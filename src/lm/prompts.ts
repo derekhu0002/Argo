@@ -49,7 +49,7 @@ Return ONLY valid JSON (no markdown fences) in this exact shape:
 // ── Map Phase ──────────────────────────────────────────────────────────────
 
 export const MAP_SYSTEM_PROMPT = `You are an expert software architect performing semantic analysis on source code.
-Your job is to read a code symbol (function, method, or class) and produce a STRUCTURED JSON summary.
+Your job is to read a BATCH of code symbols (functions, methods, classes, interfaces) and produce a STRUCTURED JSON array summary.
 
 Rules:
 - Focus on REAL BUSINESS SIDE EFFECTS: what does this code actually DO? (e.g. "writes order to DB", "calls payment gateway via REST", "emits OrderCreated event").
@@ -58,26 +58,35 @@ Rules:
   <<ValueObject>>, <<Factory>>, <<Adapter>>, <<EventHandler>>, <<Utility>>,
   <<Aggregate>>, <<DomainService>>, <<ApplicationService>>, <<Specification>>.
 - List concrete side effects as short phrases.
+- Return one item for every input symbol, preserving the original symbolName exactly.
 
 Return ONLY valid JSON (no markdown fences) in this exact shape:
-{
-  "effectSummary": "one-sentence summary of real business behaviour",
-  "stereotypes": ["<<Service>>"],
-  "sideEffects": ["writes to orders table", "publishes OrderCreated event"]
-}`;
+[
+  {
+    "symbolName": "Exact.Input.SymbolName",
+    "effectSummary": "one-sentence summary of real business behaviour",
+    "stereotypes": ["<<Service>>"],
+    "sideEffects": ["writes to orders table", "publishes OrderCreated event"]
+  }
+]`;
 
-export function buildMapUserPrompt(symbolName: string, sourceText: string, callees: string[]): string {
-    const calleesStr = callees.length > 0
-        ? `\nThis symbol calls: ${callees.join(', ')}`
-        : '';
-    return `Analyse the following code symbol.
+export function buildMapUserPrompt(symbols: Array<{ symbolName: string; sourceText: string; callees: string[] }>): string {
+    const rendered = symbols.map((symbol, index) => {
+        const callees = symbol.callees.length > 0
+            ? symbol.callees.join(', ')
+            : '(none)';
+        return [
+            `### Symbol ${index + 1}`,
+            `symbolName: ${symbol.symbolName}`,
+            `callees: ${callees}`,
+            'source:',
+            '```',
+            symbol.sourceText,
+            '```',
+        ].join('\n');
+    }).join('\n\n');
 
-Symbol name: ${symbolName}${calleesStr}
-
-Source code:
-\`\`\`
-${sourceText}
-\`\`\``;
+    return `Analyse the following batch of code symbols and return a JSON array with one summary per symbol.\n\n${rendered}`;
 }
 
 // ── Reduce Phase ───────────────────────────────────────────────────────────

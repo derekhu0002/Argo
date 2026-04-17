@@ -16,11 +16,33 @@ import {
     buildReduceUserPrompt,
 } from '../lm/prompts';
 
+interface MapPromptSymbol {
+    symbolName: string;
+    sourceText: string;
+    callees: string[];
+}
+
+interface BatchMapResponseItem {
+    symbolName: string;
+    effectSummary?: unknown;
+    stereotypes?: unknown;
+    sideEffects?: unknown;
+}
+
+interface TrivialSummaryHint {
+    stereotype: string;
+}
+
 /**
  * Default concrete implementation of the three-step
  * Semantic UML extraction pipeline.
  */
 export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
+
+    private static readonly MAP_BATCH_SIZE = 15;
+    private static readonly MAP_CONCURRENCY = 2;
+    private static readonly TRIVIAL_SYMBOL_MAX_CHARS = 220;
+    private static readonly DTO_CLASS_MAX_CHARS = 600;
 
     // ------------------------------------------------------------------ //
     //  Step 1 — LSP Topology Collection                                  //
@@ -42,36 +64,82 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
         symbols: CodeSymbolNode[],
         options: SemanticUmlEngineOptions,
     ): Promise<BusinessSummary[]> {
-        const summaries: BusinessSummary[] = [];
-        const batchSize = 5;
+        const summariesByName = new Map<string, BusinessSummary>();
+        const llmCandidates: CodeSymbolNode[] = [];
 
-        for (let i = 0; i < symbols.length; i += batchSize) {
-            if (options.token.isCancellationRequested) break;
-
-            const batch = symbols.slice(i, i + batchSize);
-            options.stream.markdown(
-                `  Summarising symbols ${i + 1}–${Math.min(i + batchSize, symbols.length)} of ${symbols.length} …\n`,
-            );
-
-            const batchResults = await Promise.all(
-                batch.map(sym => this.summariseOneSymbol(sym, options)),
-            );
-            summaries.push(...batchResults);
+        for (const symbol of symbols) {
+            const trivialSummary = this.buildTrivialSummary(symbol);
+            if (trivialSummary) {
+                summariesByName.set(symbol.name, trivialSummary);
+            } else {
+                llmCandidates.push(symbol);
+            }
         }
-        return summaries;
+
+        const skippedCount = summariesByName.size;
+        const llmBatchCount = Math.ceil(llmCandidates.length / DefaultSemanticUmlEngine.MAP_BATCH_SIZE);
+        options.stream.markdown(
+            `  Fast-path skipped ${skippedCount} trivial symbol(s); ${llmCandidates.length} symbol(s) remain for LLM analysis in ${llmBatchCount} batch(es).\n`,
+        );
+
+        if (llmCandidates.length > 0) {
+            const batches = this.chunkSymbols(llmCandidates, DefaultSemanticUmlEngine.MAP_BATCH_SIZE);
+            const batchResults = await this.runMapBatchesWithConcurrency(batches, options);
+            for (const summary of batchResults.flat()) {
+                summariesByName.set(summary.symbolName, summary);
+            }
+        }
+
+        for (const symbol of symbols) {
+            if (!summariesByName.has(symbol.name)) {
+                summariesByName.set(symbol.name, this.createFallbackSummary(symbol));
+            }
+        }
+
+        return symbols.map(symbol => summariesByName.get(symbol.name) ?? this.createFallbackSummary(symbol));
     }
 
-    private async summariseOneSymbol(
-        sym: CodeSymbolNode,
+    private async runMapBatchesWithConcurrency(
+        batches: CodeSymbolNode[][],
         options: SemanticUmlEngineOptions,
-    ): Promise<BusinessSummary> {
-        // Truncate very large source bodies to stay within token budget.
-        const maxChars = (options.mapBudgetTokens ?? 4096) * 3;
-        const source = sym.sourceText.length > maxChars
-            ? sym.sourceText.slice(0, maxChars) + '\n// … (truncated)'
-            : sym.sourceText;
+    ): Promise<BusinessSummary[][]> {
+        const results: BusinessSummary[][] = new Array(batches.length);
+        const totalSymbols = this.countSymbols(batches);
+        let nextBatchIndex = 0;
+        const workerCount = Math.min(DefaultSemanticUmlEngine.MAP_CONCURRENCY, batches.length);
 
-        const userPrompt = buildMapUserPrompt(sym.name, source, sym.callees);
+        const workers = Array.from({ length: workerCount }, async () => {
+            while (true) {
+                if (options.token.isCancellationRequested) {
+                    throw new vscode.CancellationError();
+                }
+
+                const currentIndex = nextBatchIndex;
+                nextBatchIndex += 1;
+                if (currentIndex >= batches.length) {
+                    return;
+                }
+
+                const batch = batches[currentIndex];
+                const start = currentIndex * DefaultSemanticUmlEngine.MAP_BATCH_SIZE + 1;
+                const end = start + batch.length - 1;
+                options.stream.markdown(
+                    `  Summarising symbols ${start}–${end} of ${totalSymbols} in batch ${currentIndex + 1}/${batches.length} …\n`,
+                );
+                results[currentIndex] = await this.summariseBatch(batch, options);
+            }
+        });
+
+        await Promise.all(workers);
+        return results;
+    }
+
+    private async summariseBatch(
+        symbols: CodeSymbolNode[],
+        options: SemanticUmlEngineOptions,
+    ): Promise<BusinessSummary[]> {
+        const promptSymbols = symbols.map(symbol => this.toMapPromptSymbol(symbol, options));
+        const userPrompt = buildMapUserPrompt(promptSymbols);
 
         try {
             const raw = await sendLlmRequest(
@@ -80,51 +148,166 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
                 options.token,
                 options.mapBudgetTokens ?? 4096,
             );
-            return this.parseMapResponse(sym.name, raw);
+            return this.parseBatchMapResponse(symbols, raw);
         } catch {
-            // Fallback if LLM is unavailable or returns garbage.
-            return {
-                symbolName: sym.name,
-                effectSummary: `(auto) Code symbol: ${sym.name}`,
-                stereotypes: [this.guessStereotype(sym)],
-                sideEffects: [],
-            };
+            return symbols.map(symbol => this.createFallbackSummary(symbol));
         }
     }
 
-    private parseMapResponse(symbolName: string, raw: string): BusinessSummary {
+    private parseBatchMapResponse(symbols: CodeSymbolNode[], raw: string): BusinessSummary[] {
         try {
-            // Strip potential markdown code fences
             const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
             const parsed = JSON.parse(cleaned);
-            return {
-                symbolName,
-                effectSummary: String(parsed.effectSummary ?? ''),
-                stereotypes: Array.isArray(parsed.stereotypes) ? parsed.stereotypes : [],
-                sideEffects: Array.isArray(parsed.sideEffects) ? parsed.sideEffects : [],
-            };
+            const items = Array.isArray(parsed) ? parsed as BatchMapResponseItem[] : [];
+            const byName = new Map(items.map(item => [String(item.symbolName ?? ''), item]));
+            return symbols.map(symbol => {
+                const item = byName.get(symbol.name);
+                if (!item) {
+                    return this.createFallbackSummary(symbol);
+                }
+                return {
+                    symbolName: symbol.name,
+                    effectSummary: String(item.effectSummary ?? ''),
+                    stereotypes: Array.isArray(item.stereotypes)
+                        ? item.stereotypes.map(String).filter(Boolean)
+                        : [this.guessStereotype(symbol)],
+                    sideEffects: Array.isArray(item.sideEffects)
+                        ? item.sideEffects.map(String).filter(Boolean)
+                        : [],
+                };
+            });
         } catch {
-            return {
-                symbolName,
-                effectSummary: raw.slice(0, 200),
-                stereotypes: [],
-                sideEffects: [],
-            };
+            return symbols.map(symbol => this.createFallbackSummary(symbol));
         }
     }
 
-    /** Simple heuristic when LLM is unavailable. */
-    private guessStereotype(sym: CodeSymbolNode): string {
+    private toMapPromptSymbol(
+        symbol: CodeSymbolNode,
+        options: SemanticUmlEngineOptions,
+    ): MapPromptSymbol {
+        const maxChars = Math.max(600, (options.mapBudgetTokens ?? 4096) * 2);
+        const sourceText = symbol.sourceText.length > maxChars
+            ? symbol.sourceText.slice(0, maxChars) + '\n// … (truncated)'
+            : symbol.sourceText;
+        return {
+            symbolName: symbol.name,
+            sourceText,
+            callees: symbol.callees,
+        };
+    }
+
+    private buildTrivialSummary(symbol: CodeSymbolNode): BusinessSummary | undefined {
+        const hint = this.classifyTrivialSymbol(symbol);
+        if (!hint) {
+            return undefined;
+        }
+
+        return {
+            symbolName: symbol.name,
+            effectSummary: '',
+            stereotypes: [hint.stereotype],
+            sideEffects: [],
+        };
+    }
+
+    private classifyTrivialSymbol(symbol: CodeSymbolNode): TrivialSummaryHint | undefined {
+        const source = symbol.sourceText.trim();
+        const normalized = source.replace(/\s+/g, ' ').trim();
+        const lowerName = symbol.name.toLowerCase();
+
+        if (symbol.kind === vscode.SymbolKind.Interface) {
+            return { stereotype: this.guessStereotype(symbol, '<<ValueObject>>') };
+        }
+
+        if (source.length <= DefaultSemanticUmlEngine.TRIVIAL_SYMBOL_MAX_CHARS && this.isSimpleAccessor(normalized)) {
+            return { stereotype: '<<Utility>>' };
+        }
+
+        if (source.length <= DefaultSemanticUmlEngine.TRIVIAL_SYMBOL_MAX_CHARS && this.isSimplePassThrough(normalized)) {
+            return { stereotype: this.guessStereotype(symbol) };
+        }
+
+        if (
+            (symbol.kind === vscode.SymbolKind.Class || symbol.kind === vscode.SymbolKind.Struct) &&
+            source.length <= DefaultSemanticUmlEngine.DTO_CLASS_MAX_CHARS &&
+            (/(dto|request|response|payload|viewmodel|view-model|params|command|query|record|message)$/i.test(lowerName) ||
+                this.isDtoLikeType(source))
+        ) {
+            return { stereotype: '<<ValueObject>>' };
+        }
+
+        return undefined;
+    }
+
+    private isSimpleAccessor(source: string): boolean {
+        return /^((public|private|protected|static|async|readonly|get|set)\s+)*[\w$<>\[\],:?]+\s*\([^)]*\)\s*\{\s*(return\s+(this\.)?[\w$.[\]]+;|(this\.)?[\w$.[\]]+\s*=\s*[\w$.[\]]+;|return;)?\s*\}$/i.test(source);
+    }
+
+    private isSimplePassThrough(source: string): boolean {
+        return /^(public|private|protected|static|async|readonly|constructor|function|def|func)?[\s\w$<>\[\],:?()=-]*\{\s*(super\([^)]*\);\s*)?(return\s+[^;]+;)?\s*\}$/i.test(source)
+            && !/(await\s|for\s*\(|while\s*\(|switch\s*\(|catch\s*\(|throw\s|new\s+[A-Z]|fetch\(|axios\.|repository\.|db\.|query\(|execute\(|publish\(|emit\()/i.test(source);
+    }
+
+    private isDtoLikeType(source: string): boolean {
+        const bodyMatch = source.match(/\{([\s\S]*)\}/);
+        if (!bodyMatch) {
+            return false;
+        }
+        const body = bodyMatch[1].trim();
+        if (!body) {
+            return true;
+        }
+        if (/(=>|await\s|return\s+[^\n]*\(|throw\s|for\s*\(|while\s*\(|switch\s*\(|catch\s*\(|publish\(|emit\(|query\(|execute\()/i.test(body)) {
+            return false;
+        }
+        const lines = body.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        return lines.length > 0 && lines.every(line =>
+            /^((public|private|protected|readonly|static)\s+)*[\w$]+[!?]?\s*[:=][^;]*;?$/i.test(line) ||
+            /^constructor\([^)]*\)\s*\{\s*\}$/i.test(line),
+        );
+    }
+
+    private chunkSymbols(symbols: CodeSymbolNode[], batchSize: number): CodeSymbolNode[][] {
+        const chunks: CodeSymbolNode[][] = [];
+        for (let i = 0; i < symbols.length; i += batchSize) {
+            chunks.push(symbols.slice(i, i + batchSize));
+        }
+        return chunks;
+    }
+
+    private createFallbackSummary(symbol: CodeSymbolNode): BusinessSummary {
+        return {
+            symbolName: symbol.name,
+            effectSummary: '',
+            stereotypes: [this.guessStereotype(symbol)],
+            sideEffects: [],
+        };
+    }
+
+    private countSymbols(batches: CodeSymbolNode[][]): number {
+        let total = 0;
+        for (const batch of batches) {
+            total += batch.length;
+        }
+        return total;
+    }
+
+    private guessStereotype(sym: CodeSymbolNode, fallback: string = '<<Utility>>'): string {
         const lower = sym.name.toLowerCase();
         if (lower.includes('controller')) return '<<Controller>>';
+        if (lower.includes('appservice') || lower.includes('applicationservice')) return '<<ApplicationService>>';
+        if (lower.includes('domainservice')) return '<<DomainService>>';
         if (lower.includes('service')) return '<<Service>>';
         if (lower.includes('repository') || lower.includes('repo')) return '<<Repository>>';
         if (lower.includes('gateway') || lower.includes('client')) return '<<Gateway>>';
         if (lower.includes('handler')) return '<<EventHandler>>';
         if (lower.includes('factory')) return '<<Factory>>';
         if (lower.includes('adapter')) return '<<Adapter>>';
+        if (lower.includes('aggregate')) return '<<Aggregate>>';
+        if (lower.includes('specification')) return '<<Specification>>';
         if (lower.includes('entity') || lower.includes('model')) return '<<Entity>>';
-        return '<<Utility>>';
+        if (/(dto|request|response|payload|valueobject|value-object|record|message)$/i.test(lower)) return '<<ValueObject>>';
+        return fallback;
     }
 
     // ------------------------------------------------------------------ //
@@ -136,13 +319,11 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
         summaries: BusinessSummary[],
         options: SemanticUmlEngineOptions,
     ): Promise<SemanticUmlResult> {
-        // Build call graph
         const callGraph = new Map<string, string[]>();
         for (const sym of symbols) {
             callGraph.set(sym.name, sym.callees);
         }
 
-        // Prepare symbol summaries for the prompt
         const summaryLookup = new Map(summaries.map(s => [s.symbolName, s]));
         const symbolSummaries = symbols.map(sym => {
             const s = summaryLookup.get(sym.name);
@@ -164,14 +345,11 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
                 options.token,
                 8192,
             );
-            // Clean potential markdown wrapping
             plantUml = plantUml.replace(/```plantuml?\s*/g, '').replace(/```/g, '').trim();
         } catch {
-            // Fallback: generate a minimal but correct PlantUML
             plantUml = this.generateFallbackPlantUml(symbolSummaries, callGraph);
         }
 
-        // Extract notes from summaries for structured output
         const notes: UmlNote[] = summaries.map(s => ({
             targetElement: s.symbolName,
             content: `${s.effectSummary}\nSide effects: ${s.sideEffects.join(', ') || 'none detected'}`,
@@ -182,7 +360,7 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
             summaries,
             notes,
             callGraph,
-            elapsedMs: 0, // Will be set by the base class extract()
+            elapsedMs: 0,
         };
     }
 
@@ -208,7 +386,6 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
             const srcAlias = src.replace(/\./g, '_');
             for (const tgt of targets) {
                 const tgtAlias = tgt.replace(/\./g, '_');
-                // Only add edge if target is in our symbol set
                 if (symbols.some(s => s.name === tgt)) {
                     lines.push(`${srcAlias} --> ${tgtAlias}`);
                 }

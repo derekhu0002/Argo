@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "0.3.0",
+  "version": "0.5.1",
   "license": "MIT",
   "publisher": "argo-team",
   "engines": {
@@ -19,7 +19,9 @@
     "uml",
     "archimate"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onChatParticipant:argo.architect"
+  ],
   "main": "./out/extension.js",
   "extensionDependencies": [
     "github.copilot-chat"
@@ -30,7 +32,7 @@
         "id": "argo.architect",
         "fullName": "Argo Architect",
         "name": "argo",
-        "description": "Agentic Workflow Orchestrator — closed-loop architecture control between ArchiMate intent and real code.",
+        "description": "Agentic Workflow Orchestrator \u2014 closed-loop architecture control between ArchiMate intent and real code.",
         "isSticky": true,
         "commands": [
           {
