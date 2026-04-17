@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "0.5.1",
+  "version": "0.8.0",
   "license": "MIT",
   "publisher": "argo-team",
   "engines": {
