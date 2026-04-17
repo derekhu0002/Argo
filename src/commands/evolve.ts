@@ -1,8 +1,15 @@
 import * as vscode from 'vscode';
 import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
-import { buildMainAgentHandoffPrompt, parseCommitPrompt } from '../utils/agentHandoff';
+import { StitchJudge } from '../engine/stitchJudge';
+import { buildFixHandoffPrompt, buildMainAgentHandoffPrompt, parseCommitPrompt } from '../utils/agentHandoff';
 import { commitExists, getChangedSourceUrisForCommit, getHeadCommit } from '../utils/git';
-import { intentUri, writeImplementationUml } from '../utils/workspaceFs';
+import {
+    intentUri,
+    readImplementationUml,
+    readIntentArchitecture,
+    writeCandidateImplementationUml,
+    writeImplementationUml,
+} from '../utils/workspaceFs';
 
 /**
  * `/evolve` — Incremental Architecture Evolution Handoff
@@ -12,7 +19,7 @@ import { intentUri, writeImplementationUml } from '../utils/workspaceFs';
  *   2. Hand off evolution work to the Copilot main agent.
  *   3. Require the main agent to commit and return the commit id.
  *   4. Resolve source files changed by that commit.
- *   5. Extract implementation UML from real workspace code and persist it.
+ *   5. Rebuild the full implementation UML from the current workspace.
  */
 export async function handleEvolve(
     request: vscode.ChatRequest,
@@ -34,13 +41,20 @@ export async function handleEvolve(
     }
 
     const { commitId, extraContext } = parseCommitPrompt(request.prompt);
+    let currentIntent: string;
+    try {
+        currentIntent = await readIntentArchitecture();
+    } catch (err) {
+        stream.markdown(`❌ 无法读取架构意图：\`${String(err)}\`\n`);
+        return;
+    }
 
     if (!commitId) {
         const handoffPrompt = buildMainAgentHandoffPrompt(intentFile, 'evolve', extraContext);
         stream.markdown(
             '### Step 1 — Handoff To Copilot Main Agent\n\n' +
             '当前稳定 VS Code API 不支持由 Argo 直接编程式拉起 GitHub Copilot 主 agent 并等待其完成代码修改。\n\n' +
-            '请将下面这段指令交给 Copilot 主 agent 执行。Argo 只接受 **commit id** 作为下一步输入，并会基于该 commit 对真实代码做实现架构提取。\n\n',
+            '请将下面这段指令交给 Copilot 主 agent 执行。Argo 只接受 **commit id** 作为下一步输入：commit 中的变更文件用于定位本次演进范围，而正式裁判始终基于当前工作区全量源码重建完整实现架构。\n\n',
         );
         stream.markdown('```text\n' + handoffPrompt + '\n```\n\n');
         stream.markdown(
@@ -64,8 +78,8 @@ export async function handleEvolve(
         );
     }
 
-    const targetUris = await getChangedSourceUrisForCommit(commitId);
-    if (targetUris.length === 0) {
+    const changedUris = await getChangedSourceUrisForCommit(commitId);
+    if (changedUris.length === 0) {
         stream.markdown(
             `⚠️ commit \`${commitId}\` 没有检测到可分析的源码文件变更，无法提取实现架构。\n`,
         );
@@ -73,25 +87,56 @@ export async function handleEvolve(
     }
 
     stream.markdown(
-        `发现 **${targetUris.length}** 个变更源码文件，开始基于真实代码提取实现架构。\n\n`,
+        `发现 **${changedUris.length}** 个变更源码文件。Argo 将以这些变更定位本次演进范围，但正式裁判会基于当前工作区全量源码重建完整实现架构，避免用局部提取结果覆盖整体 UML。\n\n`,
     );
 
     const engine = new DefaultSemanticUmlEngine();
+    const judge = new StitchJudge();
     try {
+        const previousUml = await readImplementationUml();
         const result = await engine.extract({
-            targetUris,
-            incremental: true,
+            targetUris: [],
+            incremental: false,
             token,
             stream,
         });
 
-        const savedUri = await writeImplementationUml(result.plantUml);
+        const newUml = result.plantUml;
+
+        stream.markdown('### Step 3 — Running anti-corruption check …\n\n');
+        const judgement = await judge.antiCorruptionCheck(previousUml, newUml, currentIntent, token);
+
+        if (judgement.verdict === 'pass') {
+            const savedUri = await writeImplementationUml(newUml);
+            stream.markdown(
+                `✅ 防腐检查通过。commit \`${commitId}\` 的演进结果未破坏既有架构边界。\n\n` +
+                `✅ 新的正式实现架构已写入 [design/implementation-uml.puml](${savedUri.toString()})。\n\n` +
+                `> 变更文件：${changedUris.length} 个 · UML 重建范围：当前工作区全量源码 · 耗时 ${result.elapsedMs}ms\n`,
+            );
+            return;
+        }
+
+        const candidateUri = await writeCandidateImplementationUml(newUml);
+
+        stream.markdown('❌ 防腐检查失败，检测到以下违规项：\n\n');
+        for (const violation of judgement.violations) {
+            stream.markdown(
+                `- **${violation.intentComponent}** ↔ \`${violation.codeElement}\`：${violation.description}\n` +
+                `  - 修复建议：${violation.suggestedFix}\n`,
+            );
+        }
+
         stream.markdown(
-            `✅ 基于 commit \`${commitId}\` 相关真实代码提取的实现架构已自动存档至 [design/implementation-uml.puml](${savedUri.toString()})。\n\n`,
+            `\n⚠️ 候选实现架构已单独存档至 [design/implementation-uml.candidate.puml](${candidateUri.toString()})，` +
+            '正式实现架构文件尚未被覆盖。该候选 UML 同样是基于当前工作区全量源码重建的完整视图。\n\n',
         );
+
+        const fixPrompt = buildFixHandoffPrompt(intentFile, judgement.violations, 'evolve');
         stream.markdown(
-            `> 提取范围：${targetUris.length} 个变更源码文件 · 耗时 ${result.elapsedMs}ms\n`,
+            '\n❌ 防腐检查失败！请将以下指令交接给 Copilot 主 Agent 进行修复。' +
+            '修复完成后，请使用新的 commit id 重新运行 `@argo /evolve commit:<new-id>`。\n\n',
         );
+        stream.markdown('```text\n' + fixPrompt + '\n```\n');
     } catch (err) {
         if (err instanceof vscode.CancellationError) {
             stream.markdown('⚠️ Operation cancelled.\n');

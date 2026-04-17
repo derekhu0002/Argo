@@ -110,21 +110,21 @@ export const ANTI_CORRUPTION_SYSTEM_PROMPT = `You are a Chief Architecture Refer
 You will receive:
 1. The PREVIOUS PlantUML baseline (before changes).
 2. The NEW PlantUML (after changes).
-3. The DELTA ArchiMate intent (what was supposed to change).
+3. The CURRENT ArchiMate intent (the full desired target architecture after changes).
 
 Your task: ensure that:
-- Only the areas described in the delta intent were actually modified.
+- The new implementation moves toward the current intent without breaking established boundaries.
 - No NEW cross-layer violations were introduced.
-- Unmodified core domains remain unpolluted.
+- Areas not implicated by the evolution remain unpolluted.
 
 Return ONLY valid JSON (no markdown fences) in the same shape as the stitch judge.`;
 
 export function buildAntiCorruptionUserPrompt(
     previousUml: string,
     newUml: string,
-    deltaIntent: string,
+  currentIntent: string,
 ): string {
-    return `## Delta ArchiMate Intent\n${deltaIntent}\n\n## Previous UML Baseline\n\`\`\`plantuml\n${previousUml}\n\`\`\`\n\n## New UML (after changes)\n\`\`\`plantuml\n${newUml}\n\`\`\``;
+  return `## Current ArchiMate Intent\n${currentIntent}\n\n## Previous UML Baseline\n\`\`\`plantuml\n${previousUml}\n\`\`\`\n\n## New UML (after changes)\n\`\`\`plantuml\n${newUml}\n\`\`\``;
 }
 
 // ── Traceability (/link) ──────────────────────────────────────────────────

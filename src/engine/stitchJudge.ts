@@ -38,16 +38,16 @@ export class StitchJudge {
     }
 
     /**
-     * Anti-corruption check for /evolve: ensure delta changes didn't
-     * pollute unrelated domains.
+     * Anti-corruption check for /evolve: ensure the new implementation
+     * aligns with the current target intent without polluting unrelated domains.
      */
     async antiCorruptionCheck(
         previousUml: string,
         newUml: string,
-        deltaIntent: string,
+        currentIntent: string,
         token: vscode.CancellationToken,
     ): Promise<StitchJudgement> {
-        const userPrompt = buildAntiCorruptionUserPrompt(previousUml, newUml, deltaIntent);
+        const userPrompt = buildAntiCorruptionUserPrompt(previousUml, newUml, currentIntent);
         const raw = await sendLlmRequest(
             ANTI_CORRUPTION_SYSTEM_PROMPT,
             userPrompt,

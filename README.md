@@ -25,7 +25,7 @@ It is designed for teams that want to:
 
 ### 1. Greenfield architecture-driven build
 
-You define the target architecture in `design/architecture-intent.puml`, then run `@argo /init` to generate an implementation proposal and validate whether the generated structure matches the declared intent.
+You define the target architecture in `design/architecture-intent.puml`, then run `@argo /init`. Argo uses the returned commit to locate the implementation scope, rebuilds a full implementation UML from the current workspace, and validates whether that full structure matches the declared intent.
 
 ### 2. Legacy codebase baseline
 
@@ -33,7 +33,7 @@ You run `@argo /baseline` on an existing workspace. Argo extracts semantic UML, 
 
 ### 3. Controlled architecture evolution
 
-You update the intent file to reflect a new capability or boundary change, then run `@argo /evolve` with optional extra context. Argo checks whether the evolved implementation introduces cross-layer leakage or domain corruption.
+You update the intent file to reflect a new capability or boundary change, then run `@argo /evolve` with optional extra context. Argo uses the returned commit to locate the evolution scope, rebuilds a full implementation UML from the current workspace, and checks whether the evolved implementation introduces cross-layer leakage or domain corruption.
 
 ### 4. Architecture traceability and review
 
@@ -47,9 +47,17 @@ Argo uses fixed paths under the workspace `design/` directory. These files are p
 |------|---------|
 | `design/architecture-intent.puml` | Canonical architecture intent input |
 | `design/implementation-uml.puml` | Extracted implementation architecture output |
+| `design/implementation-uml.candidate.puml` | Candidate implementation architecture when `/init` or `/evolve` fails judgement |
 | `design/symbol-summaries.md` | Symbol-level semantic summary output |
 
 You should treat `design/architecture-intent.puml` as the architecture source of truth for Argo workflows.
+
+For commit-driven workflows, Argo uses a strict rule:
+
+- the changed files in the returned commit are used only to locate the scope of the current implementation or evolution work
+- the actual architecture judgement is always performed against a full UML rebuilt from the current workspace source code
+
+This avoids overwriting the full implementation architecture baseline with a partial UML extracted from only the changed files.
 
 ## How To Use
 
@@ -94,6 +102,7 @@ Argo writes its outputs into fixed files rather than dumping long artifacts into
 After running extraction-oriented workflows, review:
 
 - `design/implementation-uml.puml`
+- `design/implementation-uml.candidate.puml` when `/init` or `/evolve` fails judgement
 - `design/symbol-summaries.md`
 
 ## Command Guide
@@ -123,11 +132,13 @@ Use this when the architecture intent should drive the initial implementation sh
 What it does:
 
 - reads `design/architecture-intent.puml`
-- optionally appends your chat prompt as extra context
-- generates candidate code through the language model
-- extracts implementation UML from generated code
-- runs stitching checks between intent and implementation
-- stores the implementation UML in `design/implementation-uml.puml`
+- optionally appends your chat prompt as extra context for the Copilot main agent handoff
+- requires the main agent to commit and return a commit id
+- uses the changed files in that commit only to locate the scope of the implementation work
+- rebuilds a full implementation UML from the current workspace before judging
+- runs stitching checks between intent and the rebuilt full implementation view
+- writes `design/implementation-uml.puml` only when judgement passes
+- writes `design/implementation-uml.candidate.puml` when judgement fails
 
 Best for:
 
@@ -141,10 +152,13 @@ Use this when the system already exists and the architecture is changing increme
 
 What it does:
 
-- captures the current baseline architecture
-- applies the requested delta through the model
-- extracts updated UML from the changed implementation
+- reads the current formal implementation baseline from `design/implementation-uml.puml`
+- requires the main agent to commit and return a commit id
+- uses the changed files in that commit only to locate the scope of the evolution work
+- rebuilds a full implementation UML from the current workspace before judging
 - runs anti-corruption checks against unintended boundary violations
+- writes `design/implementation-uml.puml` only when judgement passes
+- writes `design/implementation-uml.candidate.puml` when judgement fails
 
 Best for:
 
@@ -175,6 +189,7 @@ Best for:
 3. Review `design/implementation-uml.puml` and `design/symbol-summaries.md`.
 4. Run `@argo /link` to inspect intent-to-code traceability.
 5. Run `@argo /evolve` for controlled changes, or `@argo /init` for architecture-first generation.
+6. If `/init` or `/evolve` fails judgement, inspect `design/implementation-uml.candidate.puml`, repair the code through the Copilot main agent, then rerun with the new commit id.
 
 ## Project Structure
 
@@ -182,6 +197,7 @@ Best for:
 Argo/
 ├── design/
 │   ├── architecture-intent.puml
+│   ├── implementation-uml.candidate.puml
 │   ├── implementation-uml.puml
 │   └── symbol-summaries.md
 ├── src/

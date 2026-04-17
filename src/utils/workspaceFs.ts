@@ -6,6 +6,7 @@ import type { BusinessSummary, TraceabilityMatrix } from '../engine/types';
 const DESIGN_DIR = 'design';
 const INTENT_FILE = `${DESIGN_DIR}/architecture-intent.puml`;
 const IMPL_FILE = `${DESIGN_DIR}/implementation-uml.puml`;
+const IMPL_CANDIDATE_FILE = `${DESIGN_DIR}/implementation-uml.candidate.puml`;
 const SYMBOL_SUMMARIES_FILE = `${DESIGN_DIR}/symbol-summaries.md`;
 const TRACEABILITY_MATRIX_FILE = `${DESIGN_DIR}/traceability-matrix.md`;
 
@@ -26,6 +27,11 @@ export function intentUri(): vscode.Uri {
 /** Absolute URI of the implementation UML file. */
 export function implUri(): vscode.Uri {
     return vscode.Uri.joinPath(workspaceRoot(), IMPL_FILE);
+}
+
+/** Absolute URI of the candidate implementation UML file. */
+export function implCandidateUri(): vscode.Uri {
+    return vscode.Uri.joinPath(workspaceRoot(), IMPL_CANDIDATE_FILE);
 }
 
 /** Absolute URI of the symbol summaries file. */
@@ -56,6 +62,23 @@ export async function readIntentArchitecture(): Promise<string> {
 }
 
 /**
+ * Read `design/implementation-uml.puml` and return its text content.
+ * Throws a user-friendly error when the file does not exist.
+ */
+export async function readImplementationUml(): Promise<string> {
+    const uri = implUri();
+    try {
+        const bytes = await vscode.workspace.fs.readFile(uri);
+        return new TextDecoder('utf-8').decode(bytes);
+    } catch {
+        throw new Error(
+            `找不到实现架构文件: ${IMPL_FILE}\n` +
+            '请先运行 /baseline、/init 或 /evolve 生成 design/implementation-uml.puml 后重试。',
+        );
+    }
+}
+
+/**
  * Write PlantUML text to `design/implementation-uml.puml`.
  * Creates the `design/` directory if it doesn't exist.
  */
@@ -66,6 +89,20 @@ export async function writeImplementationUml(plantUml: string): Promise<vscode.U
     await vscode.workspace.fs.createDirectory(designDir);
 
     const uri = vscode.Uri.joinPath(root, IMPL_FILE);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
+    return uri;
+}
+
+/**
+ * Write candidate PlantUML text to `design/implementation-uml.candidate.puml`.
+ * Creates the `design/` directory if it doesn't exist.
+ */
+export async function writeCandidateImplementationUml(plantUml: string): Promise<vscode.Uri> {
+    const root = workspaceRoot();
+    const designDir = vscode.Uri.joinPath(root, DESIGN_DIR);
+    await vscode.workspace.fs.createDirectory(designDir);
+
+    const uri = vscode.Uri.joinPath(root, IMPL_CANDIDATE_FILE);
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
     return uri;
 }

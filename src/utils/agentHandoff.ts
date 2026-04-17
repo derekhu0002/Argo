@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import type { StitchViolation } from '../engine/types';
 
 const COMMIT_ID_PATTERN = /(?:^|\s)(?:commit\s*:\s*)?([0-9a-f]{7,40})(?=$|\s)/i;
 
@@ -46,6 +47,33 @@ export function buildMainAgentHandoffPrompt(
     if (extraContext) {
         lines.push(`${workflow === 'init' ? '6' : '7'}. 额外上下文：${extraContext}`);
     }
+
+    return lines.join('\n');
+}
+
+export function buildFixHandoffPrompt(
+    intentFile: vscode.Uri,
+    violations: StitchViolation[],
+    workflow: 'init' | 'evolve',
+): string {
+    const title = workflow === 'init'
+        ? '作为 Copilot 主 agent，你刚才提交的代码未能通过架构缝合审查。'
+        : '作为 Copilot 主 agent，你刚才提交的代码未能通过防腐层架构审查。';
+
+    const lines = [
+        title,
+        `请以 ${intentFile.fsPath} 作为唯一架构意图来源，修复以下违规项：`,
+        '',
+        ...violations.map((violation, index) => [
+            `${index + 1}. ${violation.intentComponent} ↔ ${violation.codeElement}`,
+            `   - 问题：${violation.description}`,
+            `   - 修复建议：${violation.suggestedFix}`,
+        ].join('\n')),
+        '',
+        '🚨 重要 Git 规范：修复完成后，你必须执行 git commit --amend --no-edit。',
+        '如果确有必要补充提交说明，可以使用 amend 更新提交信息，但必须保持修复合并到上一次提交中。',
+        '完成后请回复我最新的 commit id。',
+    ];
 
     return lines.join('\n');
 }
