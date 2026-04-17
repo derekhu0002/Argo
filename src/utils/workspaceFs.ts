@@ -68,6 +68,20 @@ export async function readIntentArchitecture(): Promise<string> {
 }
 
 /**
+ * Write PlantUML text to `design/architecture-intent.puml`.
+ * Creates the `design/` directory if it doesn't exist.
+ */
+export async function writeIntentArchitecture(plantUml: string): Promise<vscode.Uri> {
+    const root = workspaceRoot();
+    const designDir = vscode.Uri.joinPath(root, DESIGN_DIR);
+    await vscode.workspace.fs.createDirectory(designDir);
+
+    const uri = vscode.Uri.joinPath(root, INTENT_FILE);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
+    return uri;
+}
+
+/**
  * Read `design/implementation-uml.puml` and return its text content.
  * Throws a user-friendly error when the file does not exist.
  */

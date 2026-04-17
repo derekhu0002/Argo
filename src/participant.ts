@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { handleInit, handleEvolve, handleBaseline, handleLink } from './commands';
+import { handleInit, handleEvolve, handleBaseline, handleLink, handleDiscover } from './commands';
 
 /**
  * Central request handler for the `@argo` chat participant.
@@ -33,6 +33,10 @@ export async function argoRequestHandler(
             await handleLink(request, context, stream, token);
             break;
 
+        case 'discover':
+            await handleDiscover(request, context, stream, token);
+            break;
+
         default:
             await handleDefaultPrompt(request, context, stream, token);
             break;
@@ -61,6 +65,7 @@ async function handleDefaultPrompt(
         '| `/init` | Generate code from ArchiMate intent and validate architecture stitching |\n' +
         '| `/evolve` | Evolve existing architecture with anti-corruption checks |\n' +
         '| `/baseline` | Reverse-engineer legacy code into semantic UML (X-ray) |\n' +
+        '| `/discover` | Infer high-level ArchiMate intent from implementation and establish a baseline |\n' +
         '| `/link` | Build a traceability matrix between intent and code |\n\n',
     );
 

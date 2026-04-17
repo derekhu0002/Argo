@@ -93,6 +93,49 @@ export function buildMapUserPrompt(symbols: Array<{ symbolName: string; skeleton
     return `Analyse the following batch of class/module skeletons and return a JSON array with one summary per container.\n\n${rendered}`;
 }
 
+// ── Discovery Phase ────────────────────────────────────────────────────────
+
+export const DISCOVER_INTENT_SYSTEM_PROMPT = `You are an enterprise architect performing architecture discovery from a concrete implementation view.
+You will receive a low-level implementation UML extracted from source code.
+
+Your task: abstract upward and infer a HIGH-LEVEL ArchiMate-style intent architecture.
+
+Produce a PlantUML diagram that captures:
+- Business Process elements when end-to-end flows or business capabilities are visible.
+- Application Component elements representing cohesive system capabilities or bounded modules.
+- Infrastructure / Technology nodes when runtime, integration, or platform concerns are evident.
+- High-level relationships between these concepts.
+
+Rules:
+- Think in terms of intent and capability, not individual classes.
+- Consolidate low-level classes into a smaller set of meaningful architectural elements.
+- Prefer stable business/domain abstractions over file-level details.
+- Keep the output concise but structurally complete.
+- Use PlantUML syntax starting with @startuml and ending with @enduml.
+- The result must be suitable to serve as design/architecture-intent.puml for later traceability and drift analysis.
+
+Return ONLY the PlantUML code, no markdown fences and no extra commentary.`;
+
+export function buildDiscoverIntentUserPrompt(implementationUml: string): string {
+  return buildPromptSections([
+    {
+      title: 'Implementation UML (extracted from code)',
+      body: implementationUml,
+      language: 'plantuml',
+    },
+    {
+      title: 'Discovery Instructions',
+      body: [
+        'Infer the likely business intent from the implementation structure.',
+        'Collapse low-level code elements into business processes, application components, and infrastructure concerns.',
+        'Produce a clean ArchiMate-style target architecture that can be used as the team\'s initial intent baseline.',
+        'If the implementation suggests multiple subsystems, group them into coherent packages or layers.',
+        'Do not mirror every class one-for-one; synthesize at a higher level.',
+      ].join('\n'),
+    },
+  ]);
+}
+
 // ── Reduce Phase ───────────────────────────────────────────────────────────
 
 export const REDUCE_SYSTEM_PROMPT = `You are an expert UML architect. You will receive:

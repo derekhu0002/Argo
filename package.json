@@ -48,6 +48,10 @@
             "description": "Reverse-engineer a legacy codebase into richly annotated semantic UML (X-ray mode)."
           },
           {
+            "name": "discover",
+            "description": "Infer a high-level ArchiMate intent architecture from the implementation UML and auto-establish traceability baselines."
+          },
+          {
             "name": "link",
             "description": "Build a traceability matrix linking ArchiMate intent components to underlying code classes."
           }
