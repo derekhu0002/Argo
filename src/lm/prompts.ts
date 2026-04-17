@@ -96,18 +96,25 @@ export function buildMapUserPrompt(symbols: Array<{ symbolName: string; skeleton
 // ── Reduce Phase ───────────────────────────────────────────────────────────
 
 export const REDUCE_SYSTEM_PROMPT = `You are an expert UML architect. You will receive:
-1. A list of class/module-level symbols with their stereotypes and business summaries.
+1. A batch of class/module-level symbols with their stereotypes and business summaries.
 2. A class-level call-graph adjacency list (dependencies between classes/modules).
 
-Your task: generate a COMPLETE PlantUML class/component diagram that:
-- Uses <<Stereotype>> on every element.
-- Adds "note right of <Element>" or "note bottom of <Element>" annotations
-  describing the REAL business behaviour (not just the class name).
-- Shows dependency arrows based on the class-level call graph.
-- Groups related elements into packages where appropriate.
-- Uses proper PlantUML syntax starting with @startuml and ending with @enduml.
+Your task: assign each symbol to a logical PACKAGE for grouping in a PlantUML diagram.
+Group related elements together based on:
+- Shared domain concepts (e.g. order, payment, user)
+- Architectural layers (e.g. controllers, services, repositories)
+- Module/directory structure implied by symbol names
+- Call-graph proximity
 
-Return ONLY the PlantUML code, no other text.`;
+Return ONLY valid JSON (no markdown fences) — a JSON array with one entry per input symbol:
+[
+  { "symbolName": "Exact.Input.SymbolName", "package": "suggested/package/path" }
+]
+
+Rules:
+- Return one entry for EVERY input symbol — do NOT skip any.
+- Use short, readable package names (2-3 segments max).
+- Prefer domain groupings over purely technical ones.`;
 
 export function buildReduceUserPrompt(
     symbolSummaries: Array<{ name: string; stereotypes: string[]; effectSummary: string; sideEffects: string[] }>,
@@ -117,12 +124,13 @@ export function buildReduceUserPrompt(
         `- ${s.name} ${s.stereotypes.join(' ')}  →  "${s.effectSummary}" [${s.sideEffects.join('; ')}]`,
     ).join('\n');
 
+    const relevantNames = new Set(symbolSummaries.map(s => s.name));
     const edgesBlock = Array.from(callGraph.entries())
-        .filter(([, targets]) => targets.length > 0)
+        .filter(([src, targets]) => relevantNames.has(src) && targets.length > 0)
         .map(([src, targets]) => `  ${src} -> ${targets.join(', ')}`)
         .join('\n');
 
-    return `## Symbols\n${symbolsBlock}\n\n## Call Graph\n${edgesBlock}`;
+    return `## Symbols\n${symbolsBlock}\n\n## Call Graph\n${edgesBlock || '(none)'}`;
 }
 
 // ── Stitch Judge ───────────────────────────────────────────────────────────

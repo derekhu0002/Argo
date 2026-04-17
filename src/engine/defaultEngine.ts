@@ -148,36 +148,35 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
                 options.mapBudgetTokens ?? 4096,
             );
             return this.parseBatchMapResponse(symbols, raw);
-        } catch {
+        } catch (err) {
+            options.stream.markdown(
+                `  ⚠️ Map batch failed (${symbols.length} symbols): \`${String(err)}\`. Using heuristic fallback for these symbols.\n`,
+            );
             return symbols.map(symbol => this.createFallbackSummary(symbol));
         }
     }
 
     private parseBatchMapResponse(symbols: CodeSymbolNode[], raw: string): BusinessSummary[] {
-        try {
-            const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(cleaned);
-            const items = Array.isArray(parsed) ? parsed as BatchMapResponseItem[] : [];
-            const byName = new Map(items.map(item => [String(item.symbolName ?? ''), item]));
-            return symbols.map(symbol => {
-                const item = byName.get(symbol.name);
-                if (!item) {
-                    return this.createFallbackSummary(symbol);
-                }
-                return {
-                    symbolName: symbol.name,
-                    effectSummary: String(item.effectSummary ?? ''),
-                    stereotypes: Array.isArray(item.stereotypes)
-                        ? item.stereotypes.map(String).filter(Boolean)
-                        : [this.guessStereotype(symbol)],
-                    sideEffects: Array.isArray(item.sideEffects)
-                        ? item.sideEffects.map(String).filter(Boolean)
-                        : [],
-                };
-            });
-        } catch {
-            return symbols.map(symbol => this.createFallbackSummary(symbol));
-        }
+        const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        const items = Array.isArray(parsed) ? parsed as BatchMapResponseItem[] : [];
+        const byName = new Map(items.map(item => [String(item.symbolName ?? ''), item]));
+        return symbols.map(symbol => {
+            const item = byName.get(symbol.name);
+            if (!item) {
+                return this.createFallbackSummary(symbol);
+            }
+            return {
+                symbolName: symbol.name,
+                effectSummary: String(item.effectSummary ?? ''),
+                stereotypes: Array.isArray(item.stereotypes)
+                    ? item.stereotypes.map(String).filter(Boolean)
+                    : [this.guessStereotype(symbol)],
+                sideEffects: Array.isArray(item.sideEffects)
+                    ? item.sideEffects.map(String).filter(Boolean)
+                    : [],
+            };
+        });
     }
 
     private toMapPromptSymbol(
@@ -304,6 +303,8 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
     //  Step 3 — Reduce Phase: PlantUML Generation                        //
     // ------------------------------------------------------------------ //
 
+    private static readonly REDUCE_BATCH_SIZE = 50;
+
     protected async reduceToPlantUml(
         symbols: CodeSymbolNode[],
         summaries: BusinessSummary[],
@@ -325,20 +326,11 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
             };
         });
 
-        const userPrompt = buildReduceUserPrompt(symbolSummaries, callGraph);
+        // Phase A: Ask LLM (in batches) for package groupings.
+        const packageMap = await this.resolvePackageGroupings(symbolSummaries, callGraph, options);
 
-        let plantUml: string;
-        try {
-            plantUml = await sendLlmRequest(
-                REDUCE_SYSTEM_PROMPT,
-                userPrompt,
-                options.token,
-                8192,
-            );
-            plantUml = plantUml.replace(/```plantuml?\s*/g, '').replace(/```/g, '').trim();
-        } catch {
-            plantUml = this.generateFallbackPlantUml(symbolSummaries, callGraph);
-        }
+        // Phase B: Generate deterministic PlantUML with groupings applied.
+        const plantUml = this.generateDeterministicPlantUml(symbolSummaries, callGraph, packageMap);
 
         const notes: UmlNote[] = summaries.map(s => ({
             targetElement: s.symbolName,
@@ -354,35 +346,167 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
         };
     }
 
-    /** Deterministic fallback when LLM is not available. */
-    private generateFallbackPlantUml(
+    /**
+     * Ask the LLM (in batches) to assign each symbol to a logical package.
+     * Returns a map: symbolName → packageName.
+     * Falls back to file-path-based grouping if LLM fails.
+     */
+    private async resolvePackageGroupings(
+        symbolSummaries: Array<{ name: string; stereotypes: string[]; effectSummary: string; sideEffects: string[] }>,
+        callGraph: Map<string, string[]>,
+        options: SemanticUmlEngineOptions,
+    ): Promise<Map<string, string>> {
+        const packageMap = new Map<string, string>();
+
+        // Build batches.
+        const batches: typeof symbolSummaries[] = [];
+        for (let i = 0; i < symbolSummaries.length; i += DefaultSemanticUmlEngine.REDUCE_BATCH_SIZE) {
+            batches.push(symbolSummaries.slice(i, i + DefaultSemanticUmlEngine.REDUCE_BATCH_SIZE));
+        }
+
+        options.stream.markdown(
+            `  Grouping ${symbolSummaries.length} symbol(s) into packages via LLM in ${batches.length} batch(es) …\n`,
+        );
+
+        for (let bi = 0; bi < batches.length; bi++) {
+            if (options.token.isCancellationRequested) {
+                throw new vscode.CancellationError();
+            }
+
+            const batch = batches[bi];
+            options.stream.markdown(
+                `  Reduce batch ${bi + 1}/${batches.length} (${batch.length} symbols) …\n`,
+            );
+
+            try {
+                const userPrompt = buildReduceUserPrompt(batch, callGraph);
+                const raw = await sendLlmRequest(
+                    REDUCE_SYSTEM_PROMPT,
+                    userPrompt,
+                    options.token,
+                    4096,
+                );
+
+                const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed)) {
+                    let assigned = 0;
+                    for (const item of parsed) {
+                        if (item && typeof item.symbolName === 'string' && typeof item.package === 'string') {
+                            packageMap.set(item.symbolName, item.package);
+                            assigned++;
+                        }
+                    }
+                    const missing = batch.length - assigned;
+                    if (missing > 0) {
+                        options.stream.markdown(
+                            `  ⚠️ Reduce batch ${bi + 1}: LLM returned groupings for ${assigned}/${batch.length} symbols. ` +
+                            `${missing} symbol(s) will use path-based fallback grouping.\n`,
+                        );
+                    }
+                } else {
+                    options.stream.markdown(
+                        `  ⚠️ Reduce batch ${bi + 1}: LLM returned invalid format (expected JSON array). ` +
+                        `Using path-based fallback grouping for ${batch.length} symbols.\n`,
+                    );
+                }
+            } catch (err) {
+                options.stream.markdown(
+                    `  ⚠️ Reduce batch ${bi + 1} failed: \`${String(err)}\`. ` +
+                    `Using path-based fallback grouping for ${batch.length} symbols.\n`,
+                );
+                for (const sym of batch) {
+                    if (!packageMap.has(sym.name)) {
+                        packageMap.set(sym.name, this.inferPackageFromName(sym.name));
+                    }
+                }
+            }
+        }
+
+        // Ensure every symbol has a package.
+        for (const sym of symbolSummaries) {
+            if (!packageMap.has(sym.name)) {
+                packageMap.set(sym.name, this.inferPackageFromName(sym.name));
+            }
+        }
+
+        return packageMap;
+    }
+
+    private inferPackageFromName(name: string): string {
+        const slashIdx = name.lastIndexOf('/');
+        if (slashIdx > 0) return name.slice(0, slashIdx);
+        const dotIdx = name.lastIndexOf('.');
+        if (dotIdx > 0) return name.slice(0, dotIdx);
+        return 'default';
+    }
+
+    /**
+     * Generate a COMPLETE deterministic PlantUML diagram.
+     * Every symbol is guaranteed to appear. LLM-derived package groupings
+     * are applied for logical organisation.
+     */
+    private generateDeterministicPlantUml(
         symbols: Array<{ name: string; stereotypes: string[]; effectSummary: string; sideEffects: string[] }>,
         callGraph: Map<string, string[]>,
+        packageMap: Map<string, string>,
     ): string {
         const lines: string[] = ['@startuml', ''];
 
+        // Group symbols by package.
+        const packages = new Map<string, typeof symbols>();
         for (const sym of symbols) {
-            const stereo = sym.stereotypes[0] ?? '';
-            const alias = sym.name.replace(/\./g, '_');
-            lines.push(`class "${sym.name}" as ${alias} ${stereo} {`);
-            lines.push('}');
-            if (sym.effectSummary) {
-                lines.push(`note right of ${alias} : ${sym.effectSummary}`);
+            const pkg = packageMap.get(sym.name) ?? 'default';
+            let list = packages.get(pkg);
+            if (!list) {
+                list = [];
+                packages.set(pkg, list);
             }
+            list.push(sym);
+        }
+
+        const allNames = new Set(symbols.map(s => s.name));
+
+        // Emit packages.
+        for (const [pkgName, pkgSymbols] of packages) {
+            const safePkgName = pkgName.replace(/[^a-zA-Z0-9_./]/g, '_');
+            lines.push(`package "${safePkgName}" {`);
+            for (const sym of pkgSymbols) {
+                const stereo = sym.stereotypes[0] ?? '';
+                const alias = this.toAlias(sym.name);
+                lines.push(`  class "${sym.name}" as ${alias} ${stereo} {`);
+                lines.push('  }');
+            }
+            lines.push('}');
             lines.push('');
         }
 
+        // Emit notes.
+        for (const sym of symbols) {
+            if (sym.effectSummary) {
+                const alias = this.toAlias(sym.name);
+                const escaped = sym.effectSummary.replace(/\n/g, '\\n');
+                lines.push(`note right of ${alias} : ${escaped}`);
+            }
+        }
+        lines.push('');
+
+        // Emit call-graph edges.
         for (const [src, targets] of callGraph) {
-            const srcAlias = src.replace(/\./g, '_');
+            if (!allNames.has(src)) continue;
+            const srcAlias = this.toAlias(src);
             for (const tgt of targets) {
-                const tgtAlias = tgt.replace(/\./g, '_');
-                if (symbols.some(s => s.name === tgt)) {
-                    lines.push(`${srcAlias} --> ${tgtAlias}`);
+                if (allNames.has(tgt)) {
+                    lines.push(`${srcAlias} --> ${this.toAlias(tgt)}`);
                 }
             }
         }
 
         lines.push('', '@enduml');
         return lines.join('\n');
+    }
+
+    private toAlias(name: string): string {
+        return name.replace(/[^a-zA-Z0-9_]/g, '_');
     }
 }

@@ -1,0 +1,77 @@
+@startuml
+
+package "backend/src" {
+  class "timeout" <<Utility>> {
+    + Provides a utility to execute promises with a timeout.
+  }
+  class "config" <<Utility>> {
+    + Parses and validates configuration for backend origins.
+  }
+  class "app" <<Factory>> {
+    + Creates the backend application with a given provider and environment.
+  }
+}
+
+package "extension/src/sidepanel" {
+  class "App" <<Controller>> {
+    + Defines the side panel application and its components.
+  }
+  class "useSidepanelController" <<Controller>> {
+    + Manages the state and behavior of the side panel.
+    + Logs side panel events; syncs state to background.
+  }
+  class "useScrollFollowController" <<Controller>> {
+    + Manages scroll behavior for a side panel.
+    + Scrolls to specific elements.
+  }
+  class "reasoningTimelineView" <<Controller>> {
+    + Renders and manages the reasoning timeline view for user interactions.
+    + Renders UI components; handles user feedback.
+  }
+}
+
+package "extension/src/shared" {
+  class "api" <<Gateway>> {
+    + Handles API interactions for runs, events, and feedback.
+    + Starts runs; submits feedback; streams run events.
+  }
+  class "rules" <<Service>> {
+    + Manages rules for page field capture and matching.
+    + Reads and writes rules to storage; captures field values.
+  }
+  class "configuration" <<Service>> {
+    + Manages extension configuration and validation.
+    + Validates configuration patterns; resolves extension environment.
+  }
+}
+
+package "Entities" {
+  class "NormalizedRunEvent" <<Entity>> {
+    + Represents a normalized event in a run.
+    + Includes metadata and associated data.
+  }
+  class "TimelineCardModel" <<Entity>> {
+    + Represents a card in the reasoning timeline.
+  }
+}
+
+package "Utilities" {
+  class "FakeEventSource" <<Utility>> {
+    + Simulates an EventSource for testing purposes.
+    + Emits events; manages event listeners.
+  }
+  class "username" <<Utility>> {
+    + Extracts and normalizes username context from various sources.
+    + Reads DOM attributes; parses metadata.
+  }
+}
+
+"timeout" ..> "FakeEventSource" : uses
+"config" ..> "app" : configures
+"App" ..> "useSidepanelController" : manages
+"reasoningTimelineView" ..> "rules" : interacts
+"api" ..> "NormalizedRunEvent" : processes
+"configuration" ..> "rules" : validates
+"FakeEventSource" ..> "NormalizedRunEvent" : emits
+
+@enduml
