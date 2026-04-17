@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
-import { writeImplementationUml } from '../utils/workspaceFs';
+import { writeImplementationUml, writeSymbolSummaries } from '../utils/workspaceFs';
 
 /**
  * `/baseline` — Legacy Codebase Reverse-Engineering (X-Ray Mode)
@@ -37,9 +37,13 @@ export async function handleBaseline(
 
         // Auto-save the PlantUML diagram to design/implementation-uml.puml
         const savedUri = await writeImplementationUml(result.plantUml);
+        const summariesUri = await writeSymbolSummaries(result.summaries);
         stream.markdown('\n### 📊 Extracted Semantic UML\n\n');
         stream.markdown(
             `✅ 提取的实现架构已自动存档至 [design/implementation-uml.puml](${savedUri.toString()})。\n\n`,
+        );
+        stream.markdown(
+            `✅ Symbol Summaries 已自动存档至 [design/symbol-summaries.md](${summariesUri.toString()})。\n\n`,
         );
 
         // Output summary stats

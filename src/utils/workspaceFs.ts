@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
+import { TextDecoder, TextEncoder } from 'util';
+import type { BusinessSummary } from '../engine/types';
 
 // ── Convention-over-Configuration paths ────────────────────────────
 const DESIGN_DIR = 'design';
 const INTENT_FILE = `${DESIGN_DIR}/architecture-intent.puml`;
 const IMPL_FILE = `${DESIGN_DIR}/implementation-uml.puml`;
+const SYMBOL_SUMMARIES_FILE = `${DESIGN_DIR}/symbol-summaries.md`;
 
 /** Resolve the workspace root (first folder). Throws if no workspace is open. */
 function workspaceRoot(): vscode.Uri {
@@ -22,6 +25,11 @@ export function intentUri(): vscode.Uri {
 /** Absolute URI of the implementation UML file. */
 export function implUri(): vscode.Uri {
     return vscode.Uri.joinPath(workspaceRoot(), IMPL_FILE);
+}
+
+/** Absolute URI of the symbol summaries file. */
+export function symbolSummariesUri(): vscode.Uri {
+    return vscode.Uri.joinPath(workspaceRoot(), SYMBOL_SUMMARIES_FILE);
 }
 
 /**
@@ -54,4 +62,38 @@ export async function writeImplementationUml(plantUml: string): Promise<vscode.U
     const uri = vscode.Uri.joinPath(root, IMPL_FILE);
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
     return uri;
+}
+
+/**
+ * Write symbol summaries to `design/symbol-summaries.md`.
+ * Creates the `design/` directory if it doesn't exist.
+ */
+export async function writeSymbolSummaries(summaries: BusinessSummary[]): Promise<vscode.Uri> {
+    const root = workspaceRoot();
+    const designDir = vscode.Uri.joinPath(root, DESIGN_DIR);
+    await vscode.workspace.fs.createDirectory(designDir);
+
+    const lines: string[] = [
+        '# Symbol Summaries',
+        '',
+        '| Symbol | Stereotype | Business Effect |',
+        '|--------|-----------|-----------------|',
+    ];
+
+    for (const summary of summaries) {
+        const symbolName = escapeMarkdownCell(summary.symbolName);
+        const stereotypes = escapeMarkdownCell(summary.stereotypes.join(', ') || '—');
+        const effectSummary = escapeMarkdownCell(summary.effectSummary || '—');
+        lines.push(`| ${symbolName} | ${stereotypes} | ${effectSummary} |`);
+    }
+
+    lines.push('');
+
+    const uri = vscode.Uri.joinPath(root, SYMBOL_SUMMARIES_FILE);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(lines.join('\n')));
+    return uri;
+}
+
+function escapeMarkdownCell(value: string): string {
+    return value.replace(/\|/g, '\\|').replace(/\r?\n/g, '<br/>');
 }

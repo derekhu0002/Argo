@@ -13,3 +13,4 @@ node_modules/**
 workspace_bundle.json
 package-lock.json
 .git/**
+!design
