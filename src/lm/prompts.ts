@@ -3,6 +3,49 @@
  * Centralised here so they can be tuned without touching logic.
  */
 
+interface PromptSection {
+    title: string;
+    body: string;
+    language?: string;
+}
+
+function buildPromptSections(sections: PromptSection[]): string {
+    return sections.map(section => {
+        const trimmedBody = section.body.trim();
+        if (!section.language) {
+            return `## ${section.title}\n${trimmedBody}`;
+        }
+        return `## ${section.title}\n\`\`\`${section.language}\n${trimmedBody}\n\`\`\``;
+    }).join('\n\n');
+}
+
+function buildGovernanceJudgementSystemPrompt(
+    title: string,
+    inputs: string[],
+    checks: string[],
+): string {
+    return `You are a Chief Architecture Referee performing ${title}.
+You will receive:
+${inputs.map((input, index) => `${index + 1}. ${input}`).join('\n')}
+
+Your task: judge the architecture using the following checks:
+${checks.map(check => `- ${check}`).join('\n')}
+
+Return ONLY valid JSON (no markdown fences) in this exact shape:
+{
+  "verdict": "pass" | "fail",
+  "violations": [
+    {
+      "intentComponent": "name",
+      "codeElement": "name or MISSING",
+      "description": "what is wrong",
+      "suggestedFix": "how to fix it"
+    }
+  ],
+  "reasoning": "step-by-step reasoning trace"
+}`;
+}
+
 // ── Map Phase ──────────────────────────────────────────────────────────────
 
 export const MAP_SYSTEM_PROMPT = `You are an expert software architect performing semantic analysis on source code.
@@ -71,60 +114,63 @@ export function buildReduceUserPrompt(
 
 // ── Stitch Judge ───────────────────────────────────────────────────────────
 
-export const STITCH_JUDGE_SYSTEM_PROMPT = `You are a Chief Architecture Referee. You will receive:
-1. An ArchiMate INTENT description (the desired architecture).
-2. A PlantUML IMPLEMENTATION diagram (extracted from real code).
-
-Your task: judge whether the implementation is consistent with the intent.
-
-For EACH intent component, check:
-- Is there a corresponding implementation element?
-- Are the stereotypes / layers correct?
-- Are there any forbidden cross-layer dependencies?
-- Are there missing components that the intent requires?
-
-Return ONLY valid JSON (no markdown fences) in this exact shape:
-{
-  "verdict": "pass" | "fail",
-  "violations": [
-    {
-      "intentComponent": "name",
-      "codeElement": "name or MISSING",
-      "description": "what is wrong",
-      "suggestedFix": "how to fix it"
-    }
+export const STITCH_JUDGE_SYSTEM_PROMPT = buildGovernanceJudgementSystemPrompt(
+  'an ARCHITECTURE STITCHING CHECK',
+  [
+    'An ArchiMate INTENT description (the desired architecture).',
+    'A PlantUML IMPLEMENTATION diagram (extracted from real code).',
   ],
-  "reasoning": "step-by-step reasoning trace"
-}`;
+  [
+    'For each intent component, verify that there is a corresponding implementation element.',
+    'Validate stereotypes, layers, and architectural boundaries.',
+    'Detect forbidden cross-layer dependencies.',
+    'Detect missing implementation for required intent components.',
+  ],
+);
 
 export function buildStitchJudgeUserPrompt(
     archiMateIntent: string,
     implementationUml: string,
 ): string {
-    return `## ArchiMate Intent\n${archiMateIntent}\n\n## Implementation UML (from code)\n\`\`\`plantuml\n${implementationUml}\n\`\`\``;
+  return buildPromptSections([
+    { title: 'ArchiMate Intent', body: archiMateIntent },
+    { title: 'Implementation UML (from code)', body: implementationUml, language: 'plantuml' },
+  ]);
 }
 
 // ── Anti-Corruption Check (for /evolve) ────────────────────────────────────
 
-export const ANTI_CORRUPTION_SYSTEM_PROMPT = `You are a Chief Architecture Referee performing an ANTI-CORRUPTION CHECK.
-You will receive:
-1. The PREVIOUS PlantUML baseline (before changes).
-2. The NEW PlantUML (after changes).
-3. The CURRENT ArchiMate intent (the full desired target architecture after changes).
-
-Your task: ensure that:
-- The new implementation moves toward the current intent without breaking established boundaries.
-- No NEW cross-layer violations were introduced.
-- Areas not implicated by the evolution remain unpolluted.
-
-Return ONLY valid JSON (no markdown fences) in the same shape as the stitch judge.`;
+export const ANTI_CORRUPTION_SYSTEM_PROMPT = buildGovernanceJudgementSystemPrompt(
+  'an ANTI-CORRUPTION CHECK',
+  [
+    'The PREVIOUS PlantUML baseline (before changes).',
+    'The NEW PlantUML (after changes).',
+    'The CURRENT ArchiMate intent (the full desired target architecture after changes).',
+    'Optionally, the latest architecture drift report from /link.',
+  ],
+  [
+    'Ensure the new implementation moves toward the current intent without breaking established boundaries.',
+    'Detect newly introduced cross-layer violations.',
+    'Ensure areas not implicated by the evolution remain unpolluted.',
+    'Use the drift report as governance context when it is provided.',
+  ],
+);
 
 export function buildAntiCorruptionUserPrompt(
     previousUml: string,
     newUml: string,
-  currentIntent: string,
+    currentIntent: string,
+    driftReport?: string,
 ): string {
-  return `## Current ArchiMate Intent\n${currentIntent}\n\n## Previous UML Baseline\n\`\`\`plantuml\n${previousUml}\n\`\`\`\n\n## New UML (after changes)\n\`\`\`plantuml\n${newUml}\n\`\`\``;
+  const sections: PromptSection[] = [
+    { title: 'Current ArchiMate Intent', body: currentIntent },
+    { title: 'Previous UML Baseline', body: previousUml, language: 'plantuml' },
+    { title: 'New UML (after changes)', body: newUml, language: 'plantuml' },
+  ];
+  if (driftReport) {
+    sections.push({ title: 'Latest Architecture Drift Report', body: driftReport });
+  }
+  return buildPromptSections(sections);
 }
 
 // ── Traceability (/link) ──────────────────────────────────────────────────
@@ -152,5 +198,53 @@ export function buildTraceabilityUserPrompt(
     archiMateIntent: string,
     implementationUml: string,
 ): string {
-    return `## ArchiMate Intent\n${archiMateIntent}\n\n## Implementation UML\n\`\`\`plantuml\n${implementationUml}\n\`\`\``;
+  return buildPromptSections([
+    { title: 'ArchiMate Intent', body: archiMateIntent },
+    { title: 'Implementation UML', body: implementationUml, language: 'plantuml' },
+  ]);
+}
+
+export const DRIFT_ANALYSIS_SYSTEM_PROMPT = `You are an architecture governance referee.
+You will receive:
+1. The canonical ArchiMate INTENT.
+2. The current PlantUML IMPLEMENTATION view.
+3. The current traceability matrix between intent and code.
+
+Your task: analyse architectural drift and deviation between the intent and implementation.
+
+You must:
+- assess the overall drift severity
+- identify concrete deviations and why they matter
+- suggest specific remediation actions that would move the implementation toward the intent
+- produce a driftScore between 0 and 1, where 0 means fully aligned and 1 means severely drifted
+
+Return ONLY valid JSON (no markdown fences) in this exact shape:
+{
+  "summary": "short executive summary",
+  "overallStatus": "aligned" | "minor-drift" | "major-drift",
+  "driftScore": 0.35,
+  "deviations": [
+    {
+      "intentComponent": "name",
+      "codeElements": ["ClassA", "ClassB"],
+      "category": "missing-component | layer-violation | stereotype-mismatch | unexpected-dependency | traceability-gap | other",
+      "severity": "low" | "medium" | "high",
+      "description": "what drift was detected",
+      "impact": "why this matters",
+      "recommendation": "how to fix it"
+    }
+  ],
+  "recommendations": ["action 1", "action 2"]
+}`;
+
+export function buildDriftAnalysisUserPrompt(
+    archiMateIntent: string,
+    implementationUml: string,
+    traceabilityMatrix: string,
+): string {
+  return buildPromptSections([
+    { title: 'ArchiMate Intent', body: archiMateIntent },
+    { title: 'Implementation UML', body: implementationUml, language: 'plantuml' },
+    { title: 'Traceability Matrix', body: traceabilityMatrix, language: 'json' },
+  ]);
 }

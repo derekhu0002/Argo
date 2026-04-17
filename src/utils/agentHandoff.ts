@@ -23,6 +23,7 @@ export function buildMainAgentHandoffPrompt(
     intentFile: vscode.Uri,
     workflow: 'init' | 'evolve',
     extraContext: string,
+    driftReport?: string,
 ): string {
     const workflowSpecificSteps = workflow === 'init'
         ? [
@@ -46,6 +47,11 @@ export function buildMainAgentHandoffPrompt(
 
     if (extraContext) {
         lines.push(`${workflow === 'init' ? '6' : '7'}. 额外上下文：${extraContext}`);
+    }
+
+    if (driftReport) {
+        lines.push(`${workflow === 'init' ? (extraContext ? '7' : '6') : (extraContext ? '8' : '7')}. 以下是最近一次 /link 生成的架构偏离报告，请将其作为高优先级治理上下文：`);
+        lines.push(driftReport);
     }
 
     return lines.join('\n');

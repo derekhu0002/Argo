@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import {
+    ArchitectureDriftReport,
     StitchJudgement,
     TraceabilityMatrix,
 } from './types';
 import { sendLlmRequest } from '../lm/chatModelHelper';
 import {
+    buildDriftAnalysisUserPrompt,
     STITCH_JUDGE_SYSTEM_PROMPT,
     buildStitchJudgeUserPrompt,
     ANTI_CORRUPTION_SYSTEM_PROMPT,
     buildAntiCorruptionUserPrompt,
+    DRIFT_ANALYSIS_SYSTEM_PROMPT,
     TRACEABILITY_SYSTEM_PROMPT,
     buildTraceabilityUserPrompt,
 } from '../lm/prompts';
@@ -19,6 +22,8 @@ import {
  */
 export class StitchJudge {
 
+    private static readonly ANALYSIS_TOKEN_BUDGET = 4096;
+
     /**
      * Full stitching check: does the implementation UML match the intent?
      */
@@ -27,14 +32,12 @@ export class StitchJudge {
         implementationUml: string,
         token: vscode.CancellationToken,
     ): Promise<StitchJudgement> {
-        const userPrompt = buildStitchJudgeUserPrompt(archiMateIntent, implementationUml);
-        const raw = await sendLlmRequest(
+        return this.runAnalysis(
             STITCH_JUDGE_SYSTEM_PROMPT,
-            userPrompt,
+            buildStitchJudgeUserPrompt(archiMateIntent, implementationUml),
             token,
-            4096,
+            raw => this.parseJudgement(raw),
         );
-        return this.parseJudgement(raw);
     }
 
     /**
@@ -45,16 +48,15 @@ export class StitchJudge {
         previousUml: string,
         newUml: string,
         currentIntent: string,
+        driftReport: string | undefined,
         token: vscode.CancellationToken,
     ): Promise<StitchJudgement> {
-        const userPrompt = buildAntiCorruptionUserPrompt(previousUml, newUml, currentIntent);
-        const raw = await sendLlmRequest(
+        return this.runAnalysis(
             ANTI_CORRUPTION_SYSTEM_PROMPT,
-            userPrompt,
+            buildAntiCorruptionUserPrompt(previousUml, newUml, currentIntent, driftReport),
             token,
-            4096,
+            raw => this.parseJudgement(raw),
         );
-        return this.parseJudgement(raw);
     }
 
     /**
@@ -65,21 +67,56 @@ export class StitchJudge {
         implementationUml: string,
         token: vscode.CancellationToken,
     ): Promise<TraceabilityMatrix> {
-        const userPrompt = buildTraceabilityUserPrompt(archiMateIntent, implementationUml);
-        const raw = await sendLlmRequest(
+        return this.runAnalysis(
             TRACEABILITY_SYSTEM_PROMPT,
-            userPrompt,
+            buildTraceabilityUserPrompt(archiMateIntent, implementationUml),
             token,
-            4096,
+            raw => this.parseTraceability(raw),
         );
-        return this.parseTraceability(raw);
+    }
+
+    async analyseDrift(
+        archiMateIntent: string,
+        implementationUml: string,
+        traceabilityMatrix: TraceabilityMatrix,
+        token: vscode.CancellationToken,
+    ): Promise<ArchitectureDriftReport> {
+        return this.runAnalysis(
+            DRIFT_ANALYSIS_SYSTEM_PROMPT,
+            buildDriftAnalysisUserPrompt(
+                archiMateIntent,
+                implementationUml,
+                JSON.stringify(traceabilityMatrix, null, 2),
+            ),
+            token,
+            raw => this.parseDriftReport(raw),
+        );
     }
 
     // ── Private parsing helpers ──────────────────────────────────────────
 
+    private async runAnalysis<T>(
+        systemPrompt: string,
+        userPrompt: string,
+        token: vscode.CancellationToken,
+        parser: (raw: string) => T,
+    ): Promise<T> {
+        const raw = await sendLlmRequest(
+            systemPrompt,
+            userPrompt,
+            token,
+            StitchJudge.ANALYSIS_TOKEN_BUDGET,
+        );
+        return parser(raw);
+    }
+
+    private cleanJsonResponse(raw: string): string {
+        return raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
+    }
+
     private parseJudgement(raw: string): StitchJudgement {
         try {
-            const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
+            const cleaned = this.cleanJsonResponse(raw);
             const parsed = JSON.parse(cleaned);
             return {
                 verdict: parsed.verdict === 'pass' ? 'pass' : 'fail',
@@ -104,7 +141,7 @@ export class StitchJudge {
 
     private parseTraceability(raw: string): TraceabilityMatrix {
         try {
-            const cleaned = raw.replace(/```json?\s*/g, '').replace(/```/g, '').trim();
+            const cleaned = this.cleanJsonResponse(raw);
             const parsed = JSON.parse(cleaned);
             return {
                 entries: Array.isArray(parsed.entries)
@@ -119,6 +156,53 @@ export class StitchJudge {
             };
         } catch {
             return { entries: [], generatedAt: new Date() };
+        }
+    }
+
+    private parseDriftReport(raw: string): ArchitectureDriftReport {
+        try {
+            const cleaned = this.cleanJsonResponse(raw);
+            const parsed = JSON.parse(cleaned);
+            const driftScoreRaw = Number(parsed.driftScore ?? 1);
+            return {
+                summary: String(parsed.summary ?? ''),
+                overallStatus: parsed.overallStatus === 'aligned'
+                    ? 'aligned'
+                    : parsed.overallStatus === 'minor-drift'
+                        ? 'minor-drift'
+                        : 'major-drift',
+                driftScore: Number.isFinite(driftScoreRaw)
+                    ? Math.min(1, Math.max(0, driftScoreRaw))
+                    : 1,
+                deviations: Array.isArray(parsed.deviations)
+                    ? parsed.deviations.map((item: Record<string, unknown>) => ({
+                        intentComponent: String(item.intentComponent ?? ''),
+                        codeElements: Array.isArray(item.codeElements) ? item.codeElements.map(String) : [],
+                        category: String(item.category ?? 'other'),
+                        severity: item.severity === 'low'
+                            ? 'low'
+                            : item.severity === 'medium'
+                                ? 'medium'
+                                : 'high',
+                        description: String(item.description ?? ''),
+                        impact: String(item.impact ?? ''),
+                        recommendation: String(item.recommendation ?? ''),
+                    }))
+                    : [],
+                recommendations: Array.isArray(parsed.recommendations)
+                    ? parsed.recommendations.map(String)
+                    : [],
+                generatedAt: new Date(),
+            };
+        } catch {
+            return {
+                summary: `Failed to parse drift analysis response: ${raw.slice(0, 500)}`,
+                overallStatus: 'major-drift',
+                driftScore: 1,
+                deviations: [],
+                recommendations: [],
+                generatedAt: new Date(),
+            };
         }
     }
 }

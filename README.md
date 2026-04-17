@@ -49,6 +49,8 @@ Argo uses fixed paths under the workspace `design/` directory. These files are p
 | `design/implementation-uml.puml` | Extracted implementation architecture output |
 | `design/implementation-uml.candidate.puml` | Candidate implementation architecture when `/init` or `/evolve` fails judgement |
 | `design/symbol-summaries.md` | Symbol-level semantic summary output |
+| `design/traceability-matrix.md` | Intent-to-code mapping output from `/link` |
+| `design/architecture-drift-report.md` | Drift/deviation report and remediation advice from `/link` |
 
 You should treat `design/architecture-intent.puml` as the architecture source of truth for Argo workflows.
 
@@ -104,6 +106,8 @@ After running extraction-oriented workflows, review:
 - `design/implementation-uml.puml`
 - `design/implementation-uml.candidate.puml` when `/init` or `/evolve` fails judgement
 - `design/symbol-summaries.md`
+- `design/traceability-matrix.md`
+- `design/architecture-drift-report.md`
 
 ## Command Guide
 
@@ -153,6 +157,7 @@ Use this when the system already exists and the architecture is changing increme
 What it does:
 
 - reads the current formal implementation baseline from `design/implementation-uml.puml`
+- uses `design/architecture-drift-report.md` from the latest `/link` run as governance context when available
 - requires the main agent to commit and return a commit id
 - uses the changed files in that commit only to locate the scope of the evolution work
 - rebuilds a full implementation UML from the current workspace before judging
@@ -172,9 +177,10 @@ Use this when you want intent-to-code mapping.
 
 What it does:
 
-- reads the current implementation view
-- compares the intent model with implementation structure
+- reads the canonical intent and the current formal implementation view
 - builds a traceability matrix between architectural concepts and code elements
+- analyses architecture drift, deviation details, and remediation suggestions
+- writes both `design/traceability-matrix.md` and `design/architecture-drift-report.md`
 
 Best for:
 
@@ -188,8 +194,9 @@ Best for:
 2. Run `@argo /baseline` to capture the current implementation view.
 3. Review `design/implementation-uml.puml` and `design/symbol-summaries.md`.
 4. Run `@argo /link` to inspect intent-to-code traceability.
-5. Run `@argo /evolve` for controlled changes, or `@argo /init` for architecture-first generation.
-6. If `/init` or `/evolve` fails judgement, inspect `design/implementation-uml.candidate.puml`, repair the code through the Copilot main agent, then rerun with the new commit id.
+5. Review `design/architecture-drift-report.md` to understand current deviations and recommended repairs.
+6. Run `@argo /evolve` for controlled changes, or `@argo /init` for architecture-first generation.
+7. If `/init` or `/evolve` fails judgement, inspect `design/implementation-uml.candidate.puml`, repair the code through the Copilot main agent, then rerun with the new commit id.
 
 ## Project Structure
 
@@ -199,7 +206,9 @@ Argo/
 │   ├── architecture-intent.puml
 │   ├── implementation-uml.candidate.puml
 │   ├── implementation-uml.puml
-│   └── symbol-summaries.md
+│   ├── symbol-summaries.md
+│   ├── traceability-matrix.md
+│   └── architecture-drift-report.md
 ├── src/
 │   ├── commands/
 │   ├── engine/

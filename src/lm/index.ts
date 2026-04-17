@@ -10,4 +10,6 @@ export {
     buildAntiCorruptionUserPrompt,
     TRACEABILITY_SYSTEM_PROMPT,
     buildTraceabilityUserPrompt,
+    DRIFT_ANALYSIS_SYSTEM_PROMPT,
+    buildDriftAnalysisUserPrompt,
 } from './prompts';

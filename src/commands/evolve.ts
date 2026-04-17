@@ -5,6 +5,7 @@ import { buildFixHandoffPrompt, buildMainAgentHandoffPrompt, parseCommitPrompt }
 import { commitExists, getChangedSourceUrisForCommit, getHeadCommit } from '../utils/git';
 import {
     intentUri,
+    readArchitectureDriftReport,
     readImplementationUml,
     readIntentArchitecture,
     writeCandidateImplementationUml,
@@ -49,13 +50,23 @@ export async function handleEvolve(
         return;
     }
 
+    let driftReport: string | undefined;
+    try {
+        driftReport = await readArchitectureDriftReport();
+    } catch {
+        driftReport = undefined;
+    }
+
     if (!commitId) {
-        const handoffPrompt = buildMainAgentHandoffPrompt(intentFile, 'evolve', extraContext);
+        const handoffPrompt = buildMainAgentHandoffPrompt(intentFile, 'evolve', extraContext, driftReport);
         stream.markdown(
             '### Step 1 — Handoff To Copilot Main Agent\n\n' +
             '当前稳定 VS Code API 不支持由 Argo 直接编程式拉起 GitHub Copilot 主 agent 并等待其完成代码修改。\n\n' +
             '请将下面这段指令交给 Copilot 主 agent 执行。Argo 只接受 **commit id** 作为下一步输入：commit 中的变更文件用于定位本次演进范围，而正式裁判始终基于当前工作区全量源码重建完整实现架构。\n\n',
         );
+        if (driftReport) {
+            stream.markdown('已检测到最近一次 `/link` 生成的偏离报告，Argo 会将其作为本次演进的重要治理上下文一并交给主 agent。\n\n');
+        }
         stream.markdown('```text\n' + handoffPrompt + '\n```\n\n');
         stream.markdown(
             '主 agent 完成后，请重新运行：\n\n' +
@@ -104,7 +115,7 @@ export async function handleEvolve(
         const newUml = result.plantUml;
 
         stream.markdown('### Step 3 — Running anti-corruption check …\n\n');
-        const judgement = await judge.antiCorruptionCheck(previousUml, newUml, currentIntent, token);
+        const judgement = await judge.antiCorruptionCheck(previousUml, newUml, currentIntent, driftReport, token);
 
         if (judgement.verdict === 'pass') {
             const savedUri = await writeImplementationUml(newUml);

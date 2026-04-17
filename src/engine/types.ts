@@ -103,6 +103,28 @@ export interface TraceabilityMatrix {
     generatedAt: Date;
 }
 
+export type DriftSeverity = 'low' | 'medium' | 'high';
+export type DriftStatus = 'aligned' | 'minor-drift' | 'major-drift';
+
+export interface ArchitectureDeviation {
+    intentComponent: string;
+    codeElements: string[];
+    category: string;
+    severity: DriftSeverity;
+    description: string;
+    impact: string;
+    recommendation: string;
+}
+
+export interface ArchitectureDriftReport {
+    summary: string;
+    overallStatus: DriftStatus;
+    driftScore: number;
+    deviations: ArchitectureDeviation[];
+    recommendations: string[];
+    generatedAt: Date;
+}
+
 // ============================================================================
 // 4. Engine Configuration
 // ============================================================================

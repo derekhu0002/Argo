@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TextDecoder, TextEncoder } from 'util';
-import type { BusinessSummary, TraceabilityMatrix } from '../engine/types';
+import type { ArchitectureDriftReport, BusinessSummary, TraceabilityMatrix } from '../engine/types';
 
 // ── Convention-over-Configuration paths ────────────────────────────
 const DESIGN_DIR = 'design';
@@ -9,6 +9,7 @@ const IMPL_FILE = `${DESIGN_DIR}/implementation-uml.puml`;
 const IMPL_CANDIDATE_FILE = `${DESIGN_DIR}/implementation-uml.candidate.puml`;
 const SYMBOL_SUMMARIES_FILE = `${DESIGN_DIR}/symbol-summaries.md`;
 const TRACEABILITY_MATRIX_FILE = `${DESIGN_DIR}/traceability-matrix.md`;
+const DRIFT_REPORT_FILE = `${DESIGN_DIR}/architecture-drift-report.md`;
 
 /** Resolve the workspace root (first folder). Throws if no workspace is open. */
 function workspaceRoot(): vscode.Uri {
@@ -42,6 +43,11 @@ export function symbolSummariesUri(): vscode.Uri {
 /** Absolute URI of the traceability matrix file. */
 export function traceabilityMatrixUri(): vscode.Uri {
     return vscode.Uri.joinPath(workspaceRoot(), TRACEABILITY_MATRIX_FILE);
+}
+
+/** Absolute URI of the architecture drift report file. */
+export function driftReportUri(): vscode.Uri {
+    return vscode.Uri.joinPath(workspaceRoot(), DRIFT_REPORT_FILE);
 }
 
 /**
@@ -166,6 +172,75 @@ export async function writeTraceabilityMatrix(matrix: TraceabilityMatrix): Promi
     lines.push('');
 
     const uri = vscode.Uri.joinPath(root, TRACEABILITY_MATRIX_FILE);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(lines.join('\n')));
+    return uri;
+}
+
+/** Read `design/architecture-drift-report.md` and return its text content. */
+export async function readArchitectureDriftReport(): Promise<string> {
+    const uri = driftReportUri();
+    try {
+        const bytes = await vscode.workspace.fs.readFile(uri);
+        return new TextDecoder('utf-8').decode(bytes);
+    } catch {
+        throw new Error(
+            `找不到偏离报告文件: ${DRIFT_REPORT_FILE}\n` +
+            '请先运行 /link 生成 design/architecture-drift-report.md 后重试。',
+        );
+    }
+}
+
+/** Write the architecture drift report to `design/architecture-drift-report.md`. */
+export async function writeArchitectureDriftReport(report: ArchitectureDriftReport): Promise<vscode.Uri> {
+    const root = workspaceRoot();
+    const designDir = vscode.Uri.joinPath(root, DESIGN_DIR);
+    await vscode.workspace.fs.createDirectory(designDir);
+
+    const lines: string[] = [
+        '# Architecture Drift Report',
+        '',
+        `Generated at: ${report.generatedAt.toISOString()}`,
+        `Overall status: ${report.overallStatus}`,
+        `Drift score: ${Math.round(report.driftScore * 100)}%`,
+        '',
+        '## Summary',
+        '',
+        report.summary || '—',
+        '',
+        '## Deviations',
+        '',
+        '| Intent Component | Code Elements | Category | Severity | Description | Impact | Recommendation |',
+        '|------------------|---------------|----------|----------|-------------|--------|----------------|',
+    ];
+
+    for (const deviation of report.deviations) {
+        lines.push(
+            `| ${escapeMarkdownCell(deviation.intentComponent)} | ` +
+            `${escapeMarkdownCell(deviation.codeElements.join(', ') || '—')} | ` +
+            `${escapeMarkdownCell(deviation.category || '—')} | ` +
+            `${escapeMarkdownCell(deviation.severity)} | ` +
+            `${escapeMarkdownCell(deviation.description || '—')} | ` +
+            `${escapeMarkdownCell(deviation.impact || '—')} | ` +
+            `${escapeMarkdownCell(deviation.recommendation || '—')} |`,
+        );
+    }
+
+    if (report.deviations.length === 0) {
+        lines.push('| — | — | — | — | No material deviation detected | — | — |');
+    }
+
+    lines.push('', '## Recommended Actions', '');
+    if (report.recommendations.length === 0) {
+        lines.push('- No additional remediation actions suggested.');
+    } else {
+        for (const recommendation of report.recommendations) {
+            lines.push(`- ${recommendation}`);
+        }
+    }
+
+    lines.push('');
+
+    const uri = vscode.Uri.joinPath(root, DRIFT_REPORT_FILE);
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(lines.join('\n')));
     return uri;
 }
