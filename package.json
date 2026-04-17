@@ -1,0 +1,70 @@
+{
+  "name": "argo-architect",
+  "displayName": "Argo - Agentic Workflow Orchestrator",
+  "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "argo-team",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "keywords": [
+    "copilot",
+    "chat-participant",
+    "architecture",
+    "uml",
+    "archimate"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "extensionDependencies": [
+    "github.copilot-chat"
+  ],
+  "contributes": {
+    "chatParticipants": [
+      {
+        "id": "argo.architect",
+        "fullName": "Argo Architect",
+        "name": "argo",
+        "description": "Agentic Workflow Orchestrator — closed-loop architecture control between ArchiMate intent and real code.",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "init",
+            "description": "Full build: generate code from ArchiMate intent, extract semantic UML, judge stitching, and iterate until consistent."
+          },
+          {
+            "name": "evolve",
+            "description": "Evolve existing architecture: apply delta ArchiMate changes, run anti-corruption checks, and auto-fix violations."
+          },
+          {
+            "name": "baseline",
+            "description": "Reverse-engineer a legacy codebase into richly annotated semantic UML (X-ray mode)."
+          },
+          {
+            "name": "link",
+            "description": "Build a traceability matrix linking ArchiMate intent components to underlying code classes."
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.93.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0"
+  }
+}
