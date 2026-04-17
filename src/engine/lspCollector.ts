@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import ignore, { type Ignore } from 'ignore';
+import * as path from 'path';
 import { CodeSymbolNode } from './types';
 
 // File extensions we consider as analysable source code.
@@ -11,11 +13,85 @@ export async function resolveSourceUris(
     targetUris: vscode.Uri[],
 ): Promise<vscode.Uri[]> {
     if (targetUris.length > 0) {
-        return targetUris;
+        const expanded = await expandTargetUris(targetUris);
+        return filterGitIgnoredUris(expanded);
     }
     // No explicit targets → scan entire workspace.
     const files = await vscode.workspace.findFiles(SOURCE_GLOBS, '**/node_modules/**', 500);
-    return files;
+    return filterGitIgnoredUris(files);
+}
+
+async function expandTargetUris(targetUris: vscode.Uri[]): Promise<vscode.Uri[]> {
+    const collected = new Map<string, vscode.Uri>();
+
+    for (const targetUri of targetUris) {
+        try {
+            const stat = await vscode.workspace.fs.stat(targetUri);
+            if ((stat.type & vscode.FileType.Directory) !== 0) {
+                const files = await vscode.workspace.findFiles(
+                    new vscode.RelativePattern(targetUri.fsPath, SOURCE_GLOBS),
+                    '**/node_modules/**',
+                    500,
+                );
+                for (const file of files) {
+                    collected.set(file.toString(), file);
+                }
+                continue;
+            }
+        } catch {
+            // Fall through and keep the original URI when stat fails.
+        }
+
+        collected.set(targetUri.toString(), targetUri);
+    }
+
+    return Array.from(collected.values());
+}
+
+async function filterGitIgnoredUris(uris: vscode.Uri[]): Promise<vscode.Uri[]> {
+    const matcherCache = new Map<string, Promise<Ignore>>();
+    const filtered: vscode.Uri[] = [];
+
+    for (const uri of uris) {
+        const folder = vscode.workspace.getWorkspaceFolder(uri);
+        if (!folder) {
+            filtered.push(uri);
+            continue;
+        }
+
+        let matcherPromise = matcherCache.get(folder.uri.toString());
+        if (!matcherPromise) {
+            matcherPromise = loadGitIgnoreMatcher(folder.uri);
+            matcherCache.set(folder.uri.toString(), matcherPromise);
+        }
+
+        const matcher = await matcherPromise;
+        const relativePath = path.relative(folder.uri.fsPath, uri.fsPath).split(path.sep).join('/');
+        if (!relativePath || relativePath.startsWith('..')) {
+            filtered.push(uri);
+            continue;
+        }
+
+        if (!matcher.ignores(relativePath)) {
+            filtered.push(uri);
+        }
+    }
+
+    return filtered;
+}
+
+async function loadGitIgnoreMatcher(workspaceRoot: vscode.Uri): Promise<Ignore> {
+    const matcher = ignore();
+    const gitIgnoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
+
+    try {
+        const content = await vscode.workspace.fs.readFile(gitIgnoreUri);
+        matcher.add(Buffer.from(content).toString('utf8'));
+    } catch {
+        // No .gitignore is fine; fall back to an empty matcher.
+    }
+
+    return matcher;
 }
 
 /**
