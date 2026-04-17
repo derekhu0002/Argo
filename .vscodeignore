@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+build/**
 src/**
 .gitignore
 tsconfig.json
@@ -13,4 +14,4 @@ node_modules/**
 workspace_bundle.json
 package-lock.json
 .git/**
-!design
+design/**

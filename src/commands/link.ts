@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
 import { StitchJudge } from '../engine/stitchJudge';
+import { writeTraceabilityMatrix } from '../utils/workspaceFs';
 
 /**
  * `/link` — Build Traceability Matrix
@@ -67,18 +68,11 @@ export async function handleLink(
             return;
         }
 
-        // Output as a structured table
+        const matrixUri = await writeTraceabilityMatrix(matrix);
         stream.markdown('### 📋 Traceability Matrix\n\n');
-        stream.markdown('| ArchiMate Component | Code Elements | Confidence | Rationale |\n');
-        stream.markdown('|---------------------|--------------|------------|----------|\n');
-
-        for (const entry of matrix.entries) {
-            const confidence = `${Math.round(entry.confidence * 100)}%`;
-            const codeEls = entry.codeElements.map(e => `\`${e}\``).join(', ');
-            stream.markdown(
-                `| **${entry.intentComponent}** | ${codeEls} | ${confidence} | ${entry.rationale} |\n`,
-            );
-        }
+        stream.markdown(
+            `✅ Traceability Matrix 已自动存档至 [design/traceability-matrix.md](${matrixUri.toString()})。\n\n`,
+        );
 
         stream.markdown(
             `\n> Generated at ${matrix.generatedAt.toISOString()} · ${matrix.entries.length} mapping(s)\n\n` +

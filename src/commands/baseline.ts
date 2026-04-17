@@ -55,19 +55,6 @@ export async function handleBaseline(
             `- **Elapsed:** ${result.elapsedMs}ms\n\n`,
         );
 
-        // Output per-symbol summaries as a table
-        if (result.summaries.length > 0) {
-            stream.markdown('### 🏷️ Symbol Summaries\n\n');
-            stream.markdown('| Symbol | Stereotype | Business Effect |\n');
-            stream.markdown('|--------|-----------|----------------|\n');
-            for (const s of result.summaries) {
-                stream.markdown(
-                    `| \`${s.symbolName}\` | ${s.stereotypes.join(', ') || '—'} | ${s.effectSummary || '—'} |\n`,
-                );
-            }
-            stream.markdown('\n');
-        }
-
         stream.markdown(
             '> 💡 **Next step:** Review this UML, draft your ArchiMate intent, then run `@argo /link` to build a traceability matrix.\n',
         );
