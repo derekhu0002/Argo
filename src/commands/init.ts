@@ -1,20 +1,18 @@
 import * as vscode from 'vscode';
 import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
-import { StitchJudge } from '../engine/stitchJudge';
-import { sendLlmRequestStreaming } from '../lm/chatModelHelper';
-import { readIntentArchitecture, writeImplementationUml } from '../utils/workspaceFs';
-
-const MAX_STITCH_ITERATIONS = 3;
+import { buildMainAgentHandoffPrompt, parseCommitPrompt } from '../utils/agentHandoff';
+import { commitExists, getChangedSourceUrisForCommit, getHeadCommit } from '../utils/git';
+import { intentUri, writeImplementationUml } from '../utils/workspaceFs';
 
 /**
- * `/init` — Full Build from ArchiMate Intent
+ * `/init` — Architecture-Guided Implementation Handoff
  *
  * Pipeline:
- *   1. Read intent from design/architecture-intent.puml (+ optional user prompt).
- *   2. LLM generates initial code.
- *   3. ExtractSemanticUML() produces implementation UML.
- *   4. LLM judges stitching between intent UML ↔ implementation UML.
- *   5. On mismatch → LLM emits code diff → loop until stitched.
+ *   1. Resolve the canonical intent file path.
+ *   2. Hand off implementation work to the Copilot main agent.
+ *   3. Require the main agent to commit and return the commit id.
+ *   4. Resolve source files changed by that commit.
+ *   5. Extract implementation UML from real workspace code and persist it.
  */
 export async function handleInit(
     request: vscode.ChatRequest,
@@ -24,10 +22,10 @@ export async function handleInit(
 ): Promise<void> {
     stream.markdown('## 🏗️ /init — Full Build from ArchiMate Intent\n\n');
 
-    // ── Read intent from convention path ───────────────────────────
-    let archiMateIntent: string;
+    // ── Resolve canonical intent path ───────────────────────────────
+    const intentFile = intentUri();
     try {
-        archiMateIntent = await readIntentArchitecture();
+        await vscode.workspace.fs.stat(intentFile);
     } catch {
         stream.markdown(
             '⚠️ 找不到 `design/architecture-intent.puml`，请先创建它。\n\n' +
@@ -36,115 +34,72 @@ export async function handleInit(
         return;
     }
 
-    // Append user prompt as extra context if provided
-    const extraContext = request.prompt.trim();
-    if (extraContext) {
-        archiMateIntent += `\n\n[用户补充说明] ${extraContext}`;
+    const { commitId, extraContext } = parseCommitPrompt(request.prompt);
+
+    if (!commitId) {
+        const handoffPrompt = buildMainAgentHandoffPrompt(intentFile, 'init', extraContext);
+        stream.markdown(
+            '### Step 1 — Handoff To Copilot Main Agent\n\n' +
+            '当前稳定 VS Code API 不支持由 Argo 直接编程式拉起 GitHub Copilot 主 agent 并等待其完成代码修改。\n\n' +
+            '请将下面这段指令交给 Copilot 主 agent 执行。Argo 只接受 **commit id** 作为下一步输入，并会基于该 commit 对真实代码做实现架构提取。\n\n',
+        );
+        stream.markdown('```text\n' + handoffPrompt + '\n```\n\n');
+        stream.markdown(
+            '主 agent 完成后，请重新运行：\n\n' +
+            '`@argo /init commit:<commit-id>`\n',
+        );
+        return;
     }
 
-    // ── Step 1: Generate initial code from intent ──────────────────
-    stream.markdown('### Step 1 — Generating code from ArchiMate intent …\n\n');
-    const generatedCode = await sendLlmRequestStreaming(
-        `You are an expert software engineer. The user provides an ArchiMate architectural intent. 
-Generate TypeScript/JavaScript code that implements this architecture. 
-Include classes, interfaces, and module structure that map to the ArchiMate components.
-Output ONLY code (with file-path comments like "// file: src/services/OrderService.ts").`,
-        archiMateIntent,
-        stream,
-        token,
-    );
+    // ── Step 1: Resolve commit and changed files ───────────────────
+    stream.markdown(`### Step 1 — Resolving commit \`${commitId}\` …\n\n`);
+    if (!(await commitExists(commitId))) {
+        stream.markdown(`❌ 找不到 commit: \`${commitId}\`\n`);
+        return;
+    }
 
-    if (token.isCancellationRequested) return;
-
-    // ── Step 2+3+4: Extract UML → Judge → Iterate ─────────────────
-    const engine = new DefaultSemanticUmlEngine();
-    const judge = new StitchJudge();
-    let currentCode = generatedCode;
-
-    for (let iteration = 1; iteration <= MAX_STITCH_ITERATIONS; iteration++) {
-        if (token.isCancellationRequested) return;
-
-        stream.markdown(`\n---\n### Stitch Loop — Iteration ${iteration}/${MAX_STITCH_ITERATIONS}\n\n`);
-
-        // Step 2: Extract semantic UML from current code
-        stream.markdown('**Extracting semantic UML from generated code …**\n\n');
-
-        // For /init, we don't have real files yet — we ask the LLM to
-        // produce the UML directly from the generated code text.
-        const extractionResult = await extractUmlFromCodeText(currentCode, stream, token);
-        if (token.isCancellationRequested) return;
-
-        // Auto-save extracted UML to design/implementation-uml.puml
-        const savedUri = await writeImplementationUml(extractionResult);
+    const headCommit = await getHeadCommit();
+    if (!headCommit.startsWith(commitId)) {
         stream.markdown(
-            `✅ 提取的实现架构已自动存档至 [design/implementation-uml.puml](${savedUri.toString()})。\n\n`,
+            `⚠️ 当前工作区 HEAD 是 \`${headCommit.slice(0, 12)}\`，不是 \`${commitId}\`。` +
+            'Argo 将基于**当前工作区中这些文件的实际内容**提取实现架构，而不是从 git 对象中重建临时快照。\n\n',
         );
+    }
 
-        // Step 3: Judge stitching
-        stream.markdown('**Judging architecture stitching …**\n\n');
-        const judgement = await judge.judge(archiMateIntent, extractionResult, token);
-
-        stream.markdown(`**Verdict:** ${judgement.verdict === 'pass' ? '✅ PASS' : '❌ FAIL'}\n\n`);
-
-        if (judgement.verdict === 'pass') {
-            stream.markdown(
-                '### ✅ Architecture Stitching Successful\n\n' +
-                `Achieved consistency in **${iteration}** iteration(s).\n\n` +
-                '**Reasoning:**\n' + judgement.reasoning + '\n',
-            );
-            return;
-        }
-
-        // Step 4: Output violations and request fix
-        stream.markdown('**Violations found:**\n\n');
-        for (const v of judgement.violations) {
-            stream.markdown(
-                `- **${v.intentComponent}** ↔ \`${v.codeElement}\`: ${v.description}\n` +
-                `  - 💡 Fix: ${v.suggestedFix}\n`,
-            );
-        }
-
-        if (iteration < MAX_STITCH_ITERATIONS) {
-            stream.markdown('\n**Applying fixes …**\n\n');
-            currentCode = await sendLlmRequestStreaming(
-                `You are an expert software engineer. The previous code has architecture violations. 
-Fix the code to resolve ALL of the following violations while keeping the rest intact.
-Output ONLY the corrected code.`,
-                `## Original ArchiMate Intent\n${archiMateIntent}\n\n` +
-                `## Current Code\n\`\`\`\n${currentCode}\n\`\`\`\n\n` +
-                `## Violations to Fix\n${judgement.violations.map(v =>
-                    `- ${v.intentComponent} ↔ ${v.codeElement}: ${v.description} → ${v.suggestedFix}`
-                ).join('\n')}`,
-                stream,
-                token,
-            );
-        }
+    const targetUris = await getChangedSourceUrisForCommit(commitId);
+    if (targetUris.length === 0) {
+        stream.markdown(
+            `⚠️ commit \`${commitId}\` 没有检测到可分析的源码文件变更，无法提取实现架构。\n`,
+        );
+        return;
     }
 
     stream.markdown(
-        '\n### ⚠️ Max iterations reached\n\n' +
-        `Could not achieve full stitching in ${MAX_STITCH_ITERATIONS} iterations. ` +
-        'Review the violations above and refine your intent or code manually.\n',
+        `发现 **${targetUris.length}** 个变更源码文件，开始基于真实代码提取实现架构。\n\n`,
     );
-}
 
-/**
- * Ask the LLM to extract PlantUML from a code text block
- * (used when we don't have real files on disk yet).
- */
-async function extractUmlFromCodeText(
-    codeText: string,
-    stream: vscode.ChatResponseStream,
-    token: vscode.CancellationToken,
-): Promise<string> {
-    const { sendLlmRequest } = await import('../lm/chatModelHelper.js');
-    const raw = await sendLlmRequest(
-        `You are an expert UML architect. Read the following code and produce a PlantUML class diagram.
-Include <<Stereotype>> on every element and add "note" annotations describing real business behaviour.
-Return ONLY the PlantUML code.`,
-        `\`\`\`\n${codeText}\n\`\`\``,
-        token,
-        8192,
-    );
-    return raw.replace(/```plantuml?\s*/g, '').replace(/```/g, '').trim();
+    // ── Step 2: Extract UML from real workspace code ───────────────
+    const engine = new DefaultSemanticUmlEngine();
+    try {
+        const result = await engine.extract({
+            targetUris,
+            incremental: false,
+            token,
+            stream,
+        });
+
+        const savedUri = await writeImplementationUml(result.plantUml);
+        stream.markdown(
+            `✅ 基于 commit \`${commitId}\` 相关真实代码提取的实现架构已自动存档至 [design/implementation-uml.puml](${savedUri.toString()})。\n\n`,
+        );
+        stream.markdown(
+            `> 提取范围：${targetUris.length} 个变更源码文件 · 耗时 ${result.elapsedMs}ms\n`,
+        );
+    } catch (err) {
+        if (err instanceof vscode.CancellationError) {
+            stream.markdown('⚠️ Operation cancelled.\n');
+            return;
+        }
+        stream.markdown(`❌ 实现架构提取失败：\`${String(err)}\`\n`);
+    }
 }
