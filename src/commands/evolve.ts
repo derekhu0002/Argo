@@ -3,6 +3,7 @@ import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
 import { StitchJudge } from '../engine/stitchJudge';
 import { buildFixHandoffPrompt, buildMainAgentHandoffPrompt, parseCommitPrompt } from '../utils/agentHandoff';
 import { commitExists, getChangedSourceUrisForCommit, getHeadCommit } from '../utils/git';
+import { syncGovernanceReports } from '../utils/governance';
 import {
     intentUri,
     readArchitectureDriftReport,
@@ -124,6 +125,17 @@ export async function handleEvolve(
                 `✅ 新的正式实现架构已写入 [design/implementation-uml.puml](${savedUri.toString()})。\n\n` +
                 `> 变更文件：${changedUris.length} 个 · UML 重建范围：当前工作区全量源码 · 耗时 ${result.elapsedMs}ms\n`,
             );
+            try {
+                await syncGovernanceReports(currentIntent, newUml, stream, token);
+            } catch (err) {
+                if (err instanceof vscode.CancellationError) {
+                    throw err;
+                }
+                stream.markdown(
+                    `⚠️ 正式实现架构已保存，但治理资产自动同步失败：\`${String(err)}\`\n\n` +
+                    '你可以稍后运行 `@argo /link` 手动再次同步治理资产。\n\n',
+                );
+            }
             return;
         }
 

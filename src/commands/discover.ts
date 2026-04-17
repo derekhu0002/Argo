@@ -1,18 +1,14 @@
 import * as vscode from 'vscode';
-import { StitchJudge } from '../engine/stitchJudge';
 import { sendLlmRequest } from '../lm/chatModelHelper';
 import {
     buildDiscoverIntentUserPrompt,
     DISCOVER_INTENT_SYSTEM_PROMPT,
 } from '../lm/prompts';
+import { syncGovernanceReports } from '../utils/governance';
 import {
-    driftReportUri,
     intentUri,
     readImplementationUml,
-    traceabilityMatrixUri,
-    writeArchitectureDriftReport,
     writeIntentArchitecture,
-    writeTraceabilityMatrix,
 } from '../utils/workspaceFs';
 
 const DISCOVERY_TOKEN_BUDGET = 8192;
@@ -24,7 +20,7 @@ const DISCOVERY_TOKEN_BUDGET = 8192;
  *   1. Read the formal implementation UML from design/implementation-uml.puml.
  *   2. Ask the LLM to abstract a high-level ArchiMate-style intent architecture.
  *   3. Persist the discovered intent to design/architecture-intent.puml.
- *   4. Reuse StitchJudge to immediately build traceability and drift baselines.
+ *   4. Auto-sync governance artifacts from the newly discovered baseline.
  */
 export async function handleDiscover(
     _request: vscode.ChatRequest,
@@ -99,66 +95,20 @@ export async function handleDiscover(
         return;
     }
 
-    stream.markdown('### Step 3 — Auto-linking discovered intent back to implementation …\n\n');
-
-    const judge = new StitchJudge();
+    stream.markdown('### Step 3 — Auto-syncing governance artifacts …\n\n');
     try {
-        const matrix = await judge.buildTraceabilityMatrix(
-            discoveredIntent,
-            implementationUml,
-            token,
-        );
-        const driftReport = await judge.analyseDrift(
-            discoveredIntent,
-            implementationUml,
-            matrix,
-            token,
-        );
-
-        const matrixUri = await writeTraceabilityMatrix(matrix);
-        const driftUri = await writeArchitectureDriftReport(driftReport);
-
         stream.markdown('### 🏛️ Discovered Intent Baseline\n\n');
         stream.markdown(
             `${overwriteNotice ? '⚠️ 已覆盖' : '✅ 已生成'} [design/architecture-intent.puml](${savedIntentUri.toString()})。\n\n`,
         );
-        stream.markdown(
-            `✅ Traceability Matrix 已自动存档至 [design/traceability-matrix.md](${matrixUri.toString()})。\n\n`,
-        );
-        stream.markdown(
-            `✅ Architecture Drift Report 已自动存档至 [design/architecture-drift-report.md](${driftUri.toString()})。\n\n`,
-        );
-
-        stream.markdown(
-            `### 📈 Discovery Summary\n\n` +
-            `- **Intent file:** ${overwriteNotice ? 'overwritten from implementation-derived discovery' : 'created from implementation-derived discovery'}\n` +
-            `- **Traceability mappings:** ${matrix.entries.length}\n` +
-            `- **Drift score:** ${Math.round(driftReport.driftScore * 100)}%\n` +
-            `- **Overall status:** ${driftReport.overallStatus}\n\n`,
-        );
-
-        if (driftReport.driftScore > 0.05) {
-            stream.markdown(
-                '⚠️ 由于这份意图是从实现反推得到的，理论上 Drift Score 应接近 0。当前结果偏高，通常意味着发现阶段抽象过强、实现 UML 不完整，或追溯映射未完全收敛。\n\n',
-            );
-        } else {
-            stream.markdown('✅ 该发现结果已形成一份可作为后续演进基线的低偏离意图架构。\n\n');
-        }
-
-        stream.markdown(
-            `> Generated artifacts: [design/architecture-intent.puml](${savedIntentUri.toString()}), ` +
-            `[design/traceability-matrix.md](${matrixUri.toString()}), ` +
-            `[design/architecture-drift-report.md](${driftUri.toString()})\n`,
-        );
+        await syncGovernanceReports(discoveredIntent, implementationUml, stream, token);
     } catch (err) {
         if (err instanceof vscode.CancellationError) {
             return;
         }
         stream.markdown(
             `❌ 自动追溯与偏离分析失败：\`${String(err)}\`\n\n` +
-            `已保存新的意图文件 [design/architecture-intent.puml](${savedIntentUri.toString()})，` +
-            `但未能成功更新 [design/traceability-matrix.md](${traceabilityMatrixUri().toString()}) ` +
-            `或 [design/architecture-drift-report.md](${driftReportUri().toString()})。\n`,
+            `已保存新的意图文件 [design/architecture-intent.puml](${savedIntentUri.toString()})，但治理资产同步未成功完成。\n`,
         );
     }
 }

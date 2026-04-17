@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { DefaultSemanticUmlEngine } from '../engine/defaultEngine';
-import { writeImplementationUml, writeSymbolSummaries } from '../utils/workspaceFs';
+import { syncGovernanceReports } from '../utils/governance';
+import {
+    readIntentArchitecture,
+    writeImplementationUml,
+    writeSymbolSummaries,
+} from '../utils/workspaceFs';
 
 /**
  * `/baseline` — Legacy Codebase Reverse-Engineering (X-Ray Mode)
@@ -45,6 +50,23 @@ export async function handleBaseline(
         stream.markdown(
             `✅ Symbol Summaries 已自动存档至 [design/symbol-summaries.md](${summariesUri.toString()})。\n\n`,
         );
+
+        try {
+            const archiMateIntent = await readIntentArchitecture();
+            await syncGovernanceReports(archiMateIntent, result.plantUml, stream, token);
+        } catch (err) {
+            if (err instanceof vscode.CancellationError) {
+                throw err;
+            }
+            if (String(err).includes('找不到意图架构文件')) {
+                stream.markdown('💡 尚未发现意图架构，已跳过同步映射与偏离报告。\n\n');
+            } else {
+                stream.markdown(
+                    `⚠️ 实现架构已保存，但治理资产自动同步失败：\`${String(err)}\`\n\n` +
+                    '你可以稍后运行 `@argo /link` 手动再次同步治理资产。\n\n',
+                );
+            }
+        }
 
         // Output summary stats
         stream.markdown(
