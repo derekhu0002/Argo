@@ -160,67 +160,169 @@ async function getIncomingCalls(
     }
 }
 
-/**
- * Interesting symbol kinds that we want to include in the topology.
- * Filters out variables, constants, fields etc. that are too granular.
- */
-const INTERESTING_KINDS = new Set<vscode.SymbolKind>([
+// ── Container-level symbol kinds (top-level analysis units) ────────────────
+
+const CONTAINER_KINDS = new Set<vscode.SymbolKind>([
     vscode.SymbolKind.Class,
     vscode.SymbolKind.Interface,
-    vscode.SymbolKind.Function,
-    vscode.SymbolKind.Method,
-    vscode.SymbolKind.Constructor,
     vscode.SymbolKind.Module,
     vscode.SymbolKind.Enum,
     vscode.SymbolKind.Struct,
 ]);
 
+const CALLABLE_KINDS = new Set<vscode.SymbolKind>([
+    vscode.SymbolKind.Method,
+    vscode.SymbolKind.Constructor,
+    vscode.SymbolKind.Function,
+]);
+
+// ── Skeleton helpers ───────────────────────────────────────────────────────
+
 /**
- * Flatten a hierarchy of DocumentSymbols into a list, keeping only
- * "interesting" kinds. Methods/constructors carry their parent class
- * name as a prefix.
+ * Extract the signature of a method / function, stripping the body.
+ * Finds the outermost opening `{` (whose matching `}` is at the end)
+ * and returns everything before it.
  */
-function flattenSymbols(
-    symbols: vscode.DocumentSymbol[],
-    parentPrefix: string = '',
-): Array<{ name: string; kind: vscode.SymbolKind; range: vscode.Range }> {
-    const result: Array<{ name: string; kind: vscode.SymbolKind; range: vscode.Range }> = [];
-    for (const sym of symbols) {
-        const qualifiedName = parentPrefix ? `${parentPrefix}.${sym.name}` : sym.name;
-        if (INTERESTING_KINDS.has(sym.kind)) {
-            result.push({ name: qualifiedName, kind: sym.kind, range: sym.range });
-        }
-        // Recurse into children (e.g. methods inside a class).
-        if (sym.children?.length) {
-            result.push(
-                ...flattenSymbols(sym.children, qualifiedName),
-            );
+function extractSignature(methodText: string): string {
+    const trimmed = methodText.trimEnd();
+    if (!trimmed.endsWith('}')) {
+        return trimmed.endsWith(';') ? trimmed : trimmed + ';';
+    }
+    let depth = 0;
+    for (let i = trimmed.length - 1; i >= 0; i--) {
+        if (trimmed[i] === '}') depth++;
+        else if (trimmed[i] === '{') {
+            depth--;
+            if (depth === 0) {
+                return trimmed.slice(0, i).trimEnd() + ';';
+            }
         }
     }
-    return result;
+    return trimmed + ';';
 }
 
 /**
- * Read the source text for a given range from a TextDocument.
+ * Build a lightweight skeleton for a container symbol (class, struct, module).
+ * Keeps property declarations and method signatures; removes method bodies.
  */
-function extractSourceText(doc: vscode.TextDocument, range: vscode.Range): string {
-    return doc.getText(range);
+function buildContainerSkeleton(
+    doc: vscode.TextDocument,
+    sym: vscode.DocumentSymbol,
+): string {
+    // Interfaces and enums are already compact — return full text.
+    if (sym.kind === vscode.SymbolKind.Interface || sym.kind === vscode.SymbolKind.Enum) {
+        return doc.getText(sym.range);
+    }
+
+    const fullText = doc.getText(sym.range);
+    const braceIdx = fullText.indexOf('{');
+    if (braceIdx < 0) {
+        return fullText;
+    }
+
+    const lines: string[] = [fullText.slice(0, braceIdx + 1).trimEnd()];
+
+    for (const child of sym.children ?? []) {
+        const childText = doc.getText(child.range);
+        if (
+            child.kind === vscode.SymbolKind.Property ||
+            child.kind === vscode.SymbolKind.Field ||
+            child.kind === vscode.SymbolKind.EnumMember
+        ) {
+            lines.push('  ' + childText.trim());
+        } else if (CALLABLE_KINDS.has(child.kind)) {
+            lines.push('  ' + extractSignature(childText));
+        } else if (CONTAINER_KINDS.has(child.kind)) {
+            // Nested container — include its skeleton indented.
+            const nested = buildContainerSkeleton(doc, child);
+            for (const nestedLine of nested.split('\n')) {
+                lines.push('  ' + nestedLine);
+            }
+        }
+    }
+
+    lines.push('}');
+    return lines.join('\n');
 }
 
 /**
- * Build a full CodeSymbolNode[] topology for the given URIs.
+ * Build a virtual module skeleton from standalone (top-level) functions.
+ */
+function buildVirtualModuleSkeleton(
+    doc: vscode.TextDocument,
+    moduleName: string,
+    functions: vscode.DocumentSymbol[],
+): string {
+    const lines: string[] = [`// Module: ${moduleName}`];
+    for (const fn of functions) {
+        const fnText = doc.getText(fn.range);
+        lines.push(extractSignature(fnText));
+    }
+    return lines.join('\n');
+}
+
+/**
+ * Derive a module name from a file URI (workspace-relative, no extension).
+ */
+function fileToModuleName(uri: vscode.Uri): string {
+    const folder = vscode.workspace.getWorkspaceFolder(uri);
+    if (!folder) {
+        return path.basename(uri.fsPath, path.extname(uri.fsPath));
+    }
+    const rel = path.relative(folder.uri.fsPath, uri.fsPath);
+    return rel.replace(/\.[^.]+$/, '').split(path.sep).join('/');
+}
+
+/**
+ * Collect start positions of callable children (methods, constructors, functions).
+ */
+function collectCallablePositions(sym: vscode.DocumentSymbol): vscode.Position[] {
+    return (sym.children ?? [])
+        .filter(c => CALLABLE_KINDS.has(c.kind))
+        .map(c => c.range.start);
+}
+
+/**
+ * Collect member names from a container's children.
+ */
+function collectMemberNames(sym: vscode.DocumentSymbol): string[] {
+    return (sym.children ?? [])
+        .filter(c =>
+            CALLABLE_KINDS.has(c.kind) ||
+            c.kind === vscode.SymbolKind.Property ||
+            c.kind === vscode.SymbolKind.Field,
+        )
+        .map(c => c.name);
+}
+
+// ── Main container-level topology collector ────────────────────────────────
+
+/** Intermediate structure used during the two-phase collection. */
+interface RawContainer {
+    name: string;
+    kind: vscode.SymbolKind;
+    uri: vscode.Uri;
+    range: vscode.Range;
+    skeleton: string;
+    memberNames: string[];
+    callablePositions: vscode.Position[];
+}
+
+/**
+ * Build a CodeSymbolNode[] topology at container level
+ * (class, interface, module, enum, struct).
  *
- * For each file:
- *   1. Get document symbols via LSP.
- *   2. Flatten to interesting kinds.
- *   3. Read source text.
- *   4. Resolve outgoing / incoming call edges.
+ * Standalone top-level functions are grouped into virtual file-level modules.
+ * Call edges from individual methods are aggregated & elevated to the
+ * container that owns them.
  */
 export async function collectTopologyFromUris(
     uris: vscode.Uri[],
     token: vscode.CancellationToken,
 ): Promise<CodeSymbolNode[]> {
-    const nodes: CodeSymbolNode[] = [];
+    // ── Phase 1: Collect all containers ──────────────────────────────
+
+    const rawContainers: RawContainer[] = [];
 
     for (const uri of uris) {
         if (token.isCancellationRequested) break;
@@ -229,34 +331,114 @@ export async function collectTopologyFromUris(
         try {
             doc = await vscode.workspace.openTextDocument(uri);
         } catch {
-            // Binary file or cannot open — skip.
             continue;
         }
 
         const rawSymbols = await getDocumentSymbols(uri);
-        const flat = flattenSymbols(rawSymbols);
+        const standaloneFunctions: vscode.DocumentSymbol[] = [];
 
-        for (const sym of flat) {
-            if (token.isCancellationRequested) break;
+        for (const sym of rawSymbols) {
+            if (CONTAINER_KINDS.has(sym.kind)) {
+                rawContainers.push({
+                    name: sym.name,
+                    kind: sym.kind,
+                    uri,
+                    range: sym.range,
+                    skeleton: buildContainerSkeleton(doc, sym),
+                    memberNames: collectMemberNames(sym),
+                    callablePositions: collectCallablePositions(sym),
+                });
+            } else if (sym.kind === vscode.SymbolKind.Function) {
+                standaloneFunctions.push(sym);
+            }
+        }
 
-            const sourceText = extractSourceText(doc, sym.range);
-            const startPos = sym.range.start;
-
-            const [callees, callers] = await Promise.all([
-                getOutgoingCalls(uri, startPos),
-                getIncomingCalls(uri, startPos),
-            ]);
-
-            nodes.push({
-                name: sym.name,
-                kind: sym.kind,
+        // Group standalone functions into a virtual file-level module.
+        if (standaloneFunctions.length > 0) {
+            const moduleName = fileToModuleName(uri);
+            rawContainers.push({
+                name: moduleName,
+                kind: vscode.SymbolKind.Module,
                 uri,
-                range: sym.range,
-                callees,
-                callers,
-                sourceText,
+                range: new vscode.Range(0, 0, doc.lineCount - 1, 0),
+                skeleton: buildVirtualModuleSkeleton(doc, moduleName, standaloneFunctions),
+                memberNames: standaloneFunctions.map(f => f.name),
+                callablePositions: standaloneFunctions.map(f => f.range.start),
             });
         }
+    }
+
+    // ── Phase 2: Build member→container lookup for call-edge elevation ──
+
+    const memberToContainers = new Map<string, Set<string>>();
+    for (const container of rawContainers) {
+        for (const member of container.memberNames) {
+            let set = memberToContainers.get(member);
+            if (!set) {
+                set = new Set();
+                memberToContainers.set(member, set);
+            }
+            set.add(container.name);
+        }
+    }
+
+    const allContainerNames = new Set(rawContainers.map(c => c.name));
+
+    /** Map a raw callee/caller name to container name(s). */
+    function elevateToContainers(rawNames: string[]): string[] {
+        const elevated = new Set<string>();
+        for (const name of rawNames) {
+            if (allContainerNames.has(name)) {
+                elevated.add(name);
+                continue;
+            }
+            const containers = memberToContainers.get(name);
+            if (containers) {
+                for (const c of containers) elevated.add(c);
+            } else {
+                // External / unresolved dependency — keep raw name.
+                elevated.add(name);
+            }
+        }
+        return [...elevated];
+    }
+
+    // ── Phase 3: Resolve call edges and aggregate to container level ──
+
+    const nodes: CodeSymbolNode[] = [];
+
+    for (const container of rawContainers) {
+        if (token.isCancellationRequested) break;
+
+        const allCallees = new Set<string>();
+        const allCallers = new Set<string>();
+
+        for (const pos of container.callablePositions) {
+            if (token.isCancellationRequested) break;
+
+            const [callees, callers] = await Promise.all([
+                getOutgoingCalls(container.uri, pos),
+                getIncomingCalls(container.uri, pos),
+            ]);
+
+            for (const c of callees) allCallees.add(c);
+            for (const c of callers) allCallers.add(c);
+        }
+
+        // Elevate raw method names to container names, remove self-references.
+        const elevatedCallees = elevateToContainers([...allCallees]).filter(c => c !== container.name);
+        const elevatedCallers = elevateToContainers([...allCallers]).filter(c => c !== container.name);
+
+        nodes.push({
+            name: container.name,
+            kind: container.kind,
+            uri: container.uri,
+            range: container.range,
+            skeleton: container.skeleton,
+            callees: elevatedCallees,
+            callers: elevatedCallers,
+            memberNames: container.memberNames,
+        });
     }
 
     return nodes;

@@ -18,7 +18,7 @@ import {
 
 interface MapPromptSymbol {
     symbolName: string;
-    sourceText: string;
+    skeleton: string;
     callees: string[];
 }
 
@@ -41,8 +41,7 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
 
     private static readonly MAP_BATCH_SIZE = 15;
     private static readonly MAP_CONCURRENCY = 2;
-    private static readonly TRIVIAL_SYMBOL_MAX_CHARS = 220;
-    private static readonly DTO_CLASS_MAX_CHARS = 600;
+    private static readonly DTO_CLASS_MAX_CHARS = 1500;
 
     // ------------------------------------------------------------------ //
     //  Step 1 — LSP Topology Collection                                  //
@@ -186,12 +185,12 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
         options: SemanticUmlEngineOptions,
     ): MapPromptSymbol {
         const maxChars = Math.max(600, (options.mapBudgetTokens ?? 4096) * 2);
-        const sourceText = symbol.sourceText.length > maxChars
-            ? symbol.sourceText.slice(0, maxChars) + '\n// … (truncated)'
-            : symbol.sourceText;
+        const skeleton = symbol.skeleton.length > maxChars
+            ? symbol.skeleton.slice(0, maxChars) + '\n// … (truncated)'
+            : symbol.skeleton;
         return {
             symbolName: symbol.name,
-            sourceText,
+            skeleton,
             callees: symbol.callees,
         };
     }
@@ -211,42 +210,32 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
     }
 
     private classifyTrivialSymbol(symbol: CodeSymbolNode): TrivialSummaryHint | undefined {
-        const source = symbol.sourceText.trim();
-        const normalized = source.replace(/\s+/g, ' ').trim();
+        const skeleton = symbol.skeleton.trim();
         const lowerName = symbol.name.toLowerCase();
 
+        // Interfaces are compact by nature; classify by naming convention.
         if (symbol.kind === vscode.SymbolKind.Interface) {
             return { stereotype: this.guessStereotype(symbol, '<<ValueObject>>') };
         }
 
-        if (source.length <= DefaultSemanticUmlEngine.TRIVIAL_SYMBOL_MAX_CHARS && this.isSimpleAccessor(normalized)) {
-            return { stereotype: '<<Utility>>' };
-        }
-
-        if (source.length <= DefaultSemanticUmlEngine.TRIVIAL_SYMBOL_MAX_CHARS && this.isSimplePassThrough(normalized)) {
-            return { stereotype: this.guessStereotype(symbol) };
-        }
-
-        if (
-            (symbol.kind === vscode.SymbolKind.Class || symbol.kind === vscode.SymbolKind.Struct) &&
-            source.length <= DefaultSemanticUmlEngine.DTO_CLASS_MAX_CHARS &&
-            (/(dto|request|response|payload|viewmodel|view-model|params|command|query|record|message)$/i.test(lowerName) ||
-                this.isDtoLikeType(source))
-        ) {
+        // Enums are value objects.
+        if (symbol.kind === vscode.SymbolKind.Enum) {
             return { stereotype: '<<ValueObject>>' };
+        }
+
+        // DTO-like classes: named as DTO/Request/Response or contain only properties.
+        if (symbol.kind === vscode.SymbolKind.Class || symbol.kind === vscode.SymbolKind.Struct) {
+            if (/(dto|request|response|payload|viewmodel|view-model|params|command|query|record|message)$/i.test(lowerName)) {
+                return { stereotype: '<<ValueObject>>' };
+            }
+            if (skeleton.length <= DefaultSemanticUmlEngine.DTO_CLASS_MAX_CHARS && this.isDtoLikeType(skeleton)) {
+                return { stereotype: '<<ValueObject>>' };
+            }
         }
 
         return undefined;
     }
 
-    private isSimpleAccessor(source: string): boolean {
-        return /^((public|private|protected|static|async|readonly|get|set)\s+)*[\w$<>\[\],:?]+\s*\([^)]*\)\s*\{\s*(return\s+(this\.)?[\w$.[\]]+;|(this\.)?[\w$.[\]]+\s*=\s*[\w$.[\]]+;|return;)?\s*\}$/i.test(source);
-    }
-
-    private isSimplePassThrough(source: string): boolean {
-        return /^(public|private|protected|static|async|readonly|constructor|function|def|func)?[\s\w$<>\[\],:?()=-]*\{\s*(super\([^)]*\);\s*)?(return\s+[^;]+;)?\s*\}$/i.test(source)
-            && !/(await\s|for\s*\(|while\s*\(|switch\s*\(|catch\s*\(|throw\s|new\s+[A-Z]|fetch\(|axios\.|repository\.|db\.|query\(|execute\(|publish\(|emit\()/i.test(source);
-    }
 
     private isDtoLikeType(source: string): boolean {
         const bodyMatch = source.match(/\{([\s\S]*)\}/);
@@ -263,7 +252,8 @@ export class DefaultSemanticUmlEngine extends SemanticUmlEngine {
         const lines = body.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
         return lines.length > 0 && lines.every(line =>
             /^((public|private|protected|readonly|static)\s+)*[\w$]+[!?]?\s*[:=][^;]*;?$/i.test(line) ||
-            /^constructor\([^)]*\)\s*\{\s*\}$/i.test(line),
+            /^constructor\([^)]*\)\s*\{\s*\}$/i.test(line) ||
+            /^constructor\([^)]*\)\s*;$/i.test(line),
         );
     }
 

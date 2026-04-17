@@ -48,16 +48,20 @@ Return ONLY valid JSON (no markdown fences) in this exact shape:
 
 // ── Map Phase ──────────────────────────────────────────────────────────────
 
-export const MAP_SYSTEM_PROMPT = `You are an expert software architect performing semantic analysis on source code.
-Your job is to read a BATCH of code symbols (functions, methods, classes, interfaces) and produce a STRUCTURED JSON array summary.
+export const MAP_SYSTEM_PROMPT = `You are an expert software architect performing semantic analysis on code.
+Your job is to read a BATCH of class/module-level code SKELETONS and produce a STRUCTURED JSON array summary.
+
+IMPORTANT: You are receiving LIGHTWEIGHT SKELETONS — method bodies have been removed; only signatures,
+properties, and type information remain. You also receive CLASS-LEVEL dependency topology (aggregated
+callees from all internal methods elevated to their owning class/module).
 
 Rules:
-- Focus on REAL BUSINESS SIDE EFFECTS: what does this code actually DO? (e.g. "writes order to DB", "calls payment gateway via REST", "emits OrderCreated event").
-- Classify the symbol with one or more UML stereotypes from this list:
+- Infer REAL BUSINESS SIDE EFFECTS from method signatures, property types, and the dependency topology (callees).
+- Classify the container with one or more UML stereotypes from this list:
   <<Service>>, <<Repository>>, <<Controller>>, <<Gateway>>, <<Entity>>,
   <<ValueObject>>, <<Factory>>, <<Adapter>>, <<EventHandler>>, <<Utility>>,
   <<Aggregate>>, <<DomainService>>, <<ApplicationService>>, <<Specification>>.
-- List concrete side effects as short phrases.
+- List concrete side effects inferred from signatures and dependencies as short phrases.
 - Return one item for every input symbol, preserving the original symbolName exactly.
 
 Return ONLY valid JSON (no markdown fences) in this exact shape:
@@ -70,7 +74,7 @@ Return ONLY valid JSON (no markdown fences) in this exact shape:
   }
 ]`;
 
-export function buildMapUserPrompt(symbols: Array<{ symbolName: string; sourceText: string; callees: string[] }>): string {
+export function buildMapUserPrompt(symbols: Array<{ symbolName: string; skeleton: string; callees: string[] }>): string {
     const rendered = symbols.map((symbol, index) => {
         const callees = symbol.callees.length > 0
             ? symbol.callees.join(', ')
@@ -79,27 +83,27 @@ export function buildMapUserPrompt(symbols: Array<{ symbolName: string; sourceTe
             `### Symbol ${index + 1}`,
             `symbolName: ${symbol.symbolName}`,
             `callees: ${callees}`,
-            'source:',
+            'skeleton:',
             '```',
-            symbol.sourceText,
+            symbol.skeleton,
             '```',
         ].join('\n');
     }).join('\n\n');
 
-    return `Analyse the following batch of code symbols and return a JSON array with one summary per symbol.\n\n${rendered}`;
+    return `Analyse the following batch of class/module skeletons and return a JSON array with one summary per container.\n\n${rendered}`;
 }
 
 // ── Reduce Phase ───────────────────────────────────────────────────────────
 
 export const REDUCE_SYSTEM_PROMPT = `You are an expert UML architect. You will receive:
-1. A list of code symbols with their stereotypes and business summaries.
-2. A call-graph adjacency list.
+1. A list of class/module-level symbols with their stereotypes and business summaries.
+2. A class-level call-graph adjacency list (dependencies between classes/modules).
 
 Your task: generate a COMPLETE PlantUML class/component diagram that:
 - Uses <<Stereotype>> on every element.
 - Adds "note right of <Element>" or "note bottom of <Element>" annotations
   describing the REAL business behaviour (not just the class name).
-- Shows dependency arrows based on the call graph.
+- Shows dependency arrows based on the class-level call graph.
 - Groups related elements into packages where appropriate.
 - Uses proper PlantUML syntax starting with @startuml and ending with @enduml.
 

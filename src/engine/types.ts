@@ -4,22 +4,24 @@ import * as vscode from 'vscode';
 // 1. Semantic UML Engine — Input / Output Contracts
 // ============================================================================
 
-/** A single code symbol enriched with LSP-derived topology. */
+/** A container-level code symbol (class, interface, module, enum) enriched with LSP-derived topology. */
 export interface CodeSymbolNode {
-    /** Fully-qualified symbol name (e.g. `com.example.OrderService.placeOrder`). */
+    /** Fully-qualified symbol name (e.g. `OrderService`). */
     name: string;
-    /** The kind reported by VS Code (class, method, function, etc.). */
+    /** The kind reported by VS Code (class, interface, module, enum, struct). */
     kind: vscode.SymbolKind;
     /** File URI where the symbol is defined. */
     uri: vscode.Uri;
     /** Range within the file. */
     range: vscode.Range;
-    /** Direct outgoing calls (call-graph edges). */
+    /** Aggregated outgoing calls from all members, elevated to container names. */
     callees: string[];
-    /** Direct incoming callers. */
+    /** Aggregated incoming callers to all members, elevated to container names. */
     callers: string[];
-    /** Raw source text of the symbol body. */
-    sourceText: string;
+    /** Lightweight code skeleton — signatures only, method bodies removed. */
+    skeleton: string;
+    /** Names of direct members (methods, properties) within this container. */
+    memberNames: string[];
 }
 
 /** Business-side summary produced by the LLM in the Map phase. */
