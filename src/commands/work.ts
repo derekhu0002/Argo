@@ -5,6 +5,7 @@ import {
     type ArchitectureTestRunSummary,
     DEFAULT_ARCHITECTURE_GRAPH_PATH,
     FAILURE_RECORDS_PATH,
+    runArchitectureTests,
 } from '../tools/architectureTestTool';
 import { buildWorkAgentHandoffPrompt } from '../utils/agentHandoff';
 
@@ -19,15 +20,7 @@ export async function handleWork(
 
     let summary: ArchitectureTestRunSummary;
     try {
-        const toolResult = await vscode.lm.invokeTool(
-            ARGO_TEST_TOOL_NAME,
-            {
-                toolInvocationToken: request.toolInvocationToken,
-                input: { architecturePath: DEFAULT_ARCHITECTURE_GRAPH_PATH },
-            },
-            token,
-        );
-        summary = parseArchitectureTestRunSummary(toolResult);
+        summary = await executeArchitectureTests(request, token);
     } catch (error) {
         if (error instanceof vscode.CancellationError) {
             return;
@@ -70,6 +63,35 @@ export async function handleWork(
         '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；如果测试为空或 `acceptanceCriteria` 为空，则要把该项视为新功能开发并回填测试路径。\n\n',
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
+}
+
+async function executeArchitectureTests(
+    request: vscode.ChatRequest,
+    token: vscode.CancellationToken,
+): Promise<ArchitectureTestRunSummary> {
+    try {
+        const toolResult = await vscode.lm.invokeTool(
+            ARGO_TEST_TOOL_NAME,
+            {
+                toolInvocationToken: request.toolInvocationToken,
+                input: { architecturePath: DEFAULT_ARCHITECTURE_GRAPH_PATH },
+            },
+            token,
+        );
+        return parseArchitectureTestRunSummary(toolResult);
+    } catch (error) {
+        if (!isMissingContributedToolError(error)) {
+            throw error;
+        }
+        return runArchitectureTests(DEFAULT_ARCHITECTURE_GRAPH_PATH, token);
+    }
+}
+
+function isMissingContributedToolError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+        return false;
+    }
+    return /Tool\s+.+\s+was not contributed/i.test(error.message);
 }
 
 function parseArchitectureTestRunSummary(result: vscode.LanguageModelToolResult): ArchitectureTestRunSummary {
