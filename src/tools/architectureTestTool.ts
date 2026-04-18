@@ -63,6 +63,14 @@ export interface ArchitectureTestRunSummary {
     failureRecords: FailedTestRecord[];
 }
 
+export interface ArchitectureTestProgressUpdate {
+    currentIndex: number;
+    totalTestCases: number;
+    testcaseName: string;
+    resolvedScriptPath: string;
+    status: 'running' | TestStatus;
+}
+
 interface CommandExecutionResult {
     exitCode: number | null;
     stdout: string;
@@ -98,22 +106,29 @@ export class ArchitectureTestTool implements vscode.LanguageModelTool<Architectu
 export async function runArchitectureTests(
     architecturePath: string | undefined,
     token: vscode.CancellationToken,
+    onProgress?: (update: ArchitectureTestProgressUpdate) => void | Promise<void>,
 ): Promise<ArchitectureTestRunSummary> {
     const root = workspaceRoot();
     const resolvedArchitecturePath = normalizeRelativePath(architecturePath || DEFAULT_ARCHITECTURE_GRAPH_PATH);
     const graphUri = toWorkspaceUri(root, resolvedArchitecturePath);
     const graph = await readArchitectureGraph(graphUri);
+    const totalTestCases = countTestCases(graph);
 
     const results: ArchitectureTestExecutionResult[] = [];
     const failureRecords: FailedTestRecord[] = [];
+    let currentIndex = 0;
 
     for (const element of graph.elements ?? []) {
         const elementId = String(element.id ?? '');
         for (const testcase of element.testcases ?? []) {
             throwIfCancelled(token);
+            currentIndex += 1;
             const testcaseName = String(testcase.name ?? '');
             const testDescription = String(testcase.description ?? '');
             const acceptanceCriteria = String(testcase.acceptanceCriteria ?? '').trim();
+            const resolvedScriptPath = acceptanceCriteria
+                ? normalizeRelativePath(acceptanceCriteria)
+                : '';
             const failureRecord: FailedTestRecord = {
                 testcasename: testcaseName,
                 testdescription: testDescription,
@@ -121,8 +136,16 @@ export async function runArchitectureTests(
                 relatedIntentElementId: elementId,
             };
 
+            await onProgress?.({
+                currentIndex,
+                totalTestCases,
+                testcaseName,
+                resolvedScriptPath,
+                status: 'running',
+            });
+
             if (!acceptanceCriteria) {
-                results.push({
+                const result: ArchitectureTestExecutionResult = {
                     testcaseName,
                     testDescription,
                     acceptanceCriteria,
@@ -134,16 +157,23 @@ export async function runArchitectureTests(
                     durationMs: 0,
                     stdout: '',
                     stderr: 'acceptanceCriteria is empty',
+                };
+                results.push(result);
+                await onProgress?.({
+                    currentIndex,
+                    totalTestCases,
+                    testcaseName,
+                    resolvedScriptPath: '',
+                    status: result.status,
                 });
                 failureRecords.push(failureRecord);
                 continue;
             }
 
-            const resolvedScriptPath = normalizeRelativePath(acceptanceCriteria);
             const scriptUri = toWorkspaceUri(root, resolvedScriptPath);
             const scriptExists = await fileExists(scriptUri);
             if (!scriptExists) {
-                results.push({
+                const result: ArchitectureTestExecutionResult = {
                     testcaseName,
                     testDescription,
                     acceptanceCriteria,
@@ -155,6 +185,14 @@ export async function runArchitectureTests(
                     durationMs: 0,
                     stdout: '',
                     stderr: `test script not found: ${resolvedScriptPath}`,
+                };
+                results.push(result);
+                await onProgress?.({
+                    currentIndex,
+                    totalTestCases,
+                    testcaseName,
+                    resolvedScriptPath,
+                    status: result.status,
                 });
                 failureRecords.push(failureRecord);
                 continue;
@@ -163,7 +201,7 @@ export async function runArchitectureTests(
             const start = Date.now();
             const execution = await executeAcceptanceScript(scriptUri.fsPath, root.fsPath);
             const passed = execution.exitCode === 0;
-            results.push({
+            const result: ArchitectureTestExecutionResult = {
                 testcaseName,
                 testDescription,
                 acceptanceCriteria,
@@ -175,6 +213,14 @@ export async function runArchitectureTests(
                 durationMs: Date.now() - start,
                 stdout: execution.stdout,
                 stderr: execution.stderr,
+            };
+            results.push(result);
+            await onProgress?.({
+                currentIndex,
+                totalTestCases,
+                testcaseName,
+                resolvedScriptPath,
+                status: result.status,
             });
             if (!passed) {
                 failureRecords.push(failureRecord);
@@ -190,7 +236,7 @@ export async function runArchitectureTests(
     return {
         architecturePath: resolvedArchitecturePath,
         failureRecordsPath: FAILURE_RECORDS_PATH,
-        totalTestCases: results.length,
+        totalTestCases,
         passedCount,
         failedCount: failureRecords.length,
         missingCriteriaCount,
@@ -281,6 +327,10 @@ function toWorkspaceUri(root: vscode.Uri, relativePath: string): vscode.Uri {
 
 function normalizeRelativePath(value: string): string {
     return value.replace(/\\/g, '/').replace(/^\.\//, '').trim();
+}
+
+function countTestCases(graph: RawArchitectureGraph): number {
+    return (graph.elements ?? []).reduce((total, element) => total + (element.testcases?.length ?? 0), 0);
 }
 
 function throwIfCancelled(token: vscode.CancellationToken): void {

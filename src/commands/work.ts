@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {
-    ARGO_TEST_TOOL_NAME,
     ArchitectureTestExecutionResult,
+    type ArchitectureTestProgressUpdate,
     type ArchitectureTestRunSummary,
     DEFAULT_ARCHITECTURE_GRAPH_PATH,
     FAILURE_RECORDS_PATH,
@@ -20,7 +20,7 @@ export async function handleWork(
 
     let summary: ArchitectureTestRunSummary;
     try {
-        summary = await executeArchitectureTests(request, token);
+        summary = await executeArchitectureTests(stream, token);
     } catch (error) {
         if (error instanceof vscode.CancellationError) {
             return;
@@ -66,40 +66,25 @@ export async function handleWork(
 }
 
 async function executeArchitectureTests(
-    request: vscode.ChatRequest,
+    stream: vscode.ChatResponseStream,
     token: vscode.CancellationToken,
 ): Promise<ArchitectureTestRunSummary> {
-    try {
-        const toolResult = await vscode.lm.invokeTool(
-            ARGO_TEST_TOOL_NAME,
-            {
-                toolInvocationToken: request.toolInvocationToken,
-                input: { architecturePath: DEFAULT_ARCHITECTURE_GRAPH_PATH },
-            },
-            token,
-        );
-        return parseArchitectureTestRunSummary(toolResult);
-    } catch (error) {
-        if (!isMissingContributedToolError(error)) {
-            throw error;
-        }
-        return runArchitectureTests(DEFAULT_ARCHITECTURE_GRAPH_PATH, token);
-    }
+    return runArchitectureTests(
+        DEFAULT_ARCHITECTURE_GRAPH_PATH,
+        token,
+        update => {
+            if (update.status !== 'running') {
+                return;
+            }
+            stream.progress(renderProgress(update));
+        },
+    );
 }
 
-function isMissingContributedToolError(error: unknown): boolean {
-    if (!(error instanceof Error)) {
-        return false;
-    }
-    return /Tool\s+.+\s+was not contributed/i.test(error.message);
-}
-
-function parseArchitectureTestRunSummary(result: vscode.LanguageModelToolResult): ArchitectureTestRunSummary {
-    const textPart = result.content.find(part => part instanceof vscode.LanguageModelTextPart);
-    if (!(textPart instanceof vscode.LanguageModelTextPart)) {
-        throw new Error('argo.test did not return a text result.');
-    }
-    return JSON.parse(textPart.value) as ArchitectureTestRunSummary;
+function renderProgress(update: ArchitectureTestProgressUpdate): string {
+    const testcaseName = update.testcaseName || '(unnamed testcase)';
+    const scriptPath = update.resolvedScriptPath || '(missing acceptanceCriteria)';
+    return `[${update.currentIndex}/${update.totalTestCases}] ${testcaseName} | ${scriptPath} | running`;
 }
 
 function renderSummary(summary: ArchitectureTestRunSummary): string {

@@ -107,24 +107,25 @@ export function buildWorkAgentHandoffPrompt(input: {
         '   - 需要完成对应功能开发',
         '   - 需要补充测试脚本',
         '   - 需要把测试脚本路径回填到 design/KG/SystemArchitecture.json 的 `acceptanceCriteria` 字段',
-        '6. 完成后，请回复：',
+        '6. 在你完成所有代码修改、测试补齐与路径回填之后，必须主动调用 `argo.test` 工具，对整个架构图谱执行一次完整的全面测试，不允许跳过。',
+        '7. 完成后，请回复：',
         '   - 修改了哪些代码',
         '   - 新增或回填了哪些测试路径',
         '   - 当前测试执行结果',
     ];
 
     if (input.totalTestCases === 0) {
-        lines.push('7. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
+        lines.push('8. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
     } else if (input.missingCriteriaCount > 0) {
-        lines.push(`7. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
+        lines.push(`8. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
     }
 
     if (input.extraContext) {
-        lines.push(`8. 额外上下文：${input.extraContext}`);
+        lines.push(`9. 额外上下文：${input.extraContext}`);
     }
 
     if (input.failureRecords.length > 0) {
-        lines.push('9. 当前失败记录如下：');
+        lines.push('10. 当前失败记录如下：');
         lines.push(JSON.stringify(input.failureRecords, null, 2));
     }
 
