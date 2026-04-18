@@ -35,7 +35,7 @@ export interface FailedTestRecord {
     testcasename: string;
     testdescription: string;
     acceptanceCriteria: string;
-    '在意图架构图谱中对应的元素id': string;
+    relatedIntentElementId: string;
 }
 
 export interface ArchitectureTestExecutionResult {
@@ -118,7 +118,7 @@ export async function runArchitectureTests(
                 testcasename: testcaseName,
                 testdescription: testDescription,
                 acceptanceCriteria,
-                '在意图架构图谱中对应的元素id': elementId,
+                relatedIntentElementId: elementId,
             };
 
             if (!acceptanceCriteria) {

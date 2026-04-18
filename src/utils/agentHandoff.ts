@@ -92,7 +92,7 @@ export function buildWorkAgentHandoffPrompt(input: {
         testcasename: string;
         testdescription: string;
         acceptanceCriteria: string;
-        '在意图架构图谱中对应的元素id': string;
+        relatedIntentElementId: string;
     }>;
     totalTestCases: number;
     missingCriteriaCount: number;
