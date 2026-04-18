@@ -83,3 +83,50 @@ export function buildFixHandoffPrompt(
 
     return lines.join('\n');
 }
+
+export function buildWorkAgentHandoffPrompt(input: {
+    architectureGraphPath: string;
+    failureRecordsPath: string;
+    extraContext: string;
+    failureRecords: Array<{
+        testcasename: string;
+        testdescription: string;
+        acceptanceCriteria: string;
+        '在意图架构图谱中对应的元素id': string;
+    }>;
+    totalTestCases: number;
+    missingCriteriaCount: number;
+}): string {
+    const lines = [
+        '请作为 Copilot 主 agent 完成以下工作：',
+        `1. 读取架构图谱文件：${input.architectureGraphPath}`,
+        `2. 读取失败测试记录文件：${input.failureRecordsPath}`,
+        '3. 以失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议。',
+        '4. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过。',
+        '5. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
+        '   - 需要完成对应功能开发',
+        '   - 需要补充测试脚本',
+        '   - 需要把测试脚本路径回填到 design/KG/SystemArchitecture.json 的 `acceptanceCriteria` 字段',
+        '6. 完成后，请回复：',
+        '   - 修改了哪些代码',
+        '   - 新增或回填了哪些测试路径',
+        '   - 当前测试执行结果',
+    ];
+
+    if (input.totalTestCases === 0) {
+        lines.push('7. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
+    } else if (input.missingCriteriaCount > 0) {
+        lines.push(`7. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
+    }
+
+    if (input.extraContext) {
+        lines.push(`8. 额外上下文：${input.extraContext}`);
+    }
+
+    if (input.failureRecords.length > 0) {
+        lines.push('9. 当前失败记录如下：');
+        lines.push(JSON.stringify(input.failureRecords, null, 2));
+    }
+
+    return lines.join('\n');
+}

@@ -9,6 +9,10 @@ The extension is exposed as `@argo` inside VS Code Chat and focuses on four work
 - `/evolve`: apply architecture deltas while running anti-corruption checks
 - `/link`: build traceability between architecture intent and implementation
 
+It also exposes a dedicated work agent as `@argowork`:
+
+- `/work`: execute all testcase scripts referenced from `design/KG/SystemArchitecture.json`, persist failed testcase records, and prepare a development handoff for the Copilot main agent
+
 ## What Problem It Solves
 
 Architecture documents usually drift away from code. Argo reduces that drift by treating architecture as an operational asset instead of a static document.
@@ -97,6 +101,10 @@ Examples:
 @argo /link 请优先分析 orchestration 和 LLM 边界
 ```
 
+```text
+@argowork /work
+```
+
 ### 3. Review generated assets under `design/`
 
 Argo writes its outputs into fixed files rather than dumping long artifacts into chat.
@@ -108,6 +116,7 @@ After running extraction-oriented workflows, review:
 - `design/symbol-summaries.md`
 - `design/traceability-matrix.md`
 - `design/architecture-drift-report.md`
+- `design/KG/test-failure-records.json` after `@argowork /work`
 
 ## Command Guide
 

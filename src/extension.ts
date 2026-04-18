@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
 import { argoRequestHandler } from './participant';
+import { registerArchitectureTestTool } from './tools/architectureTestTool';
+import { argoWorkRequestHandler } from './workParticipant';
 
 const PARTICIPANT_ID = 'argo.architect';
+const WORK_PARTICIPANT_ID = 'argo.worker';
 
 export function activate(extensionContext: vscode.ExtensionContext): void {
     const participant = vscode.chat.createChatParticipant(
@@ -9,9 +12,18 @@ export function activate(extensionContext: vscode.ExtensionContext): void {
         argoRequestHandler,
     );
 
+    const workParticipant = vscode.chat.createChatParticipant(
+        WORK_PARTICIPANT_ID,
+        argoWorkRequestHandler,
+    );
+
     participant.iconPath = new vscode.ThemeIcon('compass');
+    workParticipant.iconPath = new vscode.ThemeIcon('tools');
+
+    registerArchitectureTestTool(extensionContext);
 
     extensionContext.subscriptions.push(participant);
+    extensionContext.subscriptions.push(workParticipant);
 }
 
 export function deactivate(): void {
