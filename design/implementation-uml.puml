@@ -1,0 +1,180 @@
+@startuml
+
+package "utils/filesystem" {
+  class "src/utils/workspaceFs" as src_utils_workspaceFs <<Utility>> {
+  }
+}
+
+package "validation" {
+  class "ValidationCommand" as ValidationCommand <<ValueObject>> {
+  }
+  class "ValidationSettings" as ValidationSettings <<ValueObject>> {
+  }
+}
+
+package "uml/preparation" {
+  class "PlantUmlPreparationResult" as PlantUmlPreparationResult <<ValueObject>> {
+  }
+}
+
+package "uml/mapping" {
+  class "ArchimateElementMapping" as ArchimateElementMapping <<ValueObject>> {
+  }
+}
+
+package "utils/uml" {
+  class "src/utils/plantUml" as src_utils_plantUml <<Utility>> {
+  }
+}
+
+package "utils/governance" {
+  class "src/utils/governance" as src_utils_governance <<Service>> {
+  }
+}
+
+package "utils/git" {
+  class "src/utils/git" as src_utils_git <<Adapter>> {
+  }
+}
+
+package "utils/agent" {
+  class "src/utils/agentHandoff" as src_utils_agentHandoff <<Utility>> {
+  }
+}
+
+package "services/participant" {
+  class "src/participant" as src_participant <<Service>> {
+  }
+}
+
+package "prompts" {
+  class "PromptSection" as PromptSection <<ValueObject>> {
+  }
+  class "MapPromptSymbol" as MapPromptSymbol <<ValueObject>> {
+  }
+  class "BatchMapResponseItem" as BatchMapResponseItem <<ValueObject>> {
+  }
+}
+
+package "utils/prompts" {
+  class "src/lm/prompts" as src_lm_prompts <<Utility>> {
+  }
+}
+
+package "services/chat" {
+  class "src/lm/chatModelHelper" as src_lm_chatModelHelper <<Service>> {
+  }
+}
+
+package "controllers/extension" {
+  class "src/extension" as src_extension <<Controller>> {
+  }
+}
+
+package "symbols" {
+  class "CodeSymbolNode" as CodeSymbolNode <<ValueObject>> {
+  }
+}
+
+package "summaries" {
+  class "BusinessSummary" as BusinessSummary <<ValueObject>> {
+  }
+  class "TrivialSummaryHint" as TrivialSummaryHint <<ValueObject>> {
+  }
+}
+
+package "uml/notes" {
+  class "UmlNote" as UmlNote <<ValueObject>> {
+  }
+}
+
+package "uml/semantic" {
+  class "SemanticUmlResult" as SemanticUmlResult <<ValueObject>> {
+  }
+  class "SemanticUmlEngineOptions" as SemanticUmlEngineOptions <<ValueObject>> {
+  }
+  class "SemanticUmlEngine" as SemanticUmlEngine <<Specification>> {
+  }
+}
+
+package "stitching" {
+  class "StitchViolation" as StitchViolation <<ValueObject>> {
+  }
+  class "StitchJudgement" as StitchJudgement <<ValueObject>> {
+  }
+}
+
+package "traceability" {
+  class "TraceabilityEntry" as TraceabilityEntry <<ValueObject>> {
+  }
+  class "TraceabilityMatrix" as TraceabilityMatrix <<ValueObject>> {
+  }
+}
+
+package "architecture" {
+  class "ArchitectureDeviation" as ArchitectureDeviation <<ValueObject>> {
+  }
+}
+
+package "repositories/architecture" {
+  class "ArchitectureDriftReport" as ArchitectureDriftReport <<Repository>> {
+  }
+}
+
+package "services/stitching" {
+  class "StitchJudge" as StitchJudge <<DomainService>> {
+  }
+}
+
+package "containers" {
+  class "RawContainer" as RawContainer <<ValueObject>> {
+  }
+}
+
+package "adapters/engine" {
+  class "src/engine/lspCollector" as src_engine_lspCollector <<Adapter>> {
+  }
+}
+
+package "services/uml" {
+  class "DefaultSemanticUmlEngine" as DefaultSemanticUmlEngine <<Service>> {
+  }
+}
+
+package "commands/chat" {
+  class "src/commands/link" as src_commands_link <<EventHandler>> {
+  }
+  class "src/commands/init" as src_commands_init <<EventHandler>> {
+  }
+}
+
+package "controllers/commands" {
+  class "src/commands/evolve" as src_commands_evolve <<Controller>> {
+  }
+  class "src/commands/discover" as src_commands_discover <<Controller>> {
+  }
+  class "src/commands/baseline" as src_commands_baseline <<Controller>> {
+  }
+}
+
+note right of src_utils_workspaceFs : Manages file system operations for architecture and UML artifacts.
+note right of src_utils_plantUml : Processes and validates PlantUML diagrams.
+note right of src_utils_governance : Synchronizes governance reports between intent and implementation UML.
+note right of src_utils_git : Interacts with Git to retrieve commit and file change information.
+note right of src_utils_agentHandoff : Builds prompts for agent handoff workflows.
+note right of src_participant : Handles chat requests and responses for the participant system.
+note right of src_lm_prompts : Generates prompts for various user and system interactions.
+note right of src_lm_chatModelHelper : Manages interactions with the language model chat system.
+note right of src_extension : Handles activation and deactivation of the VS Code extension.
+note right of StitchJudge : Analyzes architecture drift and performs anti-corruption checks.
+note right of SemanticUmlEngine : Abstract engine for semantic analysis and UML generation.
+note right of src_engine_lspCollector : Collects and processes source code symbols and topology.
+note right of DefaultSemanticUmlEngine : Implements semantic analysis and UML generation with specific strategies.
+note right of src_commands_link : Handles linking operations in the chat system.
+note right of src_commands_init : Handles initialization operations in the chat system.
+note right of src_commands_evolve : Handles an evolve command with no external dependencies.
+note right of src_commands_discover : Processes a discover command and cleans PlantUML strings.
+note right of src_commands_baseline : Handles a baseline command and resolves target URIs while analyzing call graphs.
+
+
+@enduml
