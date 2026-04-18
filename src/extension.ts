@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { argoRequestHandler } from './participant';
 import { registerArchitectureTestTool } from './tools/architectureTestTool';
+import { ensureWorkspaceEaTemplates } from './utils/workspaceBootstrap';
 import { argoWorkRequestHandler } from './workParticipant';
 
 const PARTICIPANT_ID = 'argo.architect';
@@ -21,6 +22,7 @@ export function activate(extensionContext: vscode.ExtensionContext): void {
     workParticipant.iconPath = new vscode.ThemeIcon('tools');
 
     registerArchitectureTestTool(extensionContext);
+    void ensureWorkspaceEaTemplates(extensionContext.extensionUri);
 
     extensionContext.subscriptions.push(participant);
     extensionContext.subscriptions.push(workParticipant);

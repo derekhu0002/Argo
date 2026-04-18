@@ -16,4 +16,5 @@ package-lock.json
 .git/**
 design/**
 !node_modules/ignore/**
+!eatool/**
 Argo.feap
