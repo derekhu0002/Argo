@@ -1,33 +1,59 @@
 {
-"name": "NEWWORLD",
+"name": "System",
 "description": "",
 "elements": [
 {
-"id": "2242",
-"name": "ApplicationFunction1"
-,"type": "ArchiMate_ApplicationFunction"
-,"testcases": [
+"id": "1207",
+"name": "StrategyLayerAndMotivationAspect"
+,"type": "ArchiMate_Assessment"
+,"subdiagram_views": [
 {
-"name": "TestCase1",
-"description": "真实端到端 SMOKE：使用精确 prompt“请总结当前 SR 的风险与建议下一步动作。”，校验界面显示消息与 OPENCODE SERVER 接收消息一致，不重复、不遗漏、不乱序。\r\n",
-"acceptanceCriteria": "extension/scripts/real-extension-smoke.mjs"
+"view_id": "159",
+"view_name": "StrategyLayerAndMotivationAspect"
 }
 ]
 },
 {
-"id": "2243",
-"name": "ApplicationFunction2"
-,"type": "ArchiMate_ApplicationFunction"
-,"testcases": [
+"id": "1208",
+"name": "BusinessLayer"
+,"type": "ArchiMate_Assessment"
+,"subdiagram_views": [
 {
-"name": "TestCase2",
-"description": "会话界面隐藏 tool transcript：验证主舞台 transcript 不显示 transcript-part-tool 类型消息，仅保留用户消息、assistant 正文和 summary；对应真实 smoke 与 sidepanel transcript 渲染回归。",
-"acceptanceCriteria": ""
+"view_id": "160",
+"view_name": "BusinessLayer"
+}
+]
 },
 {
-"name": "TestCase3",
-"description": "完成态显示正确：当消息已形成终态证据后，界面应从进行中收敛为已完成；验证 session.idle / result 后 summary 显示“已完成”，且真实 smoke 面板状态正确。",
-"acceptanceCriteria": ""
+"id": "1209",
+"name": "ApplicationLayer"
+,"type": "ArchiMate_Assessment"
+,"subdiagram_views": [
+{
+"view_id": "161",
+"view_name": "ApplicationLayer"
+}
+]
+},
+{
+"id": "1210",
+"name": "TechnologyLayer"
+,"type": "ArchiMate_Assessment"
+,"subdiagram_views": [
+{
+"view_id": "162",
+"view_name": "TechnologyLayer"
+}
+]
+},
+{
+"id": "1211",
+"name": "ProjectManagement"
+,"type": "ArchiMate_Assessment"
+,"subdiagram_views": [
+{
+"view_id": "163",
+"view_name": "ProjectManagement"
 }
 ]
 }
@@ -37,11 +63,74 @@
 ],
 "views": [
 {
-"view_id": "194",
+"view_id": "159",
+"view_name": "StrategyLayerAndMotivationAspect"
+,"parent_element_id": "1207"
+,"parent_element_name": "StrategyLayerAndMotivationAspect"
+,"included_elements": [
+
+]
+,"included_relationships": [
+
+]
+},
+{
+"view_id": "160",
+"view_name": "BusinessLayer"
+,"parent_element_id": "1208"
+,"parent_element_name": "BusinessLayer"
+,"included_elements": [
+
+]
+,"included_relationships": [
+
+]
+},
+{
+"view_id": "161",
+"view_name": "ApplicationLayer"
+,"parent_element_id": "1209"
+,"parent_element_name": "ApplicationLayer"
+,"included_elements": [
+
+]
+,"included_relationships": [
+
+]
+},
+{
+"view_id": "162",
+"view_name": "TechnologyLayer"
+,"parent_element_id": "1210"
+,"parent_element_name": "TechnologyLayer"
+,"included_elements": [
+
+]
+,"included_relationships": [
+
+]
+},
+{
+"view_id": "163",
+"view_name": "ProjectManagement"
+,"parent_element_id": "1211"
+,"parent_element_name": "ProjectManagement"
+,"included_elements": [
+
+]
+,"included_relationships": [
+
+]
+},
+{
+"view_id": "158",
 "view_name": "SystemArchitecture"
 ,"included_elements": [
-"2242",
-"2243"
+"1207",
+"1208",
+"1209",
+"1210",
+"1211"
 ]
 ,"included_relationships": [
 
