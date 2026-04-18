@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "0.9.2",
+  "version": "0.9.7",
   "license": "MIT",
   "publisher": "argo-team",
   "engines": {
@@ -27,6 +27,61 @@
     "github.copilot-chat"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Argo",
+      "properties": {
+        "argo.plantuml.validationMode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "cli",
+            "java-jar",
+            "disabled"
+          ],
+          "default": "auto",
+          "description": "How Argo performs full PlantUML compile validation before saving diagrams. 'auto' tries the plantuml CLI first, then java -jar when a jar path is configured."
+        },
+        "argo.plantuml.command": {
+          "type": "string",
+          "default": "plantuml",
+          "description": "Executable name or absolute path for the PlantUML CLI used when validationMode is 'auto' or 'cli'."
+        },
+        "argo.plantuml.commandArgs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional arguments passed before Argo's render arguments when invoking the PlantUML CLI."
+        },
+        "argo.plantuml.javaCommand": {
+          "type": "string",
+          "default": "",
+          "description": "Java executable name or absolute path used for java -jar validation. Falls back to the PlantUML extension's plantuml.java setting, then 'java'."
+        },
+        "argo.plantuml.javaArgs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional JVM arguments passed before -jar during PlantUML validation."
+        },
+        "argo.plantuml.jarPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to plantuml.jar used when validationMode is 'java-jar' or as a fallback in 'auto'. Falls back to the PlantUML extension's plantuml.jar setting when present."
+        },
+        "argo.plantuml.jarArgs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional PlantUML jar arguments passed before Argo's render arguments during validation."
+        }
+      }
+    },
     "chatParticipants": [
       {
         "id": "argo.architect",

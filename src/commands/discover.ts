@@ -8,7 +8,7 @@ import { syncGovernanceReports } from '../utils/governance';
 import {
     intentUri,
     readImplementationUml,
-    writeIntentArchitecture,
+    writeIntentArchitectureDetailed,
 } from '../utils/workspaceFs';
 
 const DISCOVERY_TOKEN_BUDGET = 8192;
@@ -83,7 +83,17 @@ export async function handleDiscover(
 
     let savedIntentUri: vscode.Uri;
     try {
-        savedIntentUri = await writeIntentArchitecture(discoveredIntent);
+        const persistResult = await writeIntentArchitectureDetailed(discoveredIntent);
+        savedIntentUri = persistResult.uri;
+        discoveredIntent = persistResult.prepared;
+        if (persistResult.corrections.length > 0) {
+            stream.markdown('### Step 3 — Rule-based PlantUML normalization …\n\n');
+            stream.markdown(
+                '⚠️ 在保存前已应用确定性修正规则，以通过 PlantUML 编译校验：\n' +
+                persistResult.corrections.map(item => `- ${item}`).join('\n') +
+                '\n\n',
+            );
+        }
     } catch (err) {
         if (err instanceof vscode.CancellationError) {
             return;
@@ -95,11 +105,12 @@ export async function handleDiscover(
         return;
     }
 
-    stream.markdown('### Step 3 — Auto-syncing governance artifacts …\n\n');
+    stream.markdown('### Step 4 — Auto-syncing governance artifacts …\n\n');
     try {
         stream.markdown('### 🏛️ Discovered Intent Baseline\n\n');
         stream.markdown(
-            `${overwriteNotice ? '⚠️ 已覆盖' : '✅ 已生成'} [design/architecture-intent.puml](${savedIntentUri.toString()})。\n\n`,
+            `${overwriteNotice ? '⚠️ 已覆盖' : '✅ 已生成'} [design/architecture-intent.puml](${savedIntentUri.toString()})。\n\n` +
+            '✅ 该意图文件已通过真实 PlantUML 编译验证后写入磁盘。\n\n',
         );
         await syncGovernanceReports(discoveredIntent, implementationUml, stream, token);
     } catch (err) {

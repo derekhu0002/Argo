@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TextDecoder, TextEncoder } from 'util';
 import type { ArchitectureDriftReport, BusinessSummary, TraceabilityMatrix } from '../engine/types';
+import { preparePlantUmlForSave, preparePlantUmlForSaveDetailed } from './plantUml';
 
 // ── Convention-over-Configuration paths ────────────────────────────
 const DESIGN_DIR = 'design';
@@ -72,13 +73,20 @@ export async function readIntentArchitecture(): Promise<string> {
  * Creates the `design/` directory if it doesn't exist.
  */
 export async function writeIntentArchitecture(plantUml: string): Promise<vscode.Uri> {
+    const result = await writeIntentArchitectureDetailed(plantUml);
+    return result.uri;
+}
+
+export async function writeIntentArchitectureDetailed(plantUml: string): Promise<{ uri: vscode.Uri; corrections: string[]; prepared: string }> {
     const root = workspaceRoot();
     const designDir = vscode.Uri.joinPath(root, DESIGN_DIR);
     await vscode.workspace.fs.createDirectory(designDir);
 
     const uri = vscode.Uri.joinPath(root, INTENT_FILE);
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
-    return uri;
+    const prepared = preparePlantUmlForSaveDetailed(plantUml);
+    const validated = await preparePlantUmlForSave(prepared.prepared, uri);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(validated));
+    return { uri, corrections: prepared.corrections, prepared: validated };
 }
 
 /**
@@ -109,7 +117,8 @@ export async function writeImplementationUml(plantUml: string): Promise<vscode.U
     await vscode.workspace.fs.createDirectory(designDir);
 
     const uri = vscode.Uri.joinPath(root, IMPL_FILE);
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
+    const prepared = await preparePlantUmlForSave(plantUml, uri);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(prepared));
     return uri;
 }
 
@@ -123,7 +132,8 @@ export async function writeCandidateImplementationUml(plantUml: string): Promise
     await vscode.workspace.fs.createDirectory(designDir);
 
     const uri = vscode.Uri.joinPath(root, IMPL_CANDIDATE_FILE);
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(plantUml));
+    const prepared = await preparePlantUmlForSave(plantUml, uri);
+    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(prepared));
     return uri;
 }
 

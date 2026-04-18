@@ -112,6 +112,9 @@ Rules:
 - Prefer stable business/domain abstractions over file-level details.
 - Keep the output concise but structurally complete.
 - Use PlantUML syntax starting with @startuml and ending with @enduml.
+- Use PlantUML ArchiMate stdlib macros such as Business_Process, Application_Component, Application_Service, Technology_Node, Business_Actor, and Business_Role.
+- If you use ArchiMate macros, include !include <archimate/Archimate> immediately after @startuml.
+- Do not invent unsupported macros or rely on undefined aliases.
 - The result must be suitable to serve as design/architecture-intent.puml for later traceability and drift analysis.
 
 Return ONLY the PlantUML code, no markdown fences and no extra commentary.`;
@@ -131,6 +134,7 @@ export function buildDiscoverIntentUserPrompt(implementationUml: string): string
         'Produce a clean ArchiMate-style target architecture that can be used as the team\'s initial intent baseline.',
         'If the implementation suggests multiple subsystems, group them into coherent packages or layers.',
         'Do not mirror every class one-for-one; synthesize at a higher level.',
+        'When emitting ArchiMate elements, use stdlib macros like Business_Process(alias, "Label") and Application_Component(alias, "Label").',
       ].join('\n'),
     },
   ]);
