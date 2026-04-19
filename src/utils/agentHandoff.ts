@@ -102,22 +102,24 @@ export function buildWorkAgentHandoffPrompt(input: {
         `1. 读取架构图谱文件：${input.architectureGraphPath}`,
         `2. 读取失败测试记录文件：${input.failureRecordsPath}`,
         '3. 以失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议。',
-        '4. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过。',
-        '5. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
+        '4. 任何代码修改都必须满足架构图谱中的 `ArchiMate_Principle` 类型元素所描述的架构原则，不能引入新的架构违规；如果无法满足原则约束，请优先修复架构违规，再进行功能修复。',
+        '5. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过。',
+        '6. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
         '   - 需要完成对应功能开发',
+        '   - 测试环境前置条件不满足时，你需要需要自行构建相应的测试环境以满足前置条件',
         '   - 需要补充测试脚本',
         '   - 需要把测试脚本路径回填到 design/KG/SystemArchitecture.json 的 `acceptanceCriteria` 字段',
-        '6. 在你完成所有代码修改、测试补齐与路径回填之后，必须主动对整个架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
-        '7. 完成后，请回复：',
+        '7. 在你完成所有代码修改、测试补齐与路径回填之后，必须主动对整个架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
+        '8. 完成后，请回复：',
         '   - 修改了哪些代码',
         '   - 新增或回填了哪些测试路径',
         '   - 当前测试执行结果',
     ];
 
     if (input.totalTestCases === 0) {
-        lines.push('8. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
+        lines.push('9. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
     } else if (input.missingCriteriaCount > 0) {
-        lines.push(`8. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
+        lines.push(`9. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
     }
 
     if (input.extraContext) {
