@@ -33,7 +33,7 @@ export async function handleWork(
 
     if (summary.totalTestCases === 0) {
         stream.markdown(
-            '⚠️ 当前架构图谱中没有任何 testcase。按工作流约定，这意味着对应功能需要新开发，且开发完成后必须回填测试用例路径。\n\n',
+            '⚠️ 当前架构图谱中没有任何 testcase。按工作流约定，这意味着对应功能需要新开发，且开发完成后必须写回完整 testcase 对象。\n\n',
         );
     }
 
@@ -60,7 +60,7 @@ export async function handleWork(
     stream.markdown(
         '### Step 2 - Handoff To Copilot Main Agent\n\n' +
         '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot 主 agent 并等待它完成开发。\n\n' +
-        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；如果测试为空或 `acceptanceCriteria` 为空，则要把该项视为新功能开发并回填测试路径。\n\n',
+        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；如果测试为空或 `acceptanceCriteria` 为空，则要把该项视为新功能开发，并把完整 testcase 对象写回架构图谱。\n\n',
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
 }

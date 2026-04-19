@@ -106,25 +106,36 @@ export function buildWorkAgentHandoffPrompt(input: {
         '5. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
         '6. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
         '   - 需要完成对应功能开发',
-        '   - 你新增或回填的 `acceptanceCriteria` 必须是一个工作区内的单一测试入口：要么是单一脚本文件路径，要么是 `tests/test_x.py::test_y` 这种 pytest node id；禁止写成 `npm run ...`、`python ...`、`node ...` 这类命令行，且不允许附带任何额外参数',
+        '   - 需要写回完整的 testcase 对象到 design/KG/SystemArchitecture.json',
+        '   - testcase 对象至少必须完整包含以下字段：`name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`',
+        '   - `description` 必须写清楚测试目标、关键断言、测试环境要求（是否必须真实环境/不可 mock)、以及基于代码实现的必要的运行时覆盖范围；不能只写一句笼统描述',
+        '   - `acceptanceCriteria` 必须是一个工作区内的单一测试入口：要么是单一脚本文件路径，要么是 `tests/test_x.py::test_y` 这种 pytest node id；禁止写成 `npm run ...`、`python ...`、`node ...` 这类命令行，且不允许附带任何额外参数',
         '   - 所有执行前置步骤、环境准备、依赖安装、数据构造、断言与退出码处理，都必须封装到这个单一测试入口可直接触发的脚本/用例中，使 Argo 只凭 `acceptanceCriteria` 就能运行它',
         '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关测试环境信息，并依据这些信息自行构建测试环境以满足前置条件',
         '   - 如果架构图谱没有直接写明测试环境，也不允许停下或向用户追问；你必须结合 testcase 描述、acceptanceCriteria、仓库现有脚本/配置/依赖，主动推导出“能让该测试落地”的最小可运行测试环境，并自行补齐',
         '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责就是自行发现、自行搭建、自行验证',
         '   - 需要补充测试脚本；该脚本必须做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
-        '   - 需要把测试脚本路径回填到 design/KG/SystemArchitecture.json 的 `acceptanceCriteria` 字段',
+        '   - 需要把完整 testcase 对象写回到 design/KG/SystemArchitecture.json，而不是只改 `acceptanceCriteria` 字段',
+        '   - testcase 写回格式必须遵循如下结构：',
+        '     {' ,
+        '       "name": "TestCaseName",',
+        '       "description": "测试目标、关键断言、测试环境要求（是否必须真实环境/不可 mock)、以及基于代码实现的必要的运行时覆盖范围；不能只写一句笼统描述",',
+        '       "Input": "",',
+        '       "acceptanceCriteria": "path/to/test-script-or-pytest-nodeid",',
+        '       "TestResults": ""',
+        '     }',
         '7. 在你完成所有代码修改、测试补齐与路径回填之后，必须主动对整个架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
         '8. 完成后，请回复：',
         '   - 修改了哪些代码',
-        '   - 新增或回填了哪些测试路径',
+        '   - 新增或回填了哪些完整 testcase 对象',
         '   - 当前测试执行结果',
         '   - 你是从架构图谱和仓库上下文中如何识别并搭建测试环境的',
     ];
 
     if (input.totalTestCases === 0) {
-        lines.push('9. 当前架构图谱没有任何 testcase，请按“新功能开发 + 回填测试路径”的方式处理。');
+        lines.push('9. 当前架构图谱没有任何 testcase，请按“新功能开发 + 写回完整 testcase 对象”的方式处理。');
     } else if (input.missingCriteriaCount > 0) {
-        lines.push(`9. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本并回填路径。`);
+        lines.push(`9. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本，并同时补全/重写对应的完整 testcase 对象。`);
     }
 
     if (input.extraContext) {
