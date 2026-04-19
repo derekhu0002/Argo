@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 
 const execFileAsync = promisify(execFile);
 
-export const ARGO_TEST_TOOL_NAME = 'argo.test';
+export const ARGO_TEST_TOOL_NAME = 'argo-test';
 export const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 export const FAILURE_RECORDS_PATH = 'design/KG/test-failure-records.json';
 

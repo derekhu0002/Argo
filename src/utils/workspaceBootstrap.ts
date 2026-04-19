@@ -8,7 +8,16 @@ const WINDOWS_RESERVED_NAMES = new Set([
 ]);
 
 export async function ensureWorkspaceEaTemplates(extensionUri: vscode.Uri): Promise<void> {
-    const folders = vscode.workspace.workspaceFolders ?? [];
+    await ensureWorkspaceEaTemplatesForFolders(
+        vscode.workspace.workspaceFolders ?? [],
+        extensionUri,
+    );
+}
+
+export async function ensureWorkspaceEaTemplatesForFolders(
+    folders: readonly vscode.WorkspaceFolder[],
+    extensionUri: vscode.Uri,
+): Promise<void> {
     for (const folder of folders) {
         await ensureWorkspaceEaTemplate(folder, extensionUri);
     }
@@ -22,9 +31,6 @@ async function ensureWorkspaceEaTemplate(
     const targetUri = vscode.Uri.joinPath(folder.uri, targetFileName);
 
     if (await fileExists(targetUri)) {
-        void vscode.window.showWarningMessage(
-            `Argo 未覆盖已存在的 EA 模型文件: ${targetFileName}`,
-        );
         return;
     }
 
@@ -33,6 +39,12 @@ async function ensureWorkspaceEaTemplate(
         const templateBytes = await vscode.workspace.fs.readFile(templateUri);
         await vscode.workspace.fs.writeFile(targetUri, templateBytes);
     } catch (error) {
+        console.error('Argo failed to initialize EA model template.', {
+            targetFileName,
+            templateUri: templateUri.toString(),
+            targetUri: targetUri.toString(),
+            error,
+        });
         void vscode.window.showErrorMessage(
             `Argo 初始化 EA 模型模板失败: ${String(error)}`,
         );

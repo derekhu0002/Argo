@@ -20,14 +20,12 @@
     "archimate"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onChatParticipant:argo.architect",
     "onChatParticipant:argo.worker",
-    "onLanguageModelTool:argo.test"
+    "onLanguageModelTool:argo-test"
   ],
   "main": "./out/extension.js",
-  "extensionDependencies": [
-    "github.copilot-chat"
-  ],
   "contributes": {
     "configuration": {
       "title": "Argo",
@@ -89,7 +87,7 @@
         "id": "argo.architect",
         "fullName": "Argo Architect",
         "name": "argo",
-        "description": "Agentic Workflow Orchestrator \u2014 closed-loop architecture control between ArchiMate intent and real code.",
+        "description": "Agentic Workflow Orchestrator — closed-loop architecture control between ArchiMate intent and real code.",
         "isSticky": true,
         "commands": [
           {
@@ -130,8 +128,10 @@
     ],
     "languageModelTools": [
       {
-        "name": "argo.test",
-        "description": "Run all testcase acceptance scripts declared in design/KG/SystemArchitecture.json and record failed testcase metadata.",
+        "name": "argo-test",
+        "displayName": "Argo Test",
+        "modelDescription": "Run all testcase acceptance scripts declared in design/KG/SystemArchitecture.json and return a structured summary of passed and failed architecture-linked tests.",
+        "userDescription": "Run architecture-linked acceptance tests from design/KG/SystemArchitecture.json.",
         "tags": [
           "argo",
           "testing",
@@ -153,13 +153,15 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "test:e2e:workspace-bootstrap": "node tests/e2e/runWorkspaceBootstrapE2E.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.93.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^8.57.0",
     "typescript": "^5.4.0"
   },

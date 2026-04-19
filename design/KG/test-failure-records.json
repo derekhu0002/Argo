@@ -1,0 +1,8 @@
+[
+  {
+    "testcasename": "WorkspaceBootstrapCopiesEaTemplateOnStartup",
+    "testdescription": "Opening a new workspace activates Argo and copies eatool/EA-model-template.feap into the workspace root when no .feap file exists.",
+    "acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js",
+    "relatedIntentElementId": "1210"
+  }
+]

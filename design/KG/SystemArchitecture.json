@@ -39,6 +39,13 @@
 "id": "1210",
 "name": "TechnologyLayer"
 ,"type": "ArchiMate_Assessment"
+,"testcases": [
+{
+"name": "WorkspaceBootstrapCopiesEaTemplateOnStartup"
+,"description": "Opening a new workspace activates Argo and copies eatool/EA-model-template.feap into the workspace root when no .feap file exists."
+,"acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js"
+}
+]
 ,"subdiagram_views": [
 {
 "view_id": "162",
