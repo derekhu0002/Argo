@@ -39,13 +39,6 @@
 "id": "1210",
 "name": "TechnologyLayer"
 ,"type": "ArchiMate_Assessment"
-,"testcases": [
-{
-"name": "WorkspaceBootstrapCopiesEaTemplateOnStartup"
-,"description": "Opening a new workspace activates Argo and copies eatool/EA-model-template.feap into the workspace root when no .feap file exists."
-,"acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js"
-}
-]
 ,"subdiagram_views": [
 {
 "view_id": "162",
@@ -61,6 +54,20 @@
 {
 "view_id": "163",
 "view_name": "ProjectManagement"
+}
+]
+},
+{
+"id": "1332",
+"name": "ApplicationFunction1"
+,"type": "ArchiMate_ApplicationFunction"
+,"testcases": [
+{
+"name": "WorkspaceBootstrapCopiesEaTemplateOnStartup",
+"description": "Opening a new workspace activates Argo and copies eatool/EA-model-template.feap into the workspace root when no .feap file exists.",
+"Input": "",
+"acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js",
+"TestResults": ""
 }
 ]
 }
@@ -99,7 +106,7 @@
 ,"parent_element_id": "1209"
 ,"parent_element_name": "ApplicationLayer"
 ,"included_elements": [
-
+"1332"
 ]
 ,"included_relationships": [
 
