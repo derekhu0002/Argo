@@ -116,10 +116,13 @@ function renderExecutionResult(result: ArchitectureTestExecutionResult): string 
     const detail = result.resolvedScriptPath
         ? `script: \`${result.resolvedScriptPath}\``
         : 'script: (missing)';
+    const executionCommand = result.executionCommand
+        ? `command: \`${result.executionCommand}\``
+        : 'command: (n/a)';
     const exitCode = result.exitCode === null ? 'n/a' : String(result.exitCode);
     const stderr = shrink(result.stderr);
     const stdout = shrink(result.stdout);
-    let line = `- ${result.testcaseName || '(unnamed testcase)'}: ${result.status} · ${detail} · exitCode: ${exitCode}`;
+    let line = `- ${result.testcaseName || '(unnamed testcase)'}: ${result.status} · ${detail} · ${executionCommand} · exitCode: ${exitCode}`;
     if (stdout) {
         line += ` · stdout: ${stdout}`;
     }

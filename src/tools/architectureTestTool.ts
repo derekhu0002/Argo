@@ -44,6 +44,7 @@ export interface ArchitectureTestExecutionResult {
     acceptanceCriteria: string;
     elementId: string;
     resolvedScriptPath: string;
+    executionCommand: string;
     status: TestStatus;
     passed: boolean;
     exitCode: number | null;
@@ -178,6 +179,7 @@ export async function runArchitectureTests(
                     acceptanceCriteria,
                     elementId,
                     resolvedScriptPath: '',
+                    executionCommand: '',
                     status: 'missing-criteria',
                     passed: false,
                     exitCode: null,
@@ -205,6 +207,7 @@ export async function runArchitectureTests(
                     acceptanceCriteria,
                     elementId,
                     resolvedScriptPath,
+                    executionCommand: '',
                     status: 'invalid-criteria',
                     passed: false,
                     exitCode: null,
@@ -225,6 +228,7 @@ export async function runArchitectureTests(
             }
 
             const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
+            const executionCommand = buildExecutionCommandPreview(parsedAcceptanceCriteria);
 
             const scriptUri = toWorkspaceUri(root, parsedAcceptanceCriteria.scriptRelativePath);
             const scriptExists = await fileExists(scriptUri);
@@ -235,6 +239,7 @@ export async function runArchitectureTests(
                     acceptanceCriteria,
                     elementId,
                     resolvedScriptPath,
+                    executionCommand,
                     status: 'missing-file',
                     passed: false,
                     exitCode: null,
@@ -263,6 +268,7 @@ export async function runArchitectureTests(
                 acceptanceCriteria,
                 elementId,
                 resolvedScriptPath,
+                executionCommand,
                 status: passed ? 'passed' : 'failed',
                 passed,
                 exitCode: execution.exitCode,
@@ -454,6 +460,38 @@ function buildPytestNodeId(criteria: ParsedAcceptanceCriteria): string {
     return criteria.selector
         ? `${criteria.scriptRelativePath}::${criteria.selector}`
         : criteria.scriptRelativePath;
+}
+
+function buildExecutionCommandPreview(criteria: ParsedAcceptanceCriteria): string {
+    if (criteria.selector) {
+        return formatCommand('python', ['-m', 'pytest', buildPytestNodeId(criteria)]);
+    }
+
+    const scriptPath = criteria.scriptRelativePath;
+    const extension = path.extname(scriptPath).toLowerCase();
+    switch (extension) {
+        case '.js':
+        case '.cjs':
+        case '.mjs':
+            return formatCommand(process.execPath, [scriptPath]);
+        case '.py':
+            return formatCommand('python', [scriptPath]);
+        case '.ps1':
+            return formatCommand('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath]);
+        case '.cmd':
+        case '.bat':
+            return formatCommand(scriptPath, []);
+        default:
+            return formatCommand(scriptPath, []);
+    }
+}
+
+function formatCommand(command: string, args: string[]): string {
+    return [quoteCommandPart(command), ...args.map(quoteCommandPart)].join(' ');
+}
+
+function quoteCommandPart(value: string): string {
+    return /\s/.test(value) ? `"${value}"` : value;
 }
 
 function countTestCases(graph: RawArchitectureGraph): number {
