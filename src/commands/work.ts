@@ -73,9 +73,6 @@ async function executeArchitectureTests(
         DEFAULT_ARCHITECTURE_GRAPH_PATH,
         token,
         update => {
-            if (update.status !== 'running') {
-                return;
-            }
             stream.progress(renderProgress(update));
         },
     );
@@ -84,7 +81,8 @@ async function executeArchitectureTests(
 function renderProgress(update: ArchitectureTestProgressUpdate): string {
     const testcaseName = update.testcaseName || '(unnamed testcase)';
     const scriptPath = update.resolvedScriptPath || '(missing acceptanceCriteria)';
-    return `[${update.currentIndex}/${update.totalTestCases}] ${testcaseName} | ${scriptPath} | running`;
+    const executionCommand = update.executionCommand || '(n/a)';
+    return `[${update.currentIndex}/${update.totalTestCases}] ${testcaseName} | ${scriptPath} | ${executionCommand} | ${update.status}`;
 }
 
 function renderSummary(summary: ArchitectureTestRunSummary): string {

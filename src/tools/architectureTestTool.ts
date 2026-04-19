@@ -69,6 +69,7 @@ export interface ArchitectureTestProgressUpdate {
     totalTestCases: number;
     testcaseName: string;
     resolvedScriptPath: string;
+    executionCommand: string;
     status: 'running' | TestStatus;
 }
 
@@ -164,14 +165,6 @@ export async function runArchitectureTests(
                 relatedIntentElementId: elementId,
             };
 
-            await onProgress?.({
-                currentIndex,
-                totalTestCases,
-                testcaseName,
-                resolvedScriptPath,
-                status: 'running',
-            });
-
             if (!acceptanceCriteria) {
                 const result: ArchitectureTestExecutionResult = {
                     testcaseName,
@@ -193,6 +186,7 @@ export async function runArchitectureTests(
                     totalTestCases,
                     testcaseName,
                     resolvedScriptPath: '',
+                    executionCommand: '',
                     status: result.status,
                 });
                 failureRecords.push(failureRecord);
@@ -221,6 +215,7 @@ export async function runArchitectureTests(
                     totalTestCases,
                     testcaseName,
                     resolvedScriptPath,
+                    executionCommand: '',
                     status: result.status,
                 });
                 failureRecords.push(failureRecord);
@@ -229,6 +224,15 @@ export async function runArchitectureTests(
 
             const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
             const executionCommand = buildExecutionCommandPreview(parsedAcceptanceCriteria);
+
+            await onProgress?.({
+                currentIndex,
+                totalTestCases,
+                testcaseName,
+                resolvedScriptPath,
+                executionCommand,
+                status: 'running',
+            });
 
             const scriptUri = toWorkspaceUri(root, parsedAcceptanceCriteria.scriptRelativePath);
             const scriptExists = await fileExists(scriptUri);
@@ -253,6 +257,7 @@ export async function runArchitectureTests(
                     totalTestCases,
                     testcaseName,
                     resolvedScriptPath,
+                    executionCommand,
                     status: result.status,
                 });
                 failureRecords.push(failureRecord);
@@ -282,6 +287,7 @@ export async function runArchitectureTests(
                 totalTestCases,
                 testcaseName,
                 resolvedScriptPath,
+                executionCommand,
                 status: result.status,
             });
             if (!passed) {
