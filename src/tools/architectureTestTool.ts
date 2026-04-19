@@ -10,7 +10,7 @@ export const ARGO_TEST_TOOL_NAME = 'argo-test';
 export const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 export const FAILURE_RECORDS_PATH = 'design/KG/test-failure-records.json';
 
-type TestStatus = 'passed' | 'failed' | 'missing-criteria' | 'missing-file';
+type TestStatus = 'passed' | 'failed' | 'missing-criteria' | 'invalid-criteria' | 'missing-file';
 
 interface RawArchitectureGraph {
     elements?: RawArchitectureElement[];
@@ -76,6 +76,33 @@ interface CommandExecutionResult {
     stdout: string;
     stderr: string;
 }
+
+interface AcceptanceCriteriaValidationResult {
+    valid: boolean;
+    reason?: string;
+}
+
+interface ParsedAcceptanceCriteria {
+    scriptRelativePath: string;
+    selector?: string;
+}
+
+const SUPPORTED_TEST_SCRIPT_EXTENSIONS = new Set([
+    '.js',
+    '.cjs',
+    '.mjs',
+    '.py',
+    '.ps1',
+    '.cmd',
+    '.bat',
+]);
+
+const DISALLOWED_ACCEPTANCE_CRITERIA_PATTERNS = [
+    /[\r\n]/,
+    /[|&;<>]/,
+    /^['"].*['"]$/,
+    /^(?:npm|pnpm|yarn|npx|node|python|py|powershell|pwsh|cmd|bash|sh)\b/i,
+];
 
 export function registerArchitectureTestTool(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.lm.registerTool(ARGO_TEST_TOOL_NAME, new ArchitectureTestTool()));
@@ -170,7 +197,36 @@ export async function runArchitectureTests(
                 continue;
             }
 
-            const scriptUri = toWorkspaceUri(root, resolvedScriptPath);
+            const validation = validateAcceptanceCriteria(resolvedScriptPath);
+            if (!validation.valid) {
+                const result: ArchitectureTestExecutionResult = {
+                    testcaseName,
+                    testDescription,
+                    acceptanceCriteria,
+                    elementId,
+                    resolvedScriptPath,
+                    status: 'invalid-criteria',
+                    passed: false,
+                    exitCode: null,
+                    durationMs: 0,
+                    stdout: '',
+                    stderr: validation.reason ?? 'acceptanceCriteria must be a direct script file path',
+                };
+                results.push(result);
+                await onProgress?.({
+                    currentIndex,
+                    totalTestCases,
+                    testcaseName,
+                    resolvedScriptPath,
+                    status: result.status,
+                });
+                failureRecords.push(failureRecord);
+                continue;
+            }
+
+            const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
+
+            const scriptUri = toWorkspaceUri(root, parsedAcceptanceCriteria.scriptRelativePath);
             const scriptExists = await fileExists(scriptUri);
             if (!scriptExists) {
                 const result: ArchitectureTestExecutionResult = {
@@ -199,7 +255,7 @@ export async function runArchitectureTests(
             }
 
             const start = Date.now();
-            const execution = await executeAcceptanceScript(scriptUri.fsPath, root.fsPath);
+            const execution = await executeAcceptanceScript(parsedAcceptanceCriteria, root.fsPath, scriptUri.fsPath);
             const passed = execution.exitCode === 0;
             const result: ArchitectureTestExecutionResult = {
                 testcaseName,
@@ -263,7 +319,15 @@ async function writeFailureRecords(root: vscode.Uri, records: FailedTestRecord[]
     await vscode.workspace.fs.writeFile(targetUri, new TextEncoder().encode(content));
 }
 
-async function executeAcceptanceScript(scriptPath: string, cwd: string): Promise<CommandExecutionResult> {
+async function executeAcceptanceScript(
+    criteria: ParsedAcceptanceCriteria,
+    cwd: string,
+    scriptPath: string,
+): Promise<CommandExecutionResult> {
+    if (criteria.selector) {
+        return runPythonPytestNodeId(criteria, cwd);
+    }
+
     const extension = path.extname(scriptPath).toLowerCase();
     switch (extension) {
         case '.js':
@@ -280,6 +344,13 @@ async function executeAcceptanceScript(scriptPath: string, cwd: string): Promise
         default:
             return runCommand(scriptPath, [], cwd);
     }
+}
+
+async function runPythonPytestNodeId(
+    criteria: ParsedAcceptanceCriteria,
+    cwd: string,
+): Promise<CommandExecutionResult> {
+    return runCommand('python', ['-m', 'pytest', buildPytestNodeId(criteria)], cwd);
 }
 
 async function runCommand(command: string, args: string[], cwd: string): Promise<CommandExecutionResult> {
@@ -327,6 +398,62 @@ function toWorkspaceUri(root: vscode.Uri, relativePath: string): vscode.Uri {
 
 function normalizeRelativePath(value: string): string {
     return value.replace(/\\/g, '/').replace(/^\.\//, '').trim();
+}
+
+function validateAcceptanceCriteria(value: string): AcceptanceCriteriaValidationResult {
+    if (!value) {
+        return { valid: false, reason: 'acceptanceCriteria is empty' };
+    }
+
+    for (const pattern of DISALLOWED_ACCEPTANCE_CRITERIA_PATTERNS) {
+        if (pattern.test(value)) {
+            return {
+                valid: false,
+                reason: 'acceptanceCriteria must be a single workspace-relative test entry only, without extra command wrappers or arguments',
+            };
+        }
+    }
+
+    const parsed = parseAcceptanceCriteria(value);
+    const extension = path.extname(parsed.scriptRelativePath).toLowerCase();
+    if (!SUPPORTED_TEST_SCRIPT_EXTENSIONS.has(extension)) {
+        return {
+            valid: false,
+            reason: `acceptanceCriteria must point to a single executable script file (${Array.from(SUPPORTED_TEST_SCRIPT_EXTENSIONS).join(', ')})`,
+        };
+    }
+
+    if (parsed.selector && extension !== '.py') {
+        return {
+            valid: false,
+            reason: 'only Python pytest node ids like tests/test_x.py::test_y are supported when acceptanceCriteria includes :: selectors',
+        };
+    }
+
+    if (parsed.selector && !parsed.selector.trim()) {
+        return {
+            valid: false,
+            reason: 'pytest node id selectors cannot be empty',
+        };
+    }
+
+    return { valid: true };
+}
+
+function parseAcceptanceCriteria(value: string): ParsedAcceptanceCriteria {
+    const [scriptRelativePath, ...selectorParts] = value.split('::');
+    const normalizedScriptPath = normalizeRelativePath(scriptRelativePath);
+    const selector = selectorParts.length > 0 ? selectorParts.join('::').trim() : undefined;
+    return {
+        scriptRelativePath: normalizedScriptPath,
+        selector,
+    };
+}
+
+function buildPytestNodeId(criteria: ParsedAcceptanceCriteria): string {
+    return criteria.selector
+        ? `${criteria.scriptRelativePath}::${criteria.selector}`
+        : criteria.scriptRelativePath;
 }
 
 function countTestCases(graph: RawArchitectureGraph): number {
