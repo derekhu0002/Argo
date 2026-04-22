@@ -1,0 +1,18 @@
+# Argo - Python Dependencies
+# 
+# Project: Argo VS Code Extension (Architecture Test Driven Delivery)
+# 
+# All Python scripts in this project use only Python standard library modules.
+# No external dependencies are required.
+# 
+# Standard library modules used:
+# - argparse: Command-line argument parsing (pack_workspace.py, publish.py)
+# - fnmatch: Filename matching against Unix-style glob patterns (pack_workspace.py)
+# - json: JSON encoding and decoding (pack_workspace.py, publish.py)
+# - os: Operating system interfaces (publish.py)
+# - pathlib: Object-oriented filesystem paths (pack_workspace.py, publish.py)
+# - subprocess: Subprocess management (publish.py)
+# - sys: System-specific parameters and functions (pack_workspace.py, publish.py)
+# 
+# To run the scripts, ensure you have Python 3.10+ installed.
+# No pip install is required.
