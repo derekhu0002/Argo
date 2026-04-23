@@ -21,7 +21,6 @@ Argo 工作代理主要解决一个核心问题：
 - 以 `design/KG/SystemArchitecture.json` 作为唯一的 testcase 声明来源。
 - 提供 `/work` 命令，用于执行图谱中的所有测试。
 - 自动生成 `design/KG/test-failure-records.json`，供后续修复使用。
-- 直接暴露底层工具 `argo-test` 供主代理检查或扩展调用。
 
 ## 适用场景
 
@@ -40,12 +39,6 @@ Argo 工作代理主要解决一个核心问题：
 
 | 路径 | 作用 |
 |------|------|
-| `design/architecture-intent.puml` | 架构意图输入文件 |
-| `design/implementation-uml.puml` | 当前实现结构的正式 UML 结果 |
-| `design/implementation-uml.candidate.puml` | 校验未通过时的候选实现图 |
-| `design/symbol-summaries.md` | 代码符号级语义摘要 |
-| `design/traceability-matrix.md` | 架构意图到代码实现的追踪矩阵 |
-| `design/architecture-drift-report.md` | 架构漂移与偏差分析报告 |
 | `design/KG/SystemArchitecture.json` | 架构图谱与 testcase 定义 |
 | `design/KG/test-failure-records.json` | 测试失败记录，用于后续交接修复 |
 
@@ -62,16 +55,6 @@ Argo 工作代理主要解决一个核心问题：
 - 已在 VS Code 中打开一个工作区目录
 - 本地具备 Node.js 与 npm，用于安装依赖和编译扩展
 
-如果你需要对 PlantUML 结果做保存前校验，还需要按需准备 PlantUML CLI 或 `plantuml.jar`。本工程支持通过以下设置控制校验方式：
-
-- `argo.plantuml.validationMode`
-- `argo.plantuml.command`
-- `argo.plantuml.commandArgs`
-- `argo.plantuml.javaCommand`
-- `argo.plantuml.javaArgs`
-- `argo.plantuml.jarPath`
-- `argo.plantuml.jarArgs`
-
 ### 在 VS Code 中加载扩展
 
 本工程是一个本地开发中的 VS Code 扩展，典型使用方式如下：
@@ -83,7 +66,7 @@ Argo 工作代理主要解决一个核心问题：
 
 本仓库的核心入口位于：
 
-- `src/extension.ts`：扩展激活入口，注册工作代理 `argo.worker` 和测试工具 `argo-test`。
+- `src/extension.ts`：扩展激活入口，注册工作代理 `argo.worker`。
 - `src/workParticipant.ts`：工作代理请求处理和分发。
 - `src/commands/work.ts`：`/work` 命令的核心实现。
 
@@ -99,7 +82,7 @@ Argo 工作代理主要解决一个核心问题：
 
 ### `/work` 命令工作流
 
-`@argowork /work` 命令是工作代理的核心能力。它会：n
+`@argowork /work` 命令是工作代理的核心能力。它会：
 1. **读取**：读取 `design/KG/SystemArchitecture.json` 中所有元素的 `testcases` 数组。
 2. **执行**：对每个 testcase，执行其 `acceptanceCriteria` 指向的脚本。
 3. **收集**：捕获脚本的退出码和输出。
@@ -124,10 +107,6 @@ Argo 工作代理主要解决一个核心问题：
 
 这个工程的有效输出通常不在聊天窗口，而在仓库文件里。使用过程中建议重点关注：
 
-- `design/implementation-uml.puml`
-- `design/symbol-summaries.md`
-- `design/traceability-matrix.md`
-- `design/architecture-drift-report.md`
 - `design/KG/test-failure-records.json`
 
 如果这些文件长期没有被更新，通常说明你的工作流还没有真正落到仓库资产上。
