@@ -1,32 +1,36 @@
-# Argo
+# Argo — Work Agent
 
-本工程是一个 VS Code Chat 扩展，用于把仓库内的架构意图、代码结构、测试执行结果和治理产物放进同一个闭环里管理。
+Argo 工作代理是一个 VS Code Chat 扩展，专注于读取 `design/KG/SystemArchitecture.json` 中声明的测试用例，逐个执行其验收脚本，并生成结构化的测试结果报告与修复交接内容。
 
-它的目标不是单纯生成图或回答问题，而是把“架构是否落地”“代码是否偏离设计”“失败项如何交接修复”这些动作沉淀成可重复执行的工程流程。
+它的目标是把"测试执行""结果收集""失败交接"这些动作标准化为可重复的工程流程，使得失败项可以被结构化地交给主代理继续修复。
 
 ## 工程目的
 
-这个工程主要解决三类问题：
+Argo 工作代理主要解决一个核心问题：
 
-1. 架构文档与真实代码长期漂移，设计无法作为持续约束使用。
-2. 代码库中的结构、调用关系和测试状态缺少统一视图，评审和演进成本高。
-3. 当测试失败或架构约束被破坏时，缺少结构化的修复交接材料。
+当架构图谱中声明了多个测试用例（testcase）时，需要有一个自动化工具能够：
 
-围绕这些问题，工程提供了以下能力：
+1. 读取图谱中的所有 testcase 定义。
+2. 依次执行每个 testcase 的 `acceptanceCriteria` 脚本。
+3. 捕获测试输出和返回码，判断成功或失败。
+4. 失败时生成结构化的失败记录文件。
+5. 把失败信息和相关上下文整理成可交给 Copilot 主代理的修复提示。
 
-- 以 `design/` 目录为固定工作区，保存架构输入、实现视图、追踪矩阵、漂移报告等产物。
-- 基于 VS Code Chat Participant 机制，将架构治理能力直接暴露到编辑器工作流中。
-- 通过语义 UML 提取、架构判断和测试执行，把“分析”“判断”“交接”串起来。
-- 提供一个专门的工作代理，用于执行 `design/KG/SystemArchitecture.json` 中声明的测试脚本，并生成面向主代理的修复交接内容。
+围绕这个目标，工程提供了以下能力：
+
+- 以 `design/KG/SystemArchitecture.json` 作为唯一的 testcase 声明来源。
+- 提供 `/work` 命令，用于执行图谱中的所有测试。
+- 自动生成 `design/KG/test-failure-records.json`，供后续修复使用。
+- 直接暴露底层工具 `argo-test` 供主代理检查或扩展调用。
 
 ## 适用场景
 
 本工程更适合以下类型的仓库：
 
-- 需要在代码仓中维护正式架构描述的项目。
-- 希望把架构检查和代码演进绑定到同一套 Copilot 工作流中的团队。
-- 需要把架构图谱中的 testcase 与实际验收脚本关联起来的工程。
-- 希望在 VS Code 内部直接完成架构分析、问题发现、失败交接与修复推进的场景。
+- 已经在 `design/KG/SystemArchitecture.json` 中维护了 testcase 定义和验收脚本路径的项目。
+- 希望在 Copilot Chat 中快速验证这些测试是否真实可执行的团队。
+- 需要自动化捕获测试失败信息并生成修复交接内容的工程。
+- 希望把"测试失败 → 生成失败记录 → 交接修复"的流程固定下来的场景。
 
 ## 工作区约定
 
@@ -75,38 +79,46 @@
 1. 安装依赖。
 2. 编译 TypeScript 代码。
 3. 在 VS Code 中以扩展开发模式启动调试窗口。
-4. 在新的调试窗口中打开 Chat 面板并使用本扩展提供的参与者能力。
+4. 在新的调试窗口中打开 Chat 面板并使用 `@argowork /work` 命令。
 
 本仓库的核心入口位于：
 
-- `src/extension.ts`：扩展激活入口，注册聊天参与者和测试工具。
-- `src/participant.ts`：主聊天参与者请求分发。
-- `src/workParticipant.ts`：工作代理请求分发。
+- `src/extension.ts`：扩展激活入口，注册工作代理 `argo.worker` 和测试工具 `argo-test`。
+- `src/workParticipant.ts`：工作代理请求处理和分发。
+- `src/commands/work.ts`：`/work` 命令的核心实现。
 
 ### 推荐使用方式
 
-如果你把它当成一个工程治理工具来用，而不是单次问答工具，推荐按下面的顺序组织仓库内容：
+推荐按下面的顺序使用工作代理：
 
-1. 在 `design/` 下准备架构相关输入文件，并把它们纳入版本控制。
-2. 在 `design/KG/SystemArchitecture.json` 中维护 testcase 以及对应脚本路径。
-3. 通过 VS Code Chat 执行你的架构治理流程。
-4. 查看 `design/` 下新生成或更新的文件，而不是只看聊天面板输出。
-5. 当测试失败时，基于失败记录继续推进修复，而不是手工重复整理上下文。
+1. 在 `design/KG/SystemArchitecture.json` 中为相关功能定义 testcase，每个 testcase 必须包含 `acceptanceCriteria` 字段指向一个真实可执行的脚本路径或 pytest node id。
+2. 确保这些脚本在执行时能够独立运行，无需额外的命令行参数或环境准备。
+3. 在 VS Code Chat 中使用 `@argowork /work` 命令执行所有 testcase。
+4. 观察 `design/KG/test-failure-records.json` 中的失败记录。
+5. 基于失败记录，把上下文交给 Copilot 主代理继续修复，而不是手工重复整理。
 
-### 关于工作代理 `@argowork /work`
+### `/work` 命令工作流
 
-本工程中有一个相对独立且实用的能力：工作代理会读取 `design/KG/SystemArchitecture.json` 中声明的所有 testcase，逐个执行其验收脚本，并输出两类结果：
+`@argowork /work` 命令是工作代理的核心能力。它会：n
+1. **读取**：读取 `design/KG/SystemArchitecture.json` 中所有元素的 `testcases` 数组。
+2. **执行**：对每个 testcase，执行其 `acceptanceCriteria` 指向的脚本。
+3. **收集**：捕获脚本的退出码和输出。
+4. **报告**：输出运行摘要，包括通过个数、失败个数和失败原因。
+5. **交接**：生成 `design/KG/test-failure-records.json`，包含所有失败用例的详细信息。
 
-- 测试运行摘要
-- 失败记录与交接提示
+典型工作流如下：
 
-它适合用于以下场景：
+```text
+你        @argowork /work
+   ↓
+工作代理  读取 SystemArchitecture.json → 逐个执行 testcase → 生成 test-failure-records.json
+   ↓
+主代理    读取失败记录 → 修复代码 → 推送修改
+   ↓
+你        再次运行 @argowork /work → 验证修复结果
+```
 
-- 想快速验证图谱中登记的测试是否真实可执行。
-- 需要把失败测试整理成结构化修复输入，交给 Copilot 主代理继续开发。
-- 希望把“测试失败即交接修复”的流程固定下来。
-
-当没有 testcase，或 testcase 缺少 `acceptanceCriteria` 时，当前工作流会把该项视为待开发能力，并要求后续补回测试路径。
+如果 testcase 缺少 `acceptanceCriteria` 或无法执行，工作流会标记为失败并记录错误原因。
 
 ### 产物查看建议
 
@@ -150,17 +162,18 @@ npm run lint
 
 ```text
 Argo/
-├── design/                  # 架构输入、实现视图、追踪与报告产物
+├── design/                  # 架构图谱、testcase 定义、失败记录产物
 ├── eatool/                  # EA 相关模板资源
 ├── src/
-│   ├── commands/            # 各工作流命令处理器
-│   ├── engine/              # 语义 UML 提取与架构判断引擎
-│   ├── lm/                  # 大模型调用与提示词封装
-│   ├── tools/               # 语言模型工具与测试执行工具
-│   ├── utils/               # Git、PlantUML、交接、文件系统等辅助能力
-│   ├── extension.ts         # VS Code 扩展入口
-│   ├── participant.ts       # 主参与者入口
-│   └── workParticipant.ts   # 工作代理入口
+│   ├── commands/            # /work 命令实现
+│   │   └── work.ts         # 工作代理 /work 命令处理
+│   ├── tools/               # 工具定义与测试执行实现
+│   │   └── architectureTestTool.ts  # 核心工具：读取图谱、执行测试、生成失败记录
+│   ├── utils/               # 工作区初始化、文件操作等辅助能力
+│   ├── extension.ts         # VS Code 扩展入口，注册工作代理和工具
+│   └── workParticipant.ts   # 工作代理请求处理
+├── tests/                   # 测试脚本
+│   └── e2e/                # E2E 测试
 ├── publish.py               # 打包与发布脚本
 ├── pack_workspace.py        # 打包当前工作区内容为 JSON
 ├── package.json             # 扩展清单、命令、配置与依赖
@@ -169,31 +182,35 @@ Argo/
 
 ## 核心模块说明
 
-### `src/engine/`
+### `src/commands/work.ts`
 
-负责把代码结构、语言服务信息和大模型分析拼接成可落盘的语义 UML 结果，同时承担架构判断、反腐检查和追踪分析等核心能力。
-
-### `src/lm/`
-
-封装 VS Code 语言模型调用细节，包括模型获取、请求发送和提示词模板管理。
+实现 `/work` 命令的请求处理逻辑。收到命令后，调用 `architectureTestTool` 执行图谱中的所有 testcase，并通过流式输出返回结果摘要。
 
 ### `src/tools/architectureTestTool.ts`
 
-负责读取架构图谱中的 testcase，执行验收脚本，并输出失败记录，是工作代理能力的底层实现。
+工作代理的核心工具。负责：
 
-### `src/utils/agentHandoff.ts`
+1. 读取 `design/KG/SystemArchitecture.json` 中的所有 testcase。
+2. 对每个 testcase，执行 `acceptanceCriteria` 指向的脚本（支持文件路径和 pytest node id）。
+3. 捕获脚本返回码和输出。
+4. 生成 `design/KG/test-failure-records.json`，记录所有失败用例。
+5. 输出运行摘要（通过个数、失败个数、失败原因）。
 
-负责把失败测试和上下文整理成可直接交给 Copilot 主代理的交接提示，避免人工重复拼接输入。
+### `src/utils/workspaceBootstrap.ts`
+
+在扩展激活时，自动为新工作区创建 EA 模型模板文件。确保 `design/` 目录结构完整。
 
 ## 本地调试建议
 
 本工程本质上是扩展开发项目，调试时建议采用以下方式：
 
 1. 先执行 `npm run compile`，确保 `out/extension.js` 已生成。
-2. 在 VS Code 中启动扩展开发宿主窗口。
-3. 在宿主窗口中打开目标工作区，并验证 `design/` 目录约定是否齐全。
-4. 从 Chat 面板触发实际工作流，观察聊天输出和 `design/` 文件变化是否一致。
-5. 如果是测试链路问题，优先检查 `design/KG/SystemArchitecture.json` 中 testcase 的脚本路径是否可执行。
+2. 执行 `npm run test:e2e:workspace-bootstrap` 验证工作区初始化是否正常。
+3. 在 VS Code 中启动扩展开发宿主窗口。
+4. 在宿主窗口中打开一个包含 `design/KG/SystemArchitecture.json` 的工作区。
+5. 从 Chat 面板输入 `@argowork /work` 触发工作代理。
+6. 观察输出摘要和生成的 `design/KG/test-failure-records.json` 是否符合预期。
+7. 如果 testcase 未被执行或脚本执行失败，检查 `acceptanceCriteria` 指向的脚本路径是否真实存在和可执行。
 
 ## 打包与发布
 
@@ -237,10 +254,11 @@ python publish.py publish --version 0.10.5
 
 为了让这个工程持续有效，建议在日常开发中遵守以下约束：
 
-- 不要把 `design/` 当成临时目录，核心产物应进入版本控制。
-- testcase 的脚本路径必须真实可执行，避免图谱与仓库脱节。
-- 聊天输出只作为过程提示，最终依据应以落盘文件和测试结果为准。
-- 每次调整流程或扩展能力后，优先检查 `src/extension.ts`、`package.json` 和 `src/commands/` 的一致性。
+- **testcase 完整性**：`design/KG/SystemArchitecture.json` 中的每个 testcase 必须完整包含 `name`、`description`、`acceptanceCriteria` 和 `TestResults` 字段。
+- **脚本可执行性**：`acceptanceCriteria` 必须指向一个真实存在、可独立执行的脚本或 pytest node id，不能是 `npm run` 或其他命令行调用。
+- **失败记录管理**：`design/KG/test-failure-records.json` 是工作代理生成的输出，不要手工编辑，而是基于它继续推进修复。
+- **版本控制**：把 `design/KG/SystemArchitecture.json` 纳入版本控制，作为团队共同维护的架构图谱。
+- **扩展维护**：修改 `/work` 命令实现时，优先检查 `src/extension.ts`、`package.json` 和 `src/commands/work.ts` 的一致性。
 
 ## License
 
