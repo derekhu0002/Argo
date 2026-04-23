@@ -64,10 +64,10 @@
 ,"testcases": [
 {
 "name": "WorkspaceBootstrapCopiesEaTemplateOnStartup",
-"description": "Opening a new workspace activates Argo and copies eatool/EA-model-template.feap into the workspace root when no .feap file exists.",
+"description": "Test objective: Verify that when a fresh workspace is opened (without any .feap file present), the Argo extension automatically activates on startup (via onStartupFinished event) and creates a workspace-scoped EA model by copying the bundled EA-model-template.feap to {workspaceName}.feap in the workspace root. Key assertions: (1) Extension argo-team.argo-architect successfully activates within 20 seconds; (2) Generated file path matches `{workspaceName}.feap` with proper sanitization of reserved Windows names; (3) Binary content of generated file exactly matches the bundled template. Test environment: Real VS Code instance required (cannot be mocked) - uses @vscode/test-electron to launch an isolated VS Code instance with a temporary workspace folder.",
 "Input": "",
 "acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js",
-"TestResults": ""
+"TestResults": "PASS - Exit code 0"
 }
 ]
 }
