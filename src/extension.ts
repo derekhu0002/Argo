@@ -1,10 +1,8 @@
 import * as vscode from 'vscode';
-import { argoRequestHandler } from './participant';
 import { registerArchitectureTestTool } from './tools/architectureTestTool';
 import { ensureWorkspaceEaTemplates, ensureWorkspaceEaTemplatesForFolders } from './utils/workspaceBootstrap';
 import { argoWorkRequestHandler } from './workParticipant';
 
-const PARTICIPANT_ID = 'argo.architect';
 const WORK_PARTICIPANT_ID = 'argo.worker';
 const STARTUP_BOOTSTRAP_RETRY_DELAYS_MS = [250, 1000, 3000] as const;
 
@@ -43,20 +41,14 @@ function scheduleStartupWorkspaceBootstrapRetries(
 
 function registerCopilotFeatures(extensionContext: vscode.ExtensionContext): void {
     if (typeof vscode.chat?.createChatParticipant === 'function') {
-        const participant = vscode.chat.createChatParticipant(
-            PARTICIPANT_ID,
-            argoRequestHandler,
-        );
-
         const workParticipant = vscode.chat.createChatParticipant(
             WORK_PARTICIPANT_ID,
             argoWorkRequestHandler,
         );
 
-        participant.iconPath = new vscode.ThemeIcon('compass');
         workParticipant.iconPath = new vscode.ThemeIcon('tools');
 
-        extensionContext.subscriptions.push(participant, workParticipant);
+        extensionContext.subscriptions.push(workParticipant);
     }
 
     if (typeof vscode.lm?.registerTool === 'function') {

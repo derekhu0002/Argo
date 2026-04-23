@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "license": "MIT",
   "publisher": "argo-team",
   "engines": {
@@ -21,7 +21,6 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onChatParticipant:argo.architect",
     "onChatParticipant:argo.worker",
     "onLanguageModelTool:argo-test"
   ],
@@ -83,35 +82,6 @@
       }
     },
     "chatParticipants": [
-      {
-        "id": "argo.architect",
-        "fullName": "Argo Architect",
-        "name": "argo",
-        "description": "Agentic Workflow Orchestrator \u2014 closed-loop architecture control between ArchiMate intent and real code.",
-        "isSticky": true,
-        "commands": [
-          {
-            "name": "init",
-            "description": "Full build: generate code from ArchiMate intent, extract semantic UML, judge stitching, and iterate until consistent."
-          },
-          {
-            "name": "evolve",
-            "description": "Evolve existing architecture: apply delta ArchiMate changes, run anti-corruption checks, and auto-fix violations."
-          },
-          {
-            "name": "baseline",
-            "description": "Reverse-engineer a legacy codebase into richly annotated semantic UML (X-ray mode)."
-          },
-          {
-            "name": "discover",
-            "description": "Infer a high-level ArchiMate intent architecture from the implementation UML and auto-establish traceability baselines."
-          },
-          {
-            "name": "link",
-            "description": "Build a traceability matrix linking ArchiMate intent components to underlying code classes."
-          }
-        ]
-      },
       {
         "id": "argo.worker",
         "fullName": "Argo Work Agent",
