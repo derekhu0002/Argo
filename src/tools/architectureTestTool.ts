@@ -36,6 +36,13 @@ export interface FailedTestRecord {
     testdescription: string;
     acceptanceCriteria: string;
     relatedIntentElementId: string;
+    status: Exclude<TestStatus, 'passed'>;
+    resolvedScriptPath: string;
+    executionCommand: string;
+    exitCode: number | null;
+    failureError: string;
+    stdout: string;
+    stderr: string;
 }
 
 export interface ArchitectureTestExecutionResult {
@@ -158,12 +165,6 @@ export async function runArchitectureTests(
             const resolvedScriptPath = acceptanceCriteria
                 ? normalizeRelativePath(acceptanceCriteria)
                 : '';
-            const failureRecord: FailedTestRecord = {
-                testcasename: testcaseName,
-                testdescription: testDescription,
-                acceptanceCriteria,
-                relatedIntentElementId: elementId,
-            };
 
             if (!acceptanceCriteria) {
                 const result: ArchitectureTestExecutionResult = {
@@ -189,7 +190,7 @@ export async function runArchitectureTests(
                     executionCommand: '',
                     status: result.status,
                 });
-                failureRecords.push(failureRecord);
+                failureRecords.push(toFailedTestRecord(result));
                 continue;
             }
 
@@ -218,7 +219,7 @@ export async function runArchitectureTests(
                     executionCommand: '',
                     status: result.status,
                 });
-                failureRecords.push(failureRecord);
+                failureRecords.push(toFailedTestRecord(result));
                 continue;
             }
 
@@ -260,7 +261,7 @@ export async function runArchitectureTests(
                     executionCommand,
                     status: result.status,
                 });
-                failureRecords.push(failureRecord);
+                failureRecords.push(toFailedTestRecord(result));
                 continue;
             }
 
@@ -291,7 +292,7 @@ export async function runArchitectureTests(
                 status: result.status,
             });
             if (!passed) {
-                failureRecords.push(failureRecord);
+                failureRecords.push(toFailedTestRecord(result));
             }
         }
     }
@@ -329,6 +330,40 @@ async function writeFailureRecords(root: vscode.Uri, records: FailedTestRecord[]
     await vscode.workspace.fs.createDirectory(targetDir);
     const content = JSON.stringify(records, null, 2) + '\n';
     await vscode.workspace.fs.writeFile(targetUri, new TextEncoder().encode(content));
+}
+
+function toFailedTestRecord(result: ArchitectureTestExecutionResult): FailedTestRecord {
+    return {
+        testcasename: result.testcaseName,
+        testdescription: result.testDescription,
+        acceptanceCriteria: result.acceptanceCriteria,
+        relatedIntentElementId: result.elementId,
+        status: result.status as Exclude<TestStatus, 'passed'>,
+        resolvedScriptPath: result.resolvedScriptPath,
+        executionCommand: result.executionCommand,
+        exitCode: result.exitCode,
+        failureError: buildFailureError(result),
+        stdout: result.stdout,
+        stderr: result.stderr,
+    };
+}
+
+function buildFailureError(result: ArchitectureTestExecutionResult): string {
+    const stderr = result.stderr.trim();
+    if (stderr) {
+        return stderr;
+    }
+
+    const stdout = result.stdout.trim();
+    if (stdout) {
+        return stdout;
+    }
+
+    if (result.exitCode !== null) {
+        return `Command exited with code ${result.exitCode}`;
+    }
+
+    return `Test status: ${result.status}`;
 }
 
 async function executeAcceptanceScript(

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { StitchViolation } from '../engine/types';
+import type { FailedTestRecord } from '../tools/architectureTestTool';
 
 const COMMIT_ID_PATTERN = /(?:^|\s)(?:commit\s*:\s*)?([0-9a-f]{7,40})(?=$|\s)/i;
 
@@ -88,12 +89,7 @@ export function buildWorkAgentHandoffPrompt(input: {
     architectureGraphPath: string;
     failureRecordsPath: string;
     extraContext: string;
-    failureRecords: Array<{
-        testcasename: string;
-        testdescription: string;
-        acceptanceCriteria: string;
-        relatedIntentElementId: string;
-    }>;
+    failureRecords: FailedTestRecord[];
     totalTestCases: number;
     missingCriteriaCount: number;
 }): string {
