@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./schema/SystemArchitecture.schema.json",
+  "title": "SystemArchitecture Knowledge Graph Schema",
+  "description": "JSON Schema extracted from design/KG/SystemArchitecture.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "description",
+    "elements",
+    "relationships",
+    "views"
+  ],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/element"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "views": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/view"
+      }
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "status",
+        "description",
+        "start_date",
+        "due_date",
+        "reporter",
+        "priority",
+        "assigned_to",
+        "progress"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string"
+        },
+        "reporter": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "assigned_to": {
+          "type": "string"
+        },
+        "progress": {
+          "type": "string"
+        }
+      }
+    },
+    "projectInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tasks"
+      ],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task"
+          }
+        }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "subdiagramView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "view_id",
+        "view_name"
+      ],
+      "properties": {
+        "view_id": {
+          "type": "string"
+        },
+        "view_name": {
+          "type": "string"
+        }
+      }
+    },
+    "testcase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "Input",
+        "acceptanceCriteria",
+        "TestResults"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "Input": {
+          "type": "string"
+        },
+        "acceptanceCriteria": {
+          "type": "string"
+        },
+        "TestResults": {
+          "type": "string"
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "browser_path": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/attribute"
+          }
+        },
+        "project_info": {
+          "$ref": "#/$defs/projectInfo"
+        },
+        "subdiagram_views": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/subdiagramView"
+          }
+        },
+        "testcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/testcase"
+          }
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "view_id",
+        "view_name",
+        "included_elements",
+        "included_relationships"
+      ],
+      "properties": {
+        "view_id": {
+          "type": "string"
+        },
+        "view_name": {
+          "type": "string"
+        },
+        "browser_path": {
+          "type": "string"
+        },
+        "parent_element_id": {
+          "type": "string"
+        },
+        "parent_element_name": {
+          "type": "string"
+        },
+        "included_elements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "included_relationships": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@
 "id": "1207",
 "name": "StrategyLayerAndMotivationAspect"
 ,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
 ,"subdiagram_views": [
 {
 "view_id": "159",
@@ -17,6 +18,7 @@
 "id": "1208",
 "name": "BusinessLayer"
 ,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/BusinessLayer/BusinessLayer"
 ,"subdiagram_views": [
 {
 "view_id": "160",
@@ -28,6 +30,7 @@
 "id": "1209",
 "name": "ApplicationLayer"
 ,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer"
 ,"subdiagram_views": [
 {
 "view_id": "161",
@@ -39,6 +42,7 @@
 "id": "1210",
 "name": "TechnologyLayer"
 ,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer"
 ,"subdiagram_views": [
 {
 "view_id": "162",
@@ -50,6 +54,7 @@
 "id": "1211",
 "name": "ProjectManagement"
 ,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/ProjectManagement/ProjectManagement"
 ,"subdiagram_views": [
 {
 "view_id": "163",
@@ -61,6 +66,29 @@
 "id": "1332",
 "name": "ApplicationFunction1"
 ,"type": "ArchiMate_ApplicationFunction"
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/ApplicationFunction1"
+,"attributes": [
+{
+"name": "TEST"
+,"description": "ASDF"
+}
+]
+,"project_info": {
+"tasks": [
+{
+"name": "TSS"
+,"type": "ToDo"
+,"status": "New"
+,"description": "SS"
+,"start_date": "2026-4-24"
+,"due_date": "2026-4-25"
+,"reporter": "admin"
+,"priority": "Low",
+"assigned_to": "RE"
+,"progress": "GG"
+}
+]
+}
 ,"testcases": [
 {
 "name": "WorkspaceBootstrapCopiesEaTemplateOnStartup",
@@ -79,6 +107,7 @@
 {
 "view_id": "159",
 "view_name": "StrategyLayerAndMotivationAspect"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
 ,"parent_element_id": "1207"
 ,"parent_element_name": "StrategyLayerAndMotivationAspect"
 ,"included_elements": [
@@ -91,6 +120,7 @@
 {
 "view_id": "160",
 "view_name": "BusinessLayer"
+,"browser_path": "Model/System/BusinessLayer/BusinessLayer/BusinessLayer"
 ,"parent_element_id": "1208"
 ,"parent_element_name": "BusinessLayer"
 ,"included_elements": [
@@ -103,6 +133,7 @@
 {
 "view_id": "161",
 "view_name": "ApplicationLayer"
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/ApplicationLayer"
 ,"parent_element_id": "1209"
 ,"parent_element_name": "ApplicationLayer"
 ,"included_elements": [
@@ -115,6 +146,7 @@
 {
 "view_id": "162",
 "view_name": "TechnologyLayer"
+,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer/TechnologyLayer"
 ,"parent_element_id": "1210"
 ,"parent_element_name": "TechnologyLayer"
 ,"included_elements": [
@@ -127,6 +159,7 @@
 {
 "view_id": "163",
 "view_name": "ProjectManagement"
+,"browser_path": "Model/System/ProjectManagement/ProjectManagement/ProjectManagement"
 ,"parent_element_id": "1211"
 ,"parent_element_name": "ProjectManagement"
 ,"included_elements": [
@@ -139,6 +172,7 @@
 {
 "view_id": "158",
 "view_name": "SystemArchitecture"
+,"browser_path": "Model/System/SystemArchitecture"
 ,"included_elements": [
 "1207",
 "1208",
