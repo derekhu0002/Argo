@@ -18,8 +18,8 @@ if (typeof EA_AUTOGEN_CONFIG == "undefined" || EA_AUTOGEN_CONFIG == null) {
 		needCode: false,
 		needContent: true,
 		needdoc: false,
-		needallmaintenace: "onlyActive",
-		needbrowserlocation: false,
+		needallmaintenace: "All",
+		needbrowserlocation: true,
 		maintenacetype: "forproject" // forllm | forproject
 	};
 }
@@ -1177,8 +1177,8 @@ var projectPath = "";
 var needCode = false;
 var needContent = true;
 var needdoc = false;
-var needallmaintenace = "onlyActive";
-var needbrowserlocation = false;
+var needallmaintenace = "All";
+var needbrowserlocation = true;
 var maintenacetype = "forproject"; // forllm forproject
 
 function applyRuntimeConfig() {
