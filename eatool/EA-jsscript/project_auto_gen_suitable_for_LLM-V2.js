@@ -97,6 +97,24 @@ function normalizeProjectPath(pathValue) {
 	return s;
 }
 
+function isAbsolutePath(pathValue) {
+	if (pathValue == null || pathValue == "") {
+		return false;
+	}
+	var s = trimString(pathValue);
+	return /^[A-Za-z]:[\\/]/.test(s) || /^\\\\/.test(s) || /^\//.test(s);
+}
+
+function resolveContentPath(pathValue) {
+	if (pathValue == null || pathValue == "") {
+		return "";
+	}
+	if (isAbsolutePath(pathValue)) {
+		return "" + pathValue;
+	}
+	return projectPath + pathValue;
+}
+
 function resolveProjectPathFromCurrentModel() {
 	var modelFilePath = resolveModelFilePathFromConnectionString();
 	if (modelFilePath == "") {
@@ -634,7 +652,7 @@ function extractFromDiagram(currentDiagram) {
 				if ((attr.Alias == "content") && needContent) {
 					var content = "";
 					if (attr.Notes != "") {
-						content = getCode(projectPath + attr.Notes);
+						content = getCode(resolveContentPath(attr.Notes));
 					}
 					if (content != "" && needContent) {
 						attributesJsonStrings.push(
@@ -1074,7 +1092,7 @@ function main() {
 				//Session.Output(ppele.Name + " - find content:" + attr.Notes + " needContent:" + needContent);
 				var content = "";
 				if (attr.Notes != "") {
-					content = getCode(projectPath + attr.Notes);
+					content = getCode(resolveContentPath(attr.Notes));
 				}
 				if (content != "" && needContent) {
 					attributesJsonStrings.push(
