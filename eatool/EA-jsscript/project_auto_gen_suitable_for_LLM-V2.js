@@ -429,6 +429,26 @@ function getElementIdentifier(ele) {
 	return "" + ele.ElementID;
 }
 
+function getTestClassName(testClassValue) {
+	var normalized = trimString(testClassValue);
+	switch (normalized) {
+		case "1":
+			return "Unit Test";
+		case "2":
+			return "Integration Test";
+		case "3":
+			return "System Test";
+		case "4":
+			return "Acceptance Test";
+		case "5":
+			return "Scenario Test";
+		case "6":
+			return "Inspection Test";
+		default:
+			return normalized;
+	}
+}
+
 function getConnectorIdentifier(conn) {
 	if (conn == null) {
 		return "";
@@ -845,6 +865,7 @@ function extractFromDiagram(currentDiagram) {
 					'{\n' +
 					'"name": "' + jsonEscape(testcase.Name) + '",\n' +
 					'"description": "' + jsonEscape(testcase.Notes) + '",\n' +
+					'"type": "' + jsonEscape(getTestClassName(testcase.Class)) + '",\n' +
 					'"Input": "' + jsonEscape(testcase.Input) + '",\n' +
 					'"acceptanceCriteria": "' + jsonEscape(testcase.AcceptanceCriteria) + '",\n' +
 					'"TestResults": "' + jsonEscape(testcase.TestResults) + '"\n' +
