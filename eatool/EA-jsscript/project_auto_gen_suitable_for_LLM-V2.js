@@ -419,6 +419,36 @@ function getDiagramBrowserPath(diagram) {
 	return fullPath;
 }
 
+function getElementIdentifier(ele) {
+	if (ele == null) {
+		return "";
+	}
+	if (typeof ele.ElementGUID != "undefined" && ele.ElementGUID != null && ele.ElementGUID != "") {
+		return "" + ele.ElementGUID;
+	}
+	return "" + ele.ElementID;
+}
+
+function getConnectorIdentifier(conn) {
+	if (conn == null) {
+		return "";
+	}
+	if (typeof conn.ConnectorGUID != "undefined" && conn.ConnectorGUID != null && conn.ConnectorGUID != "") {
+		return "" + conn.ConnectorGUID;
+	}
+	return "" + conn.ConnectorID;
+}
+
+function getDiagramIdentifier(diagram) {
+	if (diagram == null) {
+		return "";
+	}
+	if (typeof diagram.DiagramGUID != "undefined" && diagram.DiagramGUID != null && diagram.DiagramGUID != "") {
+		return "" + diagram.DiagramGUID;
+	}
+	return "" + diagram.DiagramID;
+}
+
 function getProjectinfo(tele) {
     // Refactored for LLM readability
 	var resall as EA.Collection;
@@ -632,12 +662,12 @@ function extractFromDiagram(currentDiagram) {
 		
 		if (ele.AssociationClassConnectorID != 0) continue;
 		
-		var id = ele.ElementID;
+		var id = getElementIdentifier(ele);
 		includedElements.push('"' + jsonEscape(id) + '"');
 
 		if (typeof globalElements[id] === "undefined") {
 			globalElements[id] = "PROCESSING"; // Prevent infinite recursion
-			Session.Output("Processing:" + ele.Name + " id:" + ele.ElementID);
+			Session.Output("Processing:" + ele.Name + " id:" + id);
 			var attrs as EA.Collection;
 			attrs = ele.AttributesEx;
 			var attributesJsonStrings = [];
@@ -723,7 +753,7 @@ function extractFromDiagram(currentDiagram) {
 				subdiag = subdiags.GetAt(j);
 				subDiagramJsonStrings.push(
 					'{\n' +
-					'"view_id": "' + jsonEscape(subdiag.DiagramID) + '",\n' +
+					'"view_id": "' + jsonEscape(getDiagramIdentifier(subdiag)) + '",\n' +
 					'"view_name": "' + jsonEscape(subdiag.Name) + '"\n' +
 					'}'
 				);
@@ -843,7 +873,7 @@ function extractFromDiagram(currentDiagram) {
         var conn as EA.Connector;
         conn = Repository.GetConnectorByID(link.ConnectorID);
 		
-		var connId = conn.ConnectorID;
+		var connId = getConnectorIdentifier(conn);
 		includedRelationships.push('"' + jsonEscape(connId) + '"');
 
 		if (typeof globalRelationships[connId] === "undefined") {
@@ -925,8 +955,8 @@ function extractFromDiagram(currentDiagram) {
 			}
 			
 			relatointypejss += 
-				',"source_id":"' + jsonEscape(source.ElementID) + '"\n' +
-				',"target_id":"' + jsonEscape(target.ElementID) + '"\n' + 
+				',"source_id":"' + jsonEscape(getElementIdentifier(source)) + '"\n' +
+				',"target_id":"' + jsonEscape(getElementIdentifier(target)) + '"\n' + 
 				',"source_name":"' + jsonEscape(source.Name) + '"\n' +
 				',"target_name":"' + jsonEscape(target.Name) + '"\n' + 
 				'}';
@@ -934,9 +964,10 @@ function extractFromDiagram(currentDiagram) {
 		}
     }
 
-	var viewJson = '{\n"view_id": "' + jsonEscape(currentDiagram.DiagramID) + '",\n';
+	var currentDiagramId = getDiagramIdentifier(currentDiagram);
+	var viewJson = '{\n"view_id": "' + jsonEscape(currentDiagramId) + '",\n';
 	viewJson += '"view_name": "' + jsonEscape(viewName) + '"\n';
-	Session.Output("Processing diag:" + viewName + " id:" + currentDiagram.DiagramID);
+	Session.Output("Processing diag:" + viewName + " id:" + currentDiagramId);
 	
 	if (needbrowserlocation) {
 		var diagramBrowserPath = getDiagramBrowserPath(currentDiagram);
@@ -949,7 +980,7 @@ function extractFromDiagram(currentDiagram) {
 		var parentElement as EA.Element;
 		parentElement = Repository.GetElementByID(currentDiagram.ParentID);
 		if (parentElement != null) {
-			viewJson += ',"parent_element_id": "' + jsonEscape(parentElement.ElementID) + '"\n';
+			viewJson += ',"parent_element_id": "' + jsonEscape(getElementIdentifier(parentElement)) + '"\n';
 			viewJson += ',"parent_element_name": "' + jsonEscape(parentElement.Name) + '"\n';
 		}
 	}

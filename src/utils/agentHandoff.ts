@@ -156,7 +156,7 @@ export function buildProductBriefHandoffPrompt(input: {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
         `1. 以当前工作区 ${input.workspacePath} 为分析范围，基于仓库中的真实内容产出一份“对外介绍该项目所构建产品”的说明文档。`,
-        `2. 将最终说明文档保存到项目根目录：${input.workspacePath}\\INSTRUCTION.md。`,
+        `2. 将最终说明文档保存到项目根目录：${input.workspacePath}\\INTRODUCTION.md。`,
         `3. 优先阅读这些已知入口文件，并可按需继续深入代码与测试：`,
         `   - ${input.readmePath}`,
         `   - ${input.packageJsonPath}`,
@@ -179,14 +179,15 @@ export function buildProductBriefHandoffPrompt(input: {
         '   - 使用中文撰写',
         '   - 结构清晰，适合直接给外部团队阅读',
         '   - 优先给出“如何判断是否采用”和“如何开始使用”的信息',
+        '   - 尽量不要展开内部实现细节、源码组织、内部模块/类名或底层实现机制；仅在解释外部接入前置条件、运行约束或能力边界时，才以必要最小粒度提及',
         '   - 如仓库当前更像内部工具/扩展而非通用平台，要明确说明，不要包装成通用开放平台',
         '9. 最后必须附上一个“快速结论”小节，至少回答：',
         '   - 谁应该使用它',
         '   - 谁不适合使用它',
         '   - 最小接入路径是什么',
         '   - 采用前最需要验证的 3 个风险点是什么',
-        '10. 本次任务允许创建或更新项目根目录下的 INSTRUCTION.md，但不要修改其他业务代码。',
-        '11. 完成后，回复中必须明确说明 INSTRUCTION.md 已写入，并给出文档摘要。',
+        '10. 本次任务允许创建或更新项目根目录下的 INTRODUCTION.md，但不要修改其他业务代码。',
+        '11. 完成后，回复中必须明确说明 INTRODUCTION.md 已写入，并给出文档摘要。',
     ];
 
     if (input.extraContext) {
