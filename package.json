@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "0.15.17",
+  "version": "0.15.19",
   "license": "MIT",
   "publisher": "argo-team",
   "engines": {
@@ -89,6 +89,10 @@
         "description": "Execute architecture-linked testcases and prepare repair handoffs for the Copilot main agent.",
         "isSticky": true,
         "commands": [
+          {
+            "name": "architecturedesign",
+            "description": "Generate a main-agent handoff prompt for interviewing the user and creating or maintaining the ArchiMate model in design/KG/SystemArchitecture.json."
+          },
           {
             "name": "brief",
             "description": "Generate a main-agent handoff prompt for an external-facing product brief based on the current repository."

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "./schema/SystemArchitecture.schema.json",
   "title": "SystemArchitecture Knowledge Graph Schema",
-  "description": "JSON Schema extracted from design/KG/SystemArchitecture.json.",
+  "description": "Schema extracted from the EA ArchiMate JSON export structure for design/KG/SystemArchitecture.json.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,6 +19,12 @@
     "description": {
       "type": "string"
     },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attribute"
+      }
+    },
     "elements": {
       "type": "array",
       "items": {
@@ -28,7 +34,7 @@
     "relationships": {
       "type": "array",
       "items": {
-        "type": "object"
+        "$ref": "#/$defs/relationship"
       }
     },
     "views": {
@@ -43,16 +49,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "name",
-        "type",
-        "status",
-        "description",
-        "start_date",
-        "due_date",
-        "reporter",
-        "priority",
-        "assigned_to",
-        "progress"
+        "name"
       ],
       "properties": {
         "name": {
@@ -68,6 +65,9 @@
           "type": "string"
         },
         "start_date": {
+          "type": "string"
+        },
+        "completion_date": {
           "type": "string"
         },
         "due_date": {
@@ -87,13 +87,81 @@
         }
       }
     },
-    "projectInfo": {
+    "resource": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "tasks"
+        "owner",
+        "role",
+        "start_date",
+        "end_date",
+        "percent_complete",
+        "expected_hours"
       ],
       "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        },
+        "end_date": {
+          "type": "string"
+        },
+        "percent_complete": {
+          "type": "number"
+        },
+        "expected_hours": {
+          "type": "number"
+        },
+        "history": {
+          "type": "string"
+        }
+      }
+    },
+    "projectSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "started": {
+          "type": "string"
+        },
+        "deadline": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "assigned_to": {
+          "type": "string"
+        },
+        "progress": {
+          "type": "string"
+        }
+      }
+    },
+    "projectInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "$ref": "#/$defs/projectSummary"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        },
         "tasks": {
           "type": "array",
           "items": {
@@ -115,7 +183,10 @@
         "description": {
           "type": "string"
         },
-        "type": {
+        "value": {
+          "type": "string"
+        },
+        "content": {
           "type": "string"
         }
       }
@@ -142,6 +213,7 @@
       "required": [
         "name",
         "description",
+        "type",
         "Input",
         "acceptanceCriteria",
         "TestResults"
@@ -152,6 +224,17 @@
         },
         "description": {
           "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Unit Test",
+            "Integration Test",
+            "System Test",
+            "Acceptance Test",
+            "Scenario Test",
+            "Inspection Test"
+          ]
         },
         "Input": {
           "type": "string"
@@ -182,7 +265,22 @@
         "type": {
           "type": "string"
         },
+        "alias": {
+          "type": "string"
+        },
+        "classifier": {
+          "type": "string"
+        },
         "browser_path": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "document": {
           "type": "string"
         },
         "attributes": {
@@ -190,6 +288,15 @@
           "items": {
             "$ref": "#/$defs/attribute"
           }
+        },
+        "code_file": {
+          "type": "string"
+        },
+        "condition_file": {
+          "type": "string"
+        },
+        "prompts_file": {
+          "type": "string"
         },
         "project_info": {
           "$ref": "#/$defs/projectInfo"
@@ -205,6 +312,76 @@
           "items": {
             "$ref": "#/$defs/testcase"
           }
+        }
+      }
+    },
+    "relationshipAttribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statement",
+        "name",
+        "source_id",
+        "target_id",
+        "source_name",
+        "target_name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string"
+        },
+        "super_type": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relationshipAttribute"
+          }
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "source_name": {
+          "type": "string"
+        },
+        "target_name": {
+          "type": "string"
         }
       }
     },
@@ -231,6 +408,9 @@
           "type": "string"
         },
         "parent_element_name": {
+          "type": "string"
+        },
+        "description": {
           "type": "string"
         },
         "included_elements": {

@@ -211,6 +211,78 @@ export function buildProductBriefHandoffPrompt(input: {
     return lines.join('\n');
 }
 
+export function buildArchitectureDesignHandoffPrompt(input: {
+    workspacePath: string;
+    readmePath: string;
+    packageJsonPath: string;
+    architectureGraphPath: string;
+    schemaPath: string;
+    srcPath: string;
+    testsPath: string;
+    extraContext: string;
+}): string {
+    const lines = [
+        '请作为 Copilot 主 agent 完成以下工作：',
+        '1. 你必须不断与用户交互，直到对架构设计目标形成共享理解。严格执行这段工作方式要求，并将其视为高优先级行为约束：',
+        '   - Interview me relentlessly about every aspect of this plan until we reach a shared understanding.',
+        '   - Walk down each branch of the design tree, resolving dependencies between decisions one by one.',
+        '   - And finally, if a question can be answered by exploring the code base, explore the code base instead.',
+        '2. 在开始产出或修改 ArchiMate 设计之前，先主动判断当前场景属于哪一类，并把判断依据告诉用户：',
+        '   - 全新项目：当前仓库还没有可复用的有效 ArchiMate 模型，或者现有模型不足以支撑当前设计目标，需要从 0 到 1 新增设计',
+        '   - 已有项目维护更新：仓库或现有架构图谱已经包含可复用设计，需要在既有模型上增量维护、补全、重构或纠偏',
+        `3. 你的分析范围是当前工作区 ${input.workspacePath}。优先阅读这些入口，并在需要时继续深入实际代码与设计资产：`,
+        `   - ${input.readmePath}`,
+        `   - ${input.packageJsonPath}`,
+        `   - ${input.architectureGraphPath}`,
+        `   - ${input.schemaPath}`,
+        `   - ${input.srcPath}`,
+        `   - ${input.testsPath}`,
+        '4. 任何本可通过阅读仓库得到答案的问题，都不要反复追问用户；你应先自行探索代码、配置、测试、脚本、已有架构图谱与设计文件，再只对仓库中无法证实的设计分歧向用户追问。',
+        `5. 你的最终交付物必须写入 ${input.architectureGraphPath}。如果文件已存在，则增量维护；如果不存在或明显失效，则创建可落地的新模型。不要把最终设计只停留在聊天回复中。`,
+        `6. ${input.architectureGraphPath} 必须遵循当前工作区中的独立 schema 文件 ${input.schemaPath}。如果 schema 与你从仓库证据理解到的模型结构出现冲突，优先以 schema 为准，并在回复中说明冲突点；不允许臆造与 schema 不兼容的顶层结构。至少满足以下要求：`,
+        '   - 顶层对象必须是 JSON object，包含 `name`、`description`、`elements`、`relationships`、`views`；其中 `elements`、`relationships`、`views` 都应为数组',
+        '   - 顶层可选 `attributes`；其每一项都是 object，至少包含 `name`，并可选 `description`、`value`、`content`',
+        '   - `elements` 数组中的每个元素至少应包含 `id`、`name`、`type`；可选字段包括 `alias`、`classifier`、`browser_path`、`status`、`description`、`document`、`attributes`、`code_file`、`condition_file`、`prompts_file`、`project_info`、`subdiagram_views`、`testcases`',
+        '   - element 的 `attributes` 数组项结构与顶层 `attributes` 相同：至少 `name`，可选 `description`、`value`、`content`；用于表达 EA 属性或方法摘要',
+        '   - element 的 `subdiagram_views` 必须是数组；每项至少包含 `view_id`、`view_name`',
+        '   - element 的 `testcases` 必须是数组；每项至少包含 `name`、`description`、`type`、`Input`、`acceptanceCriteria`、`TestResults`；`type` 应优先使用导出器识别的 6 种测试类型名称：`Unit Test`、`Integration Test`、`System Test`、`Acceptance Test`、`Scenario Test`、`Inspection Test`',
+        '   - element 的 `project_info` 如果存在，应是 object；可包含 `summary`、`resources`、`tasks`。其中 `summary` 可包含 `notes`、`started`、`deadline`、`priority`、`assigned_to`、`progress`；`resources` 数组项至少表达 `owner`、`role`，并可含 `description`、`start_date`、`end_date`、`percent_complete`、`expected_hours`、`history`；`tasks` 数组项至少表达 `name`，并可含 `type`、`status`、`description`、`start_date`、`completion_date`、`due_date`、`reporter`、`priority`、`assigned_to`、`progress`',
+        '   - `relationships` 数组中的每个关系至少应包含 `id`、`statement`、`name`、`source_id`、`target_id`、`source_name`、`target_name`；可选 `description`、`sequence`、`super_type`、`document`、`attributes`',
+        '   - relationship 的 `attributes` 数组项至少包含 `name`，可选 `description`',
+        '   - `views` 数组中的每个视图至少应包含 `view_id`、`view_name`、`included_elements`、`included_relationships`；可选 `browser_path`、`parent_element_id`、`parent_element_name`、`description`',
+        '   - `included_elements` 和 `included_relationships` 都必须是 ID 字符串数组，引用前面定义的 element/relationship',
+        '   - `id`、`view_id`、`source_id`、`target_id` 应优先沿用已有模型中的稳定标识；全新建模时需要保证在同一文件内唯一，且关系、视图引用必须可解析',
+        '7. 设计过程中，你必须把用户反馈、仓库证据与模型演进关联起来，避免只产出抽象概念图：',
+        '   - 架构必须聚焦意图，从目标、措施等战略层逐步分解到业务层、应用层、技术层；它的职责是说明战略目标如何一步一步落成具体架构元素，而不是直接铺陈实现细节',
+        '   - 模型中的元素分解必须体现清晰的意图追踪链：上层目标/原则/措施如何约束下层业务能力、应用组件、技术支撑，以及这些层次之间为什么存在当前关系',
+        '   - 不允许把具体类名、函数名、局部算法、代码行级结构直接当作架构元素本身；实现细节只能作为“该架构元素由哪些代码实现支撑”的证据与映射信息出现',
+        '   - 对于新增系统能力，要补齐相关元素、关系、视图与必要 testcase',
+        '   - 对于已有系统维护更新，要明确哪些元素沿用、哪些重命名、哪些废弃、哪些关系需要迁移',
+        '   - 对于已经存在 `design\\KG\\SystemArchitecture.json` 的项目，你必须先分析并理解现有模型中的元素、关系、视图与 testcase，再开始后续架构调整，不能跳过对既有设计基线的吸收',
+        '   - 在后续架构调整中，不允许擅自删除已有 testcase；如果某个 testcase 不再适合挂在原元素下，你只能把它调整挂载到更合适的元素下，并同步更新其描述、测试入口或上下文',
+        '   - 如果你认为某个已有 testcase 必须被删除，必须先明确向用户说明删除原因、影响范围、替代方案，并获得用户明确同意后才能删除',
+        '   - 每个关键架构元素都必须明确回答两个映射问题：它由哪些 testcase 验证；它由哪些具体代码实现、配置入口、脚本入口或运行组件承载。如果当前仓库里还没有对应测试或实现，要明确标注为空缺而不是跳过',
+        '   - 当 testcase 挂载到某个架构元素下时，你必须说明它验证的是该元素的哪一项职责、约束或协作关系；当代码被映射到某个架构元素时，你必须说明这些代码为何属于该元素而不是别的元素',
+        '   - 如果代码与现有模型冲突，要先定位事实来源，再与用户确认应该改代码、改模型还是两者都改',
+        '8. 你必须持续和用户确认关键分叉决策，例如系统边界、能力拆分、上下游依赖、外部接口、部署/运行约束、架构原则、测试落点、视图组织方式；每解决一个分支，再进入下一个分支，不要一次性抛出大而空的问题清单。',
+        '9. 如果通过读代码、读测试、读配置或读已有模型已经能回答某个问题，你就直接给出结论和证据，不要把本可自证的问题继续丢给用户。',
+        '10. 当你完成 ArchiMate 模型新增或维护更新后，回复中必须包含：',
+        '   - 你如何判断这是全新项目设计还是已有项目维护更新',
+        '   - 你向用户追问并确认了哪些关键设计决策',
+        '   - 你通过探索仓库自行回答了哪些问题，以及证据来自哪里',
+        '   - 你最终在 `design\\KG\\SystemArchitecture.json` 中新增、修改、删除了哪些关键元素、关系、视图、testcase 或 project_info',
+        '   - 关键架构元素分别关联了哪些 testcase，以及这些元素分别由哪些代码实现、配置、脚本或运行组件支撑',
+        '   - 当前模型中仍然存在的假设、待定项或后续设计风险',
+        '11. 不要只输出建议或讨论纪要；你必须真正维护 `design\\KG\\SystemArchitecture.json`，并确保结果可作为后续开发、测试和架构治理的唯一结构化基线。',
+    ];
+
+    if (input.extraContext) {
+        lines.push(`12. 当前补充上下文：${input.extraContext}`);
+    }
+
+    return lines.join('\n');
+}
+
 export function buildTestDesignHandoffPrompt(input: {
     workspacePath: string;
     readmePath: string;
