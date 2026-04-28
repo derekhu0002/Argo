@@ -255,6 +255,8 @@ export function buildTestDesignHandoffPrompt(input: {
         `8. 完成测试设计后，你必须将所有测试建议回填到架构图谱文件 ${input.architectureGraphPath}，不能只停留在聊天回复中。`,
         '   - 所有新增测试建议都要写成完整 testcase 对象并落到对应的架构图谱位置',
         '   - 所有需要调整的已有测试，也要同步更新架构图谱中的对应 testcase 对象，不能只在文字说明里提到',
+        '   - 如果某个已有 testcase 需要调整其覆盖的系统内容，必须先将该 testcase 的 `acceptanceCriteria` 填为空字符串，表示原测试入口暂时失效，等待新的系统实现与测试入口重新落地',
+        '   - 同时必须在该 testcase 的说明中临时明确写出：该用例及其对应的系统功能需要重新实现，并记录原来的测试入口（即原 `acceptanceCriteria` 的值），避免主 agent 把旧测试入口误当成仍然有效，且确保后续重建测试时有可追溯依据',
         '   - 回填后的 testcase 至少必须包含：`name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`',
         '   - `description` 需要写清测试目标、关键断言、前置条件、是否依赖真实环境/真实系统能力',
         '   - `acceptanceCriteria` 必须指向单一测试入口，不允许写成一串命令拼接',
