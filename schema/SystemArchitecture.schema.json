@@ -176,9 +176,11 @@
       "required": [
         "name"
       ],
+      "description": "Generic EA-style attribute container. Use this for architecture annotations such as verification_focus, acceptance_outcomes, and design_risks instead of introducing dedicated top-level fields.",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Attribute name, for example verification_focus, acceptance_outcomes, design_risks, or a domain-specific property name."
         },
         "description": {
           "type": "string"
@@ -220,10 +222,12 @@
       ],
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Stable testcase identifier. Use the testcase name itself as the long-lived identity; do not add a separate testcase id field."
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Place the intent being verified here. Each testcase should normally be mounted under exactly one element rather than using extra verifies_elements or verifies_intents fields."
         },
         "type": {
           "type": "string",
@@ -285,6 +289,7 @@
         },
         "attributes": {
           "type": "array",
+          "description": "Use attributes to store additional architecture intent metadata, including verification_focus, acceptance_outcomes, and design_risks.",
           "items": {
             "$ref": "#/$defs/attribute"
           }

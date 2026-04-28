@@ -20,7 +20,6 @@ export async function handleArchitectureDesign(
         readmePath: `${rootPath}\\README.md`,
         packageJsonPath: `${rootPath}\\package.json`,
         architectureGraphPath: `${rootPath}\\design\\KG\\SystemArchitecture.json`,
-        schemaPath: `${rootPath}\\schema\\SystemArchitecture.schema.json`,
         srcPath: `${rootPath}\\src`,
         testsPath: `${rootPath}\\tests`,
         extraContext: request.prompt.trim(),
