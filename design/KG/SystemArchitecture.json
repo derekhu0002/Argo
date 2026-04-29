@@ -3,125 +3,227 @@
 "description": "",
 "elements": [
 {
-"id": "1207",
+"id": "{A437C67D-90A3-4a48-B9A9-D17F90FC18F0}",
 "name": "StrategyLayerAndMotivationAspect"
 ,"type": "ArchiMate_Assessment"
 ,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
 ,"subdiagram_views": [
 {
-"view_id": "159",
+"view_id": "{0B4C49ED-9F3D-497e-B726-A45491B6C57E}",
 "view_name": "StrategyLayerAndMotivationAspect"
 }
 ]
 },
 {
-"id": "1208",
+"id": "{1D55A29D-FAAB-4fe5-A2AC-9991859B7759}",
+"name": "Assessment1"
+,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1"
+,"subdiagram_views": [
+{
+"view_id": "{0287ACB5-97DF-4108-A77F-F00092A6CB7F}",
+"view_name": "Assessment1"
+}
+]
+},
+{
+"id": "{85FE3D9A-168C-4d73-90D8-CBAA0C1BD7B3}",
+"name": "MODEL"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/MODEL"
+},
+{
+"id": "{E6768540-8805-47a4-9AB4-82620BB82AE4}",
+"name": "CODE IMPLEMENTATION"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/CODE IMPLEMENTATION"
+},
+{
+"id": "{6C93991C-A5A7-4c52-91B9-952B37AF4203}",
+"name": "TEST CASE"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/TEST CASE"
+},
+{
+"id": "{2E10E3C6-CA59-4772-9204-D8CAD0706D6D}",
+"name": "HUMAN BEING"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/HUMAN BEING"
+},
+{
+"id": "{BF4028F0-D812-49aa-8FD9-E2A03F4F1D21}",
+"name": "AI CODING AGENT"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/AI CODING AGENT"
+},
+{
+"id": "{47D7DB7E-CB3F-4111-A116-B34A234A10D5}",
 "name": "BusinessLayer"
 ,"type": "ArchiMate_Assessment"
 ,"browser_path": "Model/System/BusinessLayer/BusinessLayer"
 ,"subdiagram_views": [
 {
-"view_id": "160",
+"view_id": "{B7341552-BD0E-4e40-95A3-5224AAB12BF1}",
 "view_name": "BusinessLayer"
 }
 ]
 },
 {
-"id": "1209",
+"id": "{11B31EBE-2D74-42a1-ABC1-C0D0A9EBCAD8}",
 "name": "ApplicationLayer"
 ,"type": "ArchiMate_Assessment"
 ,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer"
 ,"subdiagram_views": [
 {
-"view_id": "161",
+"view_id": "{84DFE546-E90B-44a6-BEB7-5470ED13B5B5}",
 "view_name": "ApplicationLayer"
 }
 ]
 },
 {
-"id": "1210",
-"name": "TechnologyLayer"
-,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer"
-,"subdiagram_views": [
-{
-"view_id": "162",
-"view_name": "TechnologyLayer"
-}
-]
-},
-{
-"id": "1211",
-"name": "ProjectManagement"
-,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/ProjectManagement/ProjectManagement"
-,"subdiagram_views": [
-{
-"view_id": "163",
-"view_name": "ProjectManagement"
-}
-]
-},
-{
-"id": "1332",
-"name": "ApplicationFunction1"
+"id": "{23AC48BF-11DA-48cb-8C00-060F240E4D8A}",
+"name": "自动拷贝FEAP TEMPLATE"
 ,"type": "ArchiMate_ApplicationFunction"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/ApplicationFunction1"
-,"attributes": [
-{
-"name": "TEST"
-,"description": "ASDF"
-}
-]
-,"project_info": {
-"tasks": [
-{
-"name": "TSS"
-,"type": "ToDo"
-,"status": "New"
-,"description": "SS"
-,"start_date": "2026-4-24"
-,"due_date": "2026-4-25"
-,"reporter": "admin"
-,"priority": "Low",
-"assigned_to": "RE"
-,"progress": "GG"
-}
-]
-}
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/自动拷贝FEAP TEMPLATE"
 ,"testcases": [
 {
 "name": "WorkspaceBootstrapCopiesEaTemplateOnStartup",
 "description": "Test objective: Verify that when a fresh workspace is opened (without any .feap file present), the Argo extension automatically activates on startup (via onStartupFinished event) and creates a workspace-scoped EA model by copying the bundled EA-model-template.feap to {workspaceName}.feap in the workspace root. Key assertions: (1) Extension argo-team.argo-architect successfully activates within 20 seconds; (2) Generated file path matches `{workspaceName}.feap` with proper sanitization of reserved Windows names; (3) Binary content of generated file exactly matches the bundled template. Test environment: Real VS Code instance required (cannot be mocked) - uses @vscode/test-electron to launch an isolated VS Code instance with a temporary workspace folder.",
+"type": "Acceptance Test",
 "Input": "",
 "acceptanceCriteria": "tests/e2e/runWorkspaceBootstrapE2E.js",
 "TestResults": "PASS - Exit code 0"
 }
 ]
+},
+{
+"id": "{51B609B5-443A-41d5-839E-D77758D50199}",
+"name": "刷新项目功能和对外接口"
+,"type": "ArchiMate_ApplicationFunction"
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/刷新项目功能和对外接口"
+},
+{
+"id": "{03048AE3-88C4-4893-88CD-DC244C7163B0}",
+"name": "TechnologyLayer"
+,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer"
+,"subdiagram_views": [
+{
+"view_id": "{DA69C86F-94DB-40e1-A44F-6EBA0BF7EC79}",
+"view_name": "TechnologyLayer"
+}
+]
+},
+{
+"id": "{CA7350B0-1F62-4053-9833-685F6A12B3B5}",
+"name": "ProjectManagement"
+,"type": "ArchiMate_Assessment"
+,"browser_path": "Model/System/ProjectManagement/ProjectManagement"
+,"subdiagram_views": [
+{
+"view_id": "{107597C2-E3D5-4de3-922F-05E901E97684}",
+"view_name": "ProjectManagement"
+}
+]
 }
 ],
 "relationships": [
-
+{
+"id":"{8CC5F185-1E1C-4c32-84FD-F13CBE66585F}"
+,"statement":"MODEL --(defines)--> TEST CASE"
+,"name":"defines"
+,"source_id":"{85FE3D9A-168C-4d73-90D8-CBAA0C1BD7B3}"
+,"target_id":"{6C93991C-A5A7-4c52-91B9-952B37AF4203}"
+,"source_name":"MODEL"
+,"target_name":"TEST CASE"
+},
+{
+"id":"{0E288736-6460-4edb-9187-B8166FFEDACC}"
+,"statement":"TEST CASE --(guides)--> AI CODING AGENT"
+,"name":"guides"
+,"source_id":"{6C93991C-A5A7-4c52-91B9-952B37AF4203}"
+,"target_id":"{BF4028F0-D812-49aa-8FD9-E2A03F4F1D21}"
+,"source_name":"TEST CASE"
+,"target_name":"AI CODING AGENT"
+},
+{
+"id":"{40531ECA-16F3-46a2-BC73-FD06A06CEFD8}"
+,"statement":"CODE IMPLEMENTATION --(passes)--> TEST CASE"
+,"name":"passes"
+,"source_id":"{E6768540-8805-47a4-9AB4-82620BB82AE4}"
+,"target_id":"{6C93991C-A5A7-4c52-91B9-952B37AF4203}"
+,"source_name":"CODE IMPLEMENTATION"
+,"target_name":"TEST CASE"
+},
+{
+"id":"{01038036-7353-4784-8EBB-11D4836D99FD}"
+,"statement":"TEST CASE --(fullfills)--> MODEL"
+,"name":"fullfills"
+,"source_id":"{6C93991C-A5A7-4c52-91B9-952B37AF4203}"
+,"target_id":"{85FE3D9A-168C-4d73-90D8-CBAA0C1BD7B3}"
+,"source_name":"TEST CASE"
+,"target_name":"MODEL"
+},
+{
+"id":"{ADCE3C22-7E00-4f02-B614-A7D6196F278D}"
+,"statement":"HUMAN BEING --(designs)--> MODEL"
+,"name":"designs"
+,"source_id":"{2E10E3C6-CA59-4772-9204-D8CAD0706D6D}"
+,"target_id":"{85FE3D9A-168C-4d73-90D8-CBAA0C1BD7B3}"
+,"source_name":"HUMAN BEING"
+,"target_name":"MODEL"
+},
+{
+"id":"{A60F7B1C-292E-4201-B652-9901C4CFD476}"
+,"statement":"AI CODING AGENT --(implements)--> CODE IMPLEMENTATION"
+,"name":"implements"
+,"source_id":"{BF4028F0-D812-49aa-8FD9-E2A03F4F1D21}"
+,"target_id":"{E6768540-8805-47a4-9AB4-82620BB82AE4}"
+,"source_name":"AI CODING AGENT"
+,"target_name":"CODE IMPLEMENTATION"
+}
 ],
 "views": [
 {
-"view_id": "159",
+"view_id": "{0287ACB5-97DF-4108-A77F-F00092A6CB7F}",
+"view_name": "Assessment1"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/Assessment1/Assessment1"
+,"parent_element_id": "{1D55A29D-FAAB-4fe5-A2AC-9991859B7759}"
+,"parent_element_name": "Assessment1"
+,"included_elements": [
+"{85FE3D9A-168C-4d73-90D8-CBAA0C1BD7B3}",
+"{E6768540-8805-47a4-9AB4-82620BB82AE4}",
+"{6C93991C-A5A7-4c52-91B9-952B37AF4203}",
+"{2E10E3C6-CA59-4772-9204-D8CAD0706D6D}",
+"{BF4028F0-D812-49aa-8FD9-E2A03F4F1D21}"
+]
+,"included_relationships": [
+"{8CC5F185-1E1C-4c32-84FD-F13CBE66585F}",
+"{0E288736-6460-4edb-9187-B8166FFEDACC}",
+"{40531ECA-16F3-46a2-BC73-FD06A06CEFD8}",
+"{01038036-7353-4784-8EBB-11D4836D99FD}",
+"{ADCE3C22-7E00-4f02-B614-A7D6196F278D}",
+"{A60F7B1C-292E-4201-B652-9901C4CFD476}"
+]
+},
+{
+"view_id": "{0B4C49ED-9F3D-497e-B726-A45491B6C57E}",
 "view_name": "StrategyLayerAndMotivationAspect"
 ,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
-,"parent_element_id": "1207"
+,"parent_element_id": "{A437C67D-90A3-4a48-B9A9-D17F90FC18F0}"
 ,"parent_element_name": "StrategyLayerAndMotivationAspect"
 ,"included_elements": [
-
+"{1D55A29D-FAAB-4fe5-A2AC-9991859B7759}"
 ]
 ,"included_relationships": [
 
 ]
 },
 {
-"view_id": "160",
+"view_id": "{B7341552-BD0E-4e40-95A3-5224AAB12BF1}",
 "view_name": "BusinessLayer"
 ,"browser_path": "Model/System/BusinessLayer/BusinessLayer/BusinessLayer"
-,"parent_element_id": "1208"
+,"parent_element_id": "{47D7DB7E-CB3F-4111-A116-B34A234A10D5}"
 ,"parent_element_name": "BusinessLayer"
 ,"included_elements": [
 
@@ -131,23 +233,24 @@
 ]
 },
 {
-"view_id": "161",
+"view_id": "{84DFE546-E90B-44a6-BEB7-5470ED13B5B5}",
 "view_name": "ApplicationLayer"
 ,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/ApplicationLayer"
-,"parent_element_id": "1209"
+,"parent_element_id": "{11B31EBE-2D74-42a1-ABC1-C0D0A9EBCAD8}"
 ,"parent_element_name": "ApplicationLayer"
 ,"included_elements": [
-"1332"
+"{23AC48BF-11DA-48cb-8C00-060F240E4D8A}",
+"{51B609B5-443A-41d5-839E-D77758D50199}"
 ]
 ,"included_relationships": [
 
 ]
 },
 {
-"view_id": "162",
+"view_id": "{DA69C86F-94DB-40e1-A44F-6EBA0BF7EC79}",
 "view_name": "TechnologyLayer"
 ,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer/TechnologyLayer"
-,"parent_element_id": "1210"
+,"parent_element_id": "{03048AE3-88C4-4893-88CD-DC244C7163B0}"
 ,"parent_element_name": "TechnologyLayer"
 ,"included_elements": [
 
@@ -157,10 +260,10 @@
 ]
 },
 {
-"view_id": "163",
+"view_id": "{107597C2-E3D5-4de3-922F-05E901E97684}",
 "view_name": "ProjectManagement"
 ,"browser_path": "Model/System/ProjectManagement/ProjectManagement/ProjectManagement"
-,"parent_element_id": "1211"
+,"parent_element_id": "{CA7350B0-1F62-4053-9833-685F6A12B3B5}"
 ,"parent_element_name": "ProjectManagement"
 ,"included_elements": [
 
@@ -170,15 +273,15 @@
 ]
 },
 {
-"view_id": "158",
+"view_id": "{98C55C09-9C9B-4f53-A566-D92C9FF20805}",
 "view_name": "SystemArchitecture"
 ,"browser_path": "Model/System/SystemArchitecture"
 ,"included_elements": [
-"1207",
-"1208",
-"1209",
-"1210",
-"1211"
+"{A437C67D-90A3-4a48-B9A9-D17F90FC18F0}",
+"{47D7DB7E-CB3F-4111-A116-B34A234A10D5}",
+"{11B31EBE-2D74-42a1-ABC1-C0D0A9EBCAD8}",
+"{03048AE3-88C4-4893-88CD-DC244C7163B0}",
+"{CA7350B0-1F62-4053-9833-685F6A12B3B5}"
 ]
 ,"included_relationships": [
 
