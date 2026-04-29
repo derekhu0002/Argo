@@ -423,8 +423,8 @@ function getElementIdentifier(ele) {
 	if (ele == null) {
 		return "";
 	}
-	if (typeof ele.ElementGUID != "undefined" && ele.ElementGUID != null && ele.ElementGUID != "") {
-		return "" + ele.ElementGUID;
+	if (typeof ele.ElementID != "undefined" && ele.ElementID != null && ele.ElementID != "") {
+		return "" + ele.ElementID;
 	}
 	return "" + ele.ElementID;
 }
@@ -453,8 +453,8 @@ function getConnectorIdentifier(conn) {
 	if (conn == null) {
 		return "";
 	}
-	if (typeof conn.ConnectorGUID != "undefined" && conn.ConnectorGUID != null && conn.ConnectorGUID != "") {
-		return "" + conn.ConnectorGUID;
+	if (typeof conn.ConnectorID != "undefined" && conn.ConnectorID != null && conn.ConnectorID != "") {
+		return "" + conn.ConnectorID;
 	}
 	return "" + conn.ConnectorID;
 }
@@ -463,8 +463,8 @@ function getDiagramIdentifier(diagram) {
 	if (diagram == null) {
 		return "";
 	}
-	if (typeof diagram.DiagramGUID != "undefined" && diagram.DiagramGUID != null && diagram.DiagramGUID != "") {
-		return "" + diagram.DiagramGUID;
+	if (typeof diagram.DiagramID != "undefined" && diagram.DiagramID != null && diagram.DiagramID != "") {
+		return "" + diagram.DiagramID;
 	}
 	return "" + diagram.DiagramID;
 }
