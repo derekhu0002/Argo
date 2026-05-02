@@ -95,8 +95,8 @@ export function buildWorkAgentHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        '1. 读取架构图谱：@file:SystemArchitecture.json',
-        '2. 读取失败测试记录：@file:test-failure-records.json',
+        '1. 读取架构图谱：#file:SystemArchitecture.json',
+        '2. 读取失败测试记录：#file:test-failure-records.json',
         '3. 以失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议。',
         '4. 任何代码修改都必须满足架构图谱中的 `ArchiMate_Principle` 类型元素所描述的架构原则，不能引入新的架构违规；如果无法满足原则约束，请优先修复架构违规，再进行功能修复。',
         '5. 在进行代码开发时，必须保持 deep module 架构，禁止产出 shallow module：模块对外暴露的接口应尽量小而稳定，但模块内部必须封装足够完整的业务能力、复杂度与变化点，不能把复杂度外泄给调用方。',
@@ -114,7 +114,7 @@ export function buildWorkAgentHandoffPrompt(input: {
         '8. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
         '9. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
         '   - 需要完成对应功能开发',
-        '   - 需要写回完整的 testcase 对象到 design/KG/SystemArchitecture.json',
+        '   - 需要写回完整的 testcase 对象到 #file:SystemArchitecture.json',
         '   - testcase 对象至少必须完整包含以下字段：`name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`',
         '   - `description` 必须写清楚测试目标、关键断言、测试环境要求（是否必须真实环境/不可 mock)；不能只写一句笼统描述',
         '   - `acceptanceCriteria` 必须是一个工作区内的单一测试入口：要么是单一脚本文件路径，要么是 `tests/test_x.py::test_y` 这种 pytest node id；禁止写成 `npm run ...`、`python ...`、`node ...` 这类命令行，且不允许附带任何额外参数',
@@ -123,7 +123,7 @@ export function buildWorkAgentHandoffPrompt(input: {
         '   - 如果架构图谱没有直接写明测试环境，也不允许停下或向用户追问；你必须结合 testcase 描述、acceptanceCriteria、仓库现有脚本/配置/依赖，主动推导出“能让该测试落地”的最小可运行测试环境，并自行补齐',
         '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责就是自行发现、自行搭建、自行验证',
         '   - 需要补充测试脚本；该脚本必须做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
-        '   - 需要把完整 testcase 对象写回到 design/KG/SystemArchitecture.json，而不是只改 `acceptanceCriteria` 字段',
+        '   - 需要把完整 testcase 对象写回到 #file:SystemArchitecture.json，而不是只改 `acceptanceCriteria` 字段',
         '   - testcase 写回格式必须遵循如下结构：',
         '     {' ,
         '       "name": "TestCaseName",',
@@ -249,7 +249,7 @@ export function buildArchitectureDesignHandoffPrompt(input: {
         '   - 不允许把具体类名、函数名、局部算法、代码行级结构直接当作架构元素本身；实现细节只能作为“该架构元素由哪些代码实现支撑”的证据与映射信息出现',
         '   - 对于新增系统能力，要补齐相关元素、关系、视图与必要 testcase',
         '   - 对于已有系统维护更新，要明确哪些元素沿用、哪些重命名、哪些废弃、哪些关系需要迁移',
-        '   - 对于已经存在 `design\\KG\\SystemArchitecture.json` 的项目，你必须先分析并理解现有模型中的元素、关系、视图与 testcase，再开始后续架构调整，不能跳过对既有设计基线的吸收',
+        '   - 对于已经存在 #file:SystemArchitecture.json 的项目，你必须先分析并理解现有模型中的元素、关系、视图与 testcase，再开始后续架构调整，不能跳过对既有设计基线的吸收',
         '   - 在后续架构调整中，不允许擅自新增、修改或删除 testcase；如果某个 testcase 不再适合挂在原元素下，也不能直接迁移或重写，必须先向用户展示拟议变更、原因、影响范围与替代方案，并征求用户意见或同意',
         '   - 如果用户不同意某个 testcase 的新增、修改或删除方案，你必须继续和用户深入讨论分歧来源、约束条件与替代路径，直到达成理解一致后才能把对应变更写回架构图谱',
         '   - 每个关键架构元素都必须明确回答两个映射问题：它由哪些 testcase 验证；它由哪些具体代码实现、配置入口、脚本入口或运行组件承载。如果当前仓库里还没有对应测试或实现，要明确标注为空缺而不是跳过',
@@ -264,10 +264,10 @@ export function buildArchitectureDesignHandoffPrompt(input: {
         '   - 你如何判断这是全新项目设计还是已有项目维护更新',
         '   - 你向用户追问并确认了哪些关键设计决策',
         '   - 你通过探索仓库自行回答了哪些问题，以及证据来自哪里',
-        '   - 你最终在 `design\\KG\\SystemArchitecture.json` 中新增、修改、删除了哪些关键元素、关系、视图、testcase 或 project_info',
+        '   - 你最终在 #file:SystemArchitecture.json 中新增、修改、删除了哪些关键元素、关系、视图、testcase 或 project_info',
         '   - 关键架构元素分别关联了哪些 testcase，以及这些元素分别由哪些代码实现、配置、脚本或运行组件支撑',
         '   - 当前模型中仍然存在的假设、待定项或后续设计风险',
-        '11. 不要只输出建议或讨论纪要；你必须真正维护 `design\\KG\\SystemArchitecture.json`，并确保结果可作为后续开发、测试和架构治理的唯一结构化基线。',
+        '11. 不要只输出建议或讨论纪要；你必须真正维护 #file:SystemArchitecture.json`，并确保结果可作为后续开发、测试和架构治理的唯一结构化基线。',
     ];
 
     if (input.extraContext) {
@@ -289,11 +289,11 @@ export function buildTestDesignHandoffPrompt(input: {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
         '1. 本次测试设计必须采用“双阶段衔接”方式，而不是一上来就重新向用户做完整需求访谈：',
-        '   - 第一阶段：先吸收当前仓库中已经存在的架构基线、测试基线与实现证据，优先理解 **SystemArchitecture** 中现有元素、testcase、attributes、风险信息以及它们与代码的对应关系',
+        '   - 第一阶段：先吸收当前仓库中已经存在的架构基线、测试基线与实现证据，优先理解 #file:SystemArchitecture.json 中现有元素、testcase、attributes、风险信息以及它们与代码的对应关系',
         '   - 第二阶段：只有当架构图谱、现有测试和仓库证据仍不足以支撑测试设计时，才向用户补问缺口信息；补问的目标是补足测试设计缺口，而不是把整个需求从头再问一遍',
-        `2. 你的分析范围是当前工作区 ${input.workspacePath}。优先阅读架构图谱 **SystemArchitecture** ，再按需深入代码、架构图谱与现有测试：`,
+        `2. 你的分析范围是当前工作区 ${input.workspacePath}。优先阅读架构图谱 #file:SystemArchitecture.json ，再按需深入代码、架构图谱与现有测试：`,
         '3. 你必须先识别当前真正的变更目标、问题边界、关键风险、受影响模块与现有测试覆盖情况，再决定应该新增哪些测试、保留哪些测试、调整哪些已有测试。若架构图谱已经足够回答这些问题，就直接基于图谱和仓库证据推进，不要重复追问用户。',
-        `4. 你要优先把 **SystemArchitecture** 已沉淀的结构化结果转译成测试设计输入，尤其关注：`,
+        `4. 你要优先把 #file:SystemArchitecture.json 已沉淀的结构化结果转译成测试设计输入，尤其关注：`,
         '   - 哪些架构元素已有 testcase，哪些还没有',
         '   - 哪些 element attributes 中已经写明了 `verification_focus`、`acceptance_outcomes`、`design_risks` 或同类验证信息',
         '   - 哪些 testcase 与当前元素挂载关系不匹配，哪些 testcase 需要迁移、补强或重写',
@@ -320,7 +320,7 @@ export function buildTestDesignHandoffPrompt(input: {
         '   - 所有测试设计都必须服务于“通过实现真实系统功能来满足需求并使测试通过”，禁止通过在测试用例中伪造业务流程、绕过真实调用链、硬编码期望结果、放宽断言、注入仅供测试通过的特殊分支、伪造假数据流或其他 test-only shortcut 让用例表面通过',
         '   - 如果某个测试要通过，前提应当是对应系统能力已经被真实实现或真实修复；测试只能验证真实能力是否存在，不能承担伪造能力本身的职责',
         '8. 输出结果必须包含以下内容：',
-        `   - 架构基线吸收结果：你从现有 **SystemArchitecture** 、代码和测试中读到了哪些与本次测试设计直接相关的既有信息`,
+        `   - 架构基线吸收结果：你从现有 #file:SystemArchitecture.json 、代码和测试中读到了哪些与本次测试设计直接相关的既有信息`,
         '   - 仍需向用户补问的缺口：哪些问题是仓库证据无法回答、必须由用户确认的',
         '   - 需求/问题理解：你认为当前要验证的目标是什么',
         '   - 风险分析：列出最可能导致回归、误实现或架构偏离的点',
@@ -328,7 +328,7 @@ export function buildTestDesignHandoffPrompt(input: {
         '   - 具体测试用例建议：每条至少写清楚名称、前置条件、输入/操作、关键断言、所属测试类型、建议落点文件或测试入口',
         '   - 反作弊约束：说明每类关键测试应如何避免“改测试让它过”而不是“改系统让它对”',
         '   - 现有测试调整建议：指出哪些现有测试需要保留、修改、补断言、迁移或删除，并说明原因',
-        `9. 完成测试设计后，你必须将所有测试建议回填到架构图谱文件 ${input.architectureGraphPath}，不能只停留在聊天回复中。`,
+        `9. 完成测试设计后，你必须将所有测试建议回填到架构图谱文件 #file:SystemArchitecture.json ，不能只停留在聊天回复中。`,
         '   - 但在新增、修改或删除任何 testcase 之前，你必须先向用户逐项展示拟议变更、变更原因、影响范围与预期收益，并明确征求用户的意见或同意；未经用户确认，不得直接写回这些 testcase 变更',
         '   - 如果用户不同意某个 testcase 的新增、修改或删除方案，你必须继续和用户讨论分歧点、约束条件与替代方案，直到双方达成理解一致后，才能继续回填对应 testcase',
         '   - 所有新增测试建议都要写成完整 testcase 对象并落到对应的架构图谱位置',
@@ -347,7 +347,6 @@ export function buildTestDesignHandoffPrompt(input: {
         '   - 必须明确说明哪些结论直接来自架构图谱与仓库证据，哪些结论来自向用户补问后的确认',
         '   - 能引用现有文件、目录、脚本、测试入口时尽量引用',
         '13. 本次任务不要求直接修改业务代码，但要求你产出测试设计并把所有测试建议回填到架构图谱，作为后续实现和验证的唯一测试基线。',
-        '**SystemArchitecture:** @file:SystemArchitecture.json',
     ];
 
     if (input.extraContext) {
