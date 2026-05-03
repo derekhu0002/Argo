@@ -148,8 +148,12 @@ export function buildWorkAgentHandoffPrompt(input: {
         lines.push(`12. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本，并同时补全/重写对应的完整 testcase 对象。`);
     }
 
+    if (input.failureRecords.length > 0) {
+        lines.push(`13. 当前有 ${input.failureRecords.length} 条失败记录，请优先修复这些失败记录对应的测试用例，直到它们全部通过；`);
+    }
+
     if (input.extraContext) {
-        lines.push(`13. 额外上下文：${input.extraContext}`);
+        lines.push(`14. 额外上下文：${input.extraContext}`);
     }
 
     return lines.join('\n');
