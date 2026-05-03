@@ -152,11 +152,6 @@ export function buildWorkAgentHandoffPrompt(input: {
         lines.push(`13. 额外上下文：${input.extraContext}`);
     }
 
-    if (input.failureRecords.length > 0) {
-        lines.push('14. 当前失败记录如下：');
-        lines.push(JSON.stringify(input.failureRecords, null, 2));
-    }
-
     return lines.join('\n');
 }
 
