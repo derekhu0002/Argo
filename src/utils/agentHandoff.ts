@@ -208,13 +208,13 @@ export function buildTestDesignHandoffPrompt(input: {
         '2. 这是一个 human in the loop 的测试设计任务。先把架构图谱转成测试设计输入，识别当前目标、边界、风险、已有 testcase、覆盖缺口，以及与当前职责或实现证据不再匹配的 testcase。意图架构优先于当前实现形状。',
         '3. 按决策依赖顺序推进。优先自己探索仓库；只有当某个未决问题会改变测试方向、验收口径、挂载对象或回填范围时，才向用户提问。每个问题都必须附推荐答案、理由与权衡。',
         '4. 显性 testcase 只允许是验收测试、场景测试或子系统间集成测试，并且每条只允许一个主挂载对象。Unit Test、System Test、Inspection Test 只作为非显性支撑性验证。若实现边界、运行入口或检查对象尚未成形，不要伪造具体测试，只能先设计为支撑性占位项。',
-        '5. 非显性 testcase 写入 #file:supporting-testcases.json，并至少写明 `name`、`kind`、`role`、`verifies`、`supportsExplicitTestcase`、`targetIntentElementId`、`suggestedEntry`、`preconditions`、`keyAssertions`、`status`；若只是占位项，也要写清未满足的实现前提。显性 testcase 与非显性 testcase 之间的支撑关系必须保持同步：显性 testcase 的目标、挂载对象、入口或范围发生调整时，相关非显性 testcase 必须同步检查并更新；反过来，若非显性 testcase 的支撑对象、验证边界或入口建议发生变化，也必须回头检查受影响的显性 testcase 是否仍然成立。优先复用现有测试资产，禁止通过 test-only shortcut 制造“表面通过”。',
+        '5. 非显性 testcase 写入 `design\KG\supporting-testcases.json`，并至少写明 `name`、`kind`、`role`、`verifies`、`supportsExplicitTestcase`、`targetIntentElementId`、`suggestedEntry`、`preconditions`、`keyAssertions`、`status`；若只是占位项，也要写清未满足的实现前提。显性 testcase 与非显性 testcase 之间的支撑关系必须保持同步：显性 testcase 的目标、挂载对象、入口或范围发生调整时，相关非显性 testcase 必须同步检查并更新；反过来，若非显性 testcase 的支撑对象、验证边界或入口建议发生变化，也必须回头检查受影响的显性 testcase 是否仍然成立。优先复用现有测试资产，禁止通过 test-only shortcut 制造“表面通过”。',
         '6. 输出必须使用中文，并压缩为 3 段：',
         '   - 仓库已证实的事实与本地约束',
         '   - 需要用户拍板的问题（含推荐答案、理由与权衡）',
         '   - 测试设计与回填计划',
         '7. 在新增、修改或删除任何显性 testcase 之前，必须先征求用户确认；未经确认，不得写回 #file:SystemArchitecture.json。获确认后，回填对象至少包含 `name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`，其中 `acceptanceCriteria` 必须指向单一测试入口。',
-        '8. 你可以直接更新 #file:supporting-testcases.json；如果某个已有显性 testcase 已不再适配当前系统内容，先将其 `acceptanceCriteria` 置空，并说明重建原因和原测试入口。本次任务不要求直接修改业务代码。',
+        '8. 你可以直接更新 `design\KG\supporting-testcases.json` ；如果某个已有显性 testcase 已不再适配当前系统内容，先将其 `acceptanceCriteria` 置空，并说明重建原因和原测试入口。本次任务不要求直接修改业务代码。',
     ];
 
     if (input.extraContext) {
