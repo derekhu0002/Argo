@@ -113,12 +113,11 @@ export function buildWorkAgentHandoffPrompt(input: {
         '   - 如果仓库中还没有合适的接口文档目录或文档文件，你必须创建专门文档并纳入仓库维护',
         '   - 文档必须与本次代码改动同步更新，不能等测试通过后再补',
         '9. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
-        '10. 编码阶段默认只消费已存在且已获确认的显性 testcase 基线，不得自行定义、扩张或重写显性 testcase 的验证目标。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。',
-        '   - 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，应视为测试契约缺口，而不是默认授权你重写显性 testcase 基线',
+        '10. 编码阶段默认以当前架构图谱中声明的显性 testcase 作为验收基线。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。你必须保持这些显性 testcase 的目标、挂载对象、断言口径与范围稳定。',
         '   - #file:supporting-testcases.json 中的非显性 testcase 仅用于指导你补齐实现、支撑性测试、执行脚本和测试环境；它们不构成显性架构验收基线，也不替代显性 testcase',
         '   - 你可以补齐实现代码、支撑性测试、执行脚本和测试环境，使既有或已确认的显性 testcase 真正可运行',
-        '   - 你不得在未经用户确认的情况下新增、修改或删除显性 testcase，也不得擅自回写新的验收目标、断言口径或挂载范围到 #file:SystemArchitecture.json',
-        '   - 如确有契约缺口，请明确列出缺口及建议，交回测试设计阶段或用户确认；只有用户明确授权时，才能回写完整 testcase 对象',
+        '   - 你不得新增、删除、重建显性 testcase，也不得改写其目标、挂载对象、断言口径或范围；你只能补齐、修正或刷新它们的 `acceptanceCriteria` 所指向的单一测试入口，使其恢复可执行',
+        '   - 显性 testcase 与 #file:supporting-testcases.json 中的非显性 testcase 必须双向同步：显性 testcase 的目标、挂载对象、入口、范围变化时，要同步更新其支撑性测试；反过来，若支撑性测试的支撑对象、验证边界或入口变化，也必须回头检查并修正受影响的显性 testcase',
         '   - 对于已存在但缺少单一测试入口的 testcase，你可以补充对应脚本，使其做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
         '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关信息，并依据这些信息自行构建最小可运行测试环境',
         '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责是自行发现、自行搭建、自行验证',
@@ -205,31 +204,21 @@ export function buildTestDesignHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 分析范围仅限当前工作区 ${input.workspacePath}。先读取 #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置；凡是能从仓库与运行结果确认的事实，不要向用户追问。`,
-        '2. 先做方向收敛，再做测试设计：先判断当前变更目标、边界、成功标准、关键风险和受影响元素；如果这些信息仍不清楚，只提出少量高价值问题来裁剪后续路径，不要重新做完整需求访谈。',
-        '3. 不要复述教材式测试知识，不要臆造动态事实。关于已有实现、现有测试、可用脚本、真实依赖、测试入口和字段结构，都必须以仓库证据或运行时结果为准。',
-        '4. 请先把 #file:SystemArchitecture.json 转译成测试设计输入，至少明确：哪些元素已有 testcase，哪些缺口仍未覆盖，哪些 attributes 已表达 verification_focus、acceptance_outcomes、design_risks 等验证信息，以及哪些 testcase 与当前元素职责或实现证据不再匹配。人类定义的意图架构优先于当前实现形状；代码、现有测试和仓库现状只能作为证据，不能反向缩减或改写目标边界。',
-        '5. 除显性 testcase 外，你还可以设计非显性 testcase，并将其写入 `design\KG\supporting-testcases.json`。这里的“非显性 testcase”特指：不写入意图架构、不直接承担架构验收职责、但用于支撑实现、局部验证、环境校准和回归防退化的测试。',
-        '6. 测试设计应默认以 Acceptance Test 和 Scenario Test 作为主验证面；只有“验收测试”“场景测试”以及“子系统之间的集成测试”可以作为显性 testcase 回填到 #file:SystemArchitecture.json。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。Unit Test、System Test、Inspection Test，以及不直接表达子系统间协作意图的其他测试，只能作为测试代码中的支撑性验证存在，不需要显性回填到意图架构。每条显性 testcase 只允许一个主挂载对象：要么是一个意图元素，要么是一条主协作关系；禁止用一条 testcase 同时承担多个主职责。',
-        '7. 对每一种测试类型都要给出取舍理由：为什么要选，为什么不选，支撑哪个风险或验收目标；禁止为了凑类型而堆砌测试。',
-        '8. 所有测试都必须验证真实系统能力，禁止通过伪造业务流程、绕过真实调用链、放宽断言、硬编码期望结果、注入仅供测试通过的特殊分支或其他 test-only shortcut 制造“表面通过”。如果某项能力尚未真实实现，应明确标记为空缺，而不是用测试伪装能力存在。',
-        '9. 优先复用仓库内已有测试、脚本、架构 testcase、e2e harness 和校验工具；只有当现有资产无法满足验证目标时，才建议新增测试入口。所有动态入口都必须在仓库中真实存在或能被当前任务明确落地。',
-        '10. 你必须同步维护 `design\KG\supporting-testcases.json`：对每条非显性 testcase 至少写明 `name`、`kind`、`role`、`verifies`、`supportsExplicitTestcase`、`targetIntentElementId`、`suggestedEntry`、`preconditions`、`keyAssertions`、`status`。其中 `role` 固定为 `supporting`。',
-        '11. 输出必须使用中文，并严格包含以下结构：',
-        '   - 仓库已证实的事实：只写能从架构图谱、代码、测试、脚本、配置中确认的信息',
-        '   - 仍需用户确认的关键问题：仅限会改变测试路径或验收口径的高价值问题',
-        '   - 测试策略：按测试类型说明保留、新增、修改、迁移、删除或不采用的理由，并明确哪些属于显性架构 testcase，哪些只作为测试代码中的支撑性验证',
-        '   - 测试用例草案：每条显性 testcase 至少写明名称、挂载元素、被验证职责、前置条件、输入/操作、关键断言、测试类型、建议入口、反作弊约束；每条非显性 testcase 至少写明其支撑对象、局部验证目标、建议入口和关键断言',
-        '   - 回填计划：分别列出需要新增或更新到 #file:SystemArchitecture.json 的显性 testcase，以及需要新增或更新到 `design\KG\supporting-testcases.json` 的非显性 testcase',
-        '12. 在新增、修改或删除任何显性 testcase 之前，必须先向用户逐项展示拟议变更、原因、影响范围和预期收益，并征求确认；未经确认，不得直接回填。若用户不同意，你必须继续收敛分歧，而不是强行写回。',
-        '13. 一旦获得用户确认，回填到 #file:SystemArchitecture.json 的 testcase 对象至少必须包含：`name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`。只有验收测试、场景测试或子系统间集成测试可以按此方式显性回填；其中 `description` 要写清测试目标、关键断言、前置条件以及是否依赖真实环境；`acceptanceCriteria` 必须指向单一测试入口，不得写成命令拼接。',
-        '14. 对于 `design\KG\supporting-testcases.json` 中的非显性 testcase，你可以直接新增或更新，因为它们属于测试设计阶段的支撑性产物；但不得借此绕过显性 testcase 的确认流程。',
-        '15. 如果某个已有显性 testcase 已不再适配当前系统内容，先把其 `acceptanceCriteria` 置空，并在说明中记录需要重建的原因和原测试入口，再等待新的实现与测试入口落地。',
-        '16. 本次任务不要求直接修改业务代码，但要求产出可执行的测试设计，并在用户确认后仅将验收测试、场景测试和子系统间集成测试作为意图架构的显性测试基线回填到 #file:SystemArchitecture.json；其他测试应写入 `design\KG\supporting-testcases.json`，作为编码阶段可消费的支撑实现。',
+        `1. 范围仅限当前工作区 ${input.workspacePath}。先读 #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置。能从仓库或工具结果确认的事实，不要向用户追问。`,
+        '2. 这是一个 human in the loop 的测试设计任务。先把架构图谱转成测试设计输入，识别当前目标、边界、风险、已有 testcase、覆盖缺口，以及与当前职责或实现证据不再匹配的 testcase。意图架构优先于当前实现形状。',
+        '3. 按决策依赖顺序推进。优先自己探索仓库；只有当某个未决问题会改变测试方向、验收口径、挂载对象或回填范围时，才向用户提问。每个问题都必须附推荐答案、理由与权衡。',
+        '4. 显性 testcase 只允许是验收测试、场景测试或子系统间集成测试，并且每条只允许一个主挂载对象。Unit Test、System Test、Inspection Test 只作为非显性支撑性验证。若实现边界、运行入口或检查对象尚未成形，不要伪造具体测试，只能先设计为支撑性占位项。',
+        '5. 非显性 testcase 写入 #file:supporting-testcases.json，并至少写明 `name`、`kind`、`role`、`verifies`、`supportsExplicitTestcase`、`targetIntentElementId`、`suggestedEntry`、`preconditions`、`keyAssertions`、`status`；若只是占位项，也要写清未满足的实现前提。显性 testcase 与非显性 testcase 之间的支撑关系必须保持同步：显性 testcase 的目标、挂载对象、入口或范围发生调整时，相关非显性 testcase 必须同步检查并更新；反过来，若非显性 testcase 的支撑对象、验证边界或入口建议发生变化，也必须回头检查受影响的显性 testcase 是否仍然成立。优先复用现有测试资产，禁止通过 test-only shortcut 制造“表面通过”。',
+        '6. 输出必须使用中文，并压缩为 3 段：',
+        '   - 仓库已证实的事实与本地约束',
+        '   - 需要用户拍板的问题（含推荐答案、理由与权衡）',
+        '   - 测试设计与回填计划',
+        '7. 在新增、修改或删除任何显性 testcase 之前，必须先征求用户确认；未经确认，不得写回 #file:SystemArchitecture.json。获确认后，回填对象至少包含 `name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`，其中 `acceptanceCriteria` 必须指向单一测试入口。',
+        '8. 你可以直接更新 #file:supporting-testcases.json；如果某个已有显性 testcase 已不再适配当前系统内容，先将其 `acceptanceCriteria` 置空，并说明重建原因和原测试入口。本次任务不要求直接修改业务代码。',
     ];
 
     if (input.extraContext) {
-        lines.push(`17. 当前补充上下文：${input.extraContext}`);
+        lines.push(`9. 当前补充上下文：${input.extraContext}`);
     }
 
     return lines.join('\n');
