@@ -226,8 +226,8 @@
 "relationships": [
 {
 "id":"1128"
-,"statement":"TEST CASE --(guides)--> AI CODING AGENT"
-,"name":"guides"
+,"statement":"TEST CASE --(guides and constrains)--> AI CODING AGENT"
+,"name":"guides and constrains"
 ,"source_id":"1337"
 ,"target_id":"1339"
 ,"source_name":"TEST CASE"
@@ -244,8 +244,8 @@
 },
 {
 "id":"1130"
-,"statement":"TEST CASE --(fullfills)--> INTENTION ARCHITECTURE MODEL"
-,"name":"fullfills"
+,"statement":"TEST CASE --(verifies)--> INTENTION ARCHITECTURE MODEL"
+,"name":"verifies"
 ,"source_id":"1337"
 ,"target_id":"1335"
 ,"source_name":"TEST CASE"
@@ -332,6 +332,15 @@
 ,"target_id":"1347"
 ,"source_name":"HUMAN BEING"
 ,"target_name":"AI INTETION ARCHITECTURE DESIGN UTILITY"
+},
+{
+"id":"1140"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(implements)--> INTENTION ARCHITECTURE MODEL"
+,"name":"implements"
+,"source_id":"1341"
+,"target_id":"1335"
+,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+,"target_name":"INTENTION ARCHITECTURE MODEL"
 }
 ],
 "views": [
@@ -364,7 +373,8 @@
 "1135",
 "1137",
 "1138",
-"1139"
+"1139",
+"1140"
 ]
 },
 {

@@ -16,7 +16,7 @@ if (typeof EA_AUTOGEN_CONFIG == "undefined" || EA_AUTOGEN_CONFIG == null) {
 	var EA_AUTOGEN_CONFIG = {
 		projectPath: "",
 		needCode: false,
-		needContent: true,
+		needContent: false,
 		needdoc: false,
 		needallmaintenace: "All",
 		needbrowserlocation: true,
