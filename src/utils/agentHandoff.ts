@@ -112,26 +112,14 @@ export function buildWorkAgentHandoffPrompt(input: {
         '   - 如果仓库中还没有合适的接口文档目录或文档文件，你必须创建专门文档并纳入仓库维护',
         '   - 文档必须与本次代码改动同步更新，不能等测试通过后再补',
         '8. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
-        '9. 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，则将该项视为尚未落地的新功能：',
-        '   - 需要完成对应功能开发',
-        '   - 需要写回完整的 testcase 对象到 #file:SystemArchitecture.json',
-        '   - testcase 对象至少必须完整包含以下字段：`name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`',
-        '   - `description` 必须写清楚测试目标、关键断言、测试环境要求（是否必须真实环境/不可 mock)；不能只写一句笼统描述',
-        '   - `acceptanceCriteria` 必须是一个工作区内的单一测试入口：要么是单一脚本文件路径，要么是 `tests/test_x.py::test_y` 这种 pytest node id；禁止写成 `npm run ...`、`python ...`、`node ...` 这类命令行，且不允许附带任何额外参数',
-        '   - 所有执行前置步骤、环境准备、依赖安装、数据构造、断言与退出码处理，都必须封装到这个单一测试入口可直接触发的脚本/用例中，使 Argo 只凭 `acceptanceCriteria` 就能运行它',
-        '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关测试环境信息，并依据这些信息自行构建测试环境以满足前置条件',
-        '   - 如果架构图谱没有直接写明测试环境，也不允许停下或向用户追问；你必须结合 testcase 描述、acceptanceCriteria、仓库现有脚本/配置/依赖，主动推导出“能让该测试落地”的最小可运行测试环境，并自行补齐',
-        '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责就是自行发现、自行搭建、自行验证',
-        '   - 需要补充测试脚本；该脚本必须做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
-        '   - 需要把完整 testcase 对象写回到 #file:SystemArchitecture.json，而不是只改 `acceptanceCriteria` 字段',
-        '   - testcase 写回格式必须遵循如下结构：',
-        '     {' ,
-        '       "name": "TestCaseName",',
-        '       "description": "测试目标、关键断言、测试环境要求（是否必须真实环境/不可 mock)；不能只写一句笼统描述",',
-        '       "Input": "",',
-        '       "acceptanceCriteria": "path/to/test-script-or-pytest-nodeid",',
-        '       "TestResults": ""',
-        '     }',
+        '9. 编码阶段默认只消费已存在且已获确认的显性 testcase 基线，不得自行定义、扩张或重写显性 testcase 的验证目标。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。',
+        '   - 如果架构图谱中 testcase 总数为 0，或者某条记录的 `acceptanceCriteria` 为空，应视为测试契约缺口，而不是默认授权你重写显性 testcase 基线',
+        '   - 你可以补齐实现代码、支撑性测试、执行脚本和测试环境，使既有或已确认的显性 testcase 真正可运行',
+        '   - 你不得在未经用户确认的情况下新增、修改或删除显性 testcase，也不得擅自回写新的验收目标、断言口径或挂载范围到 #file:SystemArchitecture.json',
+        '   - 如确有契约缺口，请明确列出缺口及建议，交回测试设计阶段或用户确认；只有用户明确授权时，才能回写完整 testcase 对象',
+        '   - 对于已存在但缺少单一测试入口的 testcase，你可以补充对应脚本，使其做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
+        '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关信息，并依据这些信息自行构建最小可运行测试环境',
+        '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责是自行发现、自行搭建、自行验证',
         '10. 在你完成所有代码修改、测试补齐、接口文档更新与路径回填之后，必须主动对整个架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
         '11. 完成后，请回复：',
         '   - 修改了哪些代码',
@@ -143,9 +131,9 @@ export function buildWorkAgentHandoffPrompt(input: {
     ];
 
     if (input.totalTestCases === 0) {
-        lines.push('12. 当前架构图谱没有任何 testcase，请按“新功能开发 + 写回完整 testcase 对象”的方式处理。');
+        lines.push('12. 当前架构图谱没有任何 testcase；请先完成实现侧可落地部分，并把显性 testcase 契约缺口明确回报，不要擅自补写基线。');
     } else if (input.missingCriteriaCount > 0) {
-        lines.push(`12. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria，请补齐测试脚本，并同时补全/重写对应的完整 testcase 对象。`);
+        lines.push(`12. 当前有 ${input.missingCriteriaCount} 个 testcase 缺少 acceptanceCriteria；请优先补齐可执行脚本或明确契约缺口，不要擅自改写显性 testcase 目标。`);
     }
 
     if (input.failureRecords.length > 0) {
@@ -217,8 +205,8 @@ export function buildTestDesignHandoffPrompt(input: {
         `1. 分析范围仅限当前工作区 ${input.workspacePath}。先读取 #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置；凡是能从仓库与运行结果确认的事实，不要向用户追问。`,
         '2. 先做方向收敛，再做测试设计：先判断当前变更目标、边界、成功标准、关键风险和受影响元素；如果这些信息仍不清楚，只提出少量高价值问题来裁剪后续路径，不要重新做完整需求访谈。',
         '3. 不要复述教材式测试知识，不要臆造动态事实。关于已有实现、现有测试、可用脚本、真实依赖、测试入口和字段结构，都必须以仓库证据或运行时结果为准。',
-        '4. 请先把 #file:SystemArchitecture.json 转译成测试设计输入，至少明确：哪些元素已有 testcase，哪些缺口仍未覆盖，哪些 attributes 已表达 verification_focus、acceptance_outcomes、design_risks 等验证信息，以及哪些 testcase 与当前元素职责或实现证据不再匹配。',
-        '5. 测试设计应默认以 Acceptance Test 和 Scenario Test 作为主验证面；只有“验收测试”“场景测试”以及“子系统之间的集成测试”可以作为显性 testcase 回填到 #file:SystemArchitecture.json。Unit Test、System Test、Inspection Test，以及不直接表达子系统间协作意图的其他测试，只能作为测试代码中的支撑性验证存在，不需要显性回填到意图架构。',
+        '4. 请先把 #file:SystemArchitecture.json 转译成测试设计输入，至少明确：哪些元素已有 testcase，哪些缺口仍未覆盖，哪些 attributes 已表达 verification_focus、acceptance_outcomes、design_risks 等验证信息，以及哪些 testcase 与当前元素职责或实现证据不再匹配。人类定义的意图架构优先于当前实现形状；代码、现有测试和仓库现状只能作为证据，不能反向缩减或改写目标边界。',
+        '5. 测试设计应默认以 Acceptance Test 和 Scenario Test 作为主验证面；只有“验收测试”“场景测试”以及“子系统之间的集成测试”可以作为显性 testcase 回填到 #file:SystemArchitecture.json。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。Unit Test、System Test、Inspection Test，以及不直接表达子系统间协作意图的其他测试，只能作为测试代码中的支撑性验证存在，不需要显性回填到意图架构。每条显性 testcase 只允许一个主挂载对象：要么是一个意图元素，要么是一条主协作关系；禁止用一条 testcase 同时承担多个主职责。',
         '6. 对每一种测试类型都要给出取舍理由：为什么要选，为什么不选，支撑哪个风险或验收目标；禁止为了凑类型而堆砌测试。',
         '7. 所有测试都必须验证真实系统能力，禁止通过伪造业务流程、绕过真实调用链、放宽断言、硬编码期望结果、注入仅供测试通过的特殊分支或其他 test-only shortcut 制造“表面通过”。如果某项能力尚未真实实现，应明确标记为空缺，而不是用测试伪装能力存在。',
         '8. 优先复用仓库内已有测试、脚本、架构 testcase、e2e harness 和校验工具；只有当现有资产无法满足验证目标时，才建议新增测试入口。所有动态入口都必须在仓库中真实存在或能被当前任务明确落地。',
