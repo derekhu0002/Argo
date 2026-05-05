@@ -94,8 +94,12 @@
             "description": "Generate a main-agent handoff prompt for an external-facing product brief based on the current repository."
           },
           {
+            "name": "intentinarchitecturedesign",
+            "description": "Generate a main-agent handoff prompt that uses the grill-me design interview workflow for intent-in-architecture design."
+          },
+          {
             "name": "implementationdesign",
-            "description": "Generate a main-agent handoff prompt for human-in-the-loop implementation architecture design, producing ImplementationArchitecture.json and supporting-testcases.json from the full intent architecture."
+            "description": "Generate a main-agent handoff prompt for human-in-the-loop implementation architecture design, producing ImplementationArchitecture.json with embedded non-explicit testcases from the full intent architecture."
           },
           {
             "name": "work",
