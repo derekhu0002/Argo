@@ -1,4 +1,0 @@
-{
-  "description": "Non-explicit supporting testcases designed during test design. These entries do not belong to the architecture acceptance baseline in SystemArchitecture.json.",
-  "testcases": []
-}

@@ -94,8 +94,8 @@
             "description": "Generate a main-agent handoff prompt for an external-facing product brief based on the current repository."
           },
           {
-            "name": "testdesign",
-            "description": "Generate a main-agent handoff prompt for designing or adjusting the right test strategy and test cases for the current requirement or issue."
+            "name": "implementationdesign",
+            "description": "Generate a main-agent handoff prompt for human-in-the-loop implementation architecture design, producing ImplementationArchitecture.json and supporting-testcases.json from the full intent architecture."
           },
           {
             "name": "work",

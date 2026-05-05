@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import type { StitchViolation } from '../engine/types';
 import type { FailedTestRecord } from '../tools/architectureTestTool';
 
@@ -95,39 +95,38 @@ export function buildWorkAgentHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        '1. 读取架构图谱： #file:SystemArchitecture.json',
+        '1. 读取意图架构图谱： #file:SystemArchitecture.json',
         '2. 读取失败测试记录： #file:test-failure-records.json',
-        '3. 读取非显性 testcase 清单： #file:supporting-testcases.json。该文件用于承载测试设计阶段产出的支撑性测试，不属于显性架构 testcase 基线。',
-        '4. 以失败记录作为唯一待修复清单，并把  #file:supporting-testcases.json 作为实现与补测试的辅助约束，直接修改当前工作区代码，而不是只给建议。',
-        '5. 任何代码修改都必须满足架构图谱中的 `ArchiMate_Principle` 类型元素所描述的架构原则，不能引入新的架构违规；如果无法满足原则约束，请优先修复架构违规，再进行功能修复。',
-        '6. 在进行代码开发时，必须保持 deep module 架构，禁止产出 shallow module：模块对外暴露的接口应尽量小而稳定，但模块内部必须封装足够完整的业务能力、复杂度与变化点，不能把复杂度外泄给调用方。',
-        '7. 设计和实现时必须遵守 SOLID 原则，尤其要避免：',
-        '   - 单个模块同时承担多种不相干职责',
-        '   - 通过条件分支堆叠不同行为而不是抽象扩展点',
-        '   - 新接口破坏既有调用约定或要求调用方了解过多内部细节',
-        '   - 高层流程直接依赖底层细节实现而没有稳定抽象',
-        '8. 任何新增或调整的内外部接口，都必须有专门文档进行存放和维护，不能只散落在代码注释或聊天回复里：',
+        '3. 读取实现架构图谱： #file:ImplementationArchitecture.json',
+        '4. 以失败记录作为唯一待修复清单，并把 #file:ImplementationArchitecture.json 作为实现与补测试的辅助约束，直接修改当前工作区代码，而不是只给建议。',
+        '5. 任何代码修改都必须同时遵守意图架构图谱与实现架构图谱中已经确定的原则、边界、依赖方向和实现映射，不能为了让测试通过而绕开这些约束，更不能引入新的架构违规。',
+        '6. 如果当前代码与 #file:ImplementationArchitecture.json 中声明的模块职责、接口边界、分层关系或实现链不一致，应优先把实现拉回既定架构，再补功能或补测试。',
+        '7. 具体执行时，必须把这些优秀实践当作硬约束，而不是口号：',
+        '   - 保持 deep module，禁止把复杂度外泄给调用方，禁止用 shallow module 式补丁堆过测试',
+        '   - 遵守 SOLID 与关注点分离，避免把多种不相干职责继续塞进同一模块',
+        '   - 当行为差异持续扩大时，优先抽象稳定扩展点，而不是继续堆条件分支',
+        '   - 高层流程只能依赖稳定抽象，不能直接回退到底层实现细节',
+        '8. 任何新增或调整的外部接口，都必须有专门文档进行存放和维护，不能只散落在代码注释或聊天回复里：',
         '   - 外部接口文档需要说明用途、调用方式、输入输出、约束、错误语义与示例',
         '   - 所有新增或调整的外部接口，必须同步刷新到项目根目录的 INTRODUCTION.md，确保对外说明文档与当前真实接口保持一致',
-        '   - 内部接口文档需要说明模块职责、边界、依赖关系、调用约束和演进注意事项',
-        '   - 如果仓库中还没有合适的接口文档目录或文档文件，你必须创建专门文档并纳入仓库维护',
-        '   - 文档必须与本次代码改动同步更新，不能等测试通过后再补',
-        '9. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
-        '10. 编码阶段默认以当前架构图谱中声明的显性 testcase 作为验收基线。这里的“显性 testcase”特指：被明确写入  #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。你必须保持这些显性 testcase 的目标、挂载对象、断言口径与范围稳定。',
-        '   -  #file:supporting-testcases.json 中的非显性 testcase 仅用于指导你补齐实现、支撑性测试、执行脚本和测试环境；它们不构成显性架构验收基线，也不替代显性 testcase',
+        '   - 文档必须与本次代码改动同步更新',
+        '9. 修复完成后，执行失败测试记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不需要请示用户，更不能提前结束。',
+        '10. 编码阶段默认以当前意图架构图谱中声明的显性 testcase 作为验收基线。这里的“显性 testcase”特指：被明确写入  #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。你必须保持这些显性 testcase 的目标、挂载对象、断言口径与范围稳定。',
+        '   - #file:ImplementationArchitecture.json 中挂载在实现元素下的非显性 testcase 仅用于指导你补齐实现、支撑性测试、执行脚本和测试环境；它们不构成显性架构验收基线，也不替代显性 testcase',
         '   - 你可以补齐实现代码、支撑性测试、执行脚本和测试环境，使既有或已确认的显性 testcase 真正可运行',
         '   - 你不得新增、删除、重建显性 testcase，也不得改写其目标、挂载对象、断言口径或范围；你只能补齐、修正或刷新它们的 `acceptanceCriteria` 所指向的单一测试入口，使其恢复可执行',
-        '   - 显性 testcase 与  #file:supporting-testcases.json 中的非显性 testcase 必须双向同步：显性 testcase 的目标、挂载对象、入口、范围变化时，要同步更新其支撑性测试；反过来，若支撑性测试的支撑对象、验证边界或入口变化，也必须回头检查并修正受影响的显性 testcase',
+        '   - 显性 testcase 与 #file:ImplementationArchitecture.json 中的非显性 testcase 必须通过追溯链保持一致：显性 testcase 的目标、挂载对象、入口、范围变化时，要同步检查受影响的实现元素及其下挂载的非显性测试；反过来，若某条非显性测试直接支持的上游对象、验证边界或入口变化，也必须回头检查沿追溯链受影响的显性 testcase 是否仍然成立',
         '   - 对于已存在但缺少单一测试入口的 testcase，你可以补充对应脚本，使其做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
+        '   - 需要补齐支撑性验证时，应优先把非显性测试写回到对应实现元素下，而不是新建额外的独立测试基线文件',
         '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关信息，并依据这些信息自行构建最小可运行测试环境',
         '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责是自行发现、自行搭建、自行验证',
-        '11. 在你完成所有代码修改、测试补齐、接口文档更新与路径回填之后，必须主动对整个架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
+        '11. 在你完成所有代码修改、测试补齐、接口文档更新与路径回填之后，必须主动对整个意图架构图谱执行一次完整的全面测试，不允许跳过，并修复所有发现的问题。',
         '12. 完成后，请回复：',
         '   - 修改了哪些代码',
-        '   - 新增或更新了哪些接口文档，以及它们分别覆盖哪些内外部接口',
+        '   - 新增或更新了哪些内外部接口',
         '   - INTRODUCTION.md 刷新了哪些外部接口信息',
         '   - 新增或回填了哪些完整 testcase 对象',
-        '   - 参考了哪些非显性 testcase，以及它们分别支撑了哪些显性 testcase 或实现决策',
+        '   - 参考了哪些非显性 testcase',
         '   - 当前测试执行结果',
         '   - 你是从架构图谱和仓库上下文中如何识别并搭建测试环境的',
     ];
@@ -193,32 +192,42 @@ export function buildProductBriefHandoffPrompt(input: {
     return lines.join('\n');
 }
 
-export function buildTestDesignHandoffPrompt(input: {
+export function buildImplementationDesignHandoffPrompt(input: {
     workspacePath: string;
-    readmePath: string;
-    packageJsonPath: string;
     architectureGraphPath: string;
+    schemaPath: string;
+    implementationArchitecturePath: string;
     testsPath: string;
     srcPath: string;
     extraContext: string;
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 范围仅限当前工作区 ${input.workspacePath}。先读  #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置。能从仓库或工具结果确认的事实，不要向用户追问。`,
-        '2. 这是一个 human in the loop 的测试设计任务。先把架构图谱转成测试设计输入，识别当前目标、边界、风险、已有 testcase、覆盖缺口，以及与当前职责或实现证据不再匹配的 testcase。意图架构优先于当前实现形状。',
-        '3. 按决策依赖顺序推进。优先自己探索仓库；只有当某个未决问题会改变测试方向、验收口径、挂载对象或回填范围时，才向用户提问。每个问题都必须附推荐答案、理由与权衡。',
-        '4. 显性 testcase 只允许是验收测试、场景测试或子系统间集成测试，并且每条只允许一个主挂载对象。Unit Test、System Test、Inspection Test 只作为非显性支撑性验证。若实现边界、运行入口或检查对象尚未成形，不要伪造具体测试，只能先设计为支撑性占位项。',
-        '5. 非显性 testcase 写入 `design\KG\supporting-testcases.json`，并至少写明 `name`、`kind`、`role`、`verifies`、`supportsExplicitTestcase`、`targetIntentElementId`、`suggestedEntry`、`preconditions`、`keyAssertions`、`status`；若只是占位项，也要写清未满足的实现前提。显性 testcase 与非显性 testcase 之间的支撑关系必须保持同步：显性 testcase 的目标、挂载对象、入口或范围发生调整时，相关非显性 testcase 必须同步检查并更新；反过来，若非显性 testcase 的支撑对象、验证边界或入口建议发生变化，也必须回头检查受影响的显性 testcase 是否仍然成立。优先复用现有测试资产，禁止通过 test-only shortcut 制造“表面通过”。',
-        '6. 输出必须使用中文，并压缩为 3 段：',
-        '   - 仓库已证实的事实与本地约束',
-        '   - 需要用户拍板的问题（含推荐答案、理由与权衡）',
-        '   - 测试设计与回填计划',
-        '7. 在新增、修改或删除任何显性 testcase 之前，必须先征求用户确认；未经确认，不得写回  #file:SystemArchitecture.json。获确认后，回填对象至少包含 `name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`，其中 `acceptanceCriteria` 必须指向单一测试入口。',
-        '8. 你可以直接更新 `design\KG\supporting-testcases.json` ；如果某个已有显性 testcase 已不再适配当前系统内容，先将其 `acceptanceCriteria` 置空，并说明重建原因和原测试入口。本次任务不要求直接修改业务代码。',
+        `1. 分析范围仅限当前工作区 ${input.workspacePath}。必须先读取 #file:SystemArchitecture.json 与 #file:SystemArchitecture.schema.json，再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。`,
+        '2. 本次任务的输入是整个意图架构：包括意图元素、关系、视图、attributes、架构原则，以及其中挂载的显性 testcase。请把显性 testcase 视为契约，把意图架构本体视为需求边界与设计约束，把当前代码库视为实现现状证据。',
+        '3. 这是一个 human in the loop 的实现架构设计任务，人类必须深度参与关键决策。你必须先自行吸收仓库事实，再把真正会改变实现架构走向的决策点拿出来与用户确认。至少以下事项必须显式征求用户意见，且每项都要给出推荐方案、备选方案、理由与权衡：',
+        '   - 实现架构的一级分层和模块分解方式',
+        '   - 关键接口边界与依赖方向',
+        '   - 哪些实现元素用于直接实现意图元素',
+        '   - 哪些非显性测试用例需要递交给后续编码阶段作为护栏',
+        '4. 设计时必须显式应用并检查这些原则：整洁架构、SOLID、DEEP MODULE、渐进式披露、关注点分离、稳定抽象依赖方向。这里的“渐进式披露”不是要求输出迁移路线图，而是要求你的架构模型本身有层次性，优先通过包含、聚合、实现、依赖等关系组织结构，让人类和 AI 都能逐层理解。',
+        '5. 你必须产出 UML 风格的实现架构模型，并将其真正落盘到 #file:ImplementationArchitecture.json。该文件路径固定为 `design/KG/ImplementationArchitecture.json`。模型结构必须遵循 #file:SystemArchitecture.schema.json 的骨架：顶层仍应包含 `name`、`description`、`elements`、`relationships`、`views`，元素与关系也使用相似的对象结构；但元素类型应偏向软件实现建模，例如 Package、Component、Interface、Class、Module、Service、Adapter、Repository、DataStore、Artifact、Node 等。',
+        '6. `design/KG/ImplementationArchitecture.json` 中的实现元素与 #file:SystemArchitecture.json 中的意图元素之间，跨模型映射只允许使用 implementation 语义的关系`implements`。不要用 `serves`、`aggregates`、`contains` 之类关系去直接连接实现元素和意图元素；这些关系只应用于实现架构模型内部的层次组织。',
+        '7. 不是每个实现元素都必须直接连到意图元素。允许存在间接实现链路，例如实现元素 C implements 实现元素 B，而 B implements 意图元素 A；在这种情况下，C 通过实现链间接承载 A。你的任务是让这种实现链条可追踪、可解释，而不是强制所有节点都直接挂到意图层。',
+        '8. 非显性测试用例直接写入 `design/KG/ImplementationArchitecture.json`，作为实现架构模型的一部分，挂载到相应实现元素下的 `testcases` 字段中。它们是后续编码阶段的支撑性验证输入，但不属于意图架构中的显性 testcase 基线。优先使用 schema 已有 testcase 结构；必要时可在testcase的描述中补充这些测试所保护的实现决策、显性 testcase 或前置条件。',
+        '9. 这些非显性测试用例只需要明确说明它们直接支持的上游对象，例如某个实现模块、某项实现决策，或某条上一级支撑性测试用例；不要求每条都直接写出最终对应的显性 testcase，只要沿着追溯链能够分析出它最终支撑到哪条显性 testcase 即可。',
+        '10. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。',
+        '11. 输出必须使用中文，并严格包含以下内容：',
+        '   - 仓库已证实的事实与当前实现约束',
+        '   - 需要用户决策的问题：逐项列出推荐方案、备选方案、理由与权衡',
+        '   - 最终实现架构设计摘要：模块、职责、接口、依赖方向、分层关系、与意图元素的实现映射（包括直接实现与间接实现链）',
+        '   - UML/JSON 建模结果：说明你已更新 `design/KG/ImplementationArchitecture.json`，并概述关键元素、关系、视图',
+        '   - 非显性测试用例递交结果：说明你已把哪些非显性测试写入 `design/KG/ImplementationArchitecture.json`，并概述这些测试如何支撑后续编码阶段',
+        '12. 除非用户明确要求，否则本次任务不要直接修改业务代码；重点是维护实现架构模型和后续编码护栏，而不是直接进入编码。',
     ];
 
     if (input.extraContext) {
-        lines.push(`9. 当前补充上下文：${input.extraContext}`);
+        lines.push(`13. 当前补充上下文：${input.extraContext}`);
     }
 
     return lines.join('\n');
