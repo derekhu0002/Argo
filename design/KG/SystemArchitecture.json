@@ -176,18 +176,18 @@
 },
 {
 "id": "1345",
-,"name": "implementationdesign"
+"name": "implementationdesign"
 ,"type": "ArchiMate_ApplicationFunction"
 ,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/implementationdesign"
-,"description": "used for telling the main agent to design the implementation architecture from the full intention architecture and to hand off supporting non-explicit testcases for the later coding stage."
+,"description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model."
 ,"attributes": [
 {
 "name": "autonomous"
 ,"description": "src\\commands\\implementationdesign.ts"
 },
 {
-"name": "IMPLEMENTATION_ARCHITECTURE_DESIGN_PROMPT"
-,"description": "#sym:buildImplementationDesignHandoffPrompt"
+"name": "TEST_CASE_DESIGN_PROMPT"
+,"description": "#sym:buildImplementationDesignHandoffPrompt "
 }
 ]
 },
@@ -209,19 +209,6 @@
 ]
 },
 {
-"id": "1347",
-"name": "AI INTETION ARCHITECTURE DESIGN UTILITY"
-,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/AI INTETION ARCHITECTURE DESIGN UTILITY"
-,"description": "/grill-me based on #file:SystemArchitecture.json , PLAN..."
-,"attributes": [
-{
-"name": "grill-me SKILL"
-,"description": ".github\\skills\\grill-me\\SKILL.md"
-}
-]
-},
-{
 "id": "1363",
 "name": "意图架构设计"
 ,"type": "Class"
@@ -233,6 +220,36 @@
 ,"type": "Class"
 ,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/显性测试用例"
 ,"description": "包括验收测试用例、场景测试用例"
+},
+{
+"id": "1365",
+"name": "自动化测试"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/自动化测试"
+,"description": "#sym:executeArchitectureTests "
+},
+{
+"id": "1366",
+"name": "测试失败记录"
+,"type": "Class"
+,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/测试失败记录"
+,"description": "design\\KG\\test-failure-records.json"
+},
+{
+"id": "1367",
+"name": "intentinarchitecturedesign"
+,"type": "ArchiMate_ApplicationFunction"
+,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/intentinarchitecturedesign"
+,"attributes": [
+{
+"name": "autonomous"
+,"description": "src\\commands\\intentinarchitecturedesign.ts"
+},
+{
+"name": "INTENTION_DESIGN_PROMPT"
+,"description": "#sym:buildIntentInArchitectureDesignHandoffPrompt"
+}
+]
 }
 ],
 "relationships": [
@@ -247,8 +264,8 @@
 },
 {
 "id":"1131"
-,"statement":"意图架构设计 --(设计出)--> INTENTION ARCHITECTURE MODEL"
-,"name":"设计出"
+,"statement":"意图架构设计 --(意图架构更新)--> INTENTION ARCHITECTURE MODEL"
+,"name":"意图架构更新"
 ,"source_id":"1363"
 ,"target_id":"1335"
 ,"source_name":"意图架构设计"
@@ -265,8 +282,8 @@
 },
 {
 "id":"1133"
-,"statement":"INTENTION ARCHITECTURE MODEL --(guides)--> 实现架构设计"
-,"name":"guides"
+,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构输入)--> 实现架构设计"
+,"name":"意图架构输入"
 ,"source_id":"1335"
 ,"target_id":"1340"
 ,"source_name":"INTENTION ARCHITECTURE MODEL"
@@ -274,8 +291,8 @@
 },
 {
 "id":"1134"
-,"statement":"实现架构设计 --(设计出)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"设计出"
+,"statement":"实现架构设计 --(实现架构更新)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"实现架构更新"
 ,"source_id":"1340"
 ,"target_id":"1341"
 ,"source_name":"实现架构设计"
@@ -301,18 +318,9 @@
 ,"target_name":"编码"
 },
 {
-"id":"1139"
-,"statement":"HUMAN BEING --(uses)--> AI INTETION ARCHITECTURE DESIGN UTILITY"
-,"name":"uses"
-,"source_id":"1338"
-,"target_id":"1347"
-,"source_name":"HUMAN BEING"
-,"target_name":"AI INTETION ARCHITECTURE DESIGN UTILITY"
-},
-{
 "id":"1155"
-,"statement":"HUMAN BEING --(主导)--> 意图架构设计"
-,"name":"主导"
+,"statement":"HUMAN BEING --(需求)--> 意图架构设计"
+,"name":"需求"
 ,"source_id":"1338"
 ,"target_id":"1363"
 ,"source_name":"HUMAN BEING"
@@ -362,6 +370,87 @@
 ,"target_id":"1335"
 ,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
 ,"target_name":"INTENTION ARCHITECTURE MODEL"
+},
+{
+"id":"1161"
+,"statement":"implementationdesign --(Realisation)--> 实现架构设计"
+,"name":"Realisation"
+,"source_id":"1345"
+,"target_id":"1340"
+,"source_name":"implementationdesign"
+,"target_name":"实现架构设计"
+},
+{
+"id":"1162"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(历史实现架构输入)--> 实现架构设计"
+,"name":"历史实现架构输入"
+,"source_id":"1341"
+,"target_id":"1340"
+,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+,"target_name":"实现架构设计"
+},
+{
+"id":"1163"
+,"statement":"INTENTION ARCHITECTURE MODEL --(历史意图架构输入)--> 意图架构设计"
+,"name":"历史意图架构输入"
+,"source_id":"1335"
+,"target_id":"1363"
+,"source_name":"INTENTION ARCHITECTURE MODEL"
+,"target_name":"意图架构设计"
+},
+{
+"id":"1164"
+,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构（含显性测试用例）输入)--> 编码"
+,"name":"意图架构（含显性测试用例）输入"
+,"source_id":"1335"
+,"target_id":"1339"
+,"source_name":"INTENTION ARCHITECTURE MODEL"
+,"target_name":"编码"
+},
+{
+"id":"1165"
+,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构（含显性测试用例）输入)--> 自动化测试"
+,"name":"意图架构（含显性测试用例）输入"
+,"source_id":"1335"
+,"target_id":"1365"
+,"source_name":"INTENTION ARCHITECTURE MODEL"
+,"target_name":"自动化测试"
+},
+{
+"id":"1166"
+,"statement":"自动化测试 --(可能输出)--> 测试失败记录"
+,"name":"可能输出"
+,"source_id":"1365"
+,"target_id":"1366"
+,"source_name":"自动化测试"
+,"target_name":"测试失败记录"
+},
+{
+"id":"1167"
+,"statement":"测试失败记录 --(失败记录输入)--> 编码"
+,"name":"失败记录输入"
+,"source_id":"1366"
+,"target_id":"1339"
+,"source_name":"测试失败记录"
+,"target_name":"编码"
+},
+{
+"id":"1168"
+,"statement":"intentinarchitecturedesign --(Realisation)--> 意图架构设计"
+,"name":"Realisation"
+,"source_id":"1367"
+,"target_id":"1363"
+,"source_name":"intentinarchitecturedesign"
+,"target_name":"意图架构设计"
+},
+{
+"id":"1169"
+,"statement":"CODE IMPLEMENTATION --(实现)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"实现"
+,"source_id":"1336"
+,"target_id":"1341"
+,"source_name":"CODE IMPLEMENTATION"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
 }
 ],
 "views": [
@@ -374,7 +463,10 @@
 ,"included_elements": [
 "1363",
 "1364",
-"1347",
+"1345",
+"1365",
+"1366",
+"1367",
 "1335",
 "1336",
 "1337",
@@ -391,13 +483,21 @@
 "1133",
 "1134",
 "1138",
-"1139",
 "1155",
 "1156",
 "1157",
 "1158",
 "1159",
-"1160"
+"1160",
+"1161",
+"1162",
+"1163",
+"1164",
+"1165",
+"1166",
+"1167",
+"1168",
+"1169"
 ]
 },
 {
@@ -433,6 +533,7 @@
 ,"parent_element_id": "1344"
 ,"parent_element_name": "commands"
 ,"included_elements": [
+"1367",
 "1333",
 "1345",
 "1346"
