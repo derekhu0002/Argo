@@ -95,10 +95,10 @@ export function buildWorkAgentHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        '1. 读取架构图谱：#file:SystemArchitecture.json',
-        '2. 读取失败测试记录：#file:test-failure-records.json',
-        '3. 读取非显性 testcase 清单：#file:supporting-testcases.json。该文件用于承载测试设计阶段产出的支撑性测试，不属于显性架构 testcase 基线。',
-        '4. 以失败记录作为唯一待修复清单，并把 #file:supporting-testcases.json 作为实现与补测试的辅助约束，直接修改当前工作区代码，而不是只给建议。',
+        '1. 读取架构图谱： #file:SystemArchitecture.json',
+        '2. 读取失败测试记录： #file:test-failure-records.json',
+        '3. 读取非显性 testcase 清单： #file:supporting-testcases.json。该文件用于承载测试设计阶段产出的支撑性测试，不属于显性架构 testcase 基线。',
+        '4. 以失败记录作为唯一待修复清单，并把  #file:supporting-testcases.json 作为实现与补测试的辅助约束，直接修改当前工作区代码，而不是只给建议。',
         '5. 任何代码修改都必须满足架构图谱中的 `ArchiMate_Principle` 类型元素所描述的架构原则，不能引入新的架构违规；如果无法满足原则约束，请优先修复架构违规，再进行功能修复。',
         '6. 在进行代码开发时，必须保持 deep module 架构，禁止产出 shallow module：模块对外暴露的接口应尽量小而稳定，但模块内部必须封装足够完整的业务能力、复杂度与变化点，不能把复杂度外泄给调用方。',
         '7. 设计和实现时必须遵守 SOLID 原则，尤其要避免：',
@@ -113,11 +113,11 @@ export function buildWorkAgentHandoffPrompt(input: {
         '   - 如果仓库中还没有合适的接口文档目录或文档文件，你必须创建专门文档并纳入仓库维护',
         '   - 文档必须与本次代码改动同步更新，不能等测试通过后再补',
         '9. 修复完成后，执行记录中 `acceptanceCriteria` 指向的测试脚本，直到这些用例全部通过；只要仍有失败，就继续修改、继续执行，不能提前结束。',
-        '10. 编码阶段默认以当前架构图谱中声明的显性 testcase 作为验收基线。这里的“显性 testcase”特指：被明确写入 #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。你必须保持这些显性 testcase 的目标、挂载对象、断言口径与范围稳定。',
-        '   - #file:supporting-testcases.json 中的非显性 testcase 仅用于指导你补齐实现、支撑性测试、执行脚本和测试环境；它们不构成显性架构验收基线，也不替代显性 testcase',
+        '10. 编码阶段默认以当前架构图谱中声明的显性 testcase 作为验收基线。这里的“显性 testcase”特指：被明确写入  #file:SystemArchitecture.json、直接承担架构验收职责、可由单一测试入口执行、并作为实现与回归基线管理的 testcase。你必须保持这些显性 testcase 的目标、挂载对象、断言口径与范围稳定。',
+        '   -  #file:supporting-testcases.json 中的非显性 testcase 仅用于指导你补齐实现、支撑性测试、执行脚本和测试环境；它们不构成显性架构验收基线，也不替代显性 testcase',
         '   - 你可以补齐实现代码、支撑性测试、执行脚本和测试环境，使既有或已确认的显性 testcase 真正可运行',
         '   - 你不得新增、删除、重建显性 testcase，也不得改写其目标、挂载对象、断言口径或范围；你只能补齐、修正或刷新它们的 `acceptanceCriteria` 所指向的单一测试入口，使其恢复可执行',
-        '   - 显性 testcase 与 #file:supporting-testcases.json 中的非显性 testcase 必须双向同步：显性 testcase 的目标、挂载对象、入口、范围变化时，要同步更新其支撑性测试；反过来，若支撑性测试的支撑对象、验证边界或入口变化，也必须回头检查并修正受影响的显性 testcase',
+        '   - 显性 testcase 与  #file:supporting-testcases.json 中的非显性 testcase 必须双向同步：显性 testcase 的目标、挂载对象、入口、范围变化时，要同步更新其支撑性测试；反过来，若支撑性测试的支撑对象、验证边界或入口变化，也必须回头检查并修正受影响的显性 testcase',
         '   - 对于已存在但缺少单一测试入口的 testcase，你可以补充对应脚本，使其做到“无需额外命令、无需额外参数、只执行脚本路径即可运行”',
         '   - 测试环境前置条件不满足时，你必须先从架构图谱中的 testcase 描述、相关元素、关系、视图、原则约束中主动发现相关信息，并依据这些信息自行构建最小可运行测试环境',
         '   - 禁止把“缺少测试环境说明”“环境前置条件不明确”“需要用户提供环境信息”作为阻塞理由；你的职责是自行发现、自行搭建、自行验证',
@@ -204,7 +204,7 @@ export function buildTestDesignHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 范围仅限当前工作区 ${input.workspacePath}。先读 #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置。能从仓库或工具结果确认的事实，不要向用户追问。`,
+        `1. 范围仅限当前工作区 ${input.workspacePath}。先读  #file:SystemArchitecture.json，再按需读取代码、测试、脚本和配置。能从仓库或工具结果确认的事实，不要向用户追问。`,
         '2. 这是一个 human in the loop 的测试设计任务。先把架构图谱转成测试设计输入，识别当前目标、边界、风险、已有 testcase、覆盖缺口，以及与当前职责或实现证据不再匹配的 testcase。意图架构优先于当前实现形状。',
         '3. 按决策依赖顺序推进。优先自己探索仓库；只有当某个未决问题会改变测试方向、验收口径、挂载对象或回填范围时，才向用户提问。每个问题都必须附推荐答案、理由与权衡。',
         '4. 显性 testcase 只允许是验收测试、场景测试或子系统间集成测试，并且每条只允许一个主挂载对象。Unit Test、System Test、Inspection Test 只作为非显性支撑性验证。若实现边界、运行入口或检查对象尚未成形，不要伪造具体测试，只能先设计为支撑性占位项。',
@@ -213,7 +213,7 @@ export function buildTestDesignHandoffPrompt(input: {
         '   - 仓库已证实的事实与本地约束',
         '   - 需要用户拍板的问题（含推荐答案、理由与权衡）',
         '   - 测试设计与回填计划',
-        '7. 在新增、修改或删除任何显性 testcase 之前，必须先征求用户确认；未经确认，不得写回 #file:SystemArchitecture.json。获确认后，回填对象至少包含 `name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`，其中 `acceptanceCriteria` 必须指向单一测试入口。',
+        '7. 在新增、修改或删除任何显性 testcase 之前，必须先征求用户确认；未经确认，不得写回  #file:SystemArchitecture.json。获确认后，回填对象至少包含 `name`、`description`、`Input`、`acceptanceCriteria`、`TestResults`，其中 `acceptanceCriteria` 必须指向单一测试入口。',
         '8. 你可以直接更新 `design\KG\supporting-testcases.json` ；如果某个已有显性 testcase 已不再适配当前系统内容，先将其 `acceptanceCriteria` 置空，并说明重建原因和原测试入口。本次任务不要求直接修改业务代码。',
     ];
 
