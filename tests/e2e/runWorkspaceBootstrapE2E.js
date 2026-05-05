@@ -17,15 +17,24 @@ async function main() {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'argo-bootstrap-e2e-'));
     const workspaceName = 'ArgoBootstrapE2EWorkspace';
     const workspacePath = path.join(tempRoot, workspaceName);
+    const userDataDir = path.join(tempRoot, 'user-data');
+    const extensionsDir = path.join(tempRoot, 'extensions');
 
     await fs.mkdir(workspacePath, { recursive: true });
+    await fs.mkdir(userDataDir, { recursive: true });
+    await fs.mkdir(extensionsDir, { recursive: true });
     await fs.writeFile(path.join(workspacePath, 'README.txt'), 'Temporary workspace for Argo bootstrap E2E test.\n', 'utf8');
 
     try {
         await runTests({
             extensionDevelopmentPath: repoRoot,
             extensionTestsPath: suitePath,
-            launchArgs: [workspacePath, '--disable-extensions'],
+            launchArgs: [
+                workspacePath,
+                '--disable-extensions',
+                '--user-data-dir', userDataDir,
+                '--extensions-dir', extensionsDir,
+            ],
         });
     } finally {
         await fs.rm(tempRoot, { recursive: true, force: true });

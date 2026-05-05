@@ -36,15 +36,23 @@ async function run() {
 
     const generatedFilePath = path.join(folder.uri.fsPath, `${folder.name}.feap`);
     const templateFilePath = path.join(extension.extensionPath, 'eatool', 'EA-model-template.feap');
+    const generatedSchemaPath = path.join(folder.uri.fsPath, '.github', 'argoschema', 'SystemArchitecture.schema.json');
+    const bundledSchemaPath = path.join(extension.extensionPath, 'schema', 'SystemArchitecture.schema.json');
 
-    await waitForFile(generatedFilePath, EXPECTED_FILE_TIMEOUT_MS);
+    await Promise.all([
+        waitForFile(generatedFilePath, EXPECTED_FILE_TIMEOUT_MS),
+        waitForFile(generatedSchemaPath, EXPECTED_FILE_TIMEOUT_MS),
+    ]);
 
-    const [generatedBytes, templateBytes] = await Promise.all([
+    const [generatedBytes, templateBytes, generatedSchemaBytes, bundledSchemaBytes] = await Promise.all([
         fs.readFile(generatedFilePath),
         fs.readFile(templateFilePath),
+        fs.readFile(generatedSchemaPath),
+        fs.readFile(bundledSchemaPath),
     ]);
 
     assert(generatedBytes.equals(templateBytes), 'Expected generated .feap file to match the bundled EA template exactly.');
+    assert(generatedSchemaBytes.equals(bundledSchemaBytes), 'Expected generated SystemArchitecture schema to match the bundled schema exactly.');
 }
 
 module.exports = { run };
