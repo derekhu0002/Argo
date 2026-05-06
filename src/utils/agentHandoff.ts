@@ -221,23 +221,25 @@ export function buildImplementationDesignHandoffPrompt(input: {
         '   - 哪些实现元素用于直接实现意图元素',
         '   - 哪些非显性测试用例需要递交给后续编码阶段作为护栏',
         '4. 设计时必须显式应用并检查这些原则：整洁架构、SOLID、DEEP MODULE、渐进式披露、关注点分离、稳定抽象依赖方向。这里的“渐进式披露”不是要求输出迁移路线图，而是要求你的架构模型本身有层次性，优先通过包含、聚合、实现、依赖等关系组织结构，让人类和 AI 都能逐层理解。',
-        '5. 你必须产出 UML 风格的实现架构模型，并将其真正落盘到 #file:ImplementationArchitecture.json。该文件路径固定为 `design/KG/ImplementationArchitecture.json`。模型结构必须遵循 #file:SystemArchitecture.schema.json 的骨架：顶层仍应包含 `name`、`description`、`elements`、`relationships`、`views`，元素与关系也使用相似的对象结构；但元素类型应偏向软件实现建模，例如 Package、Component、Interface、Class、Module、Service、Adapter、Repository、DataStore、Artifact、Node 等。',
-        '6. `design/KG/ImplementationArchitecture.json` 中的实现元素与 #file:SystemArchitecture.json 中的意图元素之间，跨模型映射只允许使用 implementation 语义的关系`implements`。不要用 `serves`、`aggregates`、`contains` 之类关系去直接连接实现元素和意图元素；这些关系只应用于实现架构模型内部的层次组织。',
-        '7. 不是每个实现元素都必须直接连到意图元素。允许存在间接实现链路，例如实现元素 C implements 实现元素 B，而 B implements 意图元素 A；在这种情况下，C 通过实现链间接承载 A。你的任务是让这种实现链条可追踪、可解释，而不是强制所有节点都直接挂到意图层。',
-        '8. 非显性测试用例直接写入 `design/KG/ImplementationArchitecture.json`，作为实现架构模型的一部分，挂载到相应实现元素下的 `testcases` 字段中。它们是后续编码阶段的支撑性验证输入，但不属于意图架构中的显性 testcase 基线。优先使用 schema 已有 testcase 结构；必要时可在testcase的描述中补充这些测试所保护的实现决策、显性 testcase 或前置条件。',
-        '9. 这些非显性测试用例只需要明确说明它们直接支持的上游对象，例如某个实现模块、某项实现决策，或某条上一级支撑性测试用例；不要求每条都直接写出最终对应的显性 testcase，只要沿着追溯链能够分析出它最终支撑到哪条显性 testcase 即可。',
-        '10. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。',
-        '11. 输出必须使用中文，并严格包含以下内容：',
+        '5. 你必须产出 UML 风格的实现架构模型，并将其真正落盘到 #file:ImplementationArchitecture.json。该文件路径固定为 `design/KG/ImplementationArchitecture.json`。模型结构必须遵循 #file:SystemArchitecture.schema.json 的骨架：顶层仍应包含 `name`、`description`、`elements`、`relationships`、`views`，元素与关系也使用相似的对象结构；但元素类型应偏向软件实现建模，例如 Package、Component、Interface、Module、Service、Adapter、Repository、DataStore、Artifact、Node 等。除非某个 Class 本身就是稳定架构边界、外部契约或关键依赖反转点，否则不要把普通类作为实现架构元素。',
+        '6. 本次产出的实现架构必须是高层实现架构，不是源码镜像，也不是按文件、类、函数穷举的细粒度设计。默认只保留那些能够承载职责边界、依赖方向、测试挂载点、外部契约或意图实现映射的稳定实现元素。禁止把私有函数、普通 helper、机械拆分出的文件级模块、局部流程步骤或“为了看起来完整”而加入的低层细节铺进模型。若某个候选元素删掉以后，不影响人类理解系统的高层职责、接口边界、依赖方向、测试护栏或与意图元素的追溯关系，那它就不应该进入 ImplementationArchitecture.json。',
+        '7. 颗粒度控制要求如下：优先建模一级分层、少量关键组件及其接口边界；只有当某个下级模块本身承载独立职责边界、稳定依赖方向、关键测试挂载点或关键 implements 追溯节点时，才允许继续下钻一层。默认停止在“组件/服务/适配器/仓储/节点”这一层，不要展开到函数级，也不要机械覆盖所有代码模块。底层实现细节原则上由代码本身表达，而不是由实现架构 JSON 重复表达。',
+        '8. `design/KG/ImplementationArchitecture.json` 中的实现元素与 #file:SystemArchitecture.json 中的意图元素之间，跨模型映射只允许使用 implementation 语义的关系`implements`。不要用 `serves`、`aggregates`、`contains` 之类关系去直接连接实现元素和意图元素；这些关系只应用于实现架构模型内部的层次组织。',
+        '9. 不是每个实现元素都必须直接连到意图元素。允许存在间接实现链路，例如实现元素 C implements 实现元素 B，而 B implements 意图元素 A；在这种情况下，C 通过实现链间接承载 A。你的任务是让这种实现链条可追踪、可解释，而不是强制所有节点都直接挂到意图层。',
+        '10. 非显性测试用例直接写入 `design/KG/ImplementationArchitecture.json`，作为实现架构模型的一部分，挂载到相应实现元素下的 `testcases` 字段中。它们是后续编码阶段的支撑性验证输入，但不属于意图架构中的显性 testcase 基线。优先使用 schema 已有 testcase 结构；必要时可在testcase的描述中补充这些测试所保护的实现决策、显性 testcase 或前置条件。测试也必须服从高层颗粒度原则：优先挂在稳定实现边界上，不要因为某个函数存在就为它单独造一个架构元素来挂测试。',
+        '11. 这些非显性测试用例只需要明确说明它们直接支持的上游对象，例如某个实现模块、某项实现决策，或某条上一级支撑性测试用例；不要求每条都直接写出最终对应的显性 testcase，只要沿着追溯链能够分析出它最终支撑到哪条显性 testcase 即可。',
+        '12. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。若你发现自己开始按文件、类、函数或局部流程枚举实现元素，应立即回退并重新压缩成高层稳定边界。',
+        '13. 输出必须使用中文，并严格包含以下内容：',
         '   - 仓库已证实的事实与当前实现约束',
         '   - 需要用户决策的问题：逐项列出推荐方案、备选方案、理由与权衡',
         '   - 最终实现架构设计摘要：模块、职责、接口、依赖方向、分层关系、与意图元素的实现映射（包括直接实现与间接实现链）',
         '   - UML/JSON 建模结果：说明你已更新 `design/KG/ImplementationArchitecture.json`，并概述关键元素、关系、视图',
         '   - 非显性测试用例递交结果：说明你已把哪些非显性测试写入 `design/KG/ImplementationArchitecture.json`，并概述这些测试如何支撑后续编码阶段',
-        '12. 除非用户明确要求，否则本次任务不要直接修改业务代码；重点是维护实现架构模型和后续编码护栏，而不是直接进入编码。',
+        '14. 除非用户明确要求，否则本次任务不要直接修改业务代码；重点是维护实现架构模型和后续编码护栏，而不是直接进入编码。',
     ];
 
     if (input.extraContext) {
-        lines.push(`13. 当前补充上下文：${input.extraContext}`);
+        lines.push(`15. 当前补充上下文：${input.extraContext}`);
     }
 
     return lines.join('\n');
