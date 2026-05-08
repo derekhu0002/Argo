@@ -27,7 +27,7 @@ export async function handleImplementationDesign(
 
     stream.markdown(
         '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot 主 agent 并等待它完成实现架构设计。\n\n' +
-        '请将下面这段指令交给 Copilot 主 agent。它必须把整个意图架构与其中显性 testcase 一起作为输入，在人类深度参与关键决策的前提下，产出 UML 风格的实现架构模型，并将结果写入 `design/KG/ImplementationArchitecture.json`。非显性测试用例也必须直接写入这个实现架构文件，对应挂载在相关实现元素下，而不是拆到独立文件。跨模型时，实现元素到意图元素只允许使用 implementation 语义关系；但允许通过实现链形成间接实现。只有真正会改变模块分解、接口边界、依赖方向、意图实现映射或支撑性测试护栏的事项，才应提交给用户拍板，而且每个决策都必须给出推荐方案、备选方案、理由与权衡。\n\n',
+        '请将下面这段指令交给 Copilot 主 agent。它必须把整个意图架构与其中显性 testcase 一起作为输入，在人类深度参与关键决策的前提下，产出 UML 风格的实现架构模型，并将结果写入 `design/KG/ImplementationArchitecture.json`。非显性测试用例也必须直接写入这个实现架构文件，对应挂载在相关实现元素下，而不是拆到独立文件。对于显性 testcase，除了在实现架构里建立追溯关系外，还必须落实为后续编码阶段可直接调用的只读测试入口；编码阶段只能调用这些入口，不能回头改写它们。跨模型时，实现元素到意图元素只允许使用 implementation 语义关系；但允许通过实现链形成间接实现。只有真正会改变模块分解、接口边界、依赖方向、意图实现映射或支撑性测试护栏的事项，才应提交给用户拍板，而且每个决策都必须给出推荐方案、备选方案、理由与权衡。\n\n',
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
 }

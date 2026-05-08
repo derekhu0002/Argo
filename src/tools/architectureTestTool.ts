@@ -24,7 +24,16 @@ interface RawArchitectureElement {
 interface RawArchitectureTestcase {
     name?: unknown;
     description?: unknown;
+    type?: unknown;
     acceptanceCriteria?: unknown;
+}
+
+interface ExplicitArchitectureTestcase {
+    elementId: string;
+    testcaseName: string;
+    testDescription: string;
+    testcaseType: string;
+    acceptanceCriteria: string;
 }
 
 export interface ArchitectureTestToolInput {
@@ -64,6 +73,7 @@ export interface ArchitectureTestRunSummary {
     architecturePath: string;
     failureRecordsPath: string;
     totalTestCases: number;
+    skippedNonExplicitCount: number;
     passedCount: number;
     failedCount: number;
     missingCriteriaCount: number;
@@ -148,152 +158,148 @@ export async function runArchitectureTests(
     const resolvedArchitecturePath = normalizeRelativePath(architecturePath || DEFAULT_ARCHITECTURE_GRAPH_PATH);
     const graphUri = toWorkspaceUri(root, resolvedArchitecturePath);
     const graph = await readArchitectureGraph(graphUri);
-    const totalTestCases = countTestCases(graph);
+    const explicitTestcases = collectExplicitTestcases(graph);
+    const totalTestCases = explicitTestcases.length;
+    const skippedNonExplicitCount = countAllTestCases(graph) - totalTestCases;
 
     const results: ArchitectureTestExecutionResult[] = [];
     const failureRecords: FailedTestRecord[] = [];
     let currentIndex = 0;
 
-    for (const element of graph.elements ?? []) {
-        const elementId = String(element.id ?? '');
-        for (const testcase of element.testcases ?? []) {
-            throwIfCancelled(token);
-            currentIndex += 1;
-            const testcaseName = String(testcase.name ?? '');
-            const testDescription = String(testcase.description ?? '');
-            const acceptanceCriteria = String(testcase.acceptanceCriteria ?? '').trim();
-            const resolvedScriptPath = acceptanceCriteria
-                ? normalizeRelativePath(acceptanceCriteria)
-                : '';
+    for (const testcase of explicitTestcases) {
+        throwIfCancelled(token);
+        currentIndex += 1;
+        const resolvedScriptPath = testcase.acceptanceCriteria
+            ? normalizeRelativePath(testcase.acceptanceCriteria)
+            : '';
 
-            if (!acceptanceCriteria) {
-                const result: ArchitectureTestExecutionResult = {
-                    testcaseName,
-                    testDescription,
-                    acceptanceCriteria,
-                    elementId,
-                    resolvedScriptPath: '',
-                    executionCommand: '',
-                    status: 'missing-criteria',
-                    passed: false,
-                    exitCode: null,
-                    durationMs: 0,
-                    stdout: '',
-                    stderr: 'acceptanceCriteria is empty',
-                };
-                results.push(result);
-                await onProgress?.({
-                    currentIndex,
-                    totalTestCases,
-                    testcaseName,
-                    resolvedScriptPath: '',
-                    executionCommand: '',
-                    status: result.status,
-                });
-                failureRecords.push(toFailedTestRecord(result));
-                continue;
-            }
-
-            const validation = validateAcceptanceCriteria(resolvedScriptPath);
-            if (!validation.valid) {
-                const result: ArchitectureTestExecutionResult = {
-                    testcaseName,
-                    testDescription,
-                    acceptanceCriteria,
-                    elementId,
-                    resolvedScriptPath,
-                    executionCommand: '',
-                    status: 'invalid-criteria',
-                    passed: false,
-                    exitCode: null,
-                    durationMs: 0,
-                    stdout: '',
-                    stderr: validation.reason ?? 'acceptanceCriteria must be a direct script file path',
-                };
-                results.push(result);
-                await onProgress?.({
-                    currentIndex,
-                    totalTestCases,
-                    testcaseName,
-                    resolvedScriptPath,
-                    executionCommand: '',
-                    status: result.status,
-                });
-                failureRecords.push(toFailedTestRecord(result));
-                continue;
-            }
-
-            const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
-            const executionCommand = buildExecutionCommandPreview(parsedAcceptanceCriteria);
-
-            await onProgress?.({
-                currentIndex,
-                totalTestCases,
-                testcaseName,
-                resolvedScriptPath,
-                executionCommand,
-                status: 'running',
-            });
-
-            const scriptUri = toWorkspaceUri(root, parsedAcceptanceCriteria.scriptRelativePath);
-            const scriptExists = await fileExists(scriptUri);
-            if (!scriptExists) {
-                const result: ArchitectureTestExecutionResult = {
-                    testcaseName,
-                    testDescription,
-                    acceptanceCriteria,
-                    elementId,
-                    resolvedScriptPath,
-                    executionCommand,
-                    status: 'missing-file',
-                    passed: false,
-                    exitCode: null,
-                    durationMs: 0,
-                    stdout: '',
-                    stderr: `test script not found: ${resolvedScriptPath}`,
-                };
-                results.push(result);
-                await onProgress?.({
-                    currentIndex,
-                    totalTestCases,
-                    testcaseName,
-                    resolvedScriptPath,
-                    executionCommand,
-                    status: result.status,
-                });
-                failureRecords.push(toFailedTestRecord(result));
-                continue;
-            }
-
-            const start = Date.now();
-            const execution = await executeAcceptanceScript(parsedAcceptanceCriteria, root.fsPath, scriptUri.fsPath);
-            const passed = execution.exitCode === 0;
+        if (!testcase.acceptanceCriteria) {
             const result: ArchitectureTestExecutionResult = {
-                testcaseName,
-                testDescription,
-                acceptanceCriteria,
-                elementId,
-                resolvedScriptPath,
-                executionCommand,
-                status: passed ? 'passed' : 'failed',
-                passed,
-                exitCode: execution.exitCode,
-                durationMs: Date.now() - start,
-                stdout: execution.stdout,
-                stderr: execution.stderr,
+                testcaseName: testcase.testcaseName,
+                testDescription: testcase.testDescription,
+                acceptanceCriteria: testcase.acceptanceCriteria,
+                elementId: testcase.elementId,
+                resolvedScriptPath: '',
+                executionCommand: '',
+                status: 'missing-criteria',
+                passed: false,
+                exitCode: null,
+                durationMs: 0,
+                stdout: '',
+                stderr: 'acceptanceCriteria is empty',
             };
             results.push(result);
             await onProgress?.({
                 currentIndex,
                 totalTestCases,
-                testcaseName,
+                testcaseName: testcase.testcaseName,
+                resolvedScriptPath: '',
+                executionCommand: '',
+                status: result.status,
+            });
+            failureRecords.push(toFailedTestRecord(result));
+            continue;
+        }
+
+        const validation = validateAcceptanceCriteria(resolvedScriptPath);
+        if (!validation.valid) {
+            const result: ArchitectureTestExecutionResult = {
+                testcaseName: testcase.testcaseName,
+                testDescription: testcase.testDescription,
+                acceptanceCriteria: testcase.acceptanceCriteria,
+                elementId: testcase.elementId,
+                resolvedScriptPath,
+                executionCommand: '',
+                status: 'invalid-criteria',
+                passed: false,
+                exitCode: null,
+                durationMs: 0,
+                stdout: '',
+                stderr: validation.reason ?? 'acceptanceCriteria must be a direct script file path',
+            };
+            results.push(result);
+            await onProgress?.({
+                currentIndex,
+                totalTestCases,
+                testcaseName: testcase.testcaseName,
+                resolvedScriptPath,
+                executionCommand: '',
+                status: result.status,
+            });
+            failureRecords.push(toFailedTestRecord(result));
+            continue;
+        }
+
+        const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
+        const executionCommand = buildExecutionCommandPreview(parsedAcceptanceCriteria);
+
+        await onProgress?.({
+            currentIndex,
+            totalTestCases,
+            testcaseName: testcase.testcaseName,
+            resolvedScriptPath,
+            executionCommand,
+            status: 'running',
+        });
+
+        const scriptUri = toWorkspaceUri(root, parsedAcceptanceCriteria.scriptRelativePath);
+        const scriptExists = await fileExists(scriptUri);
+        if (!scriptExists) {
+            const result: ArchitectureTestExecutionResult = {
+                testcaseName: testcase.testcaseName,
+                testDescription: testcase.testDescription,
+                acceptanceCriteria: testcase.acceptanceCriteria,
+                elementId: testcase.elementId,
+                resolvedScriptPath,
+                executionCommand,
+                status: 'missing-file',
+                passed: false,
+                exitCode: null,
+                durationMs: 0,
+                stdout: '',
+                stderr: `test script not found: ${resolvedScriptPath}`,
+            };
+            results.push(result);
+            await onProgress?.({
+                currentIndex,
+                totalTestCases,
+                testcaseName: testcase.testcaseName,
                 resolvedScriptPath,
                 executionCommand,
                 status: result.status,
             });
-            if (!passed) {
-                failureRecords.push(toFailedTestRecord(result));
-            }
+            failureRecords.push(toFailedTestRecord(result));
+            continue;
+        }
+
+        const start = Date.now();
+        const execution = await executeAcceptanceScript(parsedAcceptanceCriteria, root.fsPath, scriptUri.fsPath);
+        const passed = execution.exitCode === 0;
+        const result: ArchitectureTestExecutionResult = {
+            testcaseName: testcase.testcaseName,
+            testDescription: testcase.testDescription,
+            acceptanceCriteria: testcase.acceptanceCriteria,
+            elementId: testcase.elementId,
+            resolvedScriptPath,
+            executionCommand,
+            status: passed ? 'passed' : 'failed',
+            passed,
+            exitCode: execution.exitCode,
+            durationMs: Date.now() - start,
+            stdout: execution.stdout,
+            stderr: execution.stderr,
+        };
+        results.push(result);
+        await onProgress?.({
+            currentIndex,
+            totalTestCases,
+            testcaseName: testcase.testcaseName,
+            resolvedScriptPath,
+            executionCommand,
+            status: result.status,
+        });
+        if (!passed) {
+            failureRecords.push(toFailedTestRecord(result));
         }
     }
 
@@ -306,6 +312,7 @@ export async function runArchitectureTests(
         architecturePath: resolvedArchitecturePath,
         failureRecordsPath: FAILURE_RECORDS_PATH,
         totalTestCases,
+        skippedNonExplicitCount,
         passedCount,
         failedCount: failureRecords.length,
         missingCriteriaCount,
@@ -535,8 +542,33 @@ function quoteCommandPart(value: string): string {
     return /\s/.test(value) ? `"${value}"` : value;
 }
 
-function countTestCases(graph: RawArchitectureGraph): number {
+function countAllTestCases(graph: RawArchitectureGraph): number {
     return (graph.elements ?? []).reduce((total, element) => total + (element.testcases?.length ?? 0), 0);
+}
+
+function collectExplicitTestcases(graph: RawArchitectureGraph): ExplicitArchitectureTestcase[] {
+    const explicitTypes = new Set(['Acceptance Test', 'Scenario Test']);
+    const testcases: ExplicitArchitectureTestcase[] = [];
+
+    for (const element of graph.elements ?? []) {
+        const elementId = String(element.id ?? '');
+        for (const testcase of element.testcases ?? []) {
+            const testcaseType = String(testcase.type ?? '').trim();
+            if (!explicitTypes.has(testcaseType)) {
+                continue;
+            }
+
+            testcases.push({
+                elementId,
+                testcaseName: String(testcase.name ?? ''),
+                testDescription: String(testcase.description ?? ''),
+                testcaseType,
+                acceptanceCriteria: String(testcase.acceptanceCriteria ?? '').trim(),
+            });
+        }
+    }
+
+    return testcases;
 }
 
 function throwIfCancelled(token: vscode.CancellationToken): void {

@@ -16,7 +16,7 @@ export async function handleWork(
     token: vscode.CancellationToken,
 ): Promise<void> {
     stream.markdown('## /work - Architecture Test Driven Delivery\n\n');
-    stream.markdown('### Step 1 - Running all architecture-linked tests ...\n\n');
+    stream.markdown('### Step 1 - Running explicit acceptance/scenario tests from the intent architecture ...\n\n');
 
     let summary: ArchitectureTestRunSummary;
     try {
@@ -33,7 +33,7 @@ export async function handleWork(
 
     if (summary.totalTestCases === 0) {
         stream.markdown(
-            '⚠️ 当前架构图谱中没有任何 testcase。按工作流约定，这意味着对应功能需要新开发，且开发完成后必须写回完整 testcase 对象。\n\n',
+            '⚠️ 当前意图架构图谱中没有任何显性 Acceptance/Scenario testcase。按当前逻辑边界，这意味着尚未形成可执行的显性验收基线；应回到意图架构设计或实现架构设计阶段补齐基线，而不是在编码阶段直接补写。\n\n',
         );
     }
 
@@ -60,7 +60,7 @@ export async function handleWork(
     stream.markdown(
         '### Step 2 - Handoff To Copilot Main Agent\n\n' +
         '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot 主 agent 并等待它完成开发。\n\n' +
-        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；如果 `acceptanceCriteria` 缺失或测试入口失效，它必须自主补齐实现、支撑性测试、执行脚本和测试环境，并刷新现有 testcase 的测试入口；但不得新增、删除或重建架构图谱中的显性 testcase。\n\n',
+        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；编码阶段只允许补齐实现代码、支撑性测试和测试环境，并调用现有显性 testcase 入口做验收，不得新增、删除、重建或改写显性 testcase，也不得修改其既有测试入口。若发现 `acceptanceCriteria` 缺失或显性测试入口失效，应将其视为实现架构设计阶段遗留缺口并明确回报，而不是在编码阶段直接改写显性测试基线。\n\n',
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
 }
@@ -89,6 +89,7 @@ function renderSummary(summary: ArchitectureTestRunSummary): string {
     const lines: string[] = [
         `- Architecture graph: \`${summary.architecturePath}\``,
         `- Total testcases: ${summary.totalTestCases}`,
+        `- Skipped non-explicit testcases: ${summary.skippedNonExplicitCount}`,
         `- Passed: ${summary.passedCount}`,
         `- Failed or missing: ${summary.failedCount}`,
         `- Missing acceptanceCriteria: ${summary.missingCriteriaCount}`,

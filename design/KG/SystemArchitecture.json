@@ -123,13 +123,13 @@
 "id": "1339",
 "name": "编码"
 ,"type": "Class"
-,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）"
+,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：实现架构模型 + 物理化的测试入口。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码 + 补齐单元测试。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）显性测试入口。</li>\r\n</ul>"
 },
 {
 "id": "1340",
 "name": "实现架构设计"
 ,"type": "Class"
-,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。"
+,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>"
 },
 {
 "id": "1341",
@@ -257,6 +257,7 @@
 "id":"1132"
 ,"statement":"编码 --(implements)--> CODE IMPLEMENTATION"
 ,"name":"implements"
+,"super_type": "_IMPLEMENT_"
 ,"source_id":"1339"
 ,"target_id":"1336"
 ,"source_name":"编码"
@@ -346,8 +347,9 @@
 },
 {
 "id":"1160"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现)--> INTENTION ARCHITECTURE MODEL"
-,"name":"实现"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(当实现架构实现后，意图架构就会被实现)--> INTENTION ARCHITECTURE MODEL"
+,"name":"当实现架构实现后，意图架构就会被实现"
+,"super_type": "_IMPLY_"
 ,"source_id":"1341"
 ,"target_id":"1335"
 ,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
@@ -381,21 +383,12 @@
 ,"target_name":"意图架构设计"
 },
 {
-"id":"1164"
-,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构（含显性测试用例）输入)--> 编码"
-,"name":"意图架构（含显性测试用例）输入"
-,"source_id":"1335"
-,"target_id":"1339"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"编码"
-},
-{
 "id":"1165"
-,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构（含显性测试用例）输入)--> 自动化测试"
+,"statement":"显性测试用例 --(意图架构（含显性测试用例）输入)--> 自动化测试"
 ,"name":"意图架构（含显性测试用例）输入"
-,"source_id":"1335"
+,"source_id":"1364"
 ,"target_id":"1365"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
+,"source_name":"显性测试用例"
 ,"target_name":"自动化测试"
 },
 {
@@ -429,10 +422,30 @@
 "id":"1169"
 ,"statement":"CODE IMPLEMENTATION --(实现)--> IMPLEMENTATION ARCHITECTURE MODEL"
 ,"name":"实现"
+,"super_type": "_IMPLY_"
 ,"source_id":"1336"
 ,"target_id":"1341"
 ,"source_name":"CODE IMPLEMENTATION"
 ,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+},
+{
+"id":"1170"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现验收测试的逻辑)--> 显性测试用例"
+,"name":"实现验收测试的逻辑"
+,"super_type": "_IMPLEMENT_"
+,"source_id":"1341"
+,"target_id":"1364"
+,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+,"target_name":"显性测试用例"
+},
+{
+"id":"1171"
+,"statement":"显性测试用例 --(输入（已有测试实现）)--> 编码"
+,"name":"输入（已有测试实现）"
+,"source_id":"1364"
+,"target_id":"1339"
+,"source_name":"显性测试用例"
+,"target_name":"编码"
 }
 ],
 "views": [
@@ -473,12 +486,13 @@
 "1161",
 "1162",
 "1163",
-"1164",
 "1165",
 "1166",
 "1167",
 "1168",
-"1169"
+"1169",
+"1170",
+"1171"
 ]
 },
 {
