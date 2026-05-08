@@ -6,7 +6,6 @@
 "id": "1207",
 "name": "StrategyLayerAndMotivationAspect"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
 ,"subdiagram_views": [
 {
 "view_id": "159",
@@ -18,7 +17,6 @@
 "id": "1208",
 "name": "BusinessLayer"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/BusinessLayer/BusinessLayer"
 ,"subdiagram_views": [
 {
 "view_id": "160",
@@ -30,7 +28,6 @@
 "id": "1209",
 "name": "ApplicationLayer"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer"
 ,"subdiagram_views": [
 {
 "view_id": "161",
@@ -42,7 +39,6 @@
 "id": "1210",
 "name": "TechnologyLayer"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer"
 ,"subdiagram_views": [
 {
 "view_id": "162",
@@ -54,11 +50,10 @@
 "id": "1211",
 "name": "ProjectManagement"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/ProjectManagement/ProjectManagement"
 ,"attributes": [
 {
 "name": "GRAPH_USAGE_GUIDE"
-,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 > 显性testcase及意图架构显式语义 > 元素、关系、视图、attributes中的明确描述 > 被引用文件或符号 > 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。"
+,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。"
 }
 ]
 ,"subdiagram_views": [
@@ -72,7 +67,6 @@
 "id": "1333",
 "name": "brief"
 ,"type": "ArchiMate_ApplicationFunction"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/brief"
 ,"description": "provide the introduction of the current project, including the exterrnal api or other forms of interfaces in order to let external consumers know when and how to use this product system."
 ,"attributes": [
 {
@@ -85,7 +79,6 @@
 "id": "1334",
 "name": "LogicalArchitecture"
 ,"type": "ArchiMate_Assessment"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture"
 ,"subdiagram_views": [
 {
 "view_id": "169",
@@ -97,8 +90,7 @@
 "id": "1335",
 "name": "INTENTION ARCHITECTURE MODEL"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/INTENTION ARCHITECTURE MODEL"
-,"description": "the test cases hooked in the intention architecture are strictly in the scope of acceptance and scenario test cases. they are used to set the logical boundaries between the intention and code reality."
+,"description": "the test cases hooked in the intention architecture are strictly in the scope of acceptance and scenario test cases. they are used to set the logical boundaries between the intention and code reality.\r\n意图架构中自带意图架构使用指导：\r\nGRAPH_USAGE_GUIDE：将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
 ,"attributes": [
 {
 "name": "example"
@@ -114,53 +106,45 @@
 "id": "1336",
 "name": "CODE IMPLEMENTATION"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/CODE IMPLEMENTATION"
 },
 {
 "id": "1337",
 "name": "非显性测试用例"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/非显性测试用例"
 ,"description": "包括unit test, system test, integration test, inspection test, 主要用于支撑意图架构中的验收和场景测试用例的实现。"
 },
 {
 "id": "1338",
 "name": "HUMAN BEING"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/HUMAN BEING"
 ,"description": "work on <a href=\"$element://{191114F2-0331-4a44-902D-11949D1F4807}\"><font color=\"#0000ff\"><u>SystemArchitecture</u></font></a> to embody the intention of the developers."
 },
 {
 "id": "1339",
 "name": "编码"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/编码"
 ,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）"
 },
 {
 "id": "1340",
 "name": "实现架构设计"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/实现架构设计"
 ,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。"
 },
 {
 "id": "1341",
 "name": "IMPLEMENTATION ARCHITECTURE MODEL"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/IMPLEMENTATION ARCHITECTURE MODEL"
 },
 {
 "id": "1342",
 "name": "VS CODE runtime"
 ,"type": "ArchiMate_Node"
-,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer/VS CODE runtime"
 },
 {
 "id": "1343",
 "name": "Argo VS Extension"
 ,"type": "ArchiMate_ApplicationComponent"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension"
 ,"subdiagram_views": [
 {
 "view_id": "170",
@@ -172,7 +156,6 @@
 "id": "1344",
 "name": "commands"
 ,"type": "ArchiMate_ApplicationComponent"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands"
 ,"subdiagram_views": [
 {
 "view_id": "171",
@@ -184,7 +167,6 @@
 "id": "1345",
 "name": "implementationdesign"
 ,"type": "ArchiMate_ApplicationFunction"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/implementationdesign"
 ,"description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model."
 ,"attributes": [
 {
@@ -201,7 +183,6 @@
 "id": "1346",
 "name": "work"
 ,"type": "ArchiMate_ApplicationFunction"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/work"
 ,"description": "used for telling the main agent to design the implementation architecture and implement the code until passing all of the test cases pre-define."
 ,"attributes": [
 {
@@ -218,34 +199,29 @@
 "id": "1363",
 "name": "意图架构设计"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/意图架构设计"
 },
 {
 "id": "1364",
 "name": "显性测试用例"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/显性测试用例"
 ,"description": "包括验收测试用例、场景测试用例"
 },
 {
 "id": "1365",
 "name": "自动化测试"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/自动化测试"
 ,"description": "#sym:executeArchitectureTests "
 },
 {
 "id": "1366",
 "name": "测试失败记录"
 ,"type": "Class"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/测试失败记录"
 ,"description": "design\\KG\\test-failure-records.json"
 },
 {
 "id": "1367",
 "name": "intentinarchitecturedesign"
 ,"type": "ArchiMate_ApplicationFunction"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/intentinarchitecturedesign"
 ,"attributes": [
 {
 "name": "autonomous"
@@ -463,7 +439,6 @@
 {
 "view_id": "169",
 "view_name": "LogicalArchitecture"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/LogicalArchitecture/LogicalArchitecture"
 ,"parent_element_id": "1334"
 ,"parent_element_name": "LogicalArchitecture"
 ,"included_elements": [
@@ -509,7 +484,6 @@
 {
 "view_id": "159",
 "view_name": "StrategyLayerAndMotivationAspect"
-,"browser_path": "Model/System/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect/StrategyLayerAndMotivationAspect"
 ,"parent_element_id": "1207"
 ,"parent_element_name": "StrategyLayerAndMotivationAspect"
 ,"included_elements": [
@@ -522,7 +496,6 @@
 {
 "view_id": "160",
 "view_name": "BusinessLayer"
-,"browser_path": "Model/System/BusinessLayer/BusinessLayer/BusinessLayer"
 ,"parent_element_id": "1208"
 ,"parent_element_name": "BusinessLayer"
 ,"included_elements": [
@@ -535,7 +508,6 @@
 {
 "view_id": "171",
 "view_name": "commands"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/commands/commands"
 ,"parent_element_id": "1344"
 ,"parent_element_name": "commands"
 ,"included_elements": [
@@ -551,7 +523,6 @@
 {
 "view_id": "170",
 "view_name": "Argo VS Extension"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/Argo VS Extension/Argo VS Extension"
 ,"parent_element_id": "1343"
 ,"parent_element_name": "Argo VS Extension"
 ,"included_elements": [
@@ -564,7 +535,6 @@
 {
 "view_id": "161",
 "view_name": "ApplicationLayer"
-,"browser_path": "Model/System/ApplicationLayer/ApplicationLayer/ApplicationLayer"
 ,"parent_element_id": "1209"
 ,"parent_element_name": "ApplicationLayer"
 ,"included_elements": [
@@ -578,7 +548,6 @@
 {
 "view_id": "162",
 "view_name": "TechnologyLayer"
-,"browser_path": "Model/System/TechnologyLayer/TechnologyLayer/TechnologyLayer"
 ,"parent_element_id": "1210"
 ,"parent_element_name": "TechnologyLayer"
 ,"included_elements": [
@@ -591,7 +560,6 @@
 {
 "view_id": "163",
 "view_name": "ProjectManagement"
-,"browser_path": "Model/System/ProjectManagement/ProjectManagement/ProjectManagement"
 ,"parent_element_id": "1211"
 ,"parent_element_name": "ProjectManagement"
 ,"included_elements": [
@@ -604,7 +572,6 @@
 {
 "view_id": "158",
 "view_name": "SystemArchitecture"
-,"browser_path": "Model/System/SystemArchitecture"
 ,"included_elements": [
 "1207",
 "1208",
