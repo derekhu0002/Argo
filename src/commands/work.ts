@@ -8,6 +8,10 @@ import {
     runArchitectureTests,
 } from '../tools/architectureTestTool';
 import { buildWorkAgentHandoffPrompt } from '../utils/agentHandoff';
+import {
+    isExplicitTestcaseEntryGuardEnabled,
+    setExplicitTestcaseEntryGuardStage,
+} from '../utils/explicitTestcaseEntryGuard';
 
 export async function handleWork(
     request: vscode.ChatRequest,
@@ -16,6 +20,12 @@ export async function handleWork(
     token: vscode.CancellationToken,
 ): Promise<void> {
     stream.markdown('## /work - Architecture Test Driven Delivery\n\n');
+    await setExplicitTestcaseEntryGuardStage('coding');
+    stream.markdown(
+        isExplicitTestcaseEntryGuardEnabled()
+            ? '显性测试入口保护已启用：编码阶段若尝试改写这些文件，Argo 会自动回滚并拒绝该修改。\n\n'
+            : '显性测试入口保护当前未启用：只有当你打开设置 `argo.protectExplicitTestcaseEntriesDuringCoding` 后，Argo 才会在编码阶段自动回滚并拒绝这类修改。\n\n',
+    );
     stream.markdown('### Step 1 - Running explicit acceptance/scenario tests from the intent architecture ...\n\n');
 
     let summary: ArchitectureTestRunSummary;

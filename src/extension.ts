@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerArchitectureTestTool } from './tools/architectureTestTool';
+import { registerExplicitTestcaseEntryGuard } from './utils/explicitTestcaseEntryGuard';
 import { ensureWorkspaceEaTemplates, ensureWorkspaceEaTemplatesForFolders } from './utils/workspaceBootstrap';
 import { argoWorkRequestHandler } from './workParticipant';
 
@@ -9,6 +10,7 @@ const STARTUP_BOOTSTRAP_RETRY_DELAYS_MS = [250, 1000, 3000] as const;
 export async function activate(extensionContext: vscode.ExtensionContext): Promise<void> {
     await ensureWorkspaceEaTemplates(extensionContext.extensionUri);
     scheduleStartupWorkspaceBootstrapRetries(extensionContext, extensionContext.extensionUri);
+    registerExplicitTestcaseEntryGuard(extensionContext);
 
     registerCopilotFeatures(extensionContext);
 

@@ -78,6 +78,11 @@
             "type": "string"
           },
           "description": "Additional PlantUML jar arguments passed before Argo's render arguments during validation."
+        },
+        "argo.protectExplicitTestcaseEntriesDuringCoding": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, Argo blocks edits to explicit acceptance/scenario testcase entry files during the coding stage entered by /work. Default is off."
         }
       }
     },
@@ -100,6 +105,10 @@
           {
             "name": "implementationdesign",
             "description": "Generate a main-agent handoff prompt for human-in-the-loop implementation architecture design, producing ImplementationArchitecture.json with embedded non-explicit testcases from the full intent architecture."
+          },
+          {
+            "name": "idle",
+            "description": "Reset Argo's internal guard stage back to idle."
           },
           {
             "name": "work",
