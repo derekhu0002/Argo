@@ -29,6 +29,7 @@ const EXPLICIT_TESTCASE_TYPES = new Set(['Acceptance Test', 'Scenario Test']);
 
 class ExplicitTestcaseEntryGuard implements vscode.Disposable {
     private readonly outputChannel = vscode.window.createOutputChannel('Argo Explicit Testcase Guard');
+    private readonly statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 90);
     private readonly protectedEntries = new Map<string, ProtectedEntrySnapshot>();
     private readonly internalMutations = new Set<string>();
     private readonly disposables: vscode.Disposable[] = [];
@@ -40,6 +41,7 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
 
         this.disposables.push(
             this.outputChannel,
+            this.statusBarItem,
             vscode.workspace.onDidChangeConfiguration(event => {
                 if (event.affectsConfiguration(`argo.${GUARD_CONFIG_KEY}`)) {
                     void this.handleConfigurationChange();
@@ -56,6 +58,13 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
             }),
         );
 
+        this.statusBarItem.name = 'Argo Guard Stage';
+        this.statusBarItem.command = {
+            command: 'workbench.action.openSettings',
+            title: 'Configure Argo Guard',
+            arguments: ['argo.protectExplicitTestcaseEntriesDuringCoding'],
+        };
+        this.updateStatusBar();
         void this.refreshProtectedEntries();
     }
 
@@ -71,6 +80,7 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
         this.stage = stage;
         await this.context.workspaceState.update(GUARD_STAGE_KEY, stage);
         await this.refreshProtectedEntries();
+        this.updateStatusBar();
         this.log(this.buildStageStatusMessage(stage));
     }
 
@@ -106,6 +116,8 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
         for (const [key, value] of nextEntries) {
             this.protectedEntries.set(key, value);
         }
+
+        this.updateStatusBar();
     }
 
     private async readProtectedEntryPaths(root: vscode.Uri): Promise<string[]> {
@@ -279,7 +291,36 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
 
     private async handleConfigurationChange(): Promise<void> {
         await this.refreshProtectedEntries();
+        this.updateStatusBar();
         this.log(this.buildStageStatusMessage(this.stage));
+    }
+
+    private updateStatusBar(): void {
+        const protectedCount = this.protectedEntries.size;
+        const enabled = this.isEnabled();
+        const protectionActive = this.stage === 'coding' && enabled;
+
+        this.statusBarItem.text = protectionActive
+            ? `$(shield) Argo: ${this.stage}`
+            : enabled
+                ? `$(shield) Argo: ${this.stage}`
+                : `$(shield) Argo: ${this.stage} (off)`;
+
+        this.statusBarItem.backgroundColor = protectionActive
+            ? new vscode.ThemeColor('statusBarItem.warningBackground')
+            : undefined;
+        this.statusBarItem.color = protectionActive
+            ? new vscode.ThemeColor('statusBarItem.warningForeground')
+            : undefined;
+        this.statusBarItem.tooltip = [
+            `Argo guard stage: ${this.stage}`,
+            `Protection switch: ${enabled ? 'enabled' : 'disabled'}`,
+            `Protected explicit testcase entry files: ${protectedCount}`,
+            protectionActive
+                ? 'Coding-stage protection is active. Edits to explicit testcase entry files will be rolled back.'
+                : 'Click to open the protection setting.',
+        ].join('\n');
+        this.statusBarItem.show();
     }
 
     private buildStageStatusMessage(stage: GuardStage): string {
