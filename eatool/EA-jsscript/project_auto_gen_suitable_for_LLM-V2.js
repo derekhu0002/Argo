@@ -19,7 +19,7 @@ if (typeof EA_AUTOGEN_CONFIG == "undefined" || EA_AUTOGEN_CONFIG == null) {
 		needContent: false,
 		needdoc: false,
 		needallmaintenace: "All",
-		needbrowserlocation: true,
+		needbrowserlocation: false,
 		maintenacetype: "forproject" // forllm | forproject
 	};
 }
