@@ -216,7 +216,7 @@ export function buildImplementationDesignHandoffPrompt(input: {
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 分析范围仅限当前工作区 ${input.workspacePath}。必须先读取 #file:SystemArchitecture.json 与 #file:SystemArchitecture.schema.json，再读取项目根目录下的 #file:OVERALL.md（若存在）以及受影响目录下的 README.md 契约文件，再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。`,
+        `1. 分析范围仅限当前工作区 ${input.workspacePath}。必须先读取 design\\KG\\SystemArchitecture.json，再读取项目根目录下的 OVERALL.md（若存在）以及受影响目录下的 README.md 契约文件，再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。`,
         '2. 本次任务的输入是整个意图架构与当前代码仓中的实现架构。这里的“当前实现架构”不是独立 JSON 文件，而是项目代码仓根目录、OVERALL.md、相关 README.md、目录与文件结构、显性测试入口、现有非显性测试共同表达的实现现状。请把显性 testcase 视为契约，把意图架构本体视为需求边界与设计约束，把当前代码库视为实现现状证据。',
         '3. 这是一个 human in the loop 的实现架构设计任务，人类必须深度参与关键决策。你必须先自行吸收仓库事实，再把真正会改变实现架构走向的决策点拿出来与用户确认。至少以下事项必须显式征求用户意见，且每项都要给出推荐方案、备选方案、理由与权衡：',
         '   - 实现架构的一级分层和模块分解方式',
