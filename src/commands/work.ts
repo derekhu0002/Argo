@@ -70,7 +70,7 @@ export async function handleWork(
     stream.markdown(
         '### Step 2 - Handoff To Copilot Main Agent\n\n' +
         '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot 主 agent 并等待它完成开发。\n\n' +
-        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件，再进行开发，直到这些测试通过；编码阶段只允许补齐实现代码、支撑性测试和测试环境，并调用现有显性 testcase 入口做验收，不得新增、删除、重建或改写显性 testcase，也不得修改其既有测试入口。若发现 `acceptanceCriteria` 缺失或显性测试入口失效，应将其视为实现架构设计阶段遗留缺口并明确回报，而不是在编码阶段直接改写显性测试基线。\n\n',
+        '请将下面这段指令交给 Copilot 主 agent。它需要先读取失败记录文件、OVERALL.md 与相关 README.md 契约，再进行开发，直到这些测试通过；编码阶段只允许补齐实现代码、普通支撑性测试和测试环境，并调用现有显性 testcase 入口做验收。不得新增、删除、重建或改写显性 testcase，也不得修改其既有测试入口；对关键非显性测试及其受保护夹具、基线数据也一律只读。若发现 `acceptanceCriteria` 缺失、显性测试入口失效，或关键非显性测试契约本身错误，应将其视为实现架构设计阶段遗留缺口并明确回报，而不是在编码阶段直接改写这些冻结资产。\n\n',
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
 }
