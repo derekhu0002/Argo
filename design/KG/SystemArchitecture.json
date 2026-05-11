@@ -83,6 +83,10 @@
 {
 "view_id": "169",
 "view_name": "LogicalArchitecture"
+},
+{
+"view_id": "175",
+"view_name": "本体关系"
 }
 ]
 },
@@ -90,11 +94,15 @@
 "id": "1335",
 "name": "INTENTION ARCHITECTURE MODEL"
 ,"type": "Class"
-,"description": "the test cases hooked in the intention architecture are strictly in the scope of acceptance and scenario test cases. they are used to set the logical boundaries between the intention and code reality.\r\n意图架构中自带意图架构使用指导：\r\nGRAPH_USAGE_GUIDE：将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
+,"description": "the test cases hooked in the intention architecture are strictly in the scope of acceptance and scenario test cases. they are used to set the logical boundaries between the intention and code reality."
 ,"attributes": [
 {
 "name": "example"
 ,"description": "design\\KG\\SystemArchitecture.json"
+},
+{
+"name": "GRAPH_USAGE_GUIDE"
+,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
 },
 {
 "name": "schema"
@@ -123,18 +131,19 @@
 "id": "1339",
 "name": "编码"
 ,"type": "Class"
-,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：实现架构模型 + 物理化的测试入口。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码 + 补齐单元测试。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）显性测试入口。</li>\r\n</ul>"
+,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：代码仓中的目录和文件结构、目录下的测试侧栏（护栏中一般会有看护的实现对象）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码使得测试用例得以通过，如果下钻构建更细节的目录或文件，需要同时考虑是否补齐测试护栏。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）测试入口（包括设计阶段已经定义的所有测试用例）。</li>\r\n</ul>"
 },
 {
 "id": "1340",
 "name": "实现架构设计"
 ,"type": "Class"
-,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>"
+,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>\r\n\r\n这里的实现架构我们就用代码仓中的目录和文件结构来表达，每个目录或文件就代表一个实现架构中的架构元素，每个目录下可以有看护对应架构元素的测试用例，主要是单元测试、系统测试、集成测试、inspection test。"
 },
 {
 "id": "1341",
 "name": "IMPLEMENTATION ARCHITECTURE MODEL"
 ,"type": "Class"
+,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、README 契约文件、显性测试入口、非显性测试护栏共同表达。"
 },
 {
 "id": "1342",
@@ -199,12 +208,13 @@
 "id": "1363",
 "name": "意图架构设计"
 ,"type": "Class"
+,"description": "这里意图架构采用JSON格式来表达，该JSON格式主要用于“架构骨架”的表达，可作为“地图”让LLM使用，一般会全量塞入LLM上下文中，因此不要放过多内容，如果需要对某个元素或关系或者他们的属性展开描述，必须把描述放入代码仓中的makrdown文本中，只需要将文本路径填入“架构骨架”。\r\n"
 },
 {
 "id": "1364",
 "name": "显性测试用例"
 ,"type": "Class"
-,"description": "包括验收测试用例、场景测试用例"
+,"description": "默认以 Acceptance Test 与 Scenario Test 作为意图架构验收基线；若其它类型 testcase 被提升为显性 testcase，则也必须承担稳定架构验收职责并拥有只读测试入口。"
 },
 {
 "id": "1365",
@@ -232,13 +242,76 @@
 ,"description": "#sym:buildIntentInArchitectureDesignHandoffPrompt"
 }
 ]
+},
+{
+"id": "1372",
+"name": "目录"
+,"type": "Class"
+,"description": "是实现架构元素的主要物理落地。目录默认表达包含关系与物理归属关系，只有被契约显式声明为稳定边界时，才视为稳定实现架构元素。"
+},
+{
+"id": "1373",
+"name": "代码文件"
+,"type": "Class"
+,"description": "是实现架构元素的物理落地"
+},
+{
+"id": "1374",
+"name": "README文件"
+,"type": "Class"
+,"description": "是实现架构契约的默认局部载体，而不是可有可无的补充说明。稳定实现元素目录下的 README.md 默认承载局部职责、依赖、追溯与测试护栏契约；根级总入口不再默认由 README.md 承载。"
+,"attributes": [
+{
+"name": "必填段"
+,"description": "---\r\ncontract_type: implementation-architecture-element\r\ncontract_version: 1\r\nscope: stable-element\r\nelement_name: commands\r\nelement_kind: Component\r\nelement_path: src/commands\r\n---\r\n\r\n## Implementation Architecture Contract\r\n\r\n### Responsibility\r\n- 暴露稳定的 chat 命令入口\r\n- 将用户意图转换为交接或执行流\r\n\r\n### Out Of Scope\r\n- 不直接承载底层测试执行引擎\r\n- 不吸收无关的通用工具职责\r\n\r\n### Children\r\n- path: work.ts\r\n  kind: entrypoint-file\r\n  role: coding-stage orchestration\r\n- path: implementationdesign.ts\r\n  kind: entrypoint-file\r\n  role: implementation architecture design handoff\r\n\r\n### Dependencies\r\n#### allowed\r\n- path: ../utils\r\n  reason: shared handoff and guards\r\n\r\n#### forbidden\r\n- path: ../engine\r\n  reason: commands should not absorb engine internals directly\r\n\r\n### Implements / Traceability\r\n#### implements_intent\r\n- element: work\r\n- element: implementationdesign\r\n\r\n#### implements_elements\r\n- none\r\n\r\n### Test Guardrails\r\n#### critical_non_explicit_tests\r\n- test_id: commands-entry-boundary\r\n  critical_kind: architecture-boundary\r\n  test_path: tests/commands-entry-boundary.test.ts\r\n  execution_entry: tests/commands-entry-boundary.test.ts\r\n  guards_elements:\r\n    - src/commands\r\n  supports_explicit_testcases:\r\n    - work\r\n  assertion_scope: command entry boundary remains stable\r\n  mutation_policy: read-only-during-work\r\n  protected_fixtures:\r\n    - tests/fixtures/command-fixture.ts\r\n  protected_baselines:\r\n    - tests/baselines/command-boundary.json\r\n  failure_classification_rule: implementation-environment-test-contract\r\n  rationale: 守护命令入口边界\r\n  frozen_by_stage: implementationdesign\r\n\r\n#### supporting_non_explicit_tests\r\n- path: tests/work-flow-support.test.ts\r\n  scope: local supporting guard\r\n\r\n### Explicit Testcase Entrypoints\r\n- none\r\n\r\n### Cross-Directory Guards\r\n- none\r\n\r\n### Exceptions\r\n- none\r\n\r\n### Open Gaps\r\n- none\r\n\r\n### Notes\r\n- none"
+},
+{
+"name": "显性测试入口"
+}
+]
+},
+{
+"id": "1375",
+"name": "测试用例"
+,"type": "Class"
+,"description": "看护所在目录覆盖范围的实现架构"
+},
+{
+"id": "1376",
+"name": "意图架构元素"
+,"type": "Class"
+,"description": "我们采用Archimate3.2作为意图架构的外层设计语言，对于具体元素可以进一步采用其它合适的建模语言（如UML、SysML、BPMN等等，根据需要和使用的人来选择最合适的）"
+},
+{
+"id": "1378",
+"name": "关键非显性测试用例"
+,"type": "Class"
+,"description": "实现架构设计阶段定死的关键非显性测试。它们只收口于四类：直接守架构边界、依赖方向、显性入口正确性、关键实现追溯。/work 阶段对其测试入口、断言边界、挂载对象、追溯关系、受保护夹具与基线数据一律只读。"
+},
+{
+"id": "1379",
+"name": "非关键非显性测试用例"
+,"type": "Class"
+,"description": "作为实现阶段的参考与支撑护栏，不承担冻结级实现架构契约地位。/work 阶段可以在既定契约允许的位置补充、调整和优化。"
+},
+{
+"id": "1380",
+"name": "实现架构根契约"
+,"type": "Class"
+,"description": "由仓库根目录下的 OVERALL.md 承载的实现架构总入口契约。它定义实现架构根、纳入与排除路径、一级实现元素、契约文件约定、显性测试入口规则、非显性测试护栏规则、读取顺序与阶段职责边界。\r\n仓库根目录下的 OVERALL.md 文件，是实现架构根契约的唯一总入口载体。README.md 可以引用它，但不应重复定义根级架构规则。"
+,"attributes": [
+{
+"name": "OVERALL文件"
+,"description": "---\r\ncontract_type: implementation-architecture-root\r\ncontract_version: 1\r\nscope: repository-root\r\n---\r\n\r\n## Implementation Architecture Contract\r\n\r\n### Root Scope\r\n- root_path: .\r\n- meaning: implementation-architecture-read-boundary\r\n\r\n### Included Paths\r\n- path: src/\r\n  reason: primary product implementation\r\n\r\n### Excluded Paths\r\n- path: design/\r\n  reason: governance assets\r\n- path: build/\r\n  reason: generated outputs\r\n\r\n### Top-Level Elements\r\n- path: src/commands\r\n  name: commands\r\n  kind: Component\r\n  responsibility: chat command entrypoints\r\n  readme_required: true\r\n  test_guard_policy: local-tests-subdir\r\n\r\n### Architecture Readme Convention\r\n- default_file: README.md\r\n- required_for_stable_elements: true\r\n\r\n### Explicit Testcase Entrypoint Rules\r\n- ownership_stage: implementationdesign\r\n- mutation_policy: read-only-during-work\r\n\r\n### Non-Explicit Test Rules\r\n- default_tests_dir: tests/\r\n- critical_tests_mutation_policy: read-only-during-work\r\n- supporting_tests_mutation_policy: editable-during-work\r\n\r\n### Cross-Directory Guard Rules\r\n- default_owner: nearest-common-ancestor-directory\r\n\r\n### Traceability Rules\r\n- directory_hierarchy_means: containment-only\r\n- implements_relation_declared_in: README\r\n\r\n### Read Order\r\n1. intention architecture\r\n2. root contract\r\n3. relevant element contracts\r\n4. code and tests\r\n\r\n### Stage Boundaries\r\n- implementationdesign: may update contracts and freeze critical tests\r\n- work: must treat explicit entries and critical non-explicit tests as read-only\r\n\r\n### Open Gaps\r\n- none\r\n\r\n### Notes\r\n- none\r\n"
+}
+]
 }
 ],
 "relationships": [
 {
 "id":"1128"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(guides and constrains)--> 编码"
-,"name":"guides and constrains"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现架构输入)--> 编码"
+,"name":"实现架构输入"
 ,"source_id":"1341"
 ,"target_id":"1339"
 ,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
@@ -430,8 +503,8 @@
 },
 {
 "id":"1170"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现验收测试的逻辑)--> 显性测试用例"
-,"name":"实现验收测试的逻辑"
+,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现（填充）验收测试的逻辑)--> 显性测试用例"
+,"name":"实现（填充）验收测试的逻辑"
 ,"super_type": "_IMPLEMENT_"
 ,"source_id":"1341"
 ,"target_id":"1364"
@@ -455,6 +528,159 @@
 ,"target_id":"1340"
 ,"source_name":"CODE IMPLEMENTATION"
 ,"target_name":"实现架构设计"
+},
+{
+"id":"1173"
+,"statement":"README文件 --(aggregates)--> 目录"
+,"name":"aggregates"
+,"source_id":"1374"
+,"target_id":"1372"
+,"source_name":"README文件"
+,"target_name":"目录"
+},
+{
+"id":"1174"
+,"statement":"代码文件 --(aggregates)--> 目录"
+,"name":"aggregates"
+,"source_id":"1373"
+,"target_id":"1372"
+,"source_name":"代码文件"
+,"target_name":"目录"
+},
+{
+"id":"1175"
+,"statement":"目录 --(aggregates)--> 目录"
+,"name":"aggregates"
+,"source_id":"1372"
+,"target_id":"1372"
+,"source_name":"目录"
+,"target_name":"目录"
+},
+{
+"id":"1176"
+,"statement":"目录 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"aggregates"
+,"source_id":"1372"
+,"target_id":"1341"
+,"source_name":"目录"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+},
+{
+"id":"1177"
+,"statement":"代码文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"aggregates"
+,"source_id":"1373"
+,"target_id":"1341"
+,"source_name":"代码文件"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+},
+{
+"id":"1178"
+,"statement":"README文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"aggregates"
+,"source_id":"1374"
+,"target_id":"1341"
+,"source_name":"README文件"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+},
+{
+"id":"1179"
+,"statement":"测试用例 --(aggregates)--> 目录"
+,"name":"aggregates"
+,"source_id":"1375"
+,"target_id":"1372"
+,"source_name":"测试用例"
+,"target_name":"目录"
+},
+{
+"id":"1180"
+,"statement":"意图架构元素 --(意图架构元素关系)--> 意图架构元素"
+,"name":"意图架构元素关系"
+,"source_id":"1376"
+,"target_id":"1376"
+,"source_name":"意图架构元素"
+,"target_name":"意图架构元素"
+},
+{
+"id":"1181"
+,"statement":"意图架构元素 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
+,"name":"aggregates"
+,"source_id":"1376"
+,"target_id":"1335"
+,"source_name":"意图架构元素"
+,"target_name":"INTENTION ARCHITECTURE MODEL"
+},
+{
+"id":"1182"
+,"statement":"显性测试用例 --(aggregates)--> 意图架构元素"
+,"name":"aggregates"
+,"source_id":"1364"
+,"target_id":"1376"
+,"source_name":"显性测试用例"
+,"target_name":"意图架构元素"
+},
+{
+"id":"1184"
+,"statement":"显性测试用例 --(aggregates)--> 测试用例"
+,"name":"aggregates"
+,"source_id":"1364"
+,"target_id":"1375"
+,"source_name":"显性测试用例"
+,"target_name":"测试用例"
+},
+{
+"id":"1185"
+,"statement":"非显性测试用例 --(aggregates)--> 测试用例"
+,"name":"aggregates"
+,"source_id":"1337"
+,"target_id":"1375"
+,"source_name":"非显性测试用例"
+,"target_name":"测试用例"
+},
+{
+"id":"1186"
+,"statement":"关键非显性测试用例 --(aggregates)--> 非显性测试用例"
+,"name":"aggregates"
+,"source_id":"1378"
+,"target_id":"1337"
+,"source_name":"关键非显性测试用例"
+,"target_name":"非显性测试用例"
+},
+{
+"id":"1187"
+,"statement":"非关键非显性测试用例 --(aggregates)--> 非显性测试用例"
+,"name":"aggregates"
+,"source_id":"1379"
+,"target_id":"1337"
+,"source_name":"非关键非显性测试用例"
+,"target_name":"非显性测试用例"
+},
+{
+"id":"1189"
+,"statement":"代码文件 --(aggregates)--> CODE IMPLEMENTATION"
+,"name":"aggregates"
+,"source_id":"1373"
+,"target_id":"1336"
+,"source_name":"代码文件"
+,"target_name":"CODE IMPLEMENTATION"
+},
+{
+"id":"1190"
+,"statement":"目录 --(aggregates)--> CODE IMPLEMENTATION"
+,"name":"aggregates"
+,"source_id":"1372"
+,"target_id":"1336"
+,"source_name":"目录"
+,"target_name":"CODE IMPLEMENTATION"
+},
+{
+"id":"1191"
+,"statement":"实现架构根契约 --(aggregates)--> 目录"
+,"name":"aggregates"
+,"source_id":"1380"
+,"target_id":"1372"
+,"source_name":"实现架构根契约"
+,"target_name":"目录"
 }
 ],
 "views": [
@@ -503,6 +729,46 @@
 "1170",
 "1171",
 "1172"
+]
+},
+{
+"view_id": "175",
+"view_name": "本体关系"
+,"parent_element_id": "1334"
+,"parent_element_name": "LogicalArchitecture"
+,"included_elements": [
+"1336",
+"1341",
+"1335",
+"1372",
+"1373",
+"1374",
+"1375",
+"1376",
+"1364",
+"1337",
+"1378",
+"1379",
+"1380"
+]
+,"included_relationships": [
+"1173",
+"1174",
+"1175",
+"1176",
+"1177",
+"1178",
+"1179",
+"1180",
+"1181",
+"1182",
+"1184",
+"1185",
+"1186",
+"1187",
+"1189",
+"1190",
+"1191"
 ]
 },
 {
