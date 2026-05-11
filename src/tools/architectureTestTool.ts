@@ -73,7 +73,6 @@ export interface ArchitectureTestRunSummary {
     architecturePath: string;
     failureRecordsPath: string;
     totalTestCases: number;
-    skippedNonExplicitCount: number;
     passedCount: number;
     failedCount: number;
     missingCriteriaCount: number;
@@ -160,7 +159,6 @@ export async function runArchitectureTests(
     const graph = await readArchitectureGraph(graphUri);
     const explicitTestcases = collectExplicitTestcases(graph);
     const totalTestCases = explicitTestcases.length;
-    const skippedNonExplicitCount = countAllTestCases(graph) - totalTestCases;
 
     const results: ArchitectureTestExecutionResult[] = [];
     const failureRecords: FailedTestRecord[] = [];
@@ -312,7 +310,6 @@ export async function runArchitectureTests(
         architecturePath: resolvedArchitecturePath,
         failureRecordsPath: FAILURE_RECORDS_PATH,
         totalTestCases,
-        skippedNonExplicitCount,
         passedCount,
         failedCount: failureRecords.length,
         missingCriteriaCount,
@@ -542,21 +539,13 @@ function quoteCommandPart(value: string): string {
     return /\s/.test(value) ? `"${value}"` : value;
 }
 
-function countAllTestCases(graph: RawArchitectureGraph): number {
-    return (graph.elements ?? []).reduce((total, element) => total + (element.testcases?.length ?? 0), 0);
-}
-
 function collectExplicitTestcases(graph: RawArchitectureGraph): ExplicitArchitectureTestcase[] {
-    const explicitTypes = new Set(['Acceptance Test', 'Scenario Test']);
     const testcases: ExplicitArchitectureTestcase[] = [];
 
     for (const element of graph.elements ?? []) {
         const elementId = String(element.id ?? '');
         for (const testcase of element.testcases ?? []) {
             const testcaseType = String(testcase.type ?? '').trim();
-            if (!explicitTypes.has(testcaseType)) {
-                continue;
-            }
 
             testcases.push({
                 elementId,

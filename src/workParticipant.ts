@@ -35,7 +35,7 @@ export async function argoWorkRequestHandler(
 
     stream.markdown(
         '**Argo Work Agent**\n\n' +
-        'Use `/work` to execute explicit acceptance/scenario testcase entries from `design/KG/SystemArchitecture.json`, persist failed testcase records, and prepare a handoff prompt for the Copilot main agent.\n\n' +
+        'Use `/work` to execute explicit testcase entries from `design/KG/SystemArchitecture.json`, persist failed testcase records, and prepare a handoff prompt for the Copilot main agent.\n\n' +
         'Use `/idle` to reset the internal guard stage back to idle when you want to leave coding or implementation-design mode.\n\n' +
         'Use `/brief` to prepare a handoff prompt for the Copilot main agent so it can produce an external-facing product brief based on the current repository.\n\n' +
         'Use `/intentinarchitecturedesign` to prepare a handoff prompt for the Copilot main agent so it can grill the design relentlessly, explore the codebase when possible, and provide recommended answers for each design question.\n\n' +

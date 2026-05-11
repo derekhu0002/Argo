@@ -25,7 +25,6 @@ interface ProtectedEntrySnapshot {
 const GUARD_STAGE_KEY = 'argo.explicitTestcaseEntryGuard.stage';
 const GUARD_CONFIG_KEY = 'protectExplicitTestcaseEntriesDuringCoding';
 const SYSTEM_ARCHITECTURE_PATH = 'design/KG/SystemArchitecture.json';
-const EXPLICIT_TESTCASE_TYPES = new Set(['Acceptance Test', 'Scenario Test']);
 
 class ExplicitTestcaseEntryGuard implements vscode.Disposable {
     private readonly outputChannel = vscode.window.createOutputChannel('Argo Explicit Testcase Guard');
@@ -129,11 +128,6 @@ class ExplicitTestcaseEntryGuard implements vscode.Disposable {
 
             for (const element of graph.elements ?? []) {
                 for (const testcase of element.testcases ?? []) {
-                    const testcaseType = String(testcase.type ?? '').trim();
-                    if (!EXPLICIT_TESTCASE_TYPES.has(testcaseType)) {
-                        continue;
-                    }
-
                     const acceptanceCriteria = String(testcase.acceptanceCriteria ?? '').trim();
                     if (!acceptanceCriteria) {
                         continue;

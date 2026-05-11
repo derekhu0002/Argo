@@ -26,7 +26,7 @@ export async function handleWork(
             ? '显性测试入口保护已启用：编码阶段若尝试改写这些文件，Argo 会自动回滚并拒绝该修改。\n\n'
             : '显性测试入口保护当前未启用：只有当你打开设置 `argo.protectExplicitTestcaseEntriesDuringCoding` 后，Argo 才会在编码阶段自动回滚并拒绝这类修改。\n\n',
     );
-    stream.markdown('### Step 1 - Running explicit acceptance/scenario tests from the intent architecture ...\n\n');
+    stream.markdown('### Step 1 - Running explicit tests from the intent architecture ...\n\n');
 
     let summary: ArchitectureTestRunSummary;
     try {
@@ -43,7 +43,7 @@ export async function handleWork(
 
     if (summary.totalTestCases === 0) {
         stream.markdown(
-            '⚠️ 当前意图架构图谱中没有任何显性 Acceptance/Scenario testcase。按当前逻辑边界，这意味着尚未形成可执行的显性验收基线；应回到意图架构设计或实现架构设计阶段补齐基线，而不是在编码阶段直接补写。\n\n',
+            '⚠️ 当前意图架构图谱中没有任何显性 testcase。按当前逻辑边界，这意味着尚未形成可执行的显性验收基线；应回到意图架构设计或实现架构设计阶段补齐基线，而不是在编码阶段直接补写。\n\n',
         );
     }
 
@@ -99,7 +99,6 @@ function renderSummary(summary: ArchitectureTestRunSummary): string {
     const lines: string[] = [
         `- Architecture graph: \`${summary.architecturePath}\``,
         `- Total testcases: ${summary.totalTestCases}`,
-        `- Skipped non-explicit testcases: ${summary.skippedNonExplicitCount}`,
         `- Passed: ${summary.passedCount}`,
         `- Failed or missing: ${summary.failedCount}`,
         `- Missing acceptanceCriteria: ${summary.missingCriteriaCount}`,
