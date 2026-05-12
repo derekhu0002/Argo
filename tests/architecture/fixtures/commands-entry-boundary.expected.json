@@ -1,0 +1,15 @@
+{
+  "commandsDirectory": "src/commands",
+  "requiredFiles": [
+    "brief.ts",
+    "idle.ts",
+    "implementationdesign.ts",
+    "index.ts",
+    "intentinarchitecturedesign.ts",
+    "work.ts"
+  ],
+  "forbiddenImports": [
+    "../engine",
+    "../lm"
+  ]
+}
