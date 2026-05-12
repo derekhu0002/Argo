@@ -681,6 +681,33 @@
 ,"target_id":"1372"
 ,"source_name":"实现架构根契约"
 ,"target_name":"目录"
+},
+{
+"id":"1193"
+,"statement":"测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"aggregates"
+,"source_id":"1375"
+,"target_id":"1341"
+,"source_name":"测试用例"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
+},
+{
+"id":"1194"
+,"statement":"测试用例 --(Association)--> CODE IMPLEMENTATION"
+,"name":"Association"
+,"source_id":"1375"
+,"target_id":"1336"
+,"source_name":"测试用例"
+,"target_name":"CODE IMPLEMENTATION"
+},
+{
+"id":"1195"
+,"statement":"意图架构元素 --(Association)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"name":"Association"
+,"source_id":"1376"
+,"target_id":"1341"
+,"source_name":"意图架构元素"
+,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
 }
 ],
 "views": [
@@ -768,7 +795,10 @@
 "1187",
 "1189",
 "1190",
-"1191"
+"1191",
+"1193",
+"1194",
+"1195"
 ]
 },
 {
