@@ -17,8 +17,6 @@ export async function handleBrief(
 
     const handoffPrompt = buildProductBriefHandoffPrompt({
         workspacePath: rootPath,
-        readmePath: `${rootPath}\\README.md`,
-        packageJsonPath: `${rootPath}\\package.json`,
         architectureGraphPath: `${rootPath}\\design\\KG\\SystemArchitecture.json`,
         extraContext: request.prompt.trim(),
     });

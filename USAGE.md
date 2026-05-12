@@ -29,7 +29,6 @@ your-project/
 │   └── KG/
 │       ├── SystemArchitecture.json
 │       └── test-failure-records.json
-├── src/
 └── tests/
 ```
 
@@ -61,8 +60,8 @@ your-project/
 执行完 `/implementationdesign` 后，检查仓库中是否已交付以下内容：
 
 1. 目录和文件结构。
-2. 根目录 `OVERALL.md`。
-3. 各关键目录下的 `README.md`。
+2. 根目录 `OVERALL_ARCHITECTURE.md`。
+3. 各关键目录下的 `ARCHITECTURE.md`。
 4. 回填后的显性测试入口。
 5. 关键非显性测试用例。
 6. 非关键非显性测试用例。
@@ -82,7 +81,7 @@ your-project/
 
 ### 7. 让 Coding Agent 编码
 
-1. 让 Coding Agent 基于以下输入进行实现：`design/KG/SystemArchitecture.json`、`OVERALL.md`、相关目录下的 `README.md`、显性测试入口、非显性测试用例、`design/KG/test-failure-records.json`。
+1. 让 Coding Agent 基于以下输入进行实现：`design/KG/SystemArchitecture.json`、`OVERALL.md`、相关目录下的 `ARCHITECTURE.md`、显性测试入口、非显性测试用例、`design/KG/test-failure-records.json`。
 2. 让 Coding Agent 以通过所有测试用例为目标完成编码。
 
 ### 8. 回归验证

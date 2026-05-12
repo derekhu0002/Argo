@@ -143,7 +143,7 @@
 "id": "1341",
 "name": "IMPLEMENTATION ARCHITECTURE MODEL"
 ,"type": "Class"
-,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、README 契约文件、显性测试入口、非显性测试护栏共同表达。"
+,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、ARCHITECTURE.md 契约文件、显性测试入口、非显性测试护栏共同表达。"
 },
 {
 "id": "1342",
@@ -257,9 +257,9 @@
 },
 {
 "id": "1374",
-"name": "README文件"
+"name": "ARCHITECTURE文件"
 ,"type": "Class"
-,"description": "是实现架构契约的默认局部载体，而不是可有可无的补充说明。稳定实现元素目录下的 README.md 默认承载局部职责、依赖、追溯与测试护栏契约；根级总入口不再默认由 README.md 承载。"
+,"description": "是实现架构契约的默认局部载体，而不是可有可无的补充说明。稳定实现元素目录下的 ARCHITECTURE.md 默认承载局部职责、依赖、追溯与测试护栏契约；根级总入口不再默认由 ARCHITECTURE.md 承载。"
 ,"attributes": [
 {
 "name": "必填段"
@@ -298,10 +298,10 @@
 "id": "1380",
 "name": "实现架构根契约"
 ,"type": "Class"
-,"description": "由仓库根目录下的 OVERALL.md 承载的实现架构总入口契约。它定义实现架构根、纳入与排除路径、一级实现元素、契约文件约定、显性测试入口规则、非显性测试护栏规则、读取顺序与阶段职责边界。\r\n仓库根目录下的 OVERALL.md 文件，是实现架构根契约的唯一总入口载体。README.md 可以引用它，但不应重复定义根级架构规则。"
+,"description": "由仓库根目录下的 OVERALL_ARCHITECTURE.md 承载的实现架构总入口契约。它定义实现架构根、纳入与排除路径、一级实现元素、契约文件约定、显性测试入口规则、非显性测试护栏规则、读取顺序与阶段职责边界。\r\n仓库根目录下的 OVERALL_ARCHITECTURE.md 文件，是实现架构根契约的唯一总入口载体。ARCHITECTURE.md 可以引用它，但不应重复定义根级架构规则。"
 ,"attributes": [
 {
-"name": "OVERALL文件"
+"name": "OVERALL_ARCHITECTURE文件"
 ,"description": "---\r\ncontract_type: implementation-architecture-root\r\ncontract_version: 1\r\nscope: repository-root\r\n---\r\n\r\n## Implementation Architecture Contract\r\n\r\n### Root Scope\r\n- root_path: .\r\n- meaning: implementation-architecture-read-boundary\r\n\r\n### Included Paths\r\n- path: src/\r\n  reason: primary product implementation\r\n\r\n### Excluded Paths\r\n- path: design/\r\n  reason: governance assets\r\n- path: build/\r\n  reason: generated outputs\r\n\r\n### Top-Level Elements\r\n- path: src/commands\r\n  name: commands\r\n  kind: Component\r\n  responsibility: chat command entrypoints\r\n  readme_required: true\r\n  test_guard_policy: local-tests-subdir\r\n\r\n### Architecture Readme Convention\r\n- default_file: README.md\r\n- required_for_stable_elements: true\r\n\r\n### Explicit Testcase Entrypoint Rules\r\n- ownership_stage: implementationdesign\r\n- mutation_policy: read-only-during-work\r\n\r\n### Non-Explicit Test Rules\r\n- default_tests_dir: tests/\r\n- critical_tests_mutation_policy: read-only-during-work\r\n- supporting_tests_mutation_policy: editable-during-work\r\n\r\n### Cross-Directory Guard Rules\r\n- default_owner: nearest-common-ancestor-directory\r\n\r\n### Traceability Rules\r\n- directory_hierarchy_means: containment-only\r\n- implements_relation_declared_in: README\r\n\r\n### Read Order\r\n1. intention architecture\r\n2. root contract\r\n3. relevant element contracts\r\n4. code and tests\r\n\r\n### Stage Boundaries\r\n- implementationdesign: may update contracts and freeze critical tests\r\n- work: must treat explicit entries and critical non-explicit tests as read-only\r\n\r\n### Open Gaps\r\n- none\r\n\r\n### Notes\r\n- none\r\n"
 }
 ]
@@ -531,11 +531,11 @@
 },
 {
 "id":"1173"
-,"statement":"README文件 --(aggregates)--> 目录"
+,"statement":"ARCHITECTURE文件 --(aggregates)--> 目录"
 ,"name":"aggregates"
 ,"source_id":"1374"
 ,"target_id":"1372"
-,"source_name":"README文件"
+,"source_name":"ARCHITECTURE文件"
 ,"target_name":"目录"
 },
 {
@@ -576,11 +576,11 @@
 },
 {
 "id":"1178"
-,"statement":"README文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
+,"statement":"ARCHITECTURE文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
 ,"name":"aggregates"
 ,"source_id":"1374"
 ,"target_id":"1341"
-,"source_name":"README文件"
+,"source_name":"ARCHITECTURE文件"
 ,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
 },
 {
