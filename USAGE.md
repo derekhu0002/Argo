@@ -119,6 +119,9 @@ your-project/
 
 PS：执行该命令后，所有模型中挂在的测试用例对应的测试入口文件都会被锁定，在此期间无法修改，如果CODING AGENT来修改则会报错提示“禁止修改”，从而避免了AGENT通过修改测试用例来使得用例通过。
 
+![alt text](image-1.png)
+下方图标显示 "Argo:coding" 则说明当前处于编码阶段，显性测试用例被锁定无法修改。
+
 ### `@argowork /idle`
 
 用途：退出当前 guard 阶段。
