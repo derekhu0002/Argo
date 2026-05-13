@@ -5,6 +5,10 @@
   "version": "5.0.20",
   "license": "MIT",
   "publisher": "argo-team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/derekhu0002/Argo.git"
+  },
   "engines": {
     "vscode": "^1.93.0"
   },
