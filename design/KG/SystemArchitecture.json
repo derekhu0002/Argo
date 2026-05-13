@@ -271,6 +271,18 @@
 "id": "1384",
 "name": "实现架构元素"
 ,"type": "Class"
+},
+{
+"id": "1386",
+"name": "Argo_Official_Website"
+,"type": "ArchiMate_ApplicationComponent"
+,"description": "对外展示 Argo 核心思想、架构图谱、并提供博客发布能力的门户。\r\n支持基于 Markdown 的博文发布，支持集成渲染 SystemArchitecture.json。"
+,"attributes": [
+{
+"name": "requirement"
+,"description": "requirements\\Argo 门户网站与博客系统构建 (Official Site &amp; Blog System).md"
+}
+]
 }
 ],
 "relationships": [
@@ -762,6 +774,7 @@
 ,"parent_element_id": "1209"
 ,"parent_element_name": "ApplicationLayer"
 ,"included_elements": [
+"1386",
 "1343",
 "1342"
 ]
