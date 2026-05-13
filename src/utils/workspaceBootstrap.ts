@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 const EA_TEMPLATE_PATH = ['eatool', 'EA-model-template.feap'] as const;
 const SYSTEM_ARCHITECTURE_SCHEMA_PATH = ['schema', 'SystemArchitecture.schema.json'] as const;
+const BUNDLED_GITHUB_DIR_PATH = ['.github'] as const;
 const WORKSPACE_SCHEMA_TARGET_PATH = ['.github', 'argoschema', 'SystemArchitecture.schema.json'] as const;
 const WINDOWS_RESERVED_NAMES = new Set([
     'CON', 'PRN', 'AUX', 'NUL',
@@ -33,6 +34,7 @@ async function ensureWorkspaceEaTemplate(
     const targetUri = vscode.Uri.joinPath(folder.uri, targetFileName);
 
     if (await fileExists(targetUri)) {
+        await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
         return;
     }
@@ -41,6 +43,7 @@ async function ensureWorkspaceEaTemplate(
     try {
         const templateBytes = await vscode.workspace.fs.readFile(templateUri);
         await vscode.workspace.fs.writeFile(targetUri, templateBytes);
+        await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
     } catch (error) {
         console.error('Argo failed to initialize EA model template.', {
@@ -51,6 +54,27 @@ async function ensureWorkspaceEaTemplate(
         });
         void vscode.window.showErrorMessage(
             `Argo 初始化 EA 模型模板失败: ${String(error)}`,
+        );
+    }
+}
+
+async function ensureWorkspaceBundledGitHubContents(
+    folder: vscode.WorkspaceFolder,
+    extensionUri: vscode.Uri,
+): Promise<void> {
+    const sourceDir = vscode.Uri.joinPath(extensionUri, ...BUNDLED_GITHUB_DIR_PATH);
+    const targetDir = vscode.Uri.joinPath(folder.uri, '.github');
+
+    try {
+        await copyDirectoryContents(sourceDir, targetDir);
+    } catch (error) {
+        console.error('Argo failed to initialize bundled .github contents.', {
+            sourceDir: sourceDir.toString(),
+            targetDir: targetDir.toString(),
+            error,
+        });
+        void vscode.window.showErrorMessage(
+            `Argo 初始化工作区 .github 内容失败: ${String(error)}`,
         );
     }
 }
@@ -84,6 +108,48 @@ async function fileExists(uri: vscode.Uri): Promise<boolean> {
         return true;
     } catch {
         return false;
+    }
+}
+
+async function copyDirectoryContents(sourceDir: vscode.Uri, targetDir: vscode.Uri): Promise<void> {
+    await vscode.workspace.fs.createDirectory(targetDir);
+
+    const entries = await vscode.workspace.fs.readDirectory(sourceDir);
+    for (const [name, fileType] of entries) {
+        const sourceEntry = vscode.Uri.joinPath(sourceDir, name);
+        const targetEntry = vscode.Uri.joinPath(targetDir, name);
+
+        if ((fileType & vscode.FileType.Directory) !== 0) {
+            await removeFileIfPresent(targetEntry);
+            await copyDirectoryContents(sourceEntry, targetEntry);
+            continue;
+        }
+
+        await removeDirectoryIfPresent(targetEntry);
+        const bytes = await vscode.workspace.fs.readFile(sourceEntry);
+        await vscode.workspace.fs.writeFile(targetEntry, bytes);
+    }
+}
+
+async function removeDirectoryIfPresent(uri: vscode.Uri): Promise<void> {
+    try {
+        const stat = await vscode.workspace.fs.stat(uri);
+        if ((stat.type & vscode.FileType.Directory) !== 0) {
+            await vscode.workspace.fs.delete(uri, { recursive: true, useTrash: false });
+        }
+    } catch {
+        // Target does not exist.
+    }
+}
+
+async function removeFileIfPresent(uri: vscode.Uri): Promise<void> {
+    try {
+        const stat = await vscode.workspace.fs.stat(uri);
+        if ((stat.type & vscode.FileType.Directory) === 0) {
+            await vscode.workspace.fs.delete(uri, { recursive: false, useTrash: false });
+        }
+    } catch {
+        // Target does not exist.
     }
 }
 

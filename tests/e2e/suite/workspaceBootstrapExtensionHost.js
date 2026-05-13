@@ -38,21 +38,42 @@ async function run() {
     const templateFilePath = path.join(extension.extensionPath, 'eatool', 'EA-model-template.feap');
     const generatedSchemaPath = path.join(folder.uri.fsPath, '.github', 'argoschema', 'SystemArchitecture.schema.json');
     const bundledSchemaPath = path.join(extension.extensionPath, 'schema', 'SystemArchitecture.schema.json');
+    const generatedInstructionsPath = path.join(folder.uri.fsPath, '.github', 'copilot-instructions.md');
+    const bundledInstructionsPath = path.join(extension.extensionPath, '.github', 'copilot-instructions.md');
+    const generatedAgentPath = path.join(folder.uri.fsPath, '.github', 'agents', 'implementation-architecture-designer.agent.md');
+    const bundledAgentPath = path.join(extension.extensionPath, '.github', 'agents', 'implementation-architecture-designer.agent.md');
 
     await Promise.all([
         waitForFile(generatedFilePath, EXPECTED_FILE_TIMEOUT_MS),
         waitForFile(generatedSchemaPath, EXPECTED_FILE_TIMEOUT_MS),
+        waitForFile(generatedInstructionsPath, EXPECTED_FILE_TIMEOUT_MS),
+        waitForFile(generatedAgentPath, EXPECTED_FILE_TIMEOUT_MS),
     ]);
 
-    const [generatedBytes, templateBytes, generatedSchemaBytes, bundledSchemaBytes] = await Promise.all([
+    const [
+        generatedBytes,
+        templateBytes,
+        generatedSchemaBytes,
+        bundledSchemaBytes,
+        generatedInstructionsBytes,
+        bundledInstructionsBytes,
+        generatedAgentBytes,
+        bundledAgentBytes,
+    ] = await Promise.all([
         fs.readFile(generatedFilePath),
         fs.readFile(templateFilePath),
         fs.readFile(generatedSchemaPath),
         fs.readFile(bundledSchemaPath),
+        fs.readFile(generatedInstructionsPath),
+        fs.readFile(bundledInstructionsPath),
+        fs.readFile(generatedAgentPath),
+        fs.readFile(bundledAgentPath),
     ]);
 
     assert(generatedBytes.equals(templateBytes), 'Expected generated .feap file to match the bundled EA template exactly.');
     assert(generatedSchemaBytes.equals(bundledSchemaBytes), 'Expected generated SystemArchitecture schema to match the bundled schema exactly.');
+    assert(generatedInstructionsBytes.equals(bundledInstructionsBytes), 'Expected generated copilot instructions to match the bundled .github content exactly.');
+    assert(generatedAgentBytes.equals(bundledAgentBytes), 'Expected generated agent customization files to match the bundled .github content exactly.');
 }
 
 module.exports = { run };
