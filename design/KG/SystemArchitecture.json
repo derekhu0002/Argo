@@ -1,907 +1,793 @@
 {
-"name": "System",
-"description": "",
-"elements": [
-{
-"id": "1207",
-"name": "StrategyLayerAndMotivationAspect"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "159",
-"view_name": "StrategyLayerAndMotivationAspect"
-}
-]
-},
-{
-"id": "1208",
-"name": "BusinessLayer"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "160",
-"view_name": "BusinessLayer"
-}
-]
-},
-{
-"id": "1209",
-"name": "ApplicationLayer"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "161",
-"view_name": "ApplicationLayer"
-}
-]
-},
-{
-"id": "1210",
-"name": "TechnologyLayer"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "162",
-"view_name": "TechnologyLayer"
-}
-]
-},
-{
-"id": "1211",
-"name": "ProjectManagement"
-,"type": "ArchiMate_Assessment"
-,"attributes": [
-{
-"name": "GRAPH_USAGE_GUIDE"
-,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。"
-}
-]
-,"subdiagram_views": [
-{
-"view_id": "163",
-"view_name": "ProjectManagement"
-}
-]
-},
-{
-"id": "1333",
-"name": "brief"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "provide the introduction of the current project, including the exterrnal api or other forms of interfaces in order to let external consumers know when and how to use this product system."
-,"attributes": [
-{
-"name": "PROMPT_FOR_MAIN_AGENT"
-,"description": "    const lines = [\r\n        '请作为 Copilot 主 agent 完成以下工作：',\r\n        `1. 以当前工作区 ${input.workspacePath} 为分析范围，基于仓库中的真实内容产出一份“对外介绍该项目所构建产品”的说明文档。`,\r\n        `2. 将最终说明文档保存到项目根目录：${input.workspacePath}\\\\INTRODUCTION.md。`,\r\n        `3. 优先阅读这些已知入口文件，并可按需继续深入代码与测试：`,\r\n        `   - ${input.readmePath}`,\r\n        `   - ${input.packageJsonPath}`,\r\n        `   - ${input.architectureGraphPath}`,\r\n        '4. 该说明文档的目标读者是外部调用方、潜在采用方、集成方；他们需要据此判断：',\r\n        '   - 本系统解决什么问题、适合什么场景',\r\n        '   - 系统当前提供了哪些能力与边界',\r\n        '   - 外部系统如何调用、接入、配置、运行、验证',\r\n        '   - 采用本系统前需要准备哪些前置条件、依赖和约束',\r\n        '5. 只能基于仓库中能够证实的信息输出结论，禁止臆造不存在的接口、部署方式、SLA、协议或产品能力。',\r\n        '6. 输出内容必须覆盖以下部分：',\r\n        '   - 产品概述：一句话定位、解决的问题、适用对象、典型场景',\r\n        '   - 功能清单：按模块或能力域总结核心功能',\r\n        '   - 接口与集成点：必须列出所有外部调用接口、集成点、配置入口，并详细说明它们的用途、输入参数、所有可能输出、调用方式、约束与示例',\r\n        '   - 调用与使用方法：安装/运行前置条件、最小使用步骤、配置方式、调用示例或操作路径',\r\n        '   - 评估采用时应关注的约束：运行环境、依赖组件、当前局限、适合集成方式、不适用场景',\r\n        '7. 输出格式要求：',\r\n        '   - 使用中文撰写',\r\n        '   - 结构清晰，适合直接给外部团队阅读',\r\n        '   - 优先给出“如何判断是否采用”和“如何开始使用”的信息',\r\n        '   - 不允许展开内部实现细节、源码组织、内部模块/类名或底层实现机制；仅在解释外部接入前置条件、运行约束或能力边界时，才以必要最小粒度提及',\r\n        '8. 最后必须附上最小接入路径是什么',\r\n        '9. 本次任务允许创建或更新项目根目录下的 INTRODUCTION.md，但不要修改其他业务代码。',\r\n        '10. 完成后，回复中必须明确说明 INTRODUCTION.md 已写入。',\r\n    ];"
-}
-]
-},
-{
-"id": "1334",
-"name": "LogicalArchitecture"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "169",
-"view_name": "LogicalArchitecture"
-},
-{
-"view_id": "175",
-"view_name": "本体关系"
-}
-]
-},
-{
-"id": "1335",
-"name": "INTENTION ARCHITECTURE MODEL"
-,"type": "Class"
-,"description": "the test cases hooked in the intention architecture are strictly in the scope of acceptance and scenario test cases. they are used to set the logical boundaries between the intention and code reality."
-,"attributes": [
-{
-"name": "example"
-,"description": "design\\KG\\SystemArchitecture.json"
-},
-{
-"name": "GRAPH_USAGE_GUIDE"
-,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
-},
-{
-"name": "schema"
-,"description": "schema\\SystemArchitecture.schema.json"
-}
-]
-},
-{
-"id": "1336",
-"name": "CODE IMPLEMENTATION"
-,"type": "Class"
-},
-{
-"id": "1337",
-"name": "非显性测试用例"
-,"type": "Class"
-,"description": "包括unit test, system test, integration test, inspection test, 主要用于支撑意图架构中的验收和场景测试用例的实现。"
-},
-{
-"id": "1338",
-"name": "HUMAN BEING"
-,"type": "Class"
-,"description": "work on <a href=\"$element://{191114F2-0331-4a44-902D-11949D1F4807}\"><font color=\"#0000ff\"><u>SystemArchitecture</u></font></a> to embody the intention of the developers."
-},
-{
-"id": "1339",
-"name": "编码"
-,"type": "Class"
-,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：代码仓中的目录和文件结构、目录下的测试侧栏（护栏中一般会有看护的实现对象）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码使得测试用例得以通过，如果下钻构建更细节的目录或文件，需要同时考虑是否补齐测试护栏。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）测试入口（包括设计阶段已经定义的所有测试用例）。</li>\r\n</ul>"
-},
-{
-"id": "1340",
-"name": "实现架构设计"
-,"type": "Class"
-,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>\r\n\r\n这里的实现架构我们就用代码仓中的目录和文件结构来表达，每个目录或文件就代表一个实现架构中的架构元素，每个目录下可以有看护对应架构元素的测试用例，主要是单元测试、系统测试、集成测试、inspection test。"
-},
-{
-"id": "1341",
-"name": "IMPLEMENTATION ARCHITECTURE MODEL"
-,"type": "Class"
-,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、ARCHITECTURE.md 契约文件、显性测试入口、非显性测试护栏共同表达。"
-},
-{
-"id": "1342",
-"name": "VS CODE runtime"
-,"type": "ArchiMate_Node"
-},
-{
-"id": "1343",
-"name": "Argo VS Extension"
-,"type": "ArchiMate_ApplicationComponent"
-,"subdiagram_views": [
-{
-"view_id": "170",
-"view_name": "Argo VS Extension"
-}
-]
-},
-{
-"id": "1344",
-"name": "commands"
-,"type": "ArchiMate_ApplicationComponent"
-,"subdiagram_views": [
-{
-"view_id": "171",
-"view_name": "commands"
-}
-]
-},
-{
-"id": "1345",
-"name": "implementationdesign"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model."
-,"attributes": [
-{
-"name": "autonomous"
-,"description": "src\\commands\\implementationdesign.ts"
-},
-{
-"name": "TEST_CASE_DESIGN_PROMPT"
-,"description": "#sym:buildImplementationDesignHandoffPrompt "
-}
-]
-},
-{
-"id": "1346",
-"name": "work"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "used for telling the main agent to design the implementation architecture and implement the code until passing all of the test cases pre-define."
-,"attributes": [
-{
-"name": "autonomous"
-,"description": "src\\commands\\work.ts"
-},
-{
-"name": "PROMPT_FOR_MAIN_AGENT"
-,"description": "#sym:buildWorkAgentHandoffPrompt "
-}
-]
-},
-{
-"id": "1363",
-"name": "意图架构设计"
-,"type": "Class"
-,"description": "这里意图架构采用JSON格式来表达，该JSON格式主要用于“架构骨架”的表达，可作为“地图”让LLM使用，一般会全量塞入LLM上下文中，因此不要放过多内容，如果需要对某个元素或关系或者他们的属性展开描述，必须把描述放入代码仓中的makrdown文本中，只需要将文本路径填入“架构骨架”。\r\n"
-},
-{
-"id": "1364",
-"name": "显性测试用例"
-,"type": "Class"
-,"description": "默认以 Acceptance Test 与 Scenario Test 作为意图架构验收基线；若其它类型 testcase 被提升为显性 testcase，则也必须承担稳定架构验收职责并拥有只读测试入口。"
-},
-{
-"id": "1365",
-"name": "自动化测试"
-,"type": "Class"
-,"description": "#sym:executeArchitectureTests "
-},
-{
-"id": "1366",
-"name": "测试失败记录"
-,"type": "Class"
-,"description": "design\\KG\\test-failure-records.json"
-},
-{
-"id": "1367",
-"name": "intentinarchitecturedesign"
-,"type": "ArchiMate_ApplicationFunction"
-,"attributes": [
-{
-"name": "autonomous"
-,"description": "src\\commands\\intentinarchitecturedesign.ts"
-},
-{
-"name": "INTENTION_DESIGN_PROMPT"
-,"description": "#sym:buildIntentInArchitectureDesignHandoffPrompt"
-}
-]
-},
-{
-"id": "1372",
-"name": "目录"
-,"type": "Class"
-,"description": "是实现架构元素的主要物理落地。目录默认表达包含关系与物理归属关系，只有被契约显式声明为稳定边界时，才视为稳定实现架构元素。"
-},
-{
-"id": "1373",
-"name": "代码文件"
-,"type": "Class"
-,"description": "是实现架构元素的物理落地"
-},
-{
-"id": "1374",
-"name": "ARCHITECTURE文件"
-,"type": "Class"
-,"description": "是实现架构契约的默认局部载体，而不是可有可无的补充说明。稳定实现元素目录下的 ARCHITECTURE.md 默认承载局部职责、依赖、追溯与测试护栏契约；根级总入口不再默认由 ARCHITECTURE.md 承载。"
-,"attributes": [
-{
-"name": "必填段"
-,"description": "---\r\ncontract_type: implementation-architecture-element\r\ncontract_version: 1\r\nscope: stable-element\r\nelement_name: commands\r\nelement_kind: Component\r\nelement_path: src/commands\r\n---\r\n\r\n## Implementation Architecture Contract\r\n\r\n### Responsibility\r\n- 暴露稳定的 chat 命令入口\r\n- 将用户意图转换为交接或执行流\r\n\r\n### Out Of Scope\r\n- 不直接承载底层测试执行引擎\r\n- 不吸收无关的通用工具职责\r\n\r\n### Children\r\n- path: work.ts\r\n  kind: entrypoint-file\r\n  role: coding-stage orchestration\r\n- path: implementationdesign.ts\r\n  kind: entrypoint-file\r\n  role: implementation architecture design handoff\r\n\r\n### Dependencies\r\n#### allowed\r\n- path: ../utils\r\n  reason: shared handoff and guards\r\n\r\n#### forbidden\r\n- path: ../engine\r\n  reason: commands should not absorb engine internals directly\r\n\r\n### Implements / Traceability\r\n#### implements_intent\r\n- element: work\r\n- element: implementationdesign\r\n\r\n#### implements_elements\r\n- none\r\n\r\n### Test Guardrails\r\n#### critical_non_explicit_tests\r\n- test_id: commands-entry-boundary\r\n  critical_kind: architecture-boundary\r\n  test_path: tests/commands-entry-boundary.test.ts\r\n  execution_entry: tests/commands-entry-boundary.test.ts\r\n  guards_elements:\r\n    - src/commands\r\n  supports_explicit_testcases:\r\n    - work\r\n  assertion_scope: command entry boundary remains stable\r\n  mutation_policy: read-only-during-work\r\n  protected_fixtures:\r\n    - tests/fixtures/command-fixture.ts\r\n  protected_baselines:\r\n    - tests/baselines/command-boundary.json\r\n  failure_classification_rule: implementation-environment-test-contract\r\n  rationale: 守护命令入口边界\r\n  frozen_by_stage: implementationdesign\r\n\r\n#### supporting_non_explicit_tests\r\n- path: tests/work-flow-support.test.ts\r\n  scope: local supporting guard\r\n\r\n### Explicit Testcase Entrypoints\r\n- none\r\n\r\n### Cross-Directory Guards\r\n- none\r\n\r\n### Exceptions\r\n- none\r\n\r\n### Open Gaps\r\n- none\r\n\r\n### Notes\r\n- none"
-},
-{
-"name": "显性测试入口"
-}
-]
-},
-{
-"id": "1375",
-"name": "测试用例"
-,"type": "Class"
-,"description": "看护所在目录覆盖范围的实现架构"
-},
-{
-"id": "1376",
-"name": "意图架构元素"
-,"type": "Class"
-,"description": "我们采用Archimate3.2作为意图架构的外层设计语言，对于具体元素可以进一步采用其它合适的建模语言（如UML、SysML、BPMN等等，根据需要和使用的人来选择最合适的）"
-},
-{
-"id": "1378",
-"name": "关键非显性测试用例"
-,"type": "Class"
-,"description": "实现架构设计阶段定死的关键非显性测试。它们只收口于四类：直接守架构边界、依赖方向、显性入口正确性、关键实现追溯。/work 阶段对其测试入口、断言边界、挂载对象、追溯关系、受保护夹具与基线数据一律只读。"
-},
-{
-"id": "1379",
-"name": "非关键非显性测试用例"
-,"type": "Class"
-,"description": "作为实现阶段的参考与支撑护栏，不承担冻结级实现架构契约地位。/work 阶段可以在既定契约允许的位置补充、调整和优化。"
-},
-{
-"id": "1380",
-"name": "实现架构根契约"
-,"type": "Class"
-,"description": "由仓库根目录下的 OVERALL_ARCHITECTURE.md 承载的实现架构总入口契约。它定义实现架构根、纳入与排除路径、一级实现元素、契约文件约定、显性测试入口规则、非显性测试护栏规则、读取顺序与阶段职责边界。\r\n仓库根目录下的 OVERALL_ARCHITECTURE.md 文件，是实现架构根契约的唯一总入口载体。ARCHITECTURE.md 可以引用它，但不应重复定义根级架构规则。"
-,"attributes": [
-{
-"name": "OVERALL_ARCHITECTURE文件"
-,"description": "---\r\ncontract_type: implementation-architecture-root\r\ncontract_version: 1\r\nscope: repository-root\r\n---\r\n\r\n## Implementation Architecture Contract\r\n\r\n### Root Scope\r\n- root_path: .\r\n- meaning: implementation-architecture-read-boundary\r\n\r\n### Included Paths\r\n- path: src/\r\n  reason: primary product implementation\r\n\r\n### Excluded Paths\r\n- path: design/\r\n  reason: governance assets\r\n- path: build/\r\n  reason: generated outputs\r\n\r\n### Top-Level Elements\r\n- path: src/commands\r\n  name: commands\r\n  kind: Component\r\n  responsibility: chat command entrypoints\r\n  readme_required: true\r\n  test_guard_policy: local-tests-subdir\r\n\r\n### Architecture Readme Convention\r\n- default_file: README.md\r\n- required_for_stable_elements: true\r\n\r\n### Explicit Testcase Entrypoint Rules\r\n- ownership_stage: implementationdesign\r\n- mutation_policy: read-only-during-work\r\n\r\n### Non-Explicit Test Rules\r\n- default_tests_dir: tests/\r\n- critical_tests_mutation_policy: read-only-during-work\r\n- supporting_tests_mutation_policy: editable-during-work\r\n\r\n### Cross-Directory Guard Rules\r\n- default_owner: nearest-common-ancestor-directory\r\n\r\n### Traceability Rules\r\n- directory_hierarchy_means: containment-only\r\n- implements_relation_declared_in: README\r\n\r\n### Read Order\r\n1. intention architecture\r\n2. root contract\r\n3. relevant element contracts\r\n4. code and tests\r\n\r\n### Stage Boundaries\r\n- implementationdesign: may update contracts and freeze critical tests\r\n- work: must treat explicit entries and critical non-explicit tests as read-only\r\n\r\n### Open Gaps\r\n- none\r\n\r\n### Notes\r\n- none\r\n"
-}
-]
-}
-],
-"relationships": [
-{
-"id":"1128"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现架构输入)--> 编码"
-,"name":"实现架构输入"
-,"source_id":"1341"
-,"target_id":"1339"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"编码"
-},
-{
-"id":"1131"
-,"statement":"意图架构设计 --(意图架构更新)--> INTENTION ARCHITECTURE MODEL"
-,"name":"意图架构更新"
-,"source_id":"1363"
-,"target_id":"1335"
-,"source_name":"意图架构设计"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1132"
-,"statement":"编码 --(implements)--> CODE IMPLEMENTATION"
-,"name":"implements"
-,"super_type": "_IMPLEMENT_"
-,"source_id":"1339"
-,"target_id":"1336"
-,"source_name":"编码"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1133"
-,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构输入)--> 实现架构设计"
-,"name":"意图架构输入"
-,"source_id":"1335"
-,"target_id":"1340"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1134"
-,"statement":"实现架构设计 --(实现架构更新)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"实现架构更新"
-,"source_id":"1340"
-,"target_id":"1341"
-,"source_name":"实现架构设计"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1136"
-,"statement":"VS CODE runtime --(ArchiMate_Serving)--> Argo VS Extension"
-,"name":"ArchiMate_Serving"
-,"super_type": "ArchiMate_Serving"
-,"source_id":"1342"
-,"target_id":"1343"
-,"source_name":"VS CODE runtime"
-,"target_name":"Argo VS Extension"
-},
-{
-"id":"1138"
-,"statement":"work --(Realisation)--> 编码"
-,"name":"Realisation"
-,"source_id":"1346"
-,"target_id":"1339"
-,"source_name":"work"
-,"target_name":"编码"
-},
-{
-"id":"1155"
-,"statement":"HUMAN BEING --(需求)--> 意图架构设计"
-,"name":"需求"
-,"source_id":"1338"
-,"target_id":"1363"
-,"source_name":"HUMAN BEING"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1156"
-,"statement":"显性测试用例 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1335"
-,"source_name":"显性测试用例"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1157"
-,"statement":"非显性测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1337"
-,"target_id":"1341"
-,"source_name":"非显性测试用例"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1158"
-,"statement":"CODE IMPLEMENTATION --(通过测试验收)--> 非显性测试用例"
-,"name":"通过测试验收"
-,"source_id":"1336"
-,"target_id":"1337"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1159"
-,"statement":"CODE IMPLEMENTATION --(通过测试验收)--> 显性测试用例"
-,"name":"通过测试验收"
-,"source_id":"1336"
-,"target_id":"1364"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"显性测试用例"
-},
-{
-"id":"1160"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(当实现架构实现后，意图架构就会被实现)--> INTENTION ARCHITECTURE MODEL"
-,"name":"当实现架构实现后，意图架构就会被实现"
-,"super_type": "_IMPLY_"
-,"source_id":"1341"
-,"target_id":"1335"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1161"
-,"statement":"implementationdesign --(Realisation)--> 实现架构设计"
-,"name":"Realisation"
-,"source_id":"1345"
-,"target_id":"1340"
-,"source_name":"implementationdesign"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1162"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(历史实现架构输入)--> 实现架构设计"
-,"name":"历史实现架构输入"
-,"source_id":"1341"
-,"target_id":"1340"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1163"
-,"statement":"INTENTION ARCHITECTURE MODEL --(历史意图架构输入)--> 意图架构设计"
-,"name":"历史意图架构输入"
-,"source_id":"1335"
-,"target_id":"1363"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1165"
-,"statement":"显性测试用例 --(意图架构（含显性测试用例）输入)--> 自动化测试"
-,"name":"意图架构（含显性测试用例）输入"
-,"source_id":"1364"
-,"target_id":"1365"
-,"source_name":"显性测试用例"
-,"target_name":"自动化测试"
-},
-{
-"id":"1166"
-,"statement":"自动化测试 --(可能输出)--> 测试失败记录"
-,"name":"可能输出"
-,"source_id":"1365"
-,"target_id":"1366"
-,"source_name":"自动化测试"
-,"target_name":"测试失败记录"
-},
-{
-"id":"1167"
-,"statement":"测试失败记录 --(失败记录输入)--> 编码"
-,"name":"失败记录输入"
-,"source_id":"1366"
-,"target_id":"1339"
-,"source_name":"测试失败记录"
-,"target_name":"编码"
-},
-{
-"id":"1168"
-,"statement":"intentinarchitecturedesign --(Realisation)--> 意图架构设计"
-,"name":"Realisation"
-,"source_id":"1367"
-,"target_id":"1363"
-,"source_name":"intentinarchitecturedesign"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1169"
-,"statement":"CODE IMPLEMENTATION --(实现)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"实现"
-,"super_type": "_IMPLY_"
-,"source_id":"1336"
-,"target_id":"1341"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1170"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现（填充）验收测试的逻辑)--> 显性测试用例"
-,"name":"实现（填充）验收测试的逻辑"
-,"super_type": "_IMPLEMENT_"
-,"source_id":"1341"
-,"target_id":"1364"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"显性测试用例"
-},
-{
-"id":"1171"
-,"statement":"显性测试用例 --(输入（已有测试实现）)--> 编码"
-,"name":"输入（已有测试实现）"
-,"source_id":"1364"
-,"target_id":"1339"
-,"source_name":"显性测试用例"
-,"target_name":"编码"
-},
-{
-"id":"1172"
-,"statement":"CODE IMPLEMENTATION --(输入当前代码)--> 实现架构设计"
-,"name":"输入当前代码"
-,"source_id":"1336"
-,"target_id":"1340"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1173"
-,"statement":"ARCHITECTURE文件 --(aggregates)--> 目录"
-,"name":"aggregates"
-,"source_id":"1374"
-,"target_id":"1372"
-,"source_name":"ARCHITECTURE文件"
-,"target_name":"目录"
-},
-{
-"id":"1174"
-,"statement":"代码文件 --(aggregates)--> 目录"
-,"name":"aggregates"
-,"source_id":"1373"
-,"target_id":"1372"
-,"source_name":"代码文件"
-,"target_name":"目录"
-},
-{
-"id":"1175"
-,"statement":"目录 --(aggregates)--> 目录"
-,"name":"aggregates"
-,"source_id":"1372"
-,"target_id":"1372"
-,"source_name":"目录"
-,"target_name":"目录"
-},
-{
-"id":"1176"
-,"statement":"目录 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1372"
-,"target_id":"1341"
-,"source_name":"目录"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1177"
-,"statement":"代码文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1373"
-,"target_id":"1341"
-,"source_name":"代码文件"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1178"
-,"statement":"ARCHITECTURE文件 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1374"
-,"target_id":"1341"
-,"source_name":"ARCHITECTURE文件"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1179"
-,"statement":"测试用例 --(aggregates)--> 目录"
-,"name":"aggregates"
-,"source_id":"1375"
-,"target_id":"1372"
-,"source_name":"测试用例"
-,"target_name":"目录"
-},
-{
-"id":"1180"
-,"statement":"意图架构元素 --(意图架构元素关系)--> 意图架构元素"
-,"name":"意图架构元素关系"
-,"source_id":"1376"
-,"target_id":"1376"
-,"source_name":"意图架构元素"
-,"target_name":"意图架构元素"
-},
-{
-"id":"1181"
-,"statement":"意图架构元素 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1376"
-,"target_id":"1335"
-,"source_name":"意图架构元素"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1182"
-,"statement":"显性测试用例 --(aggregates)--> 意图架构元素"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1376"
-,"source_name":"显性测试用例"
-,"target_name":"意图架构元素"
-},
-{
-"id":"1184"
-,"statement":"显性测试用例 --(aggregates)--> 测试用例"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1375"
-,"source_name":"显性测试用例"
-,"target_name":"测试用例"
-},
-{
-"id":"1185"
-,"statement":"非显性测试用例 --(aggregates)--> 测试用例"
-,"name":"aggregates"
-,"source_id":"1337"
-,"target_id":"1375"
-,"source_name":"非显性测试用例"
-,"target_name":"测试用例"
-},
-{
-"id":"1186"
-,"statement":"关键非显性测试用例 --(aggregates)--> 非显性测试用例"
-,"name":"aggregates"
-,"source_id":"1378"
-,"target_id":"1337"
-,"source_name":"关键非显性测试用例"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1187"
-,"statement":"非关键非显性测试用例 --(aggregates)--> 非显性测试用例"
-,"name":"aggregates"
-,"source_id":"1379"
-,"target_id":"1337"
-,"source_name":"非关键非显性测试用例"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1189"
-,"statement":"代码文件 --(aggregates)--> CODE IMPLEMENTATION"
-,"name":"aggregates"
-,"source_id":"1373"
-,"target_id":"1336"
-,"source_name":"代码文件"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1190"
-,"statement":"目录 --(aggregates)--> CODE IMPLEMENTATION"
-,"name":"aggregates"
-,"source_id":"1372"
-,"target_id":"1336"
-,"source_name":"目录"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1191"
-,"statement":"实现架构根契约 --(aggregates)--> 目录"
-,"name":"aggregates"
-,"source_id":"1380"
-,"target_id":"1372"
-,"source_name":"实现架构根契约"
-,"target_name":"目录"
-},
-{
-"id":"1193"
-,"statement":"测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1375"
-,"target_id":"1341"
-,"source_name":"测试用例"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1194"
-,"statement":"测试用例 --(Association)--> CODE IMPLEMENTATION"
-,"name":"Association"
-,"source_id":"1375"
-,"target_id":"1336"
-,"source_name":"测试用例"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1195"
-,"statement":"意图架构元素 --(Association)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"Association"
-,"source_id":"1376"
-,"target_id":"1341"
-,"source_name":"意图架构元素"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-}
-],
-"views": [
-{
-"view_id": "169",
-"view_name": "LogicalArchitecture"
-,"parent_element_id": "1334"
-,"parent_element_name": "LogicalArchitecture"
-,"included_elements": [
-"1363",
-"1364",
-"1345",
-"1365",
-"1366",
-"1367",
-"1335",
-"1336",
-"1337",
-"1338",
-"1339",
-"1340",
-"1341",
-"1346"
-]
-,"included_relationships": [
-"1128",
-"1131",
-"1132",
-"1133",
-"1134",
-"1138",
-"1155",
-"1156",
-"1157",
-"1158",
-"1159",
-"1160",
-"1161",
-"1162",
-"1163",
-"1165",
-"1166",
-"1167",
-"1168",
-"1169",
-"1170",
-"1171",
-"1172"
-]
-},
-{
-"view_id": "175",
-"view_name": "本体关系"
-,"parent_element_id": "1334"
-,"parent_element_name": "LogicalArchitecture"
-,"included_elements": [
-"1336",
-"1341",
-"1335",
-"1372",
-"1373",
-"1374",
-"1375",
-"1376",
-"1364",
-"1337",
-"1378",
-"1379",
-"1380"
-]
-,"included_relationships": [
-"1173",
-"1174",
-"1175",
-"1176",
-"1177",
-"1178",
-"1179",
-"1180",
-"1181",
-"1182",
-"1184",
-"1185",
-"1186",
-"1187",
-"1189",
-"1190",
-"1191",
-"1193",
-"1194",
-"1195"
-]
-},
-{
-"view_id": "159",
-"view_name": "StrategyLayerAndMotivationAspect"
-,"parent_element_id": "1207"
-,"parent_element_name": "StrategyLayerAndMotivationAspect"
-,"included_elements": [
-"1334"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "160",
-"view_name": "BusinessLayer"
-,"parent_element_id": "1208"
-,"parent_element_name": "BusinessLayer"
-,"included_elements": [
-
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "171",
-"view_name": "commands"
-,"parent_element_id": "1344"
-,"parent_element_name": "commands"
-,"included_elements": [
-"1367",
-"1333",
-"1345",
-"1346"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "170",
-"view_name": "Argo VS Extension"
-,"parent_element_id": "1343"
-,"parent_element_name": "Argo VS Extension"
-,"included_elements": [
-"1344"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "161",
-"view_name": "ApplicationLayer"
-,"parent_element_id": "1209"
-,"parent_element_name": "ApplicationLayer"
-,"included_elements": [
-"1343",
-"1342"
-]
-,"included_relationships": [
-"1136"
-]
-},
-{
-"view_id": "162",
-"view_name": "TechnologyLayer"
-,"parent_element_id": "1210"
-,"parent_element_name": "TechnologyLayer"
-,"included_elements": [
-"1342"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "163",
-"view_name": "ProjectManagement"
-,"parent_element_id": "1211"
-,"parent_element_name": "ProjectManagement"
-,"included_elements": [
-
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "158",
-"view_name": "SystemArchitecture"
-,"included_elements": [
-"1207",
-"1208",
-"1209",
-"1210",
-"1211"
-]
-,"included_relationships": [
-
-]
-}
-]
+    "name": "System",
+    "description": "",
+    "elements": [
+        {
+            "id": "1207",
+            "name": "StrategyLayerAndMotivationAspect",
+            "type": "ArchiMate_Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "159",
+                    "view_name": "StrategyLayerAndMotivationAspect"
+                }
+            ]
+        },
+        {
+            "id": "1208",
+            "name": "BusinessLayer",
+            "type": "ArchiMate_Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "160",
+                    "view_name": "BusinessLayer"
+                }
+            ]
+        },
+        {
+            "id": "1209",
+            "name": "ApplicationLayer",
+            "type": "ArchiMate_Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "161",
+                    "view_name": "ApplicationLayer"
+                }
+            ]
+        },
+        {
+            "id": "1210",
+            "name": "TechnologyLayer",
+            "type": "ArchiMate_Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "162",
+                    "view_name": "TechnologyLayer"
+                }
+            ]
+        },
+        {
+            "id": "1211",
+            "name": "ProjectManagement",
+            "type": "ArchiMate_Assessment",
+            "attributes": [
+                {
+                    "name": "GRAPH_USAGE_GUIDE",
+                    "description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。"
+                }
+            ],
+            "subdiagram_views": [
+                {
+                    "view_id": "163",
+                    "view_name": "ProjectManagement"
+                }
+            ]
+        },
+        {
+            "id": "1333",
+            "name": "brief",
+            "type": "ArchiMate_ApplicationFunction",
+            "description": "provide the introduction of the current project, including the exterrnal api or other forms of interfaces in order to let external consumers know when and how to use this product system.",
+            "attributes": [
+                {
+                    "name": "PROMPT_FOR_MAIN_AGENT",
+                    "description": "    const lines = [\r\n        '请作为 Copilot 主 agent 完成以下工作：',\r\n        `1. 以当前工作区 ${input.workspacePath} 为分析范围，基于仓库中的真实内容产出一份“对外介绍该项目所构建产品”的说明文档。`,\r\n        `2. 将最终说明文档保存到项目根目录：${input.workspacePath}\\\\INTRODUCTION.md。`,\r\n        `3. 优先阅读这些已知入口文件，并可按需继续深入代码与测试：`,\r\n        `   - ${input.readmePath}`,\r\n        `   - ${input.packageJsonPath}`,\r\n        `   - ${input.architectureGraphPath}`,\r\n        '4. 该说明文档的目标读者是外部调用方、潜在采用方、集成方；他们需要据此判断：',\r\n        '   - 本系统解决什么问题、适合什么场景',\r\n        '   - 系统当前提供了哪些能力与边界',\r\n        '   - 外部系统如何调用、接入、配置、运行、验证',\r\n        '   - 采用本系统前需要准备哪些前置条件、依赖和约束',\r\n        '5. 只能基于仓库中能够证实的信息输出结论，禁止臆造不存在的接口、部署方式、SLA、协议或产品能力。',\r\n        '6. 输出内容必须覆盖以下部分：',\r\n        '   - 产品概述：一句话定位、解决的问题、适用对象、典型场景',\r\n        '   - 功能清单：按模块或能力域总结核心功能',\r\n        '   - 接口与集成点：必须列出所有外部调用接口、集成点、配置入口，并详细说明它们的用途、输入参数、所有可能输出、调用方式、约束与示例',\r\n        '   - 调用与使用方法：安装/运行前置条件、最小使用步骤、配置方式、调用示例或操作路径',\r\n        '   - 评估采用时应关注的约束：运行环境、依赖组件、当前局限、适合集成方式、不适用场景',\r\n        '7. 输出格式要求：',\r\n        '   - 使用中文撰写',\r\n        '   - 结构清晰，适合直接给外部团队阅读',\r\n        '   - 优先给出“如何判断是否采用”和“如何开始使用”的信息',\r\n        '   - 不允许展开内部实现细节、源码组织、内部模块/类名或底层实现机制；仅在解释外部接入前置条件、运行约束或能力边界时，才以必要最小粒度提及',\r\n        '8. 最后必须附上最小接入路径是什么',\r\n        '9. 本次任务允许创建或更新项目根目录下的 INTRODUCTION.md，但不要修改其他业务代码。',\r\n        '10. 完成后，回复中必须明确说明 INTRODUCTION.md 已写入。',\r\n    ];"
+                }
+            ]
+        },
+        {
+            "id": "1334",
+            "name": "LogicalArchitecture",
+            "type": "ArchiMate_Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "169",
+                    "view_name": "LogicalArchitecture"
+                },
+                {
+                    "view_id": "175",
+                    "view_name": "本体关系"
+                }
+            ]
+        },
+        {
+            "id": "1335",
+            "name": "INTENTION ARCHITECTURE MODEL",
+            "type": "Class",
+            "description": "通过EA等工具进行建模，生成可归档的design/KG/SystemArchitecture.json意图模型",
+            "attributes": [
+                {
+                    "name": "GRAPH_USAGE_GUIDE",
+                    "description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
+                },
+                {
+                    "name": "location",
+                    "description": "design\\KG\\SystemArchitecture.json"
+                },
+                {
+                    "name": "schema",
+                    "content": "Relative File Path:D:\\\\Projects\\\\Argo\\\\.github\\\\argoschema\\\\SystemArchitecture.schema.json\n\n{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"$id\": \"./schema/SystemArchitecture.schema.json\",\r\n  \"title\": \"SystemArchitecture Knowledge Graph Schema\",\r\n  \"description\": \"Schema extracted from the EA ArchiMate JSON export structure for design/KG/SystemArchitecture.json.\",\r\n  \"type\": \"object\",\r\n  \"additionalProperties\": false,\r\n  \"required\": [\r\n    \"name\",\r\n    \"description\",\r\n    \"elements\",\r\n    \"relationships\",\r\n    \"views\"\r\n  ],\r\n  \"properties\": {\r\n    \"name\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"description\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"attributes\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"$ref\": \"#/$defs/attribute\"\r\n      }\r\n    },\r\n    \"elements\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"$ref\": \"#/$defs/element\"\r\n      }\r\n    },\r\n    \"relationships\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"$ref\": \"#/$defs/relationship\"\r\n      }\r\n    },\r\n    \"views\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"$ref\": \"#/$defs/view\"\r\n      }\r\n    }\r\n  },\r\n  \"$defs\": {\r\n    \"task\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"name\"\r\n      ],\r\n      \"properties\": {\r\n        \"name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"type\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"status\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"start_date\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"completion_date\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"due_date\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"reporter\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"priority\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"assigned_to\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"progress\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"resource\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"owner\",\r\n        \"role\",\r\n        \"start_date\",\r\n        \"end_date\",\r\n        \"percent_complete\",\r\n        \"expected_hours\"\r\n      ],\r\n      \"properties\": {\r\n        \"owner\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"role\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"start_date\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"end_date\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"percent_complete\": {\r\n          \"type\": \"number\"\r\n        },\r\n        \"expected_hours\": {\r\n          \"type\": \"number\"\r\n        },\r\n        \"history\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"projectSummary\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"properties\": {\r\n        \"notes\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"started\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"deadline\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"priority\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"assigned_to\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"progress\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"projectInfo\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"properties\": {\r\n        \"summary\": {\r\n          \"$ref\": \"#/$defs/projectSummary\"\r\n        },\r\n        \"resources\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/resource\"\r\n          }\r\n        },\r\n        \"tasks\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/task\"\r\n          }\r\n        }\r\n      }\r\n    },\r\n    \"attribute\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"name\"\r\n      ],\r\n      \"description\": \"Generic EA-style attribute container. Use this for architecture annotations such as verification_focus, acceptance_outcomes, and design_risks instead of introducing dedicated top-level fields.\",\r\n      \"properties\": {\r\n        \"name\": {\r\n          \"type\": \"string\",\r\n          \"description\": \"Attribute name, for example verification_focus, acceptance_outcomes, design_risks, or a domain-specific property name.\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"value\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"content\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"subdiagramView\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"view_id\",\r\n        \"view_name\"\r\n      ],\r\n      \"properties\": {\r\n        \"view_id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"view_name\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"testcase\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"name\",\r\n        \"description\",\r\n        \"type\",\r\n        \"Input\",\r\n        \"acceptanceCriteria\",\r\n        \"TestResults\"\r\n      ],\r\n      \"properties\": {\r\n        \"name\": {\r\n          \"type\": \"string\",\r\n          \"description\": \"Stable testcase identifier. Use the testcase name itself as the long-lived identity; do not add a separate testcase id field.\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\",\r\n          \"description\": \"Place the intent being verified here. Each testcase should normally be mounted under exactly one element rather than using extra verifies_elements or verifies_intents fields.\"\r\n        },\r\n        \"type\": {\r\n          \"type\": \"string\",\r\n          \"enum\": [\r\n            \"Unit Test\",\r\n            \"Integration Test\",\r\n            \"System Test\",\r\n            \"Acceptance Test\",\r\n            \"Scenario Test\",\r\n            \"Inspection Test\"\r\n          ]\r\n        },\r\n        \"Input\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"acceptanceCriteria\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"TestResults\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"element\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"id\",\r\n        \"name\",\r\n        \"type\"\r\n      ],\r\n      \"properties\": {\r\n        \"id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"type\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"alias\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"classifier\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"browser_path\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"status\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"document\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"attributes\": {\r\n          \"type\": \"array\",\r\n          \"description\": \"Use attributes to store additional architecture intent metadata, including verification_focus, acceptance_outcomes, and design_risks.\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/attribute\"\r\n          }\r\n        },\r\n        \"code_file\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"condition_file\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"prompts_file\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"project_info\": {\r\n          \"$ref\": \"#/$defs/projectInfo\"\r\n        },\r\n        \"subdiagram_views\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/subdiagramView\"\r\n          }\r\n        },\r\n        \"testcases\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/testcase\"\r\n          }\r\n        }\r\n      }\r\n    },\r\n    \"relationshipAttribute\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"name\",\r\n        \"description\"\r\n      ],\r\n      \"properties\": {\r\n        \"name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"relationship\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"id\",\r\n        \"statement\",\r\n        \"name\",\r\n        \"source_id\",\r\n        \"target_id\",\r\n        \"source_name\",\r\n        \"target_name\"\r\n      ],\r\n      \"properties\": {\r\n        \"id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"statement\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"sequence\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"super_type\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"document\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"attributes\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"$ref\": \"#/$defs/relationshipAttribute\"\r\n          }\r\n        },\r\n        \"source_id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"target_id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"source_name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"target_name\": {\r\n          \"type\": \"string\"\r\n        }\r\n      }\r\n    },\r\n    \"view\": {\r\n      \"type\": \"object\",\r\n      \"additionalProperties\": false,\r\n      \"required\": [\r\n        \"view_id\",\r\n        \"view_name\",\r\n        \"included_elements\",\r\n        \"included_relationships\"\r\n      ],\r\n      \"properties\": {\r\n        \"view_id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"view_name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"browser_path\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"parent_element_id\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"parent_element_name\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"description\": {\r\n          \"type\": \"string\"\r\n        },\r\n        \"included_elements\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"type\": \"string\"\r\n          }\r\n        },\r\n        \"included_relationships\": {\r\n          \"type\": \"array\",\r\n          \"items\": {\r\n            \"type\": \"string\"\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n}"
+                }
+            ]
+        },
+        {
+            "id": "1336",
+            "name": "CODE IMPLEMENTATION",
+            "type": "Class"
+        },
+        {
+            "id": "1337",
+            "name": "非显性测试用例",
+            "type": "Class",
+            "description": "包括unit test, system test, integration test, inspection test, 主要用于支撑意图架构中的验收和场景测试用例的实现。"
+        },
+        {
+            "id": "1338",
+            "name": "HUMAN BEING",
+            "type": "Class",
+            "description": "work on <a href=\"$element://{191114F2-0331-4a44-902D-11949D1F4807}\"><font color=\"#0000ff\"><u>SystemArchitecture</u></font></a> to embody the intention of the developers."
+        },
+        {
+            "id": "1339",
+            "name": "编码",
+            "type": "Class",
+            "description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：代码仓中的目录和文件结构、目录下的测试侧栏（护栏中一般会有看护的实现对象）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码使得测试用例得以通过，如果下钻构建更细节的目录或文件，需要同时考虑是否补齐测试护栏。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）测试入口（包括设计阶段已经定义的所有测试用例）。</li>\r\n</ul>"
+        },
+        {
+            "id": "1340",
+            "name": "实现架构设计",
+            "type": "Class",
+            "description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>\r\n\r\n这里的实现架构我们就用代码仓中的目录和文件结构来表达，每个目录或文件就代表一个实现架构中的架构元素，每个目录下可以有看护对应架构元素的测试用例，主要是单元测试、系统测试、集成测试、inspection test。"
+        },
+        {
+            "id": "1341",
+            "name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "type": "Class",
+            "description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、OVERALL_ARCHITECTURE.md、ARCHITECTURE.md 契约文件、显性测试入口、非显性测试护栏共同表达。"
+        },
+        {
+            "id": "1342",
+            "name": "VS CODE runtime",
+            "type": "ArchiMate_Node"
+        },
+        {
+            "id": "1343",
+            "name": "Argo VS Extension",
+            "type": "ArchiMate_ApplicationComponent",
+            "subdiagram_views": [
+                {
+                    "view_id": "170",
+                    "view_name": "Argo VS Extension"
+                }
+            ]
+        },
+        {
+            "id": "1344",
+            "name": "commands",
+            "type": "ArchiMate_ApplicationComponent",
+            "subdiagram_views": [
+                {
+                    "view_id": "171",
+                    "view_name": "commands"
+                }
+            ]
+        },
+        {
+            "id": "1345",
+            "name": "implementationdesign",
+            "type": "ArchiMate_ApplicationFunction",
+            "description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model.",
+            "attributes": [
+                {
+                    "name": "autonomous",
+                    "content": "Relative File Path:D:\\\\Projects\\\\Argo\\\\src\\\\commands\\\\implementationdesign.ts\n\nimport * as vscode from 'vscode';\r\nimport { buildImplementationDesignHandoffPrompt } from '../utils/agentHandoff';\r\nimport { setExplicitTestcaseEntryGuardStage } from '../utils/explicitTestcaseEntryGuard';\r\n\r\nexport async function handleImplementationDesign(\r\n    request: vscode.ChatRequest,\r\n    _context: vscode.ChatContext,\r\n    stream: vscode.ChatResponseStream,\r\n    _token: vscode.CancellationToken,\r\n): Promise<void> {\r\n    stream.markdown('## /implementationdesign - Implementation Architecture Design Handoff\\n\\n');\r\n    await setExplicitTestcaseEntryGuardStage('implementationdesign');\r\n    stream.markdown('已切换到实现架构设计阶段：显性测试入口文件当前允许由设计阶段完成物理化。\\n\\n');\r\n\r\n    const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;\r\n    if (!rootPath) {\r\n        stream.markdown('❌ No workspace folder is open.\\n');\r\n        return;\r\n    }\r\n\r\n    const handoffPrompt = buildImplementationDesignHandoffPrompt({\r\n        workspacePath: rootPath,\r\n        architectureGraphPath: `${rootPath}\\\\design\\\\KG\\\\SystemArchitecture.json`,\r\n        schemaPath: `${rootPath}\\\\schema\\\\SystemArchitecture.schema.json`,\r\n        implementationArchitecturePath: `${rootPath}\\\\design\\\\KG\\\\ImplementationArchitecture.json`,\r\n        testsPath: `${rootPath}\\\\tests`,\r\n        srcPath: `${rootPath}\\\\src`,\r\n        extraContext: request.prompt.trim(),\r\n    });\r\n\r\n    stream.markdown(\r\n        '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot agent 并等待它完成实现架构设计。\\n\\n' +\r\n        '请优先调用自定义 agent `implementation-architecture-designer`，并将下面这段指令作为本次任务输入。它必须把整个意图架构与其中显性 testcase 一起作为输入，在人类深度参与关键决策的前提下，直接把实现架构落实到代码仓本体：更新 OVERALL_ARCHITECTURE.md、相关 ARCHITECTURE.md、显性 testcase 只读入口、关键非显性测试与普通支撑护栏，而不是再生成独立的 ImplementationArchitecture.json。对于显性 testcase，除了建立追溯关系外，还必须落实为后续编码阶段可直接调用的只读测试入口；对于关键非显性测试，也必须在本阶段定死其测试实现并冻结。跨层讨论聚合/组合关系时，统一按“部分（source）指向整体（target）”理解；目录层级默认只表达包含，不自动表达 implements。只有真正会改变模块分解、接口边界、依赖方向、意图实现映射、显性入口冻结方式或关键测试护栏的事项，才应提交给用户拍板，而且每个决策都必须给出推荐方案、备选方案、理由与权衡。\\n\\n',\r\n    );\r\n    stream.markdown('```text\\n' + handoffPrompt + '\\n```\\n');\r\n}"
+                },
+                {
+                    "name": "TEST_CASE_DESIGN_PROMPT",
+                    "description": "#sym:buildImplementationDesignHandoffPrompt "
+                }
+            ]
+        },
+        {
+            "id": "1346",
+            "name": "work",
+            "type": "ArchiMate_ApplicationFunction",
+            "description": "used for telling the main agent to design the implementation architecture and implement the code until passing all of the test cases pre-define.",
+            "attributes": [
+                {
+                    "name": "autonomous",
+                    "content": "Relative File Path:D:\\\\Projects\\\\Argo\\\\src\\\\commands\\\\work.ts\n\nimport * as vscode from 'vscode';\r\nimport {\r\n    ArchitectureTestExecutionResult,\r\n    type ArchitectureTestProgressUpdate,\r\n    type ArchitectureTestRunSummary,\r\n    DEFAULT_ARCHITECTURE_GRAPH_PATH,\r\n    FAILURE_RECORDS_PATH,\r\n    runArchitectureTests,\r\n} from '../tools/architectureTestTool';\r\nimport { buildWorkAgentHandoffPrompt } from '../utils/agentHandoff';\r\nimport {\r\n    isExplicitTestcaseEntryGuardEnabled,\r\n    setExplicitTestcaseEntryGuardStage,\r\n} from '../utils/explicitTestcaseEntryGuard';\r\n\r\nexport async function handleWork(\r\n    request: vscode.ChatRequest,\r\n    _context: vscode.ChatContext,\r\n    stream: vscode.ChatResponseStream,\r\n    token: vscode.CancellationToken,\r\n): Promise<void> {\r\n    stream.markdown('## /work - Architecture Test Driven Delivery\\n\\n');\r\n    await setExplicitTestcaseEntryGuardStage('coding');\r\n    stream.markdown(\r\n        isExplicitTestcaseEntryGuardEnabled()\r\n            ? '显性测试入口保护已启用：编码阶段若尝试改写这些文件，Argo 会自动回滚并拒绝该修改。\\n\\n'\r\n            : '显性测试入口保护当前未启用：只有当你打开设置 `argo.protectExplicitTestcaseEntriesDuringCoding` 后，Argo 才会在编码阶段自动回滚并拒绝这类修改。\\n\\n',\r\n    );\r\n    stream.markdown('### Step 1 - Running explicit tests from the intent architecture ...\\n\\n');\r\n\r\n    let summary: ArchitectureTestRunSummary;\r\n    try {\r\n        summary = await executeArchitectureTests(stream, token);\r\n    } catch (error) {\r\n        if (error instanceof vscode.CancellationError) {\r\n            return;\r\n        }\r\n        stream.markdown(`❌ Failed to execute architecture tests: \\`${String(error)}\\`\\n`);\r\n        return;\r\n    }\r\n\r\n    stream.markdown(renderSummary(summary));\r\n\r\n    if (summary.totalTestCases === 0) {\r\n        stream.markdown(\r\n            '⚠️ 当前意图架构图谱中没有任何显性 testcase。按当前逻辑边界，这意味着尚未形成可执行的显性验收基线；应回到意图架构设计或实现架构设计阶段补齐基线，而不是在编码阶段直接补写。\\n\\n',\r\n        );\r\n    }\r\n\r\n    if (summary.failedCount === 0 && summary.totalTestCases > 0) {\r\n        stream.markdown('✅ 所有已声明测试均已通过，当前无需再交接主 agent。\\n');\r\n        return;\r\n    }\r\n\r\n    const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;\r\n    if (!rootPath) {\r\n        stream.markdown('❌ No workspace folder is open.\\n');\r\n        return;\r\n    }\r\n\r\n    const handoffPrompt = buildWorkAgentHandoffPrompt({\r\n        architectureGraphPath: `${rootPath}\\\\design\\\\KG\\\\SystemArchitecture.json`,\r\n        failureRecordsPath: `${rootPath}\\\\${FAILURE_RECORDS_PATH.replace(/\\//g, '\\\\')}`,\r\n        extraContext: request.prompt.trim(),\r\n        failureRecords: summary.failureRecords,\r\n        totalTestCases: summary.totalTestCases,\r\n        missingCriteriaCount: summary.missingCriteriaCount,\r\n    });\r\n\r\n    stream.markdown(\r\n        '### Step 2 - Handoff To Copilot Main Agent\\n\\n' +\r\n        '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot agent 并等待它完成开发。\\n\\n' +\r\n        '请优先调用自定义 agent `architecture-delivery-worker`，并将下面这段指令作为本次任务输入。它需要先读取失败记录文件、OVERALL_ARCHITECTURE.md 与相关 ARCHITECTURE.md 契约，再进行开发，直到这些测试通过；编码阶段只允许补齐实现代码、普通支撑性测试和测试环境，并调用现有显性 testcase 入口做验收。不得新增、删除、重建或改写显性 testcase，也不得修改其既有测试入口；对关键非显性测试及其受保护夹具、基线数据也一律只读。若发现 `acceptanceCriteria` 缺失、显性测试入口失效，或关键非显性测试契约本身错误，应将其视为实现架构设计阶段遗留缺口并明确回报，而不是在编码阶段直接改写这些冻结资产。\\n\\n',\r\n    );\r\n    stream.markdown('```text\\n' + handoffPrompt + '\\n```\\n');\r\n}\r\n\r\nasync function executeArchitectureTests(\r\n    stream: vscode.ChatResponseStream,\r\n    token: vscode.CancellationToken,\r\n): Promise<ArchitectureTestRunSummary> {\r\n    return runArchitectureTests(\r\n        DEFAULT_ARCHITECTURE_GRAPH_PATH,\r\n        token,\r\n        update => {\r\n            stream.progress(renderProgress(update));\r\n        },\r\n    );\r\n}\r\n\r\nfunction renderProgress(update: ArchitectureTestProgressUpdate): string {\r\n    const testcaseName = update.testcaseName || '(unnamed testcase)';\r\n    const scriptPath = update.resolvedScriptPath || '(missing acceptanceCriteria)';\r\n    const executionCommand = update.executionCommand || '(n/a)';\r\n    return `[${update.currentIndex}/${update.totalTestCases}] ${testcaseName} | ${scriptPath} | ${executionCommand} | ${update.status}`;\r\n}\r\n\r\nfunction renderSummary(summary: ArchitectureTestRunSummary): string {\r\n    const lines: string[] = [\r\n        `- Architecture graph: \\`${summary.architecturePath}\\``,\r\n        `- Total testcases: ${summary.totalTestCases}`,\r\n        `- Passed: ${summary.passedCount}`,\r\n        `- Failed or missing: ${summary.failedCount}`,\r\n        `- Missing acceptanceCriteria: ${summary.missingCriteriaCount}`,\r\n        `- Failure records: \\`${summary.failureRecordsPath}\\``,\r\n        '',\r\n        '### Test Results',\r\n        '',\r\n    ];\r\n\r\n    if (summary.results.length === 0) {\r\n        lines.push('- No testcase entries were found in the architecture graph.', '');\r\n        return lines.join('\\n');\r\n    }\r\n\r\n    for (const result of summary.results) {\r\n        lines.push(renderExecutionResult(result));\r\n    }\r\n    lines.push('');\r\n    return lines.join('\\n');\r\n}\r\n\r\nfunction renderExecutionResult(result: ArchitectureTestExecutionResult): string {\r\n    const detail = result.resolvedScriptPath\r\n        ? `script: \\`${result.resolvedScriptPath}\\``\r\n        : 'script: (missing)';\r\n    const executionCommand = result.executionCommand\r\n        ? `command: \\`${result.executionCommand}\\``\r\n        : 'command: (n/a)';\r\n    const exitCode = result.exitCode === null ? 'n/a' : String(result.exitCode);\r\n    const stderr = shrink(result.stderr);\r\n    const stdout = shrink(result.stdout);\r\n    let line = `- ${result.testcaseName || '(unnamed testcase)'}: ${result.status} · ${detail} · ${executionCommand} · exitCode: ${exitCode}`;\r\n    if (stdout) {\r\n        line += ` · stdout: ${stdout}`;\r\n    }\r\n    if (stderr) {\r\n        line += ` · stderr: ${stderr}`;\r\n    }\r\n    return line;\r\n}\r\n\r\nfunction shrink(value: string): string {\r\n    if (!value) {\r\n        return '';\r\n    }\r\n    const singleLine = value.replace(/\\s+/g, ' ').trim();\r\n    return singleLine.length > 160 ? `${singleLine.slice(0, 157)}...` : singleLine;\r\n}"
+                },
+                {
+                    "name": "PROMPT_FOR_MAIN_AGENT",
+                    "description": "#sym:buildWorkAgentHandoffPrompt "
+                }
+            ]
+        },
+        {
+            "id": "1363",
+            "name": "意图架构设计",
+            "type": "Class",
+            "description": "这里意图架构采用JSON格式来表达，该JSON格式主要用于“架构骨架”的表达，可作为“地图”让LLM使用，一般会全量塞入LLM上下文中，因此不要放过多内容，如果需要对某个元素或关系或者他们的属性展开描述，必须把描述放入代码仓中的makrdown文本中，只需要将文本路径填入“架构骨架”。\r\n"
+        },
+        {
+            "id": "1364",
+            "name": "显性测试用例",
+            "type": "Class",
+            "description": "默认以 Acceptance Test 与 Scenario Test 作为意图架构验收基线；若其它类型 testcase 被提升为显性 testcase，则也必须承担稳定架构验收职责并拥有只读测试入口。"
+        },
+        {
+            "id": "1365",
+            "name": "自动化测试",
+            "type": "Class",
+            "description": "#sym:executeArchitectureTests "
+        },
+        {
+            "id": "1366",
+            "name": "测试失败记录",
+            "type": "Class",
+            "description": "design\\KG\\test-failure-records.json"
+        },
+        {
+            "id": "1367",
+            "name": "intentinarchitecturedesign",
+            "type": "ArchiMate_ApplicationFunction",
+            "attributes": [
+                {
+                    "name": "autonomous",
+                    "content": "Relative File Path:D:\\\\Projects\\\\Argo\\\\src\\\\commands\\\\intentinarchitecturedesign.ts\n\nimport * as vscode from 'vscode';\r\nimport { buildIntentInArchitectureDesignHandoffPrompt } from '../utils/agentHandoff';\r\n\r\nexport async function handleIntentInArchitectureDesign(\r\n    _request: vscode.ChatRequest,\r\n    _context: vscode.ChatContext,\r\n    stream: vscode.ChatResponseStream,\r\n    _token: vscode.CancellationToken,\r\n): Promise<void> {\r\n    stream.markdown('## /intentinarchitecturedesign - Intent In Architecture Design Handoff\\n\\n');\r\n    stream.markdown(\r\n        '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot agent 并等待它完成意图架构设计访谈。\\n\\n' +\r\n        '请优先调用自定义 agent `intent-architecture-designer`，并将下面这段指令作为本次任务输入。它会直接复用 grill-me skill 的工作方式，在代码库能够回答问题时优先自行探索仓库。\\n\\n',\r\n    );\r\n    stream.markdown('```text\\n' + buildIntentInArchitectureDesignHandoffPrompt() + '\\n```\\n');\r\n}"
+                },
+                {
+                    "name": "INTENTION_DESIGN_PROMPT",
+                    "description": "#sym:buildIntentInArchitectureDesignHandoffPrompt"
+                }
+            ]
+        },
+        {
+            "id": "1375",
+            "name": "测试用例",
+            "type": "Class",
+            "description": "看护所在目录覆盖范围的实现架构"
+        },
+        {
+            "id": "1376",
+            "name": "意图架构元素",
+            "type": "Class",
+            "description": "我们采用Archimate3.2作为意图架构的外层设计语言，对于具体元素可以进一步采用其它合适的建模语言（如UML、SysML、BPMN等等，根据需要和使用的人来选择最合适的）"
+        },
+        {
+            "id": "1378",
+            "name": "关键非显性测试用例",
+            "type": "Class",
+            "description": "实现架构设计阶段定死的关键非显性测试。它们只收口于四类：直接守架构边界、依赖方向、显性入口正确性、关键实现追溯。/work 阶段对其测试入口、断言边界、挂载对象、追溯关系、受保护夹具与基线数据一律只读。"
+        },
+        {
+            "id": "1379",
+            "name": "非关键非显性测试用例",
+            "type": "Class",
+            "description": "作为实现阶段的参考与支撑护栏，不承担冻结级实现架构契约地位。/work 阶段可以在既定契约允许的位置补充、调整和优化。"
+        },
+        {
+            "id": "1384",
+            "name": "实现架构元素",
+            "type": "Class"
+        }
+    ],
+    "relationships": [
+        {
+            "id": "1128",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(实现架构输入)--> 编码",
+            "name": "实现架构输入",
+            "source_id": "1341",
+            "target_id": "1339",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "编码"
+        },
+        {
+            "id": "1131",
+            "statement": "意图架构设计 --(意图架构更新)--> INTENTION ARCHITECTURE MODEL",
+            "name": "意图架构更新",
+            "source_id": "1363",
+            "target_id": "1335",
+            "source_name": "意图架构设计",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1132",
+            "statement": "编码 --(implements)--> CODE IMPLEMENTATION",
+            "name": "implements",
+            "super_type": "_IMPLEMENT_",
+            "source_id": "1339",
+            "target_id": "1336",
+            "source_name": "编码",
+            "target_name": "CODE IMPLEMENTATION"
+        },
+        {
+            "id": "1133",
+            "statement": "INTENTION ARCHITECTURE MODEL --(意图架构输入)--> 实现架构设计",
+            "name": "意图架构输入",
+            "source_id": "1335",
+            "target_id": "1340",
+            "source_name": "INTENTION ARCHITECTURE MODEL",
+            "target_name": "实现架构设计"
+        },
+        {
+            "id": "1134",
+            "statement": "实现架构设计 --(实现架构更新)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "实现架构更新",
+            "source_id": "1340",
+            "target_id": "1341",
+            "source_name": "实现架构设计",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1136",
+            "statement": "VS CODE runtime --(ArchiMate_Serving)--> Argo VS Extension",
+            "name": "ArchiMate_Serving",
+            "super_type": "ArchiMate_Serving",
+            "source_id": "1342",
+            "target_id": "1343",
+            "source_name": "VS CODE runtime",
+            "target_name": "Argo VS Extension"
+        },
+        {
+            "id": "1138",
+            "statement": "work --(Realisation)--> 编码",
+            "name": "Realisation",
+            "source_id": "1346",
+            "target_id": "1339",
+            "source_name": "work",
+            "target_name": "编码"
+        },
+        {
+            "id": "1155",
+            "statement": "HUMAN BEING --(需求)--> 意图架构设计",
+            "name": "需求",
+            "source_id": "1338",
+            "target_id": "1363",
+            "source_name": "HUMAN BEING",
+            "target_name": "意图架构设计"
+        },
+        {
+            "id": "1156",
+            "statement": "显性测试用例 --(aggregates)--> INTENTION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1364",
+            "target_id": "1335",
+            "source_name": "显性测试用例",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1157",
+            "statement": "非显性测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1337",
+            "target_id": "1341",
+            "source_name": "非显性测试用例",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1158",
+            "statement": "CODE IMPLEMENTATION --(通过测试验收)--> 非显性测试用例",
+            "name": "通过测试验收",
+            "source_id": "1336",
+            "target_id": "1337",
+            "source_name": "CODE IMPLEMENTATION",
+            "target_name": "非显性测试用例"
+        },
+        {
+            "id": "1159",
+            "statement": "CODE IMPLEMENTATION --(通过测试验收)--> 显性测试用例",
+            "name": "通过测试验收",
+            "source_id": "1336",
+            "target_id": "1364",
+            "source_name": "CODE IMPLEMENTATION",
+            "target_name": "显性测试用例"
+        },
+        {
+            "id": "1160",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(当实现架构实现后，意图架构就会被实现)--> INTENTION ARCHITECTURE MODEL",
+            "name": "当实现架构实现后，意图架构就会被实现",
+            "super_type": "_IMPLY_",
+            "source_id": "1341",
+            "target_id": "1335",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1161",
+            "statement": "implementationdesign --(Realisation)--> 实现架构设计",
+            "name": "Realisation",
+            "source_id": "1345",
+            "target_id": "1340",
+            "source_name": "implementationdesign",
+            "target_name": "实现架构设计"
+        },
+        {
+            "id": "1162",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(历史实现架构输入)--> 实现架构设计",
+            "name": "历史实现架构输入",
+            "source_id": "1341",
+            "target_id": "1340",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "实现架构设计"
+        },
+        {
+            "id": "1163",
+            "statement": "INTENTION ARCHITECTURE MODEL --(历史意图架构输入)--> 意图架构设计",
+            "name": "历史意图架构输入",
+            "source_id": "1335",
+            "target_id": "1363",
+            "source_name": "INTENTION ARCHITECTURE MODEL",
+            "target_name": "意图架构设计"
+        },
+        {
+            "id": "1165",
+            "statement": "显性测试用例 --(意图架构（含显性测试用例）输入)--> 自动化测试",
+            "name": "意图架构（含显性测试用例）输入",
+            "source_id": "1364",
+            "target_id": "1365",
+            "source_name": "显性测试用例",
+            "target_name": "自动化测试"
+        },
+        {
+            "id": "1166",
+            "statement": "自动化测试 --(可能输出)--> 测试失败记录",
+            "name": "可能输出",
+            "source_id": "1365",
+            "target_id": "1366",
+            "source_name": "自动化测试",
+            "target_name": "测试失败记录"
+        },
+        {
+            "id": "1167",
+            "statement": "测试失败记录 --(失败记录输入)--> 编码",
+            "name": "失败记录输入",
+            "source_id": "1366",
+            "target_id": "1339",
+            "source_name": "测试失败记录",
+            "target_name": "编码"
+        },
+        {
+            "id": "1168",
+            "statement": "intentinarchitecturedesign --(Realisation)--> 意图架构设计",
+            "name": "Realisation",
+            "source_id": "1367",
+            "target_id": "1363",
+            "source_name": "intentinarchitecturedesign",
+            "target_name": "意图架构设计"
+        },
+        {
+            "id": "1169",
+            "statement": "CODE IMPLEMENTATION --(实现)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "实现",
+            "super_type": "_IMPLY_",
+            "source_id": "1336",
+            "target_id": "1341",
+            "source_name": "CODE IMPLEMENTATION",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1170",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(实现（填充）验收测试的逻辑)--> 显性测试用例",
+            "name": "实现（填充）验收测试的逻辑",
+            "super_type": "_IMPLEMENT_",
+            "source_id": "1341",
+            "target_id": "1364",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "显性测试用例"
+        },
+        {
+            "id": "1171",
+            "statement": "显性测试用例 --(输入（已有测试实现）)--> 编码",
+            "name": "输入（已有测试实现）",
+            "source_id": "1364",
+            "target_id": "1339",
+            "source_name": "显性测试用例",
+            "target_name": "编码"
+        },
+        {
+            "id": "1172",
+            "statement": "CODE IMPLEMENTATION --(输入当前代码)--> 实现架构设计",
+            "name": "输入当前代码",
+            "source_id": "1336",
+            "target_id": "1340",
+            "source_name": "CODE IMPLEMENTATION",
+            "target_name": "实现架构设计"
+        },
+        {
+            "id": "1181",
+            "statement": "意图架构元素 --(aggregates)--> INTENTION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1376",
+            "target_id": "1335",
+            "source_name": "意图架构元素",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1184",
+            "statement": "显性测试用例 --(aggregates)--> 测试用例",
+            "name": "aggregates",
+            "source_id": "1364",
+            "target_id": "1375",
+            "source_name": "显性测试用例",
+            "target_name": "测试用例"
+        },
+        {
+            "id": "1185",
+            "statement": "非显性测试用例 --(aggregates)--> 测试用例",
+            "name": "aggregates",
+            "source_id": "1337",
+            "target_id": "1375",
+            "source_name": "非显性测试用例",
+            "target_name": "测试用例"
+        },
+        {
+            "id": "1186",
+            "statement": "关键非显性测试用例 --(aggregates)--> 非显性测试用例",
+            "name": "aggregates",
+            "source_id": "1378",
+            "target_id": "1337",
+            "source_name": "关键非显性测试用例",
+            "target_name": "非显性测试用例"
+        },
+        {
+            "id": "1187",
+            "statement": "非关键非显性测试用例 --(aggregates)--> 非显性测试用例",
+            "name": "aggregates",
+            "source_id": "1379",
+            "target_id": "1337",
+            "source_name": "非关键非显性测试用例",
+            "target_name": "非显性测试用例"
+        },
+        {
+            "id": "1193",
+            "statement": "测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1375",
+            "target_id": "1341",
+            "source_name": "测试用例",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1196",
+            "statement": "意图架构元素 --(意图架构元素关系)--> 意图架构元素",
+            "name": "意图架构元素关系",
+            "source_id": "1376",
+            "target_id": "1376",
+            "source_name": "意图架构元素",
+            "target_name": "意图架构元素"
+        },
+        {
+            "id": "1197",
+            "statement": "意图架构元素关系 --(aggregates)--> INTENTION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1383",
+            "target_id": "1335",
+            "source_name": "意图架构元素关系",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1198",
+            "statement": "实现架构元素 --(实现架构元素关系)--> 实现架构元素",
+            "name": "实现架构元素关系",
+            "description": "每个实现架构元素对应一个代码仓目录，在该目录下有ARCHITECTURE.md来表达架构信息，包括边界、接口等。",
+            "source_id": "1384",
+            "target_id": "1384",
+            "source_name": "实现架构元素",
+            "target_name": "实现架构元素"
+        },
+        {
+            "id": "1199",
+            "statement": "INTENTION ARCHITECTURE MODEL --(意图驾驭)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "意图驾驭",
+            "source_id": "1335",
+            "target_id": "1341",
+            "source_name": "INTENTION ARCHITECTURE MODEL",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1201",
+            "statement": "显性测试用例 --(aggregates)--> INTENTION ARCHITECTURE MODEL",
+            "name": "aggregates",
+            "source_id": "1364",
+            "target_id": "1335",
+            "source_name": "显性测试用例",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1202",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(意图实现)--> INTENTION ARCHITECTURE MODEL",
+            "name": "意图实现",
+            "source_id": "1341",
+            "target_id": "1335",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "INTENTION ARCHITECTURE MODEL"
+        },
+        {
+            "id": "1203",
+            "statement": "IMPLEMENTATION ARCHITECTURE MODEL --(实现设计驾驭)--> CODE IMPLEMENTATION",
+            "name": "实现设计驾驭",
+            "source_id": "1341",
+            "target_id": "1336",
+            "source_name": "IMPLEMENTATION ARCHITECTURE MODEL",
+            "target_name": "CODE IMPLEMENTATION"
+        },
+        {
+            "id": "1204",
+            "statement": "CODE IMPLEMENTATION --(代码实现)--> IMPLEMENTATION ARCHITECTURE MODEL",
+            "name": "代码实现",
+            "source_id": "1336",
+            "target_id": "1341",
+            "source_name": "CODE IMPLEMENTATION",
+            "target_name": "IMPLEMENTATION ARCHITECTURE MODEL"
+        }
+    ],
+    "views": [
+        {
+            "view_id": "169",
+            "view_name": "LogicalArchitecture",
+            "parent_element_id": "1334",
+            "parent_element_name": "LogicalArchitecture",
+            "included_elements": [
+                "1363",
+                "1364",
+                "1345",
+                "1365",
+                "1366",
+                "1367",
+                "1335",
+                "1336",
+                "1337",
+                "1338",
+                "1339",
+                "1340",
+                "1341",
+                "1346"
+            ],
+            "included_relationships": [
+                "1128",
+                "1131",
+                "1132",
+                "1133",
+                "1134",
+                "1138",
+                "1155",
+                "1156",
+                "1157",
+                "1158",
+                "1159",
+                "1160",
+                "1161",
+                "1162",
+                "1163",
+                "1165",
+                "1166",
+                "1167",
+                "1168",
+                "1169",
+                "1170",
+                "1171",
+                "1172"
+            ]
+        },
+        {
+            "view_id": "175",
+            "view_name": "本体关系",
+            "parent_element_id": "1334",
+            "parent_element_name": "LogicalArchitecture",
+            "included_elements": [
+                "1336",
+                "1341",
+                "1335",
+                "1384",
+                "1375",
+                "1376",
+                "1364",
+                "1337",
+                "1378",
+                "1379"
+            ],
+            "included_relationships": [
+                "1181",
+                "1184",
+                "1185",
+                "1186",
+                "1187",
+                "1193",
+                "1196",
+                "1197",
+                "1198",
+                "1199",
+                "1201",
+                "1202",
+                "1203",
+                "1204"
+            ]
+        },
+        {
+            "view_id": "159",
+            "view_name": "StrategyLayerAndMotivationAspect",
+            "parent_element_id": "1207",
+            "parent_element_name": "StrategyLayerAndMotivationAspect",
+            "included_elements": [
+                "1334"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "160",
+            "view_name": "BusinessLayer",
+            "parent_element_id": "1208",
+            "parent_element_name": "BusinessLayer",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "171",
+            "view_name": "commands",
+            "parent_element_id": "1344",
+            "parent_element_name": "commands",
+            "included_elements": [
+                "1367",
+                "1333",
+                "1345",
+                "1346"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "170",
+            "view_name": "Argo VS Extension",
+            "parent_element_id": "1343",
+            "parent_element_name": "Argo VS Extension",
+            "included_elements": [
+                "1344"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "161",
+            "view_name": "ApplicationLayer",
+            "parent_element_id": "1209",
+            "parent_element_name": "ApplicationLayer",
+            "included_elements": [
+                "1343",
+                "1342"
+            ],
+            "included_relationships": [
+                "1136"
+            ]
+        },
+        {
+            "view_id": "162",
+            "view_name": "TechnologyLayer",
+            "parent_element_id": "1210",
+            "parent_element_name": "TechnologyLayer",
+            "included_elements": [
+                "1342"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "163",
+            "view_name": "ProjectManagement",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "158",
+            "view_name": "SystemArchitecture",
+            "included_elements": [
+                "1207",
+                "1208",
+                "1209",
+                "1210",
+                "1211"
+            ],
+            "included_relationships": []
+        }
+    ]
 }
