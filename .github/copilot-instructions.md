@@ -25,10 +25,9 @@ Apply it as a working protocol:
 
 1. Use the graph as the first fact source, read it as modeled architecture rather than informal prose, and preserve ArchiMate semantics instead of rewriting them by naming intuition.
 2. Treat `attributes`, `description`, `browser_path`, `acceptanceCriteria`, `#file:...`, and `#sym:...` as evidence pointers; follow them on demand, but do not let referenced evidence override explicit graph semantics.
-3. Identify hard constraints and principles early, then resolve conflicts in this order: hard constraints and principles, explicit testcase semantics, explicit graph content, referenced evidence, current code reality.
-4. Treat explicit testcase baselines as stable acceptance boundaries unless the user is explicitly redesigning intent architecture; do not add, delete, rebuild, or redefine them during ordinary implementation or repair work.
-5. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and testcase ownership, coding updates implementation only, and support tests or runtime notes belong in implementation assets rather than the intent layer.
-6. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
+3. Treat explicit testcase baselines as stable acceptance boundaries unless the user is explicitly redesigning intent architecture; do not add, delete, rebuild, or redefine them during ordinary implementation or repair work.
+4. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and testcase ownership, coding updates implementation only, and support tests or runtime notes belong in implementation assets rather than the intent layer.
+5. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
 
 ## Architecture Layers
 
@@ -149,10 +148,11 @@ When designing or changing implementation architecture:
 - Keep complex details behind stable module boundaries instead of leaking them to callers.
 - Do not promote helpers, private functions, or incidental file splits into stable architecture elements without a real boundary reason.
 - Ask the user only about high-leverage decisions that materially change module decomposition, interface boundaries, dependency direction, explicit entrypoint freezing, or critical guardrails.
-- Infer everything else directly from repository evidence.
+- Derive implementation details directly from repository evidence, but never assume new architectural boundaries or intents without explicit graph or contract support.
 
 ## Expected Working Style
 
+- Identify Your Stage: At the beginning of each task, explicitly state which stage you are operating in (Intent Design, Implementation Design, or Coding/Repair) based on the user's request and the files being modified.
 - State clearly which conclusions are repository-confirmed facts and which are minimal assumptions.
 - When editing architecture-related assets, prefer updating contracts and test guardrails before modifying business behavior unless the user explicitly asks for implementation work.
 - If no contract file exists yet, report that as an architecture gap and create or update the appropriate contract file when the task is implementation architecture design.
