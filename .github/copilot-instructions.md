@@ -15,8 +15,6 @@ When a task concerns architecture, implementation, tests, delivery, or code chan
 3. Then read relevant local `ARCHITECTURE.md` files under affected stable directories.
 4. Only after those contracts are read, inspect code, tests, scripts, configuration, and documentation as implementation evidence.
 
-When the graph or contracts point to repository paths, `browser_path`, `acceptanceCriteria`, `#file:...`, or `#sym:...`, treat those as evidence-entry hints to follow on demand.
-
 Do not ask the user for facts that can be confirmed from the repository, contracts, tests, or tool results.
 
 ## Graph Usage Protocol
@@ -25,19 +23,14 @@ Treat the graph-usage guidance embedded in `design/KG/SystemArchitecture.json` a
 
 Apply it as a working protocol:
 
-1. Use the graph as the first fact source for the current task before deciding whether code, tests, scripts, docs, or other files need to be read.
-2. Read the graph as modeled architecture, not informal prose. Preserve ArchiMate semantics instead of rewriting them by naming intuition.
-3. Treat `attributes`, `description`, `browser_path`, `acceptanceCriteria`, `#file:...`, and `#sym:...` as evidence pointers to follow on demand.
-4. When `Archimate_principle`, `Archimate_constrain`, or other hard constraint elements exist, identify them early and obey them as hard limits on reasoning, design, and edits.
-5. Resolve conflicts by priority: hard constraints and principles, then explicit testcase semantics, then explicit graph content, then referenced evidence, then current code reality.
-6. Treat explicit testcase baselines as stable acceptance boundaries. Unless the user is explicitly redesigning intent architecture, do not add, delete, rebuild, or redefine their target, scope, assertion boundary, or acceptance semantics.
-7. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and physical testcase ownership, coding updates implementation only and must not normalize implementation drift back into intent.
-8. Do not conclude from one element name or one description field in isolation. Use nearby relationships, views, upstream and downstream context, and referenced evidence together.
-9. When graph information is incomplete, make only the minimum necessary assumption, label it as an assumption, and do not invent external interfaces, SLAs, deployment facts, organization process, or new explicit acceptance baselines.
-10. When support tests, guardrails, or runtime/environment notes are needed, place them in implementation architecture, code, tests, or docs rather than polluting the intent layer.
-11. Final explanations should state which graph evidence was read, which principles or constraints were followed, which conclusions are repository-confirmed facts, and which statements are minimal assumptions.
+1. Use the graph as the first fact source, read it as modeled architecture rather than informal prose, and preserve ArchiMate semantics instead of rewriting them by naming intuition.
+2. Treat `attributes`, `description`, `browser_path`, `acceptanceCriteria`, `#file:...`, and `#sym:...` as evidence pointers; follow them on demand, but do not let referenced evidence override explicit graph semantics.
+3. Identify hard constraints and principles early, then resolve conflicts in this order: hard constraints and principles, explicit testcase semantics, explicit graph content, referenced evidence, current code reality.
+4. Treat explicit testcase baselines as stable acceptance boundaries unless the user is explicitly redesigning intent architecture; do not add, delete, rebuild, or redefine them during ordinary implementation or repair work.
+5. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and testcase ownership, coding updates implementation only, and support tests or runtime notes belong in implementation assets rather than the intent layer.
+6. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
 
-## Meaning Of Each Architecture Layer
+## Architecture Layers
 
 ### Intent Architecture
 
@@ -49,6 +42,7 @@ Apply it as a working protocol:
 - Treat principles and constraints in the intent architecture as stronger than current code reality.
 - Current code does not override the intent architecture automatically.
 - Interpret ArchiMate element and relationship semantics according to the modeling language, not by informal name guessing.
+- Intent defines what must be true, including explicit acceptance boundaries that downstream layers are expected to fulfill rather than reinterpret.
 
 ### Implementation Architecture
 
@@ -60,11 +54,11 @@ Apply it as a working protocol:
 - A directory is considered a **Stable Architecture Element** if it contains an `ARCHITECTURE.md` or is explicitly mapped in `OVERALL_ARCHITECTURE.md`. If neither exists, treat it as an incidental implementation detail.
 - Stable architecture elements and their relations should be materialized by stable repository directories and their contracts; they are not inferred from arbitrary files by default.
 - The implementation side owns executable guards, test entrypoints, and the physical organization of supporting validation assets.
-- Non-explicit tests belong to implementation architecture, not intent architecture. Within that set, critical guards are frozen during implementation design, while supporting tests remain evolvable during later coding.
 - The repository root is the read boundary of implementation architecture; stable directories and key files are implementation elements only when contracts promote them to that role.
 - Directory hierarchy means containment by default, not automatic `implements` semantics.
 - `implements` mappings must be declared explicitly in `OVERALL_ARCHITECTURE.md` and relevant `ARCHITECTURE.md` files.
 - Indirect implementation chains are valid. If element C implements element B, and B implements intent element A, then C indirectly carries A.
+- Implementation architecture organizes and constrains realization: it turns intent into stable elements, dependency direction, testcase ownership, and executable guardrails.
 
 ### Code Reality
 
@@ -72,15 +66,7 @@ Apply it as a working protocol:
 - Code realization is the executed and editable implementation state that consumes and realizes the implementation architecture; it is not the same thing as the architecture contract itself.
 - They help confirm or reject hypotheses about the implementation, but they do not silently redefine intent architecture or frozen architecture contracts.
 - When code conflicts with established architecture contracts, report the mismatch and prefer restoring alignment rather than normalizing drift.
-
-## Ontology Semantics
-
-- Read intent, implementation architecture, and code realization as three distinct ontology layers with different responsibilities: intent defines, implementation architecture organizes and constrains realization, and code realizes.
-- Treat the testcase space as split into two different kinds of assets: explicit acceptance baselines owned by the intent layer, and executable guardrails owned by the implementation layer.
-- Treat critical guardrails and supporting tests as different governance classes inside implementation testing: one is frozen by architecture design, the other is meant to evolve with coding.
-- Treat modeled architecture relations as first-class semantics, not just incidental links between files or directories.
-- Treat the architecture flow as directional: intent drives implementation architecture, implementation architecture governs coding, and code is expected to realize the implementation architecture rather than redefine it.
-- When code and architecture diverge, interpret that as architecture drift unless the user is intentionally redesigning the upstream architecture.
+- Code realizes the implementation architecture. Treat the overall flow as directional: intent drives implementation architecture, implementation architecture governs coding, and divergence between code and architecture is drift unless the user is intentionally redesigning the upstream layers.
 
 ## Graph Interpretation Rules
 
@@ -116,9 +102,7 @@ When repository evidence conflicts, resolve it in this order:
 
 ### Coding And Repair Stage
 
-- Treat explicit testcase entry files as read-only acceptance baselines unless the user explicitly reopens architecture design.
-- Treat critical non-explicit tests, their assertion boundary, protected fixtures, and protected baselines as read-only.
-- Normal supporting tests may be added or refined only where the contracts allow.
+- Respect the frozen and evolvable test assets defined in Test Semantics and in the implementation contracts.
 - During coding, validate by invoking existing testcase entrypoints rather than rewriting them.
 
 ## Test Semantics
@@ -131,6 +115,7 @@ When repository evidence conflicts, resolve it in this order:
 
 ### Non-Explicit Tests
 
+- Non-explicit tests belong to the implementation layer rather than the intent layer.
 - Critical non-explicit tests are limited to four categories:
   - architecture boundary guards
   - dependency direction guards
@@ -142,13 +127,10 @@ When repository evidence conflicts, resolve it in this order:
 
 ## Control Loop Semantics
 
-- Intent architecture design updates the intent model.
-- Implementation architecture design reads the intent model, historical implementation architecture, and current code, then updates the implementation architecture.
-- Coding consumes implementation architecture plus existing testcase entrypoints and failure records.
-- Automated testing consumes explicit testcases and may produce failure records.
-- Code realization implements the implementation architecture; when implementation architecture is correctly realized, it in turn fulfills the intent architecture.
-
-Keep this loop explicit in reasoning: intent drives implementation architecture, implementation architecture drives coding, and tests plus failure records drive repair without redefining the upstream baselines.
+- Intent architecture design updates intent.
+- Implementation architecture design updates implementation contracts and testcase ownership.
+- Coding realizes implementation architecture.
+- Automated testing produces failure records that feed repair without redefining the upstream baselines.
 
 ## Architecture Design Principles
 
