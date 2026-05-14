@@ -5,8 +5,6 @@
 build/**
 tests/**
 requirements/**
-eatool/**
-eatool/**
 src/**
 .gitignore
 tsconfig.json
