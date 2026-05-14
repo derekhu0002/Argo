@@ -783,6 +783,7 @@ function extractFromDiagram(currentDiagram) {
 			// START Refactoring Node JSON
 			var finalnodetype = '{\n"id": "' + jsonEscape(id) + '",\n';
 			finalnodetype += '"name": "' + jsonEscape(ele.Name) + '"\n';
+			finalnodetype += ',"parent": "' + jsonEscape(ele.ParentID) + '"\n';
 
 			if (ele.Alias != "") {
 				finalnodetype += ',"alias": "' + jsonEscape(ele.Alias) + '"\n';

@@ -5,6 +5,7 @@
 {
 "id": "1207",
 "name": "StrategyLayerAndMotivationAspect"
+,"parent": "0"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -16,6 +17,7 @@
 {
 "id": "1208",
 "name": "BusinessLayer"
+,"parent": "0"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -27,6 +29,7 @@
 {
 "id": "1209",
 "name": "ApplicationLayer"
+,"parent": "0"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -38,6 +41,7 @@
 {
 "id": "1210",
 "name": "TechnologyLayer"
+,"parent": "0"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -49,6 +53,7 @@
 {
 "id": "1211",
 "name": "ProjectManagement"
+,"parent": "0"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -60,6 +65,7 @@
 {
 "id": "1333",
 "name": "brief"
+,"parent": "1344"
 ,"type": "ArchiMate_ApplicationFunction"
 ,"description": "provide the introduction of the current project, including the exterrnal api or other forms of interfaces in order to let external consumers know when and how to use this product system."
 ,"attributes": [
@@ -72,6 +78,7 @@
 {
 "id": "1334",
 "name": "LogicalArchitecture"
+,"parent": "1207"
 ,"type": "ArchiMate_Assessment"
 ,"subdiagram_views": [
 {
@@ -87,6 +94,7 @@
 {
 "id": "1335",
 "name": "INTENTION ARCHITECTURE MODEL"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "通过EA等工具进行建模，生成可归档的design/KG/SystemArchitecture.json意图模型"
 ,"attributes": [
@@ -107,46 +115,54 @@
 {
 "id": "1336",
 "name": "CODE IMPLEMENTATION"
+,"parent": "1334"
 ,"type": "Class"
 },
 {
 "id": "1337",
 "name": "非显性测试用例"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "包括unit test, system test, integration test, inspection test, 主要用于支撑意图架构中的验收和场景测试用例的实现。"
 },
 {
 "id": "1338",
 "name": "HUMAN BEING"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "work on <a href=\"$element://{191114F2-0331-4a44-902D-11949D1F4807}\"><font color=\"#0000ff\"><u>SystemArchitecture</u></font></a> to embody the intention of the developers."
 },
 {
 "id": "1339",
 "name": "编码"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：代码仓中的目录和文件结构、目录下的测试侧栏（护栏中一般会有看护的实现对象）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码使得测试用例得以通过，如果下钻构建更细节的目录或文件，需要同时考虑是否补齐测试护栏。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）测试入口（包括设计阶段已经定义的所有测试用例）。</li>\r\n</ul>"
 },
 {
 "id": "1340",
 "name": "实现架构设计"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>\r\n\r\n这里的实现架构我们就用代码仓中的目录和文件结构来表达，每个目录或文件就代表一个实现架构中的架构元素，每个目录下可以有看护对应架构元素的测试用例，主要是单元测试、系统测试、集成测试、inspection test。"
 },
 {
 "id": "1341",
 "name": "IMPLEMENTATION ARCHITECTURE MODEL"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、OVERALL_ARCHITECTURE.md、ARCHITECTURE.md 契约文件、显性测试入口、非显性测试护栏共同表达。"
 },
 {
 "id": "1342",
 "name": "VS CODE runtime"
+,"parent": "1210"
 ,"type": "ArchiMate_Node"
 },
 {
 "id": "1343",
 "name": "Argo VS Extension"
+,"parent": "1209"
 ,"type": "ArchiMate_ApplicationComponent"
 ,"subdiagram_views": [
 {
@@ -158,6 +174,7 @@
 {
 "id": "1344",
 "name": "commands"
+,"parent": "1343"
 ,"type": "ArchiMate_ApplicationComponent"
 ,"subdiagram_views": [
 {
@@ -169,6 +186,7 @@
 {
 "id": "1345",
 "name": "implementationdesign"
+,"parent": "1344"
 ,"type": "ArchiMate_ApplicationFunction"
 ,"description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model."
 ,"attributes": [
@@ -185,6 +203,7 @@
 {
 "id": "1346",
 "name": "work"
+,"parent": "1344"
 ,"type": "ArchiMate_ApplicationFunction"
 ,"description": "used for telling the main agent to design the implementation architecture and implement the code until passing all of the test cases pre-define."
 ,"attributes": [
@@ -201,30 +220,35 @@
 {
 "id": "1363",
 "name": "意图架构设计"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "这里意图架构采用JSON格式来表达，该JSON格式主要用于“架构骨架”的表达，可作为“地图”让LLM使用，一般会全量塞入LLM上下文中，因此不要放过多内容，如果需要对某个元素或关系或者他们的属性展开描述，必须把描述放入代码仓中的makrdown文本中，只需要将文本路径填入“架构骨架”。\r\n"
 },
 {
 "id": "1364",
 "name": "显性测试用例"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "默认以 Acceptance Test 与 Scenario Test 作为意图架构验收基线；若其它类型 testcase 被提升为显性 testcase，则也必须承担稳定架构验收职责并拥有只读测试入口。"
 },
 {
 "id": "1365",
 "name": "自动化测试"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "#sym:executeArchitectureTests "
 },
 {
 "id": "1366",
 "name": "测试失败记录"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "design\\KG\\test-failure-records.json"
 },
 {
 "id": "1367",
 "name": "intentinarchitecturedesign"
+,"parent": "1344"
 ,"type": "ArchiMate_ApplicationFunction"
 ,"attributes": [
 {
@@ -240,35 +264,41 @@
 {
 "id": "1375",
 "name": "测试用例"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "看护所在目录覆盖范围的实现架构"
 },
 {
 "id": "1376",
 "name": "意图架构元素"
+,"parent": "1335"
 ,"type": "Class"
 ,"description": "我们采用Archimate3.2作为意图架构的外层设计语言，对于具体元素可以进一步采用其它合适的建模语言（如UML、SysML、BPMN等等，根据需要和使用的人来选择最合适的）"
 },
 {
 "id": "1378",
 "name": "关键非显性测试用例"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "实现架构设计阶段定死的关键非显性测试。它们只收口于四类：直接守架构边界、依赖方向、显性入口正确性、关键实现追溯。/work 阶段对其测试入口、断言边界、挂载对象、追溯关系、受保护夹具与基线数据一律只读。"
 },
 {
 "id": "1379",
 "name": "非关键非显性测试用例"
+,"parent": "1334"
 ,"type": "Class"
 ,"description": "作为实现阶段的参考与支撑护栏，不承担冻结级实现架构契约地位。/work 阶段可以在既定契约允许的位置补充、调整和优化。"
 },
 {
 "id": "1384",
 "name": "实现架构元素"
+,"parent": "1341"
 ,"type": "Class"
 },
 {
 "id": "1386",
 "name": "Argo_Official_Website"
+,"parent": "1209"
 ,"type": "ArchiMate_ApplicationComponent"
 ,"description": "对外展示 Argo 核心思想、架构图谱、并提供博客发布能力的门户。\r\n支持基于 Markdown 的博文发布，支持集成渲染 SystemArchitecture.json。"
 ,"attributes": [
