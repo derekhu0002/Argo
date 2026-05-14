@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-type GuardStage = 'idle' | 'implementationdesign' | 'coding';
+type GuardStage = 'idle' | 'briefing' | 'intentiondesign' | 'implementationdesign' | 'coding';
 
 interface RawArchitectureGraph {
     elements?: RawArchitectureElement[];

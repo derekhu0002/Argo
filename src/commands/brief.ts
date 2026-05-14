@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { buildProductBriefHandoffPrompt } from '../utils/agentHandoff';
+import { setExplicitTestcaseEntryGuardStage } from '../utils/explicitTestcaseEntryGuard';
 
 export async function handleBrief(
     request: vscode.ChatRequest,
@@ -8,6 +9,7 @@ export async function handleBrief(
     _token: vscode.CancellationToken,
 ): Promise<void> {
     stream.markdown('## /brief - External Product Brief Handoff\n\n');
+    await setExplicitTestcaseEntryGuardStage('briefing');
 
     const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!rootPath) {
