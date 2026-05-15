@@ -101,10 +101,11 @@ export function buildWorkAgentHandoffPrompt(input: {
         '4. 读取实现架构根契约：项目根目录下的 #file:OVERALL_ARCHITECTURE.md。若不存在该文件，请将其视为实现架构设计阶段缺口并明确回报。',
         '5. 根据失败记录、受影响路径与追溯链，继续读取相关实现元素目录下的 ARCHITECTURE.md 契约文件。',
         '6. 以失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议；若当前实现与契约不一致，先把实现拉回既定架构，再补功能或补测试。',
-        '7. 修复完成后，执行失败测试记录中 `acceptanceCriteria` 指向的既有测试入口，直到这些失败全部通过；只要仍有失败，就继续修改、继续执行，不需要请示用户。',
-        '8. 如新增或调整外部接口，必须同步更新项目根目录的 INTRODUCTION.md，确保对外说明与真实接口一致。',
-        '9. 如果发现缺失显性测试入口、关键非显性测试契约错误、关键护栏失效且必须改写，或测试环境信息只能通过改写冻结资产才能补齐，请将其视为实现架构设计阶段缺口并明确回报，不要在编码阶段直接改写这些冻结资产。',
-        '10. 完成后，请回复：',
+        '7. 严禁把测试桩、测试分支、测试开关、仅供断言使用的返回字段、测试专用后门或任何其他测试内容混入业务代码；业务实现必须面向真实需求与验收语义，测试相关内容只能放在契约允许的测试、夹具或环境资产里。',
+        '8. 修复完成后，执行失败测试记录中 `acceptanceCriteria` 指向的既有测试入口，直到这些失败全部通过；只要仍有失败，就继续修改、继续执行，不需要请示用户。',
+        '9. 如新增或调整外部接口，必须同步更新项目根目录的 INTRODUCTION.md，确保对外说明与真实接口一致。',
+        '10. 如果发现缺失显性测试入口、关键非显性测试契约错误、关键护栏失效且必须改写，或测试环境信息只能通过改写冻结资产才能补齐，请将其视为实现架构设计阶段缺口并明确回报，不要在编码阶段直接改写这些冻结资产。',
+        '11. 完成后，请回复：',
         '   - 读取了哪些契约文件（OVERALL_ARCHITECTURE.md 与哪些 ARCHITECTURE.md）',
         '   - 修改了哪些代码',
         '   - 新增或更新了哪些内外部接口',
@@ -117,17 +118,17 @@ export function buildWorkAgentHandoffPrompt(input: {
     ];
 
     if (input.totalTestCases === 0) {
-        lines.push('11. 当前架构图谱没有任何 testcase；请先完成实现侧可落地部分，并把显性 testcase 契约缺口明确回报，不要擅自补写基线。');
+        lines.push('12. 当前架构图谱没有任何 testcase；请先完成实现侧可落地部分，并把显性 testcase 契约缺口明确回报，不要擅自补写基线。');
     } else if (input.missingCriteriaCount > 0) {
-        lines.push(`11. 当前有 ${input.missingCriteriaCount} 个显性 testcase 缺少 acceptanceCriteria；请将其明确标记为实现架构设计阶段尚未物理化完成的契约缺口，不要在编码阶段直接补写或改写显性测试入口。`);
+        lines.push(`12. 当前有 ${input.missingCriteriaCount} 个显性 testcase 缺少 acceptanceCriteria；请将其明确标记为实现架构设计阶段尚未物理化完成的契约缺口，不要在编码阶段直接补写或改写显性测试入口。`);
     }
 
     if (input.failureRecords.length > 0) {
-        lines.push(`12. 当前有 ${input.failureRecords.length} 条失败记录，请优先修复这些失败记录对应的测试用例，直到它们全部通过。`);
+        lines.push(`13. 当前有 ${input.failureRecords.length} 条失败记录，请优先修复这些失败记录对应的测试用例，直到它们全部通过。`);
     }
 
     if (input.extraContext) {
-        lines.push(`13. 额外上下文：${input.extraContext}`);
+        lines.push(`14. 额外上下文：${input.extraContext}`);
     }
 
     return lines.join('\n');
