@@ -20,6 +20,7 @@ export async function handleBrief(
     const handoffPrompt = buildProductBriefHandoffPrompt({
         workspacePath: rootPath,
         architectureGraphPath: `${rootPath}\\design\\KG\\SystemArchitecture.json`,
+        introductionPath: `${rootPath}\\INTRODUCTION.md`,
         extraContext: request.prompt.trim(),
     });
 

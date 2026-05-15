@@ -136,13 +136,14 @@ export function buildWorkAgentHandoffPrompt(input: {
 export function buildProductBriefHandoffPrompt(input: {
     workspacePath: string;
     architectureGraphPath: string;
+    introductionPath: string;
     extraContext: string;
 }): string {
     const lines = [
         '请作为 Copilot 主 agent 完成以下工作：',
         `1. 以当前工作区 ${input.workspacePath} 为分析范围，当前阶段按 Brief/Documentation 任务处理，产出一份“对外介绍该项目所构建产品”的说明文档。`,
-        `2. 将最终说明文档保存到项目根目录：${input.workspacePath}\\INTRODUCTION.md。`,
-        '3. 总结过程只允许参考以下架构来源，不要把分析范围扩展到其他文档、代码、测试、脚本或配置：',
+        `2. 最终说明文档保存到项目根目录：${input.introductionPath}。若该文件已存在，先读取其当前内容，再基于最新架构事实做增量维护；仅更新已被当前架构证实需要变更的部分，尽量保留仍然成立的既有结构与表述。若该文件不存在，再创建。`,
+        '3. 总结过程只允许参考以下架构来源，以及项目根目录下现有的 INTRODUCTION.md（若存在，仅作为待维护的现状文档而非新的事实来源）；不要把分析范围扩展到其他文档、代码、测试、脚本或配置：',
         '   - 项目根目录下的 OVERALL_ARCHITECTURE.md',
         '   - 各个目录下的 ARCHITECTURE.md',
         `   - 意图架构：${input.architectureGraphPath}`,
