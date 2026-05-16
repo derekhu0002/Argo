@@ -190,8 +190,10 @@ export function buildProductBriefHandoffPrompt(input: {
 export function buildIntentInArchitectureDesignHandoffPrompt(): string {
     return [
         'Operate in Intent Design stage.',
+        'Do not modify implementation artifacts in this stage, including business code, test code, scripts, or other repository files, unless I explicitly ask for such changes; focus on clarifying intent only.',
         'Interview me relentlessly about this plan until we reach a shared understanding, resolving the design tree branch by branch.',
         'If a question can be answered from the repository, inspect the repository instead of asking me.',
+        'Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
         'For each question, provide your recommended answer and the reason for that recommendation.',
     ].join('\n');
 }
