@@ -68,9 +68,7 @@ export async function handleWork(
     });
 
     stream.markdown(
-        '### Step 2 - Handoff To Copilot Main Agent\n\n' +
-        '当前稳定 VS Code API 不支持由该工作代理直接编程式拉起 Copilot agent 并等待它完成开发。\n\n' +
-        '请优先调用自定义 agent `architecture-delivery-worker`，并将下面这段指令作为本次任务输入。它需要先读取失败记录文件、OVERALL_ARCHITECTURE.md 与相关 ARCHITECTURE.md 契约，再进行开发，直到这些测试通过；编码阶段只允许补齐实现代码、普通支撑性测试和测试环境，并调用现有显性 testcase 入口做验收。不得把测试桩、测试分支、测试专用返回字段或任何其他测试内容混入业务代码。不得新增、删除、重建或改写显性 testcase，也不得修改其既有测试入口；对关键非显性测试及其受保护夹具、基线数据也一律只读。只要涉及测试设计、测试补充或测试结果说明，都必须显性写出测试的控制点和观测点。若发现 `acceptanceCriteria` 缺失、显性测试入口失效，或关键非显性测试契约本身错误，应将其视为实现架构设计阶段遗留缺口并明确回报，而不是在编码阶段直接改写这些冻结资产。\n\n',
+        '### Step 2 - Handoff To Copilot Main Agent\n\n'
     );
     stream.markdown('```text\n' + handoffPrompt + '\n```\n');
 }

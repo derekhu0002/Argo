@@ -1,4 +1,3 @@
-export { handleBrief } from './brief';
 export { handleIdle } from './idle';
 export { handleIntentInArchitectureDesign } from './intentinarchitecturedesign';
 export { handleImplementationDesign } from './implementationdesign';

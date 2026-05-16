@@ -10,7 +10,7 @@ element_path: src/commands
 ## Implementation Architecture Contract
 
 ### Responsibility
-- Expose stable chat command entrypoints for `/brief`, `/intentinarchitecturedesign`, `/implementationdesign`, `/work`, and `/idle`.
+- Expose stable chat command entrypoints for `/intentinarchitecturedesign`, `/implementationdesign`, `/work`, and `/idle`.
 - Translate user intent into handoff generation or bounded execution flows.
 - Keep command semantics stable without absorbing engine internals or unrelated helper responsibilities.
 
@@ -20,9 +20,6 @@ element_path: src/commands
 - Becoming a catch-all location for shared utilities.
 
 ### Children
-- path: brief.ts
-  kind: entrypoint-file
-  role: external product brief handoff
 - path: intentinarchitecturedesign.ts
   kind: entrypoint-file
   role: intent architecture design handoff
@@ -54,7 +51,6 @@ element_path: src/commands
 
 ### Implements / Traceability
 #### implements_intent
-- element: brief
 - element: intentinarchitecturedesign
 - element: implementationdesign
 - element: work

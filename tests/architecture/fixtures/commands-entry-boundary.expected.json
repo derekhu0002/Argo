@@ -1,7 +1,6 @@
 {
   "commandsDirectory": "src/commands",
   "requiredFiles": [
-    "brief.ts",
     "idle.ts",
     "implementationdesign.ts",
     "index.ts",

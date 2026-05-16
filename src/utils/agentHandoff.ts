@@ -94,8 +94,8 @@ export function buildWorkAgentHandoffPrompt(input: {
     missingCriteriaCount: number;
 }): string {
     const lines = [
-        '请作为 Copilot 主 agent 完成以下工作：',
-        '1. 先按仓库常驻架构知识读取并遵守意图架构、实现架构契约与阶段边界；当前阶段是 Coding/Repair。',
+        '记住当前阶段是 Coding/Repair，完成以下工作：',
+        '1. 先按仓库常驻架构知识读取并遵守意图架构、实现架构契约与阶段边界；。',
         '2. 读取意图架构图谱： #file:SystemArchitecture.json。',
         '3. 读取失败测试记录： #file:test-failure-records.json。',
         '4. 读取实现架构根契约：项目根目录下的 #file:OVERALL_ARCHITECTURE.md。若不存在该文件，请将其视为实现架构设计阶段缺口并明确回报。',
@@ -135,61 +135,9 @@ export function buildWorkAgentHandoffPrompt(input: {
     return lines.join('\n');
 }
 
-export function buildProductBriefHandoffPrompt(input: {
-    workspacePath: string;
-    architectureGraphPath: string;
-    introductionPath: string;
-    extraContext: string;
-}): string {
-    const lines = [
-        '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 以当前工作区 ${input.workspacePath} 为分析范围，当前阶段按 Brief/Documentation 任务处理，产出一份“对外介绍该项目所构建产品”的说明文档。`,
-        `2. 最终说明文档保存到项目根目录：${input.introductionPath}。若该文件已存在，先读取其当前内容，再基于最新架构事实做增量维护；仅更新已被当前架构证实需要变更的部分，尽量保留仍然成立的既有结构与表述。若该文件不存在，再创建。`,
-        '3. 总结过程只允许参考以下架构来源，以及项目根目录下现有的 INTRODUCTION.md（若存在，仅作为待维护的现状文档而非新的事实来源）；不要把分析范围扩展到其他文档、代码、测试、脚本或配置：',
-        '   - 项目根目录下的 OVERALL_ARCHITECTURE.md',
-        '   - 各个目录下的 ARCHITECTURE.md',
-        `   - 意图架构：${input.architectureGraphPath}`,
-        '4. 目标读者是外部调用方、潜在采用方、集成方；他们需要据此判断系统价值、能力边界、接入方式、运行验证方式与采用前提。',
-        '5. 只能基于上述架构来源中能够证实的信息输出结论，禁止臆造不存在的接口、部署方式、SLA、协议或产品能力。',
-        '6. 输出内容必须覆盖以下部分：',
-        '   - 产品概述：一句话定位、解决的问题、适用对象、典型场景',
-        '   - 功能清单：按模块或能力域总结核心功能',
-        '   - 接口与集成点：必须列出所有外部调用接口、集成点、配置入口；这是整份文档的重点，不能只做概述，必须让调用方可直接参照接入',
-        '   - 调用与使用方法：安装/运行前置条件、最小使用步骤、配置方式、调用示例或操作路径',
-        '   - 评估采用时应关注的约束：运行环境、依赖组件、当前局限、适合集成方式、不适用场景',
-        '7. 对“接口与集成点”中的每一个对外接口/配置入口/集成点，必须逐项给出以下信息；若仓库证据不足以支持其中某项，明确写“仓库中未提供可证实信息”，不要省略该项：',
-        '   - 接口名称/入口名称',
-        '   - 用途与适用场景',
-        '   - 调用方式或接入路径（命令、文件入口、配置位置、交互入口、执行步骤等）',
-        '   - 输入参数详细列表：参数名、是否必填、类型/格式、默认值、取值约束、语义说明',
-        '   - 输出内容详细说明：成功输出、失败输出、状态/错误信息、产物位置、可观察结果',
-        '   - 前置条件与依赖',
-        '   - 最小可运行样例或调用示例',
-        '   - 调用参考或证据来源（对应的架构契约、命令入口、配置入口、使用路径）',
-        '   - 已知限制、边界与不适用情况',
-        '8. 如果存在多个对外接口，优先使用表格 + 小节的方式组织：先给总览表，再为每个接口提供详细说明，确保外部团队可以快速横向比较后再纵向阅读。',
-        '9. 不允许把“无公开 API”当作跳过接口说明的理由；若系统仅提供命令入口、配置入口、文档入口或人工操作入口，也必须把这些入口当作外部接口进行完整说明。',
-        '10. 输出格式要求：',
-        '   - 使用中文撰写',
-        '   - 结构清晰，适合直接给外部团队阅读',
-        '   - 优先给出“如何判断是否采用”和“如何开始使用”的信息',
-        '   - 对每个接口都要保证“看完即可照着调用/接入”，避免只有概念描述，没有参数、输出、样例和参考',
-        '   - 不允许展开内部实现细节、源码组织、内部模块/类名或底层实现机制；仅在解释外部接入前置条件、运行约束或能力边界时，才以必要最小粒度提及',
-        '11. 最后必须附上最小接入路径是什么',
-        '12. 本次任务允许创建或更新项目根目录下的 INTRODUCTION.md，但不要修改其他业务代码。',
-        '13. 完成后，回复中必须明确说明 INTRODUCTION.md 已写入。',
-    ];
-
-    if (input.extraContext) {
-        lines.push(`14. 额外上下文：${input.extraContext}`);
-    }
-
-    return lines.join('\n');
-}
-
 export function buildIntentInArchitectureDesignHandoffPrompt(): string {
     return [
-        'Operate in Intent Design stage.',
+        'Remember current stage is Intent Design.',
         'Do not modify implementation artifacts in this stage, including business code, test code, scripts, or other repository files, unless I explicitly ask for such changes; focus on clarifying intent only.',
         'Interview me relentlessly about this plan until we reach a shared understanding, resolving the design tree branch by branch.',
         'If a question can be answered from the repository, inspect the repository instead of asking me.',
@@ -208,8 +156,8 @@ export function buildImplementationDesignHandoffPrompt(input: {
     extraContext: string;
 }): string {
     const lines = [
-        '请作为 Copilot 主 agent 完成以下工作：',
-        `1. 分析范围仅限当前工作区 ${input.workspacePath}，当前阶段是 Implementation Design。先读取意图架构，再读取已有实现架构契约（若存在），再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。`,
+        '请记住当前阶段是 Implementation Design。完成以下工作：',
+        `1. 分析范围仅限当前工作区 ${input.workspacePath}。先读取意图架构，再读取已有实现架构契约（若存在），再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。`,
         '2. 本次任务的输入是整个意图架构与当前代码仓中的实现现状。请把显性 testcase 视为契约，把意图架构视为需求边界与设计约束，把当前代码库视为实现现状证据。',
         '3. 这是一个 human in the loop 的实现架构设计任务。你必须先自行吸收仓库事实，再把真正会改变实现架构走向的决策点拿出来与用户确认。至少以下事项必须显式征求用户意见，且每项都要给出推荐方案、备选方案、理由与权衡：',
         '   - 实现架构的一级分层和模块分解方式',
