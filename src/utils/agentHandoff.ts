@@ -137,12 +137,17 @@ export function buildWorkAgentHandoffPrompt(input: {
 
 export function buildIntentInArchitectureDesignHandoffPrompt(): string {
     return [
-        'Remember current stage is Intent Design.',
-        'Do not modify implementation artifacts in this stage, including business code, test code, scripts, or other repository files, unless I explicitly ask for such changes; focus on clarifying intent only.',
-        'Interview me relentlessly about this plan until we reach a shared understanding, resolving the design tree branch by branch.',
-        'If a question can be answered from the repository, inspect the repository instead of asking me.',
-        'Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
-        'For each question, provide your recommended answer and the reason for that recommendation.',
+        '### Current stage: Intent Design.',
+        '',
+        '### Targets',
+        'Relentlessly scrutinize the requirements, figure out whether the intent architecture needs to be updated or if only the implementation architecture should be adjusted, or if only code changes are needed. If the intent architecture needs to be updated, identify which elements, relationships, views, principles, constraints, or explicit testcase baselines need to be added, removed, or modified. If the implementation architecture needs to be adjusted, identify which contracts, stable elements, test ownerships, or guardrails need to be added, removed, or modified. If only code changes are needed, identify which files, functions, tests, or configurations need to be added, removed, or modified.',
+        '',
+        '### Operational Rules',
+        '1. Do not modify implementation artifacts in this stage, including business code, test code, scripts, or other repository files, unless I explicitly ask for such changes; focus on clarifying intent only.',
+        '2. Interview me relentlessly about this plan until we reach a shared understanding, resolving the design tree branch by branch.',
+        '   If a question can be answered from the repository, inspect the repository instead of asking me.',
+        '3. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
+        '4. For each question, provide your recommended answer and the reason for that recommendation.',
     ].join('\n');
 }
 
