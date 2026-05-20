@@ -1,10 +1,12 @@
 {
   "commandsDirectory": "src/commands",
   "requiredFiles": [
+    "argoInit.ts",
     "idle.ts",
     "implementationdesign.ts",
     "index.ts",
     "intentinarchitecturedesign.ts",
+    "test.ts",
     "work.ts"
   ],
   "forbiddenImports": [

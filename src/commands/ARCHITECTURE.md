@@ -10,7 +10,7 @@ element_path: src/commands
 ## Implementation Architecture Contract
 
 ### Responsibility
-- Expose stable chat command entrypoints for `/intentinarchitecturedesign`, `/implementationdesign`, `/work`, and `/idle`.
+- Expose stable chat command entrypoints for `/argo-init`, `/intentinarchitecturedesign`, `/implementationdesign`, `/test`, `/work`, and `/idle`.
 - Translate user intent into handoff generation or bounded execution flows.
 - Keep command semantics stable without absorbing engine internals or unrelated helper responsibilities.
 
@@ -20,15 +20,21 @@ element_path: src/commands
 - Becoming a catch-all location for shared utilities.
 
 ### Children
+- path: argoInit.ts
+  kind: entrypoint-file
+  role: manual workspace bootstrap using the same copy policy as extension startup
 - path: intentinarchitecturedesign.ts
   kind: entrypoint-file
   role: intent architecture design handoff
 - path: implementationdesign.ts
   kind: entrypoint-file
   role: implementation architecture design handoff
+- path: test.ts
+  kind: entrypoint-file
+  role: explicit testcase execution and failure-record refresh
 - path: work.ts
   kind: entrypoint-file
-  role: coding-stage orchestration and explicit test execution handoff
+  role: coding-stage handoff based on persisted failure records
 - path: idle.ts
   kind: entrypoint-file
   role: guard stage reset
@@ -67,6 +73,8 @@ element_path: src/commands
   guards_elements:
     - src/commands
   supports_explicit_testcases:
+    - argo-init
+    - test
     - work
     - implementationdesign
   protected_fixtures:
@@ -87,7 +95,7 @@ element_path: src/commands
 - none directly owned here; commands orchestrate explicit entries but do not store them.
 
 ### Open Gaps
-- The graph currently lacks formal explicit testcase objects, so `/work` still operates over an empty explicit baseline unless the graph is updated.
+- The graph currently lacks formal explicit testcase objects, so `/test` may still operate over an empty explicit baseline unless the graph is updated.
 
 ### Notes
-- `/work` and `/implementationdesign` are direct intent implementations; other support directories usually implement the same intent only indirectly.
+- `/argo-init`, `/test`, `/work`, and `/implementationdesign` are the main user-facing orchestration entrypoints in this element; support directories usually implement the same intent only indirectly.

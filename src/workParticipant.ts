@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { handleIdle, handleImplementationDesign, handleIntentInArchitectureDesign, handleWork } from './commands';
+import { handleArgoInit, handleIdle, handleImplementationDesign, handleIntentInArchitectureDesign, handleTest, handleWork } from './commands';
 
 export async function argoWorkRequestHandler(
     request: vscode.ChatRequest,
@@ -10,6 +10,11 @@ export async function argoWorkRequestHandler(
 
     if (request.command === 'implementationdesign') {
         await handleImplementationDesign(request, context, stream, token);
+        return {};
+    }
+
+    if (request.command === 'argo-init') {
+        await handleArgoInit(request, context, stream, token);
         return {};
     }
 
@@ -28,9 +33,16 @@ export async function argoWorkRequestHandler(
         return {};
     }
 
+    if (request.command === 'test') {
+        await handleTest(request, context, stream, token);
+        return {};
+    }
+
     stream.markdown(
         '**Argo Work Agent**\n\n' +
-        'Use `/work` to execute explicit testcase entries from `design/KG/SystemArchitecture.json`, persist failed testcase records, and prepare a handoff prompt for the Copilot main agent.\n\n' +
+        'Use `/argo-init` to copy the same workspace bootstrap assets that Argo normally copies during extension startup.\n\n' +
+        'Use `/test` to execute explicit testcase entries from `design/KG/SystemArchitecture.json` and refresh `design/KG/test-failure-records.json`.\n\n' +
+        'Use `/work` to prepare a coding-stage handoff prompt for the Copilot main agent so it can repair the issues already recorded in `design/KG/test-failure-records.json`.\n\n' +
         'Use `/idle` to reset the internal guard stage back to idle when you want to leave coding or implementation-design mode.\n\n' +
         'Use `/intentinarchitecturedesign` to prepare a handoff prompt for the Copilot main agent so it can grill the design relentlessly, explore the codebase when possible, and provide recommended answers for each design question.\n\n' +
         'Use `/implementationdesign` to prepare a handoff prompt for the Copilot main agent so it can design a UML-style implementation architecture from the full intent architecture, involve the user in key architectural decisions, materialize read-only explicit testcase entry ownership, and emit `design/KG/ImplementationArchitecture.json` with embedded non-explicit testcases.\n',

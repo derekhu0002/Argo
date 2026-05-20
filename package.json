@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "5.0.51",
+  "version": "5.2.21",
   "license": "MIT",
   "publisher": "argo-team",
   "repository": {
@@ -99,6 +99,10 @@
         "isSticky": true,
         "commands": [
           {
+            "name": "argo-init",
+            "description": "Copy the same workspace bootstrap assets that Argo copies during extension startup."
+          },
+          {
             "name": "brief",
             "description": "Generate a main-agent handoff prompt for an external-facing product brief based on the current repository."
           },
@@ -115,8 +119,12 @@
             "description": "Reset Argo's internal guard stage back to idle."
           },
           {
+            "name": "test",
+            "description": "Run every testcase acceptance script declared in design/KG/SystemArchitecture.json and refresh test-failure-records.json."
+          },
+          {
             "name": "work",
-            "description": "Run every testcase acceptance script declared in design/KG/SystemArchitecture.json, record failures, and prepare the development handoff."
+            "description": "Prepare the development handoff so the main agent repairs issues already recorded in design/KG/test-failure-records.json."
           }
         ]
       }
