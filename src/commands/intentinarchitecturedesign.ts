@@ -3,7 +3,7 @@ import { buildIntentInArchitectureDesignHandoffPrompt } from '../utils/agentHand
 import { setExplicitTestcaseEntryGuardStage } from '../utils/explicitTestcaseEntryGuard';
 
 export async function handleIntentInArchitectureDesign(
-    _request: vscode.ChatRequest,
+    request: vscode.ChatRequest,
     _context: vscode.ChatContext,
     stream: vscode.ChatResponseStream,
     _token: vscode.CancellationToken,
@@ -11,5 +11,5 @@ export async function handleIntentInArchitectureDesign(
     stream.markdown('## /intentinarchitecturedesign - Intent In Architecture Design Handoff\n\n');
 
     await setExplicitTestcaseEntryGuardStage('intentiondesign');
-    stream.markdown('```text\n' + buildIntentInArchitectureDesignHandoffPrompt() + '\n```\n');
+    stream.markdown('```text\n' + buildIntentInArchitectureDesignHandoffPrompt(request.prompt.trim()) + '\n```\n');
 }

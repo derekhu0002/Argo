@@ -138,8 +138,8 @@ export function buildWorkAgentHandoffPrompt(input: {
     return lines.join('\n');
 }
 
-export function buildIntentInArchitectureDesignHandoffPrompt(): string {
-    return [
+export function buildIntentInArchitectureDesignHandoffPrompt(extraContext: string): string {
+    const lines = [
         '### Current stage: Intent Design.',
         '',
         '### Targets',
@@ -151,7 +151,13 @@ export function buildIntentInArchitectureDesignHandoffPrompt(): string {
         '   If a question can be answered from the repository, inspect the repository instead of asking me.',
         '3. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
         '4. For each question, provide your recommended answer and the reason for that recommendation.',
-    ].join('\n');
+    ];
+
+    if (extraContext) {
+        lines.push('', '### Extra Context', extraContext);
+    }
+
+    return lines.join('\n');
 }
 
 export function buildImplementationDesignHandoffPrompt(input: {
