@@ -8,7 +8,6 @@ import {
 } from '../tools/architectureTestTool';
 import {
     isExplicitTestcaseEntryGuardEnabled,
-    setExplicitTestcaseEntryGuardStage,
 } from '../utils/explicitTestcaseEntryGuard';
 
 export async function handleTest(
@@ -18,7 +17,6 @@ export async function handleTest(
     token: vscode.CancellationToken,
 ): Promise<void> {
     stream.markdown('## /test - Explicit Testcase Execution\n\n');
-    await setExplicitTestcaseEntryGuardStage('coding');
     stream.markdown(
         isExplicitTestcaseEntryGuardEnabled()
             ? '显性测试入口保护已启用：测试执行后若进入编码修复阶段，Argo 会继续阻止对显性测试入口的误改写。\n\n'
