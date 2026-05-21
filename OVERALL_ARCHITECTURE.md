@@ -87,6 +87,8 @@ scope: repository-root
 - physical_root: tests/explicit/entries/
 - entry_shape: one testcase to one callable script entry
 - mutation_policy: read-only-during-work
+- implementationdesign_minimum_delivery: explicit testcase entries must land their critical assertions, not just placeholder files or path reservations
+- implementationdesign_initial_execution_expectation: once materialized, explicit testcase entries should be executable and may legitimately fail before business implementation is completed; that failing state is an expected gap signal for /work
 - current_repository_fact: no formal explicit testcase objects exist yet in design/KG/SystemArchitecture.json
 - current_action: reserve the physical landing zone without inventing new explicit acceptance baselines
 
@@ -108,7 +110,7 @@ scope: repository-root
 4. relevant code, tests, scripts, and configuration
 
 ### Stage Boundaries
-- implementationdesign: may update contracts, reserve explicit entry landing zones, and freeze critical non-explicit tests
+- implementationdesign: may update contracts, materialize explicit entry landing zones with critical assertions, execute those entries to confirm they fail or pass for the right reason, and freeze critical non-explicit tests
 - work: must treat explicit testcase entries and critical non-explicit tests as read-only acceptance/support baselines
 
 ### Open Gaps
