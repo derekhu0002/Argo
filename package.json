@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "5.2.21",
+  "version": "5.2.23",
   "license": "MIT",
   "publisher": "argo-team",
   "repository": {
@@ -100,7 +100,7 @@
         "commands": [
           {
             "name": "argo-init",
-            "description": "Copy the same workspace bootstrap assets that Argo copies during extension startup."
+            "description": "Manually copy Argo workspace bootstrap assets on demand."
           },
           {
             "name": "brief",

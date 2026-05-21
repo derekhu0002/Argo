@@ -21,11 +21,11 @@ export async function handleArgoInit(
         return;
     }
 
-    stream.markdown('将复用扩展启动时的同一套拷贝逻辑：EA 模板、捆绑的 `.github` 目录内容以及 SystemArchitecture schema。\n\n');
+    stream.markdown('将按手动初始化策略执行工作区拷贝：EA 模板、捆绑的 `.github` 目录内容以及 SystemArchitecture schema。\n\n');
 
     await ensureWorkspaceEaTemplates(extension.extensionUri);
 
-    stream.markdown('已触发工作区初始化拷贝，策略与扩展启动时保持一致。\n\n');
+    stream.markdown('已触发工作区初始化拷贝；扩展激活阶段不会自动执行这一步。\n\n');
     stream.markdown('处理的工作区：\n');
     for (const folder of workspaceFolders) {
         stream.markdown(`- ${folder.name}\n`);

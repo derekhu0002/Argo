@@ -4,21 +4,14 @@ const path = require('path');
 const vscode = require('vscode');
 
 const EXTENSION_ID = 'argo-team.argo-architect';
-const EXPECTED_FILE_TIMEOUT_MS = 20000;
-const POLL_INTERVAL_MS = 200;
 
-async function waitForFile(filePath, timeoutMs) {
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-        try {
-            await fs.stat(filePath);
-            return;
-        } catch {
-            await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
-        }
+async function fileExists(filePath) {
+    try {
+        await fs.stat(filePath);
+        return true;
+    } catch {
+        return false;
     }
-
-    throw new Error(`Timed out waiting for generated EA template file: ${filePath}`);
 }
 
 async function run() {
@@ -35,45 +28,26 @@ async function run() {
     assert(extension.isActive, `Expected extension ${EXTENSION_ID} to activate successfully.`);
 
     const generatedFilePath = path.join(folder.uri.fsPath, `${folder.name}.feap`);
-    const templateFilePath = path.join(extension.extensionPath, 'eatool', 'EA-model-template.feap');
     const generatedSchemaPath = path.join(folder.uri.fsPath, '.github', 'argoschema', 'SystemArchitecture.schema.json');
-    const bundledSchemaPath = path.join(extension.extensionPath, 'schema', 'SystemArchitecture.schema.json');
     const generatedInstructionsPath = path.join(folder.uri.fsPath, '.github', 'copilot-instructions.md');
-    const bundledInstructionsPath = path.join(extension.extensionPath, '.github', 'copilot-instructions.md');
     const generatedAgentPath = path.join(folder.uri.fsPath, '.github', 'agents', 'implementation-architecture-designer.agent.md');
-    const bundledAgentPath = path.join(extension.extensionPath, '.github', 'agents', 'implementation-architecture-designer.agent.md');
-
-    await Promise.all([
-        waitForFile(generatedFilePath, EXPECTED_FILE_TIMEOUT_MS),
-        waitForFile(generatedSchemaPath, EXPECTED_FILE_TIMEOUT_MS),
-        waitForFile(generatedInstructionsPath, EXPECTED_FILE_TIMEOUT_MS),
-        waitForFile(generatedAgentPath, EXPECTED_FILE_TIMEOUT_MS),
-    ]);
 
     const [
-        generatedBytes,
-        templateBytes,
-        generatedSchemaBytes,
-        bundledSchemaBytes,
-        generatedInstructionsBytes,
-        bundledInstructionsBytes,
-        generatedAgentBytes,
-        bundledAgentBytes,
+        generatedFileExists,
+        generatedSchemaExists,
+        generatedInstructionsExists,
+        generatedAgentExists,
     ] = await Promise.all([
-        fs.readFile(generatedFilePath),
-        fs.readFile(templateFilePath),
-        fs.readFile(generatedSchemaPath),
-        fs.readFile(bundledSchemaPath),
-        fs.readFile(generatedInstructionsPath),
-        fs.readFile(bundledInstructionsPath),
-        fs.readFile(generatedAgentPath),
-        fs.readFile(bundledAgentPath),
+        fileExists(generatedFilePath),
+        fileExists(generatedSchemaPath),
+        fileExists(generatedInstructionsPath),
+        fileExists(generatedAgentPath),
     ]);
 
-    assert(generatedBytes.equals(templateBytes), 'Expected generated .feap file to match the bundled EA template exactly.');
-    assert(generatedSchemaBytes.equals(bundledSchemaBytes), 'Expected generated SystemArchitecture schema to match the bundled schema exactly.');
-    assert(generatedInstructionsBytes.equals(bundledInstructionsBytes), 'Expected generated copilot instructions to match the bundled .github content exactly.');
-    assert(generatedAgentBytes.equals(bundledAgentBytes), 'Expected generated agent customization files to match the bundled .github content exactly.');
+    assert.strictEqual(generatedFileExists, false, 'Expected extension activation to not generate a .feap file automatically.');
+    assert.strictEqual(generatedSchemaExists, false, 'Expected extension activation to not generate the SystemArchitecture schema automatically.');
+    assert.strictEqual(generatedInstructionsExists, false, 'Expected extension activation to not copy bundled .github instructions automatically.');
+    assert.strictEqual(generatedAgentExists, false, 'Expected extension activation to not copy bundled agent files automatically.');
 }
 
 module.exports = { run };

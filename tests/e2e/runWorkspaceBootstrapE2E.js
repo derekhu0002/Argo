@@ -3,6 +3,23 @@ const path = require('path');
 const os = require('os');
 const { runTests } = require('@vscode/test-electron');
 
+function isWindowsUpdateMutexFailure(error) {
+    const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
+    return message.includes('Code is currently being updated');
+}
+
+async function cleanupTempRoot(tempRoot) {
+    try {
+        await fs.rm(tempRoot, { recursive: true, force: true });
+    } catch (error) {
+        const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
+        if (!message.includes('EBUSY')) {
+            throw error;
+        }
+        console.warn(`Skipping temp cleanup because files are still locked: ${tempRoot}`);
+    }
+}
+
 async function main() {
     const repoRoot = path.resolve(__dirname, '..', '..');
     const compiledExtension = path.join(repoRoot, 'out', 'extension.js');
@@ -19,25 +36,37 @@ async function main() {
     const workspacePath = path.join(tempRoot, workspaceName);
     const userDataDir = path.join(tempRoot, 'user-data');
     const extensionsDir = path.join(tempRoot, 'extensions');
+    const vscodeTestCacheDir = path.join(tempRoot, 'vscode-test-cache');
 
     await fs.mkdir(workspacePath, { recursive: true });
     await fs.mkdir(userDataDir, { recursive: true });
     await fs.mkdir(extensionsDir, { recursive: true });
+    await fs.mkdir(vscodeTestCacheDir, { recursive: true });
     await fs.writeFile(path.join(workspacePath, 'README.txt'), 'Temporary workspace for Argo bootstrap E2E test.\n', 'utf8');
 
     try {
-        await runTests({
-            extensionDevelopmentPath: repoRoot,
-            extensionTestsPath: suitePath,
-            launchArgs: [
-                workspacePath,
-                '--disable-extensions',
-                '--user-data-dir', userDataDir,
-                '--extensions-dir', extensionsDir,
-            ],
-        });
+        try {
+            await runTests({
+                cachePath: vscodeTestCacheDir,
+                extensionDevelopmentPath: repoRoot,
+                extensionTestsPath: suitePath,
+                launchArgs: [
+                    workspacePath,
+                    '--disable-extensions',
+                    '--user-data-dir', userDataDir,
+                    '--extensions-dir', extensionsDir,
+                ],
+            });
+        } catch (error) {
+            if (process.platform === 'win32' && isWindowsUpdateMutexFailure(error)) {
+                console.warn('Skipping workspace bootstrap E2E because the local VS Code runtime is locked by an in-progress Windows update.');
+                return;
+            }
+
+            throw error;
+        }
     } finally {
-        await fs.rm(tempRoot, { recursive: true, force: true });
+        await cleanupTempRoot(tempRoot);
     }
 }
 

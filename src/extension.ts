@@ -1,44 +1,18 @@
 import * as vscode from 'vscode';
 import { registerArchitectureTestTool } from './tools/architectureTestTool';
 import { registerExplicitTestcaseEntryGuard } from './utils/explicitTestcaseEntryGuard';
-import { ensureWorkspaceEaTemplates, ensureWorkspaceEaTemplatesForFolders } from './utils/workspaceBootstrap';
 import { argoWorkRequestHandler } from './workParticipant';
 
 const WORK_PARTICIPANT_ID = 'argo.worker';
-const STARTUP_BOOTSTRAP_RETRY_DELAYS_MS = [250, 1000, 3000] as const;
 
 export async function activate(extensionContext: vscode.ExtensionContext): Promise<void> {
-    await ensureWorkspaceEaTemplates(extensionContext.extensionUri);
-    scheduleStartupWorkspaceBootstrapRetries(extensionContext, extensionContext.extensionUri);
     registerExplicitTestcaseEntryGuard(extensionContext);
 
     registerCopilotFeatures(extensionContext);
-
-    extensionContext.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(event => {
-        if (event.added.length === 0) {
-            return;
-        }
-        void ensureWorkspaceEaTemplatesForFolders(event.added, extensionContext.extensionUri);
-    }));
 }
 
 export function deactivate(): void {
     // Cleanup handled by disposables registered in extensionContext.subscriptions.
-}
-
-function scheduleStartupWorkspaceBootstrapRetries(
-    extensionContext: vscode.ExtensionContext,
-    extensionUri: vscode.Uri,
-): void {
-    for (const delayMs of STARTUP_BOOTSTRAP_RETRY_DELAYS_MS) {
-        const handle = setTimeout(() => {
-            void ensureWorkspaceEaTemplates(extensionUri);
-        }, delayMs);
-
-        extensionContext.subscriptions.push({
-            dispose: () => clearTimeout(handle),
-        });
-    }
 }
 
 function registerCopilotFeatures(extensionContext: vscode.ExtensionContext): void {

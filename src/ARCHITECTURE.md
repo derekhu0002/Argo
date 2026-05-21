@@ -50,7 +50,7 @@ element_path: src
 - path: ./tools
   reason: host registers stable tool surfaces
 - path: ./utils
-  reason: host bootstraps workspace assets and runtime guards
+  reason: host registers runtime guards and other stable support behavior
 
 #### forbidden
 - path: extension.ts -> ./engine
