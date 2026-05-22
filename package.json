@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "5.2.30",
+  "version": "5.2.32",
   "license": "MIT",
   "publisher": "argo-team",
   "repository": {
@@ -157,6 +157,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
+    "validate:handoff": "node scripts/validateStageHandoff.js",
+    "validate:handoff:intent": "node scripts/validateStageHandoff.js intent-to-implementation",
+    "validate:handoff:implementation": "node scripts/validateStageHandoff.js implementation-to-coding",
     "test:e2e:workspace-bootstrap": "node tests/e2e/runWorkspaceBootstrapE2E.js"
   },
   "devDependencies": {

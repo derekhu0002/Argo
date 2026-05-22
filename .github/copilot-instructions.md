@@ -94,6 +94,7 @@ When repository evidence conflicts, resolve it in this order:
 - Responsible for intent elements, relationships, views, principles, constraints, and explicit testcase baselines.
 - Do not rewrite intent baselines during ordinary implementation or coding tasks unless the user explicitly requests intent redesign.
 - When this stage edits `design/KG/SystemArchitecture.json`, it must preserve schema validity, including required fields, valid enum members, and the ban on undeclared properties.
+- Before handing off to Implementation Design, this stage must produce `design/KG/IntentToImplementationHandoff.json` that satisfies `.github/argoschema/IntentToImplementationHandoff.schema.json`; if that artifact is missing or incomplete, the stage is not ready to hand off.
 
 ### Implementation Architecture Design Stage
 
@@ -103,11 +104,13 @@ When repository evidence conflicts, resolve it in this order:
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
 - This stage must generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
+- Before handing off to Coding/Repair, this stage must produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `.github/argoschema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, and expected failure signals that Coding/Repair is required to consume.
 
 ### Coding And Repair Stage
 
 - Respect the frozen and evolvable test assets defined in Test Semantics and in the implementation contracts.
 - Treat expected-failing testcase assets produced during implementation architecture design as the primary repair queue: coding work should make those existing tests pass by completing or repairing implementation, not by weakening or redesigning the tests.
+- Read `design/KG/ImplementationToCodingHandoff.json` before changing code and treat it, together with the frozen test assets it names, as the primary execution queue for the stage.
 - During coding, validate by invoking existing testcase entrypoints rather than rewriting them.
 - When adding or refining supporting non-explicit tests in coding mode, keep the control point and observation point explicit in the test design and in any task summary.
 
@@ -138,7 +141,8 @@ When repository evidence conflicts, resolve it in this order:
 ## Control Loop Semantics
 
 - Intent architecture design updates intent.
-- Implementation architecture design updates implementation contracts, testcase ownership, and executable expected-failing test assets that define the next coding target.
+- Intent architecture design hands off through `design/KG/IntentToImplementationHandoff.json`.
+- Implementation architecture design updates implementation contracts, testcase ownership, and executable expected-failing test assets that define the next coding target, then hands off through `design/KG/ImplementationToCodingHandoff.json`.
 - Coding realizes implementation architecture by making those predesigned tests pass without redefining their acceptance boundary.
 - Automated testing produces failure records that feed repair without redefining the upstream baselines.
 
@@ -168,6 +172,7 @@ When designing or changing implementation architecture:
 - When editing architecture-related assets, prefer updating contracts and test guardrails before modifying business behavior unless the user explicitly asks for implementation work.
 - If no contract file exists yet, report that as an architecture gap and create or update the appropriate contract file when the task is implementation architecture design.
 - If you modify `design/KG/SystemArchitecture.json`, read `.github/argoschema/SystemArchitecture.schema.json` first and do not finish until the JSON is structurally valid against that schema; schema violations are blocking defects, not follow-up work.
+- If you claim a stage is ready to hand off, validate the corresponding handoff artifact with `npm run validate:handoff:intent` or `npm run validate:handoff:implementation`; failing validation means the handoff is incomplete.
 - **Stop and Ask**: If you find an unresolvable conflict between Intent (KG) and Implementation (Contracts) that would require a breaking change to the acceptance baseline, you must stop and present the conflict to the user instead of proceeding with assumptions.
 - **Token Efficiency**: Aim for the most concise code implementation that satisfies all testcases. Avoid gold-plating or over-engineering that is not derived from the Intent Architecture.
 - Do not reason from a single element name or one description field in isolation; use nearby relationships, views, upstream/downstream links, and referenced evidence before concluding how a concept should be implemented.

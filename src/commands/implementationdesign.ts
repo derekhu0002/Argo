@@ -21,7 +21,7 @@ export async function handleImplementationDesign(
     const handoffPrompt = buildImplementationDesignHandoffPrompt({
         workspacePath: rootPath,
         architectureGraphPath: `${rootPath}\\design\\KG\\SystemArchitecture.json`,
-        schemaPath: `${rootPath}\\schema\\SystemArchitecture.schema.json`,
+        schemaPath: `${rootPath}\\.github\\argoschema\\SystemArchitecture.schema.json`,
         implementationArchitecturePath: `${rootPath}\\design\\KG\\ImplementationArchitecture.json`,
         testsPath: `${rootPath}\\tests`,
         srcPath: `${rootPath}\\src`,

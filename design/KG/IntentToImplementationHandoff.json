@@ -1,0 +1,44 @@
+{
+  "stage": "intent-to-implementation",
+  "generatedAt": "2026-05-22T00:00:00Z",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Minimal bootstrap template for handing off intent design outputs into implementation design. Replace placeholder testcase details with the real explicit testcase set before using this as a true stage artifact.",
+  "intentElementIds": [
+    "1335",
+    "1363",
+    "1364"
+  ],
+  "relationshipIds": [],
+  "explicitTestcases": [
+    {
+      "name": "TEMPLATE-REPLACE-WITH-EXPLICIT-TESTCASE",
+      "mountedElementId": "1364",
+      "mountedElementName": "显性测试用例",
+      "type": "Acceptance Test",
+      "controlPoint": "Replace with the concrete trigger, input, setup, or executable entry for the real explicit testcase.",
+      "observationPoint": "Replace with the concrete externally observable output, state, artifact, log, error, or side effect asserted by the testcase.",
+      "acceptanceBoundary": "Replace with the stable assertion boundary that Implementation Design must preserve.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "Bootstrap placeholder only. Replace this object once real explicit testcase objects exist in design/KG/SystemArchitecture.json."
+    }
+  ],
+  "frozenBaselines": [
+    "design/KG/SystemArchitecture.json"
+  ],
+  "requiredImplementationArtifacts": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/ARCHITECTURE.md",
+    "design/KG/ImplementationToCodingHandoff.json"
+  ],
+  "openQuestions": [
+    {
+      "question": "Which real explicit testcase objects from design/KG/SystemArchitecture.json should replace the bootstrap placeholder entry?",
+      "recommendedAnswer": "Replace the placeholder with the real explicit acceptance or scenario testcases declared in the intent graph and keep one handoff item per testcase.",
+      "reason": "Implementation Design needs stable, named, per-testcase inputs instead of a generic placeholder before the handoff can be treated as production-ready."
+    }
+  ],
+  "notes": [
+    "This file is a minimal bootstrap template created to satisfy the new stage handoff workflow.",
+    "It must be replaced with real testcase-by-testcase handoff content before an actual Intent Design handoff is considered complete."
+  ]
+}

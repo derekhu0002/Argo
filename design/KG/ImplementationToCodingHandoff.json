@@ -1,0 +1,51 @@
+{
+  "stage": "implementation-to-coding",
+  "generatedAt": "2026-05-22T00:00:00Z",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Minimal bootstrap template for handing off implementation design outputs into coding/repair. Replace placeholder testcase semantics with real explicit entrypoints and failure signals before treating this as a true implementation handoff.",
+  "implementationContracts": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/ARCHITECTURE.md",
+    "tests/architecture/ARCHITECTURE.md"
+  ],
+  "explicitEntrypoints": [
+    {
+      "testcaseName": "TEMPLATE-REPLACE-WITH-EXPLICIT-ENTRYPOINT",
+      "entryPath": "tests/architecture/commands-entry-boundary.test.js",
+      "controlPoint": "Replace with the real explicit testcase invocation, input, or setup entry once the explicit entrypoint file exists.",
+      "observationPoint": "Replace with the real explicit testcase assertion surface once the explicit entrypoint file exists.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/architecture/commands-entry-boundary.test.js",
+      "failureReason": "Bootstrap placeholder only. Replace with the real failure reason from the explicit testcase entrypoint after Implementation Design materializes it."
+    }
+  ],
+  "criticalNonExplicitTests": [
+    {
+      "name": "commands-entry-boundary",
+      "path": "tests/architecture/commands-entry-boundary.test.js",
+      "kind": "architecture-boundary",
+      "controlPoint": "Execute node tests/architecture/commands-entry-boundary.test.js.",
+      "observationPoint": "Observe whether the host-to-command boundary matches the frozen fixture and exits without boundary drift.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "supportingNonExplicitTests": [],
+  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "codingTargets": [
+    {
+      "testcaseName": "TEMPLATE-REPLACE-WITH-EXPLICIT-ENTRYPOINT",
+      "path": "tests/architecture/commands-entry-boundary.test.js",
+      "failureSignal": "Bootstrap placeholder failure signal that must be replaced by the real explicit testcase failure output.",
+      "nextAction": "Replace this template target with the real failing explicit entrypoint and then repair the implementation until the recorded failure passes."
+    }
+  ],
+  "frozenFiles": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/ARCHITECTURE.md",
+    "tests/architecture/commands-entry-boundary.test.js"
+  ],
+  "openGaps": [
+    "The repository still lacks formal explicit testcase objects and read-only explicit testcase entry files.",
+    "Replace the bootstrap placeholder entry with the real explicit testcase entrypoint after Implementation Design materializes it."
+  ]
+}
