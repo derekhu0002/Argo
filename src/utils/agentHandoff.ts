@@ -186,7 +186,6 @@ export function buildImplementationDesignHandoffPrompt(input: {
         `- 工作区范围：${input.workspacePath}`,
         `- 意图架构图谱：${input.architectureGraphPath}`,
         `- 图谱 Schema：${input.schemaPath}`,
-        `- 实现架构文件候选：${input.implementationArchitecturePath}`,
         `- 测试目录：${input.testsPath}`,
         `- 源码目录：${input.srcPath}`,
         '',
