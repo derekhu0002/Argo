@@ -2,7 +2,7 @@
   "stage": "intent-to-implementation",
   "generatedAt": "2026-05-23T00:00:00Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "No intent-graph update is required for the current /argo-init validator-bootstrap request. Implementation Design must instead adjust repository contracts and guardrails so /argo-init prepares the validator runtime assets under Argo-managed .github paths, applies the chosen package.json seeding policy, and leaves handoff JSON creation to later design work instead of bootstrap fabrication.",
+  "summary": "Intent now formally defines ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT as an explicit acceptance baseline mounted under 显性测试用例. Implementation Design must materialize one read-only explicit testcase entry, align repository contracts and critical guardrails to that baseline, bootstrap the validator plus the full handoff schema set into Argo-managed .github paths, apply the chosen package.json seeding policy without overwriting conflicting scripts, and keep missing Node/npm runtime classified as an explicit prerequisite failure rather than a bootstrap responsibility.",
   "intentElementIds": [
     "1335",
     "1343",
@@ -19,15 +19,16 @@
       "mountedElementId": "1364",
       "mountedElementName": "显性测试用例",
       "type": "Acceptance Test",
-      "controlPoint": "Invoke /argo-init in a target workspace that lacks some or all Argo validator bootstrap assets, including the validator script, the handoff schemas, and optionally package.json.",
-      "observationPoint": "After bootstrap, the workspace contains .github/validator/script/validateStageHandoff.js and .github/argoschema/*.schema.json under Argo-managed paths; package.json is created when absent and otherwise only missing validate:handoff, validate:handoff:intent, and validate:handoff:implementation scripts are added, while pre-existing same-name scripts trigger conflict reporting instead of overwrite.",
-      "acceptanceBoundary": "Implementation Design must materialize this as bootstrap contracts and critical verification guardrails for /argo-init without treating bootstrap as permission to fabricate missing design/KG handoff JSON files or to overwrite conflicting existing script names.",
-      "requiredEntryKind": "critical-non-explicit-test",
-      "implementationNotes": "This testcase directive is recorded in the handoff to satisfy the current handoff schema without rewriting design/KG/SystemArchitecture.json. It should be materialized as implementation-architecture guardrails rather than as a new read-only explicit testcase entry file."
+      "controlPoint": "Invoke /argo-init in a target workspace that lacks some or all Argo validator bootstrap assets, including the validator script, the full .github/argoschema handoff schema set, and optionally package.json.",
+      "observationPoint": "After bootstrap, the workspace contains .github/validator/script/validateStageHandoff.js, .github/argoschema/SystemArchitecture.schema.json, .github/argoschema/IntentToImplementationHandoff.schema.json, and .github/argoschema/ImplementationToCodingHandoff.schema.json under Argo-managed paths; package.json is created when absent and otherwise only missing validate:handoff, validate:handoff:intent, and validate:handoff:implementation scripts are added, while pre-existing same-name scripts trigger conflict reporting instead of overwrite. If Node/npm is unavailable, that prerequisite failure is surfaced explicitly rather than treated as a bootstrap success.",
+      "acceptanceBoundary": "Implementation Design must materialize this baseline as one read-only explicit testcase entry plus the necessary bootstrap contracts and critical verification guardrails for /argo-init. Bootstrap is not permission to fabricate missing design/KG handoff JSON payloads or to overwrite conflicting existing script names.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "The explicit testcase is now formalized in design/KG/SystemArchitecture.json. The next stage should trace the physical read-only entry, command contract linkage, and critical non-explicit guardrails back to this graph-mounted baseline."
     }
   ],
   "frozenBaselines": [
-    "design/KG/SystemArchitecture.json"
+    "design/KG/SystemArchitecture.json",
+    "design/KG/IntentToImplementationHandoff.json"
   ],
   "requiredImplementationArtifacts": [
     "OVERALL_ARCHITECTURE.md",
@@ -36,20 +37,18 @@
     "src/commands/argoInit.ts",
     "src/utils/workspaceBootstrap.ts",
     "package.json",
+    ".github/argoschema/SystemArchitecture.schema.json",
+    ".github/argoschema/IntentToImplementationHandoff.schema.json",
+    ".github/argoschema/ImplementationToCodingHandoff.schema.json",
     ".github/validator/script/validateStageHandoff.js",
+    "tests/explicit",
     "tests/architecture",
     "tests/e2e/runWorkspaceBootstrapE2E.js"
   ],
-  "openQuestions": [
-    {
-      "question": "How should Implementation Design classify workspaces that lack a usable Node/npm runtime after /argo-init has copied the validator assets and seeded package.json?",
-      "recommendedAnswer": "Treat missing Node/npm runtime as an execution prerequisite failure that must be surfaced explicitly by the bootstrap flow or validation guardrail, rather than silently downgrading the validator contract.",
-      "reason": "The chosen bootstrap policy now allows package.json creation, but validator execution still depends on an external runtime that bootstrap alone cannot guarantee. The next stage should preserve that boundary explicitly."
-    }
-  ],
   "notes": [
-    "This handoff intentionally keeps the current intent graph unchanged and pushes the requested behavior into Implementation Design contract updates plus bootstrap verification guardrails.",
+    "This handoff now treats the testcase as a graph-owned explicit baseline rather than a handoff-only workaround.",
     "The selected policy permits /argo-init to create a minimal package.json when absent and to seed the three validate:handoff scripts only when they are missing.",
-    "If any of the target script names already exist, Implementation Design should preserve the no-overwrite rule and require explicit conflict reporting."
+    "If any of the target script names already exist, Implementation Design should preserve the no-overwrite rule and require explicit conflict reporting.",
+    "Missing usable Node/npm runtime remains outside the bootstrap implementation contract and must be reported as a prerequisite failure at execution time."
   ]
 }

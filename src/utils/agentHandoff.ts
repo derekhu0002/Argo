@@ -155,11 +155,12 @@ export function buildIntentInArchitectureDesignHandoffPrompt(extraContext: strin
         '2. Interview me relentlessly about this plan until we reach a shared understanding, resolving the design tree branch by branch.',
         '   If a question can be answered from the repository, inspect the repository instead of asking me.',
         '3. If you create or edit design/KG/SystemArchitecture.json, you must first read `.github/argoschema/SystemArchitecture.schema.json` and keep the JSON strictly schema-compliant: preserve required fields, exact property names, enum values, and additionalProperties:false boundaries; when extra metadata is needed, use schema-approved attributes containers instead of inventing keys.',
-        '4. Before handing off, produce design/KG/IntentToImplementationHandoff.json that satisfies .github/argoschema/IntentToImplementationHandoff.schema.json. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.',
-        '5. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
-        '6. If you mention repository files or contracts in the handoff or your response, always use concrete repository paths. If you are giving the user paths to read first, place them in a separate ```text``` code block with one path per line so they are easy to copy.',
-        '7. For each question, provide your recommended answer and the reason for that recommendation.',
-        '8. Do not claim the stage is ready to hand off until npm run validate:handoff:intent succeeds or you explicitly explain why the handoff artifact is still blocked.',
+        '4. After editing design/KG/SystemArchitecture.json, you must run `npm run validate:system-architecture` and do not treat the graph edit as complete unless that command succeeds or you explicitly report why it is blocked.',
+        '5. Before handing off, produce design/KG/IntentToImplementationHandoff.json that satisfies .github/argoschema/IntentToImplementationHandoff.schema.json. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.',
+        '6. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.',
+        '7. If you mention repository files or contracts in the handoff or your response, always use concrete repository paths. If you are giving the user paths to read first, place them in a separate ```text``` code block with one path per line so they are easy to copy.',
+        '8. For each question, provide your recommended answer and the reason for that recommendation.',
+        '9. Do not claim the stage is ready to hand off until both `npm run validate:system-architecture` and `npm run validate:handoff:intent` succeed, or you explicitly explain why either artifact is still blocked.',
     ];
 
     if (extraContext) {

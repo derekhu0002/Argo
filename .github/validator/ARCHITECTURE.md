@@ -21,6 +21,9 @@ element_path: .github/validator
 - path: script/validateStageHandoff.js
   kind: bundled-validator-script
   role: bundled handoff validator executable copied into managed .github workspace paths
+- path: script/validateSystemArchitecture.js
+  kind: bundled-validator-script
+  role: bundled SystemArchitecture schema validator executable copied into managed .github workspace paths
 
 ### Test Guardrails
 #### critical_non_explicit_tests
@@ -30,10 +33,11 @@ element_path: .github/validator
   execution_entry: ../../tests/architecture/validator-bootstrap-traceability.test.js
   guards_elements:
     - script/validateStageHandoff.js
+    - script/validateSystemArchitecture.js
   protected_baselines:
     - ARCHITECTURE.md
   rationale: keep validator assets traceable to the bootstrap contract and npm manifest shim
   frozen_by_stage: implementationdesign
 
 ### Notes
-- The repository-level shim remains at ../../scripts/validateStageHandoff.js so package.json can expose a stable invocation path without moving the bundled asset.
+- The repository-level shims remain at ../../scripts/validateStageHandoff.js and ../../scripts/validateSystemArchitecture.js so package.json can expose stable invocation paths without moving the bundled assets.

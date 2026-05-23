@@ -9,7 +9,8 @@ const HANDOFF_FILES_TO_RESET = [
     ['design', 'KG', 'IntentToImplementationHandoff.json'],
     ['design', 'KG', 'ImplementationToCodingHandoff.json'],
 ] as const;
-const HANDOFF_VALIDATION_SCRIPTS: Record<string, string> = {
+const BOOTSTRAP_VALIDATION_SCRIPTS: Record<string, string> = {
+    'validate:system-architecture': 'node .github/validator/script/validateSystemArchitecture.js',
     'validate:handoff': 'node .github/validator/script/validateStageHandoff.js',
     'validate:handoff:intent': 'node .github/validator/script/validateStageHandoff.js intent-to-implementation',
     'validate:handoff:implementation': 'node .github/validator/script/validateStageHandoff.js implementation-to-coding',
@@ -196,7 +197,7 @@ async function ensureWorkspacePackageJson(
         const mergedScripts = { ...existingScripts };
         const conflicts: string[] = [];
 
-        for (const [scriptName, expectedCommand] of Object.entries(HANDOFF_VALIDATION_SCRIPTS)) {
+        for (const [scriptName, expectedCommand] of Object.entries(BOOTSTRAP_VALIDATION_SCRIPTS)) {
             const currentValue = mergedScripts[scriptName];
             if (currentValue === undefined) {
                 mergedScripts[scriptName] = expectedCommand;
