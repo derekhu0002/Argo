@@ -23,6 +23,8 @@ scope: repository-root
 ### Included Paths
 - path: src/
   reason: primary implementation runtime and stable component boundaries
+- path: .github/validator/
+  reason: bundled validator assets that /argo-init must project into managed workspace paths
 - path: tests/explicit/
   reason: read-only physical landing zone for explicit testcase single-entry files
 - path: tests/architecture/
@@ -42,6 +44,15 @@ scope: repository-root
   kind: LayeredRuntime
   responsibility: host composition root plus internal runtime layers
   local_contract: src/ARCHITECTURE.md
+- path: .github/validator/
+  name: bundled-validator-assets
+  kind: BootstrapAssetZone
+  responsibility: source-of-truth validator assets copied by /argo-init into Argo-managed workspace paths
+  local_contract: .github/validator/ARCHITECTURE.md
+- path: package.json
+  name: workspace-bootstrap-manifest
+  kind: BootstrapManifestFile
+  responsibility: repository-level npm script surface for handoff validation and explicit testcase execution
 - path: tests/explicit/
   name: explicit-testcase-entries
   kind: AcceptanceEntrypointZone
@@ -65,11 +76,16 @@ scope: repository-root
   - Commands
   - Engine
   - Support
+  - Bundled Bootstrap Assets
 - stable_dependency_direction:
   - Host -> Commands
   - Host -> Support
   - Commands -> Support
   - Engine -> Support
+- bootstrap_dependency_direction:
+  - src/commands/argoInit.ts -> src/utils/workspaceBootstrap.ts
+  - src/utils/workspaceBootstrap.ts -> .github/validator/
+  - src/utils/workspaceBootstrap.ts -> package.json bootstrap manifest updates
 - forbidden_shortcuts:
   - Commands -> Engine implementation internals
   - Engine -> Commands
@@ -89,8 +105,8 @@ scope: repository-root
 - mutation_policy: read-only-during-work
 - implementationdesign_minimum_delivery: explicit testcase entries must land their critical assertions, not just placeholder files or path reservations
 - implementationdesign_initial_execution_expectation: once materialized, explicit testcase entries should be executable and may legitimately fail before business implementation is completed; that failing state is an expected gap signal for /work
-- current_repository_fact: no formal explicit testcase objects exist yet in design/KG/SystemArchitecture.json
-- current_action: reserve the physical landing zone without inventing new explicit acceptance baselines
+- current_repository_fact: intent-to-implementation handoff records ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT as the explicit testcase directive that Implementation Design must materialize without rewriting design/KG/SystemArchitecture.json
+- current_action: materialize tests/explicit/entries/runArgoInitValidatorBootstrap.js as the single read-only executable acceptance entry for /argo-init validator bootstrap
 
 ### Non-Explicit Test Rules
 - critical_tests_root: tests/architecture/
@@ -114,5 +130,5 @@ scope: repository-root
 - work: must treat explicit testcase entries and critical non-explicit tests as read-only acceptance/support baselines
 
 ### Open Gaps
-- Formal explicit testcase objects are still absent from design/KG/SystemArchitecture.json, so no explicit testcase script can be promoted to read-only acceptance baseline yet.
-- Existing tests/e2e/runWorkspaceBootstrapE2E.js remains a repository test asset, not a promoted explicit testcase entry.
+- Formal explicit testcase objects are still absent from design/KG/SystemArchitecture.json, so the explicit entry created in this stage is owned by the handoff directive rather than by a graph-embedded testcase object.
+- /argo-init package.json seeding is not implemented yet; the explicit testcase entry is expected to fail until Coding/Repair completes that behavior.

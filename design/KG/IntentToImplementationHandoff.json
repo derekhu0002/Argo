@@ -1,25 +1,29 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-05-22T00:00:00Z",
+  "generatedAt": "2026-05-23T00:00:00Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Minimal bootstrap template for handing off intent design outputs into implementation design. Replace placeholder testcase details with the real explicit testcase set before using this as a true stage artifact.",
+  "summary": "No intent-graph update is required for the current /argo-init validator-bootstrap request. Implementation Design must instead adjust repository contracts and guardrails so /argo-init prepares the validator runtime assets under Argo-managed .github paths, applies the chosen package.json seeding policy, and leaves handoff JSON creation to later design work instead of bootstrap fabrication.",
   "intentElementIds": [
     "1335",
-    "1363",
+    "1343",
+    "1344",
     "1364"
   ],
-  "relationshipIds": [],
+  "relationshipIds": [
+    "1133",
+    "1156"
+  ],
   "explicitTestcases": [
     {
-      "name": "TEMPLATE-REPLACE-WITH-EXPLICIT-TESTCASE",
+      "name": "ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT",
       "mountedElementId": "1364",
       "mountedElementName": "显性测试用例",
       "type": "Acceptance Test",
-      "controlPoint": "Replace with the concrete trigger, input, setup, or executable entry for the real explicit testcase.",
-      "observationPoint": "Replace with the concrete externally observable output, state, artifact, log, error, or side effect asserted by the testcase.",
-      "acceptanceBoundary": "Replace with the stable assertion boundary that Implementation Design must preserve.",
-      "requiredEntryKind": "explicit-testcase-entry",
-      "implementationNotes": "Bootstrap placeholder only. Replace this object once real explicit testcase objects exist in design/KG/SystemArchitecture.json."
+      "controlPoint": "Invoke /argo-init in a target workspace that lacks some or all Argo validator bootstrap assets, including the validator script, the handoff schemas, and optionally package.json.",
+      "observationPoint": "After bootstrap, the workspace contains .github/validator/script/validateStageHandoff.js and .github/argoschema/*.schema.json under Argo-managed paths; package.json is created when absent and otherwise only missing validate:handoff, validate:handoff:intent, and validate:handoff:implementation scripts are added, while pre-existing same-name scripts trigger conflict reporting instead of overwrite.",
+      "acceptanceBoundary": "Implementation Design must materialize this as bootstrap contracts and critical verification guardrails for /argo-init without treating bootstrap as permission to fabricate missing design/KG handoff JSON files or to overwrite conflicting existing script names.",
+      "requiredEntryKind": "critical-non-explicit-test",
+      "implementationNotes": "This testcase directive is recorded in the handoff to satisfy the current handoff schema without rewriting design/KG/SystemArchitecture.json. It should be materialized as implementation-architecture guardrails rather than as a new read-only explicit testcase entry file."
     }
   ],
   "frozenBaselines": [
@@ -28,17 +32,24 @@
   "requiredImplementationArtifacts": [
     "OVERALL_ARCHITECTURE.md",
     "src/ARCHITECTURE.md",
-    "design/KG/ImplementationToCodingHandoff.json"
+    "src/commands/ARCHITECTURE.md",
+    "src/commands/argoInit.ts",
+    "src/utils/workspaceBootstrap.ts",
+    "package.json",
+    ".github/validator/script/validateStageHandoff.js",
+    "tests/architecture",
+    "tests/e2e/runWorkspaceBootstrapE2E.js"
   ],
   "openQuestions": [
     {
-      "question": "Which real explicit testcase objects from design/KG/SystemArchitecture.json should replace the bootstrap placeholder entry?",
-      "recommendedAnswer": "Replace the placeholder with the real explicit acceptance or scenario testcases declared in the intent graph and keep one handoff item per testcase.",
-      "reason": "Implementation Design needs stable, named, per-testcase inputs instead of a generic placeholder before the handoff can be treated as production-ready."
+      "question": "How should Implementation Design classify workspaces that lack a usable Node/npm runtime after /argo-init has copied the validator assets and seeded package.json?",
+      "recommendedAnswer": "Treat missing Node/npm runtime as an execution prerequisite failure that must be surfaced explicitly by the bootstrap flow or validation guardrail, rather than silently downgrading the validator contract.",
+      "reason": "The chosen bootstrap policy now allows package.json creation, but validator execution still depends on an external runtime that bootstrap alone cannot guarantee. The next stage should preserve that boundary explicitly."
     }
   ],
   "notes": [
-    "This file is a minimal bootstrap template created to satisfy the new stage handoff workflow.",
-    "It must be replaced with real testcase-by-testcase handoff content before an actual Intent Design handoff is considered complete."
+    "This handoff intentionally keeps the current intent graph unchanged and pushes the requested behavior into Implementation Design contract updates plus bootstrap verification guardrails.",
+    "The selected policy permits /argo-init to create a minimal package.json when absent and to seed the three validate:handoff scripts only when they are missing.",
+    "If any of the target script names already exist, Implementation Design should preserve the no-overwrite rule and require explicit conflict reporting."
   ]
 }

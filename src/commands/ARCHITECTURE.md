@@ -22,7 +22,7 @@ element_path: src/commands
 ### Children
 - path: argoInit.ts
   kind: entrypoint-file
-  role: manual workspace bootstrap using the same copy policy as extension startup
+  role: manual workspace bootstrap orchestrator for validator assets, schema assets, and package.json seeding policy
 - path: intentinarchitecturedesign.ts
   kind: entrypoint-file
   role: intent architecture design handoff
@@ -57,8 +57,10 @@ element_path: src/commands
 
 ### Implements / Traceability
 #### implements_intent
+- element: Argo VS Extension
 - element: intentinarchitecturedesign
 - element: implementationdesign
+- element: 显性测试用例
 - element: work
 
 #### implements_elements
@@ -87,15 +89,35 @@ element_path: src/commands
   rationale: keep the command surface stable while later coding work changes underlying implementation
   frozen_by_stage: implementationdesign
 
+- test_id: argo-init-explicit-entry-correctness
+  critical_kind: explicit-entry-correctness
+  test_path: ../../tests/architecture/argo-init-explicit-entry-correctness.test.js
+  execution_entry: ../../tests/architecture/argo-init-explicit-entry-correctness.test.js
+  guards_elements:
+    - src/commands/argoInit.ts
+    - ../../tests/explicit/entries/runArgoInitValidatorBootstrap.js
+  protected_baselines:
+    - ARCHITECTURE.md
+    - ../../tests/explicit/ARCHITECTURE.md
+  assertion_scope: the /argo-init explicit acceptance entry stays single, callable, and contract-linked
+  mutation_policy: read-only-during-work
+  failure_classification_rule: implementation-test-contract
+  rationale: keep the explicit acceptance entry frozen once this stage publishes it
+  frozen_by_stage: implementationdesign
+
 #### supporting_non_explicit_tests
 - path: ../../tests/support/agentHandoff-support.test.js
   scope: prompt assembly support guard for later coding-stage changes
 
 ### Explicit Testcase Entrypoints
-- none directly owned here; commands orchestrate explicit entries but do not store them.
+- testcase: ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT
+  command_entry: argoInit.ts
+  physical_test_entry: ../../tests/explicit/entries/runArgoInitValidatorBootstrap.js
+  control_point: the explicit entry invokes the exported /argo-init command handler inside the extension host
+  observation_point: the temporary workspace shows copied validator assets, copied schema assets, and package.json bootstrap results
 
 ### Open Gaps
-- The graph currently lacks formal explicit testcase objects, so `/test` may still operate over an empty explicit baseline unless the graph is updated.
+- /argo-init still lacks package.json seeding behavior, so the explicit testcase entry is expected to fail until coding fills that gap.
 
 ### Notes
 - `/argo-init`, `/test`, `/work`, and `/implementationdesign` are the main user-facing orchestration entrypoints in this element; support directories usually implement the same intent only indirectly.

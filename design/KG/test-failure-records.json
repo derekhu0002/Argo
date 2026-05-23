@@ -1,1 +1,15 @@
-[]
+[
+	{
+		"testcasename": "ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT",
+		"testdescription": "Invoke /argo-init in a temporary workspace and require validator assets, schema assets, and package.json bootstrap seeding to be materialized as a single executable acceptance entry.",
+		"acceptanceCriteria": "tests/explicit/entries/runArgoInitValidatorBootstrap.js",
+		"relatedIntentElementId": "1364",
+		"status": "failed",
+		"resolvedScriptPath": "tests/explicit/entries/runArgoInitValidatorBootstrap.js",
+		"executionCommand": "npm run test:explicit:argo-init-validator-bootstrap",
+		"exitCode": 1,
+		"failureError": "AssertionError [ERR_ASSERTION]: Expected /argo-init to create package.json when it is absent.",
+		"stdout": "Validator and schema assets were copied before the acceptance entry reached the package.json assertion.",
+		"stderr": "AssertionError [ERR_ASSERTION]: Expected /argo-init to create package.json when it is absent."
+	}
+]

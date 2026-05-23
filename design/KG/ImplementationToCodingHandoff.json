@@ -1,22 +1,26 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-05-22T00:00:00Z",
+  "generatedAt": "2026-05-23T00:00:00Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Minimal bootstrap template for handing off implementation design outputs into coding/repair. Replace placeholder testcase semantics with real explicit entrypoints and failure signals before treating this as a true implementation handoff.",
+  "summary": "Implementation Design froze the /argo-init validator bootstrap slice into stable contracts, a single read-only explicit entrypoint, and critical architecture guardrails. The explicit entrypoint now executes and fails for the intended missing package.json seeding behavior, which becomes the primary Coding/Repair target.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     "src/ARCHITECTURE.md",
-    "tests/architecture/ARCHITECTURE.md"
+    "src/commands/ARCHITECTURE.md",
+    "src/utils/ARCHITECTURE.md",
+    ".github/validator/ARCHITECTURE.md",
+    "tests/architecture/ARCHITECTURE.md",
+    "tests/explicit/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "TEMPLATE-REPLACE-WITH-EXPLICIT-ENTRYPOINT",
-      "entryPath": "tests/architecture/commands-entry-boundary.test.js",
-      "controlPoint": "Replace with the real explicit testcase invocation, input, or setup entry once the explicit entrypoint file exists.",
-      "observationPoint": "Replace with the real explicit testcase assertion surface once the explicit entrypoint file exists.",
+      "testcaseName": "ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT",
+      "entryPath": "tests/explicit/entries/runArgoInitValidatorBootstrap.js",
+      "controlPoint": "Run npm run test:explicit:argo-init-validator-bootstrap so the entry launches an extension host, invokes the exported /argo-init command handler, and drives bootstrap against a temporary workspace.",
+      "observationPoint": "Observe the temporary workspace for copied validator assets, copied schema assets, package.json creation, and seeded validate:handoff scripts.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/architecture/commands-entry-boundary.test.js",
-      "failureReason": "Bootstrap placeholder only. Replace with the real failure reason from the explicit testcase entrypoint after Implementation Design materializes it."
+      "initialExecutionCommand": "npm run test:explicit:argo-init-validator-bootstrap",
+      "failureReason": "The executable entry fails with AssertionError [ERR_ASSERTION]: Expected /argo-init to create package.json when it is absent."
     }
   ],
   "criticalNonExplicitTests": [
@@ -24,28 +28,79 @@
       "name": "commands-entry-boundary",
       "path": "tests/architecture/commands-entry-boundary.test.js",
       "kind": "architecture-boundary",
-      "controlPoint": "Execute node tests/architecture/commands-entry-boundary.test.js.",
-      "observationPoint": "Observe whether the host-to-command boundary matches the frozen fixture and exits without boundary drift.",
+      "controlPoint": "Run npm run test:architecture:commands-entry-boundary to inspect src/commands and its contract fixture alignment.",
+      "observationPoint": "Observe that every required command entry file exists, remains declared in src/commands/ARCHITECTURE.md, and avoids forbidden engine/model imports.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "argo-init-explicit-entry-correctness",
+      "path": "tests/architecture/argo-init-explicit-entry-correctness.test.js",
+      "kind": "explicit-entry-correctness",
+      "controlPoint": "Run npm run test:architecture:argo-init-explicit-entry-correctness to inspect the explicit entry files and their contracts.",
+      "observationPoint": "Observe that the explicit contract, command contract, entry file, and suite file all exist and remain linked to the ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT testcase.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "validator-bootstrap-traceability",
+      "path": "tests/architecture/validator-bootstrap-traceability.test.js",
+      "kind": "implementation-traceability",
+      "controlPoint": "Run npm run test:architecture:validator-bootstrap-traceability to inspect the bundled validator assets, the repository shim, the npm manifest, and the related contracts.",
+      "observationPoint": "Observe that the bundled validator script, shim, package.json scripts, and architecture contracts remain mutually traceable.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "workspace-bootstrap-dependency-direction",
+      "path": "tests/architecture/workspace-bootstrap-dependency-direction.test.js",
+      "kind": "dependency-direction",
+      "controlPoint": "Run npm run test:architecture:workspace-bootstrap-dependency-direction to inspect src/utils/workspaceBootstrap.ts imports and its local contract.",
+      "observationPoint": "Observe that workspaceBootstrap.ts does not import commands, engine, or lm internals and that the utils contract keeps the package.json seeding gap explicit.",
       "expectedStatus": "passed"
     }
   ],
-  "supportingNonExplicitTests": [],
+  "supportingNonExplicitTests": [
+    {
+      "name": "workspace-bootstrap-e2e",
+      "path": "tests/e2e/runWorkspaceBootstrapE2E.js",
+      "kind": "supporting-bootstrap-regression",
+      "controlPoint": "Run npm run test:e2e:workspace-bootstrap to launch the extension host on a temporary workspace and execute the manual bootstrap helper path.",
+      "observationPoint": "Observe that activation does not auto-bootstrap and that the manual bootstrap path still copies the bundled validator and schema assets.",
+      "expectedStatus": "passed"
+    }
+  ],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "TEMPLATE-REPLACE-WITH-EXPLICIT-ENTRYPOINT",
-      "path": "tests/architecture/commands-entry-boundary.test.js",
-      "failureSignal": "Bootstrap placeholder failure signal that must be replaced by the real explicit testcase failure output.",
-      "nextAction": "Replace this template target with the real failing explicit entrypoint and then repair the implementation until the recorded failure passes."
+      "testcaseName": "ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT",
+      "path": "src/utils/workspaceBootstrap.ts",
+      "failureSignal": "The explicit entry fails because /argo-init does not create package.json when the target workspace lacks one.",
+      "nextAction": "Implement package.json seeding in workspaceBootstrap.ts so /argo-init creates a minimal manifest when absent and adds only the missing validate:handoff scripts without overwriting existing same-name scripts."
+    },
+    {
+      "path": "src/commands/argoInit.ts",
+      "failureSignal": "The explicit acceptance contract now expects /argo-init to surface the package.json bootstrap policy through the command path rather than through a hidden helper-only convention.",
+      "nextAction": "Keep /argo-init as the stable orchestration entry while making any newly implemented package.json seeding behavior observable through this command path and its explicit test entry."
     }
   ],
   "frozenFiles": [
     "OVERALL_ARCHITECTURE.md",
     "src/ARCHITECTURE.md",
-    "tests/architecture/commands-entry-boundary.test.js"
+    "src/commands/ARCHITECTURE.md",
+    "src/utils/ARCHITECTURE.md",
+    ".github/validator/ARCHITECTURE.md",
+    ".github/validator/script/validateStageHandoff.js",
+    "scripts/validateStageHandoff.js",
+    "tests/architecture/ARCHITECTURE.md",
+    "tests/architecture/commands-entry-boundary.test.js",
+    "tests/architecture/argo-init-explicit-entry-correctness.test.js",
+    "tests/architecture/validator-bootstrap-traceability.test.js",
+    "tests/architecture/workspace-bootstrap-dependency-direction.test.js",
+    "tests/explicit/ARCHITECTURE.md",
+    "tests/explicit/entries/runArgoInitValidatorBootstrap.js",
+    "tests/explicit/suite/argoInitValidatorBootstrapExtensionHost.js"
   ],
   "openGaps": [
-    "The repository still lacks formal explicit testcase objects and read-only explicit testcase entry files.",
-    "Replace the bootstrap placeholder entry with the real explicit testcase entrypoint after Implementation Design materializes it."
+    "The current bootstrap implementation still lacks package.json seeding and therefore leaves the explicit acceptance entry in an expected-failing state.",
+    "The current intent graph still does not embed formal explicit testcase objects, so the explicit entry is traced through the handoff artifact rather than a graph-local testcase object.",
+    "The selected Argo-managed path overwrite policy is frozen in contracts but still needs full code-level enforcement and future regression coverage when coding begins."
   ]
 }

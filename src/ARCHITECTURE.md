@@ -39,6 +39,7 @@ element_path: src
 - path: utils/
   kind: stable-directory
   role: workflow guards, handoff assembly, persistence helpers, and bootstrap support
+  local_contract: utils/ARCHITECTURE.md
 - path: lm/
   kind: stable-directory
   role: language-model adapter support for engine internals
@@ -96,11 +97,20 @@ element_path: src
 - path: ../tests/support/
   scope: future coding-stage support tests for tool, handoff, bootstrap, and guard behavior
 
+#### explicit_testcase_entrypoints
+- testcase: ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT
+  entry_path: ../tests/explicit/entries/runArgoInitValidatorBootstrap.js
+  control_point: invoke the /argo-init command flow in a temporary workspace through the extension host
+  observation_point: bootstrap-managed assets and package.json seeding outcomes observed in that workspace
+
 ### Explicit Testcase Entrypoints
-- none yet; explicit entries are reserved under ../tests/explicit/entries/ once formal testcase objects exist in the intent graph.
+- path: ../tests/explicit/entries/runArgoInitValidatorBootstrap.js
+  testcase: ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT
+  status: executable-read-only-entry
+  rationale: the current handoff requires a single executable acceptance entry for /argo-init validator bootstrap even though the graph has not yet embedded a formal testcase object
 
 ### Open Gaps
-- engine/, tools/, utils/, and lm/ local contracts are still required for full downward disclosure.
+- engine/, tools/, and lm/ local contracts are still required for full downward disclosure.
 
 ### Notes
 - src/ acts as the stable runtime envelope, but only the listed children are architecture elements.
