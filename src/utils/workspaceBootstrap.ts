@@ -5,6 +5,10 @@ const SYSTEM_ARCHITECTURE_SCHEMA_PATH = ['schema', 'SystemArchitecture.schema.js
 const BUNDLED_GITHUB_DIR_PATH = ['.github'] as const;
 const WORKSPACE_SCHEMA_TARGET_PATH = ['.github', 'argoschema', 'SystemArchitecture.schema.json'] as const;
 const PACKAGE_JSON_TARGET_PATH = ['package.json'] as const;
+const HANDOFF_FILES_TO_RESET = [
+    ['design', 'KG', 'IntentToImplementationHandoff.json'],
+    ['design', 'KG', 'ImplementationToCodingHandoff.json'],
+] as const;
 const HANDOFF_VALIDATION_SCRIPTS: Record<string, string> = {
     'validate:handoff': 'node .github/validator/script/validateStageHandoff.js',
     'validate:handoff:intent': 'node .github/validator/script/validateStageHandoff.js intent-to-implementation',
@@ -40,6 +44,7 @@ async function ensureWorkspaceEaTemplate(
     const targetUri = vscode.Uri.joinPath(folder.uri, targetFileName);
 
     if (await fileExists(targetUri)) {
+        await resetWorkspaceStageHandoffs(folder);
         await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
         await ensureWorkspacePackageJson(folder);
@@ -50,6 +55,7 @@ async function ensureWorkspaceEaTemplate(
     try {
         const templateBytes = await vscode.workspace.fs.readFile(templateUri);
         await vscode.workspace.fs.writeFile(targetUri, templateBytes);
+        await resetWorkspaceStageHandoffs(folder);
         await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
         await ensureWorkspacePackageJson(folder);
@@ -265,4 +271,10 @@ function buildPackageName(workspaceName: string): string {
         .replace(/^[.-]+|[.-]+$/g, '');
 
     return sanitized || 'argo-workspace';
+}
+
+async function resetWorkspaceStageHandoffs(folder: vscode.WorkspaceFolder): Promise<void> {
+    for (const handoffPath of HANDOFF_FILES_TO_RESET) {
+        await removeFileIfPresent(vscode.Uri.joinPath(folder.uri, ...handoffPath));
+    }
 }
