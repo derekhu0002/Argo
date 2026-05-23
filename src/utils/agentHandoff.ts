@@ -106,7 +106,6 @@ export function buildWorkAgentHandoffPrompt(input: {
         '- 实现到编码交接物 Schema：.github/argoschema/ImplementationToCodingHandoff.schema.json',
         `- 失败测试记录：${input.failureRecordsPath}`,
         '- 实现架构根契约：OVERALL_ARCHITECTURE.md',
-        '- 运行时根局部契约起点：src/ARCHITECTURE.md',
         '',
         '### Problem List',
         input.failureRecords.length > 0
