@@ -4,6 +4,12 @@ const EA_TEMPLATE_PATH = ['eatool', 'EA-model-template.feap'] as const;
 const SYSTEM_ARCHITECTURE_SCHEMA_PATH = ['schema', 'SystemArchitecture.schema.json'] as const;
 const BUNDLED_GITHUB_DIR_PATH = ['.github'] as const;
 const WORKSPACE_SCHEMA_TARGET_PATH = ['.github', 'argoschema', 'SystemArchitecture.schema.json'] as const;
+const PACKAGE_JSON_TARGET_PATH = ['package.json'] as const;
+const HANDOFF_VALIDATION_SCRIPTS: Record<string, string> = {
+    'validate:handoff': 'node .github/validator/script/validateStageHandoff.js',
+    'validate:handoff:intent': 'node .github/validator/script/validateStageHandoff.js intent-to-implementation',
+    'validate:handoff:implementation': 'node .github/validator/script/validateStageHandoff.js implementation-to-coding',
+};
 const WINDOWS_RESERVED_NAMES = new Set([
     'CON', 'PRN', 'AUX', 'NUL',
     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
@@ -36,6 +42,7 @@ async function ensureWorkspaceEaTemplate(
     if (await fileExists(targetUri)) {
         await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
+        await ensureWorkspacePackageJson(folder);
         return;
     }
 
@@ -45,6 +52,7 @@ async function ensureWorkspaceEaTemplate(
         await vscode.workspace.fs.writeFile(targetUri, templateBytes);
         await ensureWorkspaceBundledGitHubContents(folder, extensionUri);
         await ensureWorkspaceSystemArchitectureSchema(folder, extensionUri);
+        await ensureWorkspacePackageJson(folder);
     } catch (error) {
         console.error('Argo failed to initialize EA model template.', {
             targetFileName,
@@ -166,4 +174,95 @@ function sanitizeFileName(value: string): string {
         .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
         .replace(/[.\s]+$/g, '')
         .trim();
+}
+
+async function ensureWorkspacePackageJson(
+    folder: vscode.WorkspaceFolder,
+): Promise<void> {
+    const packageJsonUri = vscode.Uri.joinPath(folder.uri, ...PACKAGE_JSON_TARGET_PATH);
+
+    try {
+        const packageJson = await readOrCreatePackageJson(packageJsonUri, folder.name);
+        const existingScripts = typeof packageJson.scripts === 'object' && packageJson.scripts !== null
+            ? packageJson.scripts as Record<string, unknown>
+            : {};
+
+        const mergedScripts = { ...existingScripts };
+        const conflicts: string[] = [];
+
+        for (const [scriptName, expectedCommand] of Object.entries(HANDOFF_VALIDATION_SCRIPTS)) {
+            const currentValue = mergedScripts[scriptName];
+            if (currentValue === undefined) {
+                mergedScripts[scriptName] = expectedCommand;
+                continue;
+            }
+
+            if (currentValue !== expectedCommand) {
+                conflicts.push(scriptName);
+            }
+        }
+
+        packageJson.scripts = mergedScripts;
+        await vscode.workspace.fs.writeFile(
+            packageJsonUri,
+            Buffer.from(JSON.stringify(packageJson, null, 2) + '\n', 'utf8'),
+        );
+
+        if (conflicts.length > 0) {
+            const conflictList = conflicts.join(', ');
+            console.warn('Argo detected package.json script conflicts during workspace bootstrap.', {
+                workspace: folder.uri.fsPath,
+                conflicts,
+            });
+            void vscode.window.showWarningMessage(
+                `Argo 未覆盖现有 package.json scripts：${conflictList}`,
+            );
+        }
+    } catch (error) {
+        console.error('Argo failed to initialize workspace package.json.', {
+            targetUri: packageJsonUri.toString(),
+            error,
+        });
+        void vscode.window.showErrorMessage(
+            `Argo 初始化工作区 package.json 失败: ${String(error)}`,
+        );
+    }
+}
+
+async function readOrCreatePackageJson(
+    packageJsonUri: vscode.Uri,
+    workspaceName: string,
+): Promise<Record<string, unknown> & { scripts: Record<string, unknown> }> {
+    if (!await fileExists(packageJsonUri)) {
+        return {
+            name: buildPackageName(workspaceName),
+            private: true,
+            scripts: {},
+        };
+    }
+
+    const bytes = await vscode.workspace.fs.readFile(packageJsonUri);
+    const parsed = JSON.parse(Buffer.from(bytes).toString('utf8'));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('package.json must contain a JSON object.');
+    }
+
+    return {
+        ...(parsed as Record<string, unknown>),
+        scripts: typeof (parsed as { scripts?: unknown }).scripts === 'object' && (parsed as { scripts?: unknown }).scripts !== null
+            ? { ...((parsed as { scripts: Record<string, unknown> }).scripts) }
+            : {},
+    };
+}
+
+function buildPackageName(workspaceName: string): string {
+    const sanitized = sanitizeFileName(workspaceName)
+        .toLowerCase()
+        .replace(/_/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9.-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^[.-]+|[.-]+$/g, '');
+
+    return sanitized || 'argo-workspace';
 }

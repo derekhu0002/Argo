@@ -52,9 +52,9 @@ async function run() {
     assert(await fileExists(generatedPackageJsonPath), 'Expected /argo-init to create package.json when it is absent.');
 
     const packageJson = JSON.parse(await fs.readFile(generatedPackageJsonPath, 'utf8'));
-    assert.strictEqual(packageJson.scripts['validate:handoff'], 'node scripts/validateStageHandoff.js');
-    assert.strictEqual(packageJson.scripts['validate:handoff:intent'], 'node scripts/validateStageHandoff.js intent-to-implementation');
-    assert.strictEqual(packageJson.scripts['validate:handoff:implementation'], 'node scripts/validateStageHandoff.js implementation-to-coding');
+    assert.strictEqual(packageJson.scripts['validate:handoff'], 'node .github/validator/script/validateStageHandoff.js');
+    assert.strictEqual(packageJson.scripts['validate:handoff:intent'], 'node .github/validator/script/validateStageHandoff.js intent-to-implementation');
+    assert.strictEqual(packageJson.scripts['validate:handoff:implementation'], 'node .github/validator/script/validateStageHandoff.js implementation-to-coding');
 
     assert(streamOutput.some(chunk => chunk.includes('/argo-init')), 'Expected the command stream to report the /argo-init bootstrap execution.');
 }
