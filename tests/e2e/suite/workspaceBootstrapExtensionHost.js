@@ -30,24 +30,45 @@ async function run() {
     const generatedFilePath = path.join(folder.uri.fsPath, `${folder.name}.feap`);
     const generatedSchemaPath = path.join(folder.uri.fsPath, '.github', 'argoschema', 'SystemArchitecture.schema.json');
     const generatedInstructionsPath = path.join(folder.uri.fsPath, '.github', 'copilot-instructions.md');
-    const generatedAgentPath = path.join(folder.uri.fsPath, '.github', 'agents', 'implementation-architecture-designer.agent.md');
+    const generatedValidatorPath = path.join(folder.uri.fsPath, '.github', 'validator', 'script', 'validateStageHandoff.js');
 
     const [
         generatedFileExists,
         generatedSchemaExists,
         generatedInstructionsExists,
-        generatedAgentExists,
+        generatedValidatorExists,
     ] = await Promise.all([
         fileExists(generatedFilePath),
         fileExists(generatedSchemaPath),
         fileExists(generatedInstructionsPath),
-        fileExists(generatedAgentPath),
+        fileExists(generatedValidatorPath),
     ]);
 
     assert.strictEqual(generatedFileExists, false, 'Expected extension activation to not generate a .feap file automatically.');
     assert.strictEqual(generatedSchemaExists, false, 'Expected extension activation to not generate the SystemArchitecture schema automatically.');
     assert.strictEqual(generatedInstructionsExists, false, 'Expected extension activation to not copy bundled .github instructions automatically.');
-    assert.strictEqual(generatedAgentExists, false, 'Expected extension activation to not copy bundled agent files automatically.');
+    assert.strictEqual(generatedValidatorExists, false, 'Expected extension activation to not copy bundled validator files automatically.');
+
+    const bootstrapModulePath = path.join(extension.extensionPath, 'out', 'utils', 'workspaceBootstrap.js');
+    const { ensureWorkspaceEaTemplates } = require(bootstrapModulePath);
+    await ensureWorkspaceEaTemplates(extension.extensionUri);
+
+    const [
+        bootstrappedFileExists,
+        bootstrappedSchemaExists,
+        bootstrappedInstructionsExists,
+        bootstrappedValidatorExists,
+    ] = await Promise.all([
+        fileExists(generatedFilePath),
+        fileExists(generatedSchemaPath),
+        fileExists(generatedInstructionsPath),
+        fileExists(generatedValidatorPath),
+    ]);
+
+    assert.strictEqual(bootstrappedFileExists, true, 'Expected manual workspace bootstrap to generate a .feap file.');
+    assert.strictEqual(bootstrappedSchemaExists, true, 'Expected manual workspace bootstrap to copy the SystemArchitecture schema.');
+    assert.strictEqual(bootstrappedInstructionsExists, true, 'Expected manual workspace bootstrap to copy bundled .github instructions.');
+    assert.strictEqual(bootstrappedValidatorExists, true, 'Expected manual workspace bootstrap to copy bundled validator files.');
 }
 
 module.exports = { run };
