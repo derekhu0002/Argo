@@ -5,6 +5,19 @@
 These instructions apply to the main Copilot agent for this repository.
 The goal is to keep a stable shared understanding of how to read intent architecture, implementation architecture, and code without requiring the user to restate those rules in each task.
 
+## Operational Objectives
+
+!!! READ THIS SECTION FIRST !!!
+
+[ACTIVE STAGE]
+<Intent Design | Implementation Design | Coding/Repair>
+
+[STAGE GOALS: HIGHEST PRIORITY]
+- <objective 1>
+- <objective 2>
+- <objective 3>
+
+
 ## Repository Reading Order
 
 When a task concerns architecture, implementation, tests, delivery, or code changes, follow this order unless the user explicitly narrows scope:
@@ -167,6 +180,7 @@ When designing or changing implementation architecture:
 
 ## Expected Working Style
 
+- Check `## Operational Objectives` first. Treat `[ACTIVE STAGE]` and `[STAGE GOALS: HIGHEST PRIORITY]` as the primary execution lens for the task.
 - Identify Your Stage: At the beginning of each task, explicitly state which stage you are operating in (Intent Design, Implementation Design, or Coding/Repair) based on the user's request and the files being modified.
 - State clearly which conclusions are repository-confirmed facts and which are minimal assumptions.
 - When editing architecture-related assets, prefer updating contracts and test guardrails before modifying business behavior unless the user explicitly asks for implementation work.
@@ -176,6 +190,3 @@ When designing or changing implementation architecture:
 - **Stop and Ask**: If you find an unresolvable conflict between Intent (KG) and Implementation (Contracts) that would require a breaking change to the acceptance baseline, you must stop and present the conflict to the user instead of proceeding with assumptions.
 - **Token Efficiency**: Aim for the most concise code implementation that satisfies all testcases. Avoid gold-plating or over-engineering that is not derived from the Intent Architecture.
 - Do not reason from a single element name or one description field in isolation; use nearby relationships, views, upstream/downstream links, and referenced evidence before concluding how a concept should be implemented.
-
-
-## Session Memory
