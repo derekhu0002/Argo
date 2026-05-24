@@ -180,7 +180,6 @@ When designing or changing implementation architecture:
 
 ## Expected Working Style
 
-- Check `## Operational Objectives` first. Treat `[ACTIVE STAGE]` and `[STAGE GOALS: HIGHEST PRIORITY]` as the primary execution lens for the task.
 - Identify Your Stage: At the beginning of each task, explicitly state which stage you are operating in (Intent Design, Implementation Design, or Coding/Repair) based on the user's request and the files being modified.
 - State clearly which conclusions are repository-confirmed facts and which are minimal assumptions.
 - When editing architecture-related assets, prefer updating contracts and test guardrails before modifying business behavior unless the user explicitly asks for implementation work.
