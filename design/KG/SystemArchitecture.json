@@ -63,6 +63,61 @@
 ]
 },
 {
+"id": "1391",
+"name": "渐进式披露 View"
+,"parent": "1207"
+,"type": "ArchiMate_Principle"
+,"description": "intent graph 可视化界面默认只暴露 SystemArchitecture 下第一层子 view；只有在用户点击展开或搜索命中后，才继续披露更深层级的 view。"
+},
+{
+"id": "1392",
+"name": "View 层级由挂接元素决定"
+,"parent": "1207"
+,"type": "ArchiMate_Constraint"
+,"description": "若 view X 中包含元素 A，且 A 挂接了 subdiagram view Y，则浏览界面中 X 是 Y 的上层 view；若多个已展开 view 都包含该挂接元素，则 Y 可以在多个父分支下重复出现。"
+},
+{
+"id": "1390",
+"name": "Intent Graph Visual Explorer"
+,"parent": "1343"
+,"type": "ArchiMate_ApplicationComponent"
+,"description": "为 HUMAN BEING 提供只读的 intent graph 可视化浏览界面。默认展示 SystemArchitecture 下第一层子 view，支持通过逐层点击展开或搜索展开目标 view；view 层级由父 view 所含元素挂接的 subdiagram view 推导；同一子 view 可以在多个父分支下重复出现。"
+,"attributes": [
+{
+"name": "interaction_style"
+,"description": "展开风格参考 MINDMAP：节点式渐进展开，优先保持当前路径可读，而不是一次性铺开全部 view。"
+},
+{
+"name": "search_scope"
+,"description": "第一版搜索范围至少覆盖 view 名称与 view 所含元素名称。"
+}
+]
+,"subdiagram_views": [
+{
+"view_id": "176",
+"view_name": "Intent Graph Visual Explorer"
+}
+]
+,"testcases": [
+{
+"name": "INTENT-GRAPH-TOP-LEVEL-DRILLDOWN",
+"description": "验证只读界面默认只显示 SystemArchitecture 下第一层子 view，且用户可以通过逐层点击展开下级 view。",
+"type": "Acceptance Test",
+"Input": "Control point: 打开 intent graph 可视化界面并加载 design/KG/SystemArchitecture.json；初始状态展示 SystemArchitecture 下第一层子 view，随后点击某个顶层 view 并继续点击其子 view。",
+"acceptanceCriteria": "Observation point: 初始界面只呈现顶层 view；每次点击只展开所选路径上的下级 view，不要求一次性展开全部节点；下级 view 依据父 view 所含元素挂接的 subdiagram view 推导。",
+"TestResults": "Frozen baseline: 该测试只锁定只读浏览、顶层默认展示与逐层点击展开，不要求编辑或回写 intent graph。"
+},
+{
+"name": "INTENT-GRAPH-SEARCH-EXPANSION",
+"description": "验证用户可以通过搜索 view 名称或 view 所含元素名称定位目标 view，并自动展开到命中 view 的可见路径。",
+"type": "Scenario Test",
+"Input": "Control point: 在 intent graph 可视化界面输入 view 名称或某个被 view 收纳的元素名称进行搜索。",
+"acceptanceCriteria": "Observation point: 系统定位至少一个匹配 view，并将该 view 及其祖先路径展开到可见状态；若同一子 view 通过不同父分支可达，允许在多个父分支下重复出现。",
+"TestResults": "Frozen baseline: 第一版搜索至少覆盖 view 名称与所含元素名称；MINDMAP 风格仅作为展示参考，不作为像素级断言。"
+}
+]
+},
+{
 "id": "1333",
 "name": "brief"
 ,"parent": "1344"
@@ -705,6 +760,43 @@
 ,"target_id":"1335"
 ,"source_name":"EA tool"
 ,"target_name":"INTENTION ARCHITECTURE MODEL"
+},
+{
+"id":"1212"
+,"statement":"渐进式披露 View --(约束)--> Intent Graph Visual Explorer"
+,"name":"约束"
+,"source_id":"1391"
+,"target_id":"1390"
+,"source_name":"渐进式披露 View"
+,"target_name":"Intent Graph Visual Explorer"
+},
+{
+"id":"1213"
+,"statement":"View 层级由挂接元素决定 --(约束)--> Intent Graph Visual Explorer"
+,"name":"约束"
+,"source_id":"1392"
+,"target_id":"1390"
+,"source_name":"View 层级由挂接元素决定"
+,"target_name":"Intent Graph Visual Explorer"
+},
+{
+"id":"1214"
+,"statement":"Intent Graph Visual Explorer --(ArchiMate_Serving)--> HUMAN BEING"
+,"name":"ArchiMate_Serving"
+,"super_type": "ArchiMate_Serving"
+,"source_id":"1390"
+,"target_id":"1338"
+,"source_name":"Intent Graph Visual Explorer"
+,"target_name":"HUMAN BEING"
+},
+{
+"id":"1215"
+,"statement":"Intent Graph Visual Explorer --(可视化浏览)--> INTENTION ARCHITECTURE MODEL"
+,"name":"可视化浏览"
+,"source_id":"1390"
+,"target_id":"1335"
+,"source_name":"Intent Graph Visual Explorer"
+,"target_name":"INTENTION ARCHITECTURE MODEL"
 }
 ],
 "views": [
@@ -798,7 +890,9 @@
 ,"parent_element_id": "1207"
 ,"parent_element_name": "StrategyLayerAndMotivationAspect"
 ,"included_elements": [
-"1334"
+"1334",
+"1391",
+"1392"
 ]
 ,"included_relationships": [
 
@@ -839,7 +933,8 @@
 ,"included_elements": [
 "1387",
 "1388",
-"1344"
+"1344",
+"1390"
 ]
 ,"included_relationships": [
 
@@ -853,10 +948,30 @@
 ,"included_elements": [
 "1389",
 "1343",
-"1342"
+"1342",
+"1390"
 ]
 ,"included_relationships": [
 "1136"
+]
+},
+{
+"view_id": "176",
+"view_name": "Intent Graph Visual Explorer"
+,"parent_element_id": "1390"
+,"parent_element_name": "Intent Graph Visual Explorer"
+,"included_elements": [
+"1390",
+"1391",
+"1392",
+"1335",
+"1338"
+]
+,"included_relationships": [
+"1212",
+"1213",
+"1214",
+"1215"
 ]
 },
 {

@@ -1,0 +1,62 @@
+{
+  "stage": "intent-to-implementation",
+  "generatedAt": "2026-05-25T13:31:35.3653328+08:00",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Intent Design adds a read-only Intent Graph Visual Explorer that progressively discloses intent views from the SystemArchitecture top level, derives view hierarchy from mounted subdiagram views on included elements, and supports search-driven expansion by view name or included element name.",
+  "intentElementIds": [
+    "1390",
+    "1391",
+    "1392"
+  ],
+  "relationshipIds": [
+    "1212",
+    "1213",
+    "1214",
+    "1215"
+  ],
+  "explicitTestcases": [
+    {
+      "name": "INTENT-GRAPH-TOP-LEVEL-DRILLDOWN",
+      "mountedElementId": "1390",
+      "mountedElementName": "Intent Graph Visual Explorer",
+      "type": "Acceptance Test",
+      "controlPoint": "Open the read-only intent graph visual explorer against design/KG/SystemArchitecture.json, observe the initial render, then click a top-level view and continue drilling into one of its child views.",
+      "observationPoint": "The initial render shows only the first-layer child views under SystemArchitecture, and each click expands only the selected path to the next mounted child view instead of expanding the full tree.",
+      "acceptanceBoundary": "Freeze the read-only browsing contract, top-level-only initial disclosure, and click-driven progressive expansion where parent-child view hierarchy is derived from subdiagram views mounted on elements included by the parent view; do not require editing, persistence, or full-tree eager expansion.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "Implementation Design must materialize a single executable explicit testcase entry without rewriting the acceptance boundary defined on element 1390."
+    },
+    {
+      "name": "INTENT-GRAPH-SEARCH-EXPANSION",
+      "mountedElementId": "1390",
+      "mountedElementName": "Intent Graph Visual Explorer",
+      "type": "Scenario Test",
+      "controlPoint": "Open the read-only intent graph visual explorer and search by either a view name or an element name that is included by a target view.",
+      "observationPoint": "The UI reveals at least one matching target view and expands the visible ancestor path to that view; if the same child view is reachable through multiple expanded parent branches, repeated appearances are allowed.",
+      "acceptanceBoundary": "Freeze search-driven expansion over view names and included element names, plus visible-path reveal toward the matched view; treat MINDMAP style as a disclosure reference rather than a pixel-perfect rendering contract.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "Implementation Design must preserve the minimum search scope of view names plus included element names and keep the testcase read-only with respect to the intent graph file."
+    }
+  ],
+  "frozenBaselines": [
+    "Version 1 is a read-only intent graph browser; it does not edit or write back design/KG/SystemArchitecture.json.",
+    "The default initial render is limited to the first-layer child views under the SystemArchitecture view.",
+    "View expansion is progressive and user-driven; clicking expands only the selected path rather than the full graph.",
+    "A child view is considered downstream of a parent view when the parent view includes an element that mounts the child as a subdiagram view.",
+    "Search must cover at least view names and names of elements included by a view.",
+    "The same child view may appear under multiple parent branches when multiple expanded parent views include the mounting element.",
+    "MINDMAP is a presentation reference for progressive disclosure, not a pixel-perfect acceptance baseline."
+  ],
+  "requiredImplementationArtifacts": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/ARCHITECTURE.md",
+    "src/commands/ARCHITECTURE.md",
+    "src/visualIntentGraphEditor/ARCHITECTURE.md",
+    "tests/explicit/entries/",
+    "design/KG/ImplementationToCodingHandoff.json"
+  ],
+  "notes": [
+    "Repository evidence at Intent Design time shows src/visualIntentGraphEditor/ exists but is currently empty and has no stable architecture contract yet.",
+    "The new intent view for this feature is view 176, mounted under element 1390 and tracing relationships 1212, 1213, 1214, and 1215."
+  ]
+}
