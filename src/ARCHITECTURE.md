@@ -30,6 +30,10 @@ element_path: src
   kind: stable-directory
   role: command orchestration layer
   local_contract: commands/ARCHITECTURE.md
+- path: visualIntentGraphEditor/
+  kind: stable-directory
+  role: read-only intent graph explorer deep module
+  local_contract: visualIntentGraphEditor/ARCHITECTURE.md
 - path: engine/
   kind: stable-directory
   role: semantic and governance engine layer
@@ -62,6 +66,7 @@ element_path: src
 ### Layering
 - Host: extension.ts, workParticipant.ts
 - Commands: commands/
+- Visual Explorer: visualIntentGraphEditor/
 - Engine: engine/
 - Support: tools/, utils/, lm/
 
@@ -72,6 +77,7 @@ element_path: src
 
 #### implements_elements
 - element: commands/
+- element: visualIntentGraphEditor/
 - element: engine/
 - element: tools/
 - element: utils/
@@ -102,6 +108,14 @@ element_path: src
   entry_path: ../tests/explicit/entries/runArgoInitValidatorBootstrap.js
   control_point: invoke the /argo-init command flow in a temporary workspace through the extension host
   observation_point: bootstrap-managed assets and package.json seeding outcomes observed in that workspace
+- testcase: INTENT-GRAPH-TOP-LEVEL-DRILLDOWN
+  entry_path: ../tests/explicit/entries/runIntentGraphTopLevelDrilldown.js
+  control_point: invoke the future VS Code explorer command in test mode against a schema-compliant graph and request the initial snapshot plus a drilldown expansion
+  observation_point: the returned snapshot exposes only the structural first-layer child views initially, then reveals the selected child path after expansion
+- testcase: INTENT-GRAPH-SEARCH-EXPANSION
+  entry_path: ../tests/explicit/entries/runIntentGraphSearchExpansion.js
+  control_point: invoke the future VS Code explorer command in test mode against a schema-compliant graph and issue a search by view name or included element name
+  observation_point: the returned snapshot reveals the matched target view and the visible ancestor path without requiring write-back to the graph
 
 ### Explicit Testcase Entrypoints
 - path: ../tests/explicit/entries/runArgoInitValidatorBootstrap.js
@@ -111,6 +125,7 @@ element_path: src
 
 ### Open Gaps
 - engine/, tools/, and lm/ local contracts are still required for full downward disclosure.
+- visualIntentGraphEditor/ is now a frozen architecture element, but extension activation and command contribution do not yet wire it into the running extension.
 
 ### Notes
 - src/ acts as the stable runtime envelope, but only the listed children are architecture elements.

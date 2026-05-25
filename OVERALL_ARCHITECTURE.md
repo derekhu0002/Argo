@@ -74,13 +74,16 @@ scope: repository-root
 - conceptual_layers:
   - Host
   - Commands
+  - Visual Explorer
   - Engine
   - Support
   - Bundled Bootstrap Assets
 - stable_dependency_direction:
   - Host -> Commands
+  - Commands -> Visual Explorer
   - Host -> Support
   - Commands -> Support
+  - Visual Explorer -> Support
   - Engine -> Support
 - bootstrap_dependency_direction:
   - src/commands/argoInit.ts -> src/utils/workspaceBootstrap.ts
@@ -88,6 +91,8 @@ scope: repository-root
   - src/utils/workspaceBootstrap.ts -> package.json bootstrap manifest updates
 - forbidden_shortcuts:
   - Commands -> Engine implementation internals
+  - Visual Explorer -> Commands
+  - Visual Explorer -> Engine
   - Engine -> Commands
   - Support -> Commands
   - any module -> extension host orchestration except src/extension.ts and src/workParticipant.ts
@@ -105,8 +110,13 @@ scope: repository-root
 - mutation_policy: read-only-during-work
 - implementationdesign_minimum_delivery: explicit testcase entries must land their critical assertions, not just placeholder files or path reservations
 - implementationdesign_initial_execution_expectation: once materialized, explicit testcase entries should be executable and may legitimately fail before business implementation is completed; that failing state is an expected gap signal for /work
-- current_repository_fact: intent-to-implementation handoff records ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT as the explicit testcase directive that Implementation Design must materialize without rewriting design/KG/SystemArchitecture.json
-- current_action: materialize tests/explicit/entries/runArgoInitValidatorBootstrap.js as the single read-only executable acceptance entry for /argo-init validator bootstrap
+- current_repository_facts:
+  - ARGO-INIT-VALIDATOR-BOOTSTRAP-CONTRACT remains a previously materialized explicit testcase entry owned by tests/explicit/entries/runArgoInitValidatorBootstrap.js
+  - intent-to-implementation handoff now records INTENT-GRAPH-TOP-LEVEL-DRILLDOWN and INTENT-GRAPH-SEARCH-EXPANSION as explicit testcase directives owned by the new visual explorer slice
+- current_actions:
+  - keep tests/explicit/entries/runArgoInitValidatorBootstrap.js read-only
+  - materialize tests/explicit/entries/runIntentGraphTopLevelDrilldown.js as the single explicit entry for INTENT-GRAPH-TOP-LEVEL-DRILLDOWN
+  - materialize tests/explicit/entries/runIntentGraphSearchExpansion.js as the single explicit entry for INTENT-GRAPH-SEARCH-EXPANSION
 
 ### Non-Explicit Test Rules
 - critical_tests_root: tests/architecture/
@@ -130,5 +140,5 @@ scope: repository-root
 - work: must treat explicit testcase entries and critical non-explicit tests as read-only acceptance/support baselines
 
 ### Open Gaps
-- Formal explicit testcase objects are still absent from design/KG/SystemArchitecture.json, so the explicit entry created in this stage is owned by the handoff directive rather than by a graph-embedded testcase object.
 - /argo-init package.json seeding is not implemented yet; the explicit testcase entry is expected to fail until Coding/Repair completes that behavior.
+- The VS Code command contribution and runtime behavior for the Intent Graph Visual Explorer are not implemented yet; the new explicit explorer entries are expected to fail until Coding/Repair registers the command and returns the frozen test-mode snapshot shape.

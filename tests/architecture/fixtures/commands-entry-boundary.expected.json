@@ -6,6 +6,7 @@
     "implementationdesign.ts",
     "index.ts",
     "intentinarchitecturedesign.ts",
+    "intentGraphExplorer.ts",
     "test.ts",
     "work.ts"
   ],
