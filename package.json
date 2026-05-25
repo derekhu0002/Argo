@@ -2,7 +2,7 @@
   "name": "argo-architect",
   "displayName": "Argo - Agentic Workflow Orchestrator",
   "description": "A closed-loop architecture control system that enforces strong consistency between ArchiMate architectural intent and real code structure via semantic UML extraction.",
-  "version": "5.3.8",
+  "version": "5.3.9",
   "license": "MIT",
   "publisher": "argo-team",
   "repository": {
@@ -24,9 +24,11 @@
     "archimate"
   ],
   "activationEvents": [
+    "*",
     "onStartupFinished",
     "onChatParticipant:argo.worker",
-    "onLanguageModelTool:argo-test"
+    "onLanguageModelTool:argo-test",
+    "onCommand:argo.openIntentGraphExplorer"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -129,6 +131,12 @@
         ]
       }
     ],
+    "commands": [
+      {
+        "command": "argo.openIntentGraphExplorer",
+        "title": "Argo: Open Intent Graph Explorer"
+      }
+    ],
     "languageModelTools": [
       {
         "name": "argo-test",
@@ -154,7 +162,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run compile:webviews",
+    "compile:webviews": "node scripts/buildWebviews.js",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "test:architecture:commands-entry-boundary": "node tests/architecture/commands-entry-boundary.test.js",
@@ -177,14 +186,21 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "@types/vscode": "^1.93.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.28.0",
     "eslint": "^8.57.0",
     "typescript": "^5.4.0"
   },
   "dependencies": {
-    "ignore": "^7.0.5"
+    "@dagrejs/dagre": "^3.0.0",
+    "@xyflow/react": "^12.10.2",
+    "ignore": "^7.0.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   }
 }

@@ -1,0 +1,220 @@
+html,
+body,
+#argo-intent-graph-detail-root {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: radial-gradient(circle at top, #213246, #0f1720 58%);
+    color: #e6edf3;
+    font-family: Consolas, 'Courier New', monospace;
+}
+
+.argo-detail-app {
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 18px;
+    display: grid;
+    grid-template-rows: auto auto minmax(560px, calc(100vh - 236px));
+    gap: 16px;
+}
+
+.argo-detail-meta,
+.argo-detail-inspector {
+    border-radius: 16px;
+    border: 1px solid rgba(230, 237, 243, 0.12);
+    background: rgba(23, 33, 43, 0.9);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+}
+
+.argo-detail-meta {
+    padding: 16px 18px;
+}
+
+.argo-detail-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.argo-detail-subtitle {
+    color: #8b9bb0;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.argo-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.argo-detail-grid > div {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(34, 48, 66, 0.9);
+    border: 1px solid rgba(123, 211, 137, 0.16);
+}
+
+.argo-detail-grid strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #8b9bb0;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.argo-detail-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
+    min-height: 0;
+}
+
+.argo-detail-canvas {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(230, 237, 243, 0.1);
+    background: rgba(23, 33, 43, 0.72);
+    min-height: 560px;
+}
+
+.argo-detail-inspector {
+    padding: 16px 18px;
+}
+
+.argo-detail-inspector h2 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.argo-detail-inspector p {
+    margin: 0 0 12px;
+    color: #8b9bb0;
+    line-height: 1.55;
+    font-size: 12px;
+}
+
+.argo-detail-inspector ul {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+}
+
+.argo-detail-inspector li {
+    color: #d6deea;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.argo-detail-empty {
+    display: grid;
+    place-items: center;
+    min-height: 320px;
+    color: #8b9bb0;
+    font-size: 14px;
+}
+
+.argo-element-node {
+    width: 220px;
+    min-height: 108px;
+    box-sizing: border-box;
+    border-radius: 18px;
+    border: 1px solid rgba(123, 211, 137, 0.34);
+    background: linear-gradient(180deg, rgba(123, 211, 137, 0.18), rgba(34, 48, 66, 0.96));
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
+    padding: 14px 16px;
+    color: #e6edf3;
+    transition: transform 140ms ease, border-color 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+}
+
+.argo-element-node.is-clickable {
+    cursor: pointer;
+}
+
+.argo-element-node.is-clickable:hover {
+    transform: translateY(-2px);
+    border-color: rgba(123, 211, 137, 0.78);
+}
+
+.argo-element-node.is-active {
+    border-color: rgba(230, 237, 243, 0.96);
+    box-shadow: 0 22px 42px rgba(63, 185, 80, 0.18);
+}
+
+.argo-element-node.is-dim {
+    opacity: 0.42;
+}
+
+.argo-element-node-layer {
+    margin-bottom: 8px;
+    color: #8b9bb0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.argo-element-node-name {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    line-height: 1.35;
+}
+
+.argo-element-node-id {
+    color: #8b9bb0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.argo-element-node-count {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #d6deea;
+}
+
+.react-flow__renderer,
+.react-flow__pane,
+.react-flow__viewport {
+    background: transparent;
+}
+
+.react-flow__controls,
+.react-flow__minimap {
+    border: 1px solid rgba(230, 237, 243, 0.08);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.react-flow__controls-button {
+    background: rgba(23, 33, 43, 0.96);
+    color: #e6edf3;
+    border-bottom-color: rgba(230, 237, 243, 0.08);
+}
+
+.react-flow__edge-textbg {
+    fill: rgba(15, 23, 32, 0.86);
+}
+
+.react-flow__attribution {
+    display: none;
+}
+
+@media (max-width: 1120px) {
+    .argo-detail-app {
+        grid-template-rows: auto auto auto;
+    }
+
+    .argo-detail-main {
+        grid-template-columns: 1fr;
+    }
+
+    .argo-detail-canvas {
+        min-height: 500px;
+    }
+}

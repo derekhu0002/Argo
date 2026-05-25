@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
+import { handleIntentGraphExplorer } from './commands';
 import { registerArchitectureTestTool } from './tools/architectureTestTool';
 import { registerExplicitTestcaseEntryGuard } from './utils/explicitTestcaseEntryGuard';
 import { argoWorkRequestHandler } from './workParticipant';
 
 const WORK_PARTICIPANT_ID = 'argo.worker';
+const OPEN_INTENT_GRAPH_EXPLORER_COMMAND = 'argo.openIntentGraphExplorer';
 
 export async function activate(extensionContext: vscode.ExtensionContext): Promise<void> {
     registerExplicitTestcaseEntryGuard(extensionContext);
@@ -16,6 +18,13 @@ export function deactivate(): void {
 }
 
 function registerCopilotFeatures(extensionContext: vscode.ExtensionContext): void {
+    extensionContext.subscriptions.push(
+        vscode.commands.registerCommand(
+            OPEN_INTENT_GRAPH_EXPLORER_COMMAND,
+            async request => handleIntentGraphExplorer(request),
+        ),
+    );
+
     if (typeof vscode.chat?.createChatParticipant === 'function') {
         const workParticipant = vscode.chat.createChatParticipant(
             WORK_PARTICIPANT_ID,
