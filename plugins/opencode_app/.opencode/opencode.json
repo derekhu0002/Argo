@@ -4,7 +4,7 @@
   "mcp": {
     "ai4x": {
       "type": "remote",
-      "url": "http://host.docker.internal:8000/mcp"
+      "url": "http://localhost:8000/mcp"
     }
   },
   "provider": {

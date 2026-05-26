@@ -6,7 +6,7 @@ const repoRoot = process.env.ARGO_REPO_ROOT
     : path.resolve(__dirname, '..', '..', '..');
 const graphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const schemaPathCandidates = [
-    path.join(repoRoot, '.github', 'argoschema', 'SystemArchitecture.schema.json'),
+    path.join(repoRoot, '.opencode', 'argoschema', 'SystemArchitecture.schema.json'),
     path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'),
 ];
 

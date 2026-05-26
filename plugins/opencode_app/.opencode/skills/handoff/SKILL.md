@@ -21,4 +21,4 @@ Tell the next agent only:
 
 If the user passed arguments, treat them as the focus for the next stage and tailor the handoff accordingly.
 
-Output the handoff into a markdown file named current stage name in uppercase followed by `_HANDOFF.md` in `.github/handoffs/`. For example, if the current stage is Intent Design, the file should be named `INTENT_DESIGN_HANDOFF.md`.
+Output the handoff into a markdown file named current stage name in uppercase followed by `_HANDOFF.md` in `.opencode/handoffs/`. For example, if the current stage is Intent Design, the file should be named `INTENT_DESIGN_HANDOFF.md`.
