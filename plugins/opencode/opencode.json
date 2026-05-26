@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "ThreatIntelPrimary",
+  "model": "DeepSeek_custom_provider/deepseek-chat",
+  "mcp": {
+    "ai4x": {
+      "type": "remote",
+      "url": "http://host.docker.internal:8000/mcp"
+    }
+  },
+  "provider": {
+    "DeepSeek_custom_provider": {
+      "models": {
+        "deepseek-chat": {
+          "name": "deepseek-chat",
+          "limit": {
+            "context": 128000,
+            "output": 4096
+          }
+        }
+      },
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DeepSeek custom provider",
+      "options": {
+        "baseURL": "https://api.deepseek.com/v1",
+        "apiKey": "sk-7809872c14c940a7bb371dc3965a96ff"
+      }
+    }
+  },
+  "instructions": [
+    ".opencode/GLOBAL_INSTRUCTIONS.md"
+  ],
+  "permission": {
+    "mcp_*": "ask",
+    "skill": {
+      "*": "allow"
+    }
+  }
+}
