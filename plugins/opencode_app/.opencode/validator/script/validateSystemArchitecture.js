@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = process.env.ARGO_REPO_ROOT
-    ? path.resolve(process.env.ARGO_REPO_ROOT)
-    : path.resolve(__dirname, '..', '..', '..');
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const schemaPathCandidates = [
     path.join(repoRoot, '.opencode', 'argoschema', 'SystemArchitecture.schema.json'),

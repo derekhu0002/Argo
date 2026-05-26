@@ -104,7 +104,7 @@
 "description": "验证只读界面默认只显示 SystemArchitecture 下第一层子 view，且用户可以通过逐层点击展开下级 view。",
 "type": "Acceptance Test",
 "Input": "Control point: 打开 intent graph 可视化界面并加载 design/KG/SystemArchitecture.json；初始状态展示 SystemArchitecture 下第一层子 view，随后点击某个顶层 view 并继续点击其子 view。",
-"acceptanceCriteria": "Observation point: 初始界面只呈现顶层 view；每次点击只展开所选路径上的下级 view，不要求一次性展开全部节点；下级 view 依据父 view 所含元素挂接的 subdiagram view 推导。",
+"acceptanceCriteria": "tests/explicit/entries/runIntentGraphTopLevelDrilldown.js",
 "TestResults": "Frozen baseline: 该测试只锁定只读浏览、顶层默认展示与逐层点击展开，不要求编辑或回写 intent graph。"
 },
 {
@@ -112,7 +112,7 @@
 "description": "验证用户可以通过搜索 view 名称或 view 所含元素名称定位目标 view，并自动展开到命中 view 的可见路径。",
 "type": "Scenario Test",
 "Input": "Control point: 在 intent graph 可视化界面输入 view 名称或某个被 view 收纳的元素名称进行搜索。",
-"acceptanceCriteria": "Observation point: 系统定位至少一个匹配 view，并将该 view 及其祖先路径展开到可见状态；若同一子 view 通过不同父分支可达，允许在多个父分支下重复出现。",
+"acceptanceCriteria": "tests/explicit/entries/runIntentGraphSearchExpansion.js",
 "TestResults": "Frozen baseline: 第一版搜索至少覆盖 view 名称与所含元素名称；MINDMAP 风格仅作为展示参考，不作为像素级断言。"
 }
 ]
