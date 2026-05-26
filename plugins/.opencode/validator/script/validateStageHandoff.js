@@ -1,17 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const repoRoot = process.env.ARGO_REPO_ROOT
+    ? path.resolve(process.env.ARGO_REPO_ROOT)
+    : path.resolve(__dirname, '..', '..', '..');
 
 const HANDOFFS = {
     'intent-to-implementation': {
         filePath: 'design/KG/IntentToImplementationHandoff.json',
-        schemaPath: '.github/argoschema/IntentToImplementationHandoff.schema.json',
+        schemaPath: '.opencode/argoschema/IntentToImplementationHandoff.schema.json',
         validate: validateIntentToImplementation,
     },
     'implementation-to-coding': {
         filePath: 'design/KG/ImplementationToCodingHandoff.json',
-        schemaPath: '.github/argoschema/ImplementationToCodingHandoff.schema.json',
+        schemaPath: '.opencode/argoschema/ImplementationToCodingHandoff.schema.json',
         validate: validateImplementationToCoding,
     },
 };
