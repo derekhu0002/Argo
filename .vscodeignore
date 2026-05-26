@@ -23,3 +23,11 @@ design/**
 !schema/**
 !.github/**
 Argo.feap
+plugins/**
+notes/**
+requirements.txt
+INTRODUCTION.md
+OVERALL_ARCHITECTURE.md
+analysis/**
+copilot/**
+temp/**
