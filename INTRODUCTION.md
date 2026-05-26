@@ -36,7 +36,7 @@ When the command is invoked directly from the VS Code command palette without ar
 Behavior contract:
 
 - The explorer is read-only and does not write back to the intent graph.
-- The main explorer interactive webview is now rendered by a bundled React frontend rather than inline HTML and script strings.
+- The main explorer interactive webview now uses a bundled React Flow frontend with node-and-edge layout rather than inline HTML and script strings.
 - Root view resolution is structural: it uses the unique view with no `parent_element_id`.
 - Initial open exposes only the structural first-layer child views.
 - Expand-path reveals the selected visible branch.
@@ -44,6 +44,7 @@ Behavior contract:
 - Clicking a visible view in the explorer opens a separate read-only webview that shows the clicked view's included elements and relationship graph.
 - The detail webview now uses a bundled React Flow renderer with auto-layout for the relationship graph.
 - Clicking an element in the detail webview highlights its incoming and outgoing relationships while dimming unrelated nodes and edges.
+- The detail webview can reveal its current view back in the main explorer, which reopens the corresponding path and focuses that view node.
 
 Response contract:
 

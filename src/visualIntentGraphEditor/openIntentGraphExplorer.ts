@@ -14,6 +14,9 @@ type ExplorerWebviewMessage =
     | { type: 'search'; query: string }
     | { type: 'reset' };
 
+type DetailWebviewMessage =
+    | { type: 'reveal-in-explorer'; viewId: string };
+
 interface InteractiveExplorerState {
     panel: vscode.WebviewPanel;
     request: OpenIntentGraphExplorerRequest;
@@ -83,6 +86,7 @@ interface IntentGraphExplorerWebviewPayload {
     visibleViewCount: number;
     matchedViewIds: string[];
     currentQuery: string;
+    focusedViewId?: string;
     tree?: IntentGraphExplorerViewPayload;
 }
 
@@ -98,6 +102,7 @@ export interface OpenIntentGraphExplorerRequest {
     action?: IntentGraphExplorerAction;
     targetViewId?: string;
     query?: string;
+    focusViewId?: string;
     mode?: IntentGraphExplorerMode;
     testcase?: string;
 }
@@ -327,6 +332,7 @@ function buildInteractiveExplorerPayload(
         visibleViewCount: snapshot.visibleViews.length,
         matchedViewIds: snapshot.matchedViewIds ?? [],
         currentQuery: request.action === 'search' ? request.query ?? '' : '',
+        focusedViewId: request.focusViewId,
         tree: buildExplorerViewPayload(rootView.view_id, undefined, 0, graph, snapshot, indexes, visibleViewsByParentId),
     };
 }
@@ -492,6 +498,10 @@ async function openIntentGraphViewDetail(graphPath: string, viewId: string): Pro
         },
     );
 
+    panel.webview.onDidReceiveMessage(message => {
+        void handleDetailWebviewMessage(graphPath, message as DetailWebviewMessage);
+    });
+
     panel.webview.html = buildViewDetailHtml(panel.webview, {
         view: {
             view_id: view.view_id,
@@ -504,6 +514,26 @@ async function openIntentGraphViewDetail(graphPath: string, viewId: string): Pro
         relationships: inferredRelationships,
     });
     panel.reveal(vscode.ViewColumn.Beside, false);
+}
+
+async function handleDetailWebviewMessage(
+    graphPath: string,
+    message: DetailWebviewMessage,
+): Promise<void> {
+    try {
+        if (message.type === 'reveal-in-explorer') {
+            await openIntentGraphExplorer({
+                graphPath,
+                action: 'expand-path',
+                targetViewId: message.viewId,
+                focusViewId: message.viewId,
+                mode: 'interactive',
+            });
+        }
+    } catch (error) {
+        const readableError = error instanceof Error ? error.message : String(error);
+        void vscode.window.showErrorMessage(`Intent Graph View Detail: ${readableError}`);
+    }
 }
 
 function buildViewDetailHtml(

@@ -1,7 +1,23 @@
 /// <reference path="../../webview-css.d.ts" />
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import dagre from '@dagrejs/dagre';
+import {
+    Background,
+    Controls,
+    MarkerType,
+    MiniMap,
+    Position,
+    ReactFlow,
+    type Edge,
+    type Node,
+    type NodeProps,
+    type NodeTypes,
+    type ReactFlowInstance,
+    type Viewport,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import './explorerWebviewApp.css';
 
 interface ExplorerElementPayload {
@@ -29,6 +45,7 @@ interface ExplorerPayload {
     visibleViewCount: number;
     matchedViewIds: string[];
     currentQuery: string;
+    focusedViewId?: string;
     tree?: ExplorerViewPayload;
 }
 
@@ -36,6 +53,31 @@ interface VsCodeApi {
     postMessage(message: unknown): void;
     setState(state: unknown): void;
     getState(): unknown;
+}
+
+interface ExplorerWebviewState {
+    x?: number;
+    y?: number;
+    zoom?: number;
+}
+
+interface ViewNodeData extends Record<string, unknown> {
+    viewId: string;
+    viewName: string;
+    depth: number;
+    parentText: string;
+    isRoot: boolean;
+    isMatched: boolean;
+    isFocused: boolean;
+    hasVisibleChildren: boolean;
+    onExpand(viewId: string): void;
+    onOpenDetail(viewId: string): void;
+}
+
+interface ElementNodeData extends Record<string, unknown> {
+    elementId: string;
+    name: string;
+    note: string;
 }
 
 declare global {
@@ -46,376 +88,303 @@ declare global {
     function acquireVsCodeApi(): VsCodeApi;
 }
 
-const MIN_ZOOM = 0.3;
-const MAX_ZOOM = 2.5;
-const ZOOM_STEP = 0.15;
+const VIEW_NODE_WIDTH = 292;
+const VIEW_NODE_HEIGHT = 134;
+const ELEMENT_NODE_WIDTH = 188;
+const ELEMENT_NODE_HEIGHT = 104;
 const vscode = acquireVsCodeApi();
 
-function clampZoom(value: number): number {
-    return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
-}
-
-function ViewBranch({
-    branch,
-    onExpand,
-    onOpenDetail,
-}: {
-    branch: ExplorerViewPayload;
-    onExpand(viewId: string): void;
-    onOpenDetail(viewId: string): void;
-}) {
-    const classes = ['argo-view-box'];
-    if (branch.isRoot) {
-        classes.push('root');
+function ExplorerViewNode({ data }: NodeProps<Node<ViewNodeData, 'argoView'>>) {
+    const classNames = ['argo-flow-view'];
+    if (data.isRoot) {
+        classNames.push('root');
     }
-    if (branch.isMatched) {
-        classes.push('highlight');
+    if (data.isMatched) {
+        classNames.push('highlight');
+    }
+    if (data.isFocused) {
+        classNames.push('focused');
     }
 
     return (
-        <div className="argo-view-branch" data-role="view-branch" data-view-id={branch.viewId}>
-            <div
-                className={classes.join(' ')}
-                data-role="view-box"
-                data-view-id={branch.viewId}
-                onClick={() => onOpenDetail(branch.viewId)}
-            >
-                <div className="argo-view-title">View: {branch.viewName}</div>
-                <div className="argo-view-meta">
-                    {branch.viewId} · depth {branch.depth} · {branch.parentText} · {branch.hasVisibleChildren ? 'visible children' : 'leaf in current snapshot'}
-                </div>
-                {!branch.isRoot ? (
-                    <div className="argo-view-actions">
-                        <button
-                            type="button"
-                            data-target-view-id={branch.viewId}
-                            onClick={event => {
-                                event.stopPropagation();
-                                onExpand(branch.viewId);
-                            }}
-                        >
-                            Expand this view
-                        </button>
-                    </div>
-                ) : null}
+        <div className={classNames.join(' ')} onClick={() => data.onOpenDetail(data.viewId)}>
+            <div className="argo-flow-view-title">View: {data.viewName}</div>
+            <div className="argo-flow-view-meta">
+                {data.viewId} · depth {data.depth} · {data.parentText} · {data.hasVisibleChildren ? 'visible children' : 'leaf in current snapshot'}
             </div>
-
-            {branch.elements.length === 0 ? (
-                <div className="argo-empty-element">This view has no included elements.</div>
-            ) : (
-                <div className="argo-element-lane-shell" data-role="element-lane-shell">
-                    <div className="argo-element-lane" data-role="element-lane">
-                        {branch.elements.map(element => (
-                            <div key={`${branch.viewId}:${element.id}`} className="argo-element-column" data-role="element-column" data-element-id={element.id}>
-                                <div className="argo-element-node" data-role="element-node" data-element-id={element.id}>{element.name}</div>
-                                <div className="argo-element-note">{element.note}</div>
-                                {element.mountedChildren.length > 0 ? (
-                                    <div className="argo-child-row" data-role="child-row">
-                                        {element.mountedChildren.map(child => (
-                                            <div key={`${element.id}:${child.viewId}`} className="argo-child-anchor" data-role="child-anchor">
-                                                <ViewBranch branch={child} onExpand={onExpand} onOpenDetail={onOpenDetail} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="argo-empty-element">No currently visible child views</div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+            {!data.isRoot ? (
+                <div className="argo-flow-view-actions">
+                    <button
+                        type="button"
+                        onClick={event => {
+                            event.stopPropagation();
+                            data.onExpand(data.viewId);
+                        }}
+                    >
+                        Expand this view
+                    </button>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }
 
-function App({ payload }: { payload: ExplorerPayload }) {
-    const webviewState = (vscode.getState() as { zoom?: number; scrollLeft?: number; scrollTop?: number } | undefined) ?? {};
-    const [searchQuery, setSearchQuery] = useState(payload.currentQuery);
-    const [zoom, setZoom] = useState(typeof webviewState.zoom === 'number' ? webviewState.zoom : 1);
-    const scrollRef = useRef<HTMLDivElement | null>(null);
-    const shellRef = useRef<HTMLDivElement | null>(null);
-    const frameRef = useRef<HTMLDivElement | null>(null);
-    const connectorsRef = useRef<SVGSVGElement | null>(null);
-    const initializedRef = useRef(false);
-    const suppressPersistenceRef = useRef(false);
-    const isPanningRef = useRef(false);
-    const panStartXRef = useRef(0);
-    const panStartYRef = useRef(0);
-    const panScrollLeftRef = useRef(0);
-    const panScrollTopRef = useRef(0);
+function ExplorerElementNode({ data }: NodeProps<Node<ElementNodeData, 'argoElement'>>) {
+    return (
+        <div className="argo-flow-element">
+            <div className="argo-flow-element-name">{data.name}</div>
+            <div className="argo-flow-element-id">{data.elementId}</div>
+            <div className="argo-flow-element-note">{data.note}</div>
+        </div>
+    );
+}
 
-    function persistViewportState() {
-        const scroll = scrollRef.current;
-        if (!scroll || suppressPersistenceRef.current) {
+const nodeTypes: NodeTypes = {
+    argoView: ExplorerViewNode,
+    argoElement: ExplorerElementNode,
+};
+
+function buildExplorerFlow(
+    tree: ExplorerViewPayload | undefined,
+    focusedViewId: string | undefined,
+    onExpand: (viewId: string) => void,
+    onOpenDetail: (viewId: string) => void,
+): {
+    nodes: Array<Node<ViewNodeData | ElementNodeData>>;
+    edges: Edge[];
+} {
+    if (!tree) {
+        return {
+            nodes: [],
+            edges: [],
+        };
+    }
+
+    const graph = new dagre.graphlib.Graph();
+    graph.setDefaultEdgeLabel(() => ({}));
+    graph.setGraph({
+        rankdir: 'TB',
+        ranksep: 118,
+        nodesep: 42,
+        edgesep: 26,
+        marginx: 48,
+        marginy: 40,
+        ranker: 'tight-tree',
+    });
+
+    const nodes: Array<Node<ViewNodeData | ElementNodeData>> = [];
+    const edges: Edge[] = [];
+
+    function visitView(view: ExplorerViewPayload, branchPath: string): string {
+        const viewNodeId = `view:${branchPath}`;
+        graph.setNode(viewNodeId, {
+            width: VIEW_NODE_WIDTH,
+            height: VIEW_NODE_HEIGHT,
+        });
+        nodes.push({
+            id: viewNodeId,
+            type: 'argoView',
+            position: { x: 0, y: 0 },
+            sourcePosition: Position.Bottom,
+            targetPosition: Position.Top,
+            draggable: false,
+            selectable: true,
+            data: {
+                viewId: view.viewId,
+                viewName: view.viewName,
+                depth: view.depth,
+                parentText: view.parentText,
+                isRoot: view.isRoot,
+                isMatched: view.isMatched,
+                isFocused: view.viewId === focusedViewId,
+                hasVisibleChildren: view.hasVisibleChildren,
+                onExpand,
+                onOpenDetail,
+            },
+        });
+
+        view.elements.forEach((element, elementIndex) => {
+            const elementNodeId = `element:${branchPath}:${element.id}:${elementIndex}`;
+            graph.setNode(elementNodeId, {
+                width: ELEMENT_NODE_WIDTH,
+                height: ELEMENT_NODE_HEIGHT,
+            });
+            graph.setEdge(viewNodeId, elementNodeId);
+            nodes.push({
+                id: elementNodeId,
+                type: 'argoElement',
+                position: { x: 0, y: 0 },
+                sourcePosition: Position.Bottom,
+                targetPosition: Position.Top,
+                draggable: false,
+                selectable: false,
+                data: {
+                    elementId: element.id,
+                    name: element.name,
+                    note: element.note,
+                },
+            });
+            edges.push({
+                id: `${viewNodeId}->${elementNodeId}`,
+                source: viewNodeId,
+                target: elementNodeId,
+                type: 'smoothstep',
+                animated: false,
+                markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                    color: '#7bd389',
+                },
+                style: {
+                    stroke: '#7bd389',
+                    strokeWidth: 2,
+                },
+            });
+
+            element.mountedChildren.forEach((child, childIndex) => {
+                const childBranchPath = `${branchPath}/e${elementIndex}/c${childIndex}:${child.viewId}`;
+                const childViewNodeId = visitView(child, childBranchPath);
+                graph.setEdge(elementNodeId, childViewNodeId);
+                edges.push({
+                    id: `${elementNodeId}->${childViewNodeId}`,
+                    source: elementNodeId,
+                    target: childViewNodeId,
+                    type: 'smoothstep',
+                    animated: false,
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#e6edf3',
+                    },
+                    style: {
+                        stroke: '#e6edf3',
+                        strokeWidth: 1.8,
+                    },
+                });
+            });
+        });
+
+        return viewNodeId;
+    }
+
+    visitView(tree, `root:${tree.viewId}`);
+    dagre.layout(graph);
+
+    const laidOutNodes = nodes.map(node => {
+        const position = graph.node(node.id) ?? { x: 120, y: 120 };
+        const width = node.type === 'argoView' ? VIEW_NODE_WIDTH : ELEMENT_NODE_WIDTH;
+        const height = node.type === 'argoView' ? VIEW_NODE_HEIGHT : ELEMENT_NODE_HEIGHT;
+        return {
+            ...node,
+            position: {
+                x: position.x - width / 2,
+                y: position.y - height / 2,
+            },
+        };
+    });
+
+    return {
+        nodes: laidOutNodes,
+        edges,
+    };
+}
+
+function App({ payload }: { payload: ExplorerPayload }) {
+    const savedState = (vscode.getState() as ExplorerWebviewState | undefined) ?? {};
+    const [searchQuery, setSearchQuery] = useState(payload.currentQuery);
+    const [viewportZoom, setViewportZoom] = useState(typeof savedState.zoom === 'number' ? savedState.zoom : 1);
+    const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
+    const initializedViewportRef = useRef(false);
+
+    const onExpand = (viewId: string) => {
+        persistViewport();
+        vscode.postMessage({ type: 'expand', targetViewId: viewId });
+    };
+
+    const onOpenDetail = (viewId: string) => {
+        persistViewport();
+        vscode.postMessage({ type: 'open-view-detail', viewId });
+    };
+
+    const { nodes, edges } = useMemo(
+        () => buildExplorerFlow(payload.tree, payload.focusedViewId, onExpand, onOpenDetail),
+        [payload.focusedViewId, payload.tree],
+    );
+
+    function focusViewNode(viewId: string): boolean {
+        const flowInstance = flowInstanceRef.current;
+        if (!flowInstance) {
+            return false;
+        }
+
+        const targetNode = nodes.find(node => node.type === 'argoView' && node.data.viewId === viewId);
+        if (!targetNode) {
+            return false;
+        }
+
+        const currentZoom = flowInstance.getViewport().zoom;
+        void flowInstance.setCenter(
+            targetNode.position.x + VIEW_NODE_WIDTH / 2,
+            targetNode.position.y + VIEW_NODE_HEIGHT / 2,
+            {
+                zoom: Math.max(currentZoom, 0.9),
+                duration: 180,
+            },
+        );
+        return true;
+    }
+
+    function persistViewport(viewport?: Viewport) {
+        const currentViewport = viewport ?? flowInstanceRef.current?.getViewport();
+        if (!currentViewport) {
             return;
         }
 
         vscode.setState({
-            zoom,
-            scrollLeft: scroll.scrollLeft,
-            scrollTop: scroll.scrollTop,
+            x: currentViewport.x,
+            y: currentViewport.y,
+            zoom: currentViewport.zoom,
         });
     }
-
-    function getAnchorPoint(element: Element, vertical: 'top' | 'bottom') {
-        const frame = frameRef.current;
-        if (!frame) {
-            return { x: 0, y: 0 };
-        }
-
-        const frameRect = frame.getBoundingClientRect();
-        const rect = element.getBoundingClientRect();
-        return {
-            x: rect.left - frameRect.left + rect.width / 2,
-            y: vertical === 'top' ? rect.top - frameRect.top : rect.bottom - frameRect.top,
-        };
-    }
-
-    function createPath(start: { x: number; y: number }, end: { x: number; y: number }, bend: number) {
-        const cp1y = start.y + bend;
-        const cp2y = end.y - bend;
-        return `M ${start.x} ${start.y} C ${start.x} ${cp1y}, ${end.x} ${cp2y}, ${end.x} ${end.y}`;
-    }
-
-    function appendConnector(start: { x: number; y: number }, end: { x: number; y: number }, options?: { bend?: number; width?: number; stroke?: string; dash?: string }) {
-        const connectors = connectorsRef.current;
-        if (!connectors) {
-            return;
-        }
-
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const bend = options?.bend ?? Math.max(24, Math.abs(end.y - start.y) * 0.35);
-        path.setAttribute('d', createPath(start, end, bend));
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', options?.stroke ?? 'rgba(123, 211, 137, 0.82)');
-        path.setAttribute('stroke-width', String(options?.width ?? 2));
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
-        if (options?.dash) {
-            path.setAttribute('stroke-dasharray', options.dash);
-        }
-        connectors.appendChild(path);
-    }
-
-    function redrawConnectors() {
-        const frame = frameRef.current;
-        const connectors = connectorsRef.current;
-        if (!frame || !connectors) {
-            return;
-        }
-
-        const width = Math.ceil(frame.scrollWidth);
-        const height = Math.ceil(frame.scrollHeight);
-        connectors.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        connectors.setAttribute('width', String(width));
-        connectors.setAttribute('height', String(height));
-        connectors.innerHTML = '';
-
-        frame.querySelectorAll('[data-role="view-box"]').forEach(viewBox => {
-            const branch = viewBox.closest('[data-role="view-branch"]');
-            if (!branch) {
-                return;
-            }
-
-            const elementLane = branch.querySelector(':scope > [data-role="element-lane-shell"] [data-role="element-lane"]');
-            if (!elementLane) {
-                return;
-            }
-
-            appendConnector(getAnchorPoint(viewBox, 'bottom'), getAnchorPoint(elementLane, 'top'), { bend: 28, width: 2.2 });
-        });
-
-        frame.querySelectorAll('[data-role="element-node"]').forEach(elementNode => {
-            const elementColumn = elementNode.closest('[data-role="element-column"]');
-            if (!elementColumn) {
-                return;
-            }
-
-            const elementLane = elementColumn.parentElement;
-            if (elementLane?.getAttribute('data-role') === 'element-lane') {
-                appendConnector(getAnchorPoint(elementLane, 'top'), getAnchorPoint(elementNode, 'top'), {
-                    bend: 16,
-                    width: 1.8,
-                    stroke: 'rgba(123, 211, 137, 0.72)',
-                });
-            }
-
-            const childRow = elementColumn.querySelector(':scope > [data-role="child-row"]');
-            if (childRow && childRow.querySelector('[data-role="view-box"]')) {
-                appendConnector(getAnchorPoint(elementNode, 'bottom'), getAnchorPoint(childRow, 'top'), {
-                    bend: 18,
-                    width: 1.8,
-                    stroke: 'rgba(123, 211, 137, 0.72)',
-                });
-            }
-        });
-
-        frame.querySelectorAll('[data-role="child-row"]').forEach(childRow => {
-            const childViews = childRow.querySelectorAll(':scope > [data-role="child-anchor"] > [data-role="view-branch"] > [data-role="view-box"]');
-            if (childViews.length === 0) {
-                return;
-            }
-
-            childViews.forEach(childViewBox => {
-                appendConnector(getAnchorPoint(childRow, 'top'), getAnchorPoint(childViewBox, 'top'), {
-                    bend: 22,
-                    width: 1.8,
-                    stroke: 'rgba(123, 211, 137, 0.68)',
-                });
-            });
-        });
-    }
-
-    function updateZoomLayout(currentZoom: number) {
-        const frame = frameRef.current;
-        const shell = shellRef.current;
-        if (!frame || !shell) {
-            return;
-        }
-
-        frame.style.transform = `scale(${currentZoom})`;
-        shell.style.width = `${Math.ceil(frame.offsetWidth * currentZoom)}px`;
-        shell.style.height = `${Math.ceil(frame.offsetHeight * currentZoom)}px`;
-    }
-
-    function applyZoom(nextZoom: number) {
-        setZoom(clampZoom(nextZoom));
-    }
-
-    function fitToViewport() {
-        const scroll = scrollRef.current;
-        const frame = frameRef.current;
-        if (!scroll || !frame) {
-            return;
-        }
-
-        const availableWidth = Math.max(240, scroll.clientWidth - 40);
-        const availableHeight = Math.max(180, scroll.clientHeight - 40);
-        const intrinsicWidth = Math.max(1, frame.offsetWidth);
-        const intrinsicHeight = Math.max(1, frame.offsetHeight);
-        const fittedZoom = Math.min(availableWidth / intrinsicWidth, availableHeight / intrinsicHeight);
-        applyZoom(fittedZoom);
-    }
-
-    useLayoutEffect(() => {
-        updateZoomLayout(zoom);
-        const scroll = scrollRef.current;
-        if (!scroll) {
-            return;
-        }
-
-        if (!initializedRef.current) {
-            initializedRef.current = true;
-            if (typeof webviewState.zoom === 'number') {
-                requestAnimationFrame(() => {
-                    scroll.scrollLeft = typeof webviewState.scrollLeft === 'number' ? webviewState.scrollLeft : 0;
-                    scroll.scrollTop = typeof webviewState.scrollTop === 'number' ? webviewState.scrollTop : 0;
-                    requestAnimationFrame(redrawConnectors);
-                });
-                return;
-            }
-
-            suppressPersistenceRef.current = true;
-            fitToViewport();
-            requestAnimationFrame(() => {
-                suppressPersistenceRef.current = false;
-                redrawConnectors();
-            });
-            return;
-        }
-
-        requestAnimationFrame(redrawConnectors);
-        persistViewportState();
-    }, [payload, zoom]);
 
     useEffect(() => {
-        const handleResize = () => {
-            requestAnimationFrame(() => {
-                if (typeof webviewState.zoom === 'number') {
-                    updateZoomLayout(zoom);
-                    redrawConnectors();
-                    return;
-                }
+        const flowInstance = flowInstanceRef.current;
+        if (!flowInstance || initializedViewportRef.current) {
+            return;
+        }
 
-                suppressPersistenceRef.current = true;
-                fitToViewport();
-                requestAnimationFrame(() => {
-                    suppressPersistenceRef.current = false;
-                    redrawConnectors();
-                });
-            });
-        };
+        initializedViewportRef.current = true;
+        requestAnimationFrame(() => {
+            if (payload.focusedViewId && focusViewNode(payload.focusedViewId)) {
+                return;
+            }
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [zoom]);
+            if (typeof savedState.x === 'number' && typeof savedState.y === 'number' && typeof savedState.zoom === 'number') {
+                void flowInstance.setViewport({
+                    x: savedState.x,
+                    y: savedState.y,
+                    zoom: savedState.zoom,
+                }, { duration: 0 });
+                return;
+            }
+
+            void flowInstance.fitView({ padding: 0.2, duration: 0 });
+        });
+    }, [nodes, payload.focusedViewId, savedState.x, savedState.y, savedState.zoom]);
+
+    useEffect(() => {
+        if (!initializedViewportRef.current || !payload.focusedViewId) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            if (focusViewNode(payload.focusedViewId)) {
+                persistViewport();
+            }
+        });
+    }, [nodes, payload.focusedViewId]);
 
     function submitSearch() {
         vscode.postMessage({ type: 'search', query: searchQuery });
     }
-
-    function beginPan(event: React.PointerEvent<HTMLDivElement>) {
-        if (event.button !== 0) {
-            return;
-        }
-
-        const target = event.target as HTMLElement;
-        if (target.closest('button') || target.closest('input')) {
-            return;
-        }
-
-        const scroll = scrollRef.current;
-        if (!scroll) {
-            return;
-        }
-
-        isPanningRef.current = true;
-        panStartXRef.current = event.clientX;
-        panStartYRef.current = event.clientY;
-        panScrollLeftRef.current = scroll.scrollLeft;
-        panScrollTopRef.current = scroll.scrollTop;
-        scroll.classList.add('panning');
-        event.preventDefault();
-    }
-
-    function updatePan(event: PointerEvent) {
-        if (!isPanningRef.current) {
-            return;
-        }
-
-        const scroll = scrollRef.current;
-        if (!scroll) {
-            return;
-        }
-
-        scroll.scrollLeft = panScrollLeftRef.current - (event.clientX - panStartXRef.current);
-        scroll.scrollTop = panScrollTopRef.current - (event.clientY - panStartYRef.current);
-        persistViewportState();
-    }
-
-    function endPan() {
-        if (!isPanningRef.current) {
-            return;
-        }
-
-        const scroll = scrollRef.current;
-        isPanningRef.current = false;
-        scroll?.classList.remove('panning');
-        persistViewportState();
-    }
-
-    useEffect(() => {
-        window.addEventListener('pointermove', updatePan);
-        window.addEventListener('pointerup', endPan);
-        window.addEventListener('pointercancel', endPan);
-
-        return () => {
-            window.removeEventListener('pointermove', updatePan);
-            window.removeEventListener('pointerup', endPan);
-            window.removeEventListener('pointercancel', endPan);
-        };
-    });
 
     return (
         <main className="argo-explorer-app">
@@ -435,11 +404,19 @@ function App({ payload }: { payload: ExplorerPayload }) {
                 <button type="button" onClick={submitSearch}>Search</button>
                 <button type="button" className="secondary" onClick={() => vscode.postMessage({ type: 'reset' })}>Reset</button>
                 <div className="argo-zoom-toolbar">
-                    <button type="button" className="secondary" onClick={() => applyZoom(zoom - (zoom < 1 ? 0.1 : ZOOM_STEP))}>-</button>
-                    <button type="button" className="secondary" onClick={fitToViewport}>Fit</button>
-                    <button type="button" className="secondary" onClick={() => applyZoom(1)}>100%</button>
-                    <button type="button" className="secondary" onClick={() => applyZoom(zoom + (zoom < 1 ? 0.1 : ZOOM_STEP))}>+</button>
-                    <div className="argo-zoom-badge">{Math.round(zoom * 100)}%</div>
+                    <button type="button" className="secondary" onClick={() => flowInstanceRef.current?.zoomOut({ duration: 120 })}>-</button>
+                    <button type="button" className="secondary" onClick={() => flowInstanceRef.current?.fitView({ padding: 0.2, duration: 140 })}>Fit</button>
+                    <button
+                        type="button"
+                        className="secondary"
+                        onClick={() => {
+                            void flowInstanceRef.current?.setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 140 });
+                        }}
+                    >
+                        100%
+                    </button>
+                    <button type="button" className="secondary" onClick={() => flowInstanceRef.current?.zoomIn({ duration: 120 })}>+</button>
+                    <div className="argo-zoom-badge">{Math.round(viewportZoom * 100)}%</div>
                 </div>
             </section>
 
@@ -451,43 +428,47 @@ function App({ payload }: { payload: ExplorerPayload }) {
             </section>
 
             <section className="argo-explorer-canvas">
-                <div
-                    ref={scrollRef}
-                    className="argo-graph-scroll"
-                    onScroll={persistViewportState}
-                    onPointerDown={beginPan}
-                    onWheel={event => {
-                        if (!event.ctrlKey && !event.metaKey) {
-                            return;
-                        }
-
-                        event.preventDefault();
-                        applyZoom(zoom + (event.deltaY > 0 ? -(zoom < 1 ? 0.1 : ZOOM_STEP) : (zoom < 1 ? 0.1 : ZOOM_STEP)));
-                    }}
-                >
-                    <div ref={shellRef} className="argo-graph-shell">
-                        <div ref={frameRef} className="argo-graph-frame">
-                            <svg ref={connectorsRef} className="argo-graph-connectors" aria-hidden="true"></svg>
-                            {payload.tree ? (
-                                <div className="argo-graph-stage">
-                                    <ViewBranch
-                                        branch={payload.tree}
-                                        onExpand={viewId => {
-                                            persistViewportState();
-                                            vscode.postMessage({ type: 'expand', targetViewId: viewId });
-                                        }}
-                                        onOpenDetail={viewId => {
-                                            persistViewportState();
-                                            vscode.postMessage({ type: 'open-view-detail', viewId });
-                                        }}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="argo-empty">No visible views were derived from the current request.</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                {payload.tree ? (
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        nodeTypes={nodeTypes}
+                        minZoom={0.2}
+                        maxZoom={2.5}
+                        fitView
+                        fitViewOptions={{ padding: 0.2 }}
+                        nodesDraggable={false}
+                        nodesConnectable={false}
+                        elementsSelectable
+                        onInit={instance => {
+                            flowInstanceRef.current = instance;
+                        }}
+                        onMove={(_, viewport) => {
+                            setViewportZoom(viewport.zoom);
+                        }}
+                        onMoveEnd={(_, viewport) => {
+                            setViewportZoom(viewport.zoom);
+                            persistViewport(viewport);
+                        }}
+                        proOptions={{ hideAttribution: true }}
+                    >
+                        <Background color="rgba(230, 237, 243, 0.08)" gap={20} />
+                        <MiniMap
+                            pannable
+                            zoomable
+                            nodeColor={node => {
+                                if (node.type === 'argoView' && node.data.isFocused) {
+                                    return '#e6edf3';
+                                }
+                                return node.type === 'argoView' ? '#7bd389' : '#5a6f88';
+                            }}
+                            maskColor="rgba(15, 23, 32, 0.62)"
+                        />
+                        <Controls showInteractive={false} />
+                    </ReactFlow>
+                ) : (
+                    <div className="argo-empty">No visible views were derived from the current request.</div>
+                )}
             </section>
         </main>
     );

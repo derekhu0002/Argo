@@ -44,6 +44,10 @@ interface DetailPayload {
     relationships: DetailRelationship[];
 }
 
+interface VsCodeApi {
+    postMessage(message: unknown): void;
+}
+
 interface ElementNodeData extends Record<string, unknown> {
     id: string;
     label: string;
@@ -57,10 +61,13 @@ declare global {
     interface Window {
         __ARGO_INTENT_GRAPH_VIEW_DETAIL__?: DetailPayload;
     }
+
+    function acquireVsCodeApi(): VsCodeApi;
 }
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 108;
+const vscode = acquireVsCodeApi();
 
 function ElementNode({ data }: NodeProps<Node<ElementNodeData, 'argoElement'>>) {
     const classNames = ['argo-element-node', 'is-clickable'];
@@ -317,6 +324,14 @@ function App({ payload }: { payload: DetailPayload }) {
             <section className="argo-detail-meta">
                 <div className="argo-detail-title">{payload.view.view_name}</div>
                 <div className="argo-detail-subtitle">{payload.view.view_id}</div>
+                <div className="argo-detail-actions">
+                    <button
+                        type="button"
+                        onClick={() => vscode.postMessage({ type: 'reveal-in-explorer', viewId: payload.view.view_id })}
+                    >
+                        Reveal this view in explorer
+                    </button>
+                </div>
                 <div className="argo-detail-grid">
                     <div>
                         <strong>Elements</strong>
