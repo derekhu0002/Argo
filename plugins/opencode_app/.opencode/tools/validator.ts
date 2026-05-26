@@ -1,6 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { tool } from '@opencode-ai/plugin';
+import { tool, type ToolContext, type ToolResult } from '@opencode-ai/plugin';
+
+declare const Bun: {
+    spawn(input: {
+        cmd: string[];
+        cwd: string;
+        env: NodeJS.ProcessEnv;
+        stdout: 'pipe';
+        stderr: 'pipe';
+    }): {
+        stdout: ReadableStream<Uint8Array>;
+        stderr: ReadableStream<Uint8Array>;
+        exited: Promise<number>;
+    };
+};
 
 const HANDOFF_STAGES = ['intent-to-implementation', 'implementation-to-coding'];
 const SYSTEM_ARCHITECTURE_SCRIPT_CANDIDATES = [
@@ -16,11 +30,11 @@ const STAGE_HANDOFF_SCRIPT_CANDIDATES = [
     'scripts/validateStageHandoff.js',
 ];
 
-function resolveWorkspaceRoot(context) {
+function resolveWorkspaceRoot(context: Pick<ToolContext, 'worktree' | 'directory'>): string {
     return process.env.ARGO_REPO_ROOT || context.worktree || context.directory || process.cwd();
 }
 
-function resolveScriptPath(workspaceRoot, candidates) {
+function resolveScriptPath(workspaceRoot: string, candidates: readonly string[]): { absolutePath: string; relativePath: string } {
     for (const relativePath of candidates) {
         const absolutePath = path.join(workspaceRoot, relativePath);
         if (fs.existsSync(absolutePath)) {
@@ -32,10 +46,10 @@ function resolveScriptPath(workspaceRoot, candidates) {
 }
 
 async function runValidatorScript(
-    workspaceRoot,
-    candidates,
-    args,
-) {
+    workspaceRoot: string,
+    candidates: readonly string[],
+    args: readonly string[],
+): Promise<ToolResult> {
     if (typeof Bun === 'undefined' || typeof Bun.spawn !== 'function') {
         throw new Error('This tool requires the Bun runtime because opencode loads custom tools with Bun.');
     }
@@ -59,7 +73,7 @@ async function runValidatorScript(
         processHandle.exited,
     ]);
 
-    return {
+    return toToolResult('validator', {
         workspaceRoot,
         scriptPath: relativePath,
         command,
@@ -67,10 +81,10 @@ async function runValidatorScript(
         status: exitCode === 0 ? 'passed' : 'failed',
         stdout: stdout.trim(),
         stderr: stderr.trim(),
-    };
+    });
 }
 
-function normalizeStage(stage) {
+function normalizeStage(stage: string | undefined): string | undefined {
     if (!stage) {
         return undefined;
     }
@@ -80,6 +94,14 @@ function normalizeStage(stage) {
     }
 
     return stage;
+}
+
+function toToolResult(title: string, output: Record<string, unknown>): ToolResult {
+    return {
+        title,
+        output: JSON.stringify(output, null, 2),
+        metadata: output,
+    };
 }
 
 export const validateSystemArchitecture = tool({
