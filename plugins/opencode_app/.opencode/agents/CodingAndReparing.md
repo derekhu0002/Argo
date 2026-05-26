@@ -8,6 +8,7 @@ permission:
 
 tools:
   validator: true
+  argo: true
   skill: true
 ---
 ### Current Stage

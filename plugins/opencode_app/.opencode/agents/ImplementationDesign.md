@@ -8,6 +8,7 @@ permission:
 
 tools:
   skill: true
+  argo: true
   validator: true
 ---
 
