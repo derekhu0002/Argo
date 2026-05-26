@@ -8,20 +8,11 @@ const execFileAsync = promisify(execFile);
 
 const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const FAILURE_RECORDS_PATH = 'design/KG/test-failure-records.json';
-const EA_TEMPLATE_PATH = ['eatool', 'EA-model-template.feap'] as const;
-const SYSTEM_ARCHITECTURE_SCHEMA_PATH = ['schema', 'SystemArchitecture.schema.json'] as const;
-const WORKSPACE_SCHEMA_TARGET_PATH = ['.github', 'argoschema', 'SystemArchitecture.schema.json'] as const;
-const PACKAGE_JSON_TARGET_PATH = ['package.json'] as const;
+const EA_TEMPLATE_PATH = ['.opencode', 'customtools', 'EA-model-template.feap'] as const;
 const HANDOFF_FILES_TO_RESET = [
     ['design', 'KG', 'IntentToImplementationHandoff.json'],
     ['design', 'KG', 'ImplementationToCodingHandoff.json'],
 ] as const;
-const BOOTSTRAP_VALIDATION_SCRIPTS: Record<string, string> = {
-    'validate:system-architecture': 'node .github/validator/script/validateSystemArchitecture.js',
-    'validate:handoff': 'node .github/validator/script/validateStageHandoff.js',
-    'validate:handoff:intent': 'node .github/validator/script/validateStageHandoff.js intent-to-implementation',
-    'validate:handoff:implementation': 'node .github/validator/script/validateStageHandoff.js implementation-to-coding',
-};
 const WINDOWS_RESERVED_NAMES = new Set([
     'CON', 'PRN', 'AUX', 'NUL',
     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
@@ -167,19 +158,6 @@ async function ensureWorkspaceBootstrap(workspaceRoot: string) {
         }
     }
 
-    const schemaSourcePath = path.join(workspaceRoot, ...SYSTEM_ARCHITECTURE_SCHEMA_PATH);
-    const schemaTargetPath = path.join(workspaceRoot, ...WORKSPACE_SCHEMA_TARGET_PATH);
-    await fs.promises.mkdir(path.dirname(schemaTargetPath), { recursive: true });
-    await fs.promises.copyFile(schemaSourcePath, schemaTargetPath);
-    updatedFiles.push(normalizeRelativePath(path.relative(workspaceRoot, schemaTargetPath)));
-
-    const packageJsonPath = path.join(workspaceRoot, ...PACKAGE_JSON_TARGET_PATH);
-    const packageJsonResult = await ensureWorkspacePackageJson(packageJsonPath, workspaceName);
-    if (packageJsonResult.changed) {
-        updatedFiles.push(normalizeRelativePath(path.relative(workspaceRoot, packageJsonPath)));
-    }
-    skippedSteps.push(...packageJsonResult.conflicts.map(name => `package.json script preserved: ${name}`));
-
     return {
         workspaceRoot,
         targetFeapName,
@@ -191,78 +169,12 @@ async function ensureWorkspaceBootstrap(workspaceRoot: string) {
     };
 }
 
-async function ensureWorkspacePackageJson(packageJsonPath: string, workspaceName: string) {
-    const packageJson = await readOrCreatePackageJson(packageJsonPath, workspaceName);
-    const existingScripts = typeof packageJson.scripts === 'object' && packageJson.scripts !== null
-        ? packageJson.scripts as Record<string, unknown>
-        : {};
-
-    const mergedScripts = { ...existingScripts };
-    const conflicts: string[] = [];
-    let changed = !fs.existsSync(packageJsonPath);
-
-    for (const [scriptName, expectedCommand] of Object.entries(BOOTSTRAP_VALIDATION_SCRIPTS)) {
-        const currentValue = mergedScripts[scriptName];
-        if (currentValue === undefined) {
-            mergedScripts[scriptName] = expectedCommand;
-            changed = true;
-            continue;
-        }
-
-        if (currentValue !== expectedCommand) {
-            conflicts.push(scriptName);
-        }
-    }
-
-    packageJson.scripts = mergedScripts;
-    await fs.promises.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
-
-    return {
-        changed,
-        conflicts,
-    };
-}
-
-async function readOrCreatePackageJson(packageJsonPath: string, workspaceName: string): Promise<Record<string, unknown> & { scripts: Record<string, unknown> }> {
-    if (!fs.existsSync(packageJsonPath)) {
-        return {
-            name: buildPackageName(workspaceName),
-            private: true,
-            scripts: {},
-        };
-    }
-
-    const parsed = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf8'));
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new Error('package.json must contain a JSON object.');
-    }
-
-    return {
-        ...(parsed as Record<string, unknown>),
-        scripts: typeof (parsed as { scripts?: unknown }).scripts === 'object' && (parsed as { scripts?: unknown }).scripts !== null
-            ? { ...((parsed as { scripts: Record<string, unknown> }).scripts) }
-            : {},
-    };
-}
-
 function buildTargetFileName(workspaceName: string): string {
     const sanitized = sanitizeFileName(workspaceName) || 'workspace';
     const safeBaseName = WINDOWS_RESERVED_NAMES.has(sanitized.toUpperCase())
         ? `${sanitized}_workspace`
         : sanitized;
     return `${safeBaseName}.feap`;
-}
-
-function buildPackageName(workspaceName: string): string {
-    const sanitized = sanitizeFileName(workspaceName)
-        .toLowerCase()
-        .replace(/_/g, '-')
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9.-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^[.-]+|[.-]+$/g, '');
-
-    return sanitized || 'argo-workspace';
 }
 
 function sanitizeFileName(value: string): string {
