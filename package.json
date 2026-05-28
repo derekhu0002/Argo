@@ -182,6 +182,7 @@
     "validate:handoff": "node scripts/validateStageHandoff.js",
     "validate:handoff:intent": "node scripts/validateStageHandoff.js intent-to-implementation",
     "validate:handoff:implementation": "node scripts/validateStageHandoff.js implementation-to-coding",
+    "test:argo": "node scripts/runArchitectureTests.js",
     "test:e2e:workspace-bootstrap": "node tests/e2e/runWorkspaceBootstrapE2E.js"
   },
   "devDependencies": {

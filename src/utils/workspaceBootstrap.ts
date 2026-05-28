@@ -14,6 +14,7 @@ const BOOTSTRAP_VALIDATION_SCRIPTS: Record<string, string> = {
     'validate:handoff': 'node .github/validator/script/validateStageHandoff.js',
     'validate:handoff:intent': 'node .github/validator/script/validateStageHandoff.js intent-to-implementation',
     'validate:handoff:implementation': 'node .github/validator/script/validateStageHandoff.js implementation-to-coding',
+    'test:argo': 'node .github/validator/script/runArchitectureTests.js',
 };
 const WINDOWS_RESERVED_NAMES = new Set([
     'CON', 'PRN', 'AUX', 'NUL',

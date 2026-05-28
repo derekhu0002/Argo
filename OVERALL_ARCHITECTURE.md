@@ -52,7 +52,7 @@ scope: repository-root
 - path: package.json
   name: workspace-bootstrap-manifest
   kind: BootstrapManifestFile
-  responsibility: repository-level npm script surface for handoff validation and explicit testcase execution
+  responsibility: repository-level npm script surface for handoff validation, architecture validation, and explicit testcase execution
 - path: tests/explicit/
   name: explicit-testcase-entries
   kind: AcceptanceEntrypointZone
@@ -89,6 +89,7 @@ scope: repository-root
   - src/commands/argoInit.ts -> src/utils/workspaceBootstrap.ts
   - src/utils/workspaceBootstrap.ts -> .github/validator/
   - src/utils/workspaceBootstrap.ts -> package.json bootstrap manifest updates
+  - package.json -> scripts/runArchitectureTests.js -> .github/validator/script/runArchitectureTests.js
 - forbidden_shortcuts:
   - Commands -> Engine implementation internals
   - Visual Explorer -> Commands
