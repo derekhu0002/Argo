@@ -137,7 +137,7 @@ export function buildWorkAgentHandoffPrompt(input: {
     ];
 
     if (input.extraContext) {
-        lines.push('', '### Extra Context', input.extraContext);
+        lines.push('', '### User\'s requirements', input.extraContext);
     }
 
     return lines.join('\n');
@@ -164,7 +164,7 @@ export function buildIntentInArchitectureDesignHandoffPrompt(extraContext: strin
     ];
 
     if (extraContext) {
-        lines.push('', '### Extra Context', extraContext);
+        lines.push('', '### User\'s requirements', extraContext);
     }
 
     return lines.join('\n');
@@ -252,7 +252,7 @@ export function buildImplementationDesignHandoffPrompt(input: {
     ];
 
     if (input.extraContext) {
-        lines.push('', '### Extra Context', input.extraContext);
+        lines.push('', '### User\'s requirements', input.extraContext);
     }
 
     return lines.join('\n');
