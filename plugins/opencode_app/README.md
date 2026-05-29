@@ -77,6 +77,9 @@ tests/
 
 OpenCode 版与 Copilot 版共享同一套 HARNESS 原则：
 
+- 人类通过 ArchiMate 意图模型掌握方向盘。
+- 目标通过分层测试用例持续向实现层传导。
+- 架构最终沉淀进代码仓目录结构、契约文件、测试入口和 failure records。
 - 先 Intent，后 Implementation，最后 Coding
 - 测试先是契约，其次才是脚本
 - failure records 是 Coding/Repair 的直接输入

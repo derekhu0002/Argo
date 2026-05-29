@@ -1,16 +1,33 @@
 # Argo HARNESS for GitHub Copilot
 
-这个目录对应的是 Argo 的 Copilot / VS Code 版本说明。它的核心形态是一个 VS Code 扩展，扩展显示名为 `Argo - Agentic Workflow Orchestrator`，聊天参与者名称为 `@argowork`。
+这个目录对应的是 Argo 的 Copilot / VS Code 版本说明。它的核心形态是一个 VS Code 扩展，扩展显示名为 `Argo - Agentic Workflow Orchestrator`，聊天参与者名称为 `@argowork`；同时仓库也提供了 GitHub Copilot 可消费的自定义 agent 资产。
 
 如果你希望在 VS Code + GitHub Copilot Chat 里，以阶段化、可交接、可回归的方式推进 AI Coding，这个版本就是主入口。
 
+## 核心思想
+
+Copilot 版沿用 Argo 的同一条控制链：
+
+- 人类通过 ArchiMate 意图模型充当方向盘，决定系统要往哪里走。
+- 目标通过显性 testcase、关键非显性测试和支撑测试逐层传导给实现与修复阶段。
+- 架构不是停留在图上，而是继续沉淀进仓库的目录结构、契约文件、测试入口和 failure records。
+
+因此，Copilot 在这里不是自由发挥的写码工具，而是在这条控制链内执行的工程参与者。
+
 ## 你会得到什么
 
-Copilot 版把 HARNESS 工作流落成了三个直接可用的工作面：
+Copilot 版把 HARNESS 工作流落成了四个直接可用的工作面：
 
 - `@argowork` 聊天参与者命令
 - VS Code 扩展命令
+- `.github/agents/` 下的自定义 agent
 - 仓库内的显性测试入口、验证脚本和架构契约
+
+当前仓库里已经落地的自定义 agent 包括：
+
+- `IntentionDesign`
+- `ImplementationDesign`
+- `CodingAndReparing`
 
 当前主要命令包括：
 
@@ -78,6 +95,8 @@ tests/
 
 推荐顺序如下。
 
+如果你倾向用聊天参与者命令，可以这样走：
+
 意图澄清：
 
 ```text
@@ -108,6 +127,12 @@ tests/
 @argowork /idle
 ```
 
+如果你倾向直接调用自定义 agent，则阶段映射是：
+
+- Intent Design -> `IntentionDesign`
+- Implementation Design -> `ImplementationDesign`
+- Coding/Repair -> `CodingAndReparing`
+
 ### 3. 第一轮上手只需要记住这一条闭环
 
 ```text
@@ -126,6 +151,8 @@ tests/
 - 当失败记录已经存在，才进入 `/work` 做 Coding/Repair。
 
 这样做的价值在于：你交给 Copilot 的不是一段模糊上下文，而是一组已经成型的架构契约、测试入口和 failure records。
+
+更具体地说：人类通过 ArchiMate 模型掌握方向，测试分层向下传导目标，仓库目录与契约文件承载架构本体，Copilot 负责在这套边界内推进实现。
 
 ## 常用验证命令
 
@@ -148,5 +175,5 @@ npm run test:argo
 Copilot 版更适合这些场景：
 
 - 你已经把主要研发入口放在 VS Code
-- 你希望直接利用 `@argowork` 命令组织 AI Coding
+- 你希望直接利用 `@argowork` 命令或自定义 agent 组织 AI Coding
 - 你希望把测试入口、架构契约和聊天交互收在同一个开发环境里
