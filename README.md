@@ -7,6 +7,27 @@ Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它不�
 - GitHub Copilot / VS Code 版本：通过 `@argowork` 聊天参与者、VS Code 扩展命令，以及 `.github/agents/` 下的自定义 agent 驱动工作流。
 - OpenCode 版本：通过 `.opencode/` 下的 agent、command、tool 和 validator 资产驱动同一套工作流。
 
+## 快速上手
+
+版本入口：
+
+| 版本 | 适用环境 | 说明 |
+| --- | --- | --- |
+| [Copilot 版](copilot/README.md) | VS Code + GitHub Copilot Chat | 以 VS Code 扩展形式运行，入口包括 `@argowork`、扩展命令和 `.github/agents/` 下的自定义 agent |
+| [OpenCode 版](plugins/opencode_app/README.md) | OpenCode | 以 `.opencode/` 目录中的 agent、command、tool、validator 资产运行 |
+
+这两个版本共享同一条最小闭环：
+
+```text
+先准备工作区
+再澄清 intent
+再落盘 implementation contracts 和 tests
+再执行 test
+最后基于 failure records 进入 coding/repair
+```
+
+如果把顺序打乱，Argo 的价值会明显下降，因为它真正提供的不是“多一个 AI 工具入口”，而是“把架构边界、测试边界和阶段交接显性化的工程系统”。
+
 ## HARNESS 在解决什么问题
 
 
@@ -58,13 +79,6 @@ Implementation Design 允许测试以“预期失败”的方式先落地。这�
 - 架构最终落在代码仓本身的目录结构、`OVERALL_ARCHITECTURE.md`、各级 `ARCHITECTURE.md`、测试入口和 failure records 里。
 
 也就是说，Argo 不是把“架构图”和“代码仓”分开维护，而是要求架构最终在代码仓结构中被物理表达、被测试守护、被工作流持续执行。
-
-## 版本入口
-
-| 版本 | 适用环境 | 说明 |
-| --- | --- | --- |
-| [Copilot 版](copilot/README.md) | VS Code + GitHub Copilot Chat | 以 VS Code 扩展形式运行，入口包括 `@argowork`、扩展命令和 `.github/agents/` 下的自定义 agent |
-| [OpenCode 版](plugins/opencode_app/README.md) | OpenCode | 以 `.opencode/` 目录中的 agent、command、tool、validator 资产运行 |
 
 ## 工作流如何部署到 Instructions、Agents、Skills、Tools、Plugin
 
@@ -136,26 +150,3 @@ Hooks / Plugins 把规则落成事件级护栏
 ```
 
 因此，Argo 的部署不是“先写一个提示词，再写几个脚本”，而是把同一套工作流按职责拆进不同宿主层次中：规则在 instructions，角色在 agents，方法在 skills，动作在 tools，最终由 hooks 或 plugins 把这些规则提升为宿主内可执行、可拦截、可阻断的绝对护栏。
-
-## 推荐使用方式
-
-如果你第一次接触这套 HARNESS 工程，建议按下面顺序理解和上手：
-
-1. 先看当前仓库的意图入口 `design/KG/SystemArchitecture.json`。
-2. 再看实现架构根契约 `OVERALL_ARCHITECTURE.md`。
-3. 选择你的运行环境：Copilot 版或 OpenCode 版。
-4. 进入对应版本 README，按“快速安装”和“快速上手”执行第一轮闭环。
-
-## 这两个版本共享的最小闭环
-
-不论你使用 Copilot 版还是 OpenCode 版，最小有效路径都一样：
-
-```text
-先准备工作区
-再澄清 intent
-再落盘 implementation contracts 和 tests
-再执行 test
-最后基于 failure records 进入 coding/repair
-```
-
-如果把顺序打乱，Argo 的价值会明显下降，因为它真正提供的不是“多一个 AI 工具入口”，而是“把架构边界、测试边界和阶段交接显性化的工程系统”。
