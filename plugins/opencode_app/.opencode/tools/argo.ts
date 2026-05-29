@@ -192,7 +192,8 @@ async function runArchitectureTests(workspaceRoot: string, architecturePath: str
     const results: ArchitectureTestExecutionResult[] = [];
     const failureRecords: FailedTestRecord[] = [];
 
-    for (const testcase of explicitTestcases) {
+    for (const [index, testcase] of explicitTestcases.entries()) {
+        logTestcaseStart(index, explicitTestcases.length, testcase);
         const resolvedScriptPath = testcase.acceptanceCriteria
             ? normalizeRelativePath(testcase.acceptanceCriteria)
             : '';
@@ -209,6 +210,7 @@ async function runArchitectureTests(workspaceRoot: string, architecturePath: str
                 stderr: 'acceptanceCriteria is empty',
             });
             results.push(result);
+            logTestcaseFinish(index, explicitTestcases.length, result);
             failureRecords.push(toFailedTestRecord(result));
             continue;
         }
@@ -226,6 +228,7 @@ async function runArchitectureTests(workspaceRoot: string, architecturePath: str
                 stderr: validation.reason || 'acceptanceCriteria must be a direct script file path',
             });
             results.push(result);
+            logTestcaseFinish(index, explicitTestcases.length, result);
             failureRecords.push(toFailedTestRecord(result));
             continue;
         }
@@ -245,6 +248,7 @@ async function runArchitectureTests(workspaceRoot: string, architecturePath: str
                 stderr: `test script not found: ${resolvedScriptPath}`,
             });
             results.push(result);
+            logTestcaseFinish(index, explicitTestcases.length, result);
             failureRecords.push(toFailedTestRecord(result));
             continue;
         }
@@ -263,6 +267,7 @@ async function runArchitectureTests(workspaceRoot: string, architecturePath: str
             stderr: execution.stderr,
         });
         results.push(result);
+        logTestcaseFinish(index, explicitTestcases.length, result);
         if (!passed) {
             failureRecords.push(toFailedTestRecord(result));
         }
@@ -498,6 +503,34 @@ function formatCommand(command: string, args: string[]): string {
 
 function quoteCommandPart(value: string): string {
     return /\s/.test(value) ? `"${value}"` : value;
+}
+
+function logTestcaseStart(index: number, total: number, testcase: ExplicitArchitectureTestcase): void {
+    const label = formatTestcaseLabel(index, total, testcase.testcaseName);
+    console.log(`[START] ${label}`);
+    console.log(`        script: ${testcase.acceptanceCriteria || '(missing acceptanceCriteria)'}`);
+}
+
+function logTestcaseFinish(index: number, total: number, result: ArchitectureTestExecutionResult): void {
+    const label = formatTestcaseLabel(index, total, result.testcaseName);
+    const exitCode = result.exitCode === null ? 'n/a' : String(result.exitCode);
+    console.log(`[END]   ${label}`);
+    console.log(`        result: ${result.status}; exitCode=${exitCode}; durationMs=${result.durationMs}`);
+    console.log(`        command: ${result.executionCommand || '(n/a)'}`);
+    if (result.stderr) {
+        console.log(`        stderr: ${truncateSingleLine(result.stderr)}`);
+    } else if (result.stdout) {
+        console.log(`        stdout: ${truncateSingleLine(result.stdout)}`);
+    }
+}
+
+function formatTestcaseLabel(index: number, total: number, testcaseName: string): string {
+    return `[${index + 1}/${total}] ${testcaseName || '(unnamed testcase)'}`;
+}
+
+function truncateSingleLine(value: string): string {
+    const singleLine = String(value).replace(/\s+/g, ' ').trim();
+    return singleLine.length > 240 ? `${singleLine.slice(0, 237)}...` : singleLine;
 }
 
 function collectExplicitTestcases(graph: RawArchitectureGraph): ExplicitArchitectureTestcase[] {
