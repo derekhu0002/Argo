@@ -1,15 +1,8 @@
 ---
-description: xxx
-mode: primary
-temperature: 0.1
-permission:
-  task:
-    "*": deny
-
-tools:
-  skill: true
-  argo: true
-  validator: true
+name: ImplementationDesign
+description: Describe the implementation design stage, where the agent will analyze the current implementation architecture, identify gaps, and design a stable implementation architecture with clear boundaries, test entry points, and guardrails. The agent will also determine which explicit test cases need to be implemented and how they will be executed in the subsequent coding phase.
+argument-hint: The inputs this agent expects, e.g., "a task to implement" or "a question to answer".
+# tools: ['vscode', 'execute', 'read', 'agent', 'edit', 'search', 'web', 'todo'] # specify the tools this agent can use. If not set, all enabled tools are allowed.
 ---
 
 ### Current Stage
@@ -72,7 +65,7 @@ Implementation Design
 12. OVERALL_ARCHITECTURE.md 与 ARCHITECTURE.md 的契约格式必须统一采用共享骨架，但根契约与元素契约承担不同字段职责。根级总入口由 OVERALL_ARCHITECTURE.md 唯一承载；子目录局部契约默认由 ARCHITECTURE.md 承载。ARCHITECTURE.md 可以引用 OVERALL_ARCHITECTURE.md，但不得重复定义根级规则。
 13. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。
 14. 除非用户明确要求，否则本次任务不要直接修改业务功能实现；重点是维护实现架构契约、显性 testcase 入口设计、关键非显性测试冻结与后续编码护栏，而不是直接进入业务编码。
-15. 不要宣称本阶段可交接给 Coding/Repair，除非 `design/KG/ImplementationToCodingHandoff.json` 已写出并且 validator 工具 `validator_validateStageHandoff` 在 `stage: "implementation-to-coding"` 参数下可以通过；若仍未通过，必须明确阻塞点。在 opencode 中统一使用 validator 工具作为交接校验入口。
+15. 不要宣称本阶段可交接给 Coding/Repair，除非 design/KG/ImplementationToCodingHandoff.json 已写出并且 npm run validate:handoff:implementation 可以通过；若仍未通过，必须明确阻塞点。
 
 ### Required Output
 
