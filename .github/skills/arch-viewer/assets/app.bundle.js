@@ -24633,7 +24633,7 @@
         <h3>视图浏览器</h3>
         <p>目录支持展开或折叠。点击 View 切换画布，点击元素查看右侧详情。</p>
       </div>
-      <div className="tree-browser">
+      <div className="tree-browser tree-scroll">
         <${TreeNode}
           node=${tree}
           depth=${0}
