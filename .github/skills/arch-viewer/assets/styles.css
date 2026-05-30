@@ -2480,6 +2480,26 @@ body {
   background: #efe5d5;
 }
 
+.tree-node__row.is-change-new .tree-node__label {
+  background: rgba(220, 38, 38, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.34);
+}
+
+.tree-node__row.is-change-new .tree-node__text strong,
+.tree-node__row.is-change-new .tree-node__text span {
+  color: #b91c1c;
+}
+
+.tree-node__row.is-change-modified .tree-node__label {
+  background: rgba(202, 138, 4, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(202, 138, 4, 0.36);
+}
+
+.tree-node__row.is-change-modified .tree-node__text strong,
+.tree-node__row.is-change-modified .tree-node__text span {
+  color: #8a5700;
+}
+
 .tree-node__row.is-match .tree-node__label {
   background: rgba(64, 132, 244, 0.14);
   box-shadow: inset 0 0 0 1px rgba(64, 132, 244, 0.28);
@@ -2583,6 +2603,34 @@ body {
 
 .flow-card.is-highlighted {
   box-shadow: 0 0 0 2px rgba(242, 140, 40, 0.18), 0 3px 10px rgba(50, 44, 35, 0.08);
+}
+
+.flow-card.is-change-new {
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.36), 0 3px 10px rgba(50, 44, 35, 0.08);
+}
+
+.flow-card.is-change-modified {
+  box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.34), 0 3px 10px rgba(50, 44, 35, 0.08);
+}
+
+.flow-card.is-change-new .flow-card__type,
+.flow-card.is-change-new .flow-card__title {
+  color: #b91c1c;
+}
+
+.flow-card.is-change-modified .flow-card__type,
+.flow-card.is-change-modified .flow-card__title {
+  color: #7a4d00;
+}
+
+.edge-change-new .react-flow__edge-path {
+  stroke: #dc2626 !important;
+  stroke-width: 2 !important;
+}
+
+.edge-change-modified .react-flow__edge-path {
+  stroke: #ca8a04 !important;
+  stroke-width: 2 !important;
 }
 
 .flow-card__title {

@@ -7,6 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
+const { execSync } = require('child_process');
 
 const PORT = process.env.ARCH_VIEWER_PORT ? parseInt(process.env.ARCH_VIEWER_PORT) : 7432;
 
@@ -77,6 +78,113 @@ function readAsset(requestPath) {
   }
 }
 
+function emptyChangeSummary() {
+  return {
+    views: { new: [], modified: [] },
+    elements: { new: [], modified: [] },
+    relationships: { new: [], modified: [] },
+  };
+}
+
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    return `{${keys.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function indexById(items, idField) {
+  const map = new Map();
+  for (const item of items || []) {
+    const id = item?.[idField];
+    if (id !== undefined && id !== null) {
+      map.set(String(id), item);
+    }
+  }
+  return map;
+}
+
+function diffEntityList(currentItems, baseItems, idField) {
+  const currentById = indexById(currentItems, idField);
+  const baseById = indexById(baseItems, idField);
+  const added = [];
+  const modified = [];
+
+  for (const [id, currentItem] of currentById.entries()) {
+    const baseItem = baseById.get(id);
+    if (!baseItem) {
+      added.push(id);
+      continue;
+    }
+    if (stableStringify(currentItem) !== stableStringify(baseItem)) {
+      modified.push(id);
+    }
+  }
+
+  return {
+    new: added,
+    modified,
+  };
+}
+
+function getRelativePosixPath(filePath) {
+  return path.relative(ROOT, filePath).split(path.sep).join('/');
+}
+
+function readHeadFileText(relativePath) {
+  const escaped = relativePath.replace(/"/g, '\\"');
+  try {
+    return execSync(`git show HEAD:${escaped}`, {
+      cwd: ROOT,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch (_error) {
+    return null;
+  }
+}
+
+function computeChangeSummary() {
+  const summary = emptyChangeSummary();
+  const currentText = readFile(PATHS.data);
+  if (!currentText.ok) {
+    return summary;
+  }
+
+  let currentGraph;
+  try {
+    currentGraph = JSON.parse(currentText.content);
+  } catch (_error) {
+    return summary;
+  }
+
+  const relativeDataPath = getRelativePosixPath(PATHS.data);
+  const headText = readHeadFileText(relativeDataPath);
+  if (!headText) {
+    // File does not exist in HEAD (new file or repo state unavailable): treat all as new.
+    summary.views.new = (currentGraph.views || []).map((view) => String(view.view_id)).filter(Boolean);
+    summary.elements.new = (currentGraph.elements || []).map((element) => String(element.id)).filter(Boolean);
+    summary.relationships.new = (currentGraph.relationships || []).map((relationship) => String(relationship.id)).filter(Boolean);
+    return summary;
+  }
+
+  let headGraph;
+  try {
+    headGraph = JSON.parse(headText);
+  } catch (_error) {
+    return summary;
+  }
+
+  summary.views = diffEntityList(currentGraph.views || [], headGraph.views || [], 'view_id');
+  summary.elements = diffEntityList(currentGraph.elements || [], headGraph.elements || [], 'id');
+  summary.relationships = diffEntityList(currentGraph.relationships || [], headGraph.relationships || [], 'id');
+  return summary;
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
@@ -116,6 +224,15 @@ const server = http.createServer((req, res) => {
     } else {
       respond(res, 405, 'application/json', JSON.stringify({ error: 'Method not allowed' }));
     }
+
+  } else if (url.pathname === '/api/changes') {
+    if (req.method !== 'GET') {
+      respond(res, 405, 'application/json', JSON.stringify({ error: 'Method not allowed' }));
+      return;
+    }
+
+    const summary = computeChangeSummary();
+    respond(res, 200, 'application/json', JSON.stringify(summary));
 
   } else if (url.pathname === '/' || url.pathname === '/index.html') {
     const { ok, content, error } = readFile(PATHS.html);

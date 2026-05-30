@@ -35,6 +35,14 @@ const DRAWER_MIN_WIDTH = 360;
 const DRAWER_MAX_WIDTH = 960;
 const DRAWER_DEFAULT_WIDTH = 672;
 
+const CHANGE_TONE_NEW = 'new';
+const CHANGE_TONE_MODIFIED = 'modified';
+const EMPTY_CHANGE_SUMMARY = {
+  views: { new: [], modified: [] },
+  elements: { new: [], modified: [] },
+  relationships: { new: [], modified: [] },
+};
+
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -104,6 +112,63 @@ function deriveStatus(element) {
 
 function deriveVersion(element) {
   return compactText(findAttributeValue(element.attributes, ['version', 'release', 'build', 'semver']), 24);
+}
+
+function normalizeChangeSummary(value) {
+  const source = value || {};
+  const readGroup = (groupName) => {
+    const group = source[groupName] || {};
+    return {
+      new: new Set((group.new || []).map((id) => String(id))),
+      modified: new Set((group.modified || []).map((id) => String(id))),
+    };
+  };
+
+  return {
+    views: readGroup('views'),
+    elements: readGroup('elements'),
+    relationships: readGroup('relationships'),
+  };
+}
+
+function pickChangeTone(primaryTone, secondaryTone) {
+  if (primaryTone === CHANGE_TONE_NEW || secondaryTone === CHANGE_TONE_NEW) {
+    return CHANGE_TONE_NEW;
+  }
+  if (primaryTone === CHANGE_TONE_MODIFIED || secondaryTone === CHANGE_TONE_MODIFIED) {
+    return CHANGE_TONE_MODIFIED;
+  }
+  return null;
+}
+
+function getChangeTone(changeSummary, kind, id) {
+  if (!changeSummary || id === undefined || id === null) {
+    return null;
+  }
+  const key = String(id);
+  const group = changeSummary[kind];
+  if (!group) {
+    return null;
+  }
+  if (group.new.has(key)) {
+    return CHANGE_TONE_NEW;
+  }
+  if (group.modified.has(key)) {
+    return CHANGE_TONE_MODIFIED;
+  }
+  return null;
+}
+
+function deriveElementChangeTone(element, changeSummary) {
+  const elementTone = getChangeTone(changeSummary, 'elements', element?.id);
+  let viewTone = null;
+  for (const subview of element?.subdiagram_views || []) {
+    viewTone = pickChangeTone(viewTone, getChangeTone(changeSummary, 'views', subview?.view_id));
+    if (viewTone === CHANGE_TONE_NEW) {
+      break;
+    }
+  }
+  return pickChangeTone(elementTone, viewTone);
 }
 
 function getPalette(type, isContainer) {
@@ -293,7 +358,7 @@ function computeExpandedElementIds(graph, viewId, elementId) {
   return collapsed;
 }
 
-function buildViewBrowserItems(graph) {
+function buildViewBrowserItems(graph, changeSummary) {
   const rootView = resolveStructuralRootView(graph);
   if (!rootView) {
     return null;
@@ -333,6 +398,7 @@ function buildViewBrowserItems(graph) {
         viewId: view.view_id,
         label: element?.name || elementId,
         meta: element?.type || 'element',
+        changeTone: getChangeTone(changeSummary, 'elements', elementId),
         children: childIds.map(visitElement),
       };
     };
@@ -362,6 +428,7 @@ function buildViewBrowserItems(graph) {
         viewId: view.view_id,
         label: relationship?.name || relationship?.statement || relationship?.super_type || relationshipId,
         meta: `${relationship?.super_type || 'relationship'} · ${sourceLabel} -> ${targetLabel}`,
+        changeTone: getChangeTone(changeSummary, 'relationships', relationshipId),
         children: [],
       };
     });
@@ -377,6 +444,7 @@ function buildViewBrowserItems(graph) {
       id: view.view_id,
       label: view.view_name,
       meta: `${(view.included_elements || []).length} 个元素 · ${(view.included_relationships || []).length} 条关系`,
+      changeTone: getChangeTone(changeSummary, 'views', view.view_id),
       children: [...childViews, ...elementNodes, ...relationshipNodes],
       initiallyExpanded: view.view_id === rootView.view_id,
     };
@@ -432,11 +500,16 @@ function TreeNode({ node, depth, expandedIds, matchedKeys, selectedViewId, selec
     || (node.kind === 'element' && selectedNodeId === node.id)
     || (isRelationship && selectedEdgeId === node.id);
   const isMatched = matchedKeys.has(node.key);
+  const changeClass = node.changeTone === CHANGE_TONE_NEW
+    ? 'is-change-new'
+    : node.changeTone === CHANGE_TONE_MODIFIED
+      ? 'is-change-modified'
+      : '';
   const iconClass = isRoot ? 'is-root' : isView ? 'is-view' : isRelationship ? 'is-relationship' : 'is-element';
 
   return html`
     <div className="tree-node" style=${{ '--tree-depth': depth }}>
-      <div className=${`tree-node__row ${isActive ? 'is-active' : ''} ${isMatched ? 'is-match' : ''}`.trim()}>
+      <div className=${`tree-node__row ${isActive ? 'is-active' : ''} ${isMatched ? 'is-match' : ''} ${changeClass}`.trim()}>
         ${isBranch ? html`
           <button
             type="button"
@@ -772,9 +845,14 @@ function deriveSelectionGraph(nodes, edges, selected) {
 function EntityNode({ data }) {
   const targetPosition = data.direction === 'LR' ? Position.Left : Position.Top;
   const sourcePosition = data.direction === 'LR' ? Position.Right : Position.Bottom;
+  const changeClass = data.changeTone === CHANGE_TONE_NEW
+    ? 'is-change-new'
+    : data.changeTone === CHANGE_TONE_MODIFIED
+      ? 'is-change-modified'
+      : '';
   return html`
     <div
-      className=${`flow-card ${data.variant} ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''}`}
+      className=${`flow-card ${data.variant} ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''} ${changeClass}`}
       style=${{
         '--node-border': data.palette.border,
         '--node-accent': data.palette.accent,
@@ -816,9 +894,14 @@ function EntityNode({ data }) {
 function ContainerNode({ data }) {
   const targetPosition = data.direction === 'LR' ? Position.Left : Position.Top;
   const sourcePosition = data.direction === 'LR' ? Position.Right : Position.Bottom;
+  const changeClass = data.changeTone === CHANGE_TONE_NEW
+    ? 'is-change-new'
+    : data.changeTone === CHANGE_TONE_MODIFIED
+      ? 'is-change-modified'
+      : '';
   return html`
     <div
-      className=${`flow-card flow-container ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''}`}
+      className=${`flow-card flow-container ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''} ${changeClass}`}
       style=${{
         '--node-border': data.palette.border,
         '--node-accent': data.palette.accent,
@@ -877,7 +960,7 @@ const nodeTypes = {
   container: ContainerNode,
 };
 
-function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, layoutDirection, onToggleCollapse, onOpenSubview, selected, positionOverrides) {
+function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, layoutDirection, onToggleCollapse, onOpenSubview, selected, positionOverrides, changeSummary) {
   const indexes = createIndexes(graph);
   const scope = buildScope(indexes, selectedViewId);
   const matchedIds = buildMatchSet(indexes, scope, search);
@@ -896,6 +979,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
     const status = deriveStatus(element);
     const matched = matchedIds.has(elementId);
     const tooltip = [element.name, element.type, element.description].filter(Boolean).join(' | ');
+    const changeTone = deriveElementChangeTone(element, changeSummary);
 
     nodeDrafts.push({
       id: elementId,
@@ -916,6 +1000,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
         dimmed: false,
         highlighted: false,
         matched,
+        changeTone,
         onOpenSubview,
         onToggleCollapse,
         palette,
@@ -946,6 +1031,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
     }
     edgeKeys.add(dedupeKey);
     const styleToken = classifyRelationship(relationship);
+    const changeTone = getChangeTone(changeSummary, 'relationships', relationship.id);
     edgeDrafts.push({
       id: relationship.id,
       source,
@@ -964,6 +1050,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
       },
       data: {
         relationship,
+        changeTone,
         dimmed: false,
         highlighted: false,
       },
@@ -988,7 +1075,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
 
   const edges = edgeDrafts.map((edge) => ({
     ...edge,
-    className: `${selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id) ? 'edge-dimmed' : ''} ${selectionGraph.highlightedEdges.has(edge.id) ? 'edge-highlighted' : ''}`.trim(),
+    className: `${selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id) ? 'edge-dimmed' : ''} ${selectionGraph.highlightedEdges.has(edge.id) ? 'edge-highlighted' : ''} ${edge.data.changeTone === CHANGE_TONE_NEW ? 'edge-change-new' : ''} ${edge.data.changeTone === CHANGE_TONE_MODIFIED ? 'edge-change-modified' : ''}`.trim(),
     data: {
       ...edge.data,
       dimmed: selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id),
@@ -1502,6 +1589,7 @@ function App() {
   const [selection, setSelection] = useState(null);
   const [loadingError, setLoadingError] = useState('');
   const [positionOverrides, setPositionOverrides] = useState(new Map());
+  const [changeSummary, setChangeSummary] = useState(() => normalizeChangeSummary(EMPTY_CHANGE_SUMMARY));
   const [expandedBrowserIds, setExpandedBrowserIds] = useState(new Set(['root:system']));
   const [leftDockWidth, setLeftDockWidth] = useState(LEFT_DOCK_DEFAULT_WIDTH);
   const [leftDockResizing, setLeftDockResizing] = useState(false);
@@ -1510,9 +1598,10 @@ function App() {
   useEffect(() => {
     async function load() {
       try {
-        const [schemaResponse, dataResponse] = await Promise.all([
+        const [schemaResponse, dataResponse, changesResponse] = await Promise.all([
           fetch('/api/schema'),
           fetch('/api/data'),
+          fetch('/api/changes'),
         ]);
         if (!schemaResponse.ok) {
           throw new Error(`Schema request failed: ${schemaResponse.status}`);
@@ -1520,10 +1609,15 @@ function App() {
         if (!dataResponse.ok) {
           throw new Error(`Data request failed: ${dataResponse.status}`);
         }
-        const [schemaJson, graphJson] = await Promise.all([schemaResponse.json(), dataResponse.json()]);
+        const [schemaJson, graphJson, changeJson] = await Promise.all([
+          schemaResponse.json(),
+          dataResponse.json(),
+          changesResponse.ok ? changesResponse.json() : Promise.resolve(EMPTY_CHANGE_SUMMARY),
+        ]);
         const structuralRoot = resolveStructuralRootView(graphJson);
         setSchema(schemaJson);
         setGraph(graphJson);
+        setChangeSummary(normalizeChangeSummary(changeJson));
         setValidationErrors(validateGraph(graphJson, schemaJson));
         if (structuralRoot?.view_id) {
           setSelectedViewId(structuralRoot.view_id);
@@ -1660,10 +1754,10 @@ function App() {
     if (!graph || !schema) {
       return null;
     }
-    return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides);
-  }, [collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
+    return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides, changeSummary);
+  }, [changeSummary, collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
 
-  const browserTree = useMemo(() => (graph ? buildViewBrowserItems(graph) : null), [graph]);
+  const browserTree = useMemo(() => (graph ? buildViewBrowserItems(graph, changeSummary) : null), [changeSummary, graph]);
   const browserSearchState = useMemo(() => buildBrowserSearchState(browserTree, search), [browserTree, search]);
 
   useEffect(() => {
