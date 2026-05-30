@@ -24597,13 +24597,6 @@
           <button type="button" className="drawer-grip" aria-label="拖动详情抽屉">:::</button>
         </div>
       </div>
-      <div className="drawer-section">
-        <h4>Schema 摘要</h4>
-        <p>${selectedObject.schema?.description || "\u4E0B\u65B9\u539F\u59CB JSON \u4E2D\u5305\u542B\u8BE5\u5BF9\u8C61\u5BF9\u5E94\u7684 Schema \u5BF9\u9F50\u6570\u636E\u3002"}</p>
-        <div className="token-row">
-          ${requiredFields.map((field) => html`<span className="pill ${selectedObject.value[field] === void 0 ? "pill-danger" : ""}">${field}</span>`)}
-        </div>
-      </div>
       <div className="drawer-section drawer-scrollable">
         <h4>结构化详情</h4>
         <${StructuredValueTable} value=${selectedObject.value} />

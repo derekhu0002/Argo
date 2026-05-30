@@ -1385,13 +1385,6 @@ function DetailsDrawer({ selection, flowModel, schema, anchorRef }) {
           <button type="button" className="drawer-grip" aria-label="拖动详情抽屉">:::</button>
         </div>
       </div>
-      <div className="drawer-section">
-        <h4>Schema 摘要</h4>
-        <p>${selectedObject.schema?.description || '下方原始 JSON 中包含该对象对应的 Schema 对齐数据。'}</p>
-        <div className="token-row">
-          ${requiredFields.map((field) => html`<span className="pill ${selectedObject.value[field] === undefined ? 'pill-danger' : ''}">${field}</span>`)}
-        </div>
-      </div>
       <div className="drawer-section drawer-scrollable">
         <h4>结构化详情</h4>
         <${StructuredValueTable} value=${selectedObject.value} />
