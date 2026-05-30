@@ -24523,17 +24523,27 @@
     return html`
     <main className="viewer-shell viewer-workbench">
       <header className="app-topbar">
-        <div className="app-topbar__brand">
-          <div className="app-logo">A</div>
-          <div>
-            <strong>${graph.name || "System"}</strong>
-            <span>Draft</span>
+        <div className="app-topbar__left">
+          <div className="app-brand-lockup">
+            <div className="app-logo" aria-hidden="true">
+              <span className="app-logo__core"></span>
+              <span className="app-logo__wing app-logo__wing--left"></span>
+              <span className="app-logo__wing app-logo__wing--right"></span>
+            </div>
+            <div className="app-brand-copy">
+              <strong>Argo</strong>
+              <span className="app-brand-pill">Draft</span>
+            </div>
+          </div>
+          <div className="app-document-meta">
+            <strong>${scopedView ? scopedView.view_name : graph.name || "Blank diagram"}</strong>
+            <span>${graph.name || "Architecture workspace"}</span>
           </div>
         </div>
         <div className="app-topbar__meta">
-          <span className="topbar-pill">${graph.views.length} views</span>
-          <span className="topbar-pill">${flowModel.metrics.totalElements} nodes</span>
-          <span className="topbar-pill ${validationErrors.length === 0 ? "is-ok" : "is-warn"}">${validationErrors.length === 0 ? "Schema OK" : `${validationErrors.length} issues`}</span>
+          <span className="topbar-pill">${graph.views.length} Views</span>
+          <span className="topbar-pill">${flowModel.metrics.totalElements} Nodes</span>
+          <span className="topbar-pill ${validationErrors.length === 0 ? "is-ok" : "is-warn"}">${validationErrors.length === 0 ? "Schema OK" : `${validationErrors.length} Issues`}</span>
           <button type="button" className="topbar-action">Share</button>
         </div>
       </header>
@@ -24570,44 +24580,64 @@
       </section>
 
       <section className="workspace-grid workbench-grid">
-        <aside className="sidebar panel">
-          <div className="sidebar-header">
-            <h2>Shapes</h2>
-            <span>${selectedLabel || "\u672A\u9009\u62E9\u5BF9\u8C61"}</span>
-          </div>
-          <${ViewBrowser}
-            tree=${browserTree}
-            expandedIds=${expandedBrowserIds}
-            selectedViewId=${selectedViewId}
-            selectedNodeId=${selection2?.kind === "node" ? selection2.id : null}
-            onToggle=${toggleBrowserNode}
-            onSelectView=${openSubview}
-            onSelectElement=${openElementFromBrowser}
-          />
-          <section className="sidebar-section sidebar-summary">
-            <h3>当前范围</h3>
-            <p>${scopedView ? compactText(scopedView.description || `\u5F53\u524D\u805A\u7126\u4E8E ${scopedView.view_name}\u3002`, 140) : "\u5F53\u524D\u5C55\u793A\u6574\u4E2A\u67B6\u6784\u56FE\u3002\u4F60\u53EF\u4EE5\u5207\u6362\u5230\u67D0\u4E2A Schema \u89C6\u56FE\u6765\u964D\u4F4E\u566A\u97F3\uFF0C\u4FDD\u6301\u62D3\u6251\u805A\u7126\u3002"}</p>
-            <div className="token-row">
-              <span className="pill">${scopedView ? scopedView.view_name : structuralRoot?.view_name || "\u5168\u90E8\u89C6\u56FE"}</span>
-              ${search ? html`<span className="pill pill-accent">命中 ${flowModel.matchedIds.size} 个元素</span>` : null}
+        <section className="left-dock">
+          <nav className="app-rail panel" aria-label="编辑器工具">
+            <button type="button" className="app-rail__button is-active" title="指针">
+              <span className="app-rail__glyph app-rail__glyph--pointer"></span>
+            </button>
+            <button type="button" className="app-rail__button" title="容器">
+              <span className="app-rail__glyph app-rail__glyph--frame"></span>
+            </button>
+            <button type="button" className="app-rail__button" title="关系">
+              <span className="app-rail__glyph app-rail__glyph--link"></span>
+            </button>
+            <button type="button" className="app-rail__button" title="文本">
+              <span className="app-rail__glyph app-rail__glyph--text"></span>
+            </button>
+            <button type="button" className="app-rail__button" title="资源">
+              <span className="app-rail__glyph app-rail__glyph--stack"></span>
+            </button>
+          </nav>
+
+          <aside className="sidebar panel">
+            <div className="sidebar-header">
+              <h2>Shapes</h2>
+              <span>${selectedLabel || "\u672A\u9009\u62E9\u5BF9\u8C61"}</span>
             </div>
-          </section>
-          <section className="sidebar-section sidebar-summary">
-            <h3>校验</h3>
-            ${validationErrors.length === 0 ? html`<p className="validation-ok">当前未发现违反根 Schema 结构的错误。</p>` : html`
-              <div className="validation-list">
-                ${validationErrors.map((message) => html`<div className="validation-item">${message}</div>`)}
+            <${ViewBrowser}
+              tree=${browserTree}
+              expandedIds=${expandedBrowserIds}
+              selectedViewId=${selectedViewId}
+              selectedNodeId=${selection2?.kind === "node" ? selection2.id : null}
+              onToggle=${toggleBrowserNode}
+              onSelectView=${openSubview}
+              onSelectElement=${openElementFromBrowser}
+            />
+            <section className="sidebar-section sidebar-summary">
+              <h3>当前范围</h3>
+              <p>${scopedView ? compactText(scopedView.description || `\u5F53\u524D\u805A\u7126\u4E8E ${scopedView.view_name}\u3002`, 140) : "\u5F53\u524D\u5C55\u793A\u6574\u4E2A\u67B6\u6784\u56FE\u3002\u4F60\u53EF\u4EE5\u5207\u6362\u5230\u67D0\u4E2A Schema \u89C6\u56FE\u6765\u964D\u4F4E\u566A\u97F3\uFF0C\u4FDD\u6301\u62D3\u6251\u805A\u7126\u3002"}</p>
+              <div className="token-row">
+                <span className="pill">${scopedView ? scopedView.view_name : structuralRoot?.view_name || "\u5168\u90E8\u89C6\u56FE"}</span>
+                ${search ? html`<span className="pill pill-accent">命中 ${flowModel.matchedIds.size} 个元素</span>` : null}
               </div>
-            `}
-          </section>
-        </aside>
+            </section>
+            <section className="sidebar-section sidebar-summary">
+              <h3>校验</h3>
+              ${validationErrors.length === 0 ? html`<p className="validation-ok">当前未发现违反根 Schema 结构的错误。</p>` : html`
+                <div className="validation-list">
+                  ${validationErrors.map((message) => html`<div className="validation-item">${message}</div>`)}
+                </div>
+              `}
+            </section>
+          </aside>
+        </section>
 
         <section className="stage-shell">
           <div className="stage-toolbar panel">
             <div className="stage-toolbar__group">
               <span className="tool-chip is-brand">Pointer</span>
-              <span className="tool-chip">Shape</span>
-              <span className="tool-chip">Connector</span>
+              <span className="tool-chip">Container</span>
+              <span className="tool-chip">Line</span>
               <span className="tool-chip">Text</span>
             </div>
             <div className="stage-toolbar__group">
