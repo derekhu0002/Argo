@@ -1765,10 +1765,6 @@ function App() {
               <span className="app-brand-pill">Draft</span>
             </div>
           </div>
-          <div className="app-document-meta">
-            <strong>${scopedView ? scopedView.view_name : graph.name || 'Blank diagram'}</strong>
-            <span>${graph.name || 'Architecture workspace'}</span>
-          </div>
         </div>
         <div className="app-topbar__center">
           <label className="toolbar-field toolbar-field--search app-topbar__search">
