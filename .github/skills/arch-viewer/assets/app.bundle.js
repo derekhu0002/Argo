@@ -24278,14 +24278,6 @@
       }
     };
   }
-  function InfoPair({ label, value }) {
-    return html`
-    <div className="info-pair">
-      <span>${label}</span>
-      <strong>${value}</strong>
-    </div>
-  `;
-  }
   function formatStructuredValue(value) {
     if (value === null || value === void 0 || value === "") {
       return "---";
@@ -24603,13 +24595,6 @@
             —
           </button>
           <button type="button" className="drawer-grip" aria-label="拖动详情抽屉">:::</button>
-        </div>
-      </div>
-      <div className="drawer-section">
-        <div className="info-grid">
-          <${InfoPair} label="当前字段数" value=${presentFields.length} />
-          <${InfoPair} label="必填字段数" value=${requiredFields.length} />
-          <${InfoPair} label="缺失必填" value=${missingFields.length} />
         </div>
       </div>
       <div className="drawer-section">
