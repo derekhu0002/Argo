@@ -37,10 +37,20 @@ const DRAWER_DEFAULT_WIDTH = 672;
 
 const CHANGE_TONE_NEW = 'new';
 const CHANGE_TONE_MODIFIED = 'modified';
+const CHANGE_TONE_DELETED = 'deleted';
 const EMPTY_CHANGE_SUMMARY = {
-  views: { new: [], modified: [] },
-  elements: { new: [], modified: [] },
-  relationships: { new: [], modified: [] },
+  views: { new: [], modified: [], deleted: [] },
+  elements: { new: [], modified: [], deleted: [] },
+  relationships: { new: [], modified: [], deleted: [] },
+  deletedObjects: {
+    views: [],
+    elements: [],
+    relationships: [],
+  },
+  deletedViewMembership: {
+    elements: {},
+    relationships: {},
+  },
 };
 
 function clamp(value, min, max) {
@@ -121,13 +131,36 @@ function normalizeChangeSummary(value) {
     return {
       new: new Set((group.new || []).map((id) => String(id))),
       modified: new Set((group.modified || []).map((id) => String(id))),
+      deleted: new Set((group.deleted || []).map((id) => String(id))),
     };
   };
+
+  const normalizeArrayById = (items, idField) => {
+    const map = new Map();
+    for (const item of items || []) {
+      const id = item?.[idField];
+      if (id !== undefined && id !== null) {
+        map.set(String(id), item);
+      }
+    }
+    return map;
+  };
+
+  const deletedViewMembership = source.deletedViewMembership || {};
 
   return {
     views: readGroup('views'),
     elements: readGroup('elements'),
     relationships: readGroup('relationships'),
+    deletedObjects: {
+      views: normalizeArrayById(source.deletedObjects?.views || [], 'view_id'),
+      elements: normalizeArrayById(source.deletedObjects?.elements || [], 'id'),
+      relationships: normalizeArrayById(source.deletedObjects?.relationships || [], 'id'),
+    },
+    deletedViewMembership: {
+      elements: new Map(Object.entries(deletedViewMembership.elements || {}).map(([viewId, ids]) => [String(viewId), new Set((ids || []).map((id) => String(id)))])),
+      relationships: new Map(Object.entries(deletedViewMembership.relationships || {}).map(([viewId, ids]) => [String(viewId), new Set((ids || []).map((id) => String(id)))])),
+    },
   };
 }
 
@@ -137,6 +170,9 @@ function pickChangeTone(primaryTone, secondaryTone) {
   }
   if (primaryTone === CHANGE_TONE_MODIFIED || secondaryTone === CHANGE_TONE_MODIFIED) {
     return CHANGE_TONE_MODIFIED;
+  }
+  if (primaryTone === CHANGE_TONE_DELETED || secondaryTone === CHANGE_TONE_DELETED) {
+    return CHANGE_TONE_DELETED;
   }
   return null;
 }
@@ -167,7 +203,81 @@ function getChangeTone(changeSummary, kind, id) {
   if (group.modified.has(key)) {
     return CHANGE_TONE_MODIFIED;
   }
+  if (group.deleted.has(key)) {
+    return CHANGE_TONE_DELETED;
+  }
   return null;
+}
+
+function toUniqueStringArray(values) {
+  return [...new Set((values || []).map((value) => String(value)))];
+}
+
+function buildAugmentedGraph(graph, changeSummary) {
+  const next = {
+    ...graph,
+    elements: [...(graph.elements || [])],
+    relationships: [...(graph.relationships || [])],
+    views: [...(graph.views || [])],
+  };
+
+  const elementById = new Map(next.elements.map((element) => [String(element.id), element]));
+  const relationshipById = new Map(next.relationships.map((relationship) => [String(relationship.id), relationship]));
+  const viewById = new Map(next.views.map((view) => [String(view.view_id), view]));
+
+  for (const [id, element] of changeSummary.deletedObjects.elements.entries()) {
+    if (!elementById.has(id)) {
+      next.elements.push(element);
+      elementById.set(id, element);
+    }
+  }
+
+  for (const [id, relationship] of changeSummary.deletedObjects.relationships.entries()) {
+    if (!relationshipById.has(id)) {
+      next.relationships.push(relationship);
+      relationshipById.set(id, relationship);
+    }
+  }
+
+  for (const [id, view] of changeSummary.deletedObjects.views.entries()) {
+    if (!viewById.has(id)) {
+      next.views.push(view);
+      viewById.set(id, view);
+    }
+  }
+
+  // Re-attach deleted memberships to current/deleted views so deleted items remain visible until committed.
+  next.views = next.views.map((view) => {
+    const viewId = String(view.view_id);
+    const deletedElements = changeSummary.deletedViewMembership.elements.get(viewId) || new Set();
+    const deletedRelationships = changeSummary.deletedViewMembership.relationships.get(viewId) || new Set();
+    const includedElements = toUniqueStringArray([...(view.included_elements || []), ...deletedElements]);
+    const includedRelationships = toUniqueStringArray([...(view.included_relationships || []), ...deletedRelationships]);
+    return {
+      ...view,
+      included_elements: includedElements,
+      included_relationships: includedRelationships,
+    };
+  });
+
+  // Ensure parent elements know their deleted subdiagram views so hierarchy can still resolve in browser tree.
+  const refreshedElementById = new Map(next.elements.map((element) => [String(element.id), element]));
+  for (const view of next.views) {
+    const parentElementId = view.parent_element_id;
+    if (!parentElementId) {
+      continue;
+    }
+    const parentElement = refreshedElementById.get(String(parentElementId));
+    if (!parentElement) {
+      continue;
+    }
+    const currentSubviews = parentElement.subdiagram_views || [];
+    if (!currentSubviews.some((subview) => String(subview.view_id) === String(view.view_id))) {
+      parentElement.subdiagram_views = [...currentSubviews, { view_id: view.view_id, view_name: view.view_name }];
+    }
+  }
+
+  return next;
 }
 
 function deriveElementChangeTone(element, changeSummary) {
@@ -570,6 +680,8 @@ function TreeNode({ node, depth, expandedIds, matchedKeys, selectedViewId, selec
     ? 'is-change-new'
     : node.changeTone === CHANGE_TONE_MODIFIED
       ? 'is-change-modified'
+      : node.changeTone === CHANGE_TONE_DELETED
+        ? 'is-change-deleted'
       : '';
   const iconClass = isRoot ? 'is-root' : isView ? 'is-view' : isRelationship ? 'is-relationship' : 'is-element';
 
@@ -915,6 +1027,8 @@ function EntityNode({ data }) {
     ? 'is-change-new'
     : data.changeTone === CHANGE_TONE_MODIFIED
       ? 'is-change-modified'
+      : data.changeTone === CHANGE_TONE_DELETED
+        ? 'is-change-deleted'
       : '';
   return html`
     <div
@@ -964,6 +1078,8 @@ function ContainerNode({ data }) {
     ? 'is-change-new'
     : data.changeTone === CHANGE_TONE_MODIFIED
       ? 'is-change-modified'
+      : data.changeTone === CHANGE_TONE_DELETED
+        ? 'is-change-deleted'
       : '';
   return html`
     <div
@@ -1142,7 +1258,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
 
   const edges = edgeDrafts.map((edge) => ({
     ...edge,
-    className: `${selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id) ? 'edge-dimmed' : ''} ${selectionGraph.highlightedEdges.has(edge.id) ? 'edge-highlighted' : ''} ${edge.data.changeTone === CHANGE_TONE_NEW ? 'edge-change-new' : ''} ${edge.data.changeTone === CHANGE_TONE_MODIFIED ? 'edge-change-modified' : ''}`.trim(),
+    className: `${selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id) ? 'edge-dimmed' : ''} ${selectionGraph.highlightedEdges.has(edge.id) ? 'edge-highlighted' : ''} ${edge.data.changeTone === CHANGE_TONE_NEW ? 'edge-change-new' : ''} ${edge.data.changeTone === CHANGE_TONE_MODIFIED ? 'edge-change-modified' : ''} ${edge.data.changeTone === CHANGE_TONE_DELETED ? 'edge-change-deleted' : ''}`.trim(),
     data: {
       ...edge.data,
       dimmed: selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id),
@@ -1720,8 +1836,8 @@ function App() {
       return;
     }
     setSelectedViewId(nextViewId);
-    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, nextViewId).map((viewId) => `view:${viewId}`)]));
-    setCollapsedIds(computeInitialCollapsedIds(graph, nextViewId));
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(effectiveGraph || graph, nextViewId).map((viewId) => `view:${viewId}`)]));
+    setCollapsedIds(computeInitialCollapsedIds(effectiveGraph || graph, nextViewId));
     setPositionOverrides(new Map());
     setSelection(null);
   };
@@ -1731,8 +1847,8 @@ function App() {
       return;
     }
     setSelectedViewId(viewId);
-    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
-    setCollapsedIds(computeExpandedElementIds(graph, viewId, elementId));
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(effectiveGraph || graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+    setCollapsedIds(computeExpandedElementIds(effectiveGraph || graph, viewId, elementId));
     setPositionOverrides(new Map());
     setSelection({ kind: 'node', id: elementId });
   };
@@ -1742,8 +1858,8 @@ function App() {
       return;
     }
     setSelectedViewId(viewId);
-    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
-    setCollapsedIds(computeInitialCollapsedIds(graph, viewId));
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(effectiveGraph || graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+    setCollapsedIds(computeInitialCollapsedIds(effectiveGraph || graph, viewId));
     setPositionOverrides(new Map());
     setSelection({ kind: 'edge', id: relationshipId });
   };
@@ -1817,14 +1933,21 @@ function App() {
     }
   };
 
-  const flowModel = useMemo(() => {
-    if (!graph || !schema) {
+  const effectiveGraph = useMemo(() => {
+    if (!graph) {
       return null;
     }
-    return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides, changeSummary);
-  }, [changeSummary, collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
+    return buildAugmentedGraph(graph, changeSummary);
+  }, [changeSummary, graph]);
 
-  const browserTree = useMemo(() => (graph ? buildViewBrowserItems(graph, changeSummary) : null), [changeSummary, graph]);
+  const flowModel = useMemo(() => {
+    if (!effectiveGraph || !schema) {
+      return null;
+    }
+    return buildFlowModel(effectiveGraph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides, changeSummary);
+  }, [changeSummary, collapsedIds, effectiveGraph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
+
+  const browserTree = useMemo(() => (effectiveGraph ? buildViewBrowserItems(effectiveGraph, changeSummary) : null), [changeSummary, effectiveGraph]);
   const browserSearchState = useMemo(() => buildBrowserSearchState(browserTree, search), [browserTree, search]);
 
   useEffect(() => {

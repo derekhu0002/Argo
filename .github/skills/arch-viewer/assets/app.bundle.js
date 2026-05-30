@@ -23417,10 +23417,20 @@
   var DRAWER_DEFAULT_WIDTH = 672;
   var CHANGE_TONE_NEW = "new";
   var CHANGE_TONE_MODIFIED = "modified";
+  var CHANGE_TONE_DELETED = "deleted";
   var EMPTY_CHANGE_SUMMARY = {
-    views: { new: [], modified: [] },
-    elements: { new: [], modified: [] },
-    relationships: { new: [], modified: [] }
+    views: { new: [], modified: [], deleted: [] },
+    elements: { new: [], modified: [], deleted: [] },
+    relationships: { new: [], modified: [], deleted: [] },
+    deletedObjects: {
+      views: [],
+      elements: [],
+      relationships: []
+    },
+    deletedViewMembership: {
+      elements: {},
+      relationships: {}
+    }
   };
   function clamp2(value, min, max) {
     return Math.min(Math.max(value, min), max);
@@ -23481,13 +23491,34 @@
       const group = source[groupName] || {};
       return {
         new: new Set((group.new || []).map((id2) => String(id2))),
-        modified: new Set((group.modified || []).map((id2) => String(id2)))
+        modified: new Set((group.modified || []).map((id2) => String(id2))),
+        deleted: new Set((group.deleted || []).map((id2) => String(id2)))
       };
     };
+    const normalizeArrayById = (items, idField) => {
+      const map = /* @__PURE__ */ new Map();
+      for (const item of items || []) {
+        const id2 = item?.[idField];
+        if (id2 !== void 0 && id2 !== null) {
+          map.set(String(id2), item);
+        }
+      }
+      return map;
+    };
+    const deletedViewMembership = source.deletedViewMembership || {};
     return {
       views: readGroup("views"),
       elements: readGroup("elements"),
-      relationships: readGroup("relationships")
+      relationships: readGroup("relationships"),
+      deletedObjects: {
+        views: normalizeArrayById(source.deletedObjects?.views || [], "view_id"),
+        elements: normalizeArrayById(source.deletedObjects?.elements || [], "id"),
+        relationships: normalizeArrayById(source.deletedObjects?.relationships || [], "id")
+      },
+      deletedViewMembership: {
+        elements: new Map(Object.entries(deletedViewMembership.elements || {}).map(([viewId, ids]) => [String(viewId), new Set((ids || []).map((id2) => String(id2)))])),
+        relationships: new Map(Object.entries(deletedViewMembership.relationships || {}).map(([viewId, ids]) => [String(viewId), new Set((ids || []).map((id2) => String(id2)))]))
+      }
     };
   }
   function pickChangeTone(primaryTone, secondaryTone) {
@@ -23496,6 +23527,9 @@
     }
     if (primaryTone === CHANGE_TONE_MODIFIED || secondaryTone === CHANGE_TONE_MODIFIED) {
       return CHANGE_TONE_MODIFIED;
+    }
+    if (primaryTone === CHANGE_TONE_DELETED || secondaryTone === CHANGE_TONE_DELETED) {
+      return CHANGE_TONE_DELETED;
     }
     return null;
   }
@@ -23524,7 +23558,70 @@
     if (group.modified.has(key)) {
       return CHANGE_TONE_MODIFIED;
     }
+    if (group.deleted.has(key)) {
+      return CHANGE_TONE_DELETED;
+    }
     return null;
+  }
+  function toUniqueStringArray(values) {
+    return [...new Set((values || []).map((value) => String(value)))];
+  }
+  function buildAugmentedGraph(graph, changeSummary) {
+    const next = {
+      ...graph,
+      elements: [...graph.elements || []],
+      relationships: [...graph.relationships || []],
+      views: [...graph.views || []]
+    };
+    const elementById = new Map(next.elements.map((element) => [String(element.id), element]));
+    const relationshipById = new Map(next.relationships.map((relationship) => [String(relationship.id), relationship]));
+    const viewById = new Map(next.views.map((view) => [String(view.view_id), view]));
+    for (const [id2, element] of changeSummary.deletedObjects.elements.entries()) {
+      if (!elementById.has(id2)) {
+        next.elements.push(element);
+        elementById.set(id2, element);
+      }
+    }
+    for (const [id2, relationship] of changeSummary.deletedObjects.relationships.entries()) {
+      if (!relationshipById.has(id2)) {
+        next.relationships.push(relationship);
+        relationshipById.set(id2, relationship);
+      }
+    }
+    for (const [id2, view] of changeSummary.deletedObjects.views.entries()) {
+      if (!viewById.has(id2)) {
+        next.views.push(view);
+        viewById.set(id2, view);
+      }
+    }
+    next.views = next.views.map((view) => {
+      const viewId = String(view.view_id);
+      const deletedElements = changeSummary.deletedViewMembership.elements.get(viewId) || /* @__PURE__ */ new Set();
+      const deletedRelationships = changeSummary.deletedViewMembership.relationships.get(viewId) || /* @__PURE__ */ new Set();
+      const includedElements = toUniqueStringArray([...view.included_elements || [], ...deletedElements]);
+      const includedRelationships = toUniqueStringArray([...view.included_relationships || [], ...deletedRelationships]);
+      return {
+        ...view,
+        included_elements: includedElements,
+        included_relationships: includedRelationships
+      };
+    });
+    const refreshedElementById = new Map(next.elements.map((element) => [String(element.id), element]));
+    for (const view of next.views) {
+      const parentElementId = view.parent_element_id;
+      if (!parentElementId) {
+        continue;
+      }
+      const parentElement = refreshedElementById.get(String(parentElementId));
+      if (!parentElement) {
+        continue;
+      }
+      const currentSubviews = parentElement.subdiagram_views || [];
+      if (!currentSubviews.some((subview) => String(subview.view_id) === String(view.view_id))) {
+        parentElement.subdiagram_views = [...currentSubviews, { view_id: view.view_id, view_name: view.view_name }];
+      }
+    }
+    return next;
   }
   function deriveElementChangeTone(element, changeSummary) {
     const elementTone = getChangeTone(changeSummary, "elements", element?.id);
@@ -23869,7 +23966,7 @@
     const isRelationship = node.kind === "relationship";
     const isActive = isView && selectedViewId === node.id || node.kind === "element" && selectedNodeId === node.id || isRelationship && selectedEdgeId === node.id;
     const isMatched = matchedKeys.has(node.key);
-    const changeClass = node.changeTone === CHANGE_TONE_NEW ? "is-change-new" : node.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : "";
+    const changeClass = node.changeTone === CHANGE_TONE_NEW ? "is-change-new" : node.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : node.changeTone === CHANGE_TONE_DELETED ? "is-change-deleted" : "";
     const iconClass = isRoot ? "is-root" : isView ? "is-view" : isRelationship ? "is-relationship" : "is-element";
     return html`
     <div className="tree-node" style=${{ "--tree-depth": depth }}>
@@ -24163,7 +24260,7 @@
   function EntityNode({ data }) {
     const targetPosition = data.direction === "LR" ? Position.Left : Position.Top;
     const sourcePosition = data.direction === "LR" ? Position.Right : Position.Bottom;
-    const changeClass = data.changeTone === CHANGE_TONE_NEW ? "is-change-new" : data.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : "";
+    const changeClass = data.changeTone === CHANGE_TONE_NEW ? "is-change-new" : data.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : data.changeTone === CHANGE_TONE_DELETED ? "is-change-deleted" : "";
     return html`
     <div
       className=${`flow-card ${data.variant} ${data.dimmed ? "is-dimmed" : ""} ${data.highlighted ? "is-highlighted" : ""} ${data.matched ? "is-matched" : ""} ${changeClass}`}
@@ -24207,7 +24304,7 @@
   function ContainerNode({ data }) {
     const targetPosition = data.direction === "LR" ? Position.Left : Position.Top;
     const sourcePosition = data.direction === "LR" ? Position.Right : Position.Bottom;
-    const changeClass = data.changeTone === CHANGE_TONE_NEW ? "is-change-new" : data.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : "";
+    const changeClass = data.changeTone === CHANGE_TONE_NEW ? "is-change-new" : data.changeTone === CHANGE_TONE_MODIFIED ? "is-change-modified" : data.changeTone === CHANGE_TONE_DELETED ? "is-change-deleted" : "";
     return html`
     <div
       className=${`flow-card flow-container ${data.dimmed ? "is-dimmed" : ""} ${data.highlighted ? "is-highlighted" : ""} ${data.matched ? "is-matched" : ""} ${changeClass}`}
@@ -24377,7 +24474,7 @@
     }));
     const edges = edgeDrafts.map((edge) => ({
       ...edge,
-      className: `${selected2?.kind === "node" && !selectionGraph.highlightedEdges.has(edge.id) ? "edge-dimmed" : ""} ${selectionGraph.highlightedEdges.has(edge.id) ? "edge-highlighted" : ""} ${edge.data.changeTone === CHANGE_TONE_NEW ? "edge-change-new" : ""} ${edge.data.changeTone === CHANGE_TONE_MODIFIED ? "edge-change-modified" : ""}`.trim(),
+      className: `${selected2?.kind === "node" && !selectionGraph.highlightedEdges.has(edge.id) ? "edge-dimmed" : ""} ${selectionGraph.highlightedEdges.has(edge.id) ? "edge-highlighted" : ""} ${edge.data.changeTone === CHANGE_TONE_NEW ? "edge-change-new" : ""} ${edge.data.changeTone === CHANGE_TONE_MODIFIED ? "edge-change-modified" : ""} ${edge.data.changeTone === CHANGE_TONE_DELETED ? "edge-change-deleted" : ""}`.trim(),
       data: {
         ...edge.data,
         dimmed: selected2?.kind === "node" && !selectionGraph.highlightedEdges.has(edge.id),
@@ -24892,8 +24989,8 @@
         return;
       }
       setSelectedViewId(nextViewId);
-      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(graph, nextViewId).map((viewId) => `view:${viewId}`)]));
-      setCollapsedIds(computeInitialCollapsedIds(graph, nextViewId));
+      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(effectiveGraph || graph, nextViewId).map((viewId) => `view:${viewId}`)]));
+      setCollapsedIds(computeInitialCollapsedIds(effectiveGraph || graph, nextViewId));
       setPositionOverrides(/* @__PURE__ */ new Map());
       setSelection(null);
     };
@@ -24902,8 +24999,8 @@
         return;
       }
       setSelectedViewId(viewId);
-      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
-      setCollapsedIds(computeExpandedElementIds(graph, viewId, elementId));
+      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(effectiveGraph || graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+      setCollapsedIds(computeExpandedElementIds(effectiveGraph || graph, viewId, elementId));
       setPositionOverrides(/* @__PURE__ */ new Map());
       setSelection({ kind: "node", id: elementId });
     };
@@ -24912,8 +25009,8 @@
         return;
       }
       setSelectedViewId(viewId);
-      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
-      setCollapsedIds(computeInitialCollapsedIds(graph, viewId));
+      setExpandedBrowserIds((current) => /* @__PURE__ */ new Set([...current, ...collectViewPathIds(effectiveGraph || graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+      setCollapsedIds(computeInitialCollapsedIds(effectiveGraph || graph, viewId));
       setPositionOverrides(/* @__PURE__ */ new Map());
       setSelection({ kind: "edge", id: relationshipId });
     };
@@ -24975,13 +25072,19 @@
         node.onpointerdown = isCompactLayout ? null : startLeftDockResize;
       }
     };
-    const flowModel = (0, import_react3.useMemo)(() => {
-      if (!graph || !schema) {
+    const effectiveGraph = (0, import_react3.useMemo)(() => {
+      if (!graph) {
         return null;
       }
-      return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection2, positionOverrides, changeSummary);
-    }, [changeSummary, collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection2]);
-    const browserTree = (0, import_react3.useMemo)(() => graph ? buildViewBrowserItems(graph, changeSummary) : null, [changeSummary, graph]);
+      return buildAugmentedGraph(graph, changeSummary);
+    }, [changeSummary, graph]);
+    const flowModel = (0, import_react3.useMemo)(() => {
+      if (!effectiveGraph || !schema) {
+        return null;
+      }
+      return buildFlowModel(effectiveGraph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection2, positionOverrides, changeSummary);
+    }, [changeSummary, collapsedIds, effectiveGraph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection2]);
+    const browserTree = (0, import_react3.useMemo)(() => effectiveGraph ? buildViewBrowserItems(effectiveGraph, changeSummary) : null, [changeSummary, effectiveGraph]);
     const browserSearchState = (0, import_react3.useMemo)(() => buildBrowserSearchState(browserTree, search), [browserTree, search]);
     (0, import_react3.useEffect)(() => {
       if (!flowModel || !selection2) {

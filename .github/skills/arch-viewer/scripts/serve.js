@@ -80,9 +80,18 @@ function readAsset(requestPath) {
 
 function emptyChangeSummary() {
   return {
-    views: { new: [], modified: [] },
-    elements: { new: [], modified: [] },
-    relationships: { new: [], modified: [] },
+    views: { new: [], modified: [], deleted: [] },
+    elements: { new: [], modified: [], deleted: [] },
+    relationships: { new: [], modified: [], deleted: [] },
+    deletedObjects: {
+      views: [],
+      elements: [],
+      relationships: [],
+    },
+    deletedViewMembership: {
+      elements: {},
+      relationships: {},
+    },
   };
 }
 
@@ -113,6 +122,7 @@ function diffEntityList(currentItems, baseItems, idField) {
   const baseById = indexById(baseItems, idField);
   const added = [];
   const modified = [];
+  const deleted = [];
 
   for (const [id, currentItem] of currentById.entries()) {
     const baseItem = baseById.get(id);
@@ -125,9 +135,52 @@ function diffEntityList(currentItems, baseItems, idField) {
     }
   }
 
+  for (const id of baseById.keys()) {
+    if (!currentById.has(id)) {
+      deleted.push(id);
+    }
+  }
+
   return {
     new: added,
     modified,
+    deleted,
+  };
+}
+
+function pickByIds(items, idField, ids) {
+  const idSet = new Set((ids || []).map((id) => String(id)));
+  if (idSet.size === 0) {
+    return [];
+  }
+  return (items || []).filter((item) => idSet.has(String(item?.[idField])));
+}
+
+function toUniqueArray(values) {
+  return [...new Set((values || []).map((value) => String(value)))];
+}
+
+function buildDeletedMembership(headGraph, summary) {
+  const deletedElementSet = new Set((summary.elements.deleted || []).map((id) => String(id)));
+  const deletedRelationshipSet = new Set((summary.relationships.deleted || []).map((id) => String(id)));
+  const elementByView = {};
+  const relationshipByView = {};
+
+  for (const view of headGraph.views || []) {
+    const viewId = String(view.view_id);
+    const deletedElements = (view.included_elements || []).filter((id) => deletedElementSet.has(String(id))).map((id) => String(id));
+    const deletedRelationships = (view.included_relationships || []).filter((id) => deletedRelationshipSet.has(String(id))).map((id) => String(id));
+    if (deletedElements.length > 0) {
+      elementByView[viewId] = toUniqueArray(deletedElements);
+    }
+    if (deletedRelationships.length > 0) {
+      relationshipByView[viewId] = toUniqueArray(deletedRelationships);
+    }
+  }
+
+  return {
+    elements: elementByView,
+    relationships: relationshipByView,
   };
 }
 
@@ -182,6 +235,10 @@ function computeChangeSummary() {
   summary.views = diffEntityList(currentGraph.views || [], headGraph.views || [], 'view_id');
   summary.elements = diffEntityList(currentGraph.elements || [], headGraph.elements || [], 'id');
   summary.relationships = diffEntityList(currentGraph.relationships || [], headGraph.relationships || [], 'id');
+  summary.deletedObjects.views = pickByIds(headGraph.views || [], 'view_id', summary.views.deleted);
+  summary.deletedObjects.elements = pickByIds(headGraph.elements || [], 'id', summary.elements.deleted);
+  summary.deletedObjects.relationships = pickByIds(headGraph.relationships || [], 'id', summary.relationships.deleted);
+  summary.deletedViewMembership = buildDeletedMembership(headGraph, summary);
   return summary;
 }
 
