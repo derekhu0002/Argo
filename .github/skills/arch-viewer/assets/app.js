@@ -1419,10 +1419,6 @@ function DetailsDrawer({ selection, flowModel, schema, anchorRef }) {
 function ViewBrowser({ tree, expandedIds, matchedKeys, selectedViewId, selectedNodeId, selectedEdgeId, onToggle, onSelectView, onSelectElement, onSelectRelationship }) {
   return html`
     <section className="sidebar-section sidebar-browser">
-      <div className="sidebar-browser__head">
-        <h3>视图浏览器</h3>
-        <p>目录支持展开或折叠。点击 View 切换画布，点击元素查看右侧详情。</p>
-      </div>
       <div className="tree-browser tree-scroll">
         <${TreeNode}
           node=${tree}
@@ -1808,22 +1804,6 @@ function App() {
               onSelectElement=${openElementFromBrowser}
               onSelectRelationship=${openRelationshipFromBrowser}
             />
-            <section className="sidebar-section sidebar-summary">
-              <h3>当前范围</h3>
-              <p>${scopedView ? compactText(scopedView.description || `当前聚焦于 ${scopedView.view_name}。`, 140) : '当前展示整个架构图。你可以切换到某个 Schema 视图来降低噪音，保持拓扑聚焦。'}</p>
-              <div className="token-row">
-                <span className="pill">${scopedView ? scopedView.view_name : structuralRoot?.view_name || '全部视图'}</span>
-                ${search ? html`<span className="pill pill-accent">命中 ${browserSearchState.matchedKeys.size} 项</span>` : null}
-              </div>
-            </section>
-            <section className="sidebar-section sidebar-summary">
-              <h3>校验</h3>
-              ${validationErrors.length === 0 ? html`<p className="validation-ok">当前未发现违反根 Schema 结构的错误。</p>` : html`
-                <div className="validation-list">
-                  ${validationErrors.map((message) => html`<div className="validation-item">${message}</div>`)}
-                </div>
-              `}
-            </section>
           </aside>
         </section>
 
