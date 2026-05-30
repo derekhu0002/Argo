@@ -1,706 +1,1392 @@
-'use strict';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import dagre from '@dagrejs/dagre';
+import htm from 'htm';
+import {
+  applyNodeChanges,
+  Background,
+  BackgroundVariant,
+  Controls,
+  Handle,
+  MarkerType,
+  MiniMap,
+  Position,
+  ReactFlow,
+  ReactFlowProvider,
+} from '@xyflow/react';
 
-(function () {
-  const state = {
-    schema: null,
-    data: null,
-    search: '',
-    selectedPath: 'root',
-    expandedPaths: new Set(['root']),
-    validationErrors: [],
-  };
+const html = htm.bind(React.createElement);
+const ROOT_PARENT_ID = '0';
+const ALL_VIEWS = '__all__';
+const ROOT_MARGIN = 48;
+const CONTAINER_PADDING_X = 28;
+const CONTAINER_PADDING_Y = 24;
+const CONTAINER_HEADER_HEIGHT = 86;
+const CONTAINER_MIN_WIDTH = 320;
+const CONTAINER_MIN_HEIGHT = 154;
+const LEAF_WIDTH = 252;
+const LEAF_HEIGHT = 108;
+const CONTAINER_COLLAPSED_HEIGHT = 126;
+function isObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
 
-  const app = document.getElementById('app');
-
-  function escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+function compactText(value, maxLength = 72) {
+  if (!value) {
+    return '';
   }
+  const text = String(value).replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
+}
 
-  function humanize(key) {
-    return String(key).replace(/_/g, ' ').replace(/\b\w/g, function (match) {
-      return match.toUpperCase();
-    });
-  }
+function normalizeText(value) {
+  return String(value || '').toLowerCase();
+}
 
-  function pathKey(parts) {
-    return parts.join('/');
-  }
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-  function isPlainObject(value) {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-  }
-
-  function resolveSchema(schema) {
-    if (!schema) {
-      return {};
-    }
-    if (!schema.$ref) {
-      return schema;
-    }
-    if (!state.schema || !schema.$ref.startsWith('#/')) {
-      return schema;
-    }
-    const parts = schema.$ref.slice(2).split('/');
-    let current = state.schema;
-    for (const part of parts) {
-      current = current ? current[part] : null;
-    }
-    return current || schema;
-  }
-
-  function inferSchema(schema, value) {
-    const resolved = resolveSchema(schema);
-    if (resolved && resolved.type) {
-      return resolved;
-    }
-    if (Array.isArray(value)) {
-      return Object.assign({}, resolved, { type: 'array' });
-    }
-    if (isPlainObject(value)) {
-      return Object.assign({}, resolved, { type: 'object' });
-    }
-    return Object.assign({}, resolved, { type: typeof value });
-  }
-
-  function getValueType(value, schema) {
-    const resolved = inferSchema(schema, value);
-    if (resolved.type) {
-      return resolved.type;
-    }
-    if (Array.isArray(value)) {
-      return 'array';
-    }
-    if (isPlainObject(value)) {
-      return 'object';
-    }
-    if (value === null) {
-      return 'null';
-    }
-    return typeof value;
-  }
-
-  function getObjectEntries(value, schema) {
-    const resolved = inferSchema(schema, value);
-    const keys = new Set();
-    const ordered = [];
-    const properties = resolved.properties || {};
-
-    Object.keys(properties).forEach(function (key) {
-      keys.add(key);
-      ordered.push(key);
-    });
-    Object.keys(value || {}).forEach(function (key) {
-      if (!keys.has(key)) {
-        ordered.push(key);
-      }
-    });
-
-    return ordered
-      .filter(function (key) {
-        return value && value[key] !== undefined;
-      })
-      .map(function (key) {
-        return {
-          key: key,
-          value: value[key],
-          schema: properties[key] || {},
-          required: Array.isArray(resolved.required) && resolved.required.indexOf(key) >= 0,
-        };
-      });
-  }
-
-  function getArrayItemSchema(schema, itemValue) {
-    const resolved = inferSchema(schema, []);
-    if (resolved.items) {
-      return resolveSchema(resolved.items);
-    }
-    if (isPlainObject(itemValue)) {
-      return { type: 'object' };
-    }
+function resolveSchema(schemaRoot, pointerOrSchema) {
+  if (!pointerOrSchema) {
     return {};
   }
-
-  function getNodeTitle(key, value, schema, isRoot) {
-    if (isRoot) {
-      return value && value.name ? value.name : 'SystemArchitecture.json';
-    }
-    if (Array.isArray(value)) {
-      return humanize(key);
-    }
-    if (isPlainObject(value)) {
-      const candidateKeys = ['name', 'title', 'view_name', 'statement', 'id', 'view_id', 'type'];
-      for (const candidate of candidateKeys) {
-        if (typeof value[candidate] === 'string' && value[candidate].trim()) {
-          return value[candidate];
-        }
-        if (typeof value[candidate] === 'number') {
-          return String(value[candidate]);
-        }
-      }
-      const resolved = inferSchema(schema, value);
-      const firstProperty = Object.keys(resolved.properties || {}).find(function (propertyKey) {
-        return typeof value[propertyKey] === 'string' && value[propertyKey].trim();
-      });
-      if (firstProperty) {
-        return value[firstProperty];
-      }
-    }
-    if (value === null) {
-      return humanize(key);
-    }
-    if (typeof value === 'string' && value.trim()) {
-      return value.length > 42 ? value.slice(0, 39) + '...' : value;
-    }
-    return humanize(key);
+  if (!pointerOrSchema.$ref) {
+    return pointerOrSchema;
   }
-
-  function getNodeSummary(value, schema) {
-    const type = getValueType(value, schema);
-    if (type === 'array') {
-      const count = Array.isArray(value) ? value.length : 0;
-      return count + ' item' + (count === 1 ? '' : 's');
-    }
-    if (type === 'object') {
-      const size = Object.keys(value || {}).length;
-      return size + ' field' + (size === 1 ? '' : 's');
-    }
-    if (type === 'string') {
-      return value.length > 160 ? value.slice(0, 157) + '...' : value;
-    }
-    if (value === null || value === undefined || value === '') {
-      return 'No value';
-    }
-    return String(value);
+  if (!schemaRoot || !pointerOrSchema.$ref.startsWith('#/')) {
+    return pointerOrSchema;
   }
+  return pointerOrSchema.$ref
+    .slice(2)
+    .split('/')
+    .reduce((current, segment) => current && current[segment], schemaRoot) || pointerOrSchema;
+}
 
-  function getTypePills(schema, value, required) {
-    const resolved = inferSchema(schema, value);
-    const pills = [];
-    pills.push('<span class="type-pill">' + escapeHtml(resolved.type || getValueType(value, schema)) + '</span>');
-    if (required) {
-      pills.push('<span class="required-pill">Required</span>');
+function findAttributeValue(attributes, names) {
+  const wanted = new Set((names || []).map((name) => String(name).toLowerCase()));
+  for (const attribute of attributes || []) {
+    if (wanted.has(String(attribute?.name || '').toLowerCase())) {
+      return attribute.value || attribute.content || attribute.description || '';
     }
-    if (Array.isArray(resolved.enum)) {
-      pills.push('<span class="enum-pill">' + resolved.enum.length + ' enum option' + (resolved.enum.length === 1 ? '' : 's') + '</span>');
-    }
-    if (Array.isArray(value)) {
-      pills.push('<span class="count-badge">' + value.length + ' item' + (value.length === 1 ? '' : 's') + '</span>');
-    }
-    if (isPlainObject(value)) {
-      pills.push('<span class="summary-pill">' + Object.keys(value).length + ' field' + (Object.keys(value).length === 1 ? '' : 's') + '</span>');
-    }
-    return pills.join('');
   }
+  return '';
+}
 
-  function formatValue(value) {
-    if (typeof value === 'string') {
-      return value;
-    }
-    return JSON.stringify(value, null, 2);
+function deriveStatus(element) {
+  const value = (element.status || findAttributeValue(element.attributes, ['health', 'health_status', 'runtime_status', 'state'])).toLowerCase();
+  if (!value) {
+    return { tone: 'neutral', label: '未知' };
   }
+  if (/healthy|running|ok|active|green|ready/.test(value)) {
+    return { tone: 'healthy', label: compactText(value, 22) };
+  }
+  if (/warning|degraded|pending|yellow|paused|warming/.test(value)) {
+    return { tone: 'warning', label: compactText(value, 22) };
+  }
+  if (/error|critical|red|failed|down|blocked/.test(value)) {
+    return { tone: 'critical', label: compactText(value, 22) };
+  }
+  return { tone: 'neutral', label: compactText(value, 22) };
+}
 
-  function countTopLevelSections(schema, data) {
-    return Object.keys((schema && schema.properties) || {}).map(function (key) {
-      const propertySchema = resolveSchema(schema.properties[key]);
-      const value = data ? data[key] : undefined;
-      const count = Array.isArray(value) ? value.length : isPlainObject(value) ? Object.keys(value).length : (value !== undefined && value !== null && value !== '' ? 1 : 0);
-      return {
-        key: key,
-        count: count,
-        type: propertySchema.type || getValueType(value, propertySchema),
-        description: propertySchema.description || '',
-      };
+function deriveVersion(element) {
+  return compactText(findAttributeValue(element.attributes, ['version', 'release', 'build', 'semver']), 24);
+}
+
+function getPalette(type, isContainer) {
+  const normalized = normalizeText(type);
+  const defaults = {
+    tint: '#b8aa8d',
+    border: '#c9bb9e',
+    surface: 'linear-gradient(180deg, rgba(255, 248, 233, 0.98), rgba(250, 241, 224, 0.96))',
+    accent: '#7e6841',
+    shadow: 'rgba(126, 104, 65, 0.12)',
+  };
+
+  const palettes = [
+    { test: /business|actor|role|process/, value: { tint: '#94b8c8', border: '#9fc3d3', surface: 'linear-gradient(180deg, rgba(234, 244, 249, 0.98), rgba(225, 238, 245, 0.96))', accent: '#4e6b79', shadow: 'rgba(78, 107, 121, 0.12)' } },
+    { test: /application|service|function|component|interface/, value: { tint: '#bcaed4', border: '#c5b6de', surface: 'linear-gradient(180deg, rgba(242, 235, 249, 0.98), rgba(233, 224, 244, 0.96))', accent: '#685977', shadow: 'rgba(104, 89, 119, 0.12)' } },
+    { test: /technology|node|device|system software|artifact|database/, value: { tint: '#d9c98e', border: '#e0ce8b', surface: 'linear-gradient(180deg, rgba(250, 244, 221, 0.98), rgba(245, 236, 203, 0.96))', accent: '#736335', shadow: 'rgba(115, 99, 53, 0.12)' } },
+    { test: /motivation|principle|constraint|assessment|goal|requirement/, value: { tint: '#b8cfab', border: '#c6dbba', surface: 'linear-gradient(180deg, rgba(240, 247, 235, 0.98), rgba(229, 240, 223, 0.96))', accent: '#5d7151', shadow: 'rgba(93, 113, 81, 0.12)' } },
+    { test: /implementation|project|work package|deliverable/, value: { tint: '#d9b8a8', border: '#e2c3b5', surface: 'linear-gradient(180deg, rgba(249, 239, 234, 0.98), rgba(244, 228, 220, 0.96))', accent: '#7a5d53', shadow: 'rgba(122, 93, 83, 0.12)' } },
+  ];
+
+  const matched = palettes.find((candidate) => candidate.test.test(normalized));
+  const palette = matched ? matched.value : defaults;
+  if (isContainer) {
+    return {
+      ...palette,
+      surface: `${palette.surface}, radial-gradient(circle at top right, ${palette.border}2a, transparent 42%)`,
+    };
+  }
+  return palette;
+}
+
+function classifyRelationship(relationship) {
+  const text = normalizeText(`${relationship?.name || ''} ${relationship?.statement || ''} ${relationship?.super_type || ''}`);
+  if (/trigger|flow|async|event|message/.test(text)) {
+    return { dash: '8 6', width: 1.8, animated: true, label: '异步', color: '#8e835f' };
+  }
+  if (/realize|implement|serve|composition|aggregation|assignment/.test(text)) {
+    return { dash: undefined, width: 2.6, animated: false, label: '强依赖', color: '#7a735f' };
+  }
+  if (/access|association|used by|read|write/.test(text)) {
+    return { dash: '4 5', width: 1.7, animated: false, label: '弱依赖', color: '#8a8376' };
+  }
+  return { dash: undefined, width: 2.1, animated: false, label: '关联', color: '#6f6758' };
+}
+
+function validateGraph(graph, schema) {
+  const errors = [];
+  const required = schema?.required || [];
+  for (const key of required) {
+    if (graph?.[key] === undefined) {
+      errors.push(`Missing required root field: ${key}`);
+    }
+  }
+  if (!Array.isArray(graph?.elements)) {
+    errors.push('elements must be an array');
+  }
+  if (!Array.isArray(graph?.relationships)) {
+    errors.push('relationships must be an array');
+  }
+  if (!Array.isArray(graph?.views)) {
+    errors.push('views must be an array');
+  }
+  const rootViews = (graph?.views || []).filter((view) => !view.parent_element_id);
+  if (rootViews.length !== 1) {
+    errors.push(`Expected exactly one structural root view, found ${rootViews.length}`);
+  }
+  return errors;
+}
+
+function resolveStructuralRootView(graph) {
+  const rootViews = (graph?.views || []).filter((view) => !view.parent_element_id);
+  return rootViews.length === 1 ? rootViews[0] : null;
+}
+
+function createIndexes(graph) {
+  const elementById = new Map();
+  const childrenByParent = new Map();
+  const parentById = new Map();
+  for (const element of graph.elements || []) {
+    elementById.set(element.id, element);
+    const parentId = element.parent || ROOT_PARENT_ID;
+    parentById.set(element.id, parentId);
+    if (!childrenByParent.has(parentId)) {
+      childrenByParent.set(parentId, []);
+    }
+    childrenByParent.get(parentId).push(element.id);
+  }
+  for (const ids of childrenByParent.values()) {
+    ids.sort((left, right) => {
+      const leftElement = elementById.get(left);
+      const rightElement = elementById.get(right);
+      return String(leftElement?.name || left).localeCompare(String(rightElement?.name || right), 'en');
     });
   }
+  return {
+    elementById,
+    childrenByParent,
+    parentById,
+    viewById: new Map((graph.views || []).map((view) => [view.view_id, view])),
+    relationshipById: new Map((graph.relationships || []).map((relationship) => [relationship.id, relationship])),
+  };
+}
 
-  function validateAgainstSchema(value, schema, path, errors) {
-    const resolved = inferSchema(schema, value);
-    const type = resolved.type;
-
-    if (type === 'object') {
-      if (!isPlainObject(value)) {
-        errors.push(path + ' should be an object');
-        return;
-      }
-      const required = resolved.required || [];
-      required.forEach(function (requiredKey) {
-        if (value[requiredKey] === undefined) {
-          errors.push(path + '.' + requiredKey + ' is required');
-        }
-      });
-      if (resolved.additionalProperties === false && resolved.properties) {
-        Object.keys(value).forEach(function (key) {
-          if (!Object.prototype.hasOwnProperty.call(resolved.properties, key)) {
-            errors.push(path + '.' + key + ' is not allowed by the schema');
-          }
-        });
-      }
-      getObjectEntries(value, resolved).forEach(function (entry) {
-        validateAgainstSchema(entry.value, entry.schema, path + '.' + entry.key, errors);
-      });
-      return;
-    }
-
-    if (type === 'array') {
-      if (!Array.isArray(value)) {
-        errors.push(path + ' should be an array');
-        return;
-      }
-      value.forEach(function (item, index) {
-        validateAgainstSchema(item, getArrayItemSchema(resolved, item), path + '[' + index + ']', errors);
-      });
-      return;
-    }
-
-    if (type === 'string' && typeof value !== 'string') {
-      errors.push(path + ' should be a string');
-    }
-    if (type === 'number' && typeof value !== 'number') {
-      errors.push(path + ' should be a number');
-    }
-    if (type === 'integer' && (!Number.isInteger(value))) {
-      errors.push(path + ' should be an integer');
-    }
-    if (type === 'boolean' && typeof value !== 'boolean') {
-      errors.push(path + ' should be a boolean');
-    }
-    if (Array.isArray(resolved.enum) && resolved.enum.indexOf(value) < 0) {
-      errors.push(path + ' should be one of [' + resolved.enum.join(', ') + ']');
-    }
-  }
-
-  function buildNode(pathParts, key, value, schema, required, isRoot) {
-    const path = pathKey(pathParts);
-    const resolved = inferSchema(schema, value);
-    const type = getValueType(value, resolved);
-    const children = [];
-
-    if (type === 'object' && isPlainObject(value)) {
-      getObjectEntries(value, resolved).forEach(function (entry) {
-        children.push(buildNode(pathParts.concat(entry.key), entry.key, entry.value, entry.schema, entry.required, false));
-      });
-    } else if (type === 'array' && Array.isArray(value)) {
-      value.forEach(function (item, index) {
-        children.push(buildNode(pathParts.concat(String(index)), String(index), item, getArrayItemSchema(resolved, item), false, false));
-      });
-    }
-
+function buildScope(indexes, selectedViewId) {
+  if (!selectedViewId || selectedViewId === ALL_VIEWS) {
     return {
-      path: path,
-      key: key,
-      title: getNodeTitle(key, value, resolved, isRoot),
-      summary: getNodeSummary(value, resolved),
-      type: type,
-      value: value,
-      schema: resolved,
-      required: required,
-      children: children,
-      isRoot: isRoot,
+      scopeView: null,
+      allowedElementIds: new Set(indexes.elementById.keys()),
+      allowedRelationshipIds: new Set(indexes.relationshipById.keys()),
+    };
+  }
+  const scopeView = indexes.viewById.get(selectedViewId);
+  if (!scopeView) {
+    return {
+      scopeView: null,
+      allowedElementIds: new Set(indexes.elementById.keys()),
+      allowedRelationshipIds: new Set(indexes.relationshipById.keys()),
     };
   }
 
-  function queryMatchesNode(node, query) {
-    if (!query) {
-      return true;
-    }
-    const haystacks = [
-      node.title,
-      node.key,
-      node.summary,
-      node.schema && node.schema.description,
-      typeof node.value === 'string' ? node.value : '',
-      typeof node.value === 'number' ? String(node.value) : '',
-      typeof node.value === 'boolean' ? String(node.value) : '',
-    ].filter(Boolean).join(' ').toLowerCase();
+  const allowedElementIds = new Set(scopeView.included_elements || []);
 
-    if (haystacks.indexOf(query) >= 0) {
-      return true;
-    }
-    return node.children.some(function (child) {
-      return queryMatchesNode(child, query);
-    });
+  return {
+    scopeView,
+    allowedElementIds,
+    allowedRelationshipIds: new Set(scopeView.included_relationships || []),
+  };
+}
+
+function computeInitialCollapsedIds(graph, selectedViewId) {
+  if (!graph) {
+    return new Set();
   }
 
-  function nodeHasDirectMatch(node, query) {
-    if (!query) {
-      return false;
+  const indexes = createIndexes(graph);
+  const scope = buildScope(indexes, selectedViewId);
+  const collapsed = new Set();
+
+  for (const elementId of scope.allowedElementIds) {
+    const childIds = (indexes.childrenByParent.get(elementId) || []).filter((childId) => scope.allowedElementIds.has(childId));
+    if (childIds.length > 0) {
+      collapsed.add(elementId);
     }
-    const haystacks = [
-      node.title,
-      node.key,
-      node.summary,
-      node.schema && node.schema.description,
-      typeof node.value === 'string' ? node.value : '',
-    ].filter(Boolean).join(' ').toLowerCase();
-    return haystacks.indexOf(query) >= 0;
   }
 
-  function findNode(node, targetPath) {
-    if (node.path === targetPath) {
-      return node;
-    }
-    for (const child of node.children) {
-      const result = findNode(child, targetPath);
-      if (result) {
-        return result;
-      }
-    }
+  return collapsed;
+}
+
+function findParentViewId(graph, viewId) {
+  if (!graph || !viewId || viewId === ALL_VIEWS) {
     return null;
   }
 
-  function countVisibleNodes(node, query) {
-    if (!query) {
-      return countAllNodes(node);
+  const currentView = (graph.views || []).find((view) => view.view_id === viewId);
+  if (!currentView?.parent_element_id) {
+    return null;
+  }
+
+  const parentView = (graph.views || []).find((view) =>
+    Array.isArray(view.included_elements) && view.included_elements.includes(currentView.parent_element_id));
+
+  return parentView?.view_id || null;
+}
+
+function collectViewPathIds(graph, viewId) {
+  if (!graph || !viewId || viewId === ALL_VIEWS) {
+    return [];
+  }
+
+  const path = [];
+  let currentViewId = viewId;
+  while (currentViewId) {
+    path.unshift(currentViewId);
+    currentViewId = findParentViewId(graph, currentViewId);
+  }
+  return path;
+}
+
+function computeExpandedElementIds(graph, viewId, elementId) {
+  const collapsed = computeInitialCollapsedIds(graph, viewId);
+  const indexes = createIndexes(graph);
+  let current = indexes.parentById.get(elementId);
+  while (current && current !== ROOT_PARENT_ID) {
+    collapsed.delete(current);
+    current = indexes.parentById.get(current);
+  }
+  return collapsed;
+}
+
+function buildViewBrowserItems(graph) {
+  const rootView = resolveStructuralRootView(graph);
+  if (!rootView) {
+    return null;
+  }
+
+  const indexes = createIndexes(graph);
+  const childViewsByParent = new Map();
+  for (const view of graph.views || []) {
+    const parentViewId = findParentViewId(graph, view.view_id);
+    if (!parentViewId) {
+      continue;
     }
-    if (!queryMatchesNode(node, query)) {
-      return 0;
+    if (!childViewsByParent.has(parentViewId)) {
+      childViewsByParent.set(parentViewId, []);
     }
-    return 1 + node.children.reduce(function (sum, child) {
-      return sum + countVisibleNodes(child, query);
-    }, 0);
+    childViewsByParent.get(parentViewId).push(view);
   }
 
-  function countAllNodes(node) {
-    return 1 + node.children.reduce(function (sum, child) {
-      return sum + countAllNodes(child);
-    }, 0);
+  for (const siblings of childViewsByParent.values()) {
+    siblings.sort((left, right) => String(left.view_name || left.view_id).localeCompare(String(right.view_name || right.view_id), 'en'));
   }
 
-  function renderOutline(sections) {
-    return sections.map(function (section) {
-      const path = 'root/' + section.key;
-      const isActive = state.selectedPath === path;
-      return '' +
-        '<button class="outline-item' + (isActive ? ' active' : '') + '" data-action="select" data-path="' + escapeHtml(path) + '">' +
-          '<span class="outline-meta">' +
-            '<span class="outline-name">' + escapeHtml(humanize(section.key)) + '</span>' +
-            '<span class="outline-desc">' + escapeHtml(section.description || 'Schema-defined section') + '</span>' +
-          '</span>' +
-          '<span class="count-badge">' + escapeHtml(section.type) + ' · ' + escapeHtml(section.count) + '</span>' +
-        '</button>';
-    }).join('');
+  function buildElementNodes(view) {
+    const includedSet = new Set(view.included_elements || []);
+    const topLevelIds = [...includedSet].filter((elementId) => {
+      const parentId = indexes.parentById.get(elementId);
+      return !parentId || parentId === ROOT_PARENT_ID || !includedSet.has(parentId);
+    });
+
+    const visitElement = (elementId) => {
+      const element = indexes.elementById.get(elementId);
+      const childIds = (indexes.childrenByParent.get(elementId) || []).filter((childId) => includedSet.has(childId));
+      return {
+        kind: 'element',
+        key: `element:${elementId}`,
+        id: elementId,
+        viewId: view.view_id,
+        label: element?.name || elementId,
+        meta: element?.type || 'element',
+        children: childIds.map(visitElement),
+      };
+    };
+
+    topLevelIds.sort((left, right) => String(indexes.elementById.get(left)?.name || left).localeCompare(String(indexes.elementById.get(right)?.name || right), 'en'));
+    return topLevelIds.map(visitElement);
   }
 
-  function renderNode(node, depth, query) {
-    if (query && !queryMatchesNode(node, query)) {
-      return '';
+  function visit(view) {
+    const childViews = (childViewsByParent.get(view.view_id) || []).map(visit);
+    const elementNodes = buildElementNodes(view);
+    return {
+      kind: 'view',
+      key: `view:${view.view_id}`,
+      id: view.view_id,
+      label: view.view_name,
+      meta: `${(view.included_elements || []).length} 个元素 · ${(view.included_relationships || []).length} 条关系`,
+      children: [...childViews, ...elementNodes],
+      initiallyExpanded: view.view_id === rootView.view_id,
+    };
+  }
+
+  return {
+    kind: 'root',
+    key: 'root:system',
+    label: graph.name || 'System',
+    children: [visit(rootView)],
+  };
+}
+
+function TreeNode({ node, depth, expandedIds, selectedViewId, selectedNodeId, onToggle, onSelectView, onSelectElement }) {
+  const isBranch = (node.children || []).length > 0;
+  const isExpanded = expandedIds.has(node.key);
+  const isView = node.kind === 'view';
+  const isRoot = node.kind === 'root';
+  const isActive = (isView && selectedViewId === node.id) || (node.kind === 'element' && selectedNodeId === node.id);
+  const iconClass = isRoot ? 'is-root' : isView ? 'is-view' : 'is-element';
+
+  return html`
+    <div className="tree-node" style=${{ '--tree-depth': depth }}>
+      <div className=${`tree-node__row ${isActive ? 'is-active' : ''}`}>
+        ${isBranch ? html`
+          <button
+            type="button"
+            className="tree-node__toggle"
+            aria-label=${isExpanded ? '折叠节点' : '展开节点'}
+            onClick=${() => onToggle(node.key)}
+          >
+            ${isExpanded ? '▾' : '▸'}
+          </button>
+        ` : html`<span className="tree-node__toggle tree-node__toggle--placeholder"></span>`}
+        <button
+          type="button"
+          className="tree-node__label"
+          onClick=${() => {
+            if (node.kind === 'view') {
+              onSelectView(node.id);
+            } else if (node.kind === 'element') {
+              onSelectElement(node.viewId, node.id);
+            }
+          }}
+        >
+          <span className=${`tree-node__icon ${iconClass}`}></span>
+          <span className="tree-node__text">
+            <strong>${node.label}</strong>
+            ${node.meta ? html`<span>${node.meta}</span>` : null}
+          </span>
+        </button>
+      </div>
+      ${isBranch && isExpanded ? html`
+        <div className="tree-node__children">
+          ${(node.children || []).map((child) => html`
+            <${TreeNode}
+              key=${child.key}
+              node=${child}
+              depth=${depth + 1}
+              expandedIds=${expandedIds}
+              selectedViewId=${selectedViewId}
+              selectedNodeId=${selectedNodeId}
+              onToggle=${onToggle}
+              onSelectView=${onSelectView}
+              onSelectElement=${onSelectElement}
+            />
+          `)}
+        </div>
+      ` : null}
+    </div>
+  `;
+}
+
+function buildMatchSet(indexes, scope, search) {
+  const query = normalizeText(search).trim();
+  if (!query) {
+    return new Set();
+  }
+  const matches = new Set();
+  for (const elementId of scope.allowedElementIds) {
+    const element = indexes.elementById.get(elementId);
+    const haystack = normalizeText([
+      element?.name,
+      element?.type,
+      element?.alias,
+      element?.description,
+      element?.status,
+      deriveVersion(element),
+      ...(element?.attributes || []).map((attribute) => `${attribute.name} ${attribute.description || ''} ${attribute.value || ''} ${attribute.content || ''}`),
+    ].join(' '));
+    if (haystack.includes(query)) {
+      matches.add(elementId);
     }
-
-    const isSelected = state.selectedPath === node.path;
-    const directMatch = nodeHasDirectMatch(node, query);
-    const isExpandable = node.children.length > 0;
-    const isExpanded = isExpandable && (state.expandedPaths.has(node.path) || (query && node.children.some(function (child) {
-      return queryMatchesNode(child, query);
-    })));
-
-    const preview = (node.type === 'object' || node.type === 'array')
-      ? ''
-      : '<div class="value-preview">' + escapeHtml(formatValue(node.value)) + '</div>';
-
-    const controls = isExpandable
-      ? '<div class="node-controls"><button class="node-toggle" data-action="toggle" data-path="' + escapeHtml(node.path) + '">' + (isExpanded ? 'Collapse' : 'Expand') + ' branch</button></div>'
-      : '';
-
-    const children = isExpandable && isExpanded
-      ? '<div class="node-children"><div class="children-grid">' + node.children.map(function (child) {
-          return '<div class="tree-branch">' + renderNode(child, depth + 1, query) + '</div>';
-        }).join('') + '</div></div>'
-      : '';
-
-    return '' +
-      '<div class="tree-node">' +
-        '<button class="node-card' + (isSelected ? ' selected' : '') + (directMatch ? ' match' : '') + '" data-action="select" data-path="' + escapeHtml(node.path) + '">' +
-          '<div class="node-head">' +
-            '<div class="node-title-wrap">' +
-              '<div class="node-kicker">' + escapeHtml(node.isRoot ? 'Document root' : humanize(node.key)) + '</div>' +
-              '<h3 class="node-title">' + escapeHtml(node.title) + '</h3>' +
-            '</div>' +
-          '</div>' +
-          '<div class="node-summary">' + escapeHtml(node.summary || 'No summary available') + '</div>' +
-          '<div class="node-meta">' + getTypePills(node.schema, node.value, node.required) + '</div>' +
-          preview +
-        '</button>' +
-        controls +
-        children +
-      '</div>';
   }
+  return matches;
+}
 
-  function renderInspector(node) {
-    if (!node) {
-      return '' +
-        '<div class="inspector-card">' +
-          '<h3>No node selected</h3>' +
-          '<div class="inspector-subtitle">Pick a branch from the layered tree to inspect its schema shape and raw value.</div>' +
-        '</div>';
+function createDescendantsResolver(indexes, scope) {
+  const memo = new Map();
+  function resolve(elementId) {
+    if (memo.has(elementId)) {
+      return memo.get(elementId);
     }
-
-    const resolved = inferSchema(node.schema, node.value);
-    const description = resolved.description || (node.isRoot ? 'Schema-driven root summary.' : 'Schema-defined node.');
-    const entries = isPlainObject(node.value)
-      ? getObjectEntries(node.value, resolved).map(function (entry) {
-          return '' +
-            '<div class="field-card">' +
-              '<div class="field-name">' + escapeHtml(humanize(entry.key)) + '</div>' +
-              '<div class="field-badges">' + getTypePills(entry.schema, entry.value, entry.required) + '</div>' +
-              '<div class="field-preview">' + escapeHtml(getNodeSummary(entry.value, entry.schema)) + '</div>' +
-            '</div>';
-        }).join('')
-      : '';
-
-    return '' +
-      '<div class="inspector-card">' +
-        '<h3>' + escapeHtml(node.title) + '</h3>' +
-        '<div class="inspector-subtitle">' + escapeHtml(description) + '</div>' +
-        '<div class="inspector-meta">' + getTypePills(resolved, node.value, node.required) + '<span class="summary-pill">' + escapeHtml(node.path) + '</span></div>' +
-        '<div class="inspector-raw"><pre class="mono-box">' + escapeHtml(formatValue(node.value)) + '</pre></div>' +
-      '</div>' +
-      (entries
-        ? '<div class="inspector-card"><h3>Immediate fields</h3><div class="field-grid">' + entries + '</div></div>'
-        : '') +
-      (Array.isArray(node.value)
-        ? '<div class="inspector-card"><h3>Array shape</h3><div class="inspector-subtitle">Items inherit their visuals from the schema item definition and stay collapsed until opened from the tree.</div></div>'
-        : '');
-  }
-
-  function renderValidation(errors) {
-    if (!errors.length) {
-      return '' +
-        '<div class="validation-card">' +
-          '<h3>Validation</h3>' +
-          '<div class="ok-item">Schema-required fields and simple type checks passed.</div>' +
-        '</div>';
-    }
-    return '' +
-      '<div class="validation-card">' +
-        '<h3>Validation issues</h3>' +
-        '<div class="error-list">' + errors.slice(0, 20).map(function (error) {
-          return '<div class="error-item">' + escapeHtml(error) + '</div>';
-        }).join('') + '</div>' +
-        (errors.length > 20 ? '<div class="muted" style="margin-top:10px">Showing first 20 of ' + errors.length + ' issues.</div>' : '') +
-      '</div>';
-  }
-
-  function getCrumbs(path) {
-    return path.split('/').map(function (part, index, parts) {
-      if (index === 0) {
-        return 'Root';
+    const descendants = new Set([elementId]);
+    for (const childId of indexes.childrenByParent.get(elementId) || []) {
+      if (!scope.allowedElementIds.has(childId)) {
+        continue;
       }
-      return /^[0-9]+$/.test(part) ? 'Item ' + part : humanize(part);
+      for (const descendant of resolve(childId)) {
+        descendants.add(descendant);
+      }
+    }
+    memo.set(elementId, descendants);
+    return descendants;
+  }
+  return resolve;
+}
+
+function computeForcedOpen(indexes, matchedIds) {
+  const forced = new Set();
+  for (const elementId of matchedIds) {
+    let current = indexes.parentById.get(elementId);
+    while (current && current !== ROOT_PARENT_ID) {
+      forced.add(current);
+      current = indexes.parentById.get(current);
+    }
+  }
+  return forced;
+}
+
+function computeHiddenIds(indexes, scope, collapsedSet, forcedOpen) {
+  const hidden = new Set();
+  const visit = (elementId) => {
+    for (const childId of indexes.childrenByParent.get(elementId) || []) {
+      if (!scope.allowedElementIds.has(childId)) {
+        continue;
+      }
+      hidden.add(childId);
+      visit(childId);
+    }
+  };
+
+  for (const elementId of collapsedSet) {
+    if (!forcedOpen.has(elementId) && scope.allowedElementIds.has(elementId)) {
+      visit(elementId);
+    }
+  }
+  return hidden;
+}
+
+function resolveVisibleEndpoint(indexes, visibleIds, elementId) {
+  let current = elementId;
+  while (current && current !== ROOT_PARENT_ID) {
+    if (visibleIds.has(current)) {
+      return current;
+    }
+    current = indexes.parentById.get(current);
+  }
+  return null;
+}
+
+function firstBranchUnderParent(indexes, ancestorId, elementId) {
+  let current = elementId;
+  let previous = null;
+  while (current && current !== ROOT_PARENT_ID) {
+    const parentId = indexes.parentById.get(current);
+    if (parentId === ancestorId) {
+      return current;
+    }
+    previous = current;
+    current = parentId;
+  }
+  return previous;
+}
+
+function measureTree(indexes, scope, visibleIds, collapsedSet, layoutDirection) {
+  const branchEdgesCache = new Map();
+
+  function buildSiblingEdges(parentId, childIds) {
+    const cacheKey = `${parentId}:${childIds.join(',')}`;
+    if (branchEdgesCache.has(cacheKey)) {
+      return branchEdgesCache.get(cacheKey);
+    }
+    const childSet = new Set(childIds);
+    const edges = [];
+    const seen = new Set();
+    for (const relationshipId of scope.allowedRelationshipIds) {
+      const relationship = indexes.relationshipById.get(relationshipId);
+      if (!relationship) {
+        continue;
+      }
+      const sourceBranch = firstBranchUnderParent(indexes, parentId, resolveVisibleEndpoint(indexes, visibleIds, relationship.source_id));
+      const targetBranch = firstBranchUnderParent(indexes, parentId, resolveVisibleEndpoint(indexes, visibleIds, relationship.target_id));
+      if (!sourceBranch || !targetBranch || sourceBranch === targetBranch || !childSet.has(sourceBranch) || !childSet.has(targetBranch)) {
+        continue;
+      }
+      const key = `${sourceBranch}->${targetBranch}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      edges.push({ source: sourceBranch, target: targetBranch });
+    }
+    branchEdgesCache.set(cacheKey, edges);
+    return edges;
+  }
+
+  function measureElement(elementId, depth) {
+    const childIds = (indexes.childrenByParent.get(elementId) || []).filter((childId) => scope.allowedElementIds.has(childId) && visibleIds.has(childId));
+    const collapsed = collapsedSet.has(elementId);
+    const hasChildren = childIds.length > 0;
+
+    if (!hasChildren || collapsed) {
+      return {
+        width: hasChildren ? CONTAINER_MIN_WIDTH : LEAF_WIDTH,
+        height: hasChildren ? CONTAINER_COLLAPSED_HEIGHT : LEAF_HEIGHT,
+        placements: [],
+      };
+    }
+
+    const childMeasures = new Map(childIds.map((childId) => [childId, measureElement(childId, depth + 1)]));
+    const graph = new dagre.graphlib.Graph();
+    graph.setGraph({ rankdir: depth === 0 ? layoutDirection : 'TB', nodesep: 42, ranksep: 72, marginx: 0, marginy: 0 });
+    graph.setDefaultEdgeLabel(() => ({}));
+
+    for (const childId of childIds) {
+      const childMeasure = childMeasures.get(childId);
+      graph.setNode(childId, { width: childMeasure.width, height: childMeasure.height });
+    }
+    for (const edge of buildSiblingEdges(elementId, childIds)) {
+      graph.setEdge(edge.source, edge.target);
+    }
+
+    dagre.layout(graph);
+
+    let maxRight = 0;
+    let maxBottom = 0;
+    const placements = childIds.map((childId) => {
+      const node = graph.node(childId);
+      const childMeasure = childMeasures.get(childId);
+      const x = Math.max(0, node.x - (childMeasure.width / 2));
+      const y = Math.max(0, node.y - (childMeasure.height / 2));
+      maxRight = Math.max(maxRight, x + childMeasure.width);
+      maxBottom = Math.max(maxBottom, y + childMeasure.height);
+      return {
+        id: childId,
+        x,
+        y,
+        measure: childMeasure,
+      };
+    });
+
+    return {
+      width: Math.max(CONTAINER_MIN_WIDTH, maxRight + (CONTAINER_PADDING_X * 2)),
+      height: Math.max(CONTAINER_MIN_HEIGHT, CONTAINER_HEADER_HEIGHT + maxBottom + CONTAINER_PADDING_Y),
+      placements,
+    };
+  }
+
+  const rootIds = [...scope.allowedElementIds].filter((elementId) => {
+    if (!visibleIds.has(elementId)) {
+      return false;
+    }
+    const parentId = indexes.parentById.get(elementId);
+    return !parentId || parentId === ROOT_PARENT_ID || !scope.allowedElementIds.has(parentId);
+  });
+  const rootGraph = new dagre.graphlib.Graph();
+  rootGraph.setGraph({ rankdir: layoutDirection, nodesep: 56, ranksep: 90, marginx: 0, marginy: 0 });
+  rootGraph.setDefaultEdgeLabel(() => ({}));
+
+  const rootMeasures = new Map(rootIds.map((elementId) => [elementId, measureElement(elementId, 0)]));
+  for (const elementId of rootIds) {
+    const measure = rootMeasures.get(elementId);
+    rootGraph.setNode(elementId, { width: measure.width, height: measure.height });
+  }
+
+  for (const relationshipId of scope.allowedRelationshipIds) {
+    const relationship = indexes.relationshipById.get(relationshipId);
+    if (!relationship) {
+      continue;
+    }
+    const source = resolveVisibleEndpoint(indexes, visibleIds, relationship.source_id);
+    const target = resolveVisibleEndpoint(indexes, visibleIds, relationship.target_id);
+    if (!source || !target || source === target || !rootMeasures.has(source) || !rootMeasures.has(target)) {
+      continue;
+    }
+    rootGraph.setEdge(source, target);
+  }
+
+  dagre.layout(rootGraph);
+
+  const layout = new Map();
+  let maxRootRight = 0;
+  let maxRootBottom = 0;
+
+  function writePlacement(elementId, measure, position, parentId) {
+    layout.set(elementId, {
+      id: elementId,
+      parentId,
+      x: position.x,
+      y: position.y,
+      width: measure.width,
+      height: measure.height,
+    });
+    for (const placement of measure.placements) {
+      writePlacement(
+        placement.id,
+        placement.measure,
+        {
+          x: placement.x + CONTAINER_PADDING_X,
+          y: placement.y + CONTAINER_HEADER_HEIGHT,
+        },
+        elementId,
+      );
+    }
+  }
+
+  for (const elementId of rootIds) {
+    const node = rootGraph.node(elementId);
+    const measure = rootMeasures.get(elementId);
+    const x = ROOT_MARGIN + node.x - (measure.width / 2);
+    const y = ROOT_MARGIN + node.y - (measure.height / 2);
+    maxRootRight = Math.max(maxRootRight, x + measure.width);
+    maxRootBottom = Math.max(maxRootBottom, y + measure.height);
+    writePlacement(elementId, measure, { x, y }, undefined);
+  }
+
+  return {
+    layout,
+    canvasWidth: maxRootRight + ROOT_MARGIN,
+    canvasHeight: maxRootBottom + ROOT_MARGIN,
+    rootIds,
+  };
+}
+
+function deriveSelectionGraph(nodes, edges, selected) {
+  const directNeighbors = new Set();
+  const highlightedEdges = new Set();
+  if (!selected || selected.kind !== 'node') {
+    return { directNeighbors, highlightedEdges };
+  }
+  for (const edge of edges) {
+    if (edge.source === selected.id || edge.target === selected.id) {
+      highlightedEdges.add(edge.id);
+      directNeighbors.add(edge.source);
+      directNeighbors.add(edge.target);
+    }
+  }
+  return { directNeighbors, highlightedEdges };
+}
+
+function EntityNode({ data }) {
+  const targetPosition = data.direction === 'LR' ? Position.Left : Position.Top;
+  const sourcePosition = data.direction === 'LR' ? Position.Right : Position.Bottom;
+  return html`
+    <div
+      className=${`flow-card ${data.variant} ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''}`}
+      style=${{
+        '--node-border': data.palette.border,
+        '--node-accent': data.palette.accent,
+        '--node-shadow': data.palette.shadow,
+        '--node-surface': data.palette.surface,
+      }}
+      title=${data.tooltip}
+    >
+      <${Handle} type="target" position=${targetPosition} className="flow-handle" />
+      <div className="flow-card__topline">
+        <span className="flow-card__type">${data.element.type}</span>
+        <span className=${`status-dot status-${data.status.tone}`} title=${data.status.label}></span>
+      </div>
+      <strong className="flow-card__title">${data.element.name}</strong>
+      <div className="flow-card__meta">
+        ${data.version ? html`<span className="flow-chip">${data.version}</span>` : null}
+        ${data.subviewCount ? html`<span className="flow-chip">${data.subviewCount} 个视图</span>` : null}
+      </div>
+      ${data.primarySubviewId ? html`
+        <div className="flow-action-row">
+          <button
+            type="button"
+            className="node-action nodrag nopan"
+            onClick=${(event) => {
+              event.stopPropagation();
+              data.onOpenSubview(data.primarySubviewId);
+            }}
+          >
+            进入下级视图
+          </button>
+        </div>
+      ` : null}
+      <p className="flow-card__copy">${data.description}</p>
+      <${Handle} type="source" position=${sourcePosition} className="flow-handle" />
+    </div>
+  `;
+}
+
+function ContainerNode({ data }) {
+  const targetPosition = data.direction === 'LR' ? Position.Left : Position.Top;
+  const sourcePosition = data.direction === 'LR' ? Position.Right : Position.Bottom;
+  return html`
+    <div
+      className=${`flow-card flow-container ${data.dimmed ? 'is-dimmed' : ''} ${data.highlighted ? 'is-highlighted' : ''} ${data.matched ? 'is-matched' : ''}`}
+      style=${{
+        '--node-border': data.palette.border,
+        '--node-accent': data.palette.accent,
+        '--node-shadow': data.palette.shadow,
+        '--node-surface': data.palette.surface,
+      }}
+      title=${data.tooltip}
+    >
+      <${Handle} type="target" position=${targetPosition} className="flow-handle" />
+      <div className="flow-container__header">
+        <div>
+          <div className="flow-card__topline">
+            <span className="flow-card__type">${data.element.type}</span>
+            <span className=${`status-dot status-${data.status.tone}`} title=${data.status.label}></span>
+          </div>
+          <strong className="flow-card__title">${data.element.name}</strong>
+          <div className="flow-card__meta">
+            <span className="flow-chip">${data.childCount} 个子节点</span>
+            ${data.version ? html`<span className="flow-chip">${data.version}</span>` : null}
+          </div>
+        </div>
+        <button
+          type="button"
+          className="collapse-button nodrag nopan"
+          onClick=${(event) => {
+            event.stopPropagation();
+            data.onToggleCollapse(data.element.id);
+          }}
+        >
+          ${data.collapsed ? '展开' : '收起'}
+        </button>
+      </div>
+      <p className="flow-card__copy">${data.description}</p>
+      ${data.primarySubviewId ? html`
+        <div className="flow-action-row">
+          <button
+            type="button"
+            className="node-action nodrag nopan"
+            onClick=${(event) => {
+              event.stopPropagation();
+              data.onOpenSubview(data.primarySubviewId);
+            }}
+          >
+            进入下级视图
+          </button>
+        </div>
+      ` : null}
+      <div className="flow-container__hint">${data.collapsed ? '已隐藏子节点以简化当前视图。' : '嵌套节点会随父容器一起拖拽。'}</div>
+      <${Handle} type="source" position=${sourcePosition} className="flow-handle" />
+    </div>
+  `;
+}
+
+const nodeTypes = {
+  entity: EntityNode,
+  container: ContainerNode,
+};
+
+function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, layoutDirection, onToggleCollapse, onOpenSubview, selected, positionOverrides) {
+  const indexes = createIndexes(graph);
+  const scope = buildScope(indexes, selectedViewId);
+  const matchedIds = buildMatchSet(indexes, scope, search);
+  const forcedOpen = computeForcedOpen(indexes, matchedIds);
+  const effectiveCollapsed = new Set([...collapsedSet].filter((elementId) => !forcedOpen.has(elementId)));
+  const hiddenIds = computeHiddenIds(indexes, scope, effectiveCollapsed, forcedOpen);
+  const visibleIds = new Set([...scope.allowedElementIds].filter((elementId) => !hiddenIds.has(elementId)));
+  const layout = measureTree(indexes, scope, visibleIds, effectiveCollapsed, layoutDirection);
+  const nodeDrafts = [];
+
+  for (const [elementId, placement] of layout.layout.entries()) {
+    const element = indexes.elementById.get(elementId);
+    const childCount = (indexes.childrenByParent.get(elementId) || []).filter((childId) => scope.allowedElementIds.has(childId)).length;
+    const hasChildren = childCount > 0;
+    const palette = getPalette(element.type, hasChildren);
+    const status = deriveStatus(element);
+    const matched = matchedIds.has(elementId);
+    const tooltip = [element.name, element.type, element.description].filter(Boolean).join(' | ');
+
+    nodeDrafts.push({
+      id: elementId,
+      type: hasChildren ? 'container' : 'entity',
+      position: positionOverrides.get(elementId) || { x: placement.x, y: placement.y },
+      parentId: placement.parentId,
+      extent: placement.parentId ? 'parent' : undefined,
+      draggable: true,
+      dragHandle: '.flow-card',
+      style: { width: placement.width, height: placement.height },
+      data: {
+        element,
+        variant: hasChildren ? 'container' : 'entity',
+        childCount,
+        collapsed: effectiveCollapsed.has(elementId),
+        description: compactText(element.description || '暂无描述。', hasChildren ? 140 : 92),
+        direction: layoutDirection,
+        dimmed: false,
+        highlighted: false,
+        matched,
+        onOpenSubview,
+        onToggleCollapse,
+        palette,
+        primarySubviewId: element.subdiagram_views?.[0]?.view_id || null,
+        status,
+        subviewCount: (element.subdiagram_views || []).length,
+        tooltip,
+        version: deriveVersion(element),
+      },
     });
   }
 
-  function ensureSelection(rootNode) {
-    if (findNode(rootNode, state.selectedPath)) {
-      return;
+  const edgeDrafts = [];
+  const edgeKeys = new Set();
+  for (const relationshipId of scope.allowedRelationshipIds) {
+    const relationship = indexes.relationshipById.get(relationshipId);
+    if (!relationship) {
+      continue;
     }
-    state.selectedPath = 'root';
-  }
-
-  function renderApp() {
-    if (!state.schema || !state.data) {
-      return;
+    const source = resolveVisibleEndpoint(indexes, visibleIds, relationship.source_id);
+    const target = resolveVisibleEndpoint(indexes, visibleIds, relationship.target_id);
+    if (!source || !target || source === target) {
+      continue;
     }
-
-    const rootNode = buildNode(['root'], 'root', state.data, state.schema, true, true);
-    ensureSelection(rootNode);
-    const selectedNode = findNode(rootNode, state.selectedPath);
-    const sections = countTopLevelSections(state.schema, state.data);
-    const query = state.search.trim().toLowerCase();
-    const visibleNodes = countVisibleNodes(rootNode, query);
-    const totalNodes = countAllNodes(rootNode);
-    const errorCount = state.validationErrors.length;
-    const crumbs = getCrumbs(state.selectedPath);
-
-    app.innerHTML = '' +
-      '<div class="shell">' +
-        '<div class="app-frame">' +
-          '<section class="hero">' +
-            '<div class="panel hero-main">' +
-              '<div class="eyebrow"><span class="eyebrow-dot"></span>Schema-driven layered explorer</div>' +
-              '<h1 class="hero-title">' + escapeHtml(state.data.name || 'Architecture Viewer') + '</h1>' +
-              '<p class="hero-copy">' + escapeHtml(state.data.description || 'A React-style hierarchical explorer generated from the JSON schema. Expand only the branches you need, inspect structure on the right, and keep the view generic to the schema instead of any one document.') + '</p>' +
-              '<div class="hero-actions">' +
-                '<button class="primary-btn" data-action="expand-top">Expand top level</button>' +
-                '<button class="secondary-btn" data-action="collapse-all">Collapse all</button>' +
-                '<button class="ghost-btn" data-action="reload">Reload data</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="panel hero-side">' +
-              '<div class="status-card">' +
-                '<div class="status-head">' +
-                  '<p class="status-title">Schema health</p>' +
-                  '<span class="status-pill ' + (errorCount ? 'invalid' : 'valid') + '">' + (errorCount ? errorCount + ' issue' + (errorCount === 1 ? '' : 's') : 'Valid') + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<div class="stat-grid">' +
-                '<div class="stat-card"><strong>' + sections.length + '</strong><span>Top-level sections</span></div>' +
-                '<div class="stat-card"><strong>' + totalNodes + '</strong><span>Total nodes</span></div>' +
-                '<div class="stat-card"><strong>' + visibleNodes + '</strong><span>Visible with current filter</span></div>' +
-                '<div class="stat-card"><strong>' + crumbs.length + '</strong><span>Current depth</span></div>' +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-          '<section class="toolbar">' +
-            '<div class="panel search-panel">' +
-              '<p class="search-label">Search</p>' +
-              '<div class="search-wrap">' +
-                '<span class="search-icon">⌕</span>' +
-                '<input class="search-input" id="search-input" type="search" value="' + escapeHtml(state.search) + '" placeholder="Search labels, values, schema descriptions">' +
-              '</div>' +
-              '<div class="search-meta">' + (query ? 'Matched branches stay auto-expanded while filtering.' : 'Search expands matching branches on demand.') + '</div>' +
-            '</div>' +
-            '<div class="panel crumb-panel">' +
-              '<p class="crumb-label">Current path</p>' +
-              '<div class="crumbs">' + crumbs.map(function (crumb) {
-                return '<span class="crumb">' + escapeHtml(crumb) + '</span>';
-              }).join('') + '</div>' +
-            '</div>' +
-          '</section>' +
-          '<section class="workspace">' +
-            '<aside class="panel outline-panel">' +
-              '<p class="outline-title">Sections</p>' +
-              '<div class="outline-scroll">' + renderOutline(sections) + '</div>' +
-            '</aside>' +
-            '<main class="panel tree-panel">' +
-              '<p class="tree-title">Layered tree</p>' +
-              '<div class="tree-scroll">' +
-                (visibleNodes
-                  ? '<div class="tree-root">' + renderNode(rootNode, 0, query) + '</div>'
-                  : '<div class="tree-empty">No branches match the current search.</div>') +
-              '</div>' +
-            '</main>' +
-            '<aside class="panel inspector-panel">' +
-              '<p class="inspector-title">Inspector</p>' +
-              '<div class="inspector-scroll">' +
-                renderInspector(selectedNode) +
-                renderValidation(state.validationErrors) +
-              '</div>' +
-            '</aside>' +
-          '</section>' +
-        '</div>' +
-      '</div>';
-
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-      searchInput.focus({ preventScroll: true });
-      searchInput.setSelectionRange(state.search.length, state.search.length);
+    const dedupeKey = `${source}:${target}:${relationship.name || relationship.statement || relationship.id}`;
+    if (edgeKeys.has(dedupeKey)) {
+      continue;
     }
-  }
-
-  function expandTopLevel() {
-    const next = new Set(['root']);
-    const properties = (state.schema && state.schema.properties) || {};
-    Object.keys(properties).forEach(function (key) {
-      next.add('root/' + key);
+    edgeKeys.add(dedupeKey);
+    const styleToken = classifyRelationship(relationship);
+    edgeDrafts.push({
+      id: relationship.id,
+      source,
+      target,
+      type: 'smoothstep',
+      animated: styleToken.animated,
+      label: compactText(relationship.name || relationship.statement || styleToken.label, 28),
+      labelBgPadding: [7, 4],
+      labelBgBorderRadius: 999,
+      labelBgStyle: { fill: '#fffaf1', fillOpacity: 0.96 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: styleToken.color },
+      style: {
+        stroke: styleToken.color,
+        strokeDasharray: styleToken.dash,
+        strokeWidth: styleToken.width,
+      },
+      data: {
+        relationship,
+        dimmed: false,
+        highlighted: false,
+      },
     });
-    state.expandedPaths = next;
   }
 
-  function collapseAll() {
-    state.expandedPaths = new Set(['root']);
+  const selectionGraph = deriveSelectionGraph(nodeDrafts, edgeDrafts, selected);
+  const relatedIds = new Set(selectionGraph.directNeighbors);
+  if (selected?.kind === 'node') {
+    relatedIds.add(selected.id);
   }
 
-  function selectPath(path) {
-    state.selectedPath = path;
-    const parts = path.split('/');
-    const next = new Set(state.expandedPaths);
-    for (let index = 1; index <= parts.length; index += 1) {
-      next.add(parts.slice(0, index).join('/'));
+  const nodes = nodeDrafts.map((node) => ({
+    ...node,
+    className: `${node.className || ''} ${selected?.kind === 'node' && selected.id !== node.id && !relatedIds.has(node.id) ? 'node-dimmed' : ''}`.trim(),
+    data: {
+      ...node.data,
+      dimmed: selected?.kind === 'node' && selected.id !== node.id && !relatedIds.has(node.id),
+      highlighted: selected?.kind === 'node' && relatedIds.has(node.id),
+    },
+  }));
+
+  const edges = edgeDrafts.map((edge) => ({
+    ...edge,
+    className: `${selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id) ? 'edge-dimmed' : ''} ${selectionGraph.highlightedEdges.has(edge.id) ? 'edge-highlighted' : ''}`.trim(),
+    data: {
+      ...edge.data,
+      dimmed: selected?.kind === 'node' && !selectionGraph.highlightedEdges.has(edge.id),
+      highlighted: selectionGraph.highlightedEdges.has(edge.id),
+    },
+  }));
+
+  return {
+    nodes,
+    edges,
+    indexes,
+    scope,
+    matchedIds,
+    metrics: {
+      totalElements: scope.allowedElementIds.size,
+      visibleElements: nodes.length,
+      relationships: edges.length,
+      views: graph.views?.length || 0,
+    },
+    canvasSize: {
+      width: layout.canvasWidth,
+      height: layout.canvasHeight,
+    },
+  };
+}
+
+function InfoPair({ label, value }) {
+  return html`
+    <div className="info-pair">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
+
+function JsonBlock({ value }) {
+  return html`<pre className="json-block">${JSON.stringify(value, null, 2)}</pre>`;
+}
+
+function DetailsDrawer({ selection, flowModel, schema }) {
+  const selectedObject = useMemo(() => {
+    if (!selection) {
+      return null;
     }
-    state.expandedPaths = next;
-  }
-
-  function togglePath(path) {
-    const next = new Set(state.expandedPaths);
-    if (next.has(path)) {
-      next.delete(path);
-    } else {
-      next.add(path);
+    if (selection.kind === 'node') {
+      return {
+        kind: '元素',
+        value: flowModel.indexes.elementById.get(selection.id),
+        schema: resolveSchema(schema, schema?.$defs?.element),
+      };
     }
-    state.expandedPaths = next;
+    if (selection.kind === 'edge') {
+      return {
+        kind: '关系',
+        value: flowModel.indexes.relationshipById.get(selection.id),
+        schema: resolveSchema(schema, schema?.$defs?.relationship),
+      };
+    }
+    return null;
+  }, [flowModel, schema, selection]);
+
+  if (!selectedObject?.value) {
+    return html`
+      <aside className="drawer panel">
+        <div className="drawer-empty">
+          <h3>详情抽屉</h3>
+          <p>选择一个节点或关系后，可在这里查看与 Schema 对齐的完整 JSON 详情。</p>
+        </div>
+      </aside>
+    `;
   }
 
-  async function load() {
-    app.innerHTML = '' +
-      '<div class="boot-screen">' +
-        '<div class="boot-logo">KG</div>' +
-        '<h1>Architecture Viewer</h1>' +
-        '<p>Loading schema and document...</p>' +
-      '</div>';
+  const requiredFields = selectedObject.schema?.required || [];
+  const presentFields = Object.keys(selectedObject.value || {});
+  const missingFields = requiredFields.filter((field) => selectedObject.value[field] === undefined);
 
-    try {
-      const responses = await Promise.all([
-        fetch('/api/schema'),
-        fetch('/api/data'),
-      ]);
+  return html`
+    <aside className="drawer panel">
+      <div className="drawer-head">
+        <div>
+          <span className="eyebrow eyebrow-inline">${selectedObject.kind}</span>
+          <h3>${selectedObject.value.name || selectedObject.value.statement || selectedObject.value.view_name || selectedObject.value.id}</h3>
+        </div>
+      </div>
+      <div className="drawer-section">
+        <div className="info-grid">
+          <${InfoPair} label="当前字段数" value=${presentFields.length} />
+          <${InfoPair} label="必填字段数" value=${requiredFields.length} />
+          <${InfoPair} label="缺失必填" value=${missingFields.length} />
+        </div>
+      </div>
+      <div className="drawer-section">
+        <h4>Schema 摘要</h4>
+        <p>${selectedObject.schema?.description || '下方原始 JSON 中包含该对象对应的 Schema 对齐数据。'}</p>
+        <div className="token-row">
+          ${requiredFields.map((field) => html`<span className="pill ${selectedObject.value[field] === undefined ? 'pill-danger' : ''}">${field}</span>`)}
+        </div>
+      </div>
+      <div className="drawer-section drawer-scrollable">
+        <h4>原始 JSON</h4>
+        <${JsonBlock} value=${selectedObject.value} />
+      </div>
+    </aside>
+  `;
+}
 
-      responses.forEach(function (response) {
-        if (!response.ok) {
-          throw new Error('Failed to load viewer assets');
+function ViewBrowser({ tree, expandedIds, selectedViewId, selectedNodeId, onToggle, onSelectView, onSelectElement }) {
+  return html`
+    <section className="sidebar-section sidebar-browser">
+      <div className="sidebar-browser__head">
+        <h3>视图浏览器</h3>
+        <p>目录支持展开或折叠。点击 View 切换画布，点击元素查看右侧详情。</p>
+      </div>
+      <div className="tree-browser">
+        <${TreeNode}
+          node=${tree}
+          depth=${0}
+          expandedIds=${expandedIds}
+          selectedViewId=${selectedViewId}
+          selectedNodeId=${selectedNodeId}
+          onToggle=${onToggle}
+          onSelectView=${onSelectView}
+          onSelectElement=${onSelectElement}
+        />
+      </div>
+    </section>
+  `;
+}
+
+function GraphCanvas({ flowModel, selection, setSelection, layoutDirection, onNodeDragStop }) {
+  const flowRef = useRef(null);
+  const canvasHeight = Math.max(780, Math.min(1320, flowModel.canvasSize.height + 120));
+  const [renderNodes, setRenderNodes] = useState(flowModel.nodes);
+
+  useEffect(() => {
+    setRenderNodes(flowModel.nodes);
+  }, [flowModel.nodes]);
+
+  const handleCanvasNodesChange = (changes) => {
+    setRenderNodes((current) => applyNodeChanges(changes, current));
+  };
+
+  useEffect(() => {
+    if (!flowRef.current) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      flowRef.current.fitView({ duration: 480, padding: 0.16, includeHiddenNodes: false });
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [flowModel.edges, flowModel.nodes, layoutDirection]);
+
+  return html`
+    <div className="canvas panel">
+      <div className="canvas-head">
+        <div>
+          <span className="eyebrow eyebrow-inline">画布</span>
+          <h2>架构地图</h2>
+          <p>拖拽节点、切换视图，并在右侧查看对象详情。</p>
+        </div>
+        <div className="canvas-metrics">
+          <span className="pill">${flowModel.metrics.visibleElements} 个可见节点</span>
+          <span className="pill">${flowModel.metrics.relationships} 条关系连线</span>
+        </div>
+      </div>
+      <div className="canvas-frame" style=${{ height: `${canvasHeight}px`, minHeight: `${canvasHeight}px` }}>
+        <${ReactFlow}
+          nodes=${renderNodes}
+          edges=${flowModel.edges}
+          nodeTypes=${nodeTypes}
+          onNodesChange=${handleCanvasNodesChange}
+          onInit=${(instance) => {
+            flowRef.current = instance;
+          }}
+          onNodeDragStop=${(_event, node) => onNodeDragStop(node)}
+          onNodeClick=${(_event, node) => setSelection({ kind: 'node', id: node.id })}
+          onEdgeClick=${(_event, edge) => setSelection({ kind: 'edge', id: edge.id })}
+          onPaneClick=${() => setSelection(null)}
+          fitView=${true}
+          minZoom=${0.2}
+          maxZoom=${1.8}
+          defaultEdgeOptions=${{ zIndex: 3 }}
+          nodesDraggable=${true}
+          elementsSelectable=${true}
+          proOptions=${{ hideAttribution: true }}
+          colorMode="light"
+        >
+          <${MiniMap}
+            pannable=${true}
+            zoomable=${true}
+            nodeColor=${(node) => node?.data?.palette?.border || '#94a3b8'}
+            maskColor="rgba(248, 243, 233, 0.72)"
+            className="flow-minimap"
+          />
+          <${Controls} className="flow-controls" showInteractive=${false} />
+          <${Background} variant=${BackgroundVariant.Dots} gap=${22} size=${1.1} color="#d8cfbd" />
+        </${ReactFlow}>
+      </div>
+    </div>
+  `;
+}
+
+function App() {
+  const [schema, setSchema] = useState(null);
+  const [graph, setGraph] = useState(null);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [search, setSearch] = useState('');
+  const [selectedViewId, setSelectedViewId] = useState(ALL_VIEWS);
+  const [collapsedIds, setCollapsedIds] = useState(new Set());
+  const [layoutDirection, setLayoutDirection] = useState('LR');
+  const [selection, setSelection] = useState(null);
+  const [loadingError, setLoadingError] = useState('');
+  const [positionOverrides, setPositionOverrides] = useState(new Map());
+  const [expandedBrowserIds, setExpandedBrowserIds] = useState(new Set(['root:system']));
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [schemaResponse, dataResponse] = await Promise.all([
+          fetch('/api/schema'),
+          fetch('/api/data'),
+        ]);
+        if (!schemaResponse.ok) {
+          throw new Error(`Schema request failed: ${schemaResponse.status}`);
         }
-      });
-
-      state.schema = await responses[0].json();
-      state.data = await responses[1].json();
-      const errors = [];
-      validateAgainstSchema(state.data, state.schema, 'root', errors);
-      state.validationErrors = errors;
-      renderApp();
-    } catch (error) {
-      app.innerHTML = '' +
-        '<div class="shell">' +
-          '<div class="panel" style="padding:24px; max-width:720px; margin:48px auto;">' +
-            '<h1 style="margin-top:0;">Failed to load viewer</h1>' +
-            '<p class="muted">' + escapeHtml(error instanceof Error ? error.message : String(error)) + '</p>' +
-          '</div>' +
-        '</div>';
+        if (!dataResponse.ok) {
+          throw new Error(`Data request failed: ${dataResponse.status}`);
+        }
+        const [schemaJson, graphJson] = await Promise.all([schemaResponse.json(), dataResponse.json()]);
+        const structuralRoot = resolveStructuralRootView(graphJson);
+        setSchema(schemaJson);
+        setGraph(graphJson);
+        setValidationErrors(validateGraph(graphJson, schemaJson));
+        if (structuralRoot?.view_id) {
+          setSelectedViewId(structuralRoot.view_id);
+          setCollapsedIds(computeInitialCollapsedIds(graphJson, structuralRoot.view_id));
+          setExpandedBrowserIds(new Set(['root:system', ...collectViewPathIds(graphJson, structuralRoot.view_id).map((viewId) => `view:${viewId}`)]));
+        } else {
+          setSelectedViewId(ALL_VIEWS);
+          setCollapsedIds(computeInitialCollapsedIds(graphJson, ALL_VIEWS));
+          setExpandedBrowserIds(new Set(['root:system']));
+        }
+        setPositionOverrides(new Map());
+      } catch (error) {
+        setLoadingError(error instanceof Error ? error.message : String(error));
+      }
     }
+    load();
+  }, []);
+
+  const toggleCollapse = (elementId) => {
+    setCollapsedIds((current) => {
+      const next = new Set(current);
+      if (next.has(elementId)) {
+        next.delete(elementId);
+      } else {
+        next.add(elementId);
+      }
+      return next;
+    });
+  };
+
+  const openSubview = (nextViewId) => {
+    if (!nextViewId) {
+      return;
+    }
+    setSelectedViewId(nextViewId);
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, nextViewId).map((viewId) => `view:${viewId}`)]));
+    setCollapsedIds(computeInitialCollapsedIds(graph, nextViewId));
+    setPositionOverrides(new Map());
+    setSelection(null);
+  };
+
+  const openElementFromBrowser = (viewId, elementId) => {
+    if (!viewId || !elementId) {
+      return;
+    }
+    setSelectedViewId(viewId);
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+    setCollapsedIds(computeExpandedElementIds(graph, viewId, elementId));
+    setPositionOverrides(new Map());
+    setSelection({ kind: 'node', id: elementId });
+  };
+
+  const toggleBrowserNode = (nodeKey) => {
+    setExpandedBrowserIds((current) => {
+      const next = new Set(current);
+      if (next.has(nodeKey)) {
+        next.delete(nodeKey);
+      } else {
+        next.add(nodeKey);
+      }
+      return next;
+    });
+  };
+
+  const handleNodeDragStop = (node) => {
+    setPositionOverrides((current) => {
+      const next = new Map(current);
+      if (node?.id && node.position) {
+        next.set(node.id, node.position);
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setPositionOverrides(new Map());
+  }, [selectedViewId, collapsedIds, layoutDirection, search]);
+
+  const flowModel = useMemo(() => {
+    if (!graph || !schema) {
+      return null;
+    }
+    return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides);
+  }, [collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
+
+  useEffect(() => {
+    if (!flowModel || !selection) {
+      return;
+    }
+    if (selection.kind === 'node' && !flowModel.nodes.some((node) => node.id === selection.id)) {
+      setSelection(null);
+    }
+    if (selection.kind === 'edge' && !flowModel.edges.some((edge) => edge.id === selection.id)) {
+      setSelection(null);
+    }
+  }, [flowModel, selection]);
+
+  if (loadingError) {
+    return html`
+      <main className="viewer-shell error-shell">
+        <section className="panel error-panel">
+          <span className="eyebrow">加载失败</span>
+          <h1>架构拓扑页面启动失败</h1>
+          <p>${loadingError}</p>
+        </section>
+      </main>
+    `;
   }
 
-  app.addEventListener('click', function (event) {
-    const target = event.target.closest('[data-action]');
-    if (!target) {
-      return;
-    }
+  if (!flowModel || !graph || !schema) {
+    return html`
+      <main className="viewer-shell loading-shell">
+        <section className="panel boot-card">
+          <div className="boot-logo">AF</div>
+          <h1>正在准备架构拓扑</h1>
+          <p>正在从当前 skill server 获取 Schema 和架构 JSON。</p>
+        </section>
+      </main>
+    `;
+  }
 
-    const action = target.getAttribute('data-action');
-    const path = target.getAttribute('data-path');
+  const scopedView = flowModel.scope.scopeView;
+  const structuralRoot = (graph.views || []).find((view) => !view.parent_element_id);
+  const parentViewId = scopedView ? findParentViewId(graph, scopedView.view_id) : null;
+  const browserTree = buildViewBrowserItems(graph);
+  const selectedLabel = selection?.kind === 'node'
+    ? flowModel.indexes.elementById.get(selection.id)?.name
+    : selection?.kind === 'edge'
+      ? flowModel.indexes.relationshipById.get(selection.id)?.name || flowModel.indexes.relationshipById.get(selection.id)?.statement
+      : '未选择对象';
 
-    if (action === 'reload') {
-      load();
-      return;
-    }
-    if (action === 'expand-top') {
-      expandTopLevel();
-      renderApp();
-      return;
-    }
-    if (action === 'collapse-all') {
-      collapseAll();
-      renderApp();
-      return;
-    }
-    if (action === 'toggle' && path) {
-      togglePath(path);
-      renderApp();
-      return;
-    }
-    if (action === 'select' && path) {
-      selectPath(path);
-      renderApp();
-    }
-  });
+  return html`
+    <main className="viewer-shell viewer-workbench">
+      <header className="app-topbar">
+        <div className="app-topbar__brand">
+          <div className="app-logo">A</div>
+          <div>
+            <strong>${graph.name || 'System'}</strong>
+            <span>Draft</span>
+          </div>
+        </div>
+        <div className="app-topbar__meta">
+          <span className="topbar-pill">${graph.views.length} views</span>
+          <span className="topbar-pill">${flowModel.metrics.totalElements} nodes</span>
+          <span className="topbar-pill ${validationErrors.length === 0 ? 'is-ok' : 'is-warn'}">${validationErrors.length === 0 ? 'Schema OK' : `${validationErrors.length} issues`}</span>
+          <button type="button" className="topbar-action">Share</button>
+        </div>
+      </header>
 
-  app.addEventListener('input', function (event) {
-    if (event.target && event.target.id === 'search-input') {
-      state.search = event.target.value;
-      renderApp();
-    }
-  });
+      <section className="toolbar app-toolbar">
+        <label className="toolbar-field">
+          <span>查找</span>
+          <input type="search" value=${search} onInput=${(event) => setSearch(event.target.value)} placeholder="Search shapes, views, elements" />
+        </label>
+        <label className="toolbar-field">
+          <span>View</span>
+          <select value=${selectedViewId} onChange=${(event) => {
+            const nextViewId = event.target.value;
+            setSelectedViewId(nextViewId);
+            setCollapsedIds(computeInitialCollapsedIds(graph, nextViewId));
+            setPositionOverrides(new Map());
+          }}>
+            <option value=${ALL_VIEWS}>全部架构元素</option>
+            ${(graph.views || []).map((view) => html`<option value=${view.view_id}>${view.view_name}</option>`)}
+          </select>
+        </label>
+        <label className="toolbar-field">
+          <span>Layout</span>
+          <select value=${layoutDirection} onChange=${(event) => setLayoutDirection(event.target.value)}>
+            <option value="LR">从左到右</option>
+            <option value="TB">从上到下</option>
+          </select>
+        </label>
+        ${parentViewId ? html`<button type="button" className="ghost-button" onClick=${() => openSubview(parentViewId)}>返回上级视图</button>` : null}
+        <button type="button" className="ghost-button" onClick=${() => {
+          setCollapsedIds(new Set());
+          setPositionOverrides(new Map());
+        }}>全部展开</button>
+      </section>
 
-  load();
-})();
+      <section className="workspace-grid workbench-grid">
+        <aside className="sidebar panel">
+          <div className="sidebar-header">
+            <h2>Shapes</h2>
+            <span>${selectedLabel || '未选择对象'}</span>
+          </div>
+          <${ViewBrowser}
+            tree=${browserTree}
+            expandedIds=${expandedBrowserIds}
+            selectedViewId=${selectedViewId}
+            selectedNodeId=${selection?.kind === 'node' ? selection.id : null}
+            onToggle=${toggleBrowserNode}
+            onSelectView=${openSubview}
+            onSelectElement=${openElementFromBrowser}
+          />
+          <section className="sidebar-section sidebar-summary">
+            <h3>当前范围</h3>
+            <p>${scopedView ? compactText(scopedView.description || `当前聚焦于 ${scopedView.view_name}。`, 140) : '当前展示整个架构图。你可以切换到某个 Schema 视图来降低噪音，保持拓扑聚焦。'}</p>
+            <div className="token-row">
+              <span className="pill">${scopedView ? scopedView.view_name : structuralRoot?.view_name || '全部视图'}</span>
+              ${search ? html`<span className="pill pill-accent">命中 ${flowModel.matchedIds.size} 个元素</span>` : null}
+            </div>
+          </section>
+          <section className="sidebar-section sidebar-summary">
+            <h3>校验</h3>
+            ${validationErrors.length === 0 ? html`<p className="validation-ok">当前未发现违反根 Schema 结构的错误。</p>` : html`
+              <div className="validation-list">
+                ${validationErrors.map((message) => html`<div className="validation-item">${message}</div>`)}
+              </div>
+            `}
+          </section>
+        </aside>
+
+        <section className="stage-shell">
+          <div className="stage-toolbar panel">
+            <div className="stage-toolbar__group">
+              <span className="tool-chip is-brand">Pointer</span>
+              <span className="tool-chip">Shape</span>
+              <span className="tool-chip">Connector</span>
+              <span className="tool-chip">Text</span>
+            </div>
+            <div className="stage-toolbar__group">
+              <span className="tool-chip">2px</span>
+              <span className="tool-chip">None</span>
+              <span className="tool-chip">${scopedView ? scopedView.view_name : 'SystemArchitecture'}</span>
+            </div>
+          </div>
+
+          <${GraphCanvas}
+            flowModel=${flowModel}
+            selection=${selection}
+            setSelection=${setSelection}
+            layoutDirection=${layoutDirection}
+            onNodeDragStop=${handleNodeDragStop}
+          />
+
+          <${DetailsDrawer}
+            selection=${selection}
+            flowModel=${flowModel}
+            schema=${schema}
+          />
+        </section>
+      </section>
+    </main>
+  `;
+}
+
+const root = createRoot(document.getElementById('app'));
+root.render(html`<${ReactFlowProvider}><${App} /></${ReactFlowProvider}>`);

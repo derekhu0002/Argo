@@ -44,7 +44,13 @@ const MIME_TYPES = {
 };
 
 function respond(res, status, contentType, body) {
-  res.writeHead(status, { 'Content-Type': contentType, 'Access-Control-Allow-Origin': '*' });
+  res.writeHead(status, {
+    'Content-Type': contentType,
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  });
   res.end(body);
 }
 
