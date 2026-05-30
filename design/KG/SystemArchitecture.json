@@ -74,7 +74,7 @@
 "name": "View 层级由挂接元素决定"
 ,"parent": "1207"
 ,"type": "ArchiMate_Constraint"
-,"description": "111若 view X 中包含元素 A，且 A 挂接了 subdiagram view Y，则浏览界面中 X 是 Y 的上层 view；若多个已展开 view 都包含该挂接元素，则 Y 可以在多个父分支下重复出现。"
+,"description": "若 view X 中包含元素 A，且 A 挂接了 subdiagram view Y，则浏览界面中 X 是 Y 的上层 view；若多个已展开 view 都包含该挂接元素，则 Y 可以在多个父分支下重复出现。"
 },
 {
 "id": "1390",
