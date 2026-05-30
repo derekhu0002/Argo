@@ -27,6 +27,18 @@ const CONTAINER_MIN_HEIGHT = 154;
 const LEAF_WIDTH = 252;
 const LEAF_HEIGHT = 108;
 const CONTAINER_COLLAPSED_HEIGHT = 126;
+
+const LEFT_DOCK_MIN_WIDTH = 296;
+const LEFT_DOCK_MAX_WIDTH = 460;
+const LEFT_DOCK_DEFAULT_WIDTH = 342;
+const DRAWER_MIN_WIDTH = 360;
+const DRAWER_MAX_WIDTH = 960;
+const DRAWER_DEFAULT_WIDTH = 672;
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -329,16 +341,43 @@ function buildViewBrowserItems(graph) {
     return topLevelIds.map(visitElement);
   }
 
+  function buildRelationshipNodes(view) {
+    const relationshipIds = [...(view.included_relationships || [])];
+    relationshipIds.sort((left, right) => {
+      const leftRelationship = indexes.relationshipById.get(left);
+      const rightRelationship = indexes.relationshipById.get(right);
+      const leftLabel = leftRelationship?.name || leftRelationship?.statement || leftRelationship?.super_type || left;
+      const rightLabel = rightRelationship?.name || rightRelationship?.statement || rightRelationship?.super_type || right;
+      return String(leftLabel).localeCompare(String(rightLabel), 'en');
+    });
+
+    return relationshipIds.map((relationshipId) => {
+      const relationship = indexes.relationshipById.get(relationshipId);
+      const sourceLabel = indexes.elementById.get(relationship?.source)?.name || relationship?.source || '?';
+      const targetLabel = indexes.elementById.get(relationship?.target)?.name || relationship?.target || '?';
+      return {
+        kind: 'relationship',
+        key: `relationship:${relationshipId}`,
+        id: relationshipId,
+        viewId: view.view_id,
+        label: relationship?.name || relationship?.statement || relationship?.super_type || relationshipId,
+        meta: `${relationship?.super_type || 'relationship'} · ${sourceLabel} -> ${targetLabel}`,
+        children: [],
+      };
+    });
+  }
+
   function visit(view) {
     const childViews = (childViewsByParent.get(view.view_id) || []).map(visit);
     const elementNodes = buildElementNodes(view);
+    const relationshipNodes = buildRelationshipNodes(view);
     return {
       kind: 'view',
       key: `view:${view.view_id}`,
       id: view.view_id,
       label: view.view_name,
       meta: `${(view.included_elements || []).length} 个元素 · ${(view.included_relationships || []).length} 条关系`,
-      children: [...childViews, ...elementNodes],
+      children: [...childViews, ...elementNodes, ...relationshipNodes],
       initiallyExpanded: view.view_id === rootView.view_id,
     };
   }
@@ -351,17 +390,53 @@ function buildViewBrowserItems(graph) {
   };
 }
 
-function TreeNode({ node, depth, expandedIds, selectedViewId, selectedNodeId, onToggle, onSelectView, onSelectElement }) {
+function buildBrowserSearchState(tree, search) {
+  const query = normalizeText(search).trim();
+  if (!tree || !query) {
+    return { matchedKeys: new Set(), expandedKeys: new Set() };
+  }
+
+  const matchedKeys = new Set();
+  const expandedKeys = new Set(['root:system']);
+
+  function visit(node) {
+    const haystack = normalizeText([node.label, node.meta].filter(Boolean).join(' '));
+    const selfMatched = haystack.includes(query);
+    let descendantMatched = false;
+
+    for (const child of node.children || []) {
+      if (visit(child)) {
+        descendantMatched = true;
+        expandedKeys.add(node.key);
+      }
+    }
+
+    if (selfMatched) {
+      matchedKeys.add(node.key);
+    }
+
+    return selfMatched || descendantMatched;
+  }
+
+  visit(tree);
+  return { matchedKeys, expandedKeys };
+}
+
+function TreeNode({ node, depth, expandedIds, matchedKeys, selectedViewId, selectedNodeId, selectedEdgeId, onToggle, onSelectView, onSelectElement, onSelectRelationship }) {
   const isBranch = (node.children || []).length > 0;
   const isExpanded = expandedIds.has(node.key);
   const isView = node.kind === 'view';
   const isRoot = node.kind === 'root';
-  const isActive = (isView && selectedViewId === node.id) || (node.kind === 'element' && selectedNodeId === node.id);
-  const iconClass = isRoot ? 'is-root' : isView ? 'is-view' : 'is-element';
+  const isRelationship = node.kind === 'relationship';
+  const isActive = (isView && selectedViewId === node.id)
+    || (node.kind === 'element' && selectedNodeId === node.id)
+    || (isRelationship && selectedEdgeId === node.id);
+  const isMatched = matchedKeys.has(node.key);
+  const iconClass = isRoot ? 'is-root' : isView ? 'is-view' : isRelationship ? 'is-relationship' : 'is-element';
 
   return html`
     <div className="tree-node" style=${{ '--tree-depth': depth }}>
-      <div className=${`tree-node__row ${isActive ? 'is-active' : ''}`}>
+      <div className=${`tree-node__row ${isActive ? 'is-active' : ''} ${isMatched ? 'is-match' : ''}`.trim()}>
         ${isBranch ? html`
           <button
             type="button"
@@ -380,6 +455,8 @@ function TreeNode({ node, depth, expandedIds, selectedViewId, selectedNodeId, on
               onSelectView(node.id);
             } else if (node.kind === 'element') {
               onSelectElement(node.viewId, node.id);
+            } else if (node.kind === 'relationship') {
+              onSelectRelationship(node.viewId, node.id);
             }
           }}
         >
@@ -398,11 +475,14 @@ function TreeNode({ node, depth, expandedIds, selectedViewId, selectedNodeId, on
               node=${child}
               depth=${depth + 1}
               expandedIds=${expandedIds}
+              matchedKeys=${matchedKeys}
               selectedViewId=${selectedViewId}
               selectedNodeId=${selectedNodeId}
+              selectedEdgeId=${selectedEdgeId}
               onToggle=${onToggle}
               onSelectView=${onSelectView}
               onSelectElement=${onSelectElement}
+              onSelectRelationship=${onSelectRelationship}
             />
           `)}
         </div>
@@ -944,11 +1024,278 @@ function InfoPair({ label, value }) {
   `;
 }
 
-function JsonBlock({ value }) {
-  return html`<pre className="json-block">${JSON.stringify(value, null, 2)}</pre>`;
+function formatStructuredValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return '---';
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+  return String(value);
 }
 
-function DetailsDrawer({ selection, flowModel, schema }) {
+const DETAIL_HIDDEN_FIELDS = new Set(['subdiagram_views']);
+
+function shouldDisplayDetailField(key, value) {
+  if (DETAIL_HIDDEN_FIELDS.has(key)) {
+    return false;
+  }
+  if (key === 'parent' && (value === undefined || value === null || value === '')) {
+    return false;
+  }
+  return true;
+}
+
+function StructuredValueTable({ value, depth = 0 }) {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return html`<span className="structured-value structured-value--empty">---</span>`;
+    }
+    return html`
+      <div className=${`structured-table-wrap${depth > 0 ? ' is-nested' : ''}`}>
+        <table className="structured-table">
+          <tbody>
+            ${value.map((entry, index) => html`
+              <tr>
+                <th>[${index}]</th>
+                <td>
+                  ${typeof entry === 'object' && entry !== null
+                    ? html`<${StructuredValueTable} value=${entry} depth=${depth + 1} />`
+                    : html`<span className="structured-value">${formatStructuredValue(entry)}</span>`}
+                </td>
+              </tr>
+            `)}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value).filter(([key, entryValue]) => shouldDisplayDetailField(key, entryValue));
+    if (entries.length === 0) {
+      return html`<span className="structured-value structured-value--empty">---</span>`;
+    }
+    return html`
+      <div className=${`structured-table-wrap${depth > 0 ? ' is-nested' : ''}`}>
+        <table className="structured-table">
+          <tbody>
+            ${entries.map(([key, entryValue]) => html`
+              <tr>
+                <th>${key}</th>
+                <td>
+                  ${typeof entryValue === 'object' && entryValue !== null
+                    ? html`<${StructuredValueTable} value=${entryValue} depth=${depth + 1} />`
+                    : html`<span className="structured-value">${formatStructuredValue(entryValue)}</span>`}
+                </td>
+              </tr>
+            `)}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  return html`<span className="structured-value">${formatStructuredValue(value)}</span>`;
+}
+
+function DetailsDrawer({ selection, flowModel, schema, anchorRef }) {
+  const drawerRef = useRef(null);
+  const drawerHeadRef = useRef(null);
+  const drawerResizeHandleRef = useRef(null);
+  const [drawerPosition, setDrawerPosition] = useState(null);
+  const [drawerDrag, setDrawerDrag] = useState(false);
+  const [drawerResize, setDrawerResize] = useState(false);
+  const [drawerCollapsed, setDrawerCollapsed] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState(DRAWER_DEFAULT_WIDTH);
+
+  const clampDrawerWidth = (nextWidth, rightEdge = null) => {
+    const anchor = anchorRef?.current;
+    if (!anchor) {
+      return clamp(nextWidth, DRAWER_MIN_WIDTH, DRAWER_MAX_WIDTH);
+    }
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const widthByAnchor = anchorRect.width - 24;
+    const widthByEdge = rightEdge === null ? widthByAnchor : rightEdge - 12;
+    const maxWidth = Math.max(DRAWER_MIN_WIDTH, Math.min(DRAWER_MAX_WIDTH, widthByAnchor, widthByEdge));
+    return clamp(nextWidth, DRAWER_MIN_WIDTH, maxWidth);
+  };
+
+  const clampDrawerPosition = (nextPosition, widthOverride = drawerWidth) => {
+    const anchor = anchorRef?.current;
+    const drawer = drawerRef.current;
+    if (!anchor || !drawer || !nextPosition) {
+      return nextPosition;
+    }
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const drawerRect = drawer.getBoundingClientRect();
+    const maxLeft = Math.max(12, anchorRect.width - widthOverride - 12);
+    const maxTop = Math.max(12, anchorRect.height - drawerRect.height - 12);
+    return {
+      left: clamp(nextPosition.left, 12, maxLeft),
+      top: clamp(nextPosition.top, 12, maxTop),
+    };
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const nextWidth = clampDrawerWidth(
+        drawerWidth,
+        drawerPosition ? drawerPosition.left + drawerWidth : null,
+      );
+      if (nextWidth !== drawerWidth) {
+        setDrawerWidth(nextWidth);
+      }
+      setDrawerPosition((current) => clampDrawerPosition(current, nextWidth));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [anchorRef, drawerPosition, drawerWidth]);
+
+  const startDrawerDrag = (event) => {
+    if (window.innerWidth <= 1080 || !drawerRef.current || !anchorRef?.current) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const drawerRect = drawerRef.current.getBoundingClientRect();
+    const anchorRect = anchorRef.current.getBoundingClientRect();
+    const initialPosition = clampDrawerPosition({
+      left: drawerRect.left - anchorRect.left,
+      top: drawerRect.top - anchorRect.top,
+    });
+
+    drawerRef.current.style.left = `${initialPosition.left}px`;
+    drawerRef.current.style.top = `${initialPosition.top}px`;
+    drawerRef.current.style.right = 'auto';
+    setDrawerPosition(initialPosition);
+    setDrawerDrag(true);
+
+    const handleDragMove = (moveEvent) => {
+      const nextPosition = clampDrawerPosition({
+        left: initialPosition.left + (moveEvent.clientX - event.clientX),
+        top: initialPosition.top + (moveEvent.clientY - event.clientY),
+      });
+
+      if (drawerRef.current) {
+        drawerRef.current.style.left = `${nextPosition.left}px`;
+        drawerRef.current.style.top = `${nextPosition.top}px`;
+        drawerRef.current.style.right = 'auto';
+      }
+      setDrawerPosition(nextPosition);
+    };
+
+    const handleDragEnd = () => {
+      setDrawerDrag(false);
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+  };
+
+  const startDrawerResize = (event) => {
+    if (window.innerWidth <= 1080 || !drawerRef.current || !anchorRef?.current) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const drawerRect = drawerRef.current.getBoundingClientRect();
+    const anchorRect = anchorRef.current.getBoundingClientRect();
+    const initialPosition = drawerPosition || {
+      left: drawerRect.left - anchorRect.left,
+      top: drawerRect.top - anchorRect.top,
+    };
+    const rightEdge = initialPosition.left + drawerRect.width;
+    const initialWidth = drawerRect.width;
+
+    setDrawerResize(true);
+
+    const handleResizeMove = (moveEvent) => {
+      const proposedWidth = initialWidth - (moveEvent.clientX - event.clientX);
+      const nextWidth = clampDrawerWidth(proposedWidth, rightEdge);
+
+      if (drawerRef.current) {
+        drawerRef.current.style.width = `${nextWidth}px`;
+      }
+
+      if (drawerPosition) {
+        const nextPosition = clampDrawerPosition({
+          left: rightEdge - nextWidth,
+          top: initialPosition.top,
+        }, nextWidth);
+
+        if (drawerRef.current) {
+          drawerRef.current.style.left = `${nextPosition.left}px`;
+          drawerRef.current.style.top = `${nextPosition.top}px`;
+          drawerRef.current.style.right = 'auto';
+        }
+
+        setDrawerPosition(nextPosition);
+      }
+
+      setDrawerWidth(nextWidth);
+    };
+
+    const handleResizeEnd = () => {
+      setDrawerResize(false);
+      window.removeEventListener('mousemove', handleResizeMove);
+      window.removeEventListener('mouseup', handleResizeEnd);
+    };
+
+    window.addEventListener('mousemove', handleResizeMove);
+    window.addEventListener('mouseup', handleResizeEnd);
+  };
+
+  useEffect(() => {
+    const drawerHead = drawerHeadRef.current;
+    if (!drawerHead) {
+      return undefined;
+    }
+
+    const handleMouseDown = (event) => {
+      if (event.target instanceof Element && event.target.closest('.drawer-collapse')) {
+        return;
+      }
+      if (event.target instanceof Element && event.target.closest('.drawer-grip')) {
+        event.preventDefault();
+      }
+      startDrawerDrag(event);
+    };
+
+    drawerHead.addEventListener('mousedown', handleMouseDown);
+    return () => drawerHead.removeEventListener('mousedown', handleMouseDown);
+  }, [anchorRef, selection]);
+
+  useEffect(() => {
+    const resizeHandle = drawerResizeHandleRef.current;
+    if (!resizeHandle) {
+      return undefined;
+    }
+
+    resizeHandle.addEventListener('mousedown', startDrawerResize);
+    return () => resizeHandle.removeEventListener('mousedown', startDrawerResize);
+  }, [anchorRef, selection, drawerPosition, drawerWidth]);
+
+  const drawerPositionStyle = drawerPosition
+    ? { left: `${drawerPosition.left}px`, top: `${drawerPosition.top}px`, right: 'auto' }
+    : undefined;
+
+  const drawerStyle = drawerPositionStyle || undefined;
+
+  const reopenDrawer = () => {
+    setDrawerCollapsed(false);
+  };
+
   const selectedObject = useMemo(() => {
     if (!selection) {
       return null;
@@ -970,12 +1317,49 @@ function DetailsDrawer({ selection, flowModel, schema }) {
     return null;
   }, [flowModel, schema, selection]);
 
+  if (drawerCollapsed) {
+    return html`
+      <button
+        type="button"
+        className="drawer-collapsed-toggle"
+        style=${drawerPositionStyle}
+        onClick=${reopenDrawer}
+        aria-label="重新展开详情抽屉"
+      >
+        <span className="drawer-collapsed-toggle__icon">◀</span>
+        <span>展开详情</span>
+      </button>
+    `;
+  }
+
   if (!selectedObject?.value) {
     return html`
-      <aside className="drawer panel">
+      <aside ref=${drawerRef} className=${`drawer panel${drawerDrag ? ' is-dragging' : ''}${drawerResize ? ' is-resizing' : ''}`} style=${drawerStyle}>
+        <div ref=${drawerHeadRef} className="drawer-head">
+          <div className="drawer-head__title">
+            <span className="eyebrow eyebrow-inline">详情</span>
+            <h3>详情抽屉</h3>
+          </div>
+          <div className="drawer-head__actions">
+            <button
+              type="button"
+              className="drawer-collapse"
+              aria-label="收起详情抽屉"
+              onMouseDown=${(event) => {
+                event.stopPropagation();
+              }}
+              onClick=${(event) => {
+                event.stopPropagation();
+                setDrawerCollapsed(true);
+              }}
+            >
+              —
+            </button>
+            <button type="button" className="drawer-grip" aria-label="拖动详情抽屉">:::</button>
+          </div>
+        </div>
         <div className="drawer-empty">
-          <h3>详情抽屉</h3>
-          <p>选择一个节点或关系后，可在这里查看与 Schema 对齐的完整 JSON 详情。</p>
+          <p>选择一个节点或关系后，可在这里查看结构化字段详情。</p>
         </div>
       </aside>
     `;
@@ -986,11 +1370,28 @@ function DetailsDrawer({ selection, flowModel, schema }) {
   const missingFields = requiredFields.filter((field) => selectedObject.value[field] === undefined);
 
   return html`
-    <aside className="drawer panel">
-      <div className="drawer-head">
-        <div>
+    <aside ref=${drawerRef} className=${`drawer panel${drawerDrag ? ' is-dragging' : ''}${drawerResize ? ' is-resizing' : ''}`} style=${drawerStyle}>
+      <div ref=${drawerHeadRef} className="drawer-head">
+        <div className="drawer-head__title">
           <span className="eyebrow eyebrow-inline">${selectedObject.kind}</span>
           <h3>${selectedObject.value.name || selectedObject.value.statement || selectedObject.value.view_name || selectedObject.value.id}</h3>
+        </div>
+        <div className="drawer-head__actions">
+          <button
+            type="button"
+            className="drawer-collapse"
+            aria-label="收起详情抽屉"
+            onMouseDown=${(event) => {
+              event.stopPropagation();
+            }}
+            onClick=${(event) => {
+              event.stopPropagation();
+              setDrawerCollapsed(true);
+            }}
+          >
+            —
+          </button>
+          <button type="button" className="drawer-grip" aria-label="拖动详情抽屉">:::</button>
         </div>
       </div>
       <div className="drawer-section">
@@ -1008,14 +1409,14 @@ function DetailsDrawer({ selection, flowModel, schema }) {
         </div>
       </div>
       <div className="drawer-section drawer-scrollable">
-        <h4>原始 JSON</h4>
-        <${JsonBlock} value=${selectedObject.value} />
+        <h4>结构化详情</h4>
+        <${StructuredValueTable} value=${selectedObject.value} />
       </div>
     </aside>
   `;
 }
 
-function ViewBrowser({ tree, expandedIds, selectedViewId, selectedNodeId, onToggle, onSelectView, onSelectElement }) {
+function ViewBrowser({ tree, expandedIds, matchedKeys, selectedViewId, selectedNodeId, selectedEdgeId, onToggle, onSelectView, onSelectElement, onSelectRelationship }) {
   return html`
     <section className="sidebar-section sidebar-browser">
       <div className="sidebar-browser__head">
@@ -1027,11 +1428,14 @@ function ViewBrowser({ tree, expandedIds, selectedViewId, selectedNodeId, onTogg
           node=${tree}
           depth=${0}
           expandedIds=${expandedIds}
+          matchedKeys=${matchedKeys}
           selectedViewId=${selectedViewId}
           selectedNodeId=${selectedNodeId}
+          selectedEdgeId=${selectedEdgeId}
           onToggle=${onToggle}
           onSelectView=${onSelectView}
           onSelectElement=${onSelectElement}
+          onSelectRelationship=${onSelectRelationship}
         />
       </div>
     </section>
@@ -1112,6 +1516,8 @@ function GraphCanvas({ flowModel, selection, setSelection, layoutDirection, onNo
 }
 
 function App() {
+  const leftDockRef = useRef(null);
+  const stageShellRef = useRef(null);
   const [schema, setSchema] = useState(null);
   const [graph, setGraph] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -1123,6 +1529,8 @@ function App() {
   const [loadingError, setLoadingError] = useState('');
   const [positionOverrides, setPositionOverrides] = useState(new Map());
   const [expandedBrowserIds, setExpandedBrowserIds] = useState(new Set(['root:system']));
+  const [leftDockWidth, setLeftDockWidth] = useState(LEFT_DOCK_DEFAULT_WIDTH);
+  const [isCompactLayout, setIsCompactLayout] = useState(() => window.innerWidth <= 1080);
 
   useEffect(() => {
     async function load() {
@@ -1193,6 +1601,17 @@ function App() {
     setSelection({ kind: 'node', id: elementId });
   };
 
+  const openRelationshipFromBrowser = (viewId, relationshipId) => {
+    if (!viewId || !relationshipId) {
+      return;
+    }
+    setSelectedViewId(viewId);
+    setExpandedBrowserIds((current) => new Set([...current, ...collectViewPathIds(graph, viewId).map((nextViewId) => `view:${nextViewId}`)]));
+    setCollapsedIds(computeInitialCollapsedIds(graph, viewId));
+    setPositionOverrides(new Map());
+    setSelection({ kind: 'edge', id: relationshipId });
+  };
+
   const toggleBrowserNode = (nodeKey) => {
     setExpandedBrowserIds((current) => {
       const next = new Set(current);
@@ -1219,12 +1638,46 @@ function App() {
     setPositionOverrides(new Map());
   }, [selectedViewId, collapsedIds, layoutDirection, search]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCompactLayout(window.innerWidth <= 1080);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const leftDock = leftDockRef.current;
+    if (!leftDock || isCompactLayout) {
+      return undefined;
+    }
+
+    let frameId = 0;
+    let lastWidth = 0;
+
+    const syncWidth = () => {
+      const nextWidth = clamp(Math.round(Number.parseFloat(window.getComputedStyle(leftDock).width) || LEFT_DOCK_DEFAULT_WIDTH), LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH);
+      if (Math.abs(nextWidth - lastWidth) >= 1) {
+        lastWidth = nextWidth;
+        setLeftDockWidth(nextWidth);
+      }
+      frameId = window.requestAnimationFrame(syncWidth);
+    };
+
+    frameId = window.requestAnimationFrame(syncWidth);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isCompactLayout]);
+
   const flowModel = useMemo(() => {
     if (!graph || !schema) {
       return null;
     }
     return buildFlowModel(graph, schema, selectedViewId, search, collapsedIds, layoutDirection, toggleCollapse, openSubview, selection, positionOverrides);
   }, [collapsedIds, graph, layoutDirection, positionOverrides, schema, search, selectedViewId, selection]);
+
+  const browserTree = useMemo(() => (graph ? buildViewBrowserItems(graph) : null), [graph]);
+  const browserSearchState = useMemo(() => buildBrowserSearchState(browserTree, search), [browserTree, search]);
 
   useEffect(() => {
     if (!flowModel || !selection) {
@@ -1237,6 +1690,19 @@ function App() {
       setSelection(null);
     }
   }, [flowModel, selection]);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      return;
+    }
+    setExpandedBrowserIds((current) => {
+      const next = new Set([...current, ...browserSearchState.expandedKeys]);
+      if (next.size === current.size) {
+        return current;
+      }
+      return next;
+    });
+  }, [browserSearchState, search]);
 
   if (loadingError) {
     return html`
@@ -1264,8 +1730,6 @@ function App() {
 
   const scopedView = flowModel.scope.scopeView;
   const structuralRoot = (graph.views || []).find((view) => !view.parent_element_id);
-  const parentViewId = scopedView ? findParentViewId(graph, scopedView.view_id) : null;
-  const browserTree = buildViewBrowserItems(graph);
   const selectedLabel = selection?.kind === 'node'
     ? flowModel.indexes.elementById.get(selection.id)?.name
     : selection?.kind === 'edge'
@@ -1301,56 +1765,23 @@ function App() {
       </header>
 
       <section className="toolbar app-toolbar">
-        <label className="toolbar-field">
+        <label className="toolbar-field toolbar-field--search">
           <span>查找</span>
-          <input type="search" value=${search} onInput=${(event) => setSearch(event.target.value)} placeholder="Search shapes, views, elements" />
+          <input
+            type="search"
+            value=${search}
+            onInput=${(event) => setSearch(event.target.value)}
+            placeholder="输入您想查找的内容"
+            aria-label="输入您想查找的内容"
+          />
         </label>
-        <label className="toolbar-field">
-          <span>View</span>
-          <select value=${selectedViewId} onChange=${(event) => {
-            const nextViewId = event.target.value;
-            setSelectedViewId(nextViewId);
-            setCollapsedIds(computeInitialCollapsedIds(graph, nextViewId));
-            setPositionOverrides(new Map());
-          }}>
-            <option value=${ALL_VIEWS}>全部架构元素</option>
-            ${(graph.views || []).map((view) => html`<option value=${view.view_id}>${view.view_name}</option>`)}
-          </select>
-        </label>
-        <label className="toolbar-field">
-          <span>Layout</span>
-          <select value=${layoutDirection} onChange=${(event) => setLayoutDirection(event.target.value)}>
-            <option value="LR">从左到右</option>
-            <option value="TB">从上到下</option>
-          </select>
-        </label>
-        ${parentViewId ? html`<button type="button" className="ghost-button" onClick=${() => openSubview(parentViewId)}>返回上级视图</button>` : null}
-        <button type="button" className="ghost-button" onClick=${() => {
-          setCollapsedIds(new Set());
-          setPositionOverrides(new Map());
-        }}>全部展开</button>
       </section>
 
-      <section className="workspace-grid workbench-grid">
-        <section className="left-dock">
-          <nav className="app-rail panel" aria-label="编辑器工具">
-            <button type="button" className="app-rail__button is-active" title="指针">
-              <span className="app-rail__glyph app-rail__glyph--pointer"></span>
-            </button>
-            <button type="button" className="app-rail__button" title="容器">
-              <span className="app-rail__glyph app-rail__glyph--frame"></span>
-            </button>
-            <button type="button" className="app-rail__button" title="关系">
-              <span className="app-rail__glyph app-rail__glyph--link"></span>
-            </button>
-            <button type="button" className="app-rail__button" title="文本">
-              <span className="app-rail__glyph app-rail__glyph--text"></span>
-            </button>
-            <button type="button" className="app-rail__button" title="资源">
-              <span className="app-rail__glyph app-rail__glyph--stack"></span>
-            </button>
-          </nav>
-
+      <section
+        className="workspace-grid workbench-grid"
+        style=${isCompactLayout ? undefined : { gridTemplateColumns: `${leftDockWidth}px minmax(0, 1fr)` }}
+      >
+        <section ref=${leftDockRef} className="left-dock">
           <aside className="sidebar panel">
             <div className="sidebar-header">
               <h2>Shapes</h2>
@@ -1359,18 +1790,21 @@ function App() {
             <${ViewBrowser}
               tree=${browserTree}
               expandedIds=${expandedBrowserIds}
+              matchedKeys=${browserSearchState.matchedKeys}
               selectedViewId=${selectedViewId}
               selectedNodeId=${selection?.kind === 'node' ? selection.id : null}
+              selectedEdgeId=${selection?.kind === 'edge' ? selection.id : null}
               onToggle=${toggleBrowserNode}
               onSelectView=${openSubview}
               onSelectElement=${openElementFromBrowser}
+              onSelectRelationship=${openRelationshipFromBrowser}
             />
             <section className="sidebar-section sidebar-summary">
               <h3>当前范围</h3>
               <p>${scopedView ? compactText(scopedView.description || `当前聚焦于 ${scopedView.view_name}。`, 140) : '当前展示整个架构图。你可以切换到某个 Schema 视图来降低噪音，保持拓扑聚焦。'}</p>
               <div className="token-row">
                 <span className="pill">${scopedView ? scopedView.view_name : structuralRoot?.view_name || '全部视图'}</span>
-                ${search ? html`<span className="pill pill-accent">命中 ${flowModel.matchedIds.size} 个元素</span>` : null}
+                ${search ? html`<span className="pill pill-accent">命中 ${browserSearchState.matchedKeys.size} 项</span>` : null}
               </div>
             </section>
             <section className="sidebar-section sidebar-summary">
@@ -1384,7 +1818,7 @@ function App() {
           </aside>
         </section>
 
-        <section className="stage-shell">
+        <section ref=${stageShellRef} className="stage-shell">
           <div className="stage-toolbar panel">
             <div className="stage-toolbar__group">
               <span className="tool-chip is-brand">Pointer</span>
@@ -1411,6 +1845,7 @@ function App() {
             selection=${selection}
             flowModel=${flowModel}
             schema=${schema}
+            anchorRef=${stageShellRef}
           />
         </section>
       </section>
