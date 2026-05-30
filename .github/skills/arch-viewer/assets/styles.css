@@ -306,9 +306,9 @@ button {
 }
 
 .tree-browser {
-  display: inline-block;
-  min-width: 100%;
-  width: max-content;
+  display: block;
+  width: 100%;
+  min-width: 0;
   font-size: 13px;
 }
 
@@ -1100,6 +1100,28 @@ button {
 
 .tree-browser {
   font-size: 13px;
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.tree-node {
+  width: max-content;
+  min-width: 100%;
+}
+
+.tree-node__row {
+  width: max-content;
+  min-width: 100%;
+}
+
+.tree-node__label {
+  width: max-content;
+}
+
+.tree-node__children {
+  width: max-content;
+  min-width: 100%;
 }
 
 .tree-node {
@@ -1206,8 +1228,6 @@ button {
   font-weight: 500;
   line-height: 1.35;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tree-node__text span {
@@ -2431,6 +2451,25 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+}
+
+.tree-node {
+  width: max-content;
+  min-width: 100%;
+}
+
+.tree-node__row {
+  width: max-content;
+  min-width: 100%;
+}
+
+.tree-node__label {
+  width: max-content;
+}
+
+.tree-node__children {
+  width: max-content;
+  min-width: 100%;
 }
 
 .tree-node {

@@ -1788,10 +1788,6 @@ function App() {
       >
         <section ref=${leftDockRef} className="left-dock" style=${isCompactLayout ? undefined : { width: `${leftDockWidth}px` }}>
           <aside className="sidebar panel">
-            <div className="sidebar-header">
-              <h2>Shapes</h2>
-              <span>${selectedLabel || '未选择对象'}</span>
-            </div>
             <${ViewBrowser}
               tree=${browserTree}
               expandedIds=${expandedBrowserIds}
