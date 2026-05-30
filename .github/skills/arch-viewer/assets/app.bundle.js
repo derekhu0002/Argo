@@ -23499,6 +23499,16 @@
     }
     return null;
   }
+  function maxChangeTone(tones) {
+    let result = null;
+    for (const tone of tones || []) {
+      result = pickChangeTone(result, tone);
+      if (result === CHANGE_TONE_NEW) {
+        return result;
+      }
+    }
+    return result;
+  }
   function getChangeTone(changeSummary, kind, id2) {
     if (!changeSummary || id2 === void 0 || id2 === null) {
       return null;
@@ -23526,6 +23536,45 @@
       }
     }
     return pickChangeTone(elementTone, viewTone);
+  }
+  function buildCanvasElementChangeMap(indexes, graph, changeSummary) {
+    const elementToneMap = /* @__PURE__ */ new Map();
+    function setElementTone(elementId, tone) {
+      if (!elementId || !tone) {
+        return;
+      }
+      const key = String(elementId);
+      const current = elementToneMap.get(key) || null;
+      elementToneMap.set(key, pickChangeTone(current, tone));
+    }
+    for (const element of graph.elements || []) {
+      const tone = getChangeTone(changeSummary, "elements", element.id);
+      setElementTone(element.id, tone);
+    }
+    for (const view of graph.views || []) {
+      const tone = getChangeTone(changeSummary, "views", view.view_id);
+      if (tone && view.parent_element_id) {
+        setElementTone(view.parent_element_id, tone);
+      }
+    }
+    for (const relationship of graph.relationships || []) {
+      const tone = getChangeTone(changeSummary, "relationships", relationship.id);
+      if (!tone) {
+        continue;
+      }
+      setElementTone(relationship.source_id || relationship.source, tone);
+      setElementTone(relationship.target_id || relationship.target, tone);
+    }
+    const seeds = [...elementToneMap.entries()];
+    for (const [elementId, tone] of seeds) {
+      let parentId = indexes.parentById.get(elementId);
+      while (parentId && parentId !== ROOT_PARENT_ID) {
+        const current = elementToneMap.get(parentId) || null;
+        elementToneMap.set(parentId, pickChangeTone(current, tone));
+        parentId = indexes.parentById.get(parentId);
+      }
+    }
+    return elementToneMap;
   }
   function getPalette(type, isContainer) {
     const normalized = normalizeText(type);
@@ -23721,6 +23770,9 @@
       const visitElement = (elementId) => {
         const element = indexes.elementById.get(elementId);
         const childIds = (indexes.childrenByParent.get(elementId) || []).filter((childId) => includedSet.has(childId));
+        const childNodes = childIds.map(visitElement);
+        const ownTone = getChangeTone(changeSummary, "elements", elementId);
+        const inheritedTone = maxChangeTone(childNodes.map((child) => child.changeTone));
         return {
           kind: "element",
           key: `element:${elementId}`,
@@ -23728,8 +23780,8 @@
           viewId: view.view_id,
           label: element?.name || elementId,
           meta: element?.type || "element",
-          changeTone: getChangeTone(changeSummary, "elements", elementId),
-          children: childIds.map(visitElement)
+          changeTone: pickChangeTone(ownTone, inheritedTone),
+          children: childNodes
         };
       };
       topLevelIds.sort((left, right) => String(indexes.elementById.get(left)?.name || left).localeCompare(String(indexes.elementById.get(right)?.name || right), "en"));
@@ -23764,13 +23816,15 @@
       const childViews = (childViewsByParent.get(view.view_id) || []).map(visit);
       const elementNodes = buildElementNodes(view);
       const relationshipNodes = buildRelationshipNodes(view);
+      const inheritedTone = maxChangeTone([...childViews, ...elementNodes, ...relationshipNodes].map((child) => child.changeTone));
+      const ownTone = getChangeTone(changeSummary, "views", view.view_id);
       return {
         kind: "view",
         key: `view:${view.view_id}`,
         id: view.view_id,
         label: view.view_name,
         meta: `${(view.included_elements || []).length} \u4E2A\u5143\u7D20 \xB7 ${(view.included_relationships || []).length} \u6761\u5173\u7CFB`,
-        changeTone: getChangeTone(changeSummary, "views", view.view_id),
+        changeTone: pickChangeTone(ownTone, inheritedTone),
         children: [...childViews, ...elementNodes, ...relationshipNodes],
         initiallyExpanded: view.view_id === rootView.view_id
       };
@@ -24215,6 +24269,7 @@
   };
   function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, layoutDirection, onToggleCollapse, onOpenSubview, selected2, positionOverrides, changeSummary) {
     const indexes = createIndexes(graph);
+    const elementChangeMap = buildCanvasElementChangeMap(indexes, graph, changeSummary);
     const scope = buildScope(indexes, selectedViewId);
     const matchedIds = buildMatchSet(indexes, scope, search);
     const forcedOpen = computeForcedOpen(indexes, matchedIds);
@@ -24231,7 +24286,7 @@
       const status = deriveStatus(element);
       const matched = matchedIds.has(elementId);
       const tooltip = [element.name, element.type, element.description].filter(Boolean).join(" | ");
-      const changeTone = deriveElementChangeTone(element, changeSummary);
+      const changeTone = elementChangeMap.get(String(elementId)) || deriveElementChangeTone(element, changeSummary);
       nodeDrafts.push({
         id: elementId,
         type: hasChildren ? "container" : "entity",

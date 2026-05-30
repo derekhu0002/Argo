@@ -141,6 +141,17 @@ function pickChangeTone(primaryTone, secondaryTone) {
   return null;
 }
 
+function maxChangeTone(tones) {
+  let result = null;
+  for (const tone of tones || []) {
+    result = pickChangeTone(result, tone);
+    if (result === CHANGE_TONE_NEW) {
+      return result;
+    }
+  }
+  return result;
+}
+
 function getChangeTone(changeSummary, kind, id) {
   if (!changeSummary || id === undefined || id === null) {
     return null;
@@ -169,6 +180,56 @@ function deriveElementChangeTone(element, changeSummary) {
     }
   }
   return pickChangeTone(elementTone, viewTone);
+}
+
+function buildCanvasElementChangeMap(indexes, graph, changeSummary) {
+  const elementToneMap = new Map();
+
+  function setElementTone(elementId, tone) {
+    if (!elementId || !tone) {
+      return;
+    }
+    const key = String(elementId);
+    const current = elementToneMap.get(key) || null;
+    elementToneMap.set(key, pickChangeTone(current, tone));
+  }
+
+  // 1) Direct element changes.
+  for (const element of graph.elements || []) {
+    const tone = getChangeTone(changeSummary, 'elements', element.id);
+    setElementTone(element.id, tone);
+  }
+
+  // 2) View changes map to their host elements.
+  for (const view of graph.views || []) {
+    const tone = getChangeTone(changeSummary, 'views', view.view_id);
+    if (tone && view.parent_element_id) {
+      setElementTone(view.parent_element_id, tone);
+    }
+  }
+
+  // 3) Relationship changes map to source/target elements.
+  for (const relationship of graph.relationships || []) {
+    const tone = getChangeTone(changeSummary, 'relationships', relationship.id);
+    if (!tone) {
+      continue;
+    }
+    setElementTone(relationship.source_id || relationship.source, tone);
+    setElementTone(relationship.target_id || relationship.target, tone);
+  }
+
+  // 4) Propagate tones to ancestor chain until root.
+  const seeds = [...elementToneMap.entries()];
+  for (const [elementId, tone] of seeds) {
+    let parentId = indexes.parentById.get(elementId);
+    while (parentId && parentId !== ROOT_PARENT_ID) {
+      const current = elementToneMap.get(parentId) || null;
+      elementToneMap.set(parentId, pickChangeTone(current, tone));
+      parentId = indexes.parentById.get(parentId);
+    }
+  }
+
+  return elementToneMap;
 }
 
 function getPalette(type, isContainer) {
@@ -391,6 +452,9 @@ function buildViewBrowserItems(graph, changeSummary) {
     const visitElement = (elementId) => {
       const element = indexes.elementById.get(elementId);
       const childIds = (indexes.childrenByParent.get(elementId) || []).filter((childId) => includedSet.has(childId));
+      const childNodes = childIds.map(visitElement);
+      const ownTone = getChangeTone(changeSummary, 'elements', elementId);
+      const inheritedTone = maxChangeTone(childNodes.map((child) => child.changeTone));
       return {
         kind: 'element',
         key: `element:${elementId}`,
@@ -398,8 +462,8 @@ function buildViewBrowserItems(graph, changeSummary) {
         viewId: view.view_id,
         label: element?.name || elementId,
         meta: element?.type || 'element',
-        changeTone: getChangeTone(changeSummary, 'elements', elementId),
-        children: childIds.map(visitElement),
+        changeTone: pickChangeTone(ownTone, inheritedTone),
+        children: childNodes,
       };
     };
 
@@ -438,13 +502,15 @@ function buildViewBrowserItems(graph, changeSummary) {
     const childViews = (childViewsByParent.get(view.view_id) || []).map(visit);
     const elementNodes = buildElementNodes(view);
     const relationshipNodes = buildRelationshipNodes(view);
+    const inheritedTone = maxChangeTone([...childViews, ...elementNodes, ...relationshipNodes].map((child) => child.changeTone));
+    const ownTone = getChangeTone(changeSummary, 'views', view.view_id);
     return {
       kind: 'view',
       key: `view:${view.view_id}`,
       id: view.view_id,
       label: view.view_name,
       meta: `${(view.included_elements || []).length} 个元素 · ${(view.included_relationships || []).length} 条关系`,
-      changeTone: getChangeTone(changeSummary, 'views', view.view_id),
+      changeTone: pickChangeTone(ownTone, inheritedTone),
       children: [...childViews, ...elementNodes, ...relationshipNodes],
       initiallyExpanded: view.view_id === rootView.view_id,
     };
@@ -962,6 +1028,7 @@ const nodeTypes = {
 
 function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, layoutDirection, onToggleCollapse, onOpenSubview, selected, positionOverrides, changeSummary) {
   const indexes = createIndexes(graph);
+  const elementChangeMap = buildCanvasElementChangeMap(indexes, graph, changeSummary);
   const scope = buildScope(indexes, selectedViewId);
   const matchedIds = buildMatchSet(indexes, scope, search);
   const forcedOpen = computeForcedOpen(indexes, matchedIds);
@@ -979,7 +1046,7 @@ function buildFlowModel(graph, schema, selectedViewId, search, collapsedSet, lay
     const status = deriveStatus(element);
     const matched = matchedIds.has(elementId);
     const tooltip = [element.name, element.type, element.description].filter(Boolean).join(' | ');
-    const changeTone = deriveElementChangeTone(element, changeSummary);
+    const changeTone = elementChangeMap.get(String(elementId)) || deriveElementChangeTone(element, changeSummary);
 
     nodeDrafts.push({
       id: elementId,
