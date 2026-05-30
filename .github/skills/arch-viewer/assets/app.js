@@ -1517,6 +1517,7 @@ function GraphCanvas({ flowModel, selection, setSelection, layoutDirection, onNo
 
 function App() {
   const leftDockRef = useRef(null);
+  const workspaceDividerRef = useRef(null);
   const stageShellRef = useRef(null);
   const [schema, setSchema] = useState(null);
   const [graph, setGraph] = useState(null);
@@ -1530,6 +1531,7 @@ function App() {
   const [positionOverrides, setPositionOverrides] = useState(new Map());
   const [expandedBrowserIds, setExpandedBrowserIds] = useState(new Set(['root:system']));
   const [leftDockWidth, setLeftDockWidth] = useState(LEFT_DOCK_DEFAULT_WIDTH);
+  const [leftDockResizing, setLeftDockResizing] = useState(false);
   const [isCompactLayout, setIsCompactLayout] = useState(() => window.innerWidth <= 1080);
 
   useEffect(() => {
@@ -1641,33 +1643,45 @@ function App() {
   useEffect(() => {
     const handleResize = () => {
       setIsCompactLayout(window.innerWidth <= 1080);
+      setLeftDockWidth((current) => clamp(current, LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH));
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const leftDock = leftDockRef.current;
-    if (!leftDock || isCompactLayout) {
-      return undefined;
+  const startLeftDockResize = (event) => {
+    if (isCompactLayout) {
+      return;
     }
 
-    let frameId = 0;
-    let lastWidth = 0;
+    event.preventDefault();
+    const startClientX = event.clientX;
+    const initialWidth = leftDockWidth;
+    setLeftDockResizing(true);
 
-    const syncWidth = () => {
-      const nextWidth = clamp(Math.round(Number.parseFloat(window.getComputedStyle(leftDock).width) || LEFT_DOCK_DEFAULT_WIDTH), LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH);
-      if (Math.abs(nextWidth - lastWidth) >= 1) {
-        lastWidth = nextWidth;
-        setLeftDockWidth(nextWidth);
-      }
-      frameId = window.requestAnimationFrame(syncWidth);
+    const handleMove = (moveEvent) => {
+      const nextWidth = clamp(initialWidth + (moveEvent.clientX - startClientX), LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH);
+      setLeftDockWidth(nextWidth);
     };
 
-    frameId = window.requestAnimationFrame(syncWidth);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [isCompactLayout]);
+    const handleUp = () => {
+      setLeftDockResizing(false);
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+  };
+
+  const bindWorkspaceDividerRef = (node) => {
+    workspaceDividerRef.current = node;
+    if (node) {
+      node.onmousedown = isCompactLayout ? null : startLeftDockResize;
+      node.onpointerdown = isCompactLayout ? null : startLeftDockResize;
+    }
+  };
 
   const flowModel = useMemo(() => {
     if (!graph || !schema) {
@@ -1779,9 +1793,9 @@ function App() {
 
       <section
         className="workspace-grid workbench-grid"
-        style=${isCompactLayout ? undefined : { gridTemplateColumns: `${leftDockWidth}px minmax(0, 1fr)` }}
+        style=${isCompactLayout ? undefined : { gridTemplateColumns: `${leftDockWidth}px 12px minmax(0, 1fr)` }}
       >
-        <section ref=${leftDockRef} className="left-dock">
+        <section ref=${leftDockRef} className="left-dock" style=${isCompactLayout ? undefined : { width: `${leftDockWidth}px` }}>
           <aside className="sidebar panel">
             <div className="sidebar-header">
               <h2>Shapes</h2>
@@ -1817,6 +1831,16 @@ function App() {
             </section>
           </aside>
         </section>
+
+        ${isCompactLayout ? null : html`
+          <div
+            ref=${bindWorkspaceDividerRef}
+            className=${`workspace-divider${leftDockResizing ? ' is-active' : ''}`}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="调整浏览器面板宽度"
+          ></div>
+        `}
 
         <section ref=${stageShellRef} className="stage-shell">
           <div className="stage-toolbar panel">

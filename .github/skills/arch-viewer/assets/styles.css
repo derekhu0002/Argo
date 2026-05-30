@@ -1095,10 +1095,9 @@ button {
 }
 
 .sidebar {
-  width: 300px;
-  min-width: 240px;
-  max-width: 520px;
-  resize: horizontal;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   overflow: auto;
 }
 
@@ -2222,15 +2221,42 @@ body {
 .left-dock {
   min-height: calc(100vh - 108px);
   position: relative;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  display: block;
   background: #f6f4ef;
   border-right: 0;
-  resize: horizontal;
-  overflow: auto;
+  overflow: hidden;
   min-width: 296px;
   max-width: 460px;
   flex: 0 0 auto;
+}
+
+.workspace-divider {
+  position: relative;
+  flex: 0 0 12px;
+  cursor: ew-resize;
+  background: transparent;
+  touch-action: none;
+  user-select: none;
+}
+
+.workspace-divider::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 4px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(242, 140, 40, 0.12), rgba(242, 140, 40, 0.22));
+  opacity: 0.42;
+  transition: opacity 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.workspace-divider:hover::before,
+.workspace-divider.is-active::before {
+  opacity: 0.96;
+  background: linear-gradient(180deg, rgba(242, 140, 40, 0.62), rgba(242, 140, 40, 0.9));
+  box-shadow: 0 0 0 3px rgba(242, 140, 40, 0.14);
 }
 
 .left-dock::after {
@@ -2242,32 +2268,7 @@ body {
   flex: 1 1 auto;
   min-width: 0;
   position: relative;
-  border-left: 1px solid #d8d5cf;
-}
-
-.stage-shell::before {
-  content: '';
-  position: absolute;
-  top: 14px;
-  bottom: 14px;
-  left: -2px;
-  width: 4px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(242, 140, 40, 0.12), rgba(242, 140, 40, 0.22));
-  opacity: 0.42;
-  pointer-events: none;
-  z-index: 7;
-  transition: opacity 140ms ease, box-shadow 140ms ease, background 140ms ease;
-}
-
-.left-dock:hover + .stage-shell::before,
-.left-dock:focus-within + .stage-shell::before,
-.left-dock:active + .stage-shell::before,
-.stage-shell:hover::before,
-.stage-shell:focus-within::before {
-  opacity: 0.96;
-  background: linear-gradient(180deg, rgba(242, 140, 40, 0.62), rgba(242, 140, 40, 0.9));
-  box-shadow: 0 0 0 3px rgba(242, 140, 40, 0.14);
+  border-left: 0;
 }
 
 .app-rail {

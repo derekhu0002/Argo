@@ -24721,6 +24721,7 @@
   }
   function App() {
     const leftDockRef = (0, import_react3.useRef)(null);
+    const workspaceDividerRef = (0, import_react3.useRef)(null);
     const stageShellRef = (0, import_react3.useRef)(null);
     const [schema, setSchema] = (0, import_react3.useState)(null);
     const [graph, setGraph] = (0, import_react3.useState)(null);
@@ -24734,6 +24735,7 @@
     const [positionOverrides, setPositionOverrides] = (0, import_react3.useState)(/* @__PURE__ */ new Map());
     const [expandedBrowserIds, setExpandedBrowserIds] = (0, import_react3.useState)(/* @__PURE__ */ new Set(["root:system"]));
     const [leftDockWidth, setLeftDockWidth] = (0, import_react3.useState)(LEFT_DOCK_DEFAULT_WIDTH);
+    const [leftDockResizing, setLeftDockResizing] = (0, import_react3.useState)(false);
     const [isCompactLayout, setIsCompactLayout] = (0, import_react3.useState)(() => window.innerWidth <= 1080);
     (0, import_react3.useEffect)(() => {
       async function load() {
@@ -24836,28 +24838,38 @@
     (0, import_react3.useEffect)(() => {
       const handleResize = () => {
         setIsCompactLayout(window.innerWidth <= 1080);
+        setLeftDockWidth((current) => clamp2(current, LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH));
       };
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }, []);
-    (0, import_react3.useEffect)(() => {
-      const leftDock = leftDockRef.current;
-      if (!leftDock || isCompactLayout) {
-        return void 0;
+    const startLeftDockResize = (event) => {
+      if (isCompactLayout) {
+        return;
       }
-      let frameId = 0;
-      let lastWidth = 0;
-      const syncWidth = () => {
-        const nextWidth = clamp2(Math.round(Number.parseFloat(window.getComputedStyle(leftDock).width) || LEFT_DOCK_DEFAULT_WIDTH), LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH);
-        if (Math.abs(nextWidth - lastWidth) >= 1) {
-          lastWidth = nextWidth;
-          setLeftDockWidth(nextWidth);
-        }
-        frameId = window.requestAnimationFrame(syncWidth);
+      event.preventDefault();
+      const startClientX = event.clientX;
+      const initialWidth = leftDockWidth;
+      setLeftDockResizing(true);
+      const handleMove = (moveEvent) => {
+        const nextWidth = clamp2(initialWidth + (moveEvent.clientX - startClientX), LEFT_DOCK_MIN_WIDTH, LEFT_DOCK_MAX_WIDTH);
+        setLeftDockWidth(nextWidth);
       };
-      frameId = window.requestAnimationFrame(syncWidth);
-      return () => window.cancelAnimationFrame(frameId);
-    }, [isCompactLayout]);
+      const handleUp = () => {
+        setLeftDockResizing(false);
+        window.removeEventListener("mousemove", handleMove);
+        window.removeEventListener("mouseup", handleUp);
+      };
+      window.addEventListener("mousemove", handleMove);
+      window.addEventListener("mouseup", handleUp);
+    };
+    const bindWorkspaceDividerRef = (node) => {
+      workspaceDividerRef.current = node;
+      if (node) {
+        node.onmousedown = isCompactLayout ? null : startLeftDockResize;
+        node.onpointerdown = isCompactLayout ? null : startLeftDockResize;
+      }
+    };
     const flowModel = (0, import_react3.useMemo)(() => {
       if (!graph || !schema) {
         return null;
@@ -24957,9 +24969,9 @@
 
       <section
         className="workspace-grid workbench-grid"
-        style=${isCompactLayout ? void 0 : { gridTemplateColumns: `${leftDockWidth}px minmax(0, 1fr)` }}
+        style=${isCompactLayout ? void 0 : { gridTemplateColumns: `${leftDockWidth}px 12px minmax(0, 1fr)` }}
       >
-        <section ref=${leftDockRef} className="left-dock">
+        <section ref=${leftDockRef} className="left-dock" style=${isCompactLayout ? void 0 : { width: `${leftDockWidth}px` }}>
           <aside className="sidebar panel">
             <div className="sidebar-header">
               <h2>Shapes</h2>
@@ -24995,6 +25007,16 @@
             </section>
           </aside>
         </section>
+
+        ${isCompactLayout ? null : html`
+          <div
+            ref=${bindWorkspaceDividerRef}
+            className=${`workspace-divider${leftDockResizing ? " is-active" : ""}`}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="调整浏览器面板宽度"
+          ></div>
+        `}
 
         <section ref=${stageShellRef} className="stage-shell">
           <div className="stage-toolbar panel">
