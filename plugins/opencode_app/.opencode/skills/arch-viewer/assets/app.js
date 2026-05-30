@@ -414,6 +414,10 @@ function resolveStructuralRootView(graph) {
   return rootViews.length === 1 ? rootViews[0] : null;
 }
 
+function resolveStructuralRootViews(graph) {
+  return (graph?.views || []).filter((view) => !view.parent_element_id);
+}
+
 function createIndexes(graph) {
   const elementById = new Map();
   const childrenByParent = new Map();
@@ -530,10 +534,11 @@ function computeExpandedElementIds(graph, viewId, elementId) {
 }
 
 function buildViewBrowserItems(graph, changeSummary) {
-  const rootView = resolveStructuralRootView(graph);
-  if (!rootView) {
+  const rootViews = resolveStructuralRootViews(graph);
+  if (rootViews.length === 0) {
     return null;
   }
+  const rootViewIds = new Set(rootViews.map((view) => String(view.view_id)));
 
   const indexes = createIndexes(graph);
   const childViewsByParent = new Map();
@@ -622,15 +627,26 @@ function buildViewBrowserItems(graph, changeSummary) {
       meta: `${(view.included_elements || []).length} 个元素 · ${(view.included_relationships || []).length} 条关系`,
       changeTone: pickChangeTone(ownTone, inheritedTone),
       children: [...childViews, ...elementNodes, ...relationshipNodes],
-      initiallyExpanded: view.view_id === rootView.view_id,
+      initiallyExpanded: rootViewIds.has(String(view.view_id)),
     };
+  }
+
+  const visited = new Set();
+  const rootNodes = [];
+  for (const rootView of rootViews) {
+    if (visited.has(String(rootView.view_id))) {
+      continue;
+    }
+    const node = visit(rootView);
+    visited.add(String(rootView.view_id));
+    rootNodes.push(node);
   }
 
   return {
     kind: 'root',
     key: 'root:system',
     label: graph.name || 'System',
-    children: [visit(rootView)],
+    children: rootNodes,
   };
 }
 
@@ -1664,6 +1680,16 @@ function DetailsDrawer({ selection, flowModel, schema, anchorRef }) {
 }
 
 function ViewBrowser({ tree, expandedIds, matchedKeys, selectedViewId, selectedNodeId, selectedEdgeId, onToggle, onSelectView, onSelectElement, onSelectRelationship }) {
+  if (!tree) {
+    return html`
+      <section className="sidebar-section sidebar-browser">
+        <div className="tree-browser tree-scroll">
+          <div className="tree-empty">当前没有可展示的结构化视图。</div>
+        </div>
+      </section>
+    `;
+  }
+
   return html`
     <section className="sidebar-section sidebar-browser">
       <div className="tree-browser tree-scroll">
