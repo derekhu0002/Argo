@@ -24946,6 +24946,18 @@
             <span>${graph.name || "Architecture workspace"}</span>
           </div>
         </div>
+        <div className="app-topbar__center">
+          <label className="toolbar-field toolbar-field--search app-topbar__search">
+            <span>查找</span>
+            <input
+              type="search"
+              value=${search}
+              onInput=${(event) => setSearch(event.target.value)}
+              placeholder="输入您想查找的内容"
+              aria-label="输入您想查找的内容"
+            />
+          </label>
+        </div>
         <div className="app-topbar__meta">
           <span className="topbar-pill">${graph.views.length} Views</span>
           <span className="topbar-pill">${flowModel.metrics.totalElements} Nodes</span>
@@ -24953,19 +24965,6 @@
           <button type="button" className="topbar-action">Share</button>
         </div>
       </header>
-
-      <section className="toolbar app-toolbar">
-        <label className="toolbar-field toolbar-field--search">
-          <span>查找</span>
-          <input
-            type="search"
-            value=${search}
-            onInput=${(event) => setSearch(event.target.value)}
-            placeholder="输入您想查找的内容"
-            aria-label="输入您想查找的内容"
-          />
-        </label>
-      </section>
 
       <section
         className="workspace-grid workbench-grid"

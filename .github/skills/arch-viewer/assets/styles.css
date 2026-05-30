@@ -2053,6 +2053,9 @@ body {
 }
 
 .app-topbar {
+  display: grid;
+  grid-template-columns: auto minmax(320px, 720px) auto;
+  align-items: center;
   min-height: 54px;
   padding: 0 14px 0 12px;
   background: #ffffff;
@@ -2063,6 +2066,7 @@ body {
 }
 
 .app-topbar__left,
+.app-topbar__center,
 .app-brand-lockup,
 .app-brand-copy,
 .app-document-meta {
@@ -2073,6 +2077,21 @@ body {
 .app-topbar__left {
   gap: 16px;
   min-width: 0;
+}
+
+.app-topbar__center {
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 18px;
+}
+
+.app-topbar__search {
+  width: 100%;
+  max-width: 720px;
+}
+
+.app-topbar__search span {
+  display: none;
 }
 
 .app-brand-lockup {
@@ -2180,10 +2199,7 @@ body {
 }
 
 .app-toolbar {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  padding: 10px 14px 12px;
-  background: #f8f6f2;
+  display: none;
 }
 
 .toolbar-field {
