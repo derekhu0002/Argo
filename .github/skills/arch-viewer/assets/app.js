@@ -1838,20 +1838,6 @@ function App() {
         `}
 
         <section ref=${stageShellRef} className="stage-shell">
-          <div className="stage-toolbar panel">
-            <div className="stage-toolbar__group">
-              <span className="tool-chip is-brand">Pointer</span>
-              <span className="tool-chip">Container</span>
-              <span className="tool-chip">Line</span>
-              <span className="tool-chip">Text</span>
-            </div>
-            <div className="stage-toolbar__group">
-              <span className="tool-chip">2px</span>
-              <span className="tool-chip">None</span>
-              <span className="tool-chip">${scopedView ? scopedView.view_name : 'SystemArchitecture'}</span>
-            </div>
-          </div>
-
           <${GraphCanvas}
             flowModel=${flowModel}
             selection=${selection}

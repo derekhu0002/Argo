@@ -453,17 +453,7 @@ button {
 }
 
 .stage-toolbar {
-  min-height: 46px;
-  padding: 6px 12px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #ffffff;
+  display: none;
 }
 
 .tool-chip.is-brand {
@@ -784,7 +774,6 @@ button {
   .app-topbar,
   .app-toolbar,
   .canvas,
-  .stage-toolbar,
   .sidebar-header,
   .sidebar-section,
   .drawer-section {
