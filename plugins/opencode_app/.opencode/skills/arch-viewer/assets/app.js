@@ -1323,22 +1323,65 @@ function shouldDisplayDetailField(key, value) {
   return true;
 }
 
+function formatFlatStructuredValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return '---';
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+function flattenArrayRows(fieldKey, items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return [{ label: fieldKey, value: '---', flattened: true }];
+  }
+
+  const rows = [];
+  items.forEach((entry, index) => {
+    const baseLabel = `${fieldKey}[${index}]`;
+    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const nestedEntries = Object.entries(entry).filter(([key, nestedValue]) => shouldDisplayDetailField(key, nestedValue));
+      if (nestedEntries.length === 0) {
+        rows.push({ label: baseLabel, value: '---', flattened: true });
+        return;
+      }
+      nestedEntries.forEach(([nestedKey, nestedValue]) => {
+        rows.push({ label: `${baseLabel}.${nestedKey}`, value: nestedValue, flattened: true });
+      });
+      return;
+    }
+    rows.push({ label: baseLabel, value: entry, flattened: true });
+  });
+
+  return rows;
+}
+
 function StructuredValueTable({ value, depth = 0 }) {
   if (Array.isArray(value)) {
     if (value.length === 0) {
       return html`<span className="structured-value structured-value--empty">---</span>`;
     }
+
+    const rows = flattenArrayRows('item', value);
+
     return html`
       <div className=${`structured-table-wrap${depth > 0 ? ' is-nested' : ''}`}>
         <table className="structured-table">
           <tbody>
-            ${value.map((entry, index) => html`
-              <tr>
-                <th>[${index}]</th>
+            ${rows.map((row, index) => html`
+              <tr key=${`${row.label}-${index}`}>
+                <th>${row.label}</th>
                 <td>
-                  ${typeof entry === 'object' && entry !== null
-                    ? html`<${StructuredValueTable} value=${entry} depth=${depth + 1} />`
-                    : html`<span className="structured-value">${formatStructuredValue(entry)}</span>`}
+                  <span className="structured-value">${formatFlatStructuredValue(row.value)}</span>
                 </td>
               </tr>
             `)}
@@ -1353,17 +1396,25 @@ function StructuredValueTable({ value, depth = 0 }) {
     if (entries.length === 0) {
       return html`<span className="structured-value structured-value--empty">---</span>`;
     }
+
+    const rows = entries.flatMap(([key, entryValue]) => {
+      if (Array.isArray(entryValue)) {
+        return flattenArrayRows(key, entryValue);
+      }
+      return [{ label: key, value: entryValue, flattened: false }];
+    });
+
     return html`
       <div className=${`structured-table-wrap${depth > 0 ? ' is-nested' : ''}`}>
         <table className="structured-table">
           <tbody>
-            ${entries.map(([key, entryValue]) => html`
-              <tr>
-                <th>${key}</th>
+            ${rows.map((row, index) => html`
+              <tr key=${`${row.label}-${index}`}>
+                <th>${row.label}</th>
                 <td>
-                  ${typeof entryValue === 'object' && entryValue !== null
-                    ? html`<${StructuredValueTable} value=${entryValue} depth=${depth + 1} />`
-                    : html`<span className="structured-value">${formatStructuredValue(entryValue)}</span>`}
+                  ${!row.flattened && typeof row.value === 'object' && row.value !== null
+                    ? html`<${StructuredValueTable} value=${row.value} depth=${depth + 1} />`
+                    : html`<span className="structured-value">${row.flattened ? formatFlatStructuredValue(row.value) : formatStructuredValue(row.value)}</span>`}
                 </td>
               </tr>
             `)}
