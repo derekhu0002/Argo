@@ -1,8 +1,8 @@
 # Argo HARNESS
 
-Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它不把 agent 当成“直接写代码的捷径”，而是把意图架构、实现架构、测试边界、失败记录和阶段交接组织成一个可重复、可验证、可回归的闭环。
+Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它把意图架构、实现架构、测试边界、失败记录和阶段交接组织成一个可重复、可验证、可回归的闭环。
 
-这个仓库当前同时承载两种落地形态：
+当前同时承载两种落地形态：
 
 - GitHub Copilot / VS Code 版本：通过 `@argowork` 聊天参与者、VS Code 扩展命令，以及 `.github/agents/` 下的自定义 agent 驱动工作流。
 - OpenCode 版本：通过 `.opencode/` 下的 agent、command、tool 和 validator 资产驱动同一套工作流。
@@ -28,10 +28,27 @@ Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它不�
 
 如果把顺序打乱，Argo 的价值会明显下降，因为它真正提供的不是“多一个 AI 工具入口”，而是“把架构边界、测试边界和阶段交接显性化的工程系统”。
 
-## HARNESS 在解决什么问题
+### **AI 确定性交付的第一性原理**
+
+$$Total Certaint(最终交付的确定性) = \left[ C \times \frac{(P \cdot B) \times E}{G} \right] \cdot S^n$$
 
 
-很多 AI Coding 流程的问题不在“模型不够强”，而在“工程边界不够清楚”。需求、架构、测试和修复经常被混在同一轮对话里，最后得到的是一段能运行但很难复用、很难验证、也很难交接的结果。
+*   **C $\rightarrow$ Clarity（目标清晰度）**
+    *   *定义：* 意图的确定性。衡量人类对“目的地”的定义是否从模糊的语义描述固化为唯一的逻辑坐标。
+*   **P $\rightarrow$ Protocol（协议规范）**
+    *   *定义：* 边界的设计方案。即 Harness 的结构，包括 Blueprint（蓝图）、Semantic Registry（语义仓库）和测试契约的定义。
+*   **B $\rightarrow$ Binding Power（边界约束力）**
+    *   *定义：* 边界的硬度/强制性。衡量该协议是“建议性质的提示词（软约束）”还是“物理阻断的代码关卡（硬约束）”。
+*   **E $\rightarrow$ Efficacy（模型能效）**
+    *   *定义：* AI 模型的基础生产力。衡量模型在逻辑推理、代码生成及指令遵循上的原生能力（对应 HumanEval、SWE-bench 等指标）。
+*   **G $\rightarrow$ Granularity（任务颗粒度）**
+    *   *定义：* 单次执行的复杂度。任务拆解得越细，G 越小，AI 在单体任务中的探索空间就越受控。
+*   **S $\rightarrow$ Stability（系统稳定性）**
+    *   *定义：* 过程的一致性。衡量系统在单步执行中不产生随机漂移、不丢失上下文记忆的概率。
+*   **n $\rightarrow$ Number of Steps（任务链长度）**
+    *   *定义：* 阶段性目标的总数。即任务从出发点到终点经历的紫色圆圈（中间站）数量，它对稳定性具有指数级的累积效应。
+
+---
 
 Argo 的 HARNESS 思路就是先把这些边界显性化：
 
