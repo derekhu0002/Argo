@@ -46,124 +46,110 @@ $$Total Certaint(最终交付的确定性) = \left[ C \times \frac{(P \cdot B) \
 *   **S $\rightarrow$ Stability（系统稳定性）**
     *   *定义：* 过程的一致性。衡量系统在单步执行中不产生随机漂移、不丢失上下文记忆的概率。
 *   **n $\rightarrow$ Number of Steps（任务链长度）**
-    *   *定义：* 阶段性目标的总数。即任务从出发点到终点经历的紫色圆圈（中间站）数量，它对稳定性具有指数级的累积效应。
+    *   *定义：* 阶段性目标的总数。即任务从出发点到终点经历的中间站数量，它对稳定性具有指数级的累积效应。
 
 ---
 
-Argo 的 HARNESS 思路就是先把这些边界显性化：
+这不是“文档整理动作”，而是直接对应 AI 确定性交付第一性原理里不同变量的失真来源。换句话说，Argo 的每一项措施，本质上都在修复某一类确定性损失。
 
-- 让人类通过 ArchiMate 意图模型握住方向盘，持续掌控系统演进方向。
-- 让目标通过分层测试用例逐层传导，而不是靠一次提示把所有要求压给 agent。
-- 让架构直接融入代码仓的目录、文件、契约和测试入口，而不是停留在仓库外的说明文档里。
-- 先澄清意图，不让实现现状反向定义目标。
-- 先固定实现架构契约和测试入口，再进入编码。
-- 让失败记录成为下一轮工作的高质量输入，而不是噪音。
-- 让 agent 在受约束的工程系统里工作，而不是在自由提示里碰运气。
+## 基于第一性原理的 HARNESS 审视
 
-## 核心理念
+ Argo 要构建的 HARNESS 本体：它分别在解决哪一类确定性问题、机制成熟到什么程度、下一步该推进什么。
 
-### 1. 先 Intent，后 Implementation，最后 Coding
+### 1. C（Clarity）相关：语义不确定问题
 
-Argo 的主流程不是“提一个需求，直接让 agent 改代码”，而是：
+要解决的问题类型：
+- 需求与验收语义在自然语言层面存在歧义。
+- 执行阶段无法稳定判断“完成定义（Definition of Done）”。
 
-```text
-Intent Design
-  -> IntentToImplementationHandoff
-Implementation Design
-  -> ImplementationToCodingHandoff
-Coding/Repair
-  -> Test / Regression
-```
+当前解决程度（HARNESS 机制成熟度）：
+- 已形成清晰机制方向：意图先行、显性 testcase 先行、阶段化交接先行。
+- 处于“机制可定义、可表达”的成熟度阶段，核心短板是“持续、标准化产出一致性”而非概念缺失。
 
-### 2. 测试先是契约，其次才是脚本
+下一步建议：
+- 将“意图语义 -> testcase 基线 -> 交接工件”定义为 HARNESS 必经链路，并把每步产物模板化、校验化。
 
-`design/KG/SystemArchitecture.json` 中的显性 testcase 是验收基线。Implementation Design 阶段需要把它们物理化为只读、单一、可执行的测试入口；Coding/Repair 阶段修复的是实现，不是测试口径。
+### 2. P 与 B（Protocol / Binding Power）相关：协议漂移与约束软化问题
 
-### 3. 失败记录是工作队列
+要解决的问题类型：
+- 有流程但执行可绕过，导致协议漂移。
+- 边界主要靠自觉遵守，缺少默认阻断。
 
-Implementation Design 允许测试以“预期失败”的方式先落地。这样进入 Coding/Repair 时，agent 面对的不是模糊的需求，而是一组已定义边界、已具备入口、可直接回归的失败记录。
+当前解决程度（HARNESS 机制成熟度）：
+- 协议层（P）设计较完整：包含分阶段职责、契约载体、测试载体、校验动作。
+- 约束力（B）处于“中等成熟”：具备硬约束设计思想，但需要更高比例的默认自动执行。
 
-### 4. 人负责高杠杆决策，agent 负责受约束执行
+下一步建议：
+- 继续推动“规则即门禁”：让 schema、handoff、关键 guardrail 从“建议执行”升级到“默认必跑 + 失败即阻断”。
 
-人类负责拍板意图、边界和权衡，agent 负责在既定边界内读取证据、生成交接、执行测试和补齐实现。这样既避免人工被机械工作淹没，也避免 agent 在高风险决策上越权发挥。
+### 3. G（Granularity）相关：任务过粗导致随机探索问题
 
-### 5. ArchiMate、测试和仓库结构是同一套控制链
+要解决的问题类型：
+- 大任务一次性下发导致 agent 搜索空间过大。
+- 同一目标在不同轮次出现不可复现的执行路径。
 
-在 Argo 里，这三件事不是分开的：
+当前解决程度（HARNESS 机制成熟度）：
+- 已形成颗粒度治理思想：Intent Design、Implementation Design、Coding/Repair 的分阶段闭环。
+- 处于“机制可操作”阶段，仍需进一步降低人工编排依赖。
 
-- 人类通过 `design/KG/SystemArchitecture.json` 这样的 ArchiMate 意图模型掌控方向。
-- 目标通过显性 testcase、关键非显性测试和支撑测试逐层传导到实现层。
-- 架构最终落在代码仓本身的目录结构、`OVERALL_ARCHITECTURE.md`、各级 `ARCHITECTURE.md`、测试入口和 failure records 里。
+下一步建议：
+- 推进默认执行模板化：将“设计 -> 校验 -> 测试 -> 修复”固化为最小标准流程，而非每轮临场拼接。
 
-也就是说，Argo 不是把“架构图”和“代码仓”分开维护，而是要求架构最终在代码仓结构中被物理表达、被测试守护、被工作流持续执行。
+### 4. S（Stability）相关：长链路漂移与回归失稳问题
 
-## 工作流如何部署到 Instructions、Agents、Skills、Tools、Plugin
+要解决的问题类型：
+- 步数增加后，局部正确难以累积为全局正确。
+- 缺少统一失败面时，修复工作会震荡反复。
 
-Argo 不是把工作流只写成一份方法论文档，而是把同一套控制逻辑拆进宿主平台真正可执行的几个层次里。
+当前解决程度（HARNESS 机制成熟度）：
+- 已建立“失败记录驱动下一轮工作”的闭环方向。
+- 处于“闭环雏形”阶段，离“可运营、可调度、可预测收敛”还有一段距离。
 
-### 1. Instructions：定义全局工作规则
+下一步建议：
+- 把 failure records 从记录容器升级为调度容器：增加责任层、优先级、失败类型、修复状态等治理字段。
 
-Instructions 层负责声明这套 HARNESS 的全局操作规约，告诉 agent 应该先读什么、按什么阶段工作、哪些边界不能破。
+### 5. E（Efficacy）相关：模型能力利用率问题
 
-- Copilot 侧的主入口是 `.github/copilot-instructions.md`
-- OpenCode 侧的主入口是 `.opencode/GLOBAL_INSTRUCTIONS.md`
+要解决的问题类型：
+- 模型能力本身强，但被弱流程稀释。
+- 缺少工程化承载面时，能力提升无法稳定转化为交付提升。
 
-这一层承载的是全局工作纪律，例如：先读 `design/KG/SystemArchitecture.json`，再读 `OVERALL_ARCHITECTURE.md`，再按需读代码与测试；以及 Intent Design、Implementation Design、Coding/Repair 三个阶段的边界和交接要求。
+当前解决程度（HARNESS 机制成熟度）：
+- 已明确把 Instructions、Agents、Skills、Tools、Hooks/Plugins 作为能力承载层。
+- 处于“体系搭建完成、运营优化待加强”阶段。
 
-### 2. Agents：把阶段职责落成专门角色
+下一步建议：
+- 改进重点放在 HARNESS 运行机制本身：提升自动化覆盖率、阻断精度和跨阶段一致性，而不是单纯追加提示词。
 
-Agents 层负责把工作流中的不同阶段变成可直接调用的专门角色，让每个角色只做自己那一层的事。
+## 当前结论：HARNESS 在解决什么问题，解决到哪一步
 
-- Copilot 侧位于 `.github/agents/`
-- 当前已落地的 agent 包括 `IntentionDesign`、`ImplementationDesign`、`CodingAndReparing`
-- OpenCode 侧位于 `.opencode/agents/`
-- OpenCode 侧额外包含 `Init` 和 `Test` 这样的运行型 agent
+一句话总结：
 
-这一层的作用是把“同一个 agent 什么都做”的模糊工作面，拆成按阶段收口的角色工作面。
+Argo 要构建的 HARNESS，核心是在用工程化边界解决“语义不确定、流程漂移、任务过粗、长链失稳、能力稀释”五类问题；当前已完成方法与机制骨架建设，下一阶段应重点推进“默认强约束执行能力”和“闭环运营能力”。
 
-### 3. Skills：把通用工作模式沉淀成可复用模块
+## 下一步改进优先级（建议）
 
-Skills 层负责承载跨任务复用的工作模式，而不是直接承载某一轮具体任务。
+1. 优先强化 Binding（硬约束）
+- 让关键校验与关键测试成为默认门禁，减少可绕过路径。
 
-- Copilot 侧位于 `.github/skills/`
-- OpenCode 侧位于 `.opencode/skills/`
-- 当前代表性 skill 包括 `grill-me`、`handoff`、`brief`、`distill-agent-rules`、`improve-codebase-architecture`
+2. 然后强化 Stability（闭环治理）
+- 建立可调度的 failure records 机制，支持按责任与优先级收敛修复。
 
-这一层解决的是“方法怎么复用”的问题。例如，`grill-me` 负责设计阶段的持续追问，`handoff` 负责阶段交接压缩，`brief` 负责从架构来源生成对外说明。
+3. 再强化 Granularity（流程模板）
+- 固化跨阶段最小标准流程，降低人工编排随机性。
 
-### 4. Tools：把关键动作变成可执行能力
+4. 最后持续打磨 Clarity 与 Efficacy 的协同
+- 通过更稳定的意图表达与交接语义，让模型能力持续、可复现地转化为交付能力。
 
-Tools 层负责把测试、校验、初始化、工作区投影这类关键动作变成AGENT可执行能力，而不是停留在提示词里。这里在 OpenCode 和 Copilot 上的落地方式并不完全相同。
-
-- OpenCode 侧的 Tools 是显式定义给 agent 调用的工具，位于 `.opencode/tools/`，当前主要是 `argo.ts` 与 `validator.ts`
-- 在这种形态下，agent 可以把这些工具当成工作流内的直接执行面，用来完成测试、校验、初始化等动作
-- Copilot / VS Code 侧目前只有少量能力以原生模型工具形式暴露，Copilot 侧更常见的落地方式，是把关键动作实现为 `npm` / `node` / `js` 脚本和聊天参与者命令，再由 Copilot agent 通过 Bash 或终端去执行这些脚本，例如 `@argowork /argo-init`、`/test`、`/work`、`/implementationdesign` 这类入口，本质上就是让 agent 在工作流中自主触发脚本与命令，从效果上达到与 OpenCode tools 类似的“可自执行动作面”
-- 校验资产则分别落在 `.github/validator/` 和 `.opencode/validator/`
-
-因此，Tools 这一层解决的是“关键动作如何真正被 agent 自主执行”的问题。OpenCode 更偏向“显式工具定义”，Copilot 更偏向“脚本 + 命令 + 终端执行”，但它们承担的是同一类职责：让 schema 校验、handoff 校验、测试入口执行、bootstrap 资产投影这类动作在工作流中被自动触发，而不是只停留在文档要求里。
-
-### 5. Hooks / Plugins：把规则变成事件级绝对护栏
-
-这一层是利用宿主提供的事件机制，把规则变成能在关键动作发生前就拦截的绝对护栏。
-
-- 在 Copilot / VS Code 侧，是 `hook`：监听会话启动、文件访问、文件修改、命令执行等事件，然后触发对应脚本或校验逻辑
-- 在 OpenCode 侧，是 `plugin`：同样监听宿主事件，并在命中条件时执行插件脚本或校验动作
-- 这一层的目标不是给 agent 一句“最好不要这样做”的软提示，而是在违规动作真正落地前直接阻断
-
-例如，如果规则要求 agent 不能修改 `.env` 文件，那么可以通过监听 `.env` 文件修改事件，在实际写入发生前直接抛回错误，明确告诉 agent 当前操作违规。
-
-因此，这一层承载的是事件驱动的强约束执行能力：监听事件，触发脚本，命中规则即中止，而不是等违规发生后再靠提示词补救。
-
-## 这五层是怎样连起来的
-
-如果把整套 Argo 工作流从上到下看，可以理解成：
+## 从第一性原理到工程部署的对应关系
 
 ```text
-Instructions 定义全局纪律
-Agents 承载阶段职责
-Skills 复用通用工作模式
-Tools 执行关键动作
-Hooks / Plugins 把规则落成事件级护栏
+Clarity: 意图图谱 + 显性 testcase + 阶段顺序
+Protocol: 架构契约 + 指令规约 + 分层角色
+Binding: 校验器 + 只读测试入口 + 自动阻断
+Granularity: 分阶段命令与可执行 entrypoint
+Stability: failure records + 回归测试闭环
+Efficacy: 模型能力通过上述工程系统被放大
 ```
 
-因此，Argo 的部署不是“先写一个提示词，再写几个脚本”，而是把同一套工作流按职责拆进不同宿主层次中：规则在 instructions，角色在 agents，方法在 skills，动作在 tools，最终由 hooks 或 plugins 把这些规则提升为宿主内可执行、可拦截、可阻断的绝对护栏。
+因此，Argo 的下一步重点不是“再解释一遍方法论”，而是把已定义边界继续转成默认执行、默认校验、默认阻断，让确定性从“可理解”进一步变成“可强制”。
