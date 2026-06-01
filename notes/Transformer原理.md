@@ -31,3 +31,53 @@ $$T_t = \mathcal{F}(I(x_t) \mid \mathcal{S}_{<t})$$
 
 ---
 
+Attention and RoPE
+
+这是一个非常硬核且极具美感的逻辑合并。我们现在要做的，是把 **$\mathcal{F}$（演进函数）** 这个“黑盒”拆开，将 **Attention（注意力机制）** 的数学本质作为它的内动力注入进去。
+
+在你的高维空间模型里，Attention 就是计算**当前点如何从历史点云中吸取重力**的具体算法。
+
+---
+
+### 二、 过程方程（融入 Attention 机制版）
+
+我们将 $\mathcal{F}$ 函数展开，定义 **Attention** 为坐标演进的核心逻辑：
+
+#### 1. 内部算子定义：引力的产生
+在计算 $T_t$ 之前，模型先将输入映射为三个引力分量：
+*   **$q_t = I(x_t) \cdot W_Q$** （当前探针：我要找什么？）
+*   **$k_i = I(x_i) \cdot W_K$** （历史标签：我有什么特征？）
+*   **$v_i = I(x_i) \cdot W_V$** （历史能量：我能提供什么语义？）
+
+---
+
+#### 2. 问题句阶段：引力场构建 (Prefill Phase)
+当 $t = 1, \dots, N$ 时，每一个坐标点 $T_t$ 的计算过程如下：
+
+**核心演进公式：**
+
+$$T_{t+1} = \text{FFN}(\text{Attention}(q_{t+1}, \mathbf{K}, \mathbf{V}))$$
+$$\text{Attention}(q_t, \mathbf{K}_{\le t}, \mathbf{V}_{\le t}) = \sum_{i=1}^{t} \alpha_{t,i} \cdot v_i$$
+
+**其中，引力分配权重 $\alpha$（受 RoPE 修正）：**
+$$\alpha_{t,i} = \text{Softmax} \left( \frac{\text{RoPE}(q_t, t) \cdot \text{RoPE}(k_i, i)^\top}{\sqrt{d}} \right)$$
+
+*   **数学意义：** $T_t$ 不再是孤立的点，它是历史序列中所有能量点 $v_i$ 的**加权合力**。
+*   **RoPE 的作用：** 通过旋转变换，人为地让距离远的 $k_i$ 与 $q_t$ 产生的点积减小，实现**“引力随距离衰减”**。
+
+---
+
+#### 3. 回答句阶段：自回归生成 (Generation Phase)
+当 $t \ge N$ 时，系统进入“预测-采样-吸纳”的递归循环：
+
+1.  **意图坍缩 (Prediction)：**
+    $$x_{t+1} = \mathcal{Q}(T_t)$$
+    *此时 $T_t$ 已经凝聚了前面所有 Token 的 Attention 合力。*
+
+2.  **坐标演进 (Evolution)：**
+    $$T_{t+1} = \text{Attention}(q_{t+1}, \mathbf{K}_{\le t+1}, \mathbf{V}_{\le t+1})$$
+    *   **新入场：** $q_{t+1} = I(x_{t+1}) \cdot W_Q$
+    *   **吸纳历史：** 这个新的 $q_{t+1}$ 会再次通过 Attention 扫描 $\mathcal{S}_{<t+1}$（包括刚刚生成的 $x_{t+1}$）。
+    *   **更新 $\mathcal{S}$：** 将新产生的 $k_{t+1}, v_{t+1}$ 存入历史序列（即 KV Cache）。
+
+---
