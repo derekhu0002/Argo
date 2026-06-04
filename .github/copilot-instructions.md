@@ -115,7 +115,7 @@ When repository evidence conflicts, resolve it in this order:
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
 - This stage must generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
-- Before handing off to Coding/Repair, this stage must produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `.github/argoschema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, and expected failure signals that Coding/Repair is required to consume.
+- Before handing off to Coding/Repair, this stage must produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `.github/argoschema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.
 
 ### Coding And Repair Stage
 
