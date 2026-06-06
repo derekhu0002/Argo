@@ -4,14 +4,14 @@ contract_version: 1
 scope: stable-element
 element_name: bundled-validator-assets
 element_kind: BootstrapAssetZone
-element_path: .github/validator
+element_path: .cursor/validator
 ---
 
 ## Implementation Architecture Contract
 
 ### Responsibility
-- Store the bundled validator assets that /argo-init projects into Argo-managed workspace paths.
-- Keep validator implementation assets separated from target-workspace business directories while still allowing repository-native validation commands to invoke them in place.
+- Store the bundled validator assets that Argo init/bootstrap projects into Cursor-managed workspace paths.
+- Keep validator implementation assets separated from target-workspace business directories while still allowing Cursor MCP tools to invoke them in place.
 
 ### Out Of Scope
 - Owning target-workspace package.json mutation logic.
@@ -20,13 +20,13 @@ element_path: .github/validator
 ### Children
 - path: script/validateStageHandoff.js
   kind: bundled-validator-script
-  role: bundled handoff validator executable copied into managed .github workspace paths
+  role: bundled handoff validator executable copied into managed .cursor workspace paths
 - path: script/validateSystemArchitecture.js
   kind: bundled-validator-script
-  role: bundled SystemArchitecture schema validator executable copied into managed .github workspace paths
+  role: bundled SystemArchitecture schema validator executable copied into managed .cursor workspace paths
 - path: script/runArchitectureTests.js
   kind: bundled-validator-script
-  role: bundled explicit testcase execution script copied into managed .github workspace paths for npm/agent invocation
+  role: bundled explicit testcase execution script copied into managed .cursor workspace paths for MCP/agent invocation
 
 ### Test Guardrails
 #### critical_non_explicit_tests
@@ -45,4 +45,10 @@ element_path: .github/validator
   frozen_by_stage: implementationdesign
 
 ### Notes
-- The repository root package.json invokes these bundled validator scripts directly via .github/validator/script/*.js. No separate root-level validator shims are present in the current repository state.
+- Cursor agents invoke these scripts through the `argo-validator` MCP server defined in `.cursor/mcp.json`.
+- MCP entrypoint: `.cursor/tools/validator/server.js`
+- MCP tools:
+  - `validateSystemArchitecture`
+  - `validateStageHandoff`
+  - `runArchitectureTests`
+- Schema assets live under `.cursor/argoschema/`.
