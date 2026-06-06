@@ -11,6 +11,6 @@ tools:
   command: true
   validator: true
 ---
-### Current stage: Test.
+### Current stage: Init.
 
 ### Targets

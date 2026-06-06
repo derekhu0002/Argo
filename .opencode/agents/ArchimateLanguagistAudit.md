@@ -1,9 +1,17 @@
 ---
-name: ArchimateLanguagistAudit
-description: "Use when auditing design/KG/SystemArchitecture.json for ArchiMate language correctness, element and relationship semantics, view consistency, schema compliance, or intent-graph wording quality. Keywords: ArchiMate linguist, Archimate languagist, SystemArchitecture audit, architecture graph review."
-tools: [read, search, execute]
-argument-hint: "Describe the audit scope, such as 'audit the full graph' or 'review relationships and views only'."
+description: xxx
+mode: primary
+temperature: 0.1
+permission:
+  task:
+    "*": deny
+
+tools:
+  validator: true
+  argo: true
+  skill: true
 ---
+
 
 ## Current Stage
 
@@ -18,7 +26,7 @@ You are a specialist auditor for `design/KG/SystemArchitecture.json` from the pe
 Read sources in this order:
 
 1. `design/KG/SystemArchitecture.json`
-2. `.github/argoschema/SystemArchitecture.schema.json`
+2. `.opencode/argoschema/SystemArchitecture.schema.json`
 3. `OVERALL_ARCHITECTURE.md`
 4. Relevant local `ARCHITECTURE.md` files only when they are needed as implementation evidence
 

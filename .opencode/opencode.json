@@ -1,9 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": {
-    "mcp_*": "ask",
-    "skill": {
-      "*": "allow"
-    }
+    "skill": "allow"
   }
 }

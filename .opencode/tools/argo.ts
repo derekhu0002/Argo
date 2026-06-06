@@ -8,7 +8,13 @@ const execFileAsync = promisify(execFile);
 
 const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const FAILURE_RECORDS_PATH = 'design/KG/test-failure-records.json';
-const EA_TEMPLATE_PATH = ['.opencode', 'customtools', 'EA-model-template.feap'] as const;
+const EA_TEMPLATE_PATH_CANDIDATES = [
+    ['.opencode', 'customtools', 'EA-model-template.feap'],
+    ['.opencode', 'EA-model-template.feap'],
+    ['eatool', 'EA-model-template.feap'],
+    ['EA-model-template.feap'],
+    ['Argo.feap'],
+] as const;
 const HANDOFF_FILES_TO_RESET = [
     ['design', 'KG', 'IntentToImplementationHandoff.json'],
     ['design', 'KG', 'ImplementationToCodingHandoff.json'],
@@ -140,7 +146,7 @@ async function ensureWorkspaceBootstrap(workspaceRoot: string) {
     const removedFiles: string[] = [];
     const skippedSteps: string[] = [];
 
-    const templateSourcePath = path.join(workspaceRoot, ...EA_TEMPLATE_PATH);
+    const templateSourcePath = resolveTemplateSourcePath(workspaceRoot);
     const targetFeapName = buildTargetFileName(workspaceName);
     const targetFeapPath = path.join(workspaceRoot, targetFeapName);
     if (!fs.existsSync(targetFeapPath)) {
@@ -553,4 +559,19 @@ function collectExplicitTestcases(graph: RawArchitectureGraph): ExplicitArchitec
 
 function normalizeRelativePath(value: string): string {
     return value.replace(/\\/g, '/').replace(/^\.\//, '').trim();
+}
+
+function resolveTemplateSourcePath(workspaceRoot: string): string {
+    for (const relativePath of EA_TEMPLATE_PATH_CANDIDATES) {
+        const absolutePath = path.join(workspaceRoot, ...relativePath);
+        if (fs.existsSync(absolutePath)) {
+            return absolutePath;
+        }
+    }
+
+    throw new Error(
+        `EA model template not found. Checked: ${EA_TEMPLATE_PATH_CANDIDATES
+            .map(parts => normalizeRelativePath(parts.join('/')))
+            .join(', ')}`,
+    );
 }

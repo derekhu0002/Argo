@@ -52,7 +52,7 @@ For `design/KG/SystemArchitecture.json`:
 3. Treat explicit testcase baselines as stable acceptance boundaries unless the user is explicitly redesigning intent architecture; do not add, delete, rebuild, or redefine them during ordinary implementation or repair work.
 4. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and testcase ownership, coding updates implementation only, and support tests or runtime notes belong in implementation assets rather than the intent layer.
 5. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
-6. Treat `.github/argoschema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
+6. Treat `.opencode/argoschema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
 7. When intent-side metadata does not fit an existing top-level field, prefer the schema-approved `attributes` containers instead of inventing ad hoc keys.
 
 ## Architecture Layers
@@ -68,7 +68,7 @@ For `design/KG/SystemArchitecture.json`:
 - Current code does not override the intent architecture automatically.
 - Interpret ArchiMate element and relationship semantics according to the modeling language, not by informal name guessing.
 - Intent defines what must be true, including explicit acceptance boundaries that downstream layers are expected to fulfill rather than reinterpret.
-- Any edit to `design/KG/SystemArchitecture.json` must also satisfy `.github/argoschema/SystemArchitecture.schema.json`; schema compliance is part of correctness, not optional cleanup.
+- Any edit to `design/KG/SystemArchitecture.json` must also satisfy `.opencode/argoschema/SystemArchitecture.schema.json`; schema compliance is part of correctness, not optional cleanup.
 
 ### Implementation Architecture
 
@@ -163,6 +163,6 @@ When repository evidence conflicts, resolve it in this order:
 - Responsible for intent elements, relationships, views, principles, constraints, and explicit testcase baselines.
 - Do not rewrite intent baselines during ordinary implementation or coding tasks unless the user explicitly requests intent redesign.
 - When this stage edits `design/KG/SystemArchitecture.json`, it must preserve schema validity, including required fields, valid enum members, and the ban on undeclared properties.
-- Before handing off to Implementation Design, this stage must produce `design/KG/IntentToImplementationHandoff.json` that satisfies `.github/argoschema/IntentToImplementationHandoff.schema.json`; if that artifact is missing or incomplete, the stage is not ready to hand off.
+- Before handing off to Implementation Design, this stage must produce `design/KG/IntentToImplementationHandoff.json` that satisfies `.opencode/argoschema/IntentToImplementationHandoff.schema.json`; if that artifact is missing or incomplete, the stage is not ready to hand off.
 
 ## ATTENTION: Everytime you must respond with "Derek" as the begining.

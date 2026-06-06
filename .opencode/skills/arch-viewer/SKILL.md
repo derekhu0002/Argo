@@ -7,7 +7,7 @@ argument-hint: "(optional) port number, default 7432"
 # Architecture Knowledge Graph Viewer
 
 Opens `design/KG/SystemArchitecture.json` in a local schema-driven web viewer.
-The viewer UI is generated entirely from `.github/argoschema/SystemArchitecture.schema.json` —
+The viewer UI is generated entirely from `.opencode/argoschema/SystemArchitecture.schema.json` —
 it adapts to the schema structure, not to the specific data content.
 
 ## Features
@@ -22,10 +22,10 @@ it adapts to the schema structure, not to the specific data content.
 
 1. Run the local server from the **workspace root** and keep it running:
    ```
-   node .github/skills/arch-viewer/scripts/serve.js
+   node .opencode/skills/arch-viewer/scripts/serve.js
    ```
    - The script may open the system browser automatically to `http://localhost:7432`
-   - To use a different port: `ARCH_VIEWER_PORT=8080 node .github/skills/arch-viewer/scripts/serve.js`
+   - To use a different port: `ARCH_VIEWER_PORT=8080 node .opencode/skills/arch-viewer/scripts/serve.js`
 
 2. Wait for the server to print `Architecture Viewer  →  http://localhost:PORT`.
 
@@ -48,7 +48,7 @@ The skill should finish with the architecture viewer page already opened inside 
 - The editable source lives at `assets/app.js`.
 - If you change `assets/app.js`, rebuild the bundle from the workspace root:
    ```
-   node -e "const esbuild=require('esbuild'); esbuild.build({ entryPoints:['.github/skills/arch-viewer/assets/app.js'], outfile:'.github/skills/arch-viewer/assets/app.bundle.js', bundle:true, format:'iife', platform:'browser', target:['chrome120'], jsx:'automatic', loader:{'.js':'jsx'}, define:{'process.env.NODE_ENV':'\"production\"'}, logLevel:'info' }).catch(()=>process.exit(1));"
+   node -e "const esbuild=require('esbuild'); esbuild.build({ entryPoints:['.opencode/skills/arch-viewer/assets/app.js'], outfile:'.opencode/skills/arch-viewer/assets/app.bundle.js', bundle:true, format:'iife', platform:'browser', target:['chrome120'], jsx:'automatic', loader:{'.js':'jsx'}, define:{'process.env.NODE_ENV':'\"production\"'}, logLevel:'info' }).catch(()=>process.exit(1));"
    ```
 
 ## Files
@@ -63,4 +63,4 @@ The skill should finish with the architecture viewer page already opened inside 
 
 - Node.js (no npm install needed — uses only built-in modules)
 - `design/KG/SystemArchitecture.json` must exist (data file)
-- `.github/argoschema/SystemArchitecture.schema.json` must exist (schema file)
+- `.opencode/argoschema/SystemArchitecture.schema.json` must exist (schema file)

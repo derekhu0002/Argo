@@ -117,7 +117,7 @@ For `design/KG/SystemArchitecture.json`:
 3. Treat explicit testcase baselines as stable acceptance boundaries unless the user is explicitly redesigning intent architecture; do not add, delete, rebuild, or redefine them during ordinary implementation or repair work.
 4. Keep stage boundaries explicit: intent design updates intent, implementation architecture design updates contracts and testcase ownership, coding updates implementation only, and support tests or runtime notes belong in implementation assets rather than the intent layer.
 5. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
-6. Treat `.github/argoschema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
+6. Treat `.opencode/argoschema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
 7. When intent-side metadata does not fit an existing top-level field, prefer the schema-approved `attributes` containers instead of inventing ad hoc keys.
 
 ## Architecture Layers
@@ -133,7 +133,7 @@ For `design/KG/SystemArchitecture.json`:
 - Current code does not override the intent architecture automatically.
 - Interpret ArchiMate element and relationship semantics according to the modeling language, not by informal name guessing.
 - Intent defines what must be true, including explicit acceptance boundaries that downstream layers are expected to fulfill rather than reinterpret.
-- Any edit to `design/KG/SystemArchitecture.json` must also satisfy `.github/argoschema/SystemArchitecture.schema.json`; schema compliance is part of correctness, not optional cleanup.
+- Any edit to `design/KG/SystemArchitecture.json` must also satisfy `.opencode/argoschema/SystemArchitecture.schema.json`; schema compliance is part of correctness, not optional cleanup.
 
 ### Implementation Architecture
 
@@ -231,7 +231,7 @@ When repository evidence conflicts, resolve it in this order:
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
 - This stage must generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
-- Before handing off to Coding/Repair, this stage must produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `.github/argoschema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.
+- Before handing off to Coding/Repair, this stage must produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `.opencode/argoschema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.
 - If no contract file exists yet, report that as an architecture gap and create or update the appropriate contract file.
 
 ## ATTENTION: Everytime you must respond with "Derek" as the begining.

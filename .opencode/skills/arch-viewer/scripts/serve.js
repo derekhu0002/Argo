@@ -1,6 +1,6 @@
 /**
  * Architecture Viewer - Local HTTP server
- * Run from workspace root: node .github/skills/arch-viewer/scripts/serve.js
+ * Run from workspace root: node .opencode/skills/arch-viewer/scripts/serve.js
  */
 
 const http = require('http');
@@ -11,8 +11,8 @@ const { execSync } = require('child_process');
 
 const PORT = process.env.ARCH_VIEWER_PORT ? parseInt(process.env.ARCH_VIEWER_PORT) : 7432;
 
-// Auto-detect workspace root: walk up from __dirname looking for .github directory
-// serve.js lives at <root>/.github/skills/arch-viewer/scripts/serve.js
+// Auto-detect workspace root: walk up from __dirname looking for .opencode directory
+// serve.js lives at <root>/.opencode/skills/arch-viewer/scripts/serve.js
 function findRoot() {
   if (process.env.ARCH_VIEWER_ROOT) return process.env.ARCH_VIEWER_ROOT;
   let dir = __dirname;
@@ -21,8 +21,8 @@ function findRoot() {
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
-    if (fs.existsSync(path.join(dir, '.github', 'argoschema'))) return dir;
-    if (fs.existsSync(path.join(dir, 'package.json')) && fs.existsSync(path.join(dir, '.github'))) return dir;
+    if (fs.existsSync(path.join(dir, '.opencode', 'argoschema'))) return dir;
+    if (fs.existsSync(path.join(dir, 'package.json')) && fs.existsSync(path.join(dir, '.opencode'))) return dir;
   }
   return process.cwd();
 }
@@ -31,7 +31,7 @@ const ROOT = findRoot();
 
 const PATHS = {
   data:   path.join(ROOT, 'design', 'KG', 'SystemArchitecture.json'),
-  schema: path.join(ROOT, '.github', 'argoschema', 'SystemArchitecture.schema.json'),
+  schema: path.join(ROOT, '.opencode', 'argoschema', 'SystemArchitecture.schema.json'),
   html:   path.join(__dirname, '..', 'assets', 'index.html'),
   assets: path.join(__dirname, '..', 'assets'),
 };
