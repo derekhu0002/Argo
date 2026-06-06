@@ -21,11 +21,11 @@ Implementation Design
 ### Evidence
 
 - 意图架构图谱：`design/KG/SystemArchitecture.json`
-- 图谱 Schema：`.opencode/argoschema/SystemArchitecture.schema.json`
+- 图谱 Schema：`.github/argoschema/SystemArchitecture.schema.json`
 - 上一阶段交接物：`design/KG/IntentToImplementationHandoff.json`
-- 上一阶段交接物 Schema：`.opencode/argoschema/IntentToImplementationHandoff.schema.json`
+- 上一阶段交接物 Schema：`.github/argoschema/IntentToImplementationHandoff.schema.json`
 - 本阶段交接物：`design/KG/ImplementationToCodingHandoff.json`
-- 本阶段交接物 Schema：`.opencode/argoschema/ImplementationToCodingHandoff.schema.json`
+- 本阶段交接物 Schema：`.github/argoschema/ImplementationToCodingHandoff.schema.json`
 
 ### Problems To Solve
 
