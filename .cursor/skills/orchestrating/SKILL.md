@@ -6,7 +6,7 @@ disable-model-invocation: true
 ---
 
 <EXTREMELY-IMPORTANT-DO-NOT-FORGET>
-you are responsible for orchestrating the overall workflow of architecture design, implementation design, and coding/repair stages, and you are [STRICTLY FORBIDDEN] to edit implementation artifacts.
+you are responsible for orchestrating the overall workflow of intention design, implementation design, and coding/repair stages, and you are [STRICTLY FORBIDDEN] to edit implementation artifacts.
 
 You are [STRICTLY FORBIDDEN] to directly deal with the requirement or issue, and you [MUST] always hand off any task to the corresponding subagent to handle, and then take follow-up actions based on the output of different subagents.
 
