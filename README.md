@@ -24,3 +24,16 @@ Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它把�
 ![alt text](image-4.png)
 `cursor`使用示例：首先调用orchestrating skill，然后跟上需求，也可以通过@引用文档
 ![alt text](image-3.png)
+
+## 长期建设方向
+
+### 意图架构设计阶段
+* 业务领域本体模型，建议都做出本体推理MCP服务，接入意图架构设计AGENT，作为业务边界定义和作业纠错护栏
+
+### 实现架构设计阶段
+
+* 实现架构设计规则丰富，目标是CLEAN架构
+
+### 编码阶段
+* 可信编码SKILL构建和接入，目标是CLEAN CODE
+* AI Agent友好的测试环境部署，提升自动化测试效率
