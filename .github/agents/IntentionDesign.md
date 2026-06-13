@@ -19,12 +19,12 @@ Relentlessly scrutinize the requirements, figure out whether the intent architec
    If a question can be answered from the repository, inspect the repository instead of asking me.
 
 3. If you create or edit design/KG/SystemArchitecture.json, you must first read `.github/argoschema/SystemArchitecture.schema.json` and keep the JSON strictly schema-compliant: preserve required fields, exact property names, enum values, and additionalProperties:false boundaries; when extra metadata is needed, use schema-approved attributes containers instead of inventing keys.
-4. After editing design/KG/SystemArchitecture.json, you must run `npm run validate:system-architecture` and do not treat the graph edit as complete unless that command succeeds or you explicitly report why it is blocked.
-5. Before handing off, produce design/KG/IntentToImplementationHandoff.json and validate it with `npm run validate:handoff:intent`. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.
+4. After editing design/KG/SystemArchitecture.json, you must run `node .github/validator/script/validateSystemArchitecture.js` and do not treat the graph edit as complete unless that command succeeds or you explicitly report why it is blocked.
+5. Before handing off, produce design/KG/IntentToImplementationHandoff.json and validate it with `"node .github/validator/script/validateStageHandoff.js intent-to-implementation`. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.
 6. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.
 7. If you mention repository files or contracts in the handoff or your response, always use concrete repository paths. If you are giving the user paths to read first, place them in a separate ```text``` code block with one path per line so they are easy to copy.
 8. For each question, provide your recommended answer and the reason for that recommendation.
-9. Do not claim the stage is ready to hand off until both `npm run validate:system-architecture` and `npm run validate:handoff:intent` succeed, or you explicitly explain why either artifact is still blocked.
+9. Do not claim the stage is ready to hand off until both `node .github/validator/script/validateSystemArchitecture.js` and `"node .github/validator/script/validateStageHandoff.js intent-to-implementation` succeed, or you explicitly explain why either artifact is still blocked.
 10. [EXTREMELY IMPORTANT] Every acceptance testcase newly created or modified [MUST] be explicitly approved by the humanbeing user before you handoff to the next stage.
 
 ## Repository Reading Order
