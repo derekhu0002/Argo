@@ -1,7 +1,6 @@
 ---
 name: brief
 description: Create or update INTRODUCTION.md as an external-facing product brief from architecture sources only. Use when the user asks for a product brief, external introduction, adoption-facing documentation, or INTRODUCTION.md refresh.
-argument-hint: What should the brief emphasize?
 disable-model-invocation: true
 ---
 
