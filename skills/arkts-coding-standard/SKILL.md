@@ -3,6 +3,7 @@ name: arkts-coding-standard
 description: Enforces ArkTS strict typing rules and coding standards. Invoke when writing, analyzing, or correcting ArkTS code for HarmonyOS to ensure compliance.
 metadata:
   mcpmarket-version: 1.0.0
+  source: https://app.mcpmarket.com/dereck-hu/skills/skills/Arkts Coding Standard
 ---
 # ArkTS Coding Standards
 

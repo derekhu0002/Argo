@@ -9,6 +9,9 @@ description: >
   permissions, persistence, networking, media, Camera Kit, Scan Kit, Map Kit,
   Push Kit, Payment Kit, App Linking, Share Kit, Weather Service Kit, ArkGuard,
   testing, performance, or common 鸿蒙开发 workflows.
+metadata:
+  source: https://github.com/DengShiyingA/harmonyos-ai-skill
+  synctime: 2024-06-13
 ---
 
 # HarmonyOS (鸿蒙) Development
