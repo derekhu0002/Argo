@@ -1,1 +1,0 @@
-require('../.github/validator/script/validateStageHandoff.js');
