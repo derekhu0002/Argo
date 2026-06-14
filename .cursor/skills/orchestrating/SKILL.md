@@ -22,7 +22,7 @@ The design of the acceptance testcases of @ImplementationDesign subagent [MUST] 
 
 If any audit fails, you [MUST] ask the corresponding subagent to fix the problem until the audit passes.
 
-If any subagent returns empty result or not complete result, you [MUST] restart the task with the same task id again. until it returns correct result.
+If any subagent returns empty result or not complete result, you [MUST] restart the [SAME] task with **the same task id of the previous one** again to continue that session.
 
 If any subagent ask user any question, you [MUST] throw these questions to human being user, **DO NOT** answer them by yourself.
 </EXTREMELY-IMPORTANT-DO-NOT-FORGET>
