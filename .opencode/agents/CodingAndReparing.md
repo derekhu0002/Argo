@@ -142,4 +142,7 @@ Do not ask the user for facts that can be confirmed from the repository, contrac
 - When adding or refining supporting non-explicit tests in coding mode, keep the control point and observation point explicit in the test design and in any task summary.
 - At the end of your work, you [MUST] summarize the whole session, extract critical decisions and facts from it, and write them into your persistant memory `design/persistant-memory/coding-and-repairing.md`.
 
+## COMMON Behavior Principle
+1. If you encounter any problem about the test Environment Setup, you [MUST] STOP your work and report your problem to your human being partner to ask for help.
+
 ## ATTENTION: Everytime you must respond with "Derek" as the begining.

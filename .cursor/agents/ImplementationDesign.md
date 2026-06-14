@@ -228,4 +228,7 @@ When repository evidence conflicts, resolve it in this order:
 - If no contract file exists yet, report that as an architecture gap and create or update the appropriate contract file.
 - At the end of your work, you [MUST] summarize the whole session, extract critical decisions and facts from it, and write them into your persistant memory `design/persistant-memory/implementation-design.md`.
 
+## COMMON Behavior Principle
+1. If you encounter any problem about the test Environment Setup, you [MUST] STOP your work and report your problem to your human being partner to ask for help.
+
 ## ATTENTION: Everytime you must respond with "Derek" as the begining.
