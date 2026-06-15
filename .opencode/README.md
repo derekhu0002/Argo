@@ -30,6 +30,18 @@ Argo HARNESS 是一套运行在 OpenCode 之上的多 Agent 架构交付工作�
 | `Test` | 测试命令 Agent | 承接 `/argotest`，调用 `argo_test` 执行显性 testcase 并刷新失败记录。 | 主要用于验收测试执行。 |
 | `teacher` | 教学型 Agent | 以循序渐进方式解释复杂主题，帮助形成共同理解。 | 辅助学习，不承担主交付链路。 |
 
+### `Orchestrator` 硬权限护栏
+
+`Orchestrator` 的核心边界不是提示词建议，而是 `.opencode/agents/Orchestrator.md` frontmatter 中的权限配置：
+
+- 只允许 `skill` 工具，用于加载编排相关 Skill。
+- 只允许 `task` 调度 `IntentionDesign`、`ImplementationDesign`、`CodingAndReparing` 三个子 Agent。
+- 显式禁止 `read`、`edit`、`glob`、`grep`、`list`、`bash`、`webfetch`、`websearch`、`lsp`、`todowrite`、`question` 等其它工具。
+
+当 `Orchestrator` 遇到工具拒绝、阻塞、困惑或上下文不确定时，它必须进入 `RECOVERY-PROTOCOL`：停止尝试其它禁用工具，必要时重新加载 `orchestrating` Skill，然后只通过允许名单内的子 Agent 继续推进。
+
+这条护栏的验收标准是：当 `Orchestrator` 被要求读取文件、搜索代码、修改文件、执行命令、直接提问或调用非允许名单子 Agent 时，OpenCode 必须在工具执行前拒绝；拒绝后 `Orchestrator` 不能换另一个禁用工具重试，而必须回到 `orchestrating` Skill 或允许名单子 Agent；当它按流程调用允许名单内的子 Agent 或加载 Skill 时，才允许继续。
+
 ## Skills 能力补充
 
 - `orchestrating`：固化总调度规则，要求需求先交给 `IntentionDesign`，意图完成后交给 `ImplementationDesign`，编码完成后双向审计。

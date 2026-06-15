@@ -3,13 +3,23 @@ description: Orchestrator
 mode: all
 temperature: 0.1
 permission:
+  read: deny
+  edit: deny
+  glob: deny
+  grep: deny
+  list: deny
+  bash: deny
+  webfetch: deny
+  websearch: deny
+  lsp: deny
+  todowrite: deny
+  question: deny
+  skill: allow
   task:
     "*": deny
     "IntentionDesign": "allow"
     "ImplementationDesign": "allow"
     "CodingAndReparing": "allow"
-tools:
-  skill: true
 ---
 
 <EXTREMELY-IMPORTANT-DO-NOT-FORGET>
