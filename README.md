@@ -62,8 +62,8 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 ```mermaid
 flowchart TD
-    A[通过 BusinessPartner 或 /business-partner 提交需求] --> B[结构化分析目标、约束、方案和验收控制点]
-    B --> D[同一会话执行/task-tidy，按横向模块和纵向依赖提取任务，并落盘到design/tasks/目录下]
+    A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[结构化分析目标、约束、方案和验收控制点]
+    B --> D[👤 同一会话执行/task-tidy，按横向模块和纵向依赖提取任务，并落盘到design/tasks/目录下]
     D --> E[转入开发迭代复用流程]
 ```
 
@@ -73,15 +73,15 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[启动新会话进入 Orchestrator，人类按顺序提交任务] --> G[IntentionDesign 产出意图规格和验收测试用例]
-    G --> H{人类伙伴审核意图验收用例?}
+    A[👤 启动新会话进入 Orchestrator，人类按顺序提交任务] --> G[IntentionDesign 产出意图规格和验收测试用例]
+    G --> H{👤 人类伙伴审核意图验收用例?}
     H -- 不通过 --> G
     H -- 通过 --> I[ImplementationDesign 产出实现架构和测试入口]
-    I --> J{人类伙伴审核实现验收用例?}
+    I --> J{👤 人类伙伴审核实现验收用例?}
     J -- 不通过 --> I
     J -- 通过 --> K[CodingAndReparing 编码和修复]
     K --> L{测试环境问题无法自行解决?}
-    L -- 是 --> M[求助人类伙伴修复环境]
+    L -- 是 --> M[👤 求助人类伙伴修复环境]
     M --> K
     L -- 否 --> N{所有测试用例通过?}
     N -- 否 --> K
@@ -92,7 +92,7 @@ flowchart TD
     Q --> R{满足意图规格?}
     R -- 否 --> I
     R -- 是 --> S[交付当前任务]
-    S --> T{还有下一个任务?}
+    S --> T{👤 还有下一个任务?}
     T -- 是 --> A
     T -- 否 --> U[完成任务队列交付]
 ```
@@ -103,18 +103,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[提交问题现象/报错/失败测试/用户反馈] --> B[Orchestrator 接收问题]
+    A[👤 提交问题现象/报错/失败测试/用户反馈] --> B[Orchestrator 接收问题]
     B --> C[IntentionDesign 先判断意图规格是否正确]
     C --> D{问题属于意图架构或验收边界偏差?}
     D -- 是 --> E[转入新需求开发前置流程]
-    E --> F[通过 business-partner 重整需求和验收边界]
-    F --> G[执行 task-tidy 整理任务]
+    E --> F[👤 通过 business-partner 重整需求和验收边界]
+    F --> G[👤 执行 task-tidy 整理任务]
     G --> P[转入开发迭代复用流程]
     D -- 否 --> H[ImplementationDesign 判断实现架构或代码层问题]
     H --> I{问题类型?}
     I -- 纯代码 BUG --> J[CodingAndReparing 直接修复]
     I -- 涉及实现架构调整 --> K[ImplementationDesign 调整实现架构和测试入口]
-    K --> L[人类伙伴审核实现测试用例]
+    K --> L[👤 人类伙伴审核实现测试用例]
     L --> J
     J --> M{相关测试通过?}
     M -- 否 --> J
@@ -130,19 +130,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[发现架构不清洁或 AI Coding 交付摩擦变高] --> B[执行 /improve-codebase-architecture]
+    A[👤 发现架构不清洁或 AI Coding 交付摩擦变高] --> B[👤 执行 /improve-codebase-architecture]
     B --> C[按 Argo 事实源顺序探索架构资产和相关代码]
     C --> D[识别 shallow module、职责泄漏、seam 不清、测试面失焦和依赖方向问题]
     D --> E{存在值得深挖的候选?}
     E -- 否 --> F[说明保持现状或仅需实现设计/编码层调整]
     E -- 是 --> G[输出架构优化候选、收益和建议强度]
-    G --> H[人类伙伴选择候选方向]
-    H --> I[交给 /grill-me 按决策树深挖]
+    G --> H[👤 人类伙伴选择候选方向]
+    H --> I[👤 交给 /grill-me 按决策树深挖]
     I --> J{变更属于哪一层?}
     J -- 意图层 --> K[标记为意图规格调整任务]
     J -- 实现架构层 --> L[标记为实现架构调整任务]
     J -- 编码层 --> M[标记为局部重构任务]
-    K --> N[调用 task-tidy 整理并落盘到 design/tasks/]
+    K --> N[👤 调用 task-tidy 整理并落盘到 design/tasks/]
     L --> N
     M --> N
     N --> O[转入开发迭代复用流程]
@@ -158,12 +158,12 @@ AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会
 
 ```mermaid
 flowchart TD
-    A[业务方案仍不稳定] --> B[business-partner 或 grill-me]
+    A[业务方案仍不稳定] --> B[👤 business-partner 或 grill-me]
     B --> C[形成可验证的目标、方案和风险清单]
-    C --> D[task-tidy 提取任务]
+    C --> D[👤 task-tidy 提取任务]
     D --> E[涉及开发时转入开发迭代复用流程]
 
-    K[Agent 行为偏航] --> L[distill-agent-rules]
+    K[Agent 行为偏航] --> L[👤 distill-agent-rules]
     L --> M[沉淀可执行规则、触发条件和落地位置]
 ```
 
