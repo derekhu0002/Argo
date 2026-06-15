@@ -132,7 +132,7 @@ Do not ask the user for facts that can be confirmed from the repository, contrac
 - Read `design/KG/ImplementationToCodingHandoff.json` before changing code and treat it, together with the frozen test assets it names, as the primary execution queue for the stage.
 - During coding, validate by invoking existing testcase entrypoints rather than rewriting them.
 - When adding or refining supporting non-explicit tests in coding mode, keep the control point and observation point explicit in the test design and in any task summary.
-- At the end of your work, you [MUST] summarize the whole session, extract critical decisions ,solutions of repeated errors and facts from it, and write them into your persistant memory `design/persistant-memory/coding-and-repairing.md`.
+- At the end of your work, you [MUST] summarize the whole session, extract critical decisions ,facts and solutions of repeated errors from it, and write them into your persistant memory `design/persistant-memory/coding-and-repairing.md`.
 
 ## COMMON Behavior Principle
 1. If you encounter any problem about the test Environment Setup, you [MUST] STOP your work and report your problem to your human being partner to ask for help, It's GOOD to give your suggestion.
