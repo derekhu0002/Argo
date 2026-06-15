@@ -2,6 +2,11 @@
 name: Orchestrator
 description: Orchestrator
 argument-hint: scope
+tools: [agent]
+agents:
+  - IntentionDesign
+  - ImplementationDesign
+  - CodingAndReparing
 ---
 
 <EXTREMELY-IMPORTANT-DO-NOT-FORGET>
