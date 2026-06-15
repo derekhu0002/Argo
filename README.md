@@ -120,7 +120,7 @@ flowchart TD
 
 处理问题时，输入应尽量包含现象、复现步骤、失败命令、日志摘要、期望行为和已知影响范围。修复过程中如果更新了意图验收 testcase 或实现阶段测试入口，同样需要人类伙伴审核，避免 Agent 用错误测试固化错误理解。最终交付不只看单个失败是否消失，还要通过双层验收确认没有破坏意图规格和实现架构契约。
 
-##### 架构优化主流程
+##### 架构优化
 
 ```mermaid
 flowchart TD
@@ -133,17 +133,18 @@ flowchart TD
     G --> H[人类伙伴选择候选方向]
     H --> I[交给 /grill-me 按决策树深挖]
     I --> J{变更属于哪一层?}
-    J -- 意图层 --> K[进入意图设计并更新意图规格]
-    J -- 实现架构层 --> L[进入实现设计并更新架构契约]
-    J -- 编码层 --> M[进入 CodingAndReparing 做局部重构]
-    K --> N[形成可执行任务并按新需求开发流程交付]
+    J -- 意图层 --> K[标记为意图规格调整任务]
+    J -- 实现架构层 --> L[标记为实现架构调整任务]
+    J -- 编码层 --> M[标记为局部重构任务]
+    K --> N[调用 task-tidy 整理并落盘到 design/tasks/]
     L --> N
     M --> N
+    N --> O[按新需求开发流程逐任务推进迭代开发]
 ```
 
 AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会把知识、改动和 bug 面集中在少数清晰位置，让 Agent 更容易在有限上下文中理解模块职责、依赖方向和测试入口，从而更快完成交付并降低误改、漏改、越权修改的概率。相反，如果模块很浅、接口暴露过多实现细节、seam 放错位置、测试穿透内部实现，Agent 就会在多个文件之间反复跳转，既更慢，也更容易把局部修补误当成系统性修复。
 
-当前 `/improve-codebase-architecture` 的定位是意图设计阶段的前置探索步骤，不是新的主流程，也不是新的事实源。它优先按 Argo 事实源顺序读取 `design/KG/SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`、相关 handoff JSON；只有这些不足以回答问题时，才继续读取代码、测试、脚本和配置。它只先输出候选，不直接修改代码、测试或设计资产；用户选中候选后，再交给 `/grill-me` 继续深挖。
+当前 `/improve-codebase-architecture` 的定位是意图设计阶段的前置探索步骤，不是新的主流程，也不是新的事实源。它优先按 Argo 事实源顺序读取 `design/KG/SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`、相关 handoff JSON；只有这些不足以回答问题时，才继续读取代码、测试、脚本和配置。它只先输出候选，不直接修改代码、测试或设计资产；用户选中候选后，再交给 `/grill-me` 继续深挖。深挖完成后，需要先调用 `task-tidy` 将架构优化方向整理成 `design/tasks/` 下的可执行任务，再像新需求开发一样由人类伙伴按顺序逐个启动新会话提交给 `Orchestrator`，完成完整迭代交付。
 
 该 Skill 使用的核心架构优化原则包括：用 **deletion test** 判断模块是否只是 pass-through；用 **depth** 判断接口是否真正替调用方隐藏复杂度；优先让测试跨 **interface** 断言可观察行为，而不是穿透实现内部；用 “一个 adapter 可能是假 seam，两个 adapter 才更像真实 seam” 判断间接层是否必要；同时评估 **locality**、**leverage**、**testability** 三类收益。依赖也会被区分为进程内、本地可替换、远程但自有、真正外部四类，以决定是加深模块、定义稳定 port、隔离 adapter，还是删除不必要的间接层。
 
