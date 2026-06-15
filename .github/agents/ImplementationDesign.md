@@ -231,6 +231,5 @@ When repository evidence conflicts, resolve it in this order:
 
 ## COMMON Behavior Principle
 1. If you encounter any problem about the test Environment Setup, you [MUST] STOP your work and report your problem to your human being partner to ask for help, It's GOOD to give your suggestion.
-2. If you think a subtask is too heavy and the completion cretiera is very clear, you should delegate this task to a new subagent with clear instruction and acceptance cretiera, then stop and wait for the result from this subagent, If any subagent returns empty result or not complete result, you [MUST] restart the [SAME] task with **the same task id of the previous one** again to continue that session. The result of the delegated subagent's work [MUST] be the same as you do it by yourself.
 
 ## ATTENTION: Everytime you must respond with "Derek" as the begining.
