@@ -3,6 +3,7 @@
 Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实现可追溯、可验证、可回归的高质量AI自动化交付，同时形成产品、架构决策等组织资产沉淀。它基于当前AI Coding主流方法论(SDD、TDD)做了进一步增强，包括：
 * SDD增强：采用形式化建模语言进行意图规格编写，并通过工具自动检查AI输出的架构模型，从而使得SPEC的编写更规范、更可控；
 * TDD增强：传统的TDD是在编码阶段才开始写测试用例，而本实践是在意图设计阶段就    开始设计验收测试用例，实现架构设计阶段基于验收用例进一步构建测试框架并细分出系统测试用例和集成测试用例传递给编码阶段；
+* DDD引入：
 
 架构模型、测试用例均是天然的项目事实资产，一旦形成便成了AI持续迭代的上下文，从而组织成一个可重复、可验证、可回归的闭环。
 
@@ -58,13 +59,19 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 #### 场景清单
 
+流程图中，`👤` / 橙色表示需要人类参与的输入、审核、选择、求助或触发环节；`🤖` / 蓝色表示由 AI Agent 或 Skill 执行的环节。
+
 ##### 新需求开发
 
 ```mermaid
 flowchart TD
-    A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[结构化分析目标、约束、方案和验收控制点]
+    A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[🤖 结构化分析目标、约束、方案和验收控制点]
     B --> D[👤 同一会话执行/task-tidy，按横向模块和纵向依赖提取任务，并落盘到design/tasks/目录下]
-    D --> E[转入开发迭代复用流程]
+    D --> E[🤖 转入开发迭代复用流程]
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,D human
+    class B,E ai
 ```
 
 新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚；分析完成后，在同一个会话继续执行 `task-tidy`，将结论沉淀为 `design/tasks/` 下的任务文档。任务需要同时做横向切分和纵向排序：横向保证任务边界正交，纵向保证依赖顺序清晰。任务整理完成后，所有涉及开发交付的任务统一转入下面的开发迭代复用流程。
@@ -73,28 +80,34 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[👤 启动新会话进入 Orchestrator，人类按顺序提交任务] --> G[IntentionDesign 产出意图规格和验收测试用例]
+    A[👤 启动新会话进入 Orchestrator，人类按顺序提交任务] --> G[🤖 IntentionDesign 产出意图规格和验收测试用例]
     G --> H{👤 人类伙伴审核意图验收用例?}
     H -- 不通过 --> G
-    H -- 通过 --> I[ImplementationDesign 产出实现架构和测试入口]
+    H -- 通过 --> I[🤖 ImplementationDesign 产出实现架构和测试入口]
     I --> J{👤 人类伙伴审核实现验收用例?}
     J -- 不通过 --> I
-    J -- 通过 --> K[CodingAndReparing 编码和修复]
-    K --> L{测试环境问题无法自行解决?}
-    L -- 是 --> M[👤 求助人类伙伴修复环境]
+    J -- 通过 --> K[🤖 CodingAndReparing 编码和修复]
+    K --> L{🤖 测试环境问题无法自行解决?}
+    L -- 是 --> M[👤 人类伙伴修复环境]
     M --> K
-    L -- 否 --> N{所有测试用例通过?}
+    L -- 否 --> N{🤖 所有测试用例通过?}
     N -- 否 --> K
-    N -- 是 --> O[代码实现验收]
-    O --> P{满足实现架构契约?}
+    N -- 是 --> O[🤖 代码实现验收]
+    O --> P{🤖 满足实现架构契约?}
     P -- 否 --> K
-    P -- 是 --> Q[实现交付验收]
-    Q --> R{满足意图规格?}
+    P -- 是 --> Q[🤖 实现交付验收]
+    Q --> R{🤖 满足意图规格?}
     R -- 否 --> I
-    R -- 是 --> S[交付当前任务]
+    R -- 是 --> S[🤖 交付当前任务]
     S --> T{👤 还有下一个任务?}
     T -- 是 --> A
-    T -- 否 --> U[完成任务队列交付]
+    T -- 否 --> U[🤖 完成任务队列交付]
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef humanDecision fill:#fed7aa,stroke:#c2410c,color:#7c2d12,stroke-width:3px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,M human
+    class H,J,T humanDecision
+    class G,I,K,L,N,O,P,Q,R,S,U ai
 ```
 
 任务整理完成后，由人类伙伴按任务顺序逐个启动新会话，并将当前任务提交给 `Orchestrator`。每个任务都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代，不建议并发执行多个任务，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前任务交付后，如果还有下一个任务，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
@@ -103,23 +116,29 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[👤 提交问题现象/报错/失败测试/用户反馈] --> B[Orchestrator 接收问题]
-    B --> C[IntentionDesign 先判断意图规格是否正确]
-    C --> D{问题属于意图架构或验收边界偏差?}
-    D -- 是 --> E[转入新需求开发前置流程]
-    E --> F[👤 通过 business-partner 重整需求和验收边界]
-    F --> G[👤 执行 task-tidy 整理任务]
-    G --> P[转入开发迭代复用流程]
-    D -- 否 --> H[ImplementationDesign 判断实现架构或代码层问题]
-    H --> I{问题类型?}
-    I -- 纯代码 BUG --> J[CodingAndReparing 直接修复]
-    I -- 涉及实现架构调整 --> K[ImplementationDesign 调整实现架构和测试入口]
+    A[👤 提交问题现象/报错/失败测试/用户反馈] --> B[🤖 Orchestrator 接收问题]
+    B --> C[🤖 IntentionDesign 先判断意图规格是否正确]
+    C --> D{🤖 问题属于意图架构或验收边界偏差?}
+    D -- 是 --> E[🤖 转入新需求开发前置流程]
+    E --> F[👤🤖 通过 business-partner 重整需求和验收边界]
+    F --> G[👤🤖 执行 task-tidy 整理任务]
+    G --> P[🤖 转入开发迭代复用流程]
+    D -- 否 --> H[🤖 ImplementationDesign 判断实现架构或代码层问题]
+    H --> I{🤖 问题类型?}
+    I -- 纯代码 BUG --> J[🤖 CodingAndReparing 直接修复]
+    I -- 涉及实现架构调整 --> K[🤖 ImplementationDesign 调整实现架构和测试入口]
     K --> L[👤 人类伙伴审核实现测试用例]
     L --> J
-    J --> M{相关测试通过?}
+    J --> M{🤖 相关测试通过?}
     M -- 否 --> J
-    M -- 是 --> N[交付问题处理结果]
-    I -- 无需开发 --> O[说明无需开发或需要补充信息]
+    M -- 是 --> N[🤖 交付问题处理结果]
+    I -- 无需开发 --> O[🤖 说明无需开发或需要补充信息]
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef humanDecision fill:#fed7aa,stroke:#c2410c,color:#7c2d12,stroke-width:3px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,F,G human
+    class L humanDecision
+    class B,C,D,E,P,H,I,J,K,M,N,O ai
 ```
 
 问题处理也必须先经过意图设计，因为“问题”不一定是代码 BUG。它可能来自需求理解错误、验收边界遗漏、意图图谱表达不准确，也可能来自实现架构契约、测试入口或编码实现偏差。先由 `IntentionDesign` 判断问题是否属于意图架构问题；如果是，应转入新需求开发前置流程，通过 `business-partner` 重新整理需求与验收边界，再通过 `task-tidy` 形成任务，并转入开发迭代复用流程。若意图正确，再由 `ImplementationDesign` 判断问题属于纯代码 BUG 还是涉及实现架构调整：纯代码 BUG 直接交给 `CodingAndReparing` 修复；如果涉及实现架构调整，则先由 `ImplementationDesign` 更新实现架构和测试入口，经人类伙伴审核后再交给 `CodingAndReparing` 修复并跑通相关测试。
@@ -131,21 +150,27 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[👤 发现架构不清洁或 AI Coding 交付摩擦变高] --> B[👤 执行 /improve-codebase-architecture]
-    B --> C[按 Argo 事实源顺序探索架构资产和相关代码]
-    C --> D[识别 shallow module、职责泄漏、seam 不清、测试面失焦和依赖方向问题]
-    D --> E{存在值得深挖的候选?}
-    E -- 否 --> F[说明保持现状或仅需实现设计/编码层调整]
-    E -- 是 --> G[输出架构优化候选、收益和建议强度]
-    G --> H[👤 人类伙伴选择候选方向]
-    H --> I[👤 交给 /grill-me 按决策树深挖]
-    I --> J{变更属于哪一层?}
-    J -- 意图层 --> K[标记为意图规格调整任务]
-    J -- 实现架构层 --> L[标记为实现架构调整任务]
-    J -- 编码层 --> M[标记为局部重构任务]
-    K --> N[👤 调用 task-tidy 整理并落盘到 design/tasks/]
+    B --> C[🤖 按 Argo 事实源顺序探索架构资产和相关代码]
+    C --> D[🤖 识别 shallow module、职责泄漏、seam 不清、测试面失焦和依赖方向问题]
+    D --> E{🤖 存在值得深挖的候选?}
+    E -- 否 --> F[🤖 说明保持现状或仅需实现设计/编码层调整]
+    E -- 是 --> G[🤖 输出架构优化候选、收益和建议强度]
+    G --> H[👤🤖 人类伙伴选择候选方向]
+    H --> I[👤🤖 交给 /grill-me 按决策树深挖]
+    I --> J{🤖 变更属于哪一层?}
+    J -- 意图层 --> K[🤖 标记为意图规格调整任务]
+    J -- 实现架构层 --> L[🤖 标记为实现架构调整任务]
+    J -- 编码层 --> M[🤖 标记为局部重构任务]
+    K --> N[👤🤖 调用 task-tidy 整理并落盘到 design/tasks/]
     L --> N
     M --> N
     N --> O[转入开发迭代复用流程]
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef humanDecision fill:#fed7aa,stroke:#c2410c,color:#7c2d12,stroke-width:3px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,B,I,N human
+    class H humanDecision
+    class C,D,E,F,G,J,K,L,M,O ai
 ```
 
 AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会把知识、改动和 bug 面集中在少数清晰位置，让 Agent 更容易在有限上下文中理解模块职责、依赖方向和测试入口，从而更快完成交付并降低误改、漏改、越权修改的概率。相反，如果模块很浅、接口暴露过多实现细节、seam 放错位置、测试穿透内部实现，Agent 就会在多个文件之间反复跳转，既更慢，也更容易把局部修补误当成系统性修复。
@@ -159,12 +184,16 @@ AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会
 ```mermaid
 flowchart TD
     A[业务方案仍不稳定] --> B[👤 business-partner 或 grill-me]
-    B --> C[形成可验证的目标、方案和风险清单]
-    C --> D[👤 task-tidy 提取任务]
-    D --> E[涉及开发时转入开发迭代复用流程]
+    B --> C[👤🤖 形成可验证的目标、方案和风险清单]
+    C --> D[👤🤖 task-tidy 提取任务]
+    D --> E[🤖 涉及开发时转入开发迭代复用流程]
 
     K[Agent 行为偏航] --> L[👤 distill-agent-rules]
-    L --> M[沉淀可执行规则、触发条件和落地位置]
+    L --> M[🤖 沉淀可执行规则、触发条件和落地位置]
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class B,D human
+    class A,C,E,K,L,M ai
 ```
 
 除新需求和问题处理外，建议把两类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务；如果任务涉及开发，则转入开发迭代复用流程。第二类是 Agent 行为偏航治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正。
