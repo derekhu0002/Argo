@@ -1,7 +1,7 @@
 
-$$Total Certainty = \left[ C \times \frac{(P \cdot \mathbf{B}) \times E}{G} \right] \cdot S^n$$
+$$Total Certainty =  C \times \frac{(P \cdot \mathbf{B}) \times E}{G}$$
 
-#### **核心因子定义刷新：**
+#### **核心因子定义：**
 
 *   **C $\rightarrow$ Clarity（目标清晰度）**
     *   *高维定义：* 初始意图的坍缩质量。衡量人类对“目的地”的定义是否从模糊的语义云固化为空间中唯一的、高引力的逻辑坐标。
@@ -21,10 +21,3 @@ $$Total Certainty = \left[ C \times \frac{(P \cdot \mathbf{B}) \times E}{G} \rig
 
 *   **G $\rightarrow$ Granularity（任务颗粒度）**
     *   *高维定义：* 采样步长。单次执行执行的复杂度。$G$ 越小，模型在单次跳跃中面对的随机干扰越少，引力场越纯净。
-
-*   **S $\rightarrow$ Stability（系统稳定性）**
-    *   *高维定义：* 轨迹的一致性。衡量系统在单步执行中不产生随机漂移的概率。
-    *   *注：* 在 **Harness** 介入下，优秀的 $B$ 会人为推高 $S$，使其无限趋近于 1。
-
-*   **n $\rightarrow$ Number of Steps（任务链长度）**
-    *   *高维定义：* 迭代总轮次。由于 $S < 1$，任务链越长，初始偏差被指数级放大的风险就越高。
