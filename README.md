@@ -129,34 +129,25 @@ flowchart TD
     C --> D[task-tidy 提取任务]
     D --> E[进入新需求开发流程]
 
-    F[交付后发现 GAP] --> G{GAP 属于哪一层?}
-    G -- 意图层 --> H[implementation-delivery-acceptance 或 impl-gap-report]
-    G -- 实现层 --> I[coding-delivery-acceptance 或 coding-gap-report]
-    H --> J[回到对应阶段返工]
-    I --> J
-
     K[Agent 行为偏航] --> L[distill-agent-rules]
     L --> M[沉淀可执行规则、触发条件和落地位置]
 ```
 
-除新需求和问题处理外，建议把三类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务。第二类是交付后 GAP 处理：如果双层验收发现缺口，需要先判断缺口属于意图层、实现架构层还是编码层，再使用 `/impl-gap-report`、`/coding-gap-report` 等入口回到对应阶段返工。第三类是 Agent 行为偏航治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正。
+除新需求和问题处理外，建议把两类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务。第二类是 Agent 行为偏航治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正。
 
-| 场景 | 适用时机 | 推荐入口 | 期望产出 |
-| --- | --- | --- | --- |
-| 新需求开发 | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路 | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先由 `IntentionDesign` 澄清意图与验收边界，再由 `ImplementationDesign` 落实现架构与测试入口，最后由 `CodingAndReparing` 完成实现并跑通验收 |
-| 缺陷修复 | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复 | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 判断缺陷属于意图偏差、实现架构偏差还是代码实现问题，并按正确阶段产出修复、测试结果和必要返工闭环 |
-| 架构优化/重构候选梳理 | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性 | `/improve-codebase-architecture`，必要时接 `/grill-me` | 先输出值得深挖的架构优化候选，再通过决策树收敛到可执行的迭代方向 |
-| 业务方案拷问 | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE | `BusinessPartner` 或 `/business-partner` | 业务决策树、关键追问、推荐答案、任务拆解，以及从验收方视角定义的控制点和观测点 |
-| 任务整理 | 业务分析或拷问已经完成，需要把结果整理成可执行任务 | `/task-tidy` | 在 `design/tasks/` 下形成独立任务文档，每个任务包含背景、相关 PRD、执行内容和验收标准 |
-| 市场/竞品/技术趋势研究 | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息 | `/market-research` | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计 |
-| 浏览架构图谱 | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属 | `/arch-viewer` | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情 |
-| 意图图谱语义审计 | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit` | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现 |
-| 编码交付验收 | 代码已经完成，需要检查是否满足实现架构契约 | `/coding-delivery-acceptance` | 对照实现架构契约识别编码交付 GAP，并给出继续开发建议 |
-| 意图交付验收 | 功能已实现，需要检查最终交付是否满足意图架构 | `/implementation-delivery-acceptance` | 对照意图架构识别实现 GAP，并把下一步建议交给实现架构阶段 |
-| 继续补齐 GAP | 双层验收发现仍有缺口，需要继续返工 | `/coding-gap-report` 或 `/impl-gap-report` | 根据缺口属于编码层还是实现架构层，继续开发或重新下发实现架构任务 |
-| 外部说明文档刷新 | 实现或接口稳定后，需要更新面向采用者的产品简介 | `/brief` | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式 |
-| Agent 行为偏航复盘 | Agent 在会话中越权、漏读契约、误改冻结测试或反复出现同类偏差 | `/distill-agent-rules` | 将偏差提炼为可执行规则、适用范围、触发条件和推荐落地位置 |
-| HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用 | `/harmonyos-development` + `/arkts-coding-standard` | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移 |
+| 场景                 | 适用时机                                                    | 推荐入口                                                    | 期望产出                                                                                                  |
+| ------------------ | ------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先由 `IntentionDesign` 澄清意图与验收边界，再由 `ImplementationDesign` 落实现架构与测试入口，最后由 `CodingAndReparing` 完成实现并跑通验收 |
+| 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 判断缺陷属于意图偏差、实现架构偏差还是代码实现问题，并按正确阶段产出修复、测试结果和必要返工闭环                                                      |
+| 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出值得深挖的架构优化候选，再通过决策树收敛到可执行的迭代方向                                                                      |
+| 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、任务拆解，以及从验收方视角定义的控制点和观测点                                                               |
+| 任务整理               | 业务分析或拷问已经完成，需要把结果整理成可执行任务                               | `/task-tidy`                                            | 在 `design/tasks/` 下形成独立任务文档，每个任务包含背景、相关 PRD、执行内容和验收标准                                                 |
+| 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
+| 浏览架构图谱             | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属  | `/arch-viewer`                                          | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情                                                                 |
+| 意图图谱语义审计           | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit`                              | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现                                                          |
+| 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
+| Agent 行为偏航复盘       | Agent 在会话中越权、漏读契约、误改冻结测试或反复出现同类偏差                       | `/distill-agent-rules`                                  | 将偏差提炼为可执行规则、适用范围、触发条件和推荐落地位置                                                                          |
+| HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用   | `/harmonyos-development` + `/arkts-coding-standard`     | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移                                                                |
 
 #### 输入建议
 
