@@ -58,6 +58,83 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 #### 场景清单
 
+##### 新需求开发
+
+```mermaid
+flowchart TD
+    A[通过 BusinessPartner 或 /business-partner 提交需求] --> B[结构化分析目标、约束、方案和验收控制点]
+    B --> D[同一会话执行/task-tidy，按横向模块和纵向依赖提取任务，并落盘到design/tasks/目录下]
+    D --> E[启动新会话进入 Orchestrator，人类按顺序提交任务]
+    E --> G[IntentionDesign 产出意图规格和验收测试用例]
+    G --> H{人类伙伴审核意图验收用例?}
+    H -- 不通过 --> G
+    H -- 通过 --> I[ImplementationDesign 产出实现架构和测试入口]
+    I --> J{人类伙伴审核实现验收用例?}
+    J -- 不通过 --> I
+    J -- 通过 --> K[CodingAndReparing 编码和修复]
+    K --> L{测试环境问题无法自行解决?}
+    L -- 是 --> M[求助人类伙伴修复环境]
+    M --> K
+    L -- 否 --> N{所有测试用例通过?}
+    N -- 否 --> K
+    N -- 是 --> O[双层验收并交付当前任务]
+    O --> P{还有下一个任务?}
+    P -- 是 --> E
+    P -- 否 --> Q[完成需求交付]
+```
+
+新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚；分析完成后，在同一个会话继续执行 `task-tidy`，将结论沉淀为 `design/tasks/` 下的任务文档。任务需要同时做横向切分和纵向排序：横向保证任务边界正交，纵向保证依赖顺序清晰。
+
+任务整理完成后，由人类伙伴按任务顺序逐个启动新会话，并将当前任务提交给 `Orchestrator`。每个任务都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 迭代，不建议并发执行多个任务，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前任务交付后，如果还有下一个任务，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
+
+##### 问题处理
+
+```mermaid
+flowchart TD
+    A[提交问题现象/报错/失败测试/用户反馈] --> B[Orchestrator 接收问题]
+    B --> C[IntentionDesign 先判断意图规格是否正确]
+    C --> D{问题属于需求或验收边界偏差?}
+    D -- 是 --> E[修正意图规格和验收 testcase]
+    E --> F[人类伙伴审核意图变更]
+    F --> G[ImplementationDesign 重新落实现架构]
+    D -- 否 --> H[ImplementationDesign 判断实现架构是否正确]
+    H --> I{问题属于架构契约或测试入口偏差?}
+    I -- 是 --> J[修正实现架构和测试入口]
+    J --> K[人类伙伴审核实现测试用例]
+    K --> L[CodingAndReparing 修复实现]
+    I -- 否 --> L
+    G --> K
+    L --> M{所有相关测试通过?}
+    M -- 否 --> L
+    M -- 是 --> N[双层验收确认无回归]
+    N --> O[交付问题处理结果]
+```
+
+问题处理也必须先经过意图设计，因为“问题”不一定是代码 BUG。它可能来自需求理解错误、验收边界遗漏、意图图谱表达不准确，也可能来自实现架构契约、测试入口或编码实现偏差。先由 `IntentionDesign` 判断问题是否需要修改意图规格；若意图正确，再由 `ImplementationDesign` 判断实现架构是否需要调整；只有确认问题落在代码实现层，才交给 `CodingAndReparing` 直接修复。
+
+处理问题时，输入应尽量包含现象、复现步骤、失败命令、日志摘要、期望行为和已知影响范围。修复过程中如果更新了意图验收 testcase 或实现阶段测试入口，同样需要人类伙伴审核，避免 Agent 用错误测试固化错误理解。最终交付不只看单个失败是否消失，还要通过双层验收确认没有破坏意图规格和实现架构契约。
+
+##### 其他关键业务流程
+
+```mermaid
+flowchart TD
+    A[业务方案仍不稳定] --> B[business-partner 或 grill-me]
+    B --> C[形成可验证的目标、方案和风险清单]
+    C --> D[task-tidy 提取任务]
+    D --> E[进入新需求开发流程]
+
+    F[交付后发现 GAP] --> G{GAP 属于哪一层?}
+    G -- 意图层 --> H[implementation-delivery-acceptance 或 impl-gap-report]
+    G -- 实现层 --> I[coding-delivery-acceptance 或 coding-gap-report]
+    H --> J[回到对应阶段返工]
+    I --> J
+
+    K[Agent 行为偏航] --> L[distill-agent-rules]
+    L --> M[沉淀可执行规则、触发条件和落地位置]
+```
+
+除新需求和问题处理外，建议把三类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务。第二类是交付后 GAP 处理：如果双层验收发现缺口，需要先判断缺口属于意图层、实现架构层还是编码层，再使用 `/impl-gap-report`、`/coding-gap-report` 等入口回到对应阶段返工。第三类是 Agent 行为偏航治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正。
+
 | 场景 | 适用时机 | 推荐入口 | 期望产出 |
 | --- | --- | --- | --- |
 | 新需求开发 | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路 | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先由 `IntentionDesign` 澄清意图与验收边界，再由 `ImplementationDesign` 落实现架构与测试入口，最后由 `CodingAndReparing` 完成实现并跑通验收 |
