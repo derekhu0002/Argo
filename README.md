@@ -14,16 +14,42 @@ Argo 是一套面向 AI Coding 的 HARNESS 工程方法与配套实现。它把�
 
 ### 主要使用场景
 
-| 场景 | 目的 | 操作 |
-| --- | --- | --- |
-| 新需求开发或新问题处理 | 开发需求或解决问题 | `opencode`和`github copilot` ：选择Orchestrator主agent，建议输入：[需求/问题] 具体描述（或opencode中用`@`(copilot中用`#`)引用文件路径） //使用`@`或`#`可以将文本内容直接加载进上下文，省去Agent读文件过程并确保完整文件内容进入上下文 <br> `cursor` ：直接在主Agent中通过`/orchestrating` skill + [需求/问题] 具体描述 <br> //`cursor`不支持自定义主Agent，因此通过skill发起编排调度流程|
+#### 平台入口
 
-`github copilot`使用示例：
-![alt text](image-5.png)
-`opencode`使用示例：首先切换到Orchestrator主Agent，然后通过@引用需求文档
-![alt text](image-4.png)
-`cursor`使用示例：首先调用orchestrating skill，然后跟上需求，也可以通过@引用文档
-![alt text](image-3.png)
+| 平台 | 推荐入口 | 典型输入方式 | 说明 |
+| --- | --- | --- | --- |
+| OpenCode | 选择 `Orchestrator` 主 Agent | `@需求文档路径` + 需求/问题描述 | `@` 会把文件内容加载进上下文，适合需求文档、设计文档、失败记录或相关代码较长的场景 |
+| GitHub Copilot | 选择 `Orchestrator` 主 Agent | `#需求文档路径` + 需求/问题描述 | `#` 用于引用工作区文件，减少 Agent 自行查找文件的误差 |
+| Cursor | 主 Agent 中调用 `/orchestrating` | `/orchestrating` + 需求/问题描述，可配合 `@文件路径` | Cursor 不支持自定义主 Agent，因此用 Skill 发起同等编排流程 |
+
+#### 场景清单
+
+| 场景 | 适用时机 | 推荐入口 | 期望产出 |
+| --- | --- | --- | --- |
+| 新需求开发 | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路 | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先由 `IntentionDesign` 澄清意图与验收边界，再由 `ImplementationDesign` 落实现架构与测试入口，最后由 `CodingAndReparing` 完成实现并跑通验收 |
+| 缺陷修复 | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复 | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 判断缺陷属于意图偏差、实现架构偏差还是代码实现问题，并按正确阶段产出修复、测试结果和必要返工闭环 |
+| 架构优化/重构候选梳理 | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性 | `/improve-codebase-architecture`，必要时接 `/grill-me` | 先输出值得深挖的架构优化候选，再通过决策树收敛到可执行的迭代方向 |
+| 业务方案拷问 | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE | `BusinessPartner` 或 `/business-partner` | 业务决策树、关键追问、推荐答案、任务拆解，以及从验收方视角定义的控制点和观测点 |
+| 任务整理 | 业务分析或拷问已经完成，需要把结果整理成可执行任务 | `/task-tidy` | 在 `design/tasks/` 下形成独立任务文档，每个任务包含背景、相关 PRD、执行内容和验收标准 |
+| 市场/竞品/技术趋势研究 | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息 | `/market-research` | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计 |
+| 浏览架构图谱 | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属 | `/arch-viewer` | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情 |
+| 意图图谱语义审计 | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit` | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现 |
+| 编码交付验收 | 代码已经完成，需要检查是否满足实现架构契约 | `/coding-delivery-acceptance` | 对照实现架构契约识别编码交付 GAP，并给出继续开发建议 |
+| 意图交付验收 | 功能已实现，需要检查最终交付是否满足意图架构 | `/implementation-delivery-acceptance` | 对照意图架构识别实现 GAP，并把下一步建议交给实现架构阶段 |
+| 继续补齐 GAP | 双层验收发现仍有缺口，需要继续返工 | `/coding-gap-report` 或 `/impl-gap-report` | 根据缺口属于编码层还是实现架构层，继续开发或重新下发实现架构任务 |
+| 外部说明文档刷新 | 实现或接口稳定后，需要更新面向采用者的产品简介 | `/brief` | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式 |
+| Agent 行为偏航复盘 | Agent 在会话中越权、漏读契约、误改冻结测试或反复出现同类偏差 | `/distill-agent-rules` | 将偏差提炼为可执行规则、适用范围、触发条件和推荐落地位置 |
+| HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用 | `/harmonyos-development` + `/arkts-coding-standard` | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移 |
+
+#### 输入建议
+
+| 输入内容 | 建议写法 | 原因 |
+| --- | --- | --- |
+| 需求/问题描述 | 先写目标，再写当前现象、约束、期望结果 | 便于 `IntentionDesign` 判断是否需要更新意图架构、实现架构或只修代码 |
+| 文件引用 | OpenCode 用 `@路径`，Copilot 用 `#路径`，Cursor 用 `@路径` | 直接把关键文件放进上下文，减少 Agent 漏读或误读 |
+| 验收标准 | 尽量写清控制点和观测点 | Argo 会把验收边界转成显性 testcase 或实现阶段测试入口 |
+| 已知失败 | 附上失败命令、错误摘要、日志片段、失败测试路径 | 便于 `CodingAndReparing` 将失败记录转化为修复队列 |
+| 不确定的方案 | 先用 `BusinessPartner`、`/business-partner` 或 `/grill-me` | 在进入实现前先收敛业务和设计分支，避免后续返工 |
 
 ## 当前已录SubAgents 和 Skills
 
