@@ -190,15 +190,16 @@ flowchart TD
     C --> D[👤🤖 task-tidy 提取任务]
     D --> E[🤖 涉及开发时转入开发迭代复用流程]
 
-    K[Agent 行为偏航] --> L[👤 distill-agent-rules]
+    K[Agent 行为偏航或迭代后持久化记忆复盘] --> L[👤 distill-agent-rules]
     L --> M[🤖 沉淀可执行规则、触发条件和落地位置]
+    M --> N[🤖 将成熟记忆固化为 SKILL/RULE/INSTRUCTION/hook 并清理源记忆]
     classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
     classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
     class B,D human
-    class A,C,E,K,L,M ai
+    class A,C,E,K,L,M,N ai
 ```
 
-除新需求和问题处理外，建议把两类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务；如果任务涉及开发，则转入开发迭代复用流程。第二类是 Agent 行为偏航治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正。
+除新需求和问题处理外，建议把两类流程作为日常治理入口。第一类是业务方案探索：需求尚不稳定时，不要急于创建实现任务，先用 `business-partner` 或 `/grill-me` 把问题定义、方案分支、控制点和观测点收敛，再用 `task-tidy` 转成可交付任务；如果任务涉及开发，则转入开发迭代复用流程。第二类是 Agent 行为与记忆治理：当 Agent 出现越权修改、漏读契约、误改冻结测试、反复跳阶段等问题时，用 `/distill-agent-rules` 将偏差提炼为可复用规则，而不是只在当前会话中口头纠正；迭代结束后，也可以用它复盘 `design/persistant-memory` 下的三个持久化文件，把稳定复现的工作流、约束或守卫固化为 `SKILL`、`RULE`、`INSTRUCTION` 或 hook，并从持久化记忆中移除对应片段，避免同一规则同时存在于 memory 和正式机制中。
 
 | 场景                 | 适用时机                                                    | 推荐入口                                                    | 期望产出                                                                                                  |
 | ------------------ | ------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -211,7 +212,7 @@ flowchart TD
 | 浏览架构图谱             | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属  | `/arch-viewer`                                          | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情                                                                 |
 | 意图图谱语义审计           | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit`                              | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现                                                          |
 | 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
-| Agent 行为偏航复盘       | Agent 在会话中越权、漏读契约、误改冻结测试或反复出现同类偏差                       | `/distill-agent-rules`                                  | 将偏差提炼为可执行规则、适用范围、触发条件和推荐落地位置                                                                          |
+| Agent 行为与记忆治理       | Agent 在会话中越权、漏读契约、误改冻结测试、反复出现同类偏差，或迭代后需要复盘 `design/persistant-memory` | `/distill-agent-rules`                                  | 将偏差或成熟记忆提炼为可执行规则、适用范围、触发条件和推荐落地位置；固化为 `SKILL`/`RULE`/`INSTRUCTION`/hook 后清理源记忆 |
 | HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用   | `/harmonyos-development` + `/arkts-coding-standard`     | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移                                                                |
 
 #### 输入建议
@@ -260,6 +261,6 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `coding-gap-report` | 编码/修复 | 当编码交付仍存在 GAP 时，驱动继续开发直至所有缺口补齐 | `/coding-gap-report` |
 | `brief` | 交付后/文档 | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md` | `/brief` |
 | `arch-viewer` | 辅助/通用 | 在本地 schema 驱动的 Web Viewer 中浏览 `SystemArchitecture.json` 知识图谱（元素、关系、视图、详情） | `/arch-viewer` |
-| `distill-agent-rules` | 治理/复盘 | 当 Agent 行为偏离预期时，将偏差提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等），减少同类偏差重复发生 | `/distill-agent-rules` |
+| `distill-agent-rules` | 治理/复盘 | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源 | `/distill-agent-rules` |
 | `harmonyos-development` | 编码/修复（领域） | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流 | `/harmonyos-development` |
 | `arkts-coding-standard` | 编码/修复（领域） | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规 | `/arkts-coding-standard` |
