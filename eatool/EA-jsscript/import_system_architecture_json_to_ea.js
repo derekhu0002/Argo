@@ -120,10 +120,10 @@ function validateGraph(graph) {
     throw new Error('The JSON root must be an object.');
   }
   requireString(graph, 'name', 'root');
-  requireString(graph, 'description', 'root');
-  if (!graph.standard || graph.standard.name != 'ArchiMate' || graph.standard.version != '3.2') {
-    throw new Error('root.standard must be ArchiMate 3.2.');
-  }
+  // requireString(graph, 'description', 'root');
+  // if (!graph.standard || graph.standard.name != 'ArchiMate' || graph.standard.version != '3.2') {
+  //   throw new Error('root.standard must be ArchiMate 3.2.');
+  // }
   requireArray(graph.elements, 'root.elements');
   requireArray(graph.relationships, 'root.relationships');
   requireArray(graph.views, 'root.views');
