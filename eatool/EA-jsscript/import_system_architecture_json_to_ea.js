@@ -13,8 +13,8 @@
  * Notes:
  *   - EA assigns new ElementID/ConnectorID/DiagramID values. Original schema ids
  *     are preserved in aliases and tagged values.
- *   - All schema fields are imported either into native EA fields/collections or
- *     tagged values.
+ *   - Current schema fields are imported into native EA fields where possible.
+ *     Legacy fields from older JSON exports are preserved as tagged values.
  *   - element.subdiagram_views and view.parent_element_id are used to create
  *     diagrams under their owning elements.
  */
@@ -120,10 +120,9 @@ function validateGraph(graph) {
     throw new Error('The JSON root must be an object.');
   }
   requireString(graph, 'name', 'root');
-  // requireString(graph, 'description', 'root');
-  // if (!graph.standard || graph.standard.name != 'ArchiMate' || graph.standard.version != '3.2') {
-  //   throw new Error('root.standard must be ArchiMate 3.2.');
-  // }
+  if (!isNonEmptyString(graph.description)) {
+    warnOnce('root-description-empty', 'root.description is empty. The schema requires a non-empty string, but import will continue.');
+  }
   requireArray(graph.elements, 'root.elements');
   requireArray(graph.relationships, 'root.relationships');
   requireArray(graph.views, 'root.views');
@@ -157,10 +156,7 @@ function buildPackageNotes(graph) {
   lines.push('');
   lines.push('Imported from: ' + SYSTEM_ARCHITECTURE_JSON_PATH);
   lines.push('Schema: .cursor/argoschema/SystemArchitecture.schema.json');
-  lines.push('Standard: ' + safeString(graph.standard.name) + ' ' + safeString(graph.standard.version));
-  if (isNonEmptyString(graph.standard.profile)) {
-    lines.push('Profile: ' + safeString(graph.standard.profile));
-  }
+
   if (graph.attributes && graph.attributes.length > 0) {
     lines.push('');
     lines.push('Root attributes:');
@@ -174,9 +170,6 @@ function applyRootMetadata(pkg, graph) {
     var pkgElement = pkg.Element;
     if (pkgElement != null) {
       putTag(pkgElement.TaggedValues, 'schema_root_name', graph.name);
-      putTag(pkgElement.TaggedValues, 'schema_standard_name', graph.standard.name);
-      putTag(pkgElement.TaggedValues, 'schema_standard_version', graph.standard.version);
-      putTag(pkgElement.TaggedValues, 'schema_standard_profile', safeString(graph.standard.profile));
       putJsonTag(pkgElement.TaggedValues, 'schema_root_attributes_json', graph.attributes || []);
       pkgElement.Update();
       pkgElement.TaggedValues.Refresh();
@@ -298,8 +291,6 @@ function refreshElementOwner(importPkg, parentElement) {
 
 function applyElementCoreFields(element, data) {
   warnIfUnknownSchemaElementType(data.type);
-  warnIfUnknownSchemaLayer(data.archimate_layer);
-  warnIfUnknownSchemaAspect(data.archimate_aspect);
 
   element.Name = safeName(data.name, data.id);
   element.Notes = safeString(data.description);
@@ -316,16 +307,9 @@ function applyElementCoreFields(element, data) {
 
   putTag(element.TaggedValues, 'schema_id', data.id);
   putTag(element.TaggedValues, 'schema_parent', safeString(data.parent));
-  putTag(element.TaggedValues, 'archimate_type', safeString(data.type));
-  putTag(element.TaggedValues, 'archimate_layer', safeString(data.archimate_layer));
-  putTag(element.TaggedValues, 'archimate_aspect', safeString(data.archimate_aspect));
+  putTag(element.TaggedValues, 'archimate_type', canonicalArchimateType(data.type));
   putTag(element.TaggedValues, 'schema_alias', safeString(data.alias));
   putTag(element.TaggedValues, 'schema_classifier', safeString(data.classifier));
-  putTag(element.TaggedValues, 'browser_path', safeString(data.browser_path));
-  putTag(element.TaggedValues, 'document', safeString(data.document));
-  putTag(element.TaggedValues, 'code_file', safeString(data.code_file));
-  putTag(element.TaggedValues, 'condition_file', safeString(data.condition_file));
-  putTag(element.TaggedValues, 'prompts_file', safeString(data.prompts_file));
   putJsonTag(element.TaggedValues, 'schema_element_json', data);
   element.TaggedValues.Refresh();
 }
@@ -494,7 +478,6 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
 
     var connectorMeta = mapRelationshipTypeToEa(data.name);
     warnIfUnknownSchemaRelationshipType(data.name);
-    warnIfUnknownSchemaRelationshipCategory(data.archimate_category);
 
     var connector = source.Connectors.AddNew(safeString(data.name), connectorMeta.connectorType);
     connector.SupplierID = target.ElementID;
@@ -512,9 +495,7 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
 
     putTag(connector.TaggedValues, 'schema_id', data.id);
     putTag(connector.TaggedValues, 'schema_statement', safeString(data.statement));
-    putTag(connector.TaggedValues, 'archimate_relationship_type', safeString(data.name));
-    putTag(connector.TaggedValues, 'archimate_category', safeString(data.archimate_category));
-    putTag(connector.TaggedValues, 'schema_super_type', safeString(data.super_type));
+    putTag(connector.TaggedValues, 'archimate_relationship_type', canonicalArchimateType(data.name));
     putTag(connector.TaggedValues, 'document', safeString(data.document));
     putTag(connector.TaggedValues, 'source_schema_id', safeString(data.source_id));
     putTag(connector.TaggedValues, 'target_schema_id', safeString(data.target_id));
@@ -661,7 +642,6 @@ function addDiagramToOwner(importPkg, parentElement, diagramName) {
 function putDiagramTags(diagram, viewData) {
   try {
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_view_id', viewData.view_id);
-    diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_browser_path', safeString(viewData.browser_path));
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_parent_element_id', safeString(viewData.parent_element_id));
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_parent_element_name', safeString(viewData.parent_element_name));
   } catch (ignore) {
@@ -854,9 +834,99 @@ function mapRelationshipTypeToEa(relationshipType) {
 
 function normalizeArchimateName(value) {
   var text = safeString(value);
+  text = text.replace(/^ArchiMate[_\s-]*/i, '');
   text = text.replace(/&/g, '');
   text = text.replace(/[^A-Za-z0-9]/g, '');
   return text;
+}
+
+function canonicalArchimateType(value) {
+  var normalized = normalizeArchimateName(value);
+  var display = displayArchimateName(normalized);
+  return display != '' ? display : safeString(value);
+}
+
+function displayArchimateName(normalized) {
+  switch (safeString(normalized)) {
+    case 'Class': return 'Grouping';
+    case 'ValueStream': return 'Value Stream';
+    case 'CourseofAction': return 'Course of Action';
+    case 'BusinessActor': return 'Business Actor';
+    case 'BusinessRole': return 'Business Role';
+    case 'BusinessCollaboration': return 'Business Collaboration';
+    case 'BusinessInterface': return 'Business Interface';
+    case 'BusinessProcess': return 'Business Process';
+    case 'BusinessFunction': return 'Business Function';
+    case 'BusinessInteraction': return 'Business Interaction';
+    case 'BusinessEvent': return 'Business Event';
+    case 'BusinessService': return 'Business Service';
+    case 'BusinessObject': return 'Business Object';
+    case 'ApplicationComponent': return 'Application Component';
+    case 'ApplicationCollaboration': return 'Application Collaboration';
+    case 'ApplicationInterface': return 'Application Interface';
+    case 'ApplicationProcess': return 'Application Process';
+    case 'ApplicationFunction': return 'Application Function';
+    case 'ApplicationInteraction': return 'Application Interaction';
+    case 'ApplicationEvent': return 'Application Event';
+    case 'ApplicationService': return 'Application Service';
+    case 'DataObject': return 'Data Object';
+    case 'SystemSoftware': return 'System Software';
+    case 'TechnologyCollaboration': return 'Technology Collaboration';
+    case 'TechnologyInterface': return 'Technology Interface';
+    case 'CommunicationNetwork': return 'Communication Network';
+    case 'TechnologyProcess': return 'Technology Process';
+    case 'TechnologyFunction': return 'Technology Function';
+    case 'TechnologyInteraction': return 'Technology Interaction';
+    case 'TechnologyEvent': return 'Technology Event';
+    case 'TechnologyService': return 'Technology Service';
+    case 'DistributionNetwork': return 'Distribution Network';
+    case 'WorkPackage': return 'Work Package';
+    case 'ImplementationEvent': return 'Implementation Event';
+    case 'AndJunction': return 'And Junction';
+    case 'OrJunction': return 'Or Junction';
+    case 'Resource':
+    case 'Capability':
+    case 'Contract':
+    case 'Representation':
+    case 'Product':
+    case 'Node':
+    case 'Device':
+    case 'Path':
+    case 'Artifact':
+    case 'Equipment':
+    case 'Facility':
+    case 'Material':
+    case 'Stakeholder':
+    case 'Driver':
+    case 'Assessment':
+    case 'Goal':
+    case 'Outcome':
+    case 'Principle':
+    case 'Requirement':
+    case 'Constraint':
+    case 'Meaning':
+    case 'Value':
+    case 'Deliverable':
+    case 'Plateau':
+    case 'Gap':
+    case 'Grouping':
+    case 'Location':
+    case 'Junction':
+    case 'Association':
+    case 'Composition':
+    case 'Aggregation':
+    case 'Assignment':
+    case 'Realization':
+    case 'Serving':
+    case 'Access':
+    case 'Influence':
+    case 'Triggering':
+    case 'Flow':
+    case 'Specialization':
+      return normalized;
+    default:
+      return '';
+  }
 }
 
 function warnIfUnknownSchemaElementType(value) {
@@ -866,7 +936,7 @@ function warnIfUnknownSchemaElementType(value) {
 }
 
 function isSchemaElementType(value) {
-  switch (safeString(value)) {
+  switch (canonicalArchimateType(value)) {
     case 'Resource':
     case 'Capability':
     case 'Value Stream':
@@ -936,50 +1006,6 @@ function isSchemaElementType(value) {
   }
 }
 
-function warnIfUnknownSchemaLayer(value) {
-  if (!isSchemaLayer(value)) {
-    warnOnce('schema-layer-' + safeString(value), 'Element archimate_layer is not in schema enum: ' + safeString(value));
-  }
-}
-
-function isSchemaLayer(value) {
-  switch (safeString(value)) {
-    case 'Strategy':
-    case 'Business':
-    case 'Application':
-    case 'Technology':
-    case 'Physical':
-    case 'Motivation':
-    case 'Implementation & Migration':
-    case 'Other':
-      return true;
-    default:
-      return false;
-  }
-}
-
-function warnIfUnknownSchemaAspect(value) {
-  if (!isSchemaAspect(value)) {
-    warnOnce('schema-aspect-' + safeString(value), 'Element archimate_aspect is not in schema enum: ' + safeString(value));
-  }
-}
-
-function isSchemaAspect(value) {
-  switch (safeString(value)) {
-    case 'Strategy':
-    case 'Active Structure':
-    case 'Behavior':
-    case 'Passive Structure':
-    case 'Composite':
-    case 'Motivation':
-    case 'Implementation & Migration':
-    case 'Other':
-      return true;
-    default:
-      return false;
-  }
-}
-
 function warnIfUnknownSchemaRelationshipType(value) {
   if (!isSchemaRelationshipType(value)) {
     warnOnce('schema-relationship-type-' + safeString(value), 'Relationship type is not in schema enum: ' + safeString(value));
@@ -987,7 +1013,7 @@ function warnIfUnknownSchemaRelationshipType(value) {
 }
 
 function isSchemaRelationshipType(value) {
-  switch (safeString(value)) {
+  switch (canonicalArchimateType(value)) {
     case 'Association':
     case 'Composition':
     case 'Aggregation':
@@ -1005,40 +1031,13 @@ function isSchemaRelationshipType(value) {
   }
 }
 
-function warnIfUnknownSchemaRelationshipCategory(value) {
-  if (!isSchemaRelationshipCategory(value)) {
-    warnOnce('schema-relationship-category-' + safeString(value), 'Relationship archimate_category is not in schema enum: ' + safeString(value));
-  }
-}
-
-function isSchemaRelationshipCategory(value) {
-  switch (safeString(value)) {
-    case 'Structural':
-    case 'Dependency':
-    case 'Dynamic':
-    case 'Other':
-      return true;
-    default:
-      return false;
-  }
-}
-
 function mapTestTypeToEaClass(testType) {
   switch (safeString(testType)) {
-    case 'Unit Test':
-      return '1';
-    case 'Integration Test':
-      return '2';
-    case 'System Test':
-      return '3';
     case 'Acceptance Test':
       return '4';
-    case 'Scenario Test':
-      return '5';
-    case 'Inspection Test':
-      return '6';
     default:
-      return safeString(testType);
+      warnOnce('test-type-' + safeString(testType), 'Schema only allows testcase.type = "Acceptance Test"; importing legacy type as Acceptance Test: ' + safeString(testType));
+      return '4';
   }
 }
 

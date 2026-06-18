@@ -1,1010 +1,1220 @@
 {
-"name": "System",
-"description": "",
-"elements": [
-{
-"id": "1207",
-"name": "StrategyLayerAndMotivationAspect"
-,"parent": "0"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "159",
-"view_name": "StrategyLayerAndMotivationAspect"
-}
-]
-},
-{
-"id": "1208",
-"name": "BusinessLayer"
-,"parent": "0"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "160",
-"view_name": "BusinessLayer"
-}
-]
-},
-{
-"id": "1209",
-"name": "ApplicationLayer"
-,"parent": "0"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "161",
-"view_name": "ApplicationLayer"
-}
-]
-},
-{
-"id": "1210",
-"name": "TechnologyLayer"
-,"parent": "0"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "162",
-"view_name": "TechnologyLayer"
-}
-]
-},
-{
-"id": "1211",
-"name": "ProjectManagement"
-,"parent": "0"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "163",
-"view_name": "ProjectManagement"
-}
-]
-},
-{
-"id": "1391",
-"name": "渐进式披露 View"
-,"parent": "1207"
-,"type": "ArchiMate_Principle"
-,"description": "intent graph 可视化界面默认只暴露 SystemArchitecture 下第一层子 view；只有在用户点击展开或搜索命中后，才继续披露更深层级的 view。"
-},
-{
-"id": "1392",
-"name": "View 层级由挂接元素决定"
-,"parent": "1207"
-,"type": "ArchiMate_Constraint"
-,"description": "若 view X 中包含元素 A，且 A 挂接了 subdiagram view Y，则浏览界面中 X 是 Y 的上层 view；若多个已展开 view 都包含该挂接元素，则 Y 可以在多个父分支下重复出现。"
-},
-{
-"id": "1390",
-"name": "Intent Graph Visual Explorer"
-,"parent": "1343"
-,"type": "ArchiMate_ApplicationComponent"
-,"description": "为 HUMAN BEING 提供只读的 intent graph 可视化浏览界面。默认展示 SystemArchitecture 下第一层子 view，支持通过逐层点击展开或搜索展开目标 view；view 层级由父 view 所含元素挂接的 subdiagram view 推导；同一子 view 可以在多个父分支下重复出现。"
-,"attributes": [
-{
-"name": "interaction_style"
-,"description": "展开风格参考 MINDMAP：节点式渐进展开，优先保持当前路径可读，而不是一次性铺开全部 view。"
-},
-{
-"name": "search_scope"
-,"description": "第一版搜索范围至少覆盖 view 名称与 view 所含元素名称。"
-}
-]
-,"subdiagram_views": [
-{
-"view_id": "176",
-"view_name": "Intent Graph Visual Explorer"
-}
-]
-,"testcases": [
-{
-"name": "INTENT-GRAPH-TOP-LEVEL-DRILLDOWN",
-"description": "验证只读界面默认只显示 SystemArchitecture 下第一层子 view，且用户可以通过逐层点击展开下级 view。",
-"type": "Acceptance Test",
-"Input": "Control point: 打开 intent graph 可视化界面并加载 design/KG/SystemArchitecture.json；初始状态展示 SystemArchitecture 下第一层子 view，随后点击某个顶层 view 并继续点击其子 view。",
-"acceptanceCriteria": "tests/explicit/entries/runIntentGraphTopLevelDrilldown.js",
-"TestResults": "Frozen baseline: 该测试只锁定只读浏览、顶层默认展示与逐层点击展开，不要求编辑或回写 intent graph。"
-},
-{
-"name": "INTENT-GRAPH-SEARCH-EXPANSION",
-"description": "验证用户可以通过搜索 view 名称或 view 所含元素名称定位目标 view，并自动展开到命中 view 的可见路径。",
-"type": "Scenario Test",
-"Input": "Control point: 在 intent graph 可视化界面输入 view 名称或某个被 view 收纳的元素名称进行搜索。",
-"acceptanceCriteria": "tests/explicit/entries/runIntentGraphSearchExpansion.js",
-"TestResults": "Frozen baseline: 第一版搜索至少覆盖 view 名称与所含元素名称；MINDMAP 风格仅作为展示参考，不作为像素级断言。"
-}
-]
-},
-{
-"id": "1333",
-"name": "brief"
-,"parent": "1344"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "provide the introduction of the current project, including the exterrnal api or other forms of interfaces in order to let external consumers know when and how to use this product system."
-,"attributes": [
-{
-"name": "autonomous",
-"content": "src\\commands\\brief.ts"
-},
-{
-"name": "PROMPT_FOR_MAIN_AGENT"
-,"description": "#sym:buildProductBriefHandoffPrompt"
-}
-]
-},
-{
-"id": "1334",
-"name": "LogicalArchitecture"
-,"parent": "1207"
-,"type": "ArchiMate_Assessment"
-,"subdiagram_views": [
-{
-"view_id": "169",
-"view_name": "LogicalArchitecture"
-},
-{
-"view_id": "175",
-"view_name": "本体关系"
-}
-]
-},
-{
-"id": "1335",
-"name": "INTENTION ARCHITECTURE MODEL"
-,"parent": "1334"
-,"type": "Class"
-,"description": "通过EA等工具进行建模，生成可归档的design/KG/SystemArchitecture.json意图模型"
-,"attributes": [
-{
-"name": "GRAPH_USAGE_GUIDE"
-,"description": "将本文件作为意图架构知识图谱与行动约束入口使用，而不是静态清单。阅读和行动时遵循以下规则：1. 优先把本图谱当作当前任务的第一事实来源，先通读相关元素、relationships、views、attributes、testcases，再决定是否继续读取代码、测试、脚本、文档或其它外部文件。2. 本图谱以Archimate建模语言为主，辅之其它建模语言（如UML等）；所有Archimate元素的语义都以Archimate标准定义为准，不得仅凭元素名称或自然语言习惯随意改写。3. 凡属性、description、browser_path、acceptanceCriteria或其它字段指向仓库路径、#file、#sym 或外部模型线索时，应将其视为需要按需追溯的证据入口；引用内容用于补充上下文，不得推翻图谱中已经明确写出的原则、约束、显性testcase与关系语义。4. 该图谱中若存在 `Archimate_principle`、`Archimate_constrain` 等元素，你必须优先识别并严格服从；它们是硬约束，用来限制你的推理、设计与行动边界，你不能超过这些约束。5. 遇到信息冲突时，按以下优先级处理：硬约束元素与原则 &gt; 显性testcase及意图架构显式语义 &gt; 元素、关系、视图、attributes中的明确描述 &gt; 被引用文件或符号 &gt; 当前代码现状；代码只是实现证据，不会自动覆盖意图。6. 显性testcase是意图架构验收基线。除非任务明确属于意图架构设计并要求更新基线，否则你不得擅自新增、删除、重建或改写显性testcase的目标、挂载对象、断言口径与范围；编码或修复阶段只能补齐其可执行入口、支撑性实现、支撑性测试与运行环境。7. 修改边界必须清晰：意图架构设计阶段负责更新意图元素、关系、视图与显性testcase；实现架构设计阶段负责维护实现架构；编码阶段默认修改代码、测试、脚本和文档，不得把实现偏差直接回写成意图漂移。8. 分析问题时必须沿追溯链理解上下文，不得只看单个元素名称或单段description；至少应综合相关元素、关系、视图、上下游依赖、引用文件与测试挂载点后再下结论。9. 当图谱信息不完整时，可以基于仓库证据做最小必要推断，但必须显式标记假设，且不得臆造不存在的外部接口、SLA、部署事实、组织流程或新的显性验收基线。10. 若需要新增支撑性测试、实现护栏或运行环境说明，应优先写入实现架构、代码、测试与对应文档的正确落点，而不是污染意图层。11. 最终输出必须能说明：你读取了哪些图谱证据，遵守了哪些原则或约束，哪些结论是仓库已证实事实，哪些内容只是带标记的最小假设。\r\n"
-},
-{
-"name": "location"
-,"description": "design\\KG\\SystemArchitecture.json"
-},
-{
-"name": "schema",
-"content": ".github\\argoschema\\SystemArchitecture.schema.json"}
-]
-},
-{
-"id": "1336",
-"name": "CODE IMPLEMENTATION"
-,"parent": "1334"
-,"type": "Class"
-},
-{
-"id": "1337",
-"name": "非显性测试用例"
-,"parent": "1334"
-,"type": "Class"
-,"description": "包括unit test, system test, integration test, inspection test, 主要用于支撑意图架构中的验收和场景测试用例的实现。"
-},
-{
-"id": "1338",
-"name": "HUMAN BEING"
-,"parent": "1334"
-,"type": "Class"
-,"description": "work on <a href=\"$element://{191114F2-0331-4a44-902D-11949D1F4807}\"><font color=\"#0000ff\"><u>SystemArchitecture</u></font></a> to embody the intention of the developers."
-},
-{
-"id": "1339",
-"name": "编码"
-,"parent": "1334"
-,"type": "Class"
-,"description": "基于实现架构进行编码，直到通过所有测试用例（包括非显性和显性测试用例）\r\n&nbsp;\r\n<ul>\r\n\t<li>输入：代码仓中的目录和文件结构、目录下的测试侧栏（护栏中一般会有看护的实现对象）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>任务：实现业务代码使得测试用例得以通过，如果下钻构建更细节的目录或文件，需要同时考虑是否补齐测试护栏。</li>\r\n</ul>\r\n<ul>\r\n\t<li>验证：调用（而不修改）测试入口（包括设计阶段已经定义的所有测试用例）。</li>\r\n</ul>"
-},
-{
-"id": "1340",
-"name": "实现架构设计"
-,"parent": "1334"
-,"type": "Class"
-,"description": "基于用户在意图架构中标识的验收测试用例、场景测试用例、当前CODEBASE中的代码，使用业界优秀的软件架构实践进行实现架构设计，优秀原则包括《整洁架构设计》、SOLID、DEEP MODULE（深模块粒度）、渐进式披露、关注点分离等原则。负责将意图架构中的 显性测试用例 转化为具体的 测试脚本/契约代码。\r\n&nbsp;\r\n<ul>\r\n\t<li>读取 显性测试用例。</li>\r\n</ul>\r\n<ul>\r\n\t<li>产出 非显性测试用例（单元/系统测试脚手架）。</li>\r\n</ul>\r\n<ul>\r\n\t<li>实现 显性测试用例 的代码入口（作为 Coding Agent 不可修改的只读文件）。</li>\r\n</ul>\r\n\r\n这里的实现架构我们就用代码仓中的目录和文件结构来表达，每个目录或文件就代表一个实现架构中的架构元素，每个目录下可以有看护对应架构元素的测试用例，主要是单元测试、系统测试、集成测试、inspection test。"
-},
-{
-"id": "1341",
-"name": "IMPLEMENTATION ARCHITECTURE MODEL"
-,"parent": "1334"
-,"type": "Class"
-,"description": "实现架构以项目代码仓根目录为读取起点，用目录与文件结构、OVERALL_ARCHITECTURE.md、ARCHITECTURE.md 契约文件、显性测试入口、非显性测试护栏共同表达。"
-},
-{
-"id": "1342",
-"name": "VS CODE runtime"
-,"parent": "1210"
-,"type": "ArchiMate_Node"
-},
-{
-"id": "1343",
-"name": "Argo VS Extension"
-,"parent": "1209"
-,"type": "ArchiMate_ApplicationComponent"
-,"subdiagram_views": [
-{
-"view_id": "170",
-"view_name": "Argo VS Extension"
-}
-]
-},
-{
-"id": "1344",
-"name": "commands"
-,"parent": "1343"
-,"type": "ArchiMate_ApplicationComponent"
-,"subdiagram_views": [
-{
-"view_id": "171",
-"view_name": "commands"
-}
-]
-},
-{
-"id": "1345",
-"name": "implementationdesign"
-,"parent": "1344"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "used for telling the main agent to design the test cases based on the human expert's intention marked as the acceptance test intention in the intention architecture model."
-,"attributes": [
-{
-"name": "autonomous",
-"content": "src\\commands\\implementationdesign.ts"},
-{
-"name": "TEST_CASE_DESIGN_PROMPT"
-,"description": "#sym:buildImplementationDesignHandoffPrompt "
-}
-]
-},
-{
-"id": "1346",
-"name": "work"
-,"parent": "1344"
-,"type": "ArchiMate_ApplicationFunction"
-,"description": "used for telling the main agent to design the implementation architecture and implement the code until passing all of the test cases pre-define."
-,"attributes": [
-{
-"name": "autonomous",
-"content": "src\\commands\\work.ts"},
-{
-"name": "PROMPT_FOR_MAIN_AGENT"
-,"description": "#sym:buildWorkAgentHandoffPrompt "
-}
-]
-},
-{
-"id": "1363",
-"name": "意图架构设计"
-,"parent": "1334"
-,"type": "Class"
-,"description": "这里意图架构采用JSON格式来表达，该JSON格式主要用于“架构骨架”的表达，可作为“地图”让LLM使用，一般会全量塞入LLM上下文中，因此不要放过多内容，如果需要对某个元素或关系或者他们的属性展开描述，必须把描述放入代码仓中的makrdown文本中，只需要将文本路径填入“架构骨架”。\r\n"
-},
-{
-"id": "1364",
-"name": "显性测试用例"
-,"parent": "1334"
-,"type": "Class"
-,"description": "默认以 Acceptance Test 与 Scenario Test 作为意图架构验收基线；若其它类型 testcase 被提升为显性 testcase，则也必须承担稳定架构验收职责并拥有只读测试入口。"
-},
-{
-"id": "1365",
-"name": "自动化测试"
-,"parent": "1334"
-,"type": "Class"
-,"description": "#sym:executeArchitectureTests "
-},
-{
-"id": "1366",
-"name": "测试失败记录"
-,"parent": "1334"
-,"type": "Class"
-,"description": "design\\KG\\test-failure-records.json"
-},
-{
-"id": "1367",
-"name": "intentinarchitecturedesign"
-,"parent": "1344"
-,"type": "ArchiMate_ApplicationFunction"
-,"attributes": [
-{
-"name": "autonomous",
-"content": "src\\commands\\intentinarchitecturedesign.ts"
-},
-{
-"name": "INTENTION_DESIGN_PROMPT"
-,"description": "#sym:buildIntentInArchitectureDesignHandoffPrompt"
-}
-]
-},
-{
-"id": "1375",
-"name": "测试用例"
-,"parent": "1334"
-,"type": "Class"
-,"description": "看护所在目录覆盖范围的实现架构"
-},
-{
-"id": "1376",
-"name": "意图架构元素"
-,"parent": "1335"
-,"type": "Class"
-,"description": "我们采用Archimate3.2作为意图架构的外层设计语言，对于具体元素可以进一步采用其它合适的建模语言（如UML、SysML、BPMN等等，根据需要和使用的人来选择最合适的）"
-},
-{
-"id": "1378",
-"name": "关键非显性测试用例"
-,"parent": "1334"
-,"type": "Class"
-,"description": "实现架构设计阶段定死的关键非显性测试。它们只收口于四类：直接守架构边界、依赖方向、显性入口正确性、关键实现追溯。/work 阶段对其测试入口、断言边界、挂载对象、追溯关系、受保护夹具与基线数据一律只读。"
-},
-{
-"id": "1379",
-"name": "非关键非显性测试用例"
-,"parent": "1334"
-,"type": "Class"
-,"description": "作为实现阶段的参考与支撑护栏，不承担冻结级实现架构契约地位。/work 阶段可以在既定契约允许的位置补充、调整和优化。"
-},
-{
-"id": "1384",
-"name": "实现架构元素"
-,"parent": "1341"
-,"type": "Class"
-},
-{
-"id": "1387",
-"name": "copilot-instructions"
-,"parent": "1343"
-,"type": "ArchiMate_ApplicationComponent"
-,"description": "COPILOT的持久化记忆，赋予AGENT对 `本体关系` 的常驻知识。"
-,"attributes": [
-{
-"name": "copilot-instructions",
-"content": ".github\\copilot-instructions.md"}
-]
-},
-{
-"id": "1388",
-"name": "SKILLS"
-,"parent": "1343"
-,"type": "ArchiMate_ApplicationComponent"
-,"description": ".github\\skills\\grill-me\\SKILL.md  --- 一种通用的SKILL，当你有问题咨询时，可以通过该SKILL让AGENT来辅助你"
-,"attributes": [
-{
-"name": "grill-me",
-"content": ".github\\skills\\grill-me\\SKILL.md"}
-]
-},
-{
-"id": "1389",
-"name": "EA tool"
-,"parent": "1209"
-,"type": "ArchiMate_ApplicationComponent"
-,"description": "人类工程师在EA工具上建模，最后通过脚本将模型导出为 `design\\KG\\SystemArchitecture.json`"
-,"attributes": [
-{
-"name": "导出意图架构图谱",
-"content": "eatool\\EA-jsscript\\project_auto_gen_suitable_for_LLM-V2.js"}
-]
-}
-],
-"relationships": [
-{
-"id":"1128"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现架构输入)--> 编码"
-,"name":"实现架构输入"
-,"source_id":"1341"
-,"target_id":"1339"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"编码"
-},
-{
-"id":"1131"
-,"statement":"意图架构设计 --(意图架构更新)--> INTENTION ARCHITECTURE MODEL"
-,"name":"意图架构更新"
-,"source_id":"1363"
-,"target_id":"1335"
-,"source_name":"意图架构设计"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1132"
-,"statement":"编码 --(implements)--> CODE IMPLEMENTATION"
-,"name":"implements"
-,"super_type": "_IMPLEMENT_"
-,"source_id":"1339"
-,"target_id":"1336"
-,"source_name":"编码"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1133"
-,"statement":"INTENTION ARCHITECTURE MODEL --(意图架构输入)--> 实现架构设计"
-,"name":"意图架构输入"
-,"source_id":"1335"
-,"target_id":"1340"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1134"
-,"statement":"实现架构设计 --(实现架构更新)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"实现架构更新"
-,"source_id":"1340"
-,"target_id":"1341"
-,"source_name":"实现架构设计"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1136"
-,"statement":"VS CODE runtime --(ArchiMate_Serving)--> Argo VS Extension"
-,"name":"ArchiMate_Serving"
-,"super_type": "ArchiMate_Serving"
-,"source_id":"1342"
-,"target_id":"1343"
-,"source_name":"VS CODE runtime"
-,"target_name":"Argo VS Extension"
-},
-{
-"id":"1138"
-,"statement":"work --(Realisation)--> 编码"
-,"name":"Realisation"
-,"source_id":"1346"
-,"target_id":"1339"
-,"source_name":"work"
-,"target_name":"编码"
-},
-{
-"id":"1155"
-,"statement":"HUMAN BEING --(需求)--> 意图架构设计"
-,"name":"需求"
-,"source_id":"1338"
-,"target_id":"1363"
-,"source_name":"HUMAN BEING"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1156"
-,"statement":"显性测试用例 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1335"
-,"source_name":"显性测试用例"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1157"
-,"statement":"非显性测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1337"
-,"target_id":"1341"
-,"source_name":"非显性测试用例"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1158"
-,"statement":"CODE IMPLEMENTATION --(通过测试验收)--> 非显性测试用例"
-,"name":"通过测试验收"
-,"source_id":"1336"
-,"target_id":"1337"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1159"
-,"statement":"CODE IMPLEMENTATION --(通过测试验收)--> 显性测试用例"
-,"name":"通过测试验收"
-,"source_id":"1336"
-,"target_id":"1364"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"显性测试用例"
-},
-{
-"id":"1160"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(当实现架构实现后，意图架构就会被实现)--> INTENTION ARCHITECTURE MODEL"
-,"name":"当实现架构实现后，意图架构就会被实现"
-,"super_type": "_IMPLY_"
-,"source_id":"1341"
-,"target_id":"1335"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1161"
-,"statement":"implementationdesign --(Realisation)--> 实现架构设计"
-,"name":"Realisation"
-,"source_id":"1345"
-,"target_id":"1340"
-,"source_name":"implementationdesign"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1162"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(历史实现架构输入)--> 实现架构设计"
-,"name":"历史实现架构输入"
-,"source_id":"1341"
-,"target_id":"1340"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1163"
-,"statement":"INTENTION ARCHITECTURE MODEL --(历史意图架构输入)--> 意图架构设计"
-,"name":"历史意图架构输入"
-,"source_id":"1335"
-,"target_id":"1363"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1165"
-,"statement":"显性测试用例 --(意图架构（含显性测试用例）输入)--> 自动化测试"
-,"name":"意图架构（含显性测试用例）输入"
-,"source_id":"1364"
-,"target_id":"1365"
-,"source_name":"显性测试用例"
-,"target_name":"自动化测试"
-},
-{
-"id":"1166"
-,"statement":"自动化测试 --(可能输出)--> 测试失败记录"
-,"name":"可能输出"
-,"source_id":"1365"
-,"target_id":"1366"
-,"source_name":"自动化测试"
-,"target_name":"测试失败记录"
-},
-{
-"id":"1167"
-,"statement":"测试失败记录 --(失败记录输入)--> 编码"
-,"name":"失败记录输入"
-,"source_id":"1366"
-,"target_id":"1339"
-,"source_name":"测试失败记录"
-,"target_name":"编码"
-},
-{
-"id":"1168"
-,"statement":"intentinarchitecturedesign --(Realisation)--> 意图架构设计"
-,"name":"Realisation"
-,"source_id":"1367"
-,"target_id":"1363"
-,"source_name":"intentinarchitecturedesign"
-,"target_name":"意图架构设计"
-},
-{
-"id":"1169"
-,"statement":"CODE IMPLEMENTATION --(实现)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"实现"
-,"super_type": "_IMPLY_"
-,"source_id":"1336"
-,"target_id":"1341"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1170"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现（填充）验收测试的逻辑)--> 显性测试用例"
-,"name":"实现（填充）验收测试的逻辑"
-,"super_type": "_IMPLEMENT_"
-,"source_id":"1341"
-,"target_id":"1364"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"显性测试用例"
-},
-{
-"id":"1171"
-,"statement":"显性测试用例 --(输入（已有测试实现）)--> 编码"
-,"name":"输入（已有测试实现）"
-,"source_id":"1364"
-,"target_id":"1339"
-,"source_name":"显性测试用例"
-,"target_name":"编码"
-},
-{
-"id":"1172"
-,"statement":"CODE IMPLEMENTATION --(输入当前代码)--> 实现架构设计"
-,"name":"输入当前代码"
-,"source_id":"1336"
-,"target_id":"1340"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"实现架构设计"
-},
-{
-"id":"1181"
-,"statement":"意图架构元素 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1376"
-,"target_id":"1335"
-,"source_name":"意图架构元素"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1184"
-,"statement":"显性测试用例 --(aggregates)--> 测试用例"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1375"
-,"source_name":"显性测试用例"
-,"target_name":"测试用例"
-},
-{
-"id":"1185"
-,"statement":"非显性测试用例 --(aggregates)--> 测试用例"
-,"name":"aggregates"
-,"source_id":"1337"
-,"target_id":"1375"
-,"source_name":"非显性测试用例"
-,"target_name":"测试用例"
-},
-{
-"id":"1186"
-,"statement":"关键非显性测试用例 --(aggregates)--> 非显性测试用例"
-,"name":"aggregates"
-,"source_id":"1378"
-,"target_id":"1337"
-,"source_name":"关键非显性测试用例"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1187"
-,"statement":"非关键非显性测试用例 --(aggregates)--> 非显性测试用例"
-,"name":"aggregates"
-,"source_id":"1379"
-,"target_id":"1337"
-,"source_name":"非关键非显性测试用例"
-,"target_name":"非显性测试用例"
-},
-{
-"id":"1193"
-,"statement":"测试用例 --(aggregates)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1375"
-,"target_id":"1341"
-,"source_name":"测试用例"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1196"
-,"statement":"意图架构元素 --(意图架构元素关系)--> 意图架构元素"
-,"name":"意图架构元素关系"
-,"source_id":"1376"
-,"target_id":"1376"
-,"source_name":"意图架构元素"
-,"target_name":"意图架构元素"
-},
-{
-"id":"1197"
-,"statement":"意图架构元素关系 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1383"
-,"target_id":"1335"
-,"source_name":"意图架构元素关系"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1198"
-,"statement":"实现架构元素 --(实现架构元素关系)--> 实现架构元素"
-,"name":"实现架构元素关系"
-,"description": "每个实现架构元素对应一个代码仓目录，在该目录下有ARCHITECTURE.md来表达架构信息，包括边界、接口等。"
-,"source_id":"1384"
-,"target_id":"1384"
-,"source_name":"实现架构元素"
-,"target_name":"实现架构元素"
-},
-{
-"id":"1199"
-,"statement":"INTENTION ARCHITECTURE MODEL --(意图驾驭)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"意图驾驭"
-,"source_id":"1335"
-,"target_id":"1341"
-,"source_name":"INTENTION ARCHITECTURE MODEL"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1201"
-,"statement":"显性测试用例 --(aggregates)--> INTENTION ARCHITECTURE MODEL"
-,"name":"aggregates"
-,"source_id":"1364"
-,"target_id":"1335"
-,"source_name":"显性测试用例"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1202"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(意图实现)--> INTENTION ARCHITECTURE MODEL"
-,"name":"意图实现"
-,"source_id":"1341"
-,"target_id":"1335"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1203"
-,"statement":"IMPLEMENTATION ARCHITECTURE MODEL --(实现设计驾驭)--> CODE IMPLEMENTATION"
-,"name":"实现设计驾驭"
-,"source_id":"1341"
-,"target_id":"1336"
-,"source_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-,"target_name":"CODE IMPLEMENTATION"
-},
-{
-"id":"1204"
-,"statement":"CODE IMPLEMENTATION --(代码实现)--> IMPLEMENTATION ARCHITECTURE MODEL"
-,"name":"代码实现"
-,"source_id":"1336"
-,"target_id":"1341"
-,"source_name":"CODE IMPLEMENTATION"
-,"target_name":"IMPLEMENTATION ARCHITECTURE MODEL"
-},
-{
-"id":"1205"
-,"statement":"意图架构设计 --(使用EA工具建模)--> EA tool"
-,"name":"使用EA工具建模"
-,"source_id":"1363"
-,"target_id":"1389"
-,"source_name":"意图架构设计"
-,"target_name":"EA tool"
-},
-{
-"id":"1206"
-,"statement":"EA tool --(导出意图架构JSON)--> INTENTION ARCHITECTURE MODEL"
-,"name":"导出意图架构JSON"
-,"source_id":"1389"
-,"target_id":"1335"
-,"source_name":"EA tool"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-},
-{
-"id":"1212"
-,"statement":"渐进式披露 View --(约束)--> Intent Graph Visual Explorer"
-,"name":"约束"
-,"source_id":"1391"
-,"target_id":"1390"
-,"source_name":"渐进式披露 View"
-,"target_name":"Intent Graph Visual Explorer"
-},
-{
-"id":"1213"
-,"statement":"View 层级由挂接元素决定 --(约束)--> Intent Graph Visual Explorer"
-,"name":"约束"
-,"source_id":"1392"
-,"target_id":"1390"
-,"source_name":"View 层级由挂接元素决定"
-,"target_name":"Intent Graph Visual Explorer"
-},
-{
-"id":"1214"
-,"statement":"Intent Graph Visual Explorer --(ArchiMate_Serving)--> HUMAN BEING"
-,"name":"ArchiMate_Serving"
-,"super_type": "ArchiMate_Serving"
-,"source_id":"1390"
-,"target_id":"1338"
-,"source_name":"Intent Graph Visual Explorer"
-,"target_name":"HUMAN BEING"
-},
-{
-"id":"1215"
-,"statement":"Intent Graph Visual Explorer --(可视化浏览)--> INTENTION ARCHITECTURE MODEL"
-,"name":"可视化浏览"
-,"source_id":"1390"
-,"target_id":"1335"
-,"source_name":"Intent Graph Visual Explorer"
-,"target_name":"INTENTION ARCHITECTURE MODEL"
-}
-],
-"views": [
-{
-"view_id": "169",
-"view_name": "LogicalArchitecture"
-,"parent_element_id": "1334"
-,"parent_element_name": "LogicalArchitecture"
-,"included_elements": [
-"1363",
-"1364",
-"1345",
-"1365",
-"1366",
-"1367",
-"1389",
-"1335",
-"1336",
-"1337",
-"1338",
-"1339",
-"1340",
-"1341",
-"1346"
-]
-,"included_relationships": [
-"1128",
-"1131",
-"1132",
-"1133",
-"1134",
-"1138",
-"1155",
-"1156",
-"1157",
-"1158",
-"1159",
-"1160",
-"1161",
-"1162",
-"1163",
-"1165",
-"1166",
-"1167",
-"1168",
-"1169",
-"1170",
-"1171",
-"1172",
-"1205",
-"1206"
-]
-},
-{
-"view_id": "175",
-"view_name": "本体关系"
-,"parent_element_id": "1334"
-,"parent_element_name": "LogicalArchitecture"
-,"included_elements": [
-"1336",
-"1341",
-"1335",
-"1384",
-"1375",
-"1376",
-"1364",
-"1337",
-"1378",
-"1379"
-]
-,"included_relationships": [
-"1181",
-"1184",
-"1185",
-"1186",
-"1187",
-"1193",
-"1196",
-"1197",
-"1198",
-"1199",
-"1201",
-"1202",
-"1203",
-"1204"
-]
-},
-{
-"view_id": "159",
-"view_name": "StrategyLayerAndMotivationAspect"
-,"parent_element_id": "1207"
-,"parent_element_name": "StrategyLayerAndMotivationAspect"
-,"included_elements": [
-"1334",
-"1391",
-"1392"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "160",
-"view_name": "BusinessLayer"
-,"parent_element_id": "1208"
-,"parent_element_name": "BusinessLayer"
-,"included_elements": [
-
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "171",
-"view_name": "commands"
-,"parent_element_id": "1344"
-,"parent_element_name": "commands"
-,"included_elements": [
-"1367",
-"1333",
-"1345",
-"1346"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "170",
-"view_name": "Argo VS Extension"
-,"parent_element_id": "1343"
-,"parent_element_name": "Argo VS Extension"
-,"included_elements": [
-"1387",
-"1388",
-"1344",
-"1390"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "161",
-"view_name": "ApplicationLayer"
-,"parent_element_id": "1209"
-,"parent_element_name": "ApplicationLayer"
-,"included_elements": [
-"1389",
-"1343",
-"1342",
-"1390"
-]
-,"included_relationships": [
-"1136"
-]
-},
-{
-"view_id": "176",
-"view_name": "Intent Graph Visual Explorer"
-,"parent_element_id": "1390"
-,"parent_element_name": "Intent Graph Visual Explorer"
-,"included_elements": [
-"1390",
-"1391",
-"1392",
-"1335",
-"1338"
-]
-,"included_relationships": [
-"1212",
-"1213",
-"1214",
-"1215"
-]
-},
-{
-"view_id": "162",
-"view_name": "TechnologyLayer"
-,"parent_element_id": "1210"
-,"parent_element_name": "TechnologyLayer"
-,"included_elements": [
-"1342"
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "163",
-"view_name": "ProjectManagement"
-,"parent_element_id": "1211"
-,"parent_element_name": "ProjectManagement"
-,"included_elements": [
-
-]
-,"included_relationships": [
-
-]
-},
-{
-"view_id": "158",
-"view_name": "SystemArchitecture"
-,"included_elements": [
-"1207",
-"1208",
-"1209",
-"1210",
-"1211"
-]
-,"included_relationships": [
-
-]
-}
-]
+  "name": "QwenPaw System Architecture",
+  "description": "Intent architecture for QwenPaw covering the current platform slices plus the strengthened P0 local security audit foundation required for end-to-end non-repudiation, tamper-evident auditing, external checkpoint anchoring, out-of-band configuration tamper detection, tiered audit durability, replay-resistant cloud reconciliation, and behavior-level anomaly detection. The security extension is scoped from the AgentScope security infrastructure PRD and is intentionally limited to the minimum business closure needed for four core business scenarios and three deep-risk scenarios: full-chain evidence continuity, audit-integrity self-healing lock mode, bounded TTFT impact under full audit mode, lease-expiry-driven active defense, prompt-injection-resistant tool enforcement, stolen-session replay blocking, and silent exfiltration pattern alerting.",
+  "standard": {
+    "name": "ArchiMate",
+    "version": "3.2",
+    "profile": "QwenPaw repository intent knowledge graph"
+  },
+  "attributes": [
+    {
+      "name": "evidence_policy",
+      "value": "repository-current-state-plus-prd-scoped-security-foundation"
+    }
+  ],
+  "elements": [
+    {
+      "id": "intent-qwenpaw-platform",
+      "name": "QwenPaw Platform",
+      "type": "Product",
+      "archimate_layer": "Business",
+      "archimate_aspect": "Composite",
+      "browser_path": "QwenPaw Platform",
+      "description": "Repository-backed personal AI assistant platform spanning backend runtime, local operator CLI, operator console, documentation website, architecture validation assets, and the P0 security audit foundation required for local safe operation.\n#file:README.md\n#file:pyproject.toml\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-backend-runtime",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Backend Runtime",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime",
+      "description": "Python runtime root that owns API routers, agent execution, channels, config, security, providers, and shared utilities.\n#file:src/qwenpaw\n#file:tests/unit/routers/test_settings.py\n#file:tests/unit/routers/test_git.py"
+    },
+    {
+      "id": "intent-local-security-audit-foundation",
+      "parent": "intent-backend-runtime",
+      "name": "Local Security Audit Foundation",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation",
+      "description": "Backend-owned P0 security foundation that standardizes implicit SecurityContext propagation, defines the canonical AuditEvent envelope, persists append-only local audit records with a hash chain, anchors continuity through a restricted checkpoint store, verifies startup consistency against configuration hashes, enforces security lock mode after integrity failures, supports human-in-the-loop confirmation for high-risk tool execution, resists prompt-driven guard bypass at the tool-call layer, and supports tiered audit durability for critical versus informational events. This element is intentionally limited to the minimum closure needed for end-to-end non-repudiation evidence chains, audit-integrity self-healing lock mode, bounded TTFT impact, active liveness defense, replay-resistant session continuity, and behavior-anomaly evidence generation rather than the full later audit pipeline.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md\n#file:src/qwenpaw/app/auth.py\n#file:src/qwenpaw/app/agent_context.py\n#file:src/qwenpaw/app/runner/utils.py\n#file:src/qwenpaw/app/routers/config.py\n#file:src/qwenpaw/app/routers/settings.py\n#file:src/qwenpaw/security",
+      "attributes": [
+        {
+          "name": "verification_focus",
+          "value": "end-to-end actor trace continuity, tamper-evident and self-healing audit integrity, accountable security configuration changes, prompt-injection-resistant high-risk enforcement, replay-resistant session continuity, behavior-level anomaly surfacing, and bounded full-audit latency"
+        },
+        {
+          "name": "scope_limit",
+          "value": "P0 covers implicit context propagation via contextvars, local append-only audit write, checkpoint-anchored hash continuity, configuration-hash consistency verification, security lock mode, basic query, approval persistence, human-in-the-loop confirmation records for high-risk tool execution, tool-layer enforcement against prompt-driven bypass attempts, tiered L1/L2 audit write semantics, asynchronous uplink of critical audit anchors to the cloud situational awareness platform for remote integrity mirroring, and cloud-visible anomaly evidence for replay or silent exfiltration patterns; session encryption remains later phases."
+        },
+        {
+          "name": "context_propagation_rule",
+          "value": "SecurityContext must not be architecture-visible as an explicit function parameter; request entry and message dispatch must rely on implicit contextvars capture and restoration."
+        },
+        {
+          "name": "checkpoint_rule",
+          "value": "A restricted append-only checkpoint store must anchor latest anchored_event_id and global_hash every N events and on each high-risk configuration change so tail truncation is detectable on restart."
+        },
+        {
+          "name": "lock_mode_rule",
+          "value": "If startup consistency verification detects settings or audit-anchor divergence, backend runtime enters security lock mode and refuses sensitive tool loading until trust is re-established."
+        },
+        {
+          "name": "ledger_integrity_verification_rule",
+          "value": "Audit integrity verification must cover the committed audit ledger, not only checkpoint-file presence. Editing, deleting, reordering, or truncating any already-written audit record, including a non-tail record after several high-risk actions, is a tamper signal that must be detected no later than the next high-risk tool boundary or startup/reconnect preflight."
+        },
+        {
+          "name": "security_center_recovery_display_rule",
+          "value": "After audit-ledger tamper is detected, Security Center backend and operator web must keep the affected canonical client in UNTRUSTED or equivalent recovery-required state until full-chain validation against the cloud mirror succeeds; a CLEAR display before that validation is a security failure."
+        },
+        {
+          "name": "audit_tiering_rule",
+          "value": "L1 critical events use synchronous durable write plus hash-chain and checkpoint updates before returning; L2 informational reasoning events may batch asynchronously and remain visible as pending verification until anchored."
+        },
+        {
+          "name": "uplink_rule",
+          "value": "Critical audit anchors and L1 audit records must be asynchronously uplinked with retry to a cloud integrity mirror; before sending new data after reconnect, the client must perform a pre-upload hash-alignment handshake and refuse sync if local and cloud anchors diverge."
+        },
+        {
+          "name": "high_risk_confirmation_rule",
+          "value": "High-risk tool execution must pause for explicit user confirmation, persist the confirmation artifact, and emit a synchronous L1 USER_CONFIRMATION audit record before execution resumes."
+        },
+        {
+          "name": "tool_layer_enforcement_rule",
+          "value": "High-risk enforcement must execute at the tool invocation boundary rather than trusting conversational intent classification; prompts that claim test mode, maintenance mode, or other bypass narratives cannot suppress guard evaluation when the tool risk remains High."
+        },
+        {
+          "name": "session_replay_rule",
+          "value": "Cloud-side reconciliation must validate that each trusted trace or session advances through the expected monotonic sequence and hash continuity. A replayed or cloned session presented from an unaudited process must be blocked before additional actions are authorized."
+        },
+        {
+          "name": "trust_recovery_rule",
+          "value": "Whenever a client resumes from UNTRUSTED state, it must perform a mandatory full-chain sync for the missing sequence gap. No new high-risk tools are permitted until the gap is validated by the cloud mirror."
+        },
+        {
+          "name": "recovery_release_rule",
+          "value": "For a lease-expired or otherwise UNTRUSTED canonical client, successful full-chain missing-gap validation by the cloud mirror must close the recovery gate and restore normal model access for that same client. Continuing to project UNTRUSTED or return recovery-gated model-access denial after valid proof is a security availability failure; restoring access before valid proof remains a security integrity failure."
+        },
+        {
+          "name": "normal_offline_reconnect_rule",
+          "value": "A normally stopped or briefly offline canonical client whose local audit head still matches the cloud shadow, has no tamper evidence, has no missing sequence, and has not crossed the lease-expiry recovery boundary must be admitted as normal continuity on reconnect. Security Center backend and operator web must project ALIGNED or TRUSTED with gap_status CLEAR, recovery_gate_status CLEAR, and recovery_required false. If the lease did expire, the client may require full-chain missing-gap validation, but once a valid locally constructible proof is accepted the state must clear; a persistent GAP_VALIDATION_REQUIRED/REQUIRED/OPEN display after normal proof acceptance is an availability failure."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "sec-e2e-024-end-to-end-non-repudiation-evidence-chain",
+          "description": "When an employee triggers a high-risk action through a third-party agent plugin, the system must preserve a complete business-visible evidence chain from the original user to the final high-risk tool effect and bind that chain to the user's confirmation artifact.",
+          "type": "Acceptance Test",
+          "Input": "Authenticate as user A, ask QwenPaw to delegate a high-risk operation through Agent B and third-party plugin C toward high-risk tool D, then provide the required user confirmation so the action is allowed to continue.",
+          "acceptanceCriteria": "tests/integration/security/test_audit_foundation.py::test_end_to_end_non_repudiation_evidence_chain",
+          "TestResults": "Security Center and the audit query surface expose a continuous evidence chain from user A to Agent B to plugin C to tool D together with the confirmation artifact digest, and no link in the chain is anonymous, broken, or attributed to a fallback system identity."
+        },
+        {
+          "name": "sec-e2e-025-audit-integrity-self-healing-lockdown",
+          "description": "When an employee attempts to hide a sensitive action by deleting or editing audit records, editing configuration files, or reconnecting after offline tampering, the system must surface a single business-level data continuity anomaly and refuse further sensitive use until trust is re-established.",
+          "type": "Acceptance Test",
+          "Input": "Execute several sensitive actions so the local audit ledger has a multi-record baseline and Security Center has a trusted cloud anchor, then modify or truncate any committed local audit record, checkpoint, or settings database by operating-system means, including editing a non-tail audit record such as the second record. Without manually restoring trust, attempt to reconnect or invoke another sensitive tool.",
+          "acceptanceCriteria": "tests/integration/security/test_audit_foundation.py::test_audit_integrity_self_healing_lockdown",
+          "TestResults": "Before the device can continue sensitive work or upload new anchors, the system detects the audit-ledger divergence, raises a data continuity anomaly in Security Center, enters local UNTRUSTED lock mode, refuses sensitive tools at the high-risk boundary, and keeps Security Center backend and operator web recovery-required rather than CLEAR until the local ledger, checkpoint anchors, and cloud mirror are reconciled."
+        },
+        {
+          "name": "sec-e2e-027-lease-expiry-active-defense",
+          "description": "When a QwenPaw device goes missing or stays offline beyond its lease window, Security Center must actively downgrade the device to untrusted and keep it blocked until it proves continuity on return.",
+          "type": "Acceptance Test",
+          "Input": "Let a client miss its heartbeat long enough to exceed the lease TTL, observe the cloud dashboard state turn untrusted, then reconnect the device and attempt to resume model access without first completing the missing-gap verification.",
+          "acceptanceCriteria": "tests/integration/security/test_audit_foundation.py::test_lease_expiry_blocks_untrusted_rejoin_until_gap_sync",
+          "TestResults": "Security Center marks the device untrusted when the lease expires, denies restored authorization on reconnect until the full missing hash gap is validated, then closes recovery_required for the same canonical client, projects ALIGNED or TRUSTED, and allows normal model access to return. Keeping the client UNTRUSTED or returning a recovery-gated denial after valid missing-gap proof fails this acceptance boundary just as much as restoring access before proof."
+        },
+        {
+          "name": "sec-e2e-028-normal-offline-reconnect-clear-state",
+          "description": "When a trusted QwenPaw runtime is normally stopped or briefly offline without audit tamper, missing sequence, clone/replay evidence, or lease-expiry recovery debt, reconnecting the same canonical client must not be displayed as a missing-gap recovery incident.",
+          "type": "Acceptance Test",
+          "Input": "Start from a trusted canonical client with Security Center showing normal continuity, stop or disconnect the runtime through a normal offline path without mutating local audit evidence, then restart the same canonical client and attempt ordinary model access.",
+          "acceptanceCriteria": "tests/integration/security/test_audit_foundation.py::test_normal_offline_reconnect_clears_without_gap_recovery",
+          "TestResults": "Security Center backend and operator web show the same canonical client as ALIGNED or TRUSTED with gap_status CLEAR, recovery_gate_status CLEAR, and recovery_required false after reconnect; ordinary model access returns 200. The client must not remain in GAP_VALIDATION_REQUIRED, gap_status REQUIRED, recovery_gate_status OPEN, or a 'gap pending validation' operator display unless a real lease-expiry, tamper, missing sequence, hash divergence, clone, or replay condition has been observed."
+        },
+        {
+          "name": "sec-e2e-021-prompt-injection-tool-guard-enforced",
+          "description": "A malicious prompt or contaminated external text must not be able to talk an agent into skipping the high-risk confirmation path or into treating a high-risk action as if it were a trusted test operation.",
+          "type": "Acceptance Test",
+          "Input": "In a live conversation, submit nested or deceptive instructions that claim the agent is in test mode or otherwise exempt from approval, then drive the agent toward a tool whose configured risk level is High without providing a valid trusted context or confirmation artifact.",
+          "acceptanceCriteria": "tests/integration/security/test_audit_foundation.py::test_prompt_injection_cannot_bypass_high_risk_tool_guard",
+          "TestResults": "The high-risk tool remains blocked at the tool-call layer, the guard rejects execution because the required trusted context and confirmation are absent, and the attempted bypass is recorded as a rejected security-relevant event rather than silently executing."
+        },
+        {
+          "name": "sec-e2e-029-builtin-rule-line-ending-invariant",
+          "description": "Integrity Protection delivery self-test net (rule integrity, persona baseline, health check) must pass wiring, backend, and frontend layers through the extension-owned runner without regressing built-in rule LF/CRLF invariance coverage.",
+          "type": "Acceptance Test",
+          "Input": "Run extension/run-integrity-delivery-selftest.py to execute all extension-owned self-test manifests for rule integrity, persona protection, and health check across wiring, pytest, and vitest layers.",
+          "acceptanceCriteria": "extension/run-integrity-delivery-selftest.py",
+          "TestResults": "All three delivery nets pass wiring, backend, and frontend layers; rule-integrity backend still covers LF-canonical and CRLF-only ok branches plus semantic tamper detection through the self-test manifest rather than a standalone pytest node mount."
+        }
+      ]
+    },
+    {
+      "id": "intent-implicit-security-context-manager",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Implicit Security Context Manager",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Implicit Security Context Manager",
+      "description": "Runtime manager that captures SecurityContext in FastAPI middleware, stores it in Python contextvars, packages it into AgentScope message metadata when crossing asynchronous message boundaries, and restores it on the consumer side so lower-layer tools can resolve identity implicitly. Explicit SecurityContext parameter threading is forbidden by this intent element.\n#file:src/qwenpaw/app/auth.py\n#file:src/qwenpaw/app/agent_context.py\n#file:src/qwenpaw/app/runner/utils.py"
+    },
+    {
+      "id": "intent-security-context",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Security Context",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Security Context",
+      "description": "Canonical runtime context carried across request entry, agent execution, tool execution, and security-configuration mutation so that audit and policy decisions share one stable identity envelope. The minimum P0 payload includes trace_id, user_id, session_id, root_session_id, agent_id, channel, the acted-on security scope when present, and enough trusted provenance metadata to distinguish audited runtime continuity from replayed or cloned session usage.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md",
+      "attributes": [
+        {
+          "name": "integrity_binding",
+          "description": "Opaque provenance binding or signature reference that lets downstream guards verify the context originated from a trusted audited runtime rather than an injected or replayed process."
+        }
+      ]
+    },
+    {
+      "id": "intent-audit-event",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Audit Event",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Audit Event",
+      "description": "Canonical append-only security audit record that captures event identity, event type, actor, session, agent, resource or configuration scope, decision or result metadata, prior_hash, current_hash, and sufficient fields to support integrity verification, remote integrity mirroring, replay detection, and basic operator query.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md",
+      "attributes": [
+        {
+          "name": "sync_status",
+          "description": "Per-entry uplink state for DEMO integrity mirroring. Valid values are PENDING, SYNCED, and FAILED."
+        },
+        {
+          "name": "sequence_number",
+          "description": "Monotonic sequence ordinal used by the local verifier and cloud mirror to detect missing, duplicated, or replayed operations within a trusted trace or session."
+        },
+        {
+          "name": "confirmation_signature",
+          "description": "Optional user confirmation signature persisted on audit entries that record explicit approval for high-risk actions."
+        },
+        {
+          "name": "auth_token_ref",
+          "description": "Optional reference to the confirmation token or authentication artifact that authorized a high-risk action without embedding the raw secret in the audit payload."
+        },
+        {
+          "name": "resource_access_summary",
+          "description": "Optional summary of resource category, access frequency, and aggregation scope used by cloud-side behavior analytics to distinguish normal work from silent exfiltration patterns."
+        }
+      ]
+    },
+    {
+      "id": "intent-audit-checkpoint-anchor",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Audit Checkpoint Anchor",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Audit Checkpoint Anchor",
+      "description": "Restricted checkpoint record stored outside the primary audit-event log so tail truncation becomes detectable. The minimum P0 payload includes anchored_event_id, global_hash, checkpoint_reason, checkpoint_timestamp, and the protected storage location metadata used during startup integrity verification.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-tiered-audit-stream",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Tiered Audit Stream",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Tiered Audit Stream",
+      "description": "Audit write orchestration that separates L1 critical events from L2 informational reasoning events. L1 uses synchronous durable writes and checkpoint updates before sensitive actions continue, while L2 batches asynchronously and remains operator-visible as pending verification until anchored.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-high-risk-tool-guard",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "High Risk Tool Guard",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/High Risk Tool Guard",
+      "description": "Interceptor that evaluates every tool invocation against the configured risk policy at the tool-call boundary. Whenever an agent attempts to invoke a tool marked with High risk level, it pauses execution, requires trusted Security Context provenance plus a user-provided confirmation token or signature, records the confirmation as a synchronous L1 USER_CONFIRMATION audit event, and only then releases the blocked tool execution path. Prompt content, nested instructions, or claimed test-mode narratives cannot bypass this enforcement.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-builtin-tool-rule-integrity",
+      "parent": "intent-high-risk-tool-guard",
+      "name": "Built-in Tool Rule Integrity",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/High Risk Tool Guard/Built-in Tool Rule Integrity",
+      "description": "Out-of-band integrity verification for bundled dangerous shell command rules. Compares LF-normalized SHA-256 digests against a signed manifest, warns on semantic tamper without blocking rule loading in the first implementation, and supports trusted repair from a pinned official source.\n#file:design/DesignDocByHuangsiyu/security_config_integrity_design.md\n#file:src/qwenpaw/security/tool_guard/rules_integrity.py\n#file:src/qwenpaw/security/tool_guard/rules/rules_manifest.json",
+      "attributes": [
+        {
+          "name": "hash_normalization_rule",
+          "value": "SHA-256 over LF-normalized UTF-8 content; CRLF and lone CR drift must not false-positive when semantic rule content is unchanged"
+        },
+        {
+          "name": "warn_only_policy",
+          "value": "Integrity failures are logged and surfaced through the rules-integrity API and Security settings UI, but bundled rules continue loading until a future strict mode is introduced"
+        }
+      ]
+    },
+    {
+      "id": "intent-audit-uplink-manager",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Audit Uplink Manager",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Audit Uplink Manager",
+      "description": "Manager responsible for asynchronously pushing the local ledger tail state, including last event id and global hash, plus L1 critical audit records to the cloud situational awareness platform. The DEMO path uses fire-and-forget with retries, supports resume after reconnect, and must perform a pre-upload handshake against the cloud mirror before sending new data.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-heartbeat-emitter",
+      "parent": "intent-audit-uplink-manager",
+      "name": "Heartbeat Emitter",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Audit Uplink Manager/Heartbeat Emitter",
+      "description": "Emitter that periodically reads the most recent EventID and GlobalHash from the local audit ledger and sends them, together with client identity proof, to the Security Center as a lease heartbeat. The DEMO cadence is periodic, for example every five minutes.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-audit-uplink-service",
+      "parent": "intent-local-security-audit-foundation",
+      "name": "Audit Uplink Service",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Local Security Audit Foundation/Audit Uplink Service",
+      "description": "Edge-side transport adapter that implements secure audit uplink. Whenever an L1 audit record or critical anchor is durably written, it triggers an asynchronous HTTPS or gRPC call that sends an encrypted audit summary toward the Security Center while preserving retry and resume semantics under intermittent connectivity.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-security-schema-contract",
+      "parent": "intent-backend-runtime",
+      "name": "Security Schema Contract",
+      "type": "Constraint",
+      "archimate_layer": "Motivation",
+      "archimate_aspect": "Motivation",
+      "browser_path": "QwenPaw Platform/Backend Runtime/Security Schema Contract",
+      "description": "Shared contract that fixes the hash algorithm, canonical JSON field ordering, and serialization rules used by both edge-side uplink and cloud-side verification. Its purpose is to prevent false integrity failures caused by formatting drift rather than real tampering.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-security-center",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Security Center",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center",
+      "description": "Security hub deployed in a controlled environment such as cloud or server infrastructure. It aggregates audit uplinks from multiple QwenPaw nodes, maintains per-client shadow audit chains, reconstructs end-to-end evidence chains for operator review, triggers real-time data continuity alerts whenever incoming integrity state diverges from the stored cloud expectation, blocks replayed session lineages, and surfaces abnormal behavior patterns such as covert low-risk data sweeps in a business-facing visual console.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-audit-lease-monitor",
+      "parent": "intent-security-center",
+      "name": "Audit Lease Monitor",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Audit Lease Monitor",
+      "description": "Monitor that maintains the lease registry for all connected clients. It applies a TTL threshold, for example thirty minutes, marks devices UNTRUSTED when no valid heartbeat is received within the threshold, and drives dashboard state plus forced-recovery requirements on reconnect.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md"
+    },
+    {
+      "id": "intent-cloud-integrity-stub",
+      "parent": "intent-security-center",
+      "name": "Cloud Integrity Stub",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Cloud Integrity Stub",
+      "description": "Logical verification stub inside the Security Center used for the DEMO. It receives critical audit anchors and L1 events from one QwenPaw client, maintains a shadow hash chain for that client, validates each uplink by comparing incoming prior_hash against the cloud-stored current_hash, and rejects replayed or cloned session activity when the presented trace lineage does not match the next expected sequence.\n#file:design/prd/企业级个人助理平台安全基础设施设计方案 (基于 QwenPaw/AgentScope.md",
+      "attributes": [
+        {
+          "name": "external_scope",
+          "value": "Cloud-side verifier modeled as an external application-side collaboration participant rather than a repository-owned runtime component."
+        }
+      ]
+    },
+    {
+      "id": "intent-security-event-ingestion-v1",
+      "parent": "intent-security-center",
+      "name": "Security Event Ingestion V1",
+      "type": "Application Component",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1",
+      "description": "Security Center V1 capability that receives security events from company internal systems over HTTP, validates sourceSystem, eventTypeId, schemaVersion, summary, occurredAt, and payload fields against repository configuration, durably persists legal events before returning success, stores rejected submissions as failure reception records, and exposes event list/detail consumption to security operators. V1 is intentionally an ingestion and viewing inbox, not an alerting, ticketing, notification, remediation, assignment, comment, export, statistics, authentication, or external third-party intake platform.\n#file:design/prd/security-event-ingestion-prd.md\n#file:design/prd/security-event-ingestion-decision-tree.md",
+      "attributes": [
+        {
+          "name": "task_id",
+          "value": "sec-event-ingestion-v1"
+        },
+        {
+          "name": "scope_rule",
+          "value": "Only company internal systems may submit events in V1. V1 does not provide requester identity management or request authentication, so sourceSystem allow-listing, enabled flags, event-type authorization, and schema-version validation are mandatory data-quality controls."
+        },
+        {
+          "name": "persistence_rule",
+          "value": "A legal security event must be durably persisted before the submit API returns success. If persistence fails, the API must return failure. Illegal events must not enter the business event list but must be retained as bounded failure reception records for traceability."
+        },
+        {
+          "name": "idempotency_rule",
+          "value": "The idempotency key is sourceSystem plus eventId. A normalized identical repeat returns success without a new business event; the same key with a different eventTypeId, schemaVersion, or field values is rejected and recorded as an idempotency conflict; different sourceSystem values may reuse the same eventId."
+        },
+        {
+          "name": "web_inbox_rule",
+          "value": "The operator web surface is a security event inbox. It defaults to receivedAt descending, supports time range, sourceSystem, event type, and severity filters, lists only configured list fields, opens stable detail URLs by sourceSystem plus eventId, and shows base facts, labeled structured payload, undefined fields, and read-only raw payload without allowing V1 configuration editing."
+        },
+        {
+          "name": "v1_non_goals",
+          "value": "No requester authentication, third-party external intake, automatic alerting, ticket workflow, notification, automatic remediation, event status transition, owner assignment, comments, report export, statistics dashboard, Web self-service event configuration editing, historical schema display policy, or default retention promise for legal events and failure records."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "sec-event-ingestion-v1-accept-legal-event",
+          "description": "When a configured internal source submits a complete legal security event, Security Center must accept it only after durable persistence and make it visible to the operator event inbox.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit a legal HTTP event from an enabled configured sourceSystem with an allowed eventTypeId, valid schemaVersion, required summary, occurredAt, severity, and payload fields; then immediately query the event list and detail surfaces.",
+          "acceptanceCriteria": "tests/integration/security/test_security_event_ingestion.py::test_accepts_legal_event_after_persistence",
+          "TestResults": "Observation point: the API returns success with eventId and duplicate=false only after persistence, the event appears in the Web/API list ordered by receivedAt, detail lookup by sourceSystem plus eventId succeeds, and receivedAt is generated by the backend rather than trusted from the request."
+        },
+        {
+          "name": "sec-event-ingestion-v1-reject-invalid-config-boundary",
+          "description": "Unknown or disabled source systems, unauthorized event types, unknown event types, unknown schema versions, and invalid payload fields must be rejected without entering the business event list.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit events that violate sourceSystem allow-listing or enabled status, source-to-eventType authorization, eventTypeId existence, schemaVersion existence, required payload fields, field types, or enum values.",
+          "acceptanceCriteria": "tests/integration/security/test_security_event_ingestion.py::test_rejects_invalid_event_config_boundary",
+          "TestResults": "Observation point: each request returns a clear failure reason, no rejected event appears in the business event list, and a failure reception record exists with received time, submitted source field, submitted event type field, failure reason, and bounded request summary."
+        },
+        {
+          "name": "sec-event-ingestion-v1-preserve-undefined-payload-fields",
+          "description": "Configured payload fields define the primary structured event contract, while extra payload fields remain preserved but separated as undefined fields.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit a legal event whose payload includes all required configured fields plus at least one field not declared by the schema configuration.",
+          "acceptanceCriteria": "tests/integration/security/test_security_event_ingestion.py::test_preserves_undefined_payload_fields_in_detail_only",
+          "TestResults": "Observation point: the event is saved successfully, configured list columns exclude the undefined field, the detail page/API shows configured fields with labels, and the undefined payload field appears only in the undefined-fields detail area and raw payload view."
+        },
+        {
+          "name": "sec-event-ingestion-v1-enforce-idempotency",
+          "description": "The same sourceSystem plus eventId must represent one event fact and cannot be reused for conflicting event content.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit the same normalized event twice, then submit the same sourceSystem plus eventId with a different eventTypeId, schemaVersion, or payload field value, and separately submit the same eventId from a different sourceSystem.",
+          "acceptanceCriteria": "tests/integration/security/test_security_event_ingestion.py::test_enforces_source_event_id_idempotency",
+          "TestResults": "Observation point: identical repeat returns success with duplicate=true and no second business event; conflicting same-key submissions are rejected and recorded as idempotency conflicts; different sourceSystem plus same eventId is accepted as a distinct event."
+        },
+        {
+          "name": "sec-event-ingestion-v1-render-web-list-and-detail",
+          "description": "Security operators must be able to use the Web inbox list and stable detail page to inspect accepted security events.",
+          "type": "Acceptance Test",
+          "Input": "Control point: seed multiple accepted events with different receivedAt, occurredAt, sourceSystem, eventTypeId, severity, configured list payload fields, undefined fields, and raw payloads; open the Web list, apply time/source/type/severity filters, and navigate to a detail URL.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_inbox.py::test_web_lists_filters_and_opens_event_detail",
+          "TestResults": "Observation point: the list defaults to receivedAt descending, shows receivedAt, occurredAt, sourceSystem, event type display name, severity, summary, eventId, and configured list payload fields; filters constrain visible rows; detail URL reopens the same event and displays base facts, labeled structured payload, undefined fields, and a read-only raw payload without rendering very large payloads unbounded."
+        },
+        {
+          "name": "sec-event-ingestion-v1-bound-failure-records",
+          "description": "Illegal or internally failed submissions must remain traceable without polluting business events or allowing oversized payload storage to degrade the system.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit illegal events for disallowed source, disallowed type, schema failure, payload validation failure, idempotency conflict, simulated persistence error, and an oversized illegal payload.",
+          "acceptanceCriteria": "tests/integration/security/test_security_event_ingestion.py::test_records_failed_receptions_without_business_event_pollution",
+          "TestResults": "Observation point: business event list remains clean for illegal submissions, failure records are queryable with received time, source field, event type field, failure reason, and bounded request summary, database write failure returns failure instead of success, and oversized illegal payload handling stores only a bounded summary or rejects safely without storage/page instability."
+        }
+      ]
+    },
+    {
+      "id": "intent-security-event-contract-config",
+      "parent": "intent-security-event-ingestion-v1",
+      "name": "Security Event Contract Config",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1/Security Event Contract Config",
+      "description": "Configuration data that defines which internal source systems are enabled, which event types each source may submit, event type display metadata, schema versions, payload field names, labels, types, required flags, enum values, maximum lengths, and list-display flags. It defines event contracts and Web display metadata only, not business workflow logic.\n#file:design/prd/security-event-ingestion-prd.md"
+    },
+    {
+      "id": "intent-security-event",
+      "parent": "intent-security-event-ingestion-v1",
+      "name": "Security Event",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1/Security Event",
+      "description": "Accepted security event fact persisted by Security Center. Its identity is sourceSystem plus eventId, where eventId is a single event-instance id rather than a series or aggregate id. It stores eventTypeId, schemaVersion, severity, caller-provided summary, caller-provided occurredAt, backend-generated receivedAt, structured payload, undefined payload fields, and raw payload for operator detail review.\n#file:design/prd/security-event-ingestion-prd.md"
+    },
+    {
+      "id": "intent-security-event-failure-record",
+      "parent": "intent-security-event-ingestion-v1",
+      "name": "Security Event Failure Record",
+      "type": "Data Object",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1/Security Event Failure Record",
+      "description": "Trace record for rejected or failed event submissions. It captures received time, submitted source field, submitted event type field, failure reason, and bounded request summary for source rejection, type rejection, schema rejection, payload validation failure, idempotency conflict, persistence failure, and oversized invalid payload handling without inserting an illegal business event.\n#file:design/prd/security-event-ingestion-prd.md"
+    },
+    {
+      "id": "intent-security-event-inbox-web",
+      "parent": "intent-security-event-ingestion-v1",
+      "name": "Security Event Inbox Web",
+      "type": "Application Interface",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1/Security Event Inbox Web",
+      "description": "Operator-facing Web inbox for accepted security events. It provides a receivedAt-descending list with core columns and configured list payload fields, supports time range, sourceSystem, eventTypeId, and severity filters, and provides stable detail URLs that show base facts, labeled structured payload, undefined fields, and read-only raw payload with large-payload protection.\n#file:design/prd/security-event-ingestion-prd.md"
+    },
+    {
+      "id": "intent-security-event-observation-panel-v1",
+      "parent": "intent-security-event-ingestion-v1",
+      "name": "Security Event Observation Panel V1",
+      "type": "Application Interface",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Security Center/Security Event Ingestion V1/Security Event Observation Panel V1",
+      "description": "Operator-facing Security Center observation panel layered on the existing Security Event Ingestion V1 records. It lets security operators judge recent posture within one page by sharing one selected time range across summary statistics, a HIGH/MEDIUM alert list, and a raw reception list containing both accepted events and failed reception records. V1 is an observation and evidence-traceability panel, not an alert disposition, ticketing, assignment, approval, risk-scoring, custom analytics, full-text raw-payload search, payload export, requester identity, or authentication platform.\n#file:design/tasks/security-center-event-observation-panel-v1.md\n#file:design/prd/security-event-ingestion-prd.md",
+      "attributes": [
+        {
+          "name": "task_id",
+          "value": "security-center-event-observation-panel-v1"
+        },
+        {
+          "name": "time_range_rule",
+          "value": "The default time range is the latest 24 hours. The only V1 quick ranges are latest 1 hour, latest 24 hours, and latest 7 days. Summary statistics, alert list, and raw reception list must always use the same selected time range."
+        },
+        {
+          "name": "summary_rule",
+          "value": "Summary statistics count only accepted legal security events inside the selected time range: total accepted event count, HIGH accepted event count, sourceSystem distribution, and eventTypeId distribution. Failed reception records must not be counted as legal events."
+        },
+        {
+          "name": "alert_list_rule",
+          "value": "The alert list displays only accepted legal events with severity HIGH or MEDIUM. LOW and DEBUG accepted events stay out of the alert list but remain visible in the raw reception list. Default ordering is severity priority HIGH before MEDIUM, then occurredAt descending within the same severity."
+        },
+        {
+          "name": "raw_reception_rule",
+          "value": "The raw reception list displays all reception records in the selected time range: successful accepted events plus failed reception records. Failed records show failure reason and bounded raw-payload summary; successful records expose a bounded raw-payload view or entry point."
+        },
+        {
+          "name": "alert_traceability_rule",
+          "value": "Selecting an alert must locate or filter the raw reception list to the same sourceSystem plus eventId raw record so operators can trace the alert back to original received evidence."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "security-center-event-observation-panel-v1-posture-statistics",
+          "description": "When accepted security events cover multiple sources, event types, and severities, the observation panel must summarize the selected time range accurately without counting failed receptions as legal events.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit five legal accepted security events inside the selected time range, covering multiple sourceSystem values, multiple eventTypeId values, and multiple severity values, with exactly two HIGH events; then open the observation panel for that range.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_summarizes_current_event_posture",
+          "TestResults": "Observation point: the summary area shows total accepted event count 5, HIGH accepted event count 2, and sourceSystem and eventTypeId distributions exactly matching the submitted accepted events."
+        },
+        {
+          "name": "security-center-event-observation-panel-v1-alert-scope",
+          "description": "The alert list must focus operators on HIGH and MEDIUM accepted events while leaving LOW and DEBUG accepted events visible only as raw reception evidence.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit one DEBUG, one LOW, one MEDIUM, and one HIGH legal accepted event inside the selected time range; then open the observation panel.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_filters_alerts_by_severity",
+          "TestResults": "Observation point: the alert list shows only the MEDIUM and HIGH accepted events, while the raw reception list shows all four successful reception records."
+        },
+        {
+          "name": "security-center-event-observation-panel-v1-alert-ordering",
+          "description": "The alert list must order priority events by severity first and by business occurrence time within the same severity.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit multiple HIGH and MEDIUM legal accepted events with interleaved occurredAt timestamps inside the selected time range; then open the observation panel alert list.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_sorts_alerts_by_severity_and_occurred_at",
+          "TestResults": "Observation point: all HIGH alerts appear before all MEDIUM alerts, and alerts with the same severity are ordered by occurredAt descending."
+        },
+        {
+          "name": "security-center-event-observation-panel-v1-failed-receptions-visible",
+          "description": "Failed event submissions must remain visible as raw reception evidence without polluting legal-event statistics or the alert list.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit invalid events for an illegal source, a missing required field, and a payload type error inside the selected time range; then open the observation panel raw reception list.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_shows_failed_receptions_in_raw_records",
+          "TestResults": "Observation point: the failed reception records do not increase legal event summary counts and do not appear in the alert list, but they appear in the raw reception list with failure reason and bounded raw-payload summary."
+        },
+        {
+          "name": "security-center-event-observation-panel-v1-alert-to-raw-traceability",
+          "description": "Operators must be able to trace a HIGH or MEDIUM alert to the original raw received evidence for the same sourceSystem plus eventId.",
+          "type": "Acceptance Test",
+          "Input": "Control point: submit one HIGH legal accepted event, open the observation panel, and select that event in the alert list.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_links_alert_to_raw_record",
+          "TestResults": "Observation point: the raw reception list locates or filters to the same sourceSystem plus eventId raw record, and the operator can open or view the bounded raw payload evidence for that record."
+        },
+        {
+          "name": "security-center-event-observation-panel-v1-time-range-consistency",
+          "description": "Changing the quick time range must update summary statistics, alert list, and raw reception list with one consistent time-range interpretation.",
+          "type": "Acceptance Test",
+          "Input": "Control point: construct accepted and failed reception records inside the latest 1 hour, inside the latest 24 hours, inside the latest 7 days, and outside the latest 7 days; then switch the panel among latest 1 hour, latest 24 hours, and latest 7 days.",
+          "acceptanceCriteria": "tests/e2e/security_center/test_security_event_observation_panel.py::test_observation_panel_applies_time_range_consistently",
+          "TestResults": "Observation point: after each quick-range change, the summary area, alert list, and raw reception list all include only records within the same selected range and do not contradict each other."
+        }
+      ]
+    },
+    {
+      "id": "intent-local-operator-cli",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Local Operator CLI",
+      "type": "Application Interface",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Local Operator CLI",
+      "description": "Click-based local operator surface exposed through the qwenpaw entrypoint.\n#file:src/qwenpaw/cli/main.py\n#file:tests/unit/cli/test_cli_version.py\n#file:tests/unit/cli/test_cli_agents.py\n#file:tests/unit/cli/test_cli_task.py"
+    },
+    {
+      "id": "intent-console-frontend",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Console Frontend",
+      "type": "Application Interface",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Console Frontend",
+      "description": "Operator-facing console frontend built with React/Vite and desktop packaging assets.\n#file:console/package.json\n#file:console/src/App.tsx"
+    },
+    {
+      "id": "intent-docs-website",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Docs Website",
+      "type": "Application Interface",
+      "archimate_layer": "Application",
+      "archimate_aspect": "Active Structure",
+      "browser_path": "QwenPaw Platform/Docs Website",
+      "description": "Public documentation and adoption website delivered from the website workspace.\n#file:website/package.json\n#file:website/src/App.tsx"
+    },
+    {
+      "id": "intent-architecture-validator",
+      "parent": "intent-qwenpaw-platform",
+      "name": "Architecture Validator Assets",
+      "type": "Artifact",
+      "archimate_layer": "Technology",
+      "archimate_aspect": "Passive Structure",
+      "browser_path": "QwenPaw Platform/Architecture Validator Assets",
+      "description": "Bundled validator scripts and schemas that validate the graph, stage handoffs, and explicit testcase execution.\n#file:.github/validator/ARCHITECTURE.md\n#file:package.json"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-platform-backend",
+      "statement": "Backend Runtime is part of QwenPaw Platform.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-qwenpaw-platform",
+      "target_id": "intent-backend-runtime",
+      "source_name": "QwenPaw Platform",
+      "target_name": "Backend Runtime"
+    },
+    {
+      "id": "rel-backend-security-audit-foundation",
+      "statement": "Local Security Audit Foundation is part of Backend Runtime.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-backend-runtime",
+      "target_id": "intent-local-security-audit-foundation",
+      "source_name": "Backend Runtime",
+      "target_name": "Local Security Audit Foundation"
+    },
+    {
+      "id": "rel-backend-security-schema-contract",
+      "statement": "Security Schema Contract is part of Backend Runtime.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-backend-runtime",
+      "target_id": "intent-security-schema-contract",
+      "source_name": "Backend Runtime",
+      "target_name": "Security Schema Contract"
+    },
+    {
+      "id": "rel-audit-foundation-security-context",
+      "statement": "Local Security Audit Foundation standardizes the Security Context carried across trust-sensitive runtime boundaries.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-security-context",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Security Context"
+    },
+    {
+      "id": "rel-audit-foundation-implicit-context-manager",
+      "statement": "Local Security Audit Foundation relies on the Implicit Security Context Manager to preserve identity across async and message-dispatch boundaries.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-implicit-security-context-manager",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Implicit Security Context Manager"
+    },
+    {
+      "id": "rel-audit-foundation-audit-event",
+      "statement": "Local Security Audit Foundation persists and verifies Audit Event records as its canonical tamper-evident ledger payload.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-audit-event",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Audit Event"
+    },
+    {
+      "id": "rel-audit-foundation-checkpoint-anchor",
+      "statement": "Local Security Audit Foundation anchors audit continuity through the Audit Checkpoint Anchor so tail truncation remains detectable after restart.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-audit-checkpoint-anchor",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Audit Checkpoint Anchor"
+    },
+    {
+      "id": "rel-audit-foundation-tiered-stream",
+      "statement": "Local Security Audit Foundation uses the Tiered Audit Stream to separate synchronous critical durability from asynchronous informational batching.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-tiered-audit-stream",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Tiered Audit Stream"
+    },
+    {
+      "id": "rel-audit-foundation-high-risk-tool-guard",
+      "statement": "Local Security Audit Foundation uses High Risk Tool Guard to block high-risk tool execution until explicit user confirmation is durably recorded.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-high-risk-tool-guard",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "High Risk Tool Guard"
+    },
+    {
+      "id": "rel-high-risk-tool-guard-audit-event",
+      "statement": "High Risk Tool Guard persists USER_CONFIRMATION audit events through the canonical Audit Event schema before releasing execution.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-high-risk-tool-guard",
+      "target_id": "intent-audit-event",
+      "source_name": "High Risk Tool Guard",
+      "target_name": "Audit Event"
+    },
+    {
+      "id": "rel-high-risk-tool-guard-builtin-rule-integrity",
+      "statement": "High Risk Tool Guard owns Built-in Tool Rule Integrity as the out-of-band verification seam for bundled dangerous shell command rules.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-high-risk-tool-guard",
+      "target_id": "intent-builtin-tool-rule-integrity",
+      "source_name": "High Risk Tool Guard",
+      "target_name": "Built-in Tool Rule Integrity"
+    },
+    {
+      "id": "rel-uplink-manager-foundation",
+      "statement": "Local Security Audit Foundation serves Audit Uplink Manager by exposing the local tamper-evident ledger and anchored tail state needed for uplink coordination.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-local-security-audit-foundation",
+      "target_id": "intent-audit-uplink-manager",
+      "source_name": "Local Security Audit Foundation",
+      "target_name": "Audit Uplink Manager"
+    },
+    {
+      "id": "rel-uplink-manager-heartbeat-emitter",
+      "statement": "Heartbeat Emitter serves Audit Uplink Manager by publishing periodic lease heartbeats derived from the local audit tail state.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-heartbeat-emitter",
+      "target_id": "intent-audit-uplink-manager",
+      "source_name": "Heartbeat Emitter",
+      "target_name": "Audit Uplink Manager"
+    },
+    {
+      "id": "rel-heartbeat-emitter-audit-event",
+      "statement": "Heartbeat Emitter reads the current Audit Event tail to publish EventID and GlobalHash as lease heartbeat state.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-heartbeat-emitter",
+      "target_id": "intent-audit-event",
+      "source_name": "Heartbeat Emitter",
+      "target_name": "Audit Event"
+    },
+    {
+      "id": "rel-uplink-manager-uplink-service",
+      "statement": "Audit Uplink Service serves Audit Uplink Manager by performing the secure transport toward the cloud-side security hub.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-audit-uplink-service",
+      "target_id": "intent-audit-uplink-manager",
+      "source_name": "Audit Uplink Service",
+      "target_name": "Audit Uplink Manager"
+    },
+    {
+      "id": "rel-uplink-manager-platform",
+      "statement": "Audit Uplink Manager serves QwenPaw Platform by providing outward audit transparency and remote integrity mirroring status.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-audit-uplink-manager",
+      "target_id": "intent-qwenpaw-platform",
+      "source_name": "Audit Uplink Manager",
+      "target_name": "QwenPaw Platform"
+    },
+    {
+      "id": "rel-heartbeat-emitter-security-center",
+      "statement": "Heartbeat Emitter serves Security Center by periodically sending client identity, latest EventID, and GlobalHash as a lease heartbeat.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-heartbeat-emitter",
+      "target_id": "intent-security-center",
+      "source_name": "Heartbeat Emitter",
+      "target_name": "Security Center"
+    },
+    {
+      "id": "rel-uplink-service-security-center",
+      "statement": "Audit Uplink Service serves Security Center by delivering encrypted L1 audit summaries and critical anchors from the edge node.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-audit-uplink-service",
+      "target_id": "intent-security-center",
+      "source_name": "Audit Uplink Service",
+      "target_name": "Security Center"
+    },
+    {
+      "id": "rel-platform-security-center",
+      "statement": "Security Center is part of the QwenPaw Platform's cloud-edge security collaboration model.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-qwenpaw-platform",
+      "target_id": "intent-security-center",
+      "source_name": "QwenPaw Platform",
+      "target_name": "Security Center"
+    },
+    {
+      "id": "rel-security-center-lease-monitor",
+      "statement": "Audit Lease Monitor is part of Security Center as the component that tracks client TTL expiry and UNTRUSTED status.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-security-center",
+      "target_id": "intent-audit-lease-monitor",
+      "source_name": "Security Center",
+      "target_name": "Audit Lease Monitor"
+    },
+    {
+      "id": "rel-security-center-cloud-stub",
+      "statement": "Cloud Integrity Stub is part of Security Center as the per-client shadow-chain verifier used in the DEMO.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-security-center",
+      "target_id": "intent-cloud-integrity-stub",
+      "source_name": "Security Center",
+      "target_name": "Cloud Integrity Stub"
+    },
+    {
+      "id": "rel-security-center-event-ingestion-v1",
+      "statement": "Security Event Ingestion V1 is part of Security Center as the V1 internal-system security event intake and operator inbox capability.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-security-center",
+      "target_id": "intent-security-event-ingestion-v1",
+      "source_name": "Security Center",
+      "target_name": "Security Event Ingestion V1"
+    },
+    {
+      "id": "rel-event-ingestion-contract-config",
+      "statement": "Security Event Ingestion V1 uses Security Event Contract Config to validate source systems, event types, schema versions, payload fields, and Web display metadata.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-security-event-ingestion-v1",
+      "target_id": "intent-security-event-contract-config",
+      "source_name": "Security Event Ingestion V1",
+      "target_name": "Security Event Contract Config"
+    },
+    {
+      "id": "rel-event-ingestion-security-event",
+      "statement": "Security Event Ingestion V1 persists legal submissions as Security Event records before returning successful API responses.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-security-event-ingestion-v1",
+      "target_id": "intent-security-event",
+      "source_name": "Security Event Ingestion V1",
+      "target_name": "Security Event"
+    },
+    {
+      "id": "rel-event-ingestion-failure-record",
+      "statement": "Security Event Ingestion V1 records rejected submissions and persistence failures as Security Event Failure Record entries without adding them to the business event list.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-security-event-ingestion-v1",
+      "target_id": "intent-security-event-failure-record",
+      "source_name": "Security Event Ingestion V1",
+      "target_name": "Security Event Failure Record"
+    },
+    {
+      "id": "rel-event-ingestion-inbox-web",
+      "statement": "Security Event Ingestion V1 serves Security Event Inbox Web with accepted event list, filter, detail, structured payload, undefined field, and raw payload data.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-security-event-ingestion-v1",
+      "target_id": "intent-security-event-inbox-web",
+      "source_name": "Security Event Ingestion V1",
+      "target_name": "Security Event Inbox Web"
+    },
+    {
+      "id": "rel-inbox-web-security-event",
+      "statement": "Security Event Inbox Web reads Security Event records to render the operator list and stable event detail pages.",
+      "name": "Access",
+      "archimate_category": "Dependency",
+      "source_id": "intent-security-event-inbox-web",
+      "target_id": "intent-security-event",
+      "source_name": "Security Event Inbox Web",
+      "target_name": "Security Event"
+    },
+    {
+      "id": "rel-event-ingestion-observation-panel-v1",
+      "statement": "Security Event Observation Panel V1 is part of Security Event Ingestion V1 as the operator posture, alert-focus, and raw-evidence traceability surface.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-security-event-ingestion-v1",
+      "target_id": "intent-security-event-observation-panel-v1",
+      "source_name": "Security Event Ingestion V1",
+      "target_name": "Security Event Observation Panel V1"
+    },
+    {
+      "id": "rel-observation-panel-security-event",
+      "statement": "Security Event Observation Panel V1 reads accepted Security Event records to compute summary statistics, render HIGH and MEDIUM alerts, and show successful raw reception rows.",
+      "name": "Access",
+      "archimate_category": "Dependency",
+      "source_id": "intent-security-event-observation-panel-v1",
+      "target_id": "intent-security-event",
+      "source_name": "Security Event Observation Panel V1",
+      "target_name": "Security Event"
+    },
+    {
+      "id": "rel-observation-panel-failure-record",
+      "statement": "Security Event Observation Panel V1 reads Security Event Failure Record entries so failed submissions remain visible in the raw reception list without entering legal-event statistics or alerts.",
+      "name": "Access",
+      "archimate_category": "Dependency",
+      "source_id": "intent-security-event-observation-panel-v1",
+      "target_id": "intent-security-event-failure-record",
+      "source_name": "Security Event Observation Panel V1",
+      "target_name": "Security Event Failure Record"
+    },
+    {
+      "id": "rel-lease-monitor-cloud-stub",
+      "statement": "Audit Lease Monitor coordinates with Cloud Integrity Stub to require full-gap validation before an UNTRUSTED client can recover trusted status.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-audit-lease-monitor",
+      "target_id": "intent-cloud-integrity-stub",
+      "source_name": "Audit Lease Monitor",
+      "target_name": "Cloud Integrity Stub"
+    },
+    {
+      "id": "rel-security-schema-contract-audit-event",
+      "statement": "Security Schema Contract fixes the canonical Audit Event hashing and serialization rules shared across edge and cloud verification.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-security-schema-contract",
+      "target_id": "intent-audit-event",
+      "source_name": "Security Schema Contract",
+      "target_name": "Audit Event"
+    },
+    {
+      "id": "rel-uplink-service-security-schema-contract",
+      "statement": "Audit Uplink Service is associated with Security Schema Contract so transport payloads use the exact canonical hashing and field-order semantics expected by verification.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-audit-uplink-service",
+      "target_id": "intent-security-schema-contract",
+      "source_name": "Audit Uplink Service",
+      "target_name": "Security Schema Contract"
+    },
+    {
+      "id": "rel-security-center-security-schema-contract",
+      "statement": "Security Center is associated with Security Schema Contract so cloud-side mirroring and alerting validate the same canonical payload semantics as the edge node.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-security-center",
+      "target_id": "intent-security-schema-contract",
+      "source_name": "Security Center",
+      "target_name": "Security Schema Contract"
+    },
+    {
+      "id": "rel-uplink-manager-cloud-stub",
+      "statement": "Audit Uplink Manager associates with Cloud Integrity Stub over the cross-boundary uplink path used for hash alignment and critical-audit mirroring.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-audit-uplink-manager",
+      "target_id": "intent-cloud-integrity-stub",
+      "source_name": "Audit Uplink Manager",
+      "target_name": "Cloud Integrity Stub"
+    },
+    {
+      "id": "rel-platform-cli",
+      "statement": "Local Operator CLI is part of QwenPaw Platform.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-qwenpaw-platform",
+      "target_id": "intent-local-operator-cli",
+      "source_name": "QwenPaw Platform",
+      "target_name": "Local Operator CLI"
+    },
+    {
+      "id": "rel-platform-console",
+      "statement": "Console Frontend is part of QwenPaw Platform.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-qwenpaw-platform",
+      "target_id": "intent-console-frontend",
+      "source_name": "QwenPaw Platform",
+      "target_name": "Console Frontend"
+    },
+    {
+      "id": "rel-platform-website",
+      "statement": "Docs Website is part of QwenPaw Platform.",
+      "name": "Composition",
+      "archimate_category": "Structural",
+      "source_id": "intent-qwenpaw-platform",
+      "target_id": "intent-docs-website",
+      "source_name": "QwenPaw Platform",
+      "target_name": "Docs Website"
+    },
+    {
+      "id": "rel-platform-validator",
+      "statement": "Architecture Validator Assets support QwenPaw Platform governance.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-architecture-validator",
+      "target_id": "intent-qwenpaw-platform",
+      "source_name": "Architecture Validator Assets",
+      "target_name": "QwenPaw Platform"
+    },
+    {
+      "id": "rel-cli-backend",
+      "statement": "Backend Runtime serves Local Operator CLI through shared runtime services and helpers.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-backend-runtime",
+      "target_id": "intent-local-operator-cli",
+      "source_name": "Backend Runtime",
+      "target_name": "Local Operator CLI"
+    },
+    {
+      "id": "rel-console-backend",
+      "statement": "Backend Runtime serves Console Frontend through repository-owned APIs.",
+      "name": "Serving",
+      "archimate_category": "Dependency",
+      "source_id": "intent-backend-runtime",
+      "target_id": "intent-console-frontend",
+      "source_name": "Backend Runtime",
+      "target_name": "Console Frontend"
+    },
+    {
+      "id": "rel-website-platform",
+      "statement": "Docs Website describes and publishes QwenPaw Platform capabilities.",
+      "name": "Association",
+      "archimate_category": "Other",
+      "source_id": "intent-docs-website",
+      "target_id": "intent-qwenpaw-platform",
+      "source_name": "Docs Website",
+      "target_name": "QwenPaw Platform"
+    }
+  ],
+  "views": [
+    {
+      "view_id": "view-current-state-overview",
+      "view_name": "Platform Overview",
+      "browser_path": "Views/Platform Overview",
+      "description": "Stable platform slices and the strengthened P0 local security audit foundation required for safe local operation.",
+      "included_elements": [
+        "intent-qwenpaw-platform",
+        "intent-backend-runtime",
+        "intent-local-security-audit-foundation",
+        "intent-implicit-security-context-manager",
+        "intent-security-schema-contract",
+        "intent-security-context",
+        "intent-audit-event",
+        "intent-audit-checkpoint-anchor",
+        "intent-tiered-audit-stream",
+        "intent-high-risk-tool-guard",
+        "intent-builtin-tool-rule-integrity",
+        "intent-audit-uplink-manager",
+        "intent-heartbeat-emitter",
+        "intent-audit-uplink-service",
+        "intent-security-center",
+        "intent-audit-lease-monitor",
+        "intent-cloud-integrity-stub",
+        "intent-security-event-ingestion-v1",
+        "intent-security-event-contract-config",
+        "intent-security-event",
+        "intent-security-event-failure-record",
+        "intent-security-event-inbox-web",
+        "intent-security-event-observation-panel-v1",
+        "intent-local-operator-cli",
+        "intent-console-frontend",
+        "intent-docs-website",
+        "intent-architecture-validator"
+      ],
+      "included_relationships": [
+        "rel-platform-backend",
+        "rel-backend-security-audit-foundation",
+        "rel-backend-security-schema-contract",
+        "rel-audit-foundation-implicit-context-manager",
+        "rel-audit-foundation-security-context",
+        "rel-audit-foundation-audit-event",
+        "rel-audit-foundation-checkpoint-anchor",
+        "rel-audit-foundation-tiered-stream",
+        "rel-audit-foundation-high-risk-tool-guard",
+        "rel-high-risk-tool-guard-audit-event",
+        "rel-high-risk-tool-guard-builtin-rule-integrity",
+        "rel-uplink-manager-foundation",
+        "rel-uplink-manager-heartbeat-emitter",
+        "rel-heartbeat-emitter-audit-event",
+        "rel-uplink-manager-uplink-service",
+        "rel-heartbeat-emitter-security-center",
+        "rel-uplink-manager-platform",
+        "rel-uplink-service-security-center",
+        "rel-platform-security-center",
+        "rel-security-center-lease-monitor",
+        "rel-security-center-cloud-stub",
+        "rel-security-center-event-ingestion-v1",
+        "rel-event-ingestion-contract-config",
+        "rel-event-ingestion-security-event",
+        "rel-event-ingestion-failure-record",
+        "rel-event-ingestion-inbox-web",
+        "rel-inbox-web-security-event",
+        "rel-event-ingestion-observation-panel-v1",
+        "rel-observation-panel-security-event",
+        "rel-observation-panel-failure-record",
+        "rel-lease-monitor-cloud-stub",
+        "rel-security-schema-contract-audit-event",
+        "rel-uplink-service-security-schema-contract",
+        "rel-security-center-security-schema-contract",
+        "rel-uplink-manager-cloud-stub",
+        "rel-platform-cli",
+        "rel-platform-console",
+        "rel-platform-website",
+        "rel-platform-validator",
+        "rel-cli-backend",
+        "rel-console-backend",
+        "rel-website-platform"
+      ]
+    },
+    {
+      "view_id": "view-p0-security-audit-foundation",
+      "view_name": "P0 Security Audit Foundation",
+      "browser_path": "Views/P0 Security Audit Foundation",
+      "description": "Intent view for the strengthened local security audit closure that standardizes implicit context propagation, audit event shape, checkpoint-anchored tamper evidence, out-of-band configuration consistency verification, tiered logging semantics, and edge-to-cloud integrity mirroring with pre-upload handshake.",
+      "included_elements": [
+        "intent-backend-runtime",
+        "intent-local-security-audit-foundation",
+        "intent-implicit-security-context-manager",
+        "intent-security-schema-contract",
+        "intent-security-context",
+        "intent-audit-event",
+        "intent-audit-checkpoint-anchor",
+        "intent-tiered-audit-stream",
+        "intent-high-risk-tool-guard",
+        "intent-builtin-tool-rule-integrity",
+        "intent-audit-uplink-manager",
+        "intent-heartbeat-emitter",
+        "intent-audit-uplink-service",
+        "intent-security-center",
+        "intent-audit-lease-monitor",
+        "intent-cloud-integrity-stub"
+      ],
+      "included_relationships": [
+        "rel-backend-security-audit-foundation",
+        "rel-backend-security-schema-contract",
+        "rel-audit-foundation-implicit-context-manager",
+        "rel-audit-foundation-security-context",
+        "rel-audit-foundation-audit-event",
+        "rel-audit-foundation-checkpoint-anchor",
+        "rel-audit-foundation-tiered-stream",
+        "rel-audit-foundation-high-risk-tool-guard",
+        "rel-high-risk-tool-guard-audit-event",
+        "rel-high-risk-tool-guard-builtin-rule-integrity",
+        "rel-uplink-manager-foundation",
+        "rel-uplink-manager-heartbeat-emitter",
+        "rel-heartbeat-emitter-audit-event",
+        "rel-uplink-manager-uplink-service",
+        "rel-heartbeat-emitter-security-center",
+        "rel-uplink-service-security-center",
+        "rel-platform-security-center",
+        "rel-security-center-lease-monitor",
+        "rel-security-center-cloud-stub",
+        "rel-lease-monitor-cloud-stub",
+        "rel-security-schema-contract-audit-event",
+        "rel-uplink-service-security-schema-contract",
+        "rel-security-center-security-schema-contract",
+        "rel-uplink-manager-platform",
+        "rel-uplink-manager-cloud-stub"
+      ]
+    },
+    {
+      "view_id": "view-cloud-edge-security-collaboration",
+      "view_name": "Cloud Edge Security Collaboration",
+      "browser_path": "Views/Cloud Edge Security Collaboration",
+      "description": "Cross-boundary view showing how edge-side audit capture, uplink transport, shared canonical schema rules, and cloud-side mirroring combine into one security collaboration loop.",
+      "included_elements": [
+        "intent-qwenpaw-platform",
+        "intent-backend-runtime",
+        "intent-local-security-audit-foundation",
+        "intent-security-schema-contract",
+        "intent-audit-event",
+        "intent-high-risk-tool-guard",
+        "intent-builtin-tool-rule-integrity",
+        "intent-audit-uplink-manager",
+        "intent-heartbeat-emitter",
+        "intent-audit-uplink-service",
+        "intent-security-center",
+        "intent-audit-lease-monitor",
+        "intent-cloud-integrity-stub"
+      ],
+      "included_relationships": [
+        "rel-platform-backend",
+        "rel-backend-security-audit-foundation",
+        "rel-backend-security-schema-contract",
+        "rel-audit-foundation-audit-event",
+        "rel-audit-foundation-high-risk-tool-guard",
+        "rel-high-risk-tool-guard-audit-event",
+        "rel-high-risk-tool-guard-builtin-rule-integrity",
+        "rel-uplink-manager-foundation",
+        "rel-uplink-manager-heartbeat-emitter",
+        "rel-heartbeat-emitter-audit-event",
+        "rel-uplink-manager-uplink-service",
+        "rel-heartbeat-emitter-security-center",
+        "rel-uplink-service-security-center",
+        "rel-platform-security-center",
+        "rel-security-center-lease-monitor",
+        "rel-security-center-cloud-stub",
+        "rel-lease-monitor-cloud-stub",
+        "rel-security-schema-contract-audit-event",
+        "rel-uplink-service-security-schema-contract",
+        "rel-security-center-security-schema-contract",
+        "rel-uplink-manager-cloud-stub"
+      ]
+    },
+    {
+      "view_id": "view-security-event-ingestion-v1",
+      "view_name": "Security Event Ingestion V1",
+      "browser_path": "Views/Security Event Ingestion V1",
+      "description": "Intent view for the V1 Security Center event intake, inbox, and observation panel: internal systems submit events over HTTP, backend validates against configuration, legal events persist before success, illegal submissions become failure records, and security operators consume list/detail plus posture, alert-focus, and raw-evidence views.",
+      "included_elements": [
+        "intent-qwenpaw-platform",
+        "intent-security-center",
+        "intent-security-event-ingestion-v1",
+        "intent-security-event-contract-config",
+        "intent-security-event",
+        "intent-security-event-failure-record",
+        "intent-security-event-inbox-web",
+        "intent-security-event-observation-panel-v1"
+      ],
+      "included_relationships": [
+        "rel-platform-security-center",
+        "rel-security-center-event-ingestion-v1",
+        "rel-event-ingestion-contract-config",
+        "rel-event-ingestion-security-event",
+        "rel-event-ingestion-failure-record",
+        "rel-event-ingestion-inbox-web",
+        "rel-inbox-web-security-event",
+        "rel-event-ingestion-observation-panel-v1",
+        "rel-observation-panel-security-event",
+        "rel-observation-panel-failure-record"
+      ]
+    }
+  ]
 }
