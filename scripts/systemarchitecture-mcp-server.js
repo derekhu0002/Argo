@@ -467,17 +467,29 @@ function applyMutations(document, mutations) {
 
     if (mutation.type === 'removeRelationship') {
       requireId(mutation.id, 'mutation.id');
-      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
-      const beforeCount = nextDocument.relationships.length;
-      nextDocument.relationships = nextDocument.relationships.filter(relationship => relationship.id !== mutation.id);
-      if (nextDocument.relationships.length === beforeCount) {
+      const relationship = findById(nextDocument.relationships, mutation.id);
+      if (!relationship) {
         throw new Error(`Relationship '${mutation.id}' does not exist`);
       }
+      const scopedViews = mutation.view_ids === undefined
+        ? nextDocument.views
+        : requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       for (const view of scopedViews) {
         view.included_relationships = removeEntries(view.included_relationships || [], [mutation.id]);
       }
+      const stillIncludedInView = nextDocument.views.some(view => (
+        Array.isArray(view.included_relationships) && view.included_relationships.includes(mutation.id)
+      ));
+      if (!stillIncludedInView) {
+        nextDocument.relationships = nextDocument.relationships.filter(entry => entry.id !== mutation.id);
+      }
       touchedRelationshipIds.add(mutation.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.id, view_ids: mutation.view_ids });
+      mutationSummaries.push({
+        type: mutation.type,
+        id: mutation.id,
+        view_ids: mutation.view_ids,
+        removed_from_graph: !stillIncludedInView,
+      });
       continue;
     }
 

@@ -28,7 +28,9 @@ async function main() {
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
-  await rejectsRelationshipRemoveWithoutViewScope(tempGraphPath);
+  await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
+  await removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
+  await removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
   await appliesExistingElementToAdditionalView(tempGraphPath);
   await removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
@@ -269,24 +271,114 @@ async function previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath) {
   assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['updateElement', 'updateRelationship']);
 }
 
-async function rejectsRelationshipRemoveWithoutViewScope(tempGraphPath) {
-  const mutationCases = [
-    { type: 'removeRelationship', id: '1726' },
-  ];
+async function removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237', '238'],
+        relationship: {
+          id: 'mcp-scoped-remove-relationship',
+          statement: 'Orchestrator --(Association)--> IntentionDesign',
+          name: 'Association',
+          source_id: '1798',
+          target_id: '1799',
+          source_name: 'Orchestrator',
+          target_name: 'IntentionDesign',
+        },
+      },
+      {
+        type: 'removeRelationship',
+        id: 'mcp-scoped-remove-relationship',
+        view_ids: ['237'],
+      },
+    ],
+  });
 
-  for (const mutation of mutationCases) {
-    const response = await callTool('previewSystemArchitectureMutation', {
-      architecturePath: path.relative(repoRoot, tempGraphPath),
-      mutations: [mutation],
-    });
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount + 1);
 
-    const payload = parseToolPayload(response);
-    assert.strictEqual(payload.status, 'failed', mutation.type);
-    assert(
-      payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
-      `Expected missing view_ids error for ${mutation.type}, got: ${JSON.stringify(payload.errors)}`,
-    );
-  }
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(writtenGraph.relationships.some(relationship => relationship.id === 'mcp-scoped-remove-relationship'));
+  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
+  const developmentView = writtenGraph.views.find(view => view.view_id === '238');
+  assert(!topLevelView.included_relationships.includes('mcp-scoped-remove-relationship'));
+  assert(developmentView.included_relationships.includes('mcp-scoped-remove-relationship'));
+}
+
+async function removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237'],
+        relationship: {
+          id: 'mcp-last-view-relationship',
+          statement: 'Orchestrator --(Association)--> ImplementationDesign',
+          name: 'Association',
+          source_id: '1798',
+          target_id: '1800',
+          source_name: 'Orchestrator',
+          target_name: 'ImplementationDesign',
+        },
+      },
+      {
+        type: 'removeRelationship',
+        id: 'mcp-last-view-relationship',
+        view_ids: ['237'],
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.relationships.some(relationship => relationship.id === 'mcp-last-view-relationship'));
+  assert(writtenGraph.views.every(view => !(view.included_relationships || []).includes('mcp-last-view-relationship')));
+}
+
+async function removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237', '238'],
+        relationship: {
+          id: 'mcp-global-remove-relationship',
+          statement: 'Orchestrator --(Association)--> CodingAndReparing',
+          name: 'Association',
+          source_id: '1798',
+          target_id: '1801',
+          source_name: 'Orchestrator',
+          target_name: 'CodingAndReparing',
+        },
+      },
+      {
+        type: 'removeRelationship',
+        id: 'mcp-global-remove-relationship',
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.relationships.some(relationship => relationship.id === 'mcp-global-remove-relationship'));
+  assert(writtenGraph.views.every(view => !(view.included_relationships || []).includes('mcp-global-remove-relationship')));
 }
 
 async function removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath) {
