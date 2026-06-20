@@ -127,7 +127,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureElement',
-    description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
+    description: 'Patch one element through the governed SystemArchitecture mutation gateway. Element id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
@@ -169,7 +169,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureRelationship',
-    description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
+    description: 'Patch one relationship through the governed SystemArchitecture mutation gateway. Relationship id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],

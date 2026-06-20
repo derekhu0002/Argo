@@ -290,6 +290,7 @@
         "id",
         "statement",
         "name",
+        "type",
         "source_id",
         "target_id",
         "source_name",
@@ -303,6 +304,9 @@
           "$ref": "#/$defs/nonEmptyString"
         },
         "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "type": {
           "$ref": "#/$defs/archimateRelationshipType"
         },
         "description": {

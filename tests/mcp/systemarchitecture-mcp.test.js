@@ -19,6 +19,7 @@ async function main() {
   validatesUnifiedMcpConfiguration();
   validatesNoDuplicateMcpExecutionAssets();
   validatesArchimate32RuleCoverage();
+  validatesRelationshipSchemaRequiresTypeAndSeparatesName();
   await validatesFocusedViewToolsAreListed();
   await validatesCurrentGraph();
 
@@ -31,6 +32,7 @@ async function main() {
   await rejectsRelationshipOutsideArchiMate32Matrix(tempGraphPath);
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
+  await rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath);
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
   await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
   await removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
@@ -108,6 +110,16 @@ function validatesArchimate32RuleCoverage() {
   );
 }
 
+function validatesRelationshipSchemaRequiresTypeAndSeparatesName() {
+  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
+  const relationshipSchema = schema.$defs.relationship;
+
+  assert(relationshipSchema.required.includes('name'));
+  assert(relationshipSchema.required.includes('type'));
+  assert.deepStrictEqual(relationshipSchema.properties.name, { $ref: '#/$defs/nonEmptyString' });
+  assert.deepStrictEqual(relationshipSchema.properties.type, { $ref: '#/$defs/archimateRelationshipType' });
+}
+
 function ensureTempDirectory() {
   const tempDirectory = path.join(repoRoot, 'tests', 'mcp', '.tmp');
   fs.mkdirSync(tempDirectory, { recursive: true });
@@ -125,7 +137,8 @@ async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {
         relationship: {
           id: 'mcp-invalid-triggering',
           statement: 'SystemArchitecture --(Triggering)--> Orchestrator',
-          name: 'Triggering',
+          name: 'Invalid SystemArchitecture to Orchestrator trigger',
+          type: 'Triggering',
           source_id: '1803',
           target_id: '1798',
           source_name: 'SystemArchitecture',
@@ -155,7 +168,8 @@ async function rejectsRelationshipWithInvalidArchiMate32EndpointTypes(tempGraphP
         relationship: {
           id: 'mcp-invalid-serving-source',
           statement: 'SystemArchitecture --(Serving)--> Orchestrator',
-          name: 'Serving',
+          name: 'Invalid SystemArchitecture serving Orchestrator',
+          type: 'Serving',
           source_id: '1803',
           target_id: '1798',
           source_name: 'SystemArchitecture',
@@ -183,7 +197,8 @@ async function rejectsRelationshipOutsideArchiMate32Matrix(tempGraphPath) {
         relationship: {
           id: 'mcp-invalid-composition-matrix',
           statement: 'Orchestrator --(Composition)--> SystemArchitecture',
-          name: 'Composition',
+          name: 'Invalid Orchestrator composition',
+          type: 'Composition',
           source_id: '1798',
           target_id: '1803',
           source_name: 'Orchestrator',
@@ -308,7 +323,8 @@ async function rejectsRelationshipMutationWithoutViewScope(tempGraphPath) {
         relationship: {
           id: 'mcp-orphan-relationship',
           statement: 'Orchestrator --(Assignment)--> argo_test',
-          name: 'Assignment',
+          name: 'Orchestrator assignment to argo_test',
+          type: 'Assignment',
           source_id: '1798',
           target_id: '1805',
           source_name: 'Orchestrator',
@@ -354,6 +370,43 @@ async function previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath) {
   assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['updateElement', 'updateRelationship']);
 }
 
+async function rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath) {
+  const cases = [
+    {
+      mutation: { type: 'updateElement', id: '1798', patch: { id: 'mcp-renamed-element' } },
+      expected: "Element '1798' id cannot be updated",
+    },
+    {
+      mutation: { type: 'updateElement', id: '1798', patch: { type: 'Application Service' } },
+      expected: "Element '1798' type cannot be updated",
+    },
+    {
+      mutation: { type: 'updateRelationship', id: '1726', patch: { id: 'mcp-renamed-relationship' } },
+      expected: "Relationship '1726' id cannot be updated",
+    },
+    {
+      mutation: { type: 'updateRelationship', id: '1726', patch: { type: 'Association' } },
+      expected: "Relationship '1726' type cannot be updated",
+    },
+  ];
+
+  for (const testCase of cases) {
+    const before = fs.readFileSync(tempGraphPath, 'utf8');
+    const response = await callTool('previewSystemArchitectureMutation', {
+      architecturePath: path.relative(repoRoot, tempGraphPath),
+      mutations: [testCase.mutation],
+    });
+
+    const payload = parseToolPayload(response);
+    assert.strictEqual(payload.status, 'failed');
+    assert(
+      payload.errors.some(error => error.includes(testCase.expected)),
+      `Expected immutable identity/type error, got: ${JSON.stringify(payload.errors)}`,
+    );
+    assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), before);
+  }
+}
+
 async function removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath) {
   const response = await callTool('applySystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
@@ -364,7 +417,8 @@ async function removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillRefere
         relationship: {
           id: 'mcp-scoped-remove-relationship',
           statement: 'Orchestrator --(Association)--> IntentionDesign',
-          name: 'Association',
+          name: 'Scoped remove relationship',
+          type: 'Association',
           source_id: '1798',
           target_id: '1799',
           source_name: 'Orchestrator',
@@ -403,7 +457,8 @@ async function removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(te
         relationship: {
           id: 'mcp-last-view-relationship',
           statement: 'Orchestrator --(Association)--> ImplementationDesign',
-          name: 'Association',
+          name: 'Last view relationship',
+          type: 'Association',
           source_id: '1798',
           target_id: '1800',
           source_name: 'Orchestrator',
@@ -439,7 +494,8 @@ async function removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraph
         relationship: {
           id: 'mcp-global-remove-relationship',
           statement: 'Orchestrator --(Association)--> CodingAndReparing',
-          name: 'Association',
+          name: 'Global remove relationship',
+          type: 'Association',
           source_id: '1798',
           target_id: '1801',
           source_name: 'Orchestrator',
@@ -506,7 +562,8 @@ async function removesRelationshipThroughFocusedTool(tempGraphPath) {
         relationship: {
           id: 'mcp-focused-remove-relationship',
           statement: 'Orchestrator --(Association)--> IntentionDesign',
-          name: 'Association',
+          name: 'Focused remove relationship',
+          type: 'Association',
           source_id: '1798',
           target_id: '1799',
           source_name: 'Orchestrator',
@@ -561,7 +618,8 @@ async function removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt
         relationship: {
           id: 'mcp-scoped-remove-relation',
           statement: 'Scoped remove source --(Association)--> Scoped remove target',
-          name: 'Association',
+          name: 'Scoped remove relation',
+          type: 'Association',
           source_id: 'mcp-scoped-remove-source',
           target_id: 'mcp-scoped-remove-target',
           source_name: 'Scoped remove source',
@@ -659,7 +717,8 @@ async function removesElementFromAllViewsAndGraphWithoutViewScope(tempGraphPath)
         relationship: {
           id: 'mcp-global-remove-relation',
           statement: 'Temporary global remove source --(Association)--> Temporary global remove target',
-          name: 'Association',
+          name: 'Global remove relation',
+          type: 'Association',
           source_id: 'mcp-global-remove-source',
           target_id: 'mcp-global-remove-target',
           source_name: 'Temporary global remove source',

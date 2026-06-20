@@ -286,9 +286,9 @@ function validateGraphSemantics(document, errors) {
 
         relationshipById.set(relationship.id, relationship);
 
-        const expectedCategory = relationshipCategoryByType.get(relationship.name);
+        const expectedCategory = relationshipCategoryByType.get(relationship.type);
         if (!expectedCategory) {
-            errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.name}'`);
+            errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.type}'`);
         }
 
         const source = elementById.get(relationship.source_id);

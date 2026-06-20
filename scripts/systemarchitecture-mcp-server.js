@@ -74,7 +74,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureElement',
-    description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
+    description: 'Patch one element through the governed SystemArchitecture mutation gateway. Element id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
@@ -116,7 +116,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureRelationship',
-    description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
+    description: 'Patch one relationship through the governed SystemArchitecture mutation gateway. Relationship id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
@@ -317,6 +317,7 @@ function applyMutations(document, mutations) {
       if (!element) {
         throw new Error(`Element '${mutation.id}' does not exist`);
       }
+      requirePatchDoesNotChangeElementIdentityOrType(mutation.id, mutation.patch);
       Object.assign(element, clone(mutation.patch));
       touchedElementIds.add(element.id);
       mutationSummaries.push({ type: mutation.type, id: element.id });
@@ -399,6 +400,7 @@ function applyMutations(document, mutations) {
       if (!relationship) {
         throw new Error(`Relationship '${mutation.id}' does not exist`);
       }
+      requirePatchDoesNotChangeRelationshipIdentityOrType(mutation.id, mutation.patch);
       Object.assign(relationship, clone(mutation.patch));
       touchedRelationshipIds.add(relationship.id);
       mutationSummaries.push({ type: mutation.type, id: relationship.id });
@@ -508,6 +510,24 @@ function requireViewScope(views, viewIds, label) {
     seenViewIds.add(viewId);
   }
   return scopedViews;
+}
+
+function requirePatchDoesNotChangeElementIdentityOrType(elementId, patch) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'id')) {
+    throw new Error(`Element '${elementId}' id cannot be updated; remove and re-add the element to change its id`);
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'type')) {
+    throw new Error(`Element '${elementId}' type cannot be updated; remove and re-add the element to change its type`);
+  }
+}
+
+function requirePatchDoesNotChangeRelationshipIdentityOrType(relationshipId, patch) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'id')) {
+    throw new Error(`Relationship '${relationshipId}' id cannot be updated; remove and re-add the relationship to change its id`);
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'type')) {
+    throw new Error(`Relationship '${relationshipId}' type cannot be updated; remove and re-add the relationship to change its type`);
+  }
 }
 
 function requireElementInViews(elementId, views) {
@@ -651,8 +671,8 @@ function validateGraphSemantics(document, errors) {
       continue;
     }
     relationshipById.set(relationship.id, relationship);
-    if (!relationshipCategoryByType.has(relationship.name)) {
-      errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.name}'`);
+    if (!relationshipCategoryByType.has(relationship.type)) {
+      errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.type}'`);
     }
 
     const source = elementById.get(relationship.source_id);
@@ -670,7 +690,7 @@ function validateGraphSemantics(document, errors) {
     }
 
     const expectedStatement = source && target
-      ? `${source.name} --(${relationship.name})--> ${target.name}`
+      ? `${source.name} --(${relationship.type})--> ${target.name}`
       : undefined;
     if (expectedStatement && relationship.statement !== expectedStatement) {
       errors.push(`relationships '${relationship.id}' statement must be '${expectedStatement}'`);

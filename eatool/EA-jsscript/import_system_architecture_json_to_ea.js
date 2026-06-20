@@ -477,14 +477,16 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
       continue;
     }
 
-    var connectorMeta = mapRelationshipTypeToEa(data.name);
-    warnIfUnknownSchemaRelationshipType(data.name);
+    var relationshipType = data.type;
+    var relationshipName = safeString(data.name);
+    var connectorMeta = mapRelationshipTypeToEa(relationshipType);
+    warnIfUnknownSchemaRelationshipType(relationshipType);
 
-    var connector = source.Connectors.AddNew(safeString(data.name), connectorMeta.connectorType);
+    var connector = source.Connectors.AddNew(relationshipName, connectorMeta.connectorType);
     connector.SupplierID = target.ElementID;
-    connector.Name = safeString(data.name);
+    connector.Name = relationshipName;
     connector.Alias = data.id;
-    connector.StereotypeEx = mapRelationshipTypeToEaStereotype(data.name);
+    connector.StereotypeEx = mapRelationshipTypeToEaStereotype(relationshipType);
     connector.Notes = safeString(data.description);
     if (isNonEmptyString(data.sequence)) {
       connector.SequenceNo = data.sequence;
@@ -495,8 +497,9 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
     }
 
     putTag(connector.TaggedValues, 'schema_id', data.id);
+    putTag(connector.TaggedValues, 'schema_name', relationshipName);
     putTag(connector.TaggedValues, 'schema_statement', safeString(data.statement));
-    putTag(connector.TaggedValues, 'archimate_relationship_type', canonicalArchimateType(data.name));
+    putTag(connector.TaggedValues, 'archimate_relationship_type', canonicalArchimateType(relationshipType));
     putTag(connector.TaggedValues, 'document', safeString(data.document));
     putTag(connector.TaggedValues, 'source_schema_id', safeString(data.source_id));
     putTag(connector.TaggedValues, 'target_schema_id', safeString(data.target_id));
@@ -513,7 +516,7 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
 
     relationshipMap[data.id] = connector;
     count++;
-    Session.Output('Created relationship [' + data.name + ']: ' + data.id + ' (' + data.source_id + ' -> ' + data.target_id + ')');
+    Session.Output('Created relationship [' + relationshipType + '] ' + relationshipName + ': ' + data.id + ' (' + data.source_id + ' -> ' + data.target_id + ')');
   }
   return count;
 }

@@ -1039,7 +1039,7 @@ function extractFromDiagram(currentDiagram) {
 			var target as EA.Element;
 			target = Repository.GetElementByID(conn.SupplierID);
 
-			var relType = (conn.Name) ? conn.Name : conn.StereotypeEx;
+			var relType = conn.StereotypeEx;
 			
 			if (relType == "") {
 				relType = conn.Stereotype;
@@ -1047,11 +1047,21 @@ function extractFromDiagram(currentDiagram) {
 			if (relType == "") {
 				relType = conn.Type;
 			}
+			if (relType == "") {
+				relType = conn.Name;
+			}
 			var schemaRelationshipType = getConnectorTag(conn, "archimate_relationship_type");
 			if (schemaRelationshipType != "") {
 				relType = schemaRelationshipType;
 			}
 			relType = canonicalRelationshipType(relType, conn.StereotypeEx != "" ? conn.StereotypeEx : conn.Type);
+			var relName = getConnectorTag(conn, "schema_name");
+			if (relName == "") {
+				relName = conn.Name;
+			}
+			if (relName == "") {
+				relName = relType;
+			}
 			
 			var sourceSchemaName = getConnectorTag(conn, "source_name");
 			var targetSchemaName = getConnectorTag(conn, "target_name");
@@ -1067,7 +1077,8 @@ function extractFromDiagram(currentDiagram) {
 			}
 			var relatointypejss = '{\n"id":"' + jsonEscape(connId) + '"\n';
 			relatointypejss += ',"statement":"' + jsonEscape(statement) + '"\n';
-			relatointypejss += ',"name":"' + jsonEscape(relType) + '"\n';
+			relatointypejss += ',"name":"' + jsonEscape(relName) + '"\n';
+			relatointypejss += ',"type":"' + jsonEscape(relType) + '"\n';
 			
 			var relationAttributesJsonStrings = [];
 			var connassnotes = "";

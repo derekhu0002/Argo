@@ -12214,7 +12214,7 @@ function validateRelationshipEndpointTypes(relationship, source, target) {
   if (!relationship || !source || !target) {
     return [];
   }
-  const relationshipType = relationship.name;
+  const relationshipType = relationship.type;
   if (!isSupportedRelationshipType(relationshipType)) {
     return ['relationships \'' + relationship.id + '\' uses unsupported ArchiMate relationship type \'' + relationshipType + '\''];
   }
