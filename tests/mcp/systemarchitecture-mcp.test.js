@@ -21,6 +21,7 @@ async function main() {
   validatesArchimate32RuleCoverage();
   validatesRelationshipSchemaRequiresTypeAndSeparatesName();
   await validatesFocusedViewToolsAreListed();
+  await validatesAgentFacingToolGuidance();
   await validatesCurrentGraph();
 
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
@@ -72,6 +73,36 @@ async function validatesFocusedViewToolsAreListed() {
   assert(toolNames.includes('removeArchitectureRelationship'));
   assert(!toolNames.includes('addViewMembership'));
   assert(!toolNames.includes('removeViewMembership'));
+}
+
+async function validatesAgentFacingToolGuidance() {
+  const tools = await callMcpStdio([
+    { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'smoke', version: '1' } } },
+    { jsonrpc: '2.0', method: 'notifications/initialized', params: {} },
+    { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
+  ]);
+  const listResponse = tools.find(response => response.id === 2);
+  const toolByName = new Map(listResponse.result.tools.map(tool => [tool.name, tool]));
+
+  assertDescriptionIncludes(toolByName, 'getSystemArchitecture', ['Start here', 'read-only']);
+  assertDescriptionIncludes(toolByName, 'previewSystemArchitectureMutation', ['Use before apply', 'dry-run', 'does not write']);
+  assertDescriptionIncludes(toolByName, 'applySystemArchitectureMutation', ['Use for multi-step', 'atomic']);
+  assertDescriptionIncludes(toolByName, 'addArchitectureElement', ['Use for one element', 'view_ids']);
+  assertDescriptionIncludes(toolByName, 'addArchitectureRelationship', ['relationship.type', 'ArchiMate 3.2']);
+  assertDescriptionIncludes(toolByName, 'removeArchitectureElement', ['cascades related relationships', 'view_ids']);
+  assertDescriptionIncludes(toolByName, 'removeArchitectureRelationship', ['view_ids', 'all views']);
+  assertDescriptionIncludes(toolByName, 'addArchitectureView', ['one top-level view', 'sub-views']);
+}
+
+function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
+  const tool = toolByName.get(toolName);
+  assert(tool, `Expected ${toolName} to be listed`);
+  for (const expectedFragment of expectedFragments) {
+    assert(
+      tool.description.includes(expectedFragment),
+      `Expected ${toolName} description to include '${expectedFragment}', got: ${tool.description}`,
+    );
+  }
 }
 
 function validatesNoDuplicateMcpExecutionAssets() {

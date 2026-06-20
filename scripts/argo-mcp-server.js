@@ -92,7 +92,7 @@ const TOOLS = [
   },
   {
     name: 'getSystemArchitecture',
-    description: 'Read the current SystemArchitecture graph without modifying it.',
+    description: 'Start here. read-only tool for inspecting current elements, relationships, views, and ids before planning mutations. Use before preview or focused mutation tools.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -103,17 +103,17 @@ const TOOLS = [
   },
   {
     name: 'previewSystemArchitectureMutation',
-    description: 'Dry-run graph mutations and return validation errors and a summary without writing the graph.',
+    description: 'Use before apply for complex or risky changes. Performs a dry-run of one or more mutations, runs schema, graph, view, and ArchiMate 3.2 validation, and does not write the graph.',
     inputSchema: mutationInputSchema(),
   },
   {
     name: 'applySystemArchitectureMutation',
-    description: 'Apply graph mutations only after schema, graph, and ArchiMate checks pass.',
+    description: 'Use for multi-step or dependent graph changes that should be validated and written atomically. Prefer focused tools for a single simple add, update, or remove operation.',
     inputSchema: mutationInputSchema(),
   },
   {
     name: 'addArchitectureElement',
-    description: 'Add one element through the governed SystemArchitecture mutation gateway.',
+    description: 'Use for one element. Creates a new element or adds an existing element to view_ids. view_ids is required so elements never exist outside views.',
     inputSchema: {
       type: 'object',
       required: ['element', 'view_ids'],
@@ -127,7 +127,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureElement',
-    description: 'Patch one element through the governed SystemArchitecture mutation gateway. Element id and type are immutable; remove and re-add to change them.',
+    description: 'Use for one global element metadata patch. Does not change view membership. Element id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
@@ -141,7 +141,7 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureElement',
-    description: 'Remove one element from selected views, or from all views and the graph when no view_ids are provided.',
+    description: 'Use for one element removal. With view_ids, removes only from those views and cascades related relationships in the same views; without view_ids, removes from all views and the graph.',
     inputSchema: {
       type: 'object',
       required: ['id'],
@@ -155,7 +155,7 @@ const TOOLS = [
   },
   {
     name: 'addArchitectureRelationship',
-    description: 'Add one relationship through the governed SystemArchitecture mutation gateway.',
+    description: 'Use for one relationship. Creates a new relationship or adds an existing relationship to view_ids. relationship.type is the ArchiMate 3.2 relationship type and is validated against endpoint element types.',
     inputSchema: {
       type: 'object',
       required: ['relationship', 'view_ids'],
@@ -169,7 +169,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureRelationship',
-    description: 'Patch one relationship through the governed SystemArchitecture mutation gateway. Relationship id and type are immutable; remove and re-add to change them.',
+    description: 'Use for one global relationship metadata patch, such as name, statement, source_name, or target_name. Relationship id and type are immutable; remove and re-add to change them.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
@@ -183,7 +183,7 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureRelationship',
-    description: 'Remove one relationship from selected views, or from all views and the graph when no view_ids are provided.',
+    description: 'Use for one relationship removal. With view_ids, removes only from those views; without view_ids, removes from all views and deletes it from the graph.',
     inputSchema: {
       type: 'object',
       required: ['id'],
@@ -197,7 +197,7 @@ const TOOLS = [
   },
   {
     name: 'addArchitectureView',
-    description: 'Add one view through the governed SystemArchitecture mutation gateway.',
+    description: 'Use for one view. The graph must have exactly one top-level view named SystemArchitecture; all sub-views must attach to an element with parent_element_id.',
     inputSchema: {
       type: 'object',
       required: ['view'],
@@ -210,7 +210,7 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureView',
-    description: 'Patch one view through the governed SystemArchitecture mutation gateway.',
+    description: 'Use for one view metadata or membership patch. Keep the one top-level view named SystemArchitecture and attach sub-views to parent elements.',
     inputSchema: {
       type: 'object',
       required: ['view_id', 'patch'],
@@ -224,7 +224,7 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureView',
-    description: 'Remove one view through the governed SystemArchitecture mutation gateway.',
+    description: 'Use for one view removal. After removal, every remaining element and relationship must still belong to at least one view.',
     inputSchema: {
       type: 'object',
       required: ['view_id'],
