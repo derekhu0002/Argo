@@ -7,7 +7,7 @@ disable-model-invocation: true
 # Architecture Knowledge Graph Viewer
 
 Opens `design/KG/SystemArchitecture.json` in a local schema-driven web viewer.
-The viewer UI is generated entirely from `.cursor/argoschema/SystemArchitecture.schema.json` —
+The viewer UI is generated entirely from `schema/SystemArchitecture.schema.json` —
 it adapts to the schema structure, not to the specific data content.
 
 ## Features
@@ -63,4 +63,4 @@ The skill should finish with the architecture viewer server running and the URL 
 
 - Node.js (no npm install needed — uses only built-in modules)
 - `design/KG/SystemArchitecture.json` must exist (data file)
-- `.cursor/argoschema/SystemArchitecture.schema.json` must exist (schema file)
+- `schema/SystemArchitecture.schema.json` must exist (schema file)

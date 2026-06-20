@@ -4,9 +4,6 @@ const readline = require('node:readline');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const SCHEMA_PATH_CANDIDATES = [
-  '.opencode/argoschema/SystemArchitecture.schema.json',
-  '.cursor/argoschema/SystemArchitecture.schema.json',
-  '.github/argoschema/SystemArchitecture.schema.json',
   'schema/SystemArchitecture.schema.json',
 ];
 

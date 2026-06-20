@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "./.github/argoschema/SystemArchitecture.schema.json",
+  "$id": "./schema/SystemArchitecture.schema.json",
   "title": "SystemArchitecture Knowledge Graph Schema",
   "description": "Schema for design/KG/SystemArchitecture.json. The repository keeps its existing knowledge-graph shape, while ArchiMate 3.2 terminology is enforced for element and relationship concepts.",
   "type": "object",

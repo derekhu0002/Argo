@@ -23,8 +23,10 @@ scope: repository-root
 ### Included Paths
 - path: src/
   reason: primary implementation runtime and stable component boundaries
-- path: .github/validator/
-  reason: bundled validator assets that /argo-init must project into managed workspace paths
+- path: scripts/
+  reason: canonical MCP servers and deterministic execution scripts used by all platform bundles
+- path: schema/
+  reason: canonical JSON Schema assets used by validators, MCP tools, agents, and viewers
 - path: tests/explicit/
   reason: read-only physical landing zone for explicit testcase single-entry files
 - path: tests/architecture/
@@ -44,11 +46,14 @@ scope: repository-root
   kind: LayeredRuntime
   responsibility: host composition root plus internal runtime layers
   local_contract: src/ARCHITECTURE.md
-- path: .github/validator/
-  name: bundled-validator-assets
-  kind: BootstrapAssetZone
-  responsibility: source-of-truth validator assets copied by /argo-init into Argo-managed workspace paths
-  local_contract: .github/validator/ARCHITECTURE.md
+- path: scripts/
+  name: canonical-execution-scripts
+  kind: ScriptExecutionZone
+  responsibility: single source of truth for MCP servers, SystemArchitecture mutation gateway, validators, handoff validators, and explicit testcase execution
+- path: schema/
+  name: canonical-schema-assets
+  kind: SchemaContractZone
+  responsibility: single source of truth for SystemArchitecture and stage handoff JSON schemas
 - path: package.json
   name: workspace-bootstrap-manifest
   kind: BootstrapManifestFile
@@ -87,9 +92,10 @@ scope: repository-root
   - Engine -> Support
 - bootstrap_dependency_direction:
   - src/commands/argoInit.ts -> src/utils/workspaceBootstrap.ts
-  - src/utils/workspaceBootstrap.ts -> .github/validator/
+  - src/utils/workspaceBootstrap.ts -> scripts/
+  - src/utils/workspaceBootstrap.ts -> schema/
   - src/utils/workspaceBootstrap.ts -> package.json bootstrap manifest updates
-  - package.json -> scripts/runArchitectureTests.js -> .github/validator/script/runArchitectureTests.js
+  - package.json -> scripts/runArchitectureTests.js
 - forbidden_shortcuts:
   - Commands -> Engine implementation internals
   - Visual Explorer -> Commands

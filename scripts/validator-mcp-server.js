@@ -11,21 +11,12 @@ const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 
 const SCRIPT_CANDIDATES = {
   validateSystemArchitecture: [
-    '.opencode/validator/script/validateSystemArchitecture.js',
-    '.cursor/validator/script/validateSystemArchitecture.js',
-    '.github/validator/script/validateSystemArchitecture.js',
     'scripts/validateSystemArchitecture.js',
   ],
   validateStageHandoff: [
-    '.opencode/validator/script/validateStageHandoff.js',
-    '.cursor/validator/script/validateStageHandoff.js',
-    '.github/validator/script/validateStageHandoff.js',
     'scripts/validateStageHandoff.js',
   ],
   runArchitectureTests: [
-    '.opencode/validator/script/runArchitectureTests.js',
-    '.cursor/validator/script/runArchitectureTests.js',
-    '.github/validator/script/runArchitectureTests.js',
     'scripts/runArchitectureTests.js',
   ],
 };
@@ -33,7 +24,7 @@ const SCRIPT_CANDIDATES = {
 const TOOLS = [
   {
     name: 'validateSystemArchitecture',
-    description: 'Validate design/KG/SystemArchitecture.json against .cursor/argoschema/SystemArchitecture.schema.json and Argo graph rules.',
+    description: 'Validate design/KG/SystemArchitecture.json against schema/SystemArchitecture.schema.json and Argo graph rules.',
     inputSchema: {
       type: 'object',
       properties: {},

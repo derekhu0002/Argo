@@ -15,6 +15,7 @@ async function main() {
   process.env.ARGO_REPO_ROOT = repoRoot;
 
   validatesUnifiedMcpConfiguration();
+  validatesNoDuplicateMcpExecutionAssets();
   await validatesCurrentGraph();
 
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
@@ -30,6 +31,23 @@ function validatesUnifiedMcpConfiguration() {
     const config = JSON.parse(fs.readFileSync(path.join(repoRoot, configPath), 'utf8'));
     assert.deepStrictEqual(Object.keys(config.mcpServers), ['argo'], configPath);
     assert.deepStrictEqual(config.mcpServers.argo.args, ['${workspaceFolder}/scripts/argo-mcp-server.js'], configPath);
+  }
+}
+
+function validatesNoDuplicateMcpExecutionAssets() {
+  const removedPaths = [
+    '.cursor/argoschema',
+    '.github/argoschema',
+    '.opencode/argoschema',
+    '.cursor/validator/script',
+    '.github/validator/script',
+    '.opencode/validator/script',
+    '.opencode/tools/argo.ts',
+    '.opencode/tools/validator.ts',
+  ];
+
+  for (const removedPath of removedPaths) {
+    assert.strictEqual(fs.existsSync(path.join(repoRoot, removedPath)), false, removedPath);
   }
 }
 

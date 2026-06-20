@@ -4,7 +4,7 @@
 /*
  * Script Name: Import SystemArchitecture JSON to EA
  * Purpose: Reads design\KG\SystemArchitecture.json and creates an EA model
- *          matching .cursor\argoschema\SystemArchitecture.schema.json.
+ *          matching schema/SystemArchitecture.schema.json.
  * Usage:
  *   1. Copy this file into EA local scripts with JSON-Parser.js available.
  *   2. Select the target Package in EA Project Browser.
@@ -155,7 +155,7 @@ function buildPackageNotes(graph) {
   lines.push(safeString(graph.description));
   lines.push('');
   lines.push('Imported from: ' + SYSTEM_ARCHITECTURE_JSON_PATH);
-  lines.push('Schema: .cursor/argoschema/SystemArchitecture.schema.json');
+  lines.push('Schema: schema/SystemArchitecture.schema.json');
 
   if (graph.attributes && graph.attributes.length > 0) {
     lines.push('');
