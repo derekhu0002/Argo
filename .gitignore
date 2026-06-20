@@ -4,5 +4,6 @@ node_modules/
 .vscode-test/
 /build
 /debug
+tests/mcp/.tmp/
 .obsidian
 copilot/copilot-conversations/

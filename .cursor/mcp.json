@@ -7,6 +7,14 @@
       "env": {
         "ARGO_REPO_ROOT": "${workspaceFolder}"
       }
+    },
+    "argo-systemarchitecture": {
+      "command": "node",
+      "args": ["${workspaceFolder}/.cursor/tools/systemarchitecture/server.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ARGO_REPO_ROOT": "${workspaceFolder}"
+      }
     }
   }
 }

@@ -178,6 +178,7 @@
     "test:explicit:intent-graph-top-level-drilldown": "node tests/explicit/entries/runIntentGraphTopLevelDrilldown.js",
     "test:explicit:intent-graph-search-expansion": "node tests/explicit/entries/runIntentGraphSearchExpansion.js",
     "test:support:intent-graph-structural-discovery": "node tests/support/intent-graph-structural-discovery.test.js",
+    "test:mcp:systemarchitecture": "node tests/mcp/systemarchitecture-mcp.test.js",
     "validate:system-architecture": "node scripts/validateSystemArchitecture.js",
     "validate:handoff": "node scripts/validateStageHandoff.js",
     "validate:handoff:intent": "node scripts/validateStageHandoff.js intent-to-implementation",
