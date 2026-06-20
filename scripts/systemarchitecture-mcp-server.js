@@ -7,6 +7,12 @@ const SCHEMA_PATH_CANDIDATES = [
   'schema/SystemArchitecture.schema.json',
 ];
 
+const {
+  elementTypeMetadata,
+  relationshipCategoryByType,
+  auditRelationshipEndpointTypes,
+} = require('./archimate32-rules');
+
 const HANDLED_MUTATION_TYPES = new Set([
   'addElement',
   'updateElement',
@@ -18,100 +24,6 @@ const HANDLED_MUTATION_TYPES = new Set([
   'updateView',
   'removeView',
 ]);
-
-const elementTypeMetadata = new Map([
-  ['Resource', { layer: 'Strategy', aspect: 'Strategy' }],
-  ['Capability', { layer: 'Strategy', aspect: 'Strategy' }],
-  ['Value Stream', { layer: 'Strategy', aspect: 'Strategy' }],
-  ['Course of Action', { layer: 'Strategy', aspect: 'Strategy' }],
-  ['Business Actor', { layer: 'Business', aspect: 'Active Structure' }],
-  ['Business Role', { layer: 'Business', aspect: 'Active Structure' }],
-  ['Business Collaboration', { layer: 'Business', aspect: 'Active Structure' }],
-  ['Business Interface', { layer: 'Business', aspect: 'Active Structure' }],
-  ['Business Process', { layer: 'Business', aspect: 'Behavior' }],
-  ['Business Function', { layer: 'Business', aspect: 'Behavior' }],
-  ['Business Interaction', { layer: 'Business', aspect: 'Behavior' }],
-  ['Business Event', { layer: 'Business', aspect: 'Behavior' }],
-  ['Business Service', { layer: 'Business', aspect: 'Behavior' }],
-  ['Business Object', { layer: 'Business', aspect: 'Passive Structure' }],
-  ['Contract', { layer: 'Business', aspect: 'Passive Structure' }],
-  ['Representation', { layer: 'Business', aspect: 'Passive Structure' }],
-  ['Product', { layer: 'Business', aspect: 'Composite' }],
-  ['Application Component', { layer: 'Application', aspect: 'Active Structure' }],
-  ['Application Collaboration', { layer: 'Application', aspect: 'Active Structure' }],
-  ['Application Interface', { layer: 'Application', aspect: 'Active Structure' }],
-  ['Application Process', { layer: 'Application', aspect: 'Behavior' }],
-  ['Application Function', { layer: 'Application', aspect: 'Behavior' }],
-  ['Application Interaction', { layer: 'Application', aspect: 'Behavior' }],
-  ['Application Event', { layer: 'Application', aspect: 'Behavior' }],
-  ['Application Service', { layer: 'Application', aspect: 'Behavior' }],
-  ['Data Object', { layer: 'Application', aspect: 'Passive Structure' }],
-  ['Node', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Device', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['System Software', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Technology Collaboration', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Technology Interface', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Path', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Communication Network', { layer: 'Technology', aspect: 'Active Structure' }],
-  ['Technology Process', { layer: 'Technology', aspect: 'Behavior' }],
-  ['Technology Function', { layer: 'Technology', aspect: 'Behavior' }],
-  ['Technology Interaction', { layer: 'Technology', aspect: 'Behavior' }],
-  ['Technology Event', { layer: 'Technology', aspect: 'Behavior' }],
-  ['Technology Service', { layer: 'Technology', aspect: 'Behavior' }],
-  ['Artifact', { layer: 'Technology', aspect: 'Passive Structure' }],
-  ['Equipment', { layer: 'Physical', aspect: 'Active Structure' }],
-  ['Facility', { layer: 'Physical', aspect: 'Active Structure' }],
-  ['Distribution Network', { layer: 'Physical', aspect: 'Active Structure' }],
-  ['Material', { layer: 'Physical', aspect: 'Passive Structure' }],
-  ['Stakeholder', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Driver', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Assessment', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Goal', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Outcome', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Principle', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Requirement', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Constraint', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Meaning', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Value', { layer: 'Motivation', aspect: 'Motivation' }],
-  ['Work Package', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-  ['Deliverable', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-  ['Implementation Event', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-  ['Plateau', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-  ['Gap', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-  ['Grouping', { layer: 'Other', aspect: 'Other' }],
-  ['Location', { layer: 'Other', aspect: 'Other' }],
-  ['Junction', { layer: 'Other', aspect: 'Other' }],
-  ['And Junction', { layer: 'Other', aspect: 'Other' }],
-  ['Or Junction', { layer: 'Other', aspect: 'Other' }],
-]);
-
-const relationshipCategoryByType = new Map([
-  ['Composition', 'Structural'],
-  ['Aggregation', 'Structural'],
-  ['Assignment', 'Structural'],
-  ['Realization', 'Structural'],
-  ['Serving', 'Dependency'],
-  ['Access', 'Dependency'],
-  ['Influence', 'Dependency'],
-  ['Triggering', 'Dynamic'],
-  ['Flow', 'Dynamic'],
-  ['Association', 'Other'],
-  ['Specialization', 'Other'],
-]);
-
-const relationshipGrammar = {
-  Access: ({ target }) => isPassive(target),
-  Assignment: ({ source, target }) => isActive(source) && isBehavior(target),
-  Triggering: ({ source, target }) => isBehavior(source) && isBehavior(target),
-  Flow: ({ source, target }) => isBehavior(source) && isBehavior(target),
-  Serving: ({ target }) => !isPassive(target),
-  Realization: ({ source, target }) => source.id !== target.id,
-  Composition: ({ source, target }) => source.id !== target.id,
-  Aggregation: ({ source, target }) => source.id !== target.id,
-  Association: ({ source, target }) => source.id !== target.id,
-  Influence: ({ source, target }) => source.id !== target.id && isMotivation(target),
-  Specialization: ({ source, target }) => source.type === target.type && source.id !== target.id,
-};
 
 const TOOLS = [
   {
@@ -793,50 +705,7 @@ function validateTouchedArchiMateGrammar(document, touchedRelationshipIds, error
     return;
   }
 
-  const elementById = new Map((document.elements || []).map(element => [element.id, element]));
-  const relationshipById = new Map((document.relationships || []).map(relationship => [relationship.id, relationship]));
-
-  for (const relationshipId of touchedRelationshipIds) {
-    const relationship = relationshipById.get(relationshipId);
-    if (!relationship) {
-      continue;
-    }
-    const source = elementById.get(relationship.source_id);
-    const target = elementById.get(relationship.target_id);
-    if (!source || !target) {
-      continue;
-    }
-
-    const grammarCheck = relationshipGrammar[relationship.name];
-    if (!grammarCheck) {
-      continue;
-    }
-    if (!grammarCheck({ source, target })) {
-      errors.push(
-        `relationships '${relationship.id}' violates ArchiMate grammar: ${source.type} '${source.name}' cannot ${relationship.name} ${target.type} '${target.name}'`,
-      );
-    }
-  }
-}
-
-function isActive(element) {
-  return getMetadata(element).aspect === 'Active Structure';
-}
-
-function isBehavior(element) {
-  return getMetadata(element).aspect === 'Behavior';
-}
-
-function isPassive(element) {
-  return getMetadata(element).aspect === 'Passive Structure';
-}
-
-function isMotivation(element) {
-  return getMetadata(element).layer === 'Motivation';
-}
-
-function getMetadata(element) {
-  return elementTypeMetadata.get(element && element.type) || {};
+  errors.push(...auditRelationshipEndpointTypes(document, touchedRelationshipIds));
 }
 
 function validateAgainstSchema(value, schemaNode, pointer, errors, rootSchema) {

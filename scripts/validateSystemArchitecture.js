@@ -7,85 +7,11 @@ const schemaPathCandidates = [
     path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'),
 ];
 
-const elementTypeMetadata = new Map([
-    ['Resource', { layer: 'Strategy', aspect: 'Strategy' }],
-    ['Capability', { layer: 'Strategy', aspect: 'Strategy' }],
-    ['Value Stream', { layer: 'Strategy', aspect: 'Strategy' }],
-    ['Course of Action', { layer: 'Strategy', aspect: 'Strategy' }],
-    ['Business Actor', { layer: 'Business', aspect: 'Active Structure' }],
-    ['Business Role', { layer: 'Business', aspect: 'Active Structure' }],
-    ['Business Collaboration', { layer: 'Business', aspect: 'Active Structure' }],
-    ['Business Interface', { layer: 'Business', aspect: 'Active Structure' }],
-    ['Business Process', { layer: 'Business', aspect: 'Behavior' }],
-    ['Business Function', { layer: 'Business', aspect: 'Behavior' }],
-    ['Business Interaction', { layer: 'Business', aspect: 'Behavior' }],
-    ['Business Event', { layer: 'Business', aspect: 'Behavior' }],
-    ['Business Service', { layer: 'Business', aspect: 'Behavior' }],
-    ['Business Object', { layer: 'Business', aspect: 'Passive Structure' }],
-    ['Contract', { layer: 'Business', aspect: 'Passive Structure' }],
-    ['Representation', { layer: 'Business', aspect: 'Passive Structure' }],
-    ['Product', { layer: 'Business', aspect: 'Composite' }],
-    ['Application Component', { layer: 'Application', aspect: 'Active Structure' }],
-    ['Application Collaboration', { layer: 'Application', aspect: 'Active Structure' }],
-    ['Application Interface', { layer: 'Application', aspect: 'Active Structure' }],
-    ['Application Process', { layer: 'Application', aspect: 'Behavior' }],
-    ['Application Function', { layer: 'Application', aspect: 'Behavior' }],
-    ['Application Interaction', { layer: 'Application', aspect: 'Behavior' }],
-    ['Application Event', { layer: 'Application', aspect: 'Behavior' }],
-    ['Application Service', { layer: 'Application', aspect: 'Behavior' }],
-    ['Data Object', { layer: 'Application', aspect: 'Passive Structure' }],
-    ['Node', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Device', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['System Software', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Technology Collaboration', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Technology Interface', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Path', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Communication Network', { layer: 'Technology', aspect: 'Active Structure' }],
-    ['Technology Process', { layer: 'Technology', aspect: 'Behavior' }],
-    ['Technology Function', { layer: 'Technology', aspect: 'Behavior' }],
-    ['Technology Interaction', { layer: 'Technology', aspect: 'Behavior' }],
-    ['Technology Event', { layer: 'Technology', aspect: 'Behavior' }],
-    ['Technology Service', { layer: 'Technology', aspect: 'Behavior' }],
-    ['Artifact', { layer: 'Technology', aspect: 'Passive Structure' }],
-    ['Equipment', { layer: 'Physical', aspect: 'Active Structure' }],
-    ['Facility', { layer: 'Physical', aspect: 'Active Structure' }],
-    ['Distribution Network', { layer: 'Physical', aspect: 'Active Structure' }],
-    ['Material', { layer: 'Physical', aspect: 'Passive Structure' }],
-    ['Stakeholder', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Driver', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Assessment', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Goal', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Outcome', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Principle', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Requirement', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Constraint', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Meaning', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Value', { layer: 'Motivation', aspect: 'Motivation' }],
-    ['Work Package', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-    ['Deliverable', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-    ['Implementation Event', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-    ['Plateau', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-    ['Gap', { layer: 'Implementation & Migration', aspect: 'Implementation & Migration' }],
-    ['Grouping', { layer: 'Other', aspect: 'Other' }],
-    ['Location', { layer: 'Other', aspect: 'Other' }],
-    ['Junction', { layer: 'Other', aspect: 'Other' }],
-    ['And Junction', { layer: 'Other', aspect: 'Other' }],
-    ['Or Junction', { layer: 'Other', aspect: 'Other' }],
-]);
-
-const relationshipCategoryByType = new Map([
-    ['Composition', 'Structural'],
-    ['Aggregation', 'Structural'],
-    ['Assignment', 'Structural'],
-    ['Realization', 'Structural'],
-    ['Serving', 'Dependency'],
-    ['Access', 'Dependency'],
-    ['Influence', 'Dependency'],
-    ['Triggering', 'Dynamic'],
-    ['Flow', 'Dynamic'],
-    ['Association', 'Other'],
-    ['Specialization', 'Other'],
-]);
+const {
+    elementTypeMetadata,
+    relationshipCategoryByType,
+    validateRelationshipEndpointTypes,
+} = require('./archimate32-rules');
 
 function main() {
     const schemaPath = schemaPathCandidates.find(candidate => fs.existsSync(candidate));
@@ -377,6 +303,10 @@ function validateGraphSemantics(document, errors) {
             errors.push(`relationships '${relationship.id}' references missing target_id '${relationship.target_id}'`);
         } else if (relationship.target_name !== target.name) {
             errors.push(`relationships '${relationship.id}' target_name '${relationship.target_name}' does not match element '${relationship.target_id}' name '${target.name}'`);
+        }
+
+        if (source && target) {
+            errors.push(...validateRelationshipEndpointTypes(relationship, source, target));
         }
     }
 

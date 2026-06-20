@@ -11,12 +11,14 @@ const mcpConfigPaths = [
   '.opencode/mcp.json',
 ];
 const { callTool } = require('../../scripts/argo-mcp-server.js');
+const archimateRules = require('../../scripts/archimate32-rules.js');
 
 async function main() {
   process.env.ARGO_REPO_ROOT = repoRoot;
 
   validatesUnifiedMcpConfiguration();
   validatesNoDuplicateMcpExecutionAssets();
+  validatesArchimate32RuleCoverage();
   await validatesFocusedViewToolsAreListed();
   await validatesCurrentGraph();
 
@@ -25,6 +27,8 @@ async function main() {
   fs.copyFileSync(sourceGraphPath, tempGraphPath);
 
   await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
+  await rejectsRelationshipWithInvalidArchiMate32EndpointTypes(tempGraphPath);
+  await rejectsRelationshipOutsideArchiMate32Matrix(tempGraphPath);
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
@@ -81,6 +85,25 @@ function validatesNoDuplicateMcpExecutionAssets() {
   }
 }
 
+function validatesArchimate32RuleCoverage() {
+  const matrixCombinationCount = Object.values(archimateRules.RELATIONSHIP_TARGET_MATRIX)
+    .flatMap(sourceMap => Object.values(sourceMap))
+    .reduce((total, targets) => total + targets.length, 0);
+
+  assert.strictEqual(matrixCombinationCount, 10484);
+  assert.strictEqual(archimateRules.isSupportedElementType('Junction'), false);
+  assert.strictEqual(archimateRules.isSupportedElementType('And Junction'), true);
+  assert.strictEqual(archimateRules.isSupportedElementType('Or Junction'), true);
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Composition.ApplicationComponent.includes('DataObject'),
+    false,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Assignment.ApplicationComponent.includes('ApplicationFunction'),
+    true,
+  );
+}
+
 function ensureTempDirectory() {
   const tempDirectory = path.join(repoRoot, 'tests', 'mcp', '.tmp');
   fs.mkdirSync(tempDirectory, { recursive: true });
@@ -112,10 +135,66 @@ async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {
   assert.strictEqual(payload.status, 'failed');
   assert.strictEqual(payload.written, false);
   assert(
-    payload.errors.some(error => error.includes('violates ArchiMate grammar')),
+    payload.errors.some(error => error.includes('violates ArchiMate 3.2 relationship matrix')),
     `Expected ArchiMate grammar error, got: ${JSON.stringify(payload.errors)}`,
   );
   assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), before);
+}
+
+async function rejectsRelationshipWithInvalidArchiMate32EndpointTypes(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237'],
+        relationship: {
+          id: 'mcp-invalid-serving-source',
+          statement: 'SystemArchitecture --(Serving)--> Orchestrator',
+          name: 'Serving',
+          source_id: '1803',
+          target_id: '1798',
+          source_name: 'SystemArchitecture',
+          target_name: 'Orchestrator',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes('violates ArchiMate 3.2 relationship matrix')),
+    `Expected ArchiMate 3.2 endpoint type error, got: ${JSON.stringify(payload.errors)}`,
+  );
+}
+
+async function rejectsRelationshipOutsideArchiMate32Matrix(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237'],
+        relationship: {
+          id: 'mcp-invalid-composition-matrix',
+          statement: 'Orchestrator --(Composition)--> SystemArchitecture',
+          name: 'Composition',
+          source_id: '1798',
+          target_id: '1803',
+          source_name: 'Orchestrator',
+          target_name: 'SystemArchitecture',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes('violates ArchiMate 3.2 relationship matrix')),
+    `Expected ArchiMate 3.2 matrix error, got: ${JSON.stringify(payload.errors)}`,
+  );
 }
 
 async function previewsValidElementMutation(tempGraphPath) {
