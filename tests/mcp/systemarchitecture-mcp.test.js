@@ -28,9 +28,12 @@ async function main() {
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
-  await rejectsRemoveWithoutViewScope(tempGraphPath);
+  await rejectsRelationshipRemoveWithoutViewScope(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
   await appliesExistingElementToAdditionalView(tempGraphPath);
+  await removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
+  await removesElementFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
+  await removesElementFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
   await appliesExistingRelationshipToAdditionalView(tempGraphPath);
   await previewsViewLifecycleMutations(tempGraphPath);
   await rejectsSubviewWithoutParentElement(tempGraphPath);
@@ -266,9 +269,8 @@ async function previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath) {
   assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['updateElement', 'updateRelationship']);
 }
 
-async function rejectsRemoveWithoutViewScope(tempGraphPath) {
+async function rejectsRelationshipRemoveWithoutViewScope(tempGraphPath) {
   const mutationCases = [
-    { type: 'removeElement', id: '1798' },
     { type: 'removeRelationship', id: '1726' },
   ];
 
@@ -285,6 +287,163 @@ async function rejectsRemoveWithoutViewScope(tempGraphPath) {
       `Expected missing view_ids error for ${mutation.type}, got: ${JSON.stringify(payload.errors)}`,
     );
   }
+}
+
+async function removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['237', '238'],
+        element: {
+          id: 'mcp-scoped-remove-source',
+          name: 'Scoped remove source',
+          type: 'Outcome',
+          description: 'Used to validate scoped element removal with related relationships.',
+        },
+      },
+      {
+        type: 'addElement',
+        view_ids: ['237', '238'],
+        element: {
+          id: 'mcp-scoped-remove-target',
+          name: 'Scoped remove target',
+          type: 'Outcome',
+          description: 'Used to validate scoped element removal with related relationships.',
+        },
+      },
+      {
+        type: 'addRelationship',
+        view_ids: ['237', '238'],
+        relationship: {
+          id: 'mcp-scoped-remove-relation',
+          statement: 'Scoped remove source --(Association)--> Scoped remove target',
+          name: 'Association',
+          source_id: 'mcp-scoped-remove-source',
+          target_id: 'mcp-scoped-remove-target',
+          source_name: 'Scoped remove source',
+          target_name: 'Scoped remove target',
+        },
+      },
+      {
+        type: 'removeElement',
+        id: 'mcp-scoped-remove-source',
+        view_ids: ['237'],
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 2);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount + 1);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(writtenGraph.elements.some(element => element.id === 'mcp-scoped-remove-source'));
+  assert(writtenGraph.relationships.some(relationship => relationship.id === 'mcp-scoped-remove-relation'));
+  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
+  const developmentView = writtenGraph.views.find(view => view.view_id === '238');
+  const remainingViews = writtenGraph.views.filter(view => (view.included_elements || []).includes('mcp-scoped-remove-source'));
+  assert(!topLevelView.included_elements.includes('mcp-scoped-remove-source'));
+  assert(!topLevelView.included_relationships.includes('mcp-scoped-remove-relation'));
+  assert(developmentView.included_elements.includes('mcp-scoped-remove-source'));
+  assert(developmentView.included_relationships.includes('mcp-scoped-remove-relation'));
+  assert(remainingViews.length > 0);
+}
+
+async function removesElementFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['237'],
+        element: {
+          id: 'mcp-last-view-element',
+          name: 'Temporary last view element',
+          type: 'Outcome',
+          description: 'Used to validate scoped element removal from the final referencing view.',
+        },
+      },
+      {
+        type: 'removeElement',
+        id: 'mcp-last-view-element',
+        view_ids: ['237'],
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.elementCount, payload.before.elementCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.elements.some(element => element.id === 'mcp-last-view-element'));
+  assert(writtenGraph.views.every(view => !(view.included_elements || []).includes('mcp-last-view-element')));
+}
+
+async function removesElementFromAllViewsAndGraphWithoutViewScope(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['237', '238'],
+        element: {
+          id: 'mcp-global-remove-source',
+          name: 'Temporary global remove source',
+          type: 'Outcome',
+          description: 'Used to validate global element removal without a view scope.',
+        },
+      },
+      {
+        type: 'addElement',
+        view_ids: ['237', '238'],
+        element: {
+          id: 'mcp-global-remove-target',
+          name: 'Temporary global remove target',
+          type: 'Outcome',
+          description: 'Used to validate global element removal without a view scope.',
+        },
+      },
+      {
+        type: 'addRelationship',
+        view_ids: ['237', '238'],
+        relationship: {
+          id: 'mcp-global-remove-relation',
+          statement: 'Temporary global remove source --(Association)--> Temporary global remove target',
+          name: 'Association',
+          source_id: 'mcp-global-remove-source',
+          target_id: 'mcp-global-remove-target',
+          source_name: 'Temporary global remove source',
+          target_name: 'Temporary global remove target',
+        },
+      },
+      {
+        type: 'removeElement',
+        id: 'mcp-global-remove-source',
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 1);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.elements.some(element => element.id === 'mcp-global-remove-source'));
+  assert(writtenGraph.elements.some(element => element.id === 'mcp-global-remove-target'));
+  assert(!writtenGraph.relationships.some(relationship => relationship.id === 'mcp-global-remove-relation'));
+  assert(writtenGraph.views.every(view => !(view.included_elements || []).includes('mcp-global-remove-source')));
+  assert(writtenGraph.views.every(view => !(view.included_relationships || []).includes('mcp-global-remove-relation')));
 }
 
 async function previewsViewLifecycleMutations(tempGraphPath) {

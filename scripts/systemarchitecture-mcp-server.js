@@ -385,17 +385,49 @@ function applyMutations(document, mutations) {
 
     if (mutation.type === 'removeElement') {
       requireId(mutation.id, 'mutation.id');
-      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
-      const beforeCount = nextDocument.elements.length;
-      nextDocument.elements = nextDocument.elements.filter(element => element.id !== mutation.id);
-      if (nextDocument.elements.length === beforeCount) {
+      const element = findById(nextDocument.elements, mutation.id);
+      if (!element) {
         throw new Error(`Element '${mutation.id}' does not exist`);
       }
+      const scopedViews = mutation.view_ids === undefined
+        ? nextDocument.views
+        : requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
+      const relatedRelationshipIds = nextDocument.relationships
+        .filter(relationship => relationship.source_id === mutation.id || relationship.target_id === mutation.id)
+        .map(relationship => relationship.id);
       for (const view of scopedViews) {
         view.included_elements = removeEntries(view.included_elements || [], [mutation.id]);
+        view.included_relationships = removeEntries(view.included_relationships || [], relatedRelationshipIds);
       }
+      const stillIncludedInView = nextDocument.views.some(view => (
+        Array.isArray(view.included_elements) && view.included_elements.includes(mutation.id)
+      ));
+      if (!stillIncludedInView) {
+        for (const view of nextDocument.views) {
+          view.included_relationships = removeEntries(view.included_relationships || [], relatedRelationshipIds);
+        }
+        nextDocument.elements = nextDocument.elements.filter(entry => entry.id !== mutation.id);
+      }
+      const relationshipIdsStillInViews = new Set();
+      for (const view of nextDocument.views) {
+        for (const relationshipId of view.included_relationships || []) {
+          relationshipIdsStillInViews.add(relationshipId);
+        }
+      }
+      nextDocument.relationships = nextDocument.relationships.filter(relationship => (
+        !relatedRelationshipIds.includes(relationship.id) || relationshipIdsStillInViews.has(relationship.id)
+      ));
       touchedElementIds.add(mutation.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.id, view_ids: mutation.view_ids });
+      for (const relationshipId of relatedRelationshipIds) {
+        touchedRelationshipIds.add(relationshipId);
+      }
+      mutationSummaries.push({
+        type: mutation.type,
+        id: mutation.id,
+        view_ids: mutation.view_ids,
+        removed_from_graph: !stillIncludedInView,
+        removed_relationship_ids: relatedRelationshipIds.filter(relationshipId => !relationshipIdsStillInViews.has(relationshipId)),
+      });
       continue;
     }
 
