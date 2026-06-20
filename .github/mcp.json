@@ -1,8 +1,9 @@
 {
-  "mcpServers": {
+  "servers": {
     "argo": {
+      "type": "stdio",
       "command": "node",
-      "args": ["${workspaceFolder}/scripts/argo-mcp-server.js"],
+      "args": ["scripts/argo-mcp-server.js"],
       "cwd": "${workspaceFolder}",
       "env": {
         "ARGO_REPO_ROOT": "${workspaceFolder}"
