@@ -267,6 +267,226 @@ function jsonEscape(str) {
               .replace(/\t/g, '\\t');
 }
 
+function safeSchemaString(value, fallbackValue) {
+	var text = trimString(value);
+	if (text != "") {
+		return text;
+	}
+	return trimString(fallbackValue);
+}
+
+function normalizeArchimateName(value) {
+	var text = trimString(value);
+	text = text.replace(/^ArchiMate[_\s-]*/i, "");
+	text = text.replace(/&/g, "");
+	text = text.replace(/[^A-Za-z0-9]/g, "");
+	return text;
+}
+
+function displayArchimateName(normalized) {
+	switch (trimString(normalized)) {
+		case "Class": return "Grouping";
+		case "ValueStream": return "Value Stream";
+		case "CourseofAction": return "Course of Action";
+		case "BusinessActor": return "Business Actor";
+		case "BusinessRole": return "Business Role";
+		case "BusinessCollaboration": return "Business Collaboration";
+		case "BusinessInterface": return "Business Interface";
+		case "BusinessProcess": return "Business Process";
+		case "BusinessFunction": return "Business Function";
+		case "BusinessInteraction": return "Business Interaction";
+		case "BusinessEvent": return "Business Event";
+		case "BusinessService": return "Business Service";
+		case "BusinessObject": return "Business Object";
+		case "ApplicationComponent": return "Application Component";
+		case "ApplicationCollaboration": return "Application Collaboration";
+		case "ApplicationInterface": return "Application Interface";
+		case "ApplicationProcess": return "Application Process";
+		case "ApplicationFunction": return "Application Function";
+		case "ApplicationInteraction": return "Application Interaction";
+		case "ApplicationEvent": return "Application Event";
+		case "ApplicationService": return "Application Service";
+		case "DataObject": return "Data Object";
+		case "SystemSoftware": return "System Software";
+		case "TechnologyCollaboration": return "Technology Collaboration";
+		case "TechnologyInterface": return "Technology Interface";
+		case "CommunicationNetwork": return "Communication Network";
+		case "TechnologyProcess": return "Technology Process";
+		case "TechnologyFunction": return "Technology Function";
+		case "TechnologyInteraction": return "Technology Interaction";
+		case "TechnologyEvent": return "Technology Event";
+		case "TechnologyService": return "Technology Service";
+		case "DistributionNetwork": return "Distribution Network";
+		case "WorkPackage": return "Work Package";
+		case "ImplementationEvent": return "Implementation Event";
+		case "AndJunction": return "And Junction";
+		case "OrJunction": return "Or Junction";
+		case "Resource":
+		case "Capability":
+		case "Contract":
+		case "Representation":
+		case "Product":
+		case "Node":
+		case "Device":
+		case "Path":
+		case "Artifact":
+		case "Equipment":
+		case "Facility":
+		case "Material":
+		case "Stakeholder":
+		case "Driver":
+		case "Assessment":
+		case "Goal":
+		case "Outcome":
+		case "Principle":
+		case "Requirement":
+		case "Constraint":
+		case "Meaning":
+		case "Value":
+		case "Deliverable":
+		case "Plateau":
+		case "Gap":
+		case "Grouping":
+		case "Location":
+		case "Junction":
+		case "Association":
+		case "Composition":
+		case "Aggregation":
+		case "Assignment":
+		case "Realization":
+		case "Serving":
+		case "Access":
+		case "Influence":
+		case "Triggering":
+		case "Flow":
+		case "Specialization":
+			return normalized;
+		default:
+			return "";
+	}
+}
+
+function canonicalArchimateType(value) {
+	var normalized = normalizeArchimateName(value);
+	return displayArchimateName(normalized);
+}
+
+function canonicalElementType(value, fallbackValue) {
+	var display = canonicalArchimateType(value);
+	if (isSchemaElementType(display)) {
+		return display;
+	}
+	display = canonicalArchimateType(fallbackValue);
+	if (isSchemaElementType(display)) {
+		return display;
+	}
+	Session.Output("WARN: Unknown element type '" + value + "', exporting as Grouping for schema compliance.");
+	return "Grouping";
+}
+
+function canonicalRelationshipType(value, fallbackValue) {
+	var display = canonicalArchimateType(value);
+	if (isSchemaRelationshipType(display)) {
+		return display;
+	}
+	display = canonicalArchimateType(fallbackValue);
+	if (isSchemaRelationshipType(display)) {
+		return display;
+	}
+	Session.Output("WARN: Unknown relationship type '" + value + "', exporting as Association for schema compliance.");
+	return "Association";
+}
+
+function isSchemaElementType(value) {
+	switch (trimString(value)) {
+		case "Resource":
+		case "Capability":
+		case "Value Stream":
+		case "Course of Action":
+		case "Business Actor":
+		case "Business Role":
+		case "Business Collaboration":
+		case "Business Interface":
+		case "Business Process":
+		case "Business Function":
+		case "Business Interaction":
+		case "Business Event":
+		case "Business Service":
+		case "Business Object":
+		case "Contract":
+		case "Representation":
+		case "Product":
+		case "Application Component":
+		case "Application Collaboration":
+		case "Application Interface":
+		case "Application Process":
+		case "Application Function":
+		case "Application Interaction":
+		case "Application Event":
+		case "Application Service":
+		case "Data Object":
+		case "Node":
+		case "Device":
+		case "System Software":
+		case "Technology Collaboration":
+		case "Technology Interface":
+		case "Path":
+		case "Communication Network":
+		case "Technology Process":
+		case "Technology Function":
+		case "Technology Interaction":
+		case "Technology Event":
+		case "Technology Service":
+		case "Artifact":
+		case "Equipment":
+		case "Facility":
+		case "Distribution Network":
+		case "Material":
+		case "Stakeholder":
+		case "Driver":
+		case "Assessment":
+		case "Goal":
+		case "Outcome":
+		case "Principle":
+		case "Requirement":
+		case "Constraint":
+		case "Meaning":
+		case "Value":
+		case "Work Package":
+		case "Deliverable":
+		case "Implementation Event":
+		case "Plateau":
+		case "Gap":
+		case "Grouping":
+		case "Location":
+		case "Junction":
+		case "And Junction":
+		case "Or Junction":
+			return true;
+		default:
+			return false;
+	}
+}
+
+function isSchemaRelationshipType(value) {
+	switch (trimString(value)) {
+		case "Association":
+		case "Composition":
+		case "Aggregation":
+		case "Assignment":
+		case "Realization":
+		case "Serving":
+		case "Access":
+		case "Influence":
+		case "Triggering":
+		case "Flow":
+		case "Specialization":
+			return true;
+		default:
+			return false;
+	}
+}
+
 function getCode(mainbehavior_fullpath) {
 	var sanitizedpath = mainbehavior_fullpath.replace(/\\/g, "\\\\");
     var fileContent = "Relative File Path:" + sanitizedpath + "\n\n"; // Default return value
@@ -469,141 +689,6 @@ function getDiagramIdentifier(diagram) {
 	return "" + diagram.DiagramID;
 }
 
-function getProjectinfo(tele) {
-    // Refactored for LLM readability
-	var resall as EA.Collection;
-	resall = tele.Resources;
-	var stringresall = [];
-	for (var i = 0; i < resall.Count; i++) {
-		var ra as EA.Resource;
-		ra = resall.GetAt(i);
-		var sress = '{\n"owner": "' + jsonEscape(ra.Name) + '",\n' + 
-			'"role": "' + jsonEscape(ra.Role) + '"\n';
-		
-		if(ra.Notes != "") {
-			sress += ',"description": "' + jsonEscape(ra.Notes) + '"\n';
-		}
-		
-		sress += ',"start_date": "' + jsonEscape(getDate(ra.DateStart)) + '",\n' +
-			'"end_date": "' + jsonEscape(getDate(ra.DateEnd)) + '",\n' + 
-			'"percent_complete": ' + ra.PercentComplete + ',\n' +
-			'"expected_hours": ' + ra.ExpectedHours + '\n';
-		
-		if(ra.History != "") {
-			sress += ',"history": "' + jsonEscape(ra.History) + '"\n';
-		}
-		
-		sress +='}';
-		
-		stringresall.push(sress);
-	}
-
-	var tasks as EA.Collection;
-	tasks = tele.Issues;
-	var stringtasks = [];
-	var projectSummury = null;
-	// @ArchitectureID: 1193
-	function shouldIncludeTaskByMaintenance(statusValue) {
-		var status = (statusValue == null) ? "" : ("" + statusValue).toLowerCase();
-		if (needallmaintenace == "All") {
-			return true;
-		}
-		if (needallmaintenace == "ActiveAndVerified") {
-			return status == "active" || status == "verified";
-		}
-		// Default and fallback behavior: only active tasks.
-		return status == "active";
-	}
-
-	for (var i = 0; i < tasks.Count; i++) {
-		var task as EA.Issue;
-		task = tasks.GetAt(i);
-		
-		if (task.Name == "summury") {
-			projectSummury = '{\n' +
-							'"notes": "' + jsonEscape(task.Notes) + '",\n' +
-							'"started": "' + jsonEscape(getDate(task.DateReported)) + '",\n' +
-							'"deadline": "' + jsonEscape(getDate(task.DateResolved)) + '",\n' +
-							'"priority": "' + jsonEscape(task.Priority) + '",\n' +
-							'"assigned_to": "' + jsonEscape(task.Resolver) + '",\n' +
-							'"progress": "' + jsonEscape(task.ResolverNotes) + '"\n' +
-							'}';
-		} else {
-			
-			if (!shouldIncludeTaskByMaintenance(task.Status)) {
-				continue;
-			}
-			
-			if (maintenacetype == "forllm") {
-				if (task.Resolver != "llm") {
-					continue;
-				}
-			}
-			
-			var statata = '{\n"name": "' + jsonEscape(task.Name) + '"\n';
-			
-			if (task.Type != "") {
-				statata += ',"type": "' + jsonEscape(task.Type) + '"\n';
-			}
-			
-			if (task.Status != "") {
-				statata += ',"status": "' + jsonEscape(task.Status) + '"\n';
-			}
-			
-			if (task.Notes != "") {
-				statata += ',"description": "' + jsonEscape(task.Notes) + '"\n';
-			}
-			
-			statata += ',"start_date": "' + jsonEscape(getDate(task.DateReported)) + '"\n';
-			
-			if (task.Status == "Complete") {
-				statata += ',"completion_date": "' + jsonEscape(getDate(task.DateResolved)) + '"\n';
-			} else {
-				statata += ',"due_date": "' + jsonEscape(getDate(task.DateResolved)) + '"\n';
-			}
-
-			if (task.Reporter != "") {
-				statata += ',"reporter": "' + jsonEscape(task.Reporter) + '"\n';
-			}
-
-			statata += ',"priority": "' + jsonEscape(task.Priority) + '",\n' +
-				'"assigned_to": "' + jsonEscape(task.Resolver) + '"\n';
-			
-			if (task.ResolverNotes != "") {
-				statata += ',"progress": "' + jsonEscape(task.ResolverNotes) + '"\n';
-			}
-			
-			statata += '}';
-			stringtasks.push(statata);
-		}
-	}
-	var lllll = stringresall.join(',\n');
-	var tttt = stringtasks.join(',\n');
-	
-	if ((lllll == "") && (projectSummury == null) && (tttt == "")) {
-		return "";
-	}
-	
-	var finalJsonString = "{\n";
-	
-	if (projectSummury != null) {
-		finalJsonString = '"summary":' + projectSummury + '\n';
-	}
-
-	if (lllll != "") {
-		if (projectSummury != null) { finalJsonString += ','; }
-		finalJsonString += '"resources": [\n' + lllll + '\n]\n';
-	}
-
-	if (tttt != "") {
-		if (lllll != "") { finalJsonString += ','; }
-		finalJsonString += '"tasks": [\n' + tttt + '\n]\n';
-	}
-	
-    finalJsonString += '}';	
-	return finalJsonString;
-}
-
 function saveRtfAsPdf(rtfContent, pdfFileName, baseFolderPath) {
     var pdfFilePath = "";
     var fso = null;
@@ -783,7 +868,9 @@ function extractFromDiagram(currentDiagram) {
 			// START Refactoring Node JSON
 			var finalnodetype = '{\n"id": "' + jsonEscape(id) + '",\n';
 			finalnodetype += '"name": "' + jsonEscape(ele.Name) + '"\n';
-			finalnodetype += ',"parent": "' + jsonEscape(ele.ParentID) + '"\n';
+			if (ele.ParentID != 0) {
+				finalnodetype += ',"parent": "' + jsonEscape(ele.ParentID) + '"\n';
+			}
 
 			if (ele.Alias != "") {
 				finalnodetype += ',"alias": "' + jsonEscape(ele.Alias) + '"\n';
@@ -793,22 +880,7 @@ function extractFromDiagram(currentDiagram) {
 				finalnodetype += ',"classifier": "' + jsonEscape(ele.ClassifierName) + '"\n';
 			}
 			
-			if (ele.StereotypeEx != "") {
-				finalnodetype += ',"type": "' + jsonEscape(ele.StereotypeEx) + '"\n';
-			} else {
-				finalnodetype += ',"type": "' + jsonEscape(ele.Type) + '"\n';
-			}
-
-			if (needbrowserlocation) {
-				var elementBrowserPath = getElementBrowserPath(ele);
-				if (elementBrowserPath != "") {
-					finalnodetype += ',"browser_path": "' + jsonEscape(elementBrowserPath) + '"\n';
-				}
-			}
-
-			if (ele.Status == "Implemented") {
-				finalnodetype += ',"status": "' + jsonEscape(ele.Status) + '"\n';
-			}
+			finalnodetype += ',"type": "' + jsonEscape(canonicalElementType(ele.StereotypeEx, ele.Type)) + '"\n';
 			
 			if (ele.Notes != "") {
 				finalnodetype += ',"description": "' + jsonEscape(ele.Notes) + '"\n';
@@ -824,7 +896,12 @@ function extractFromDiagram(currentDiagram) {
 				var savedFileName = saveRtfAsPdf(linkedDoc, pdfFileName, projectPath);
 				
 				if (savedFileName != "") {
-					finalnodetype += ',"document": "pdfs/' + jsonEscape(savedFileName) + '"\n';
+					attributesJsonStrings.push(
+						'{\n' +
+						'"name": "document",\n' +
+						'"value": "pdfs/' + jsonEscape(savedFileName) + '"\n' +
+						'}'
+					);
 				}
 			}
 
@@ -835,23 +912,6 @@ function extractFromDiagram(currentDiagram) {
 				finalnodetype += ',"attributes": [\n' + attrsjsstr + '\n]\n';
 			}
 			
-			if (mainbehavior_relativepath != "") {
-				finalnodetype += ',"code_file": "' + jsonEscape(mainbehavior_relativepath) + '"\n';
-			}
-			
-			if (decision_condition_relativepath != "") {
-				finalnodetype += ',"condition_file": "' + jsonEscape(decision_condition_relativepath) + '"\n';
-			}
-			
-			if (prompts_relativepath != "") {
-				finalnodetype += ',"prompts_file": "' + jsonEscape(prompts_relativepath) + '"\n';
-			}
-
-			var projectinfo = getProjectinfo(ele);
-			if (projectinfo != "") {
-				finalnodetype += ',"project_info": ' + projectinfo + '\n';
-			}
-
 			if (subDiagramJsonStrings.length > 0) {
 				finalnodetype += ',"subdiagram_views": [\n' + subDiagramJsonStrings.join(',\n') + '\n]\n';
 			}
@@ -862,14 +922,22 @@ function extractFromDiagram(currentDiagram) {
 			for (var j = 0; j < testcases.Count; j++) {
 				var testcase as EA.Test;
 				testcase = testcases.GetAt(j);
+				var testcaseName = safeSchemaString(testcase.Name, "");
+				var testcaseDescription = safeSchemaString(testcase.Notes, testcaseName);
+				var testcaseInput = safeSchemaString(testcase.Input, "N/A");
+				var testcaseAcceptanceCriteria = safeSchemaString(testcase.AcceptanceCriteria, testcaseName);
+				if (testcaseName == "" || testcaseDescription == "" || testcaseInput == "" || testcaseAcceptanceCriteria == "") {
+					Session.Output("WARN: Skipping incomplete testcase on element " + ele.Name + " because schema-required fields are empty.");
+					continue;
+				}
 				testcasesJsonStrings.push(
 					'{\n' +
-					'"name": "' + jsonEscape(testcase.Name) + '",\n' +
-					'"description": "' + jsonEscape(testcase.Notes) + '",\n' +
-					'"type": "' + jsonEscape(getTestClassName(testcase.Class)) + '",\n' +
-					'"Input": "' + jsonEscape(testcase.Input) + '",\n' +
-					'"acceptanceCriteria": "' + jsonEscape(testcase.AcceptanceCriteria) + '",\n' +
-					'"TestResults": "' + jsonEscape(testcase.TestResults) + '"\n' +
+					'"name": "' + jsonEscape(testcaseName) + '",\n' +
+					'"description": "' + jsonEscape(testcaseDescription) + '",\n' +
+					'"type": "Acceptance Test",\n' +
+					'"Input": "' + jsonEscape(testcaseInput) + '",\n' +
+					'"acceptanceCriteria": "' + jsonEscape(testcaseAcceptanceCriteria) + '"' +
+					(testcase.TestResults != "" ? ',\n"TestResults": "' + jsonEscape(testcase.TestResults) + '"' : '') + '\n' +
 					'}'
 				);
 			}
@@ -904,15 +972,15 @@ function extractFromDiagram(currentDiagram) {
 			var target as EA.Element;
 			target = Repository.GetElementByID(conn.SupplierID);
 
-			var relType = (conn.Name) ? conn.Name : conn.Stereotype;
+			var relType = (conn.Name) ? conn.Name : conn.StereotypeEx;
 			
 			if (relType == "") {
-				relType = jsonEscape(conn.Type);
+				relType = conn.Stereotype;
 			}
-			
-			if (relType == "Aggregation") {
-				relType = "aggregates";
+			if (relType == "") {
+				relType = conn.Type;
 			}
+			relType = canonicalRelationshipType(relType, conn.StereotypeEx != "" ? conn.StereotypeEx : conn.Type);
 			
 			var statement = jsonEscape(source.Name) + " --(" + jsonEscape(relType) + ")--> " + jsonEscape(target.Name);
 			var relatointypejss = '{\n"id":"' + jsonEscape(connId) + '"\n';
@@ -944,12 +1012,12 @@ function extractFromDiagram(currentDiagram) {
 				for (var l = 0; l < relAttrs.Count; l++) {
 					var relAttr as EA.Attribute;
 					relAttr = relAttrs.GetAt(l);
-					relationAttributesJsonStrings.push(
-						'{\n' +
-						'"name": "' + jsonEscape(relAttr.Name) + '",\n' +
-						'"description": "' + jsonEscape(relAttr.Notes) + '"\n' +
-						'}'
-					);
+					var relAttrJson = '{\n"name": "' + jsonEscape(relAttr.Name) + '"\n';
+					if (relAttr.Notes != "") {
+						relAttrJson += ',"description": "' + jsonEscape(relAttr.Notes) + '"\n';
+					}
+					relAttrJson += '}';
+					relationAttributesJsonStrings.push(relAttrJson);
 				}
 			}
 
@@ -961,14 +1029,6 @@ function extractFromDiagram(currentDiagram) {
 
 			if (connassnotes != "") {
 				relatointypejss += ',"description": "' + jsonEscape(connassnotes) + '"\n';
-			}
-			
-			if (conn.SequenceNo != "") {
-				relatointypejss += ',"sequence": "' + jsonEscape("" + conn.SequenceNo) + '"\n';
-			}
-
-			if (conn.StereotypeEx != "") {
-				relatointypejss += ',"super_type": "' + jsonEscape(conn.StereotypeEx) + '"\n';
 			}
 			
 			var relattrsss = relationAttributesJsonStrings.join(',\n');
@@ -990,13 +1050,6 @@ function extractFromDiagram(currentDiagram) {
 	var viewJson = '{\n"view_id": "' + jsonEscape(currentDiagramId) + '",\n';
 	viewJson += '"view_name": "' + jsonEscape(viewName) + '"\n';
 	Session.Output("Processing diag:" + viewName + " id:" + currentDiagramId);
-	
-	if (needbrowserlocation) {
-		var diagramBrowserPath = getDiagramBrowserPath(currentDiagram);
-		if (diagramBrowserPath != "") {
-			viewJson += ',"browser_path": "' + jsonEscape(diagramBrowserPath) + '"\n';
-		}
-	}
 
 	if (currentDiagram.ParentID != 0) {
 		var parentElement as EA.Element;
@@ -1125,10 +1178,10 @@ function main() {
 	
 	if (ppele == null) {
 		finalJsonString += '"name": "' + jsonEscape(ppkg.Name) + '",\n';
-		finalJsonString += '"description": "' + jsonEscape(ppkg.Notes) + '",\n';
+		finalJsonString += '"description": "' + jsonEscape(safeSchemaString(ppkg.Notes, "Exported from EA package " + ppkg.Name)) + '",\n';
 	} else {
 		finalJsonString += '"name": "' + jsonEscape(ppele.Name) + '",\n';
-		finalJsonString += '"description": "' + jsonEscape(ppele.Notes) + '",\n';
+		finalJsonString += '"description": "' + jsonEscape(safeSchemaString(ppele.Notes, "Exported from EA element " + ppele.Name)) + '",\n';
 		
 		var attrs as EA.Collection;
 		attrs = ppele.AttributesEx;
