@@ -22,27 +22,27 @@ Coding/Repair
 
 ### Evidence
 
-- 意图架构图谱：`design\KG\SystemArchitecture.json`
-- 实现到编码交接物：`design\KG\ImplementationToCodingHandoff.json`
+- 意图架构图谱：`design/KG/SystemArchitecture.json`
+- 实现到编码交接物：`design/KG/ImplementationToCodingHandoff.json`
 - 实现到编码交接物 Schema：`schema/ImplementationToCodingHandoff.schema.json`
-- 失败测试记录：`design\KG\test-failure-records.json`
+- 失败测试记录：`design/KG/test-failure-records.json`
 - 实现架构根契约：`OVERALL_ARCHITECTURE.md`
 
 ### Problem List
 
-测试用例失败记录见 `design\KG\test-failure-records.json`
+测试用例失败记录见 `design/KG/test-failure-records.json`
 
 ### Operational Rules
 
 1. 先按仓库常驻架构知识读取并遵守意图架构、实现架构契约与阶段边界。
-2. 先读取 `design\KG\ImplementationToCodingHandoff.json`；若该交接物缺失、格式不完整，或与仓库现状冲突到无法执行，请先将其报告为实现架构设计阶段缺口，而不是直接跳过。
+2. 先读取 `design/KG/ImplementationToCodingHandoff.json`；若该交接物缺失、格式不完整，或与仓库现状冲突到无法执行，请先将其报告为实现架构设计阶段缺口，而不是直接跳过。
 3. 以实现到编码交接物和失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议。
 4. 严禁把测试桩、测试分支、测试开关、仅供断言使用的返回字段、测试专用后门或任何其他测试内容混入业务代码；测试相关内容只能放在契约允许的测试、夹具或环境资产里。
 5. 只要涉及测试用例，无论是读取失败记录、补齐普通非显性测试，还是说明测试修复方案，都必须显性描述“控制点”和“观测点”；缺少任一项都视为测试设计不完整。
 6. 在 handoff 或最终回复中，只要提到文件、契约、测试入口或夹具，都必须写出具体仓库路径；不要使用“相关文件”“对应 ARCHITECTURE.md”这类模糊表述。若这些路径是给用户读取、修改或执行的输入，请单独放进 ```text 代码块```，并保持一行一个路径，便于直接复制。
 7. 如果发现缺失显性测试入口、关键非显性测试契约错误、关键护栏失效且必须改写，或测试环境信息只能通过改写冻结资产才能补齐，请将其视为实现架构设计阶段缺口并明确回报，不要在编码阶段直接改写这些冻结资产。
 8. 如新增或调整外部接口，必须同步更新项目根目录的 INTRODUCTION.md，确保对外说明与真实接口一致。
-9. 修复不能导致已有显性测试用例失败；完成修复后必须调用统一 `argo` MCP 工具 `runArchitectureTests` 触发全量显性测试用例，如果失败则必须继续修复，直到所有用例都通过。
+9. 修复不能导致已有显性测试用例失败；完成修复后必须调用统一 `argo` MCP tool `runArchitectureTests` 触发全量显性测试用例，如果失败则必须继续修复，直到所有用例都通过。
 10. 测试过程中如果遇到测试环境问题，你[MUST NOT]因为环境问题而跳过测试用例执行，你[MUST]委派一个新的子agent去解决环境问题，解决后再执行测试用例。
 11. Simplicity First
 **Minimum code that solves the problem. Nothing speculative.**

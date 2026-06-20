@@ -25,7 +25,7 @@ Relentlessly scrutinize the requirements, figure out whether the intent architec
 6. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.
 7. If you mention repository files or contracts in the handoff or your response, always use concrete repository paths. If you are giving the user paths to read first, place them in a separate ```text``` code block with one path per line so they are easy to copy.
 8. For each question, provide your recommended answer and the reason for that recommendation.
-9. Do not claim the stage is ready to hand off until both unified `argo` MCP tools `validateSystemArchitecture` and `validateStageHandoff` (with `stage: "intent-to-implementation"`) report `status: "passed"`, or you explicitly explain why either artifact is still blocked.
+9. Do not claim the stage is ready to hand off until both `validateSystemArchitecture` and `validateStageHandoff` (with `stage: "intent-to-implementation"`) succeed via the unified `argo` MCP server, or you explicitly explain why either artifact is still blocked.
 10. [EXTREMELY IMPORTANT] Every acceptance testcase newly created or modified [MUST] be explicitly approved by the humanbeing user before you handoff to the next stage.
 
 ## Repository Reading Order

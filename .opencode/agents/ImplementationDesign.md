@@ -79,7 +79,7 @@ Implementation Design
 13. OVERALL_ARCHITECTURE.md 与 ARCHITECTURE.md 的契约格式必须统一采用共享骨架，但根契约与元素契约承担不同字段职责。根级总入口由 OVERALL_ARCHITECTURE.md 唯一承载；子目录局部契约默认由 ARCHITECTURE.md 承载。ARCHITECTURE.md 可以引用 OVERALL_ARCHITECTURE.md，但不得重复定义根级规则。
 14. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。
 15. 除非用户明确要求，否则本次任务不要直接修改业务功能实现；重点是维护实现架构契约、显性 testcase 入口设计、关键非显性测试冻结与后续编码护栏，而不是直接进入业务编码。
-16. 不要宣称本阶段可交接给 Coding/Repair，除非 `design/KG/ImplementationToCodingHandoff.json` 已写出并且统一 `argo` MCP 工具 `validateStageHandoff` 在 `stage: "implementation-to-coding"` 参数下返回 `status: "passed"`；若仍未通过，必须明确阻塞点。
+16. 不要宣称本阶段可交接给 Coding/Repair，除非 design/KG/ImplementationToCodingHandoff.json 已写出并且统一 `argo` MCP tool `validateStageHandoff`（`stage: "implementation-to-coding"`）返回 `status: "passed"`；若仍未通过，必须明确阻塞点。
 
 ### Required Output
 
@@ -231,7 +231,7 @@ When repository evidence conflicts, resolve it in this order:
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
 - This stage [MUST] generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
-- Before handing off to Coding/Repair, this stage [MUST] produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `schema/ImplementationToCodingHandoff.schema.json`; that artifact must reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.
+- Before handing off to Coding/Repair, this stage [MUST] produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `schema/ImplementationToCodingHandoff.schema.json`; that artifact [MUST] reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.
 - If no contract file exists yet, report that as an architecture gap and create or update the appropriate contract file.
 - At the end of your work, you [MUST] summarize the whole session, extract critical decisions ,facts and solutions of repeated errors from it, and write them into your persistant memory `design/persistant-memory/implementation-design.md`.
 
