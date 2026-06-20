@@ -66,7 +66,7 @@ Inspect at least these dimensions:
 6. When a defect is primarily schema-related, cite the exact property or structural rule that is violated.
 7. When a defect is primarily relationship-related, cite the source element, target element, relationship name, and the semantic reason it is suspicious.
 8. If useful, run the `node .github/validator/script/validateSystemArchitecture.js` for confirmation, but do not stop at validator success; semantic defects still matter even when the JSON is schema-valid.
-9. When the `argo-systemarchitecture` MCP server is available, use it as the authoritative mutation grammar reference for proposed graph changes. Default to dry-run / preview checks and do not write files unless the caller explicitly asks for a repair.
+9. Use the unified `argo` MCP server as the authoritative mutation grammar reference for proposed graph changes. Default to dry-run / preview checks and do not write files unless the caller explicitly asks for a repair.
 
 ## Recommended Procedure
 

@@ -177,7 +177,7 @@ async function handleRequest(request) {
           tools: {},
         },
         serverInfo: {
-          name: 'argo-validator',
+          name: 'argo',
           version: '1.0.0',
         },
       },

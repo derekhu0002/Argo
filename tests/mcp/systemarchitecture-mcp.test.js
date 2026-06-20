@@ -4,33 +4,32 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const sourceGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
-const serverEntrypoints = [
-  '.cursor/tools/systemarchitecture/server.js',
-  '.github/tools/systemarchitecture/server.js',
-  '.opencode/tools/systemarchitecture/server.js',
+const mcpConfigPaths = [
+  '.cursor/mcp.json',
+  '.github/mcp.json',
+  '.opencode/mcp.json',
 ];
-const validatorEntrypoints = [
-  '.cursor/tools/validator/server.js',
-  '.github/tools/validator/server.js',
-  '.opencode/tools/validator/server.js',
-];
+const { callTool } = require('../../scripts/argo-mcp-server.js');
 
 async function main() {
   process.env.ARGO_REPO_ROOT = repoRoot;
 
-  for (const validatorEntrypoint of validatorEntrypoints) {
-    const { callTool } = require(path.join(repoRoot, validatorEntrypoint));
-    await validatesCurrentGraph(callTool, validatorEntrypoint);
-  }
+  validatesUnifiedMcpConfiguration();
+  await validatesCurrentGraph();
 
-  for (const serverEntrypoint of serverEntrypoints) {
-    const { callTool } = require(path.join(repoRoot, serverEntrypoint));
-    const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
-    const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
-    fs.copyFileSync(sourceGraphPath, tempGraphPath);
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  fs.copyFileSync(sourceGraphPath, tempGraphPath);
 
-    await rejectsInvalidRelationshipWithoutWriting(callTool, tempGraphPath, serverEntrypoint);
-    await previewsValidElementMutation(callTool, tempGraphPath, serverEntrypoint);
+  await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
+  await previewsValidElementMutation(tempGraphPath);
+}
+
+function validatesUnifiedMcpConfiguration() {
+  for (const configPath of mcpConfigPaths) {
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, configPath), 'utf8'));
+    assert.deepStrictEqual(Object.keys(config.mcpServers), ['argo'], configPath);
+    assert.deepStrictEqual(config.mcpServers.argo.args, ['${workspaceFolder}/scripts/argo-mcp-server.js'], configPath);
   }
 }
 
@@ -40,7 +39,7 @@ function ensureTempDirectory() {
   return tempDirectory;
 }
 
-async function rejectsInvalidRelationshipWithoutWriting(callTool, tempGraphPath, serverEntrypoint) {
+async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {
   const before = fs.readFileSync(tempGraphPath, 'utf8');
   const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
@@ -65,12 +64,12 @@ async function rejectsInvalidRelationshipWithoutWriting(callTool, tempGraphPath,
   assert.strictEqual(payload.written, false);
   assert(
     payload.errors.some(error => error.includes('violates ArchiMate grammar')),
-    `Expected ArchiMate grammar error from ${serverEntrypoint}, got: ${JSON.stringify(payload.errors)}`,
+    `Expected ArchiMate grammar error, got: ${JSON.stringify(payload.errors)}`,
   );
   assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), before);
 }
 
-async function previewsValidElementMutation(callTool, tempGraphPath, serverEntrypoint) {
+async function previewsValidElementMutation(tempGraphPath) {
   const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
     mutations: [
@@ -87,16 +86,16 @@ async function previewsValidElementMutation(callTool, tempGraphPath, serverEntry
   });
 
   const payload = parseToolPayload(response);
-  assert.deepStrictEqual(payload.errors, [], serverEntrypoint);
+  assert.deepStrictEqual(payload.errors, []);
   assert.strictEqual(payload.status, 'passed');
   assert.strictEqual(payload.written, false);
   assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 1);
 }
 
-async function validatesCurrentGraph(callTool, validatorEntrypoint) {
+async function validatesCurrentGraph() {
   const response = await callTool('validateSystemArchitecture', {});
   const payload = parseToolPayload(response);
-  assert.strictEqual(payload.status, 'passed', validatorEntrypoint);
+  assert.strictEqual(payload.status, 'passed');
 }
 
 function parseToolPayload(response) {

@@ -45,8 +45,8 @@ element_path: .cursor/validator
   frozen_by_stage: implementationdesign
 
 ### Notes
-- Cursor agents invoke these scripts through the `argo-validator` MCP server defined in `.cursor/mcp.json`.
-- MCP entrypoint: `.cursor/tools/validator/server.js`
+- Cursor agents invoke these scripts through the unified `argo` MCP server defined in `.cursor/mcp.json`.
+- MCP entrypoint: `scripts/argo-mcp-server.js`
 - MCP tools:
   - `validateSystemArchitecture`
   - `validateStageHandoff`

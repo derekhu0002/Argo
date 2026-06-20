@@ -8,8 +8,6 @@ permission:
 
 tools:
   skill: true
-  command: true
-  validator: true
 ---
 ### Current stage: Test.
 

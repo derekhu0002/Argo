@@ -3,4 +3,4 @@ description: Run tests with coverage
 agent: Test
 ---
 
-Run the `argo_test` command to execute the full test suite with coverage reporting. This will help identify any failing tests and provide insights into code coverage. Focus on addressing any test failures and improving coverage as needed.
+Call the unified `argo` MCP tool `runArchitectureTests` to execute explicit architecture-linked testcases and refresh failure records. Focus on addressing any failing acceptance entries reported by the MCP result.

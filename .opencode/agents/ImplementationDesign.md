@@ -8,8 +8,6 @@ permission:
 
 tools:
   skill: true
-  argo: true
-  validator: true
 ---
 
 ### Current Stage
@@ -60,7 +58,7 @@ Implementation Design
 5. 对于意图架构中的显性 testcase，你除了建立追溯关系外，还必须为每条需要落地的显性 testcase 明确其单一测试入口如何物理化，使后续编码阶段可以“直接调用而不修改”。若仓库中尚不存在该入口，本阶段应负责设计并产出对应入口文件或明确其只读落点，而不是把这项责任下推给编码阶段。
 6. 本阶段对显性 testcase 的最低交付标准[MUST]是“关键断言已落地并可执行”：至少要把核心断言口径、断言对象、控制点与观测点写入可运行入口，并避免只做空壳脚手架。对于新增或修改的显性 testcase [MUST]经过人类用户批准通过才算完成。
 7. 本阶段内严禁修改 [STRICTLY FORBIDDEN] `design/KG/SystemArchitecture.json`，且本阶段结束前，`design/KG/SystemArchitecture.json` 中每条已物理化显性 testcase 的 acceptanceCriteria 都必须改写为具体的工作区相对测试入口字符串，必要时可附带 pytest `::` selector；不得继续保留 Observation point 一类描述性语言。控制点、观测点与验收边界应保留在 testcase 其它字段、实现架构契约和 handoff 中。
-7a. If an intent graph change is required, report it as an upstream Intent Design gap. Do not directly edit `design/KG/SystemArchitecture.json` and do not bypass the `argo-systemarchitecture` MCP mutation gateway; only Intent Design may apply approved graph mutations through that gateway.
+7a. If an intent graph change is required, report it as an upstream Intent Design gap. Do not directly edit `design/KG/SystemArchitecture.json` and do not bypass the unified `argo` MCP mutation tools; only Intent Design may apply approved graph mutations through that gateway.
 8. 显性 testcase 入口在本阶段完成后应被实际执行校验；若相关业务实现尚未完成，预期结果应是失败且失败原因可读。这类失败不是噪音，而是必须显式写入 `design/KG/ImplementationToCodingHandoff.json` 并交接给后续 /work 阶段的待修复输入，用来驱动 Coding/Repair 完成真实实现，而不是让测试入口虚假通过。
 9. 在 handoff 或最终回复中，只要提到文件、契约、测试入口、夹具或基线，都必须写出具体仓库路径；不要使用“相关文件”“对应契约”“某个 ARCHITECTURE.md”这类模糊表述。若这些路径是给用户读取、检查、执行或交接使用的，请单独放进 ```text 代码块```，并保持一行一个路径，便于直接复制。
 10. 所有测试用例设计都必须显性描述“控制点”和“观测点”。控制点是触发行为的入口、输入、前置布置或执行动作；观测点是被断言的外部可观察输出、状态、产物、日志、错误或副作用。无论是显性 testcase、关键非显性测试还是普通支撑测试，只要缺少控制点或观测点描述，都视为设计不完整，不能算交付完成。
@@ -81,7 +79,7 @@ Implementation Design
 13. OVERALL_ARCHITECTURE.md 与 ARCHITECTURE.md 的契约格式必须统一采用共享骨架，但根契约与元素契约承担不同字段职责。根级总入口由 OVERALL_ARCHITECTURE.md 唯一承载；子目录局部契约默认由 ARCHITECTURE.md 承载。ARCHITECTURE.md 可以引用 OVERALL_ARCHITECTURE.md，但不得重复定义根级规则。
 14. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。
 15. 除非用户明确要求，否则本次任务不要直接修改业务功能实现；重点是维护实现架构契约、显性 testcase 入口设计、关键非显性测试冻结与后续编码护栏，而不是直接进入业务编码。
-16. 不要宣称本阶段可交接给 Coding/Repair，除非 `design/KG/ImplementationToCodingHandoff.json` 已写出并且 validator 工具 `validator_validateStageHandoff` 在 `stage: "implementation-to-coding"` 参数下可以通过；若仍未通过，必须明确阻塞点。在 opencode 中统一使用 validator 工具作为交接校验入口。
+16. 不要宣称本阶段可交接给 Coding/Repair，除非 `design/KG/ImplementationToCodingHandoff.json` 已写出并且统一 `argo` MCP 工具 `validateStageHandoff` 在 `stage: "implementation-to-coding"` 参数下返回 `status: "passed"`；若仍未通过，必须明确阻塞点。
 
 ### Required Output
 

@@ -240,8 +240,8 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `CodingAndReparing` | 编码/修复 | 依据 `ImplementationToCodingHandoff.json` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台 |
 | `ArchimateLanguagistAudit` | 意图设计（审计） | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件 | 全平台 |
 | `BusinessPartner` | 前置/业务 | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，产出含控制点与观测点的验收标准；聚焦业务本身，不进入架构与代码 | Copilot、OpenCode |
-| `Init` | 初始化 | 承接 `/argoinit`，调用 `argo_init` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件） | OpenCode |
-| `Test` | 编码/修复（验收执行） | 承接 `/argotest`，调用 `argo_test` 执行全量显性 testcase 并刷新 `test-failure-records.json`，为编码阶段提供修复队列 | OpenCode |
+| `Init` | 初始化 | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件） | OpenCode |
+| `Test` | 编码/修复（验收执行） | 承接 `/argotest`，调用统一 `argo` MCP tool `runArchitectureTests` 执行全量显性 testcase 并刷新 `test-failure-records.json`，为编码阶段提供修复队列 | OpenCode |
 | `teacher` | 辅助/通用 | 循序渐进的教学伙伴，帮助用户深入理解任意主题并形成共同认知；不承担主交付链路 | 全平台 |
 
 > **Cursor 说明**：Cursor 不支持自定义主 Agent，因此 `Orchestrator` 的角色由 `/orchestrating` Skill 承担（见下表）。

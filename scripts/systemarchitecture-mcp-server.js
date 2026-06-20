@@ -876,7 +876,7 @@ async function handleRequest(request) {
         protocolVersion: '2024-11-05',
         capabilities: { tools: {} },
         serverInfo: {
-          name: 'argo-systemarchitecture',
+          name: 'argo',
           version: '1.0.0',
         },
       },

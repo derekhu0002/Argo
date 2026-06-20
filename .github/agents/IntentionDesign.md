@@ -19,13 +19,13 @@ Relentlessly scrutinize the requirements, figure out whether the intent architec
    If a question can be answered from the repository, inspect the repository instead of asking me.
 
 3. If you create or edit design/KG/SystemArchitecture.json, you must first read `.github/argoschema/SystemArchitecture.schema.json` and keep the JSON strictly schema-compliant: preserve required fields, exact property names, enum values, and additionalProperties:false boundaries; when extra metadata is needed, use schema-approved attributes containers instead of inventing keys.
-3a. Every create, update, or delete operation for `design/KG/SystemArchitecture.json` [MUST] go through the `argo-systemarchitecture` MCP mutation gateway (`previewSystemArchitectureMutation` before `applySystemArchitectureMutation`, or the focused add/update tools). You are [STRICTLY FORBIDDEN] to directly edit the graph JSON for those mutations. Direct file reads remain allowed as evidence gathering only.
-4. After editing design/KG/SystemArchitecture.json, you must run `node .github/validator/script/validateSystemArchitecture.js` and do not treat the graph edit as complete unless that command succeeds or you explicitly report why it is blocked.
-5. Before handing off, produce design/KG/IntentToImplementationHandoff.json and validate it with `"node .github/validator/script/validateStageHandoff.js intent-to-implementation`. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.
+3a. Every create, update, or delete operation for `design/KG/SystemArchitecture.json` [MUST] go through the unified `argo` MCP server mutation tools (`previewSystemArchitectureMutation` before `applySystemArchitectureMutation`, or the focused add/update tools). You are [STRICTLY FORBIDDEN] to directly edit the graph JSON for those mutations. Direct file reads remain allowed as evidence gathering only.
+4. After editing design/KG/SystemArchitecture.json, you must call the unified `argo` MCP tool `validateSystemArchitecture` and do not treat the graph edit as complete unless that tool reports `status: "passed"` or you explicitly report why it is blocked.
+5. Before handing off, produce design/KG/IntentToImplementationHandoff.json and validate it with the unified `argo` MCP tool `validateStageHandoff` using `stage: "intent-to-implementation"`. That file is mandatory and must enumerate the intent elements, explicit testcases, frozen baselines, and required implementation artifacts for the next stage.
 6. Whenever testcase design is discussed, explicitly describe the control point and observation point for each testcase; if either is missing, treat the testcase design as incomplete.
 7. If you mention repository files or contracts in the handoff or your response, always use concrete repository paths. If you are giving the user paths to read first, place them in a separate ```text``` code block with one path per line so they are easy to copy.
 8. For each question, provide your recommended answer and the reason for that recommendation.
-9. Do not claim the stage is ready to hand off until both `node .github/validator/script/validateSystemArchitecture.js` and `"node .github/validator/script/validateStageHandoff.js intent-to-implementation` succeed, or you explicitly explain why either artifact is still blocked.
+9. Do not claim the stage is ready to hand off until both unified `argo` MCP tools `validateSystemArchitecture` and `validateStageHandoff` (with `stage: "intent-to-implementation"`) report `status: "passed"`, or you explicitly explain why either artifact is still blocked.
 10. [EXTREMELY IMPORTANT] Every acceptance testcase newly created or modified [MUST] be explicitly approved by the humanbeing user before you handoff to the next stage.
 
 ## Repository Reading Order
@@ -51,7 +51,7 @@ For `design/KG/SystemArchitecture.json`:
 5. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
 6. Treat `.github/argoschema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
 7. When intent-side metadata does not fit an existing top-level field, prefer the schema-approved `attributes` containers instead of inventing ad hoc keys.
-8. Treat `argo-systemarchitecture` as the intent graph write boundary: preview the mutation, inspect schema/ArchiMate errors, apply only on a clean preview, then run `node .github/validator/script/validateSystemArchitecture.js` as the post-write confirmation.
+8. Treat the unified `argo` MCP server as the intent graph write boundary: preview the mutation, inspect schema/ArchiMate errors, apply only on a clean preview, then run `validateSystemArchitecture` as the post-write confirmation.
 
 ## Architecture Layers
 

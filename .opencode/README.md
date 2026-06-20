@@ -9,7 +9,7 @@ Argo HARNESS 是一套运行在 OpenCode 之上的多 Agent 架构交付工作�
 ```text
 .opencode/agents/          Agent 角色定义与权限边界
 .opencode/skills/          可触发的工作流能力与专项流程
-.opencode/tools/           OpenCode 插件工具：argo、validator
+.opencode/mcp.json         统一 MCP 配置：只注册 `argo` server
 .opencode/validator/script/确定性校验脚本
 .opencode/argoschema/      Argo 知识图谱与交接物 JSON Schema
 .opencode/commands/        /argoinit、/argotest 命令入口
@@ -26,8 +26,8 @@ Argo HARNESS 是一套运行在 OpenCode 之上的多 Agent 架构交付工作�
 | `CodingAndReparing` | 编码/修复执行者 | 根据 `ImplementationToCodingHandoff.json` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直到显性测试通过。 | 禁止修改意图图谱、冻结测试资产和冻结契约；禁止通过测试后门、mock 捷径或业务代码测试分支绕过验收。 |
 | `ArchimateLanguagistAudit` | ArchiMate 语义审计者 | 审计 `SystemArchitecture.json` 的 schema 合规、ArchiMate 元素/关系语义、语言精确性、视图一致性和追踪质量。 | 默认只审计不改文件；语义正确性高于“看起来能跑”。 |
 | `BusinessPartner` | 业务方案拷问者 | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，产出从验收方视角可验证的控制点与观测点。 | 聚焦业务本身，不进入软件架构和代码实现。 |
-| `Init` | 初始化命令 Agent | 承接 `/argoinit`，调用 `argo_init` 初始化 Argo 工作区。 | 主要用于启动准备。 |
-| `Test` | 测试命令 Agent | 承接 `/argotest`，调用 `argo_test` 执行显性 testcase 并刷新失败记录。 | 主要用于验收测试执行。 |
+| `Init` | 初始化命令 Agent | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区。 | 主要用于启动准备。 |
+| `Test` | 测试命令 Agent | 承接 `/argotest`，调用统一 `argo` MCP tool `runArchitectureTests` 执行显性 testcase 并刷新失败记录。 | 主要用于验收测试执行。 |
 | `teacher` | 教学型 Agent | 以循序渐进方式解释复杂主题，帮助形成共同理解。 | 辅助学习，不承担主交付链路。 |
 
 ### `Orchestrator` 硬权限护栏
@@ -55,13 +55,24 @@ Argo HARNESS 是一套运行在 OpenCode 之上的多 Agent 架构交付工作�
 - `distill-agent-rules`：当 Agent 行为偏航时，把一次事故沉淀为可复用规则、约束或 hook 建议。
 - `market-research`：做市场、竞品、投资人或技术趋势研究，并要求事实、推断、建议分离。
 
-## 脚本与工具作为护栏的作用
+## MCP 与脚本作为护栏的作用
 
-### `validator` 工具与脚本
+### 统一 `argo` MCP server
 
-- `.opencode/tools/validator.ts` 将本地校验脚本包装成 OpenCode 工具：
-  - `validator_validateSystemArchitecture`
-  - `validator_validateStageHandoff`
+- 三套分发资产 `.cursor`、`.github`、`.opencode` 都只注册同一个 MCP server：`argo`。
+- `argo` MCP server 由根目录 `scripts/argo-mcp-server.js` 提供，统一暴露：
+  - `initializeWorkspace`
+  - `validateSystemArchitecture`
+  - `validateStageHandoff`
+  - `runArchitectureTests`
+  - `getSystemArchitecture`
+  - `previewSystemArchitectureMutation`
+  - `applySystemArchitectureMutation`
+  - focused graph mutation tools such as `addArchitectureElement` and `addArchitectureRelationship`
+- Agent 不再调用 legacy OpenCode custom tool；所有确定性操作统一走 MCP。
+
+### Validator 脚本
+
 - `.opencode/validator/script/validateSystemArchitecture.js` 校验：
   - `design/KG/SystemArchitecture.json` 是否存在、可解析、符合 schema；
   - 元素类型是否匹配 ArchiMate layer/aspect；
@@ -74,12 +85,7 @@ Argo HARNESS 是一套运行在 OpenCode 之上的多 Agent 架构交付工作�
 
 这些脚本把“阶段完成”从自然语言承诺变成可执行门禁：validator 不通过，就不能宣称可交接。
 
-### `argo` 工具
-
-- `.opencode/tools/argo.ts` 提供：
-  - `argo_init`：初始化工作区，复制 EA 模板，重置阶段交接文件。
-  - `argo_test`：读取 `SystemArchitecture.json` 中的显性 testcase，执行其 `acceptanceCriteria` 指向的脚本入口，并刷新 `design/KG/test-failure-records.json`。
-- `argo_test` 还会拦截不安全或不稳定的验收入口，例如包含命令包装、管道、换行、shell 操作符、非支持扩展名等情况。
+- `runArchitectureTests` 还会拦截不安全或不稳定的验收入口，例如包含命令包装、管道、换行、shell 操作符、非支持扩展名等情况。
 
 其价值是把“验收测试”固定为图谱中的显性 testcase，而不是让编码 Agent 临时选择测试范围；失败记录也成为 Coding/Repair 的唯一修复队列。
 
@@ -99,7 +105,7 @@ Schema 与 validator 共同解决两个问题：一是 Agent 不能随意发明�
 2. **意图设计阶段**
    - 读取持久记忆、`SystemArchitecture.json`、实现契约和必要仓库证据。
    - 判断是否需要更新意图图谱、实现架构或仅需代码修复。
-   - 如果更新图谱，必须遵守 schema 并运行 `validator_validateSystemArchitecture`。
+   - 如果更新图谱，必须通过统一 `argo` MCP mutation tools preview/apply，并运行 `validateSystemArchitecture`。
    - 产出并校验 `design/KG/IntentToImplementationHandoff.json`。
 
 3. **实现设计阶段**
@@ -113,7 +119,7 @@ Schema 与 validator 共同解决两个问题：一是 Agent 不能随意发明�
    - `CodingAndReparing` 读取实现到编码 handoff、失败记录和架构契约。
    - 只修复 handoff 与 `test-failure-records.json` 指向的问题。
    - 不修改冻结测试和架构契约，不通过 mock 或测试后门伪造通过。
-   - 使用 `argo_test` 执行全量显性 testcase，直到全部通过。
+   - 使用统一 `argo` MCP tool `runArchitectureTests` 执行全量显性 testcase，直到全部通过。
 
 5. **双层验收与返工闭环**
    - 编码完成后，`ImplementationDesign` 审计编码交付是否满足实现架构契约。
@@ -150,16 +156,16 @@ Schema 与 validator 共同解决两个问题：一是 Agent 不能随意发明�
    - 两级 handoff JSON 和持久记忆文件把阶段输出结构化落盘，validator 再确保交接物包含下一阶段必需信息。
 
 6. **验收入口不稳定、不安全或不可执行**
-   - `argo_test` 和 handoff validator 要求 `acceptanceCriteria` 是单一工作区相对入口，避免 shell 包装、描述性文本和不可复现命令。
+   - `runArchitectureTests` 和 handoff validator 要求 `acceptanceCriteria` 是单一工作区相对入口，避免 shell 包装、描述性文本和不可复现命令。
 
 7. **架构语义被自然语言误读**
    - `ArchimateLanguagistAudit` 与 SystemArchitecture validator 同时关注 schema 和 ArchiMate 语义，防止元素类型、关系方向、视图表达被随意解释。
 
 ## 推荐使用方式
 
-- 初始化：使用 `/argoinit` 或 `argo_init`。
+- 初始化：使用 `/argoinit`，由命令 Agent 调用统一 `argo` MCP tool `initializeWorkspace`。
 - 浏览架构：使用 `arch-viewer` skill。
 - 新需求/缺陷：交给 `Orchestrator`，由其从 `IntentionDesign` 开始调度。
-- 阶段交接：确保对应 handoff JSON 通过 `validator_validateStageHandoff`。
-- 编码验收：使用 `argo_test` 执行显性 testcase，并以 `test-failure-records.json` 作为修复队列。
+- 阶段交接：确保对应 handoff JSON 通过统一 `argo` MCP tool `validateStageHandoff`。
+- 编码验收：使用统一 `argo` MCP tool `runArchitectureTests` 执行显性 testcase，并以 `test-failure-records.json` 作为修复队列。
 - OpenCode 配置、Agent、Skill 或插件变更后，需要重启 OpenCode，运行中的会话不会热加载这些配置。

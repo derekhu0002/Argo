@@ -10,4 +10,4 @@ If a question can be answered by exploring the codebase, explore the codebase in
 
 For each question, provide your recommended answer.
 
-Do not directly edit `design/KG/SystemArchitecture.json`. If the interview reaches an approved intent graph change, hand it to Intent Design as a structured mutation request; Intent Design must preview and apply it through the `argo-systemarchitecture` MCP mutation gateway.
+Do not directly edit `design/KG/SystemArchitecture.json`. If the interview reaches an approved intent graph change, hand it to Intent Design as a structured mutation request; Intent Design must preview and apply it through the unified `argo` MCP mutation tools.
