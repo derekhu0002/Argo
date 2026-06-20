@@ -170,6 +170,7 @@ function applyRootMetadata(pkg, graph) {
     var pkgElement = pkg.Element;
     if (pkgElement != null) {
       putTag(pkgElement.TaggedValues, 'schema_root_name', graph.name);
+      putTag(pkgElement.TaggedValues, 'schema_root_description', safeString(graph.description));
       putJsonTag(pkgElement.TaggedValues, 'schema_root_attributes_json', graph.attributes || []);
       pkgElement.Update();
       pkgElement.TaggedValues.Refresh();
@@ -911,7 +912,6 @@ function displayArchimateName(normalized) {
     case 'Gap':
     case 'Grouping':
     case 'Location':
-    case 'Junction':
     case 'Association':
     case 'Composition':
     case 'Aggregation':
@@ -997,7 +997,6 @@ function isSchemaElementType(value) {
     case 'Gap':
     case 'Grouping':
     case 'Location':
-    case 'Junction':
     case 'And Junction':
     case 'Or Junction':
       return true;

@@ -55,6 +55,53 @@ function stripWrappedQuotes(s) {
 	return v;
 }
 
+function getTaggedValueText(tagCollection, tagName) {
+	if (tagCollection == null || tagName == null || tagName == "") {
+		return "";
+	}
+	try {
+		var tag = tagCollection.GetByName(tagName);
+		if (tag == null) {
+			return "";
+		}
+		if (tag.Value == "<memo>" && tag.Notes != "") {
+			return "" + tag.Notes;
+		}
+		if (tag.Value != "") {
+			return "" + tag.Value;
+		}
+		return "" + tag.Notes;
+	} catch (e) {
+		return "";
+	}
+}
+
+function getElementTag(ele, tagName) {
+	if (ele == null) {
+		return "";
+	}
+	return getTaggedValueText(ele.TaggedValues, tagName);
+}
+
+function getConnectorTag(conn, tagName) {
+	if (conn == null) {
+		return "";
+	}
+	return getTaggedValueText(conn.TaggedValues, tagName);
+}
+
+function getStyleToken(styleText, key) {
+	if (styleText == null || key == null || key == "") {
+		return "";
+	}
+	var pattern = new RegExp("(?:^|;)" + key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)", "i");
+	var match = ("" + styleText).match(pattern);
+	if (match && match.length > 1) {
+		return match[1];
+	}
+	return "";
+}
+
 function resolveModelFilePathFromConnectionString() {
 	var conn = "";
 	try {
@@ -348,7 +395,6 @@ function displayArchimateName(normalized) {
 		case "Gap":
 		case "Grouping":
 		case "Location":
-		case "Junction":
 		case "Association":
 		case "Composition":
 		case "Aggregation":
@@ -459,7 +505,6 @@ function isSchemaElementType(value) {
 		case "Gap":
 		case "Grouping":
 		case "Location":
-		case "Junction":
 		case "And Junction":
 		case "Or Junction":
 			return true;
@@ -643,6 +688,10 @@ function getElementIdentifier(ele) {
 	if (ele == null) {
 		return "";
 	}
+	var schemaId = getElementTag(ele, "schema_id");
+	if (schemaId != "") {
+		return schemaId;
+	}
 	if (typeof ele.ElementID != "undefined" && ele.ElementID != null && ele.ElementID != "") {
 		return "" + ele.ElementID;
 	}
@@ -673,6 +722,10 @@ function getConnectorIdentifier(conn) {
 	if (conn == null) {
 		return "";
 	}
+	var schemaId = getConnectorTag(conn, "schema_id");
+	if (schemaId != "") {
+		return schemaId;
+	}
 	if (typeof conn.ConnectorID != "undefined" && conn.ConnectorID != null && conn.ConnectorID != "") {
 		return "" + conn.ConnectorID;
 	}
@@ -682,6 +735,10 @@ function getConnectorIdentifier(conn) {
 function getDiagramIdentifier(diagram) {
 	if (diagram == null) {
 		return "";
+	}
+	var schemaId = getStyleToken(diagram.StyleEx, "schema_view_id");
+	if (schemaId != "") {
+		return schemaId;
 	}
 	if (typeof diagram.DiagramID != "undefined" && diagram.DiagramID != null && diagram.DiagramID != "") {
 		return "" + diagram.DiagramID;
@@ -868,15 +925,25 @@ function extractFromDiagram(currentDiagram) {
 			// START Refactoring Node JSON
 			var finalnodetype = '{\n"id": "' + jsonEscape(id) + '",\n';
 			finalnodetype += '"name": "' + jsonEscape(ele.Name) + '"\n';
-			if (ele.ParentID != 0) {
-				finalnodetype += ',"parent": "' + jsonEscape(ele.ParentID) + '"\n';
+			var schemaParent = getElementTag(ele, "schema_parent");
+			if (schemaParent != "") {
+				finalnodetype += ',"parent": "' + jsonEscape(schemaParent) + '"\n';
+			} else if (ele.ParentID != 0) {
+				var parentEle = Repository.GetElementByID(ele.ParentID);
+				finalnodetype += ',"parent": "' + jsonEscape(getElementIdentifier(parentEle)) + '"\n';
 			}
 
-			if (ele.Alias != "") {
+			var schemaAlias = getElementTag(ele, "schema_alias");
+			if (schemaAlias != "") {
+				finalnodetype += ',"alias": "' + jsonEscape(schemaAlias) + '"\n';
+			} else if (getElementTag(ele, "schema_id") == "" && ele.Alias != "") {
 				finalnodetype += ',"alias": "' + jsonEscape(ele.Alias) + '"\n';
 			}
 			
-			if (ele.ClassifierName != "") {
+			var schemaClassifier = getElementTag(ele, "schema_classifier");
+			if (schemaClassifier != "") {
+				finalnodetype += ',"classifier": "' + jsonEscape(schemaClassifier) + '"\n';
+			} else if (ele.ClassifierName != "") {
 				finalnodetype += ',"classifier": "' + jsonEscape(ele.ClassifierName) + '"\n';
 			}
 			
@@ -980,15 +1047,31 @@ function extractFromDiagram(currentDiagram) {
 			if (relType == "") {
 				relType = conn.Type;
 			}
+			var schemaRelationshipType = getConnectorTag(conn, "archimate_relationship_type");
+			if (schemaRelationshipType != "") {
+				relType = schemaRelationshipType;
+			}
 			relType = canonicalRelationshipType(relType, conn.StereotypeEx != "" ? conn.StereotypeEx : conn.Type);
 			
-			var statement = jsonEscape(source.Name) + " --(" + jsonEscape(relType) + ")--> " + jsonEscape(target.Name);
+			var sourceSchemaName = getConnectorTag(conn, "source_name");
+			var targetSchemaName = getConnectorTag(conn, "target_name");
+			if (sourceSchemaName == "") {
+				sourceSchemaName = source.Name;
+			}
+			if (targetSchemaName == "") {
+				targetSchemaName = target.Name;
+			}
+			var statement = getConnectorTag(conn, "schema_statement");
+			if (statement == "") {
+				statement = sourceSchemaName + " --(" + relType + ")--> " + targetSchemaName;
+			}
 			var relatointypejss = '{\n"id":"' + jsonEscape(connId) + '"\n';
-			relatointypejss += ',"statement":"' + statement + '"\n';
+			relatointypejss += ',"statement":"' + jsonEscape(statement) + '"\n';
 			relatointypejss += ',"name":"' + jsonEscape(relType) + '"\n';
 			
 			var relationAttributesJsonStrings = [];
 			var connassnotes = "";
+			var relationDocumentWritten = false;
 
 			if (conn.AssociationClass != null) {
 				var assclass as EA.Element;
@@ -1005,6 +1088,7 @@ function extractFromDiagram(currentDiagram) {
 					
 					if (savedFileName != "") {
 						relatointypejss += ',"document": "pdfs/' + jsonEscape(savedFileName) + '"\n';
+						relationDocumentWritten = true;
 					}
 				}
 				var relAttrs as EA.Collection;
@@ -1030,17 +1114,26 @@ function extractFromDiagram(currentDiagram) {
 			if (connassnotes != "") {
 				relatointypejss += ',"description": "' + jsonEscape(connassnotes) + '"\n';
 			}
+			var schemaDocument = getConnectorTag(conn, "document");
+			if (schemaDocument != "" && !relationDocumentWritten) {
+				relatointypejss += ',"document": "' + jsonEscape(schemaDocument) + '"\n';
+			}
 			
 			var relattrsss = relationAttributesJsonStrings.join(',\n');
 			if (relattrsss != "") {
 				relatointypejss += ',"attributes": [\n' + relattrsss + '\n]\n';
+			} else {
+				var schemaRelationshipAttributesJson = getConnectorTag(conn, "relationship_attributes_json");
+				if (schemaRelationshipAttributesJson != "" && schemaRelationshipAttributesJson != "[]") {
+					relatointypejss += ',"attributes": ' + schemaRelationshipAttributesJson + '\n';
+				}
 			}
 			
 			relatointypejss += 
 				',"source_id":"' + jsonEscape(getElementIdentifier(source)) + '"\n' +
 				',"target_id":"' + jsonEscape(getElementIdentifier(target)) + '"\n' + 
-				',"source_name":"' + jsonEscape(source.Name) + '"\n' +
-				',"target_name":"' + jsonEscape(target.Name) + '"\n' + 
+				',"source_name":"' + jsonEscape(sourceSchemaName) + '"\n' +
+				',"target_name":"' + jsonEscape(targetSchemaName) + '"\n' + 
 				'}';
 			globalRelationships[connId] = relatointypejss;
 		}
@@ -1055,8 +1148,16 @@ function extractFromDiagram(currentDiagram) {
 		var parentElement as EA.Element;
 		parentElement = Repository.GetElementByID(currentDiagram.ParentID);
 		if (parentElement != null) {
-			viewJson += ',"parent_element_id": "' + jsonEscape(getElementIdentifier(parentElement)) + '"\n';
-			viewJson += ',"parent_element_name": "' + jsonEscape(parentElement.Name) + '"\n';
+			var schemaParentElementId = getStyleToken(currentDiagram.StyleEx, "schema_parent_element_id");
+			var schemaParentElementName = getStyleToken(currentDiagram.StyleEx, "schema_parent_element_name");
+			if (schemaParentElementId == "") {
+				schemaParentElementId = getElementIdentifier(parentElement);
+			}
+			if (schemaParentElementName == "") {
+				schemaParentElementName = parentElement.Name;
+			}
+			viewJson += ',"parent_element_id": "' + jsonEscape(schemaParentElementId) + '"\n';
+			viewJson += ',"parent_element_name": "' + jsonEscape(schemaParentElementName) + '"\n';
 		}
 	}
 	
@@ -1177,8 +1278,26 @@ function main() {
 	var finalJsonString = '{\n';
 	
 	if (ppele == null) {
-		finalJsonString += '"name": "' + jsonEscape(ppkg.Name) + '",\n';
-		finalJsonString += '"description": "' + jsonEscape(safeSchemaString(ppkg.Notes, "Exported from EA package " + ppkg.Name)) + '",\n';
+		var packageElement = null;
+		try {
+			packageElement = ppkg.Element;
+		} catch (ignore) {
+			packageElement = null;
+		}
+		var rootName = packageElement != null ? getElementTag(packageElement, "schema_root_name") : "";
+		var rootDescription = packageElement != null ? getElementTag(packageElement, "schema_root_description") : "";
+		if (rootName == "") {
+			rootName = ppkg.Name;
+		}
+		if (rootDescription == "") {
+			rootDescription = safeSchemaString(ppkg.Notes, "Exported from EA package " + ppkg.Name);
+		}
+		finalJsonString += '"name": "' + jsonEscape(rootName) + '",\n';
+		finalJsonString += '"description": "' + jsonEscape(rootDescription) + '",\n';
+		var rootAttributesJson = packageElement != null ? getElementTag(packageElement, "schema_root_attributes_json") : "";
+		if (rootAttributesJson != "" && rootAttributesJson != "[]") {
+			finalJsonString += '"attributes": ' + rootAttributesJson + ',\n';
+		}
 	} else {
 		finalJsonString += '"name": "' + jsonEscape(ppele.Name) + '",\n';
 		finalJsonString += '"description": "' + jsonEscape(safeSchemaString(ppele.Notes, "Exported from EA element " + ppele.Name)) + '",\n';
