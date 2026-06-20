@@ -27,8 +27,11 @@ async function main() {
   await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
-  await rejectsUpdateAndRemoveWithoutViewScope(tempGraphPath);
+  await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
+  await rejectsRemoveWithoutViewScope(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
+  await appliesExistingElementToAdditionalView(tempGraphPath);
+  await appliesExistingRelationshipToAdditionalView(tempGraphPath);
   await previewsViewLifecycleMutations(tempGraphPath);
   await rejectsSubviewWithoutParentElement(tempGraphPath);
 }
@@ -134,6 +137,56 @@ async function previewsValidElementMutation(tempGraphPath) {
   assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 1);
 }
 
+async function appliesExistingElementToAdditionalView(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['237'],
+        element: {
+          id: '1798',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.elementCount, payload.before.elementCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
+  assert(topLevelView.included_elements.includes('1798'));
+}
+
+async function appliesExistingRelationshipToAdditionalView(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237'],
+        relationship: {
+          id: '1726',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
+  assert(topLevelView.included_relationships.includes('1726'));
+}
+
 async function rejectsElementMutationWithoutViewScope(tempGraphPath) {
   const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
@@ -185,11 +238,37 @@ async function rejectsRelationshipMutationWithoutViewScope(tempGraphPath) {
   );
 }
 
-async function rejectsUpdateAndRemoveWithoutViewScope(tempGraphPath) {
+async function previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'updateElement',
+        id: '1798',
+        patch: {
+          description: 'Updated globally without a view scope.',
+        },
+      },
+      {
+        type: 'updateRelationship',
+        id: '1726',
+        patch: {
+          source_name: 'IntentionDesign',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, false);
+  assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['updateElement', 'updateRelationship']);
+}
+
+async function rejectsRemoveWithoutViewScope(tempGraphPath) {
   const mutationCases = [
-    { type: 'updateElement', id: '1798', patch: { description: 'Missing view scope.' } },
     { type: 'removeElement', id: '1798' },
-    { type: 'updateRelationship', id: '1726', patch: { source_name: 'IntentionDesign' } },
     { type: 'removeRelationship', id: '1726' },
   ];
 

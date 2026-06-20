@@ -165,11 +165,10 @@ const TOOLS = [
     description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch', 'view_ids'],
+      required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
-        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -194,11 +193,10 @@ const TOOLS = [
     description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch', 'view_ids'],
+      required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
-        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -354,30 +352,34 @@ function applyMutations(document, mutations) {
     if (mutation.type === 'addElement') {
       requireObject(mutation.element, 'mutation.element');
       const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
-      if (findById(nextDocument.elements, mutation.element.id)) {
-        throw new Error(`Element '${mutation.element.id}' already exists`);
+      requireId(mutation.element.id, 'mutation.element.id');
+      const existingElement = findById(nextDocument.elements, mutation.element.id);
+      if (!existingElement) {
+        nextDocument.elements.push(clone(mutation.element));
       }
-      nextDocument.elements.push(clone(mutation.element));
       for (const view of scopedViews) {
         view.included_elements = addUnique(view.included_elements || [], [mutation.element.id]);
       }
       touchedElementIds.add(mutation.element.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.element.id, view_ids: mutation.view_ids });
+      mutationSummaries.push({
+        type: mutation.type,
+        id: mutation.element.id,
+        view_ids: mutation.view_ids,
+        created: !existingElement,
+      });
       continue;
     }
 
     if (mutation.type === 'updateElement') {
       requireId(mutation.id, 'mutation.id');
       requireObject(mutation.patch, 'mutation.patch');
-      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const element = findById(nextDocument.elements, mutation.id);
       if (!element) {
         throw new Error(`Element '${mutation.id}' does not exist`);
       }
-      requireElementInViews(mutation.id, scopedViews);
       Object.assign(element, clone(mutation.patch));
       touchedElementIds.add(element.id);
-      mutationSummaries.push({ type: mutation.type, id: element.id, view_ids: mutation.view_ids });
+      mutationSummaries.push({ type: mutation.type, id: element.id });
       continue;
     }
 
@@ -400,30 +402,34 @@ function applyMutations(document, mutations) {
     if (mutation.type === 'addRelationship') {
       requireObject(mutation.relationship, 'mutation.relationship');
       const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
-      if (findById(nextDocument.relationships, mutation.relationship.id)) {
-        throw new Error(`Relationship '${mutation.relationship.id}' already exists`);
+      requireId(mutation.relationship.id, 'mutation.relationship.id');
+      const existingRelationship = findById(nextDocument.relationships, mutation.relationship.id);
+      if (!existingRelationship) {
+        nextDocument.relationships.push(clone(mutation.relationship));
       }
-      nextDocument.relationships.push(clone(mutation.relationship));
       for (const view of scopedViews) {
         view.included_relationships = addUnique(view.included_relationships || [], [mutation.relationship.id]);
       }
       touchedRelationshipIds.add(mutation.relationship.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.relationship.id, view_ids: mutation.view_ids });
+      mutationSummaries.push({
+        type: mutation.type,
+        id: mutation.relationship.id,
+        view_ids: mutation.view_ids,
+        created: !existingRelationship,
+      });
       continue;
     }
 
     if (mutation.type === 'updateRelationship') {
       requireId(mutation.id, 'mutation.id');
       requireObject(mutation.patch, 'mutation.patch');
-      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const relationship = findById(nextDocument.relationships, mutation.id);
       if (!relationship) {
         throw new Error(`Relationship '${mutation.id}' does not exist`);
       }
-      requireRelationshipInViews(mutation.id, scopedViews);
       Object.assign(relationship, clone(mutation.patch));
       touchedRelationshipIds.add(relationship.id);
-      mutationSummaries.push({ type: mutation.type, id: relationship.id, view_ids: mutation.view_ids });
+      mutationSummaries.push({ type: mutation.type, id: relationship.id });
       continue;
     }
 
@@ -988,7 +994,7 @@ async function callTool(name, args = {}) {
 
   if (name === 'updateArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], true));
   }
 
   if (name === 'addArchitectureRelationship') {
@@ -998,7 +1004,7 @@ async function callTool(name, args = {}) {
 
   if (name === 'updateArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], true));
   }
 
   if (name === 'addArchitectureView') {

@@ -128,11 +128,10 @@ const TOOLS = [
     description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch', 'view_ids'],
+      required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
-        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
@@ -157,11 +156,10 @@ const TOOLS = [
     description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch', 'view_ids'],
+      required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
-        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
