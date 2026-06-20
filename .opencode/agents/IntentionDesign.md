@@ -10,6 +10,7 @@ tools:
   skill: true
   argo: true
   validator: true
+  systemarchitecture: true
 ---
 ### Current stage: Intent Design.
 

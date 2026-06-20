@@ -10,6 +10,7 @@ tools:
   validator: true
   argo: true
   skill: true
+  systemarchitecture: true
 ---
 
 

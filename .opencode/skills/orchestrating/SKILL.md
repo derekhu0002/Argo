@@ -20,6 +20,8 @@ When the @ImplementationDesign subagent has done the audit, you [MUST] ask @Inte
 
 The design of the acceptance testcases of @ImplementationDesign subagent [MUST] be audited by @IntentionDesign subagent before the handoff to @CodingAndReparing subagent.
 
+Any approved mutation to `design/KG/SystemArchitecture.json` [MUST] be performed by @IntentionDesign through the `argo-systemarchitecture` MCP mutation gateway. You [MUST] reject or reroute any subagent output that directly edits the intent graph JSON or lacks a successful `previewSystemArchitectureMutation` / `applySystemArchitectureMutation` and `validator_validateSystemArchitecture` result.
+
 If any audit fails, you [MUST] ask the corresponding subagent to fix the problem until the audit passes.
 
 If any subagent returns empty result or not complete result, you [MUST] restart the [SAME] task with **the same task id of the previous one** again to continue that session.
