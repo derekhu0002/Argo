@@ -17,8 +17,6 @@ const HANDLED_MUTATION_TYPES = new Set([
   'addView',
   'updateView',
   'removeView',
-  'addViewMembership',
-  'removeViewMembership',
 ]);
 
 const elementTypeMetadata = new Map([
@@ -153,9 +151,10 @@ const TOOLS = [
     description: 'Add one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['element'],
+      required: ['element', 'view_ids'],
       properties: {
         element: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -166,10 +165,11 @@ const TOOLS = [
     description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch'],
+      required: ['id', 'patch', 'view_ids'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -180,9 +180,10 @@ const TOOLS = [
     description: 'Add one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['relationship'],
+      required: ['relationship', 'view_ids'],
       properties: {
         relationship: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -193,10 +194,11 @@ const TOOLS = [
     description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch'],
+      required: ['id', 'patch', 'view_ids'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -242,36 +244,6 @@ const TOOLS = [
       additionalProperties: false,
     },
   },
-  {
-    name: 'addViewMembership',
-    description: 'Add element or relationship ids to an existing view after reference checks pass.',
-    inputSchema: {
-      type: 'object',
-      required: ['view_id'],
-      properties: {
-        view_id: { type: 'string' },
-        element_ids: { type: 'array', items: { type: 'string' } },
-        relationship_ids: { type: 'array', items: { type: 'string' } },
-        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'removeViewMembership',
-    description: 'Remove element or relationship ids from an existing view after reference checks pass.',
-    inputSchema: {
-      type: 'object',
-      required: ['view_id'],
-      properties: {
-        view_id: { type: 'string' },
-        element_ids: { type: 'array', items: { type: 'string' } },
-        relationship_ids: { type: 'array', items: { type: 'string' } },
-        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
-      },
-      additionalProperties: false,
-    },
-  },
 ];
 
 function mutationInputSchema() {
@@ -294,6 +266,7 @@ function mutationInputSchema() {
             id: { type: 'string' },
             patch: { type: 'object' },
             view_id: { type: 'string' },
+            view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
             element_ids: { type: 'array', items: { type: 'string' } },
             relationship_ids: { type: 'array', items: { type: 'string' } },
           },
@@ -380,73 +353,93 @@ function applyMutations(document, mutations) {
 
     if (mutation.type === 'addElement') {
       requireObject(mutation.element, 'mutation.element');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       if (findById(nextDocument.elements, mutation.element.id)) {
         throw new Error(`Element '${mutation.element.id}' already exists`);
       }
       nextDocument.elements.push(clone(mutation.element));
+      for (const view of scopedViews) {
+        view.included_elements = addUnique(view.included_elements || [], [mutation.element.id]);
+      }
       touchedElementIds.add(mutation.element.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.element.id });
+      mutationSummaries.push({ type: mutation.type, id: mutation.element.id, view_ids: mutation.view_ids });
       continue;
     }
 
     if (mutation.type === 'updateElement') {
       requireId(mutation.id, 'mutation.id');
       requireObject(mutation.patch, 'mutation.patch');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const element = findById(nextDocument.elements, mutation.id);
       if (!element) {
         throw new Error(`Element '${mutation.id}' does not exist`);
       }
+      requireElementInViews(mutation.id, scopedViews);
       Object.assign(element, clone(mutation.patch));
       touchedElementIds.add(element.id);
-      mutationSummaries.push({ type: mutation.type, id: element.id });
+      mutationSummaries.push({ type: mutation.type, id: element.id, view_ids: mutation.view_ids });
       continue;
     }
 
     if (mutation.type === 'removeElement') {
       requireId(mutation.id, 'mutation.id');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const beforeCount = nextDocument.elements.length;
       nextDocument.elements = nextDocument.elements.filter(element => element.id !== mutation.id);
       if (nextDocument.elements.length === beforeCount) {
         throw new Error(`Element '${mutation.id}' does not exist`);
       }
+      for (const view of scopedViews) {
+        view.included_elements = removeEntries(view.included_elements || [], [mutation.id]);
+      }
       touchedElementIds.add(mutation.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.id });
+      mutationSummaries.push({ type: mutation.type, id: mutation.id, view_ids: mutation.view_ids });
       continue;
     }
 
     if (mutation.type === 'addRelationship') {
       requireObject(mutation.relationship, 'mutation.relationship');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       if (findById(nextDocument.relationships, mutation.relationship.id)) {
         throw new Error(`Relationship '${mutation.relationship.id}' already exists`);
       }
       nextDocument.relationships.push(clone(mutation.relationship));
+      for (const view of scopedViews) {
+        view.included_relationships = addUnique(view.included_relationships || [], [mutation.relationship.id]);
+      }
       touchedRelationshipIds.add(mutation.relationship.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.relationship.id });
+      mutationSummaries.push({ type: mutation.type, id: mutation.relationship.id, view_ids: mutation.view_ids });
       continue;
     }
 
     if (mutation.type === 'updateRelationship') {
       requireId(mutation.id, 'mutation.id');
       requireObject(mutation.patch, 'mutation.patch');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const relationship = findById(nextDocument.relationships, mutation.id);
       if (!relationship) {
         throw new Error(`Relationship '${mutation.id}' does not exist`);
       }
+      requireRelationshipInViews(mutation.id, scopedViews);
       Object.assign(relationship, clone(mutation.patch));
       touchedRelationshipIds.add(relationship.id);
-      mutationSummaries.push({ type: mutation.type, id: relationship.id });
+      mutationSummaries.push({ type: mutation.type, id: relationship.id, view_ids: mutation.view_ids });
       continue;
     }
 
     if (mutation.type === 'removeRelationship') {
       requireId(mutation.id, 'mutation.id');
+      const scopedViews = requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       const beforeCount = nextDocument.relationships.length;
       nextDocument.relationships = nextDocument.relationships.filter(relationship => relationship.id !== mutation.id);
       if (nextDocument.relationships.length === beforeCount) {
         throw new Error(`Relationship '${mutation.id}' does not exist`);
       }
+      for (const view of scopedViews) {
+        view.included_relationships = removeEntries(view.included_relationships || [], [mutation.id]);
+      }
       touchedRelationshipIds.add(mutation.id);
-      mutationSummaries.push({ type: mutation.type, id: mutation.id });
+      mutationSummaries.push({ type: mutation.type, id: mutation.id, view_ids: mutation.view_ids });
       continue;
     }
 
@@ -483,37 +476,6 @@ function applyMutations(document, mutations) {
       continue;
     }
 
-    if (mutation.type === 'addViewMembership') {
-      requireId(mutation.view_id, 'mutation.view_id');
-      const view = findView(nextDocument.views, mutation.view_id);
-      if (!view) {
-        throw new Error(`View '${mutation.view_id}' does not exist`);
-      }
-      view.included_elements = addUnique(view.included_elements || [], mutation.element_ids || []);
-      view.included_relationships = addUnique(view.included_relationships || [], mutation.relationship_ids || []);
-      mutationSummaries.push({
-        type: mutation.type,
-        id: mutation.view_id,
-        element_ids: mutation.element_ids || [],
-        relationship_ids: mutation.relationship_ids || [],
-      });
-    }
-
-    if (mutation.type === 'removeViewMembership') {
-      requireId(mutation.view_id, 'mutation.view_id');
-      const view = findView(nextDocument.views, mutation.view_id);
-      if (!view) {
-        throw new Error(`View '${mutation.view_id}' does not exist`);
-      }
-      view.included_elements = removeEntries(view.included_elements || [], mutation.element_ids || []);
-      view.included_relationships = removeEntries(view.included_relationships || [], mutation.relationship_ids || []);
-      mutationSummaries.push({
-        type: mutation.type,
-        id: mutation.view_id,
-        element_ids: mutation.element_ids || [],
-        relationship_ids: mutation.relationship_ids || [],
-      });
-    }
   }
 
   return {
@@ -533,6 +495,44 @@ function requireObject(value, label) {
 function requireId(value, label) {
   if (typeof value !== 'string' || value.length === 0) {
     throw new Error(`${label} must be a non-empty string`);
+  }
+}
+
+function requireViewScope(views, viewIds, label) {
+  if (!Array.isArray(viewIds) || viewIds.length === 0) {
+    throw new Error(`${label} must contain at least one view id`);
+  }
+
+  const scopedViews = [];
+  const seenViewIds = new Set();
+  for (const viewId of viewIds) {
+    requireId(viewId, `${label}[]`);
+    if (seenViewIds.has(viewId)) {
+      continue;
+    }
+    const view = findView(views, viewId);
+    if (!view) {
+      throw new Error(`View '${viewId}' does not exist`);
+    }
+    scopedViews.push(view);
+    seenViewIds.add(viewId);
+  }
+  return scopedViews;
+}
+
+function requireElementInViews(elementId, views) {
+  for (const view of views) {
+    if (!Array.isArray(view.included_elements) || !view.included_elements.includes(elementId)) {
+      throw new Error(`Element '${elementId}' is not included in view '${view.view_id}'`);
+    }
+  }
+}
+
+function requireRelationshipInViews(relationshipId, views) {
+  for (const view of views) {
+    if (!Array.isArray(view.included_relationships) || !view.included_relationships.includes(relationshipId)) {
+      throw new Error(`Relationship '${relationshipId}' is not included in view '${view.view_id}'`);
+    }
   }
 }
 
@@ -561,7 +561,23 @@ function removeEntries(existing, removals) {
 
 function buildMutationResult(context, mutations, write) {
   const beforeSummary = summarizeDocument(context.document);
-  const mutationResult = applyMutations(context.document, mutations);
+  let mutationResult;
+  try {
+    mutationResult = applyMutations(context.document, mutations);
+  } catch (error) {
+    return {
+      status: 'failed',
+      written: false,
+      graphPath: context.graphPath.relativePath,
+      schemaPath: context.schemaPath.relativePath,
+      mutations: [],
+      touchedElementIds: [],
+      touchedRelationshipIds: [],
+      before: beforeSummary,
+      after: beforeSummary,
+      errors: [String(error && error.message ? error.message : error)],
+    };
+  }
   const errors = validateDocument(mutationResult.document, context.schema, {
     touchedRelationshipIds: mutationResult.touchedRelationshipIds,
   });
@@ -671,9 +687,21 @@ function validateGraphSemantics(document, errors) {
     }
   }
 
+  const topLevelViews = views.filter(view => view && typeof view === 'object' && !view.parent_element_id);
+  if (topLevelViews.length !== 1) {
+    errors.push(`views must contain exactly one top-level view named 'SystemArchitecture'; found ${topLevelViews.length}`);
+  } else if (topLevelViews[0].view_name !== 'SystemArchitecture') {
+    errors.push(`top-level view '${topLevelViews[0].view_id}' view_name must be 'SystemArchitecture'`);
+  }
+
+  const elementIdsIncludedInViews = new Set();
+  const relationshipIdsIncludedInViews = new Set();
   for (const view of views) {
     if (!view || typeof view !== 'object') {
       continue;
+    }
+    if (!view.parent_element_id && view.view_name !== 'SystemArchitecture') {
+      errors.push(`views '${view.view_id}' must declare parent_element_id unless it is the top-level SystemArchitecture view`);
     }
     if (view.parent_element_id) {
       const parent = elementById.get(view.parent_element_id);
@@ -684,14 +712,28 @@ function validateGraphSemantics(document, errors) {
       }
     }
     for (const elementId of view.included_elements || []) {
+      elementIdsIncludedInViews.add(elementId);
       if (!elementById.has(elementId)) {
         errors.push(`views '${view.view_id}' references missing included element '${elementId}'`);
       }
     }
     for (const relationshipId of view.included_relationships || []) {
+      relationshipIdsIncludedInViews.add(relationshipId);
       if (!relationshipById.has(relationshipId)) {
         errors.push(`views '${view.view_id}' references missing included relationship '${relationshipId}'`);
       }
+    }
+  }
+
+  for (const element of elements) {
+    if (element && typeof element === 'object' && !elementIdsIncludedInViews.has(element.id)) {
+      errors.push(`elements '${element.id}' must be included in at least one view`);
+    }
+  }
+
+  for (const relationship of relationships) {
+    if (relationship && typeof relationship === 'object' && !relationshipIdsIncludedInViews.has(relationship.id)) {
+      errors.push(`relationships '${relationship.id}' must be included in at least one view`);
     }
   }
 }
@@ -941,22 +983,22 @@ async function callTool(name, args = {}) {
 
   if (name === 'addArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addElement', element: args.element }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], true));
   }
 
   if (name === 'updateArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch, view_ids: args.view_ids }], true));
   }
 
   if (name === 'addArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], true));
   }
 
   if (name === 'updateArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch, view_ids: args.view_ids }], true));
   }
 
   if (name === 'addArchitectureView') {
@@ -972,26 +1014,6 @@ async function callTool(name, args = {}) {
   if (name === 'removeArchitectureView') {
     const context = loadContext(args);
     return toolResult(buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], true));
-  }
-
-  if (name === 'addViewMembership') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{
-      type: 'addViewMembership',
-      view_id: args.view_id,
-      element_ids: args.element_ids,
-      relationship_ids: args.relationship_ids,
-    }], true));
-  }
-
-  if (name === 'removeViewMembership') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{
-      type: 'removeViewMembership',
-      view_id: args.view_id,
-      element_ids: args.element_ids,
-      relationship_ids: args.relationship_ids,
-    }], true));
   }
 
   throw new Error(`Unknown tool: ${name}`);

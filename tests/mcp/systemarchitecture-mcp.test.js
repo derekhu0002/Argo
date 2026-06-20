@@ -25,9 +25,12 @@ async function main() {
   fs.copyFileSync(sourceGraphPath, tempGraphPath);
 
   await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
+  await rejectsElementMutationWithoutViewScope(tempGraphPath);
+  await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
+  await rejectsUpdateAndRemoveWithoutViewScope(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
   await previewsViewLifecycleMutations(tempGraphPath);
-  await previewsViewMembershipAddAndRemove(tempGraphPath);
+  await rejectsSubviewWithoutParentElement(tempGraphPath);
 }
 
 function validatesUnifiedMcpConfiguration() {
@@ -49,8 +52,8 @@ async function validatesFocusedViewToolsAreListed() {
   assert(toolNames.includes('addArchitectureView'));
   assert(toolNames.includes('updateArchitectureView'));
   assert(toolNames.includes('removeArchitectureView'));
-  assert(toolNames.includes('addViewMembership'));
-  assert(toolNames.includes('removeViewMembership'));
+  assert(!toolNames.includes('addViewMembership'));
+  assert(!toolNames.includes('removeViewMembership'));
 }
 
 function validatesNoDuplicateMcpExecutionAssets() {
@@ -83,6 +86,7 @@ async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {
     mutations: [
       {
         type: 'addRelationship',
+        view_ids: ['237'],
         relationship: {
           id: 'mcp-invalid-triggering',
           statement: 'SystemArchitecture --(Triggering)--> Orchestrator',
@@ -112,6 +116,7 @@ async function previewsValidElementMutation(tempGraphPath) {
     mutations: [
       {
         type: 'addElement',
+        view_ids: ['237'],
         element: {
           id: 'mcp-valid-outcome',
           name: 'MCP governed graph mutation outcome',
@@ -129,6 +134,80 @@ async function previewsValidElementMutation(tempGraphPath) {
   assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 1);
 }
 
+async function rejectsElementMutationWithoutViewScope(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        element: {
+          id: 'mcp-orphan-element',
+          name: 'MCP orphan element',
+          type: 'Outcome',
+          description: 'This element is intentionally omitted from all views.',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
+    `Expected missing element view_ids error, got: ${JSON.stringify(payload.errors)}`,
+  );
+}
+
+async function rejectsRelationshipMutationWithoutViewScope(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        relationship: {
+          id: 'mcp-orphan-relationship',
+          statement: 'Orchestrator --(Assignment)--> argo_test',
+          name: 'Assignment',
+          source_id: '1798',
+          target_id: '1805',
+          source_name: 'Orchestrator',
+          target_name: 'argo_test',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
+    `Expected missing relationship view_ids error, got: ${JSON.stringify(payload.errors)}`,
+  );
+}
+
+async function rejectsUpdateAndRemoveWithoutViewScope(tempGraphPath) {
+  const mutationCases = [
+    { type: 'updateElement', id: '1798', patch: { description: 'Missing view scope.' } },
+    { type: 'removeElement', id: '1798' },
+    { type: 'updateRelationship', id: '1726', patch: { source_name: 'IntentionDesign' } },
+    { type: 'removeRelationship', id: '1726' },
+  ];
+
+  for (const mutation of mutationCases) {
+    const response = await callTool('previewSystemArchitectureMutation', {
+      architecturePath: path.relative(repoRoot, tempGraphPath),
+      mutations: [mutation],
+    });
+
+    const payload = parseToolPayload(response);
+    assert.strictEqual(payload.status, 'failed', mutation.type);
+    assert(
+      payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
+      `Expected missing view_ids error for ${mutation.type}, got: ${JSON.stringify(payload.errors)}`,
+    );
+  }
+}
+
 async function previewsViewLifecycleMutations(tempGraphPath) {
   const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
@@ -138,6 +217,8 @@ async function previewsViewLifecycleMutations(tempGraphPath) {
         view: {
           view_id: 'mcp-valid-view',
           view_name: 'MCP governed view',
+          parent_element_id: '1798',
+          parent_element_name: 'Orchestrator',
           description: 'A temporary view used to validate governed view lifecycle mutations.',
         },
       },
@@ -163,48 +244,26 @@ async function previewsViewLifecycleMutations(tempGraphPath) {
   assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['addView', 'updateView', 'removeView']);
 }
 
-async function previewsViewMembershipAddAndRemove(tempGraphPath) {
-  const response = await callTool('applySystemArchitectureMutation', {
+async function rejectsSubviewWithoutParentElement(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
     mutations: [
       {
         type: 'addView',
         view: {
-          view_id: 'mcp-membership-view',
-          view_name: 'MCP membership view',
-          included_elements: [],
-          included_relationships: [],
+          view_id: 'mcp-invalid-orphan-view',
+          view_name: 'Orphan sub view',
         },
-      },
-      {
-        type: 'addViewMembership',
-        view_id: 'mcp-membership-view',
-        element_ids: ['1798'],
-        relationship_ids: ['rel-1884-1886-realization'],
-      },
-      {
-        type: 'removeViewMembership',
-        view_id: 'mcp-membership-view',
-        element_ids: ['1798'],
-        relationship_ids: ['rel-1884-1886-realization'],
       },
     ],
   });
 
   const payload = parseToolPayload(response);
-  assert.deepStrictEqual(payload.errors, []);
-  assert.strictEqual(payload.status, 'passed');
-  assert.strictEqual(payload.written, true);
-  assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), [
-    'addView',
-    'addViewMembership',
-    'removeViewMembership',
-  ]);
-
-  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
-  const view = writtenGraph.views.find(entry => entry.view_id === 'mcp-membership-view');
-  assert.deepStrictEqual(view.included_elements, []);
-  assert.deepStrictEqual(view.included_relationships, []);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes('must declare parent_element_id')),
+    `Expected missing parent_element_id error, got: ${JSON.stringify(payload.errors)}`,
+  );
 }
 
 async function validatesCurrentGraph() {

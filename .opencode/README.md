@@ -36,7 +36,9 @@ Primary tools exposed by the unified server:
 - `updateArchitectureElement`
 - `addArchitectureRelationship`
 - `updateArchitectureRelationship`
-- `addViewMembership`
+- `addArchitectureView`
+- `updateArchitectureView`
+- `removeArchitectureView`
 
 Agents must not call legacy OpenCode custom tools for these operations. Deterministic operations go through the unified MCP server.
 

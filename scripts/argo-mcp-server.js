@@ -38,8 +38,6 @@ const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
   'addArchitectureView',
   'updateArchitectureView',
   'removeArchitectureView',
-  'addViewMembership',
-  'removeViewMembership',
 ]);
 
 const TOOLS = [
@@ -116,9 +114,10 @@ const TOOLS = [
     description: 'Add one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['element'],
+      required: ['element', 'view_ids'],
       properties: {
         element: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
@@ -129,10 +128,11 @@ const TOOLS = [
     description: 'Patch one element through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch'],
+      required: ['id', 'patch', 'view_ids'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
@@ -143,9 +143,10 @@ const TOOLS = [
     description: 'Add one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['relationship'],
+      required: ['relationship', 'view_ids'],
       properties: {
         relationship: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
@@ -156,10 +157,11 @@ const TOOLS = [
     description: 'Patch one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
       type: 'object',
-      required: ['id', 'patch'],
+      required: ['id', 'patch', 'view_ids'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
@@ -205,36 +207,6 @@ const TOOLS = [
       additionalProperties: false,
     },
   },
-  {
-    name: 'addViewMembership',
-    description: 'Add element or relationship ids to an existing view after reference checks pass.',
-    inputSchema: {
-      type: 'object',
-      required: ['view_id'],
-      properties: {
-        view_id: { type: 'string' },
-        element_ids: { type: 'array', items: { type: 'string' } },
-        relationship_ids: { type: 'array', items: { type: 'string' } },
-        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'removeViewMembership',
-    description: 'Remove element or relationship ids from an existing view after reference checks pass.',
-    inputSchema: {
-      type: 'object',
-      required: ['view_id'],
-      properties: {
-        view_id: { type: 'string' },
-        element_ids: { type: 'array', items: { type: 'string' } },
-        relationship_ids: { type: 'array', items: { type: 'string' } },
-        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
-      },
-      additionalProperties: false,
-    },
-  },
 ];
 
 function mutationInputSchema() {
@@ -262,8 +234,6 @@ function mutationInputSchema() {
                 'addView',
                 'updateView',
                 'removeView',
-                'addViewMembership',
-                'removeViewMembership',
               ],
             },
             element: { type: 'object' },
@@ -272,6 +242,7 @@ function mutationInputSchema() {
             id: { type: 'string' },
             patch: { type: 'object' },
             view_id: { type: 'string' },
+            view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
             element_ids: { type: 'array', items: { type: 'string' } },
             relationship_ids: { type: 'array', items: { type: 'string' } },
           },

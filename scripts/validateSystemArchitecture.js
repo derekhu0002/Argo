@@ -380,9 +380,22 @@ function validateGraphSemantics(document, errors) {
         }
     }
 
+    const topLevelViews = views.filter(view => view && typeof view === 'object' && !view.parent_element_id);
+    if (topLevelViews.length !== 1) {
+        errors.push(`views must contain exactly one top-level view named 'SystemArchitecture'; found ${topLevelViews.length}`);
+    } else if (topLevelViews[0].view_name !== 'SystemArchitecture') {
+        errors.push(`top-level view '${topLevelViews[0].view_id}' view_name must be 'SystemArchitecture'`);
+    }
+
+    const elementIdsIncludedInViews = new Set();
+    const relationshipIdsIncludedInViews = new Set();
     for (const view of views) {
         if (!view || typeof view !== 'object') {
             continue;
+        }
+
+        if (!view.parent_element_id && view.view_name !== 'SystemArchitecture') {
+            errors.push(`views '${view.view_id}' must declare parent_element_id unless it is the top-level SystemArchitecture view`);
         }
 
         if (view.parent_element_id) {
@@ -396,6 +409,7 @@ function validateGraphSemantics(document, errors) {
 
         const includedElements = Array.isArray(view.included_elements) ? view.included_elements : [];
         includedElements.forEach(elementId => {
+            elementIdsIncludedInViews.add(elementId);
             if (!elementById.has(elementId)) {
                 errors.push(`views '${view.view_id}' references missing included element '${elementId}'`);
             }
@@ -403,10 +417,23 @@ function validateGraphSemantics(document, errors) {
 
         const includedRelationships = Array.isArray(view.included_relationships) ? view.included_relationships : [];
         includedRelationships.forEach(relationshipId => {
+            relationshipIdsIncludedInViews.add(relationshipId);
             if (!relationshipById.has(relationshipId)) {
                 errors.push(`views '${view.view_id}' references missing included relationship '${relationshipId}'`);
             }
         });
+    }
+
+    for (const element of elements) {
+        if (element && typeof element === 'object' && !elementIdsIncludedInViews.has(element.id)) {
+            errors.push(`elements '${element.id}' must be included in at least one view`);
+        }
+    }
+
+    for (const relationship of relationships) {
+        if (relationship && typeof relationship === 'object' && !relationshipIdsIncludedInViews.has(relationship.id)) {
+            errors.push(`relationships '${relationship.id}' must be included in at least one view`);
+        }
     }
 }
 
