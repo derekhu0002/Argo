@@ -105,6 +105,17 @@ function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
   }
 }
 
+function assertGuidanceIncludes(payload, expectedFragments) {
+  assert(Array.isArray(payload.guidance), `Expected guidance array, got: ${JSON.stringify(payload)}`);
+  const guidanceText = payload.guidance.join('\n');
+  for (const expectedFragment of expectedFragments) {
+    assert(
+      guidanceText.includes(expectedFragment),
+      `Expected guidance to include '${expectedFragment}', got: ${JSON.stringify(payload.guidance)}`,
+    );
+  }
+}
+
 function validatesNoDuplicateMcpExecutionAssets() {
   const removedPaths = [
     '.cursor/argoschema',
@@ -186,6 +197,7 @@ async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {
     payload.errors.some(error => error.includes('violates ArchiMate 3.2 relationship matrix')),
     `Expected ArchiMate grammar error, got: ${JSON.stringify(payload.errors)}`,
   );
+  assertGuidanceIncludes(payload, ['Check relationship.type', 'source and target element types']);
   assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), before);
 }
 
@@ -343,6 +355,7 @@ async function rejectsElementMutationWithoutViewScope(tempGraphPath) {
     payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
     `Expected missing element view_ids error, got: ${JSON.stringify(payload.errors)}`,
   );
+  assertGuidanceIncludes(payload, ['Select the target view_ids', 'getSystemArchitecture']);
 }
 
 async function rejectsRelationshipMutationWithoutViewScope(tempGraphPath) {
@@ -371,6 +384,7 @@ async function rejectsRelationshipMutationWithoutViewScope(tempGraphPath) {
     payload.errors.some(error => error.includes('mutation.view_ids must contain at least one view id')),
     `Expected missing relationship view_ids error, got: ${JSON.stringify(payload.errors)}`,
   );
+  assertGuidanceIncludes(payload, ['Select the target view_ids', 'getSystemArchitecture']);
 }
 
 async function previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath) {
@@ -434,6 +448,7 @@ async function rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath) {
       payload.errors.some(error => error.includes(testCase.expected)),
       `Expected immutable identity/type error, got: ${JSON.stringify(payload.errors)}`,
     );
+    assertGuidanceIncludes(payload, ['Do not patch immutable identity or type fields', 'remove', 'add']);
     assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), before);
   }
 }

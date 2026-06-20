@@ -575,6 +575,7 @@ function buildMutationResult(context, mutations, write) {
   try {
     mutationResult = applyMutations(context.document, mutations);
   } catch (error) {
+    const errors = [String(error && error.message ? error.message : error)];
     return {
       status: 'failed',
       written: false,
@@ -585,7 +586,8 @@ function buildMutationResult(context, mutations, write) {
       touchedRelationshipIds: [],
       before: beforeSummary,
       after: beforeSummary,
-      errors: [String(error && error.message ? error.message : error)],
+      errors,
+      guidance: buildFailureGuidance(errors),
     };
   }
   const errors = validateDocument(mutationResult.document, context.schema, {
@@ -604,6 +606,9 @@ function buildMutationResult(context, mutations, write) {
     after: afterSummary,
     errors,
   };
+  if (errors.length > 0) {
+    result.guidance = buildFailureGuidance(errors);
+  }
 
   if (errors.length > 0 || !write) {
     return result;
@@ -612,6 +617,47 @@ function buildMutationResult(context, mutations, write) {
   writeGraph(context.graphPath.absolutePath, mutationResult.document);
   result.written = true;
   return result;
+}
+
+function buildFailureGuidance(errors) {
+  const guidance = [];
+  for (const error of errors || []) {
+    addGuidanceForError(guidance, String(error));
+  }
+  if (guidance.length === 0 && Array.isArray(errors) && errors.length > 0) {
+    guidance.push('Inspect the error text, call getSystemArchitecture to refresh ids and current view membership, then retry with previewSystemArchitectureMutation before writing.');
+  }
+  return guidance;
+}
+
+function addGuidanceForError(guidance, error) {
+  if (error.includes('mutation.view_ids must contain at least one view id')) {
+    pushUnique(guidance, 'Select the target view_ids explicitly. Call getSystemArchitecture to inspect existing views, then retry the add/remove operation with the intended view_ids.');
+  }
+  if (error.includes('violates ArchiMate 3.2 relationship matrix')) {
+    pushUnique(guidance, 'Check relationship.type and the source and target element types against ArchiMate 3.2. If the intended meaning is still valid, choose a compliant relationship type or change the endpoint element types by remove-and-add.');
+  }
+  if (error.includes('uses unsupported ArchiMate relationship type')) {
+    pushUnique(guidance, 'Use relationship.type for the ArchiMate relationship type and choose one of the schema-supported ArchiMate 3.2 relationship types.');
+  }
+  if (error.includes('id cannot be updated') || error.includes('type cannot be updated')) {
+    pushUnique(guidance, 'Do not patch immutable identity or type fields. To change an id or type, remove the existing element or relationship, then add the replacement with the desired id or type.');
+  }
+  if (error.includes('must be included in at least one view')) {
+    pushUnique(guidance, 'Every element and relationship must belong to at least one view. Add it with view_ids, or add the existing object to an appropriate view before validating again.');
+  }
+  if (error.includes('must declare parent_element_id') || error.includes('top-level view')) {
+    pushUnique(guidance, 'Keep exactly one top-level view named SystemArchitecture. For any sub-view, set parent_element_id to an existing element and keep parent_element_name aligned with that element name.');
+  }
+  if (error.includes('does not exist') || error.includes('references missing')) {
+    pushUnique(guidance, 'Refresh current ids with getSystemArchitecture. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
+  }
+}
+
+function pushUnique(entries, entry) {
+  if (!entries.includes(entry)) {
+    entries.push(entry);
+  }
 }
 
 function summarizeDocument(document) {
