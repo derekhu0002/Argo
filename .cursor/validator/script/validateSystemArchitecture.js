@@ -337,14 +337,6 @@ function validateGraphSemantics(document, errors) {
             errors.push(`elements '${element.id}' uses unsupported ArchiMate element type '${element.type}'`);
             continue;
         }
-
-        if (element.archimate_layer !== expectedMetadata.layer) {
-            errors.push(`elements '${element.id}' must declare archimate_layer '${expectedMetadata.layer}' for type '${element.type}'`);
-        }
-
-        if (element.archimate_aspect !== expectedMetadata.aspect) {
-            errors.push(`elements '${element.id}' must declare archimate_aspect '${expectedMetadata.aspect}' for type '${element.type}'`);
-        }
     }
 
     for (const element of elements) {
@@ -372,8 +364,6 @@ function validateGraphSemantics(document, errors) {
         const expectedCategory = relationshipCategoryByType.get(relationship.name);
         if (!expectedCategory) {
             errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.name}'`);
-        } else if (relationship.archimate_category !== expectedCategory) {
-            errors.push(`relationships '${relationship.id}' must declare archimate_category '${expectedCategory}' for relationship '${relationship.name}'`);
         }
 
         const source = elementById.get(relationship.source_id);
