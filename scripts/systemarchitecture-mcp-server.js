@@ -14,7 +14,11 @@ const HANDLED_MUTATION_TYPES = new Set([
   'addRelationship',
   'updateRelationship',
   'removeRelationship',
+  'addView',
+  'updateView',
+  'removeView',
   'addViewMembership',
+  'removeViewMembership',
 ]);
 
 const elementTypeMetadata = new Map([
@@ -199,8 +203,63 @@ const TOOLS = [
     },
   },
   {
+    name: 'addArchitectureView',
+    description: 'Add one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view'],
+      properties: {
+        view: { type: 'object' },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'updateArchitectureView',
+    description: 'Patch one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id', 'patch'],
+      properties: {
+        view_id: { type: 'string' },
+        patch: { type: 'object' },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeArchitectureView',
+    description: 'Remove one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id'],
+      properties: {
+        view_id: { type: 'string' },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'addViewMembership',
     description: 'Add element or relationship ids to an existing view after reference checks pass.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id'],
+      properties: {
+        view_id: { type: 'string' },
+        element_ids: { type: 'array', items: { type: 'string' } },
+        relationship_ids: { type: 'array', items: { type: 'string' } },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeViewMembership',
+    description: 'Remove element or relationship ids from an existing view after reference checks pass.',
     inputSchema: {
       type: 'object',
       required: ['view_id'],
@@ -231,6 +290,7 @@ function mutationInputSchema() {
             type: { type: 'string', enum: Array.from(HANDLED_MUTATION_TYPES) },
             element: { type: 'object' },
             relationship: { type: 'object' },
+            view: { type: 'object' },
             id: { type: 'string' },
             patch: { type: 'object' },
             view_id: { type: 'string' },
@@ -390,6 +450,39 @@ function applyMutations(document, mutations) {
       continue;
     }
 
+    if (mutation.type === 'addView') {
+      requireObject(mutation.view, 'mutation.view');
+      if (findView(nextDocument.views, mutation.view.view_id)) {
+        throw new Error(`View '${mutation.view.view_id}' already exists`);
+      }
+      nextDocument.views.push(clone(mutation.view));
+      mutationSummaries.push({ type: mutation.type, id: mutation.view.view_id });
+      continue;
+    }
+
+    if (mutation.type === 'updateView') {
+      requireId(mutation.view_id, 'mutation.view_id');
+      requireObject(mutation.patch, 'mutation.patch');
+      const view = findView(nextDocument.views, mutation.view_id);
+      if (!view) {
+        throw new Error(`View '${mutation.view_id}' does not exist`);
+      }
+      Object.assign(view, clone(mutation.patch));
+      mutationSummaries.push({ type: mutation.type, id: view.view_id });
+      continue;
+    }
+
+    if (mutation.type === 'removeView') {
+      requireId(mutation.view_id, 'mutation.view_id');
+      const beforeCount = nextDocument.views.length;
+      nextDocument.views = nextDocument.views.filter(view => view.view_id !== mutation.view_id);
+      if (nextDocument.views.length === beforeCount) {
+        throw new Error(`View '${mutation.view_id}' does not exist`);
+      }
+      mutationSummaries.push({ type: mutation.type, id: mutation.view_id });
+      continue;
+    }
+
     if (mutation.type === 'addViewMembership') {
       requireId(mutation.view_id, 'mutation.view_id');
       const view = findView(nextDocument.views, mutation.view_id);
@@ -398,6 +491,22 @@ function applyMutations(document, mutations) {
       }
       view.included_elements = addUnique(view.included_elements || [], mutation.element_ids || []);
       view.included_relationships = addUnique(view.included_relationships || [], mutation.relationship_ids || []);
+      mutationSummaries.push({
+        type: mutation.type,
+        id: mutation.view_id,
+        element_ids: mutation.element_ids || [],
+        relationship_ids: mutation.relationship_ids || [],
+      });
+    }
+
+    if (mutation.type === 'removeViewMembership') {
+      requireId(mutation.view_id, 'mutation.view_id');
+      const view = findView(nextDocument.views, mutation.view_id);
+      if (!view) {
+        throw new Error(`View '${mutation.view_id}' does not exist`);
+      }
+      view.included_elements = removeEntries(view.included_elements || [], mutation.element_ids || []);
+      view.included_relationships = removeEntries(view.included_relationships || [], mutation.relationship_ids || []);
       mutationSummaries.push({
         type: mutation.type,
         id: mutation.view_id,
@@ -443,6 +552,11 @@ function addUnique(existing, additions) {
     }
   }
   return result;
+}
+
+function removeEntries(existing, removals) {
+  const removalSet = new Set(removals);
+  return (Array.isArray(existing) ? existing : []).filter(entry => !removalSet.has(entry));
 }
 
 function buildMutationResult(context, mutations, write) {
@@ -845,10 +959,35 @@ async function callTool(name, args = {}) {
     return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], true));
   }
 
+  if (name === 'addArchitectureView') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{ type: 'addView', view: args.view }], true));
+  }
+
+  if (name === 'updateArchitectureView') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], true));
+  }
+
+  if (name === 'removeArchitectureView') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], true));
+  }
+
   if (name === 'addViewMembership') {
     const context = loadContext(args);
     return toolResult(buildMutationResult(context, [{
       type: 'addViewMembership',
+      view_id: args.view_id,
+      element_ids: args.element_ids,
+      relationship_ids: args.relationship_ids,
+    }], true));
+  }
+
+  if (name === 'removeViewMembership') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{
+      type: 'removeViewMembership',
       view_id: args.view_id,
       element_ids: args.element_ids,
       relationship_ids: args.relationship_ids,

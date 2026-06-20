@@ -35,7 +35,11 @@ const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
   'updateArchitectureElement',
   'addArchitectureRelationship',
   'updateArchitectureRelationship',
+  'addArchitectureView',
+  'updateArchitectureView',
+  'removeArchitectureView',
   'addViewMembership',
+  'removeViewMembership',
 ]);
 
 const TOOLS = [
@@ -162,8 +166,63 @@ const TOOLS = [
     },
   },
   {
+    name: 'addArchitectureView',
+    description: 'Add one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view'],
+      properties: {
+        view: { type: 'object' },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'updateArchitectureView',
+    description: 'Patch one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id', 'patch'],
+      properties: {
+        view_id: { type: 'string' },
+        patch: { type: 'object' },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeArchitectureView',
+    description: 'Remove one view through the governed SystemArchitecture mutation gateway.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id'],
+      properties: {
+        view_id: { type: 'string' },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'addViewMembership',
     description: 'Add element or relationship ids to an existing view after reference checks pass.',
+    inputSchema: {
+      type: 'object',
+      required: ['view_id'],
+      properties: {
+        view_id: { type: 'string' },
+        element_ids: { type: 'array', items: { type: 'string' } },
+        relationship_ids: { type: 'array', items: { type: 'string' } },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeViewMembership',
+    description: 'Remove element or relationship ids from an existing view after reference checks pass.',
     inputSchema: {
       type: 'object',
       required: ['view_id'],
@@ -200,11 +259,16 @@ function mutationInputSchema() {
                 'addRelationship',
                 'updateRelationship',
                 'removeRelationship',
+                'addView',
+                'updateView',
+                'removeView',
                 'addViewMembership',
+                'removeViewMembership',
               ],
             },
             element: { type: 'object' },
             relationship: { type: 'object' },
+            view: { type: 'object' },
             id: { type: 'string' },
             patch: { type: 'object' },
             view_id: { type: 'string' },

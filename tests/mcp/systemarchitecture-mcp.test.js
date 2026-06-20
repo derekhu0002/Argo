@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -16,6 +17,7 @@ async function main() {
 
   validatesUnifiedMcpConfiguration();
   validatesNoDuplicateMcpExecutionAssets();
+  await validatesFocusedViewToolsAreListed();
   await validatesCurrentGraph();
 
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
@@ -24,6 +26,8 @@ async function main() {
 
   await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
+  await previewsViewLifecycleMutations(tempGraphPath);
+  await previewsViewMembershipAddAndRemove(tempGraphPath);
 }
 
 function validatesUnifiedMcpConfiguration() {
@@ -32,6 +36,21 @@ function validatesUnifiedMcpConfiguration() {
     assert.deepStrictEqual(Object.keys(config.mcpServers), ['argo'], configPath);
     assert.deepStrictEqual(config.mcpServers.argo.args, ['${workspaceFolder}/scripts/argo-mcp-server.js'], configPath);
   }
+}
+
+async function validatesFocusedViewToolsAreListed() {
+  const tools = await callMcpStdio([
+    { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'smoke', version: '1' } } },
+    { jsonrpc: '2.0', method: 'notifications/initialized', params: {} },
+    { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
+  ]);
+  const listResponse = tools.find(response => response.id === 2);
+  const toolNames = listResponse.result.tools.map(tool => tool.name);
+  assert(toolNames.includes('addArchitectureView'));
+  assert(toolNames.includes('updateArchitectureView'));
+  assert(toolNames.includes('removeArchitectureView'));
+  assert(toolNames.includes('addViewMembership'));
+  assert(toolNames.includes('removeViewMembership'));
 }
 
 function validatesNoDuplicateMcpExecutionAssets() {
@@ -110,6 +129,84 @@ async function previewsValidElementMutation(tempGraphPath) {
   assert.strictEqual(payload.after.elementCount, payload.before.elementCount + 1);
 }
 
+async function previewsViewLifecycleMutations(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-valid-view',
+          view_name: 'MCP governed view',
+          description: 'A temporary view used to validate governed view lifecycle mutations.',
+        },
+      },
+      {
+        type: 'updateView',
+        view_id: 'mcp-valid-view',
+        patch: {
+          view_name: 'MCP governed view updated',
+        },
+      },
+      {
+        type: 'removeView',
+        view_id: 'mcp-valid-view',
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, false);
+  assert.strictEqual(payload.after.viewCount, payload.before.viewCount);
+  assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['addView', 'updateView', 'removeView']);
+}
+
+async function previewsViewMembershipAddAndRemove(tempGraphPath) {
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-membership-view',
+          view_name: 'MCP membership view',
+          included_elements: [],
+          included_relationships: [],
+        },
+      },
+      {
+        type: 'addViewMembership',
+        view_id: 'mcp-membership-view',
+        element_ids: ['1798'],
+        relationship_ids: ['rel-1884-1886-realization'],
+      },
+      {
+        type: 'removeViewMembership',
+        view_id: 'mcp-membership-view',
+        element_ids: ['1798'],
+        relationship_ids: ['rel-1884-1886-realization'],
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+  assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), [
+    'addView',
+    'addViewMembership',
+    'removeViewMembership',
+  ]);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  const view = writtenGraph.views.find(entry => entry.view_id === 'mcp-membership-view');
+  assert.deepStrictEqual(view.included_elements, []);
+  assert.deepStrictEqual(view.included_relationships, []);
+}
+
 async function validatesCurrentGraph() {
   const response = await callTool('validateSystemArchitecture', {});
   const payload = parseToolPayload(response);
@@ -119,6 +216,20 @@ async function validatesCurrentGraph() {
 function parseToolPayload(response) {
   assert(response && Array.isArray(response.content), 'MCP response must contain content');
   return JSON.parse(response.content[0].text);
+}
+
+async function callMcpStdio(requests) {
+  const result = spawnSync(process.execPath, ['scripts/argo-mcp-server.js'], {
+    cwd: repoRoot,
+    input: `${requests.map(request => JSON.stringify(request)).join('\n')}\n`,
+    encoding: 'utf8',
+  });
+  assert.strictEqual(result.status, 0, result.stderr);
+  return result.stdout
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map(line => JSON.parse(line));
 }
 
 main().catch((error) => {
