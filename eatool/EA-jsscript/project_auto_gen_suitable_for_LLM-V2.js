@@ -90,6 +90,13 @@ function getConnectorTag(conn, tagName) {
 	return getTaggedValueText(conn.TaggedValues, tagName);
 }
 
+function getDiagramTag(diagram, tagName) {
+	if (diagram == null) {
+		return "";
+	}
+	return getStyleToken(diagram.StyleEx, tagName);
+}
+
 function getStyleToken(styleText, key) {
 	if (styleText == null || key == null || key == "") {
 		return "";
@@ -100,6 +107,34 @@ function getStyleToken(styleText, key) {
 		return match[1];
 	}
 	return "";
+}
+
+function getStyleJsonArray(styleText, key) {
+	var value = getStyleToken(styleText, key);
+	if (value == "") {
+		return null;
+	}
+	try {
+		var decoded = decodeURIComponent(value);
+		var parsed = JSON.parse(decoded);
+		if (parsed instanceof Array) {
+			return parsed;
+		}
+	} catch (e) {
+		Session.Output("WARN: Could not parse diagram style JSON token " + key + ": " + e.message);
+	}
+	return null;
+}
+
+function schemaIdArrayToJsonStrings(ids) {
+	var result = [];
+	if (!(ids instanceof Array)) {
+		return result;
+	}
+	for (var i = 0; i < ids.length; i++) {
+		result.push('"' + jsonEscape(ids[i]) + '"');
+	}
+	return result;
 }
 
 function resolveModelFilePathFromConnectionString() {
@@ -947,7 +982,12 @@ function extractFromDiagram(currentDiagram) {
 				finalnodetype += ',"classifier": "' + jsonEscape(ele.ClassifierName) + '"\n';
 			}
 			
-			finalnodetype += ',"type": "' + jsonEscape(canonicalElementType(ele.StereotypeEx, ele.Type)) + '"\n';
+			var schemaArchimateType = getElementTag(ele, "archimate_type");
+			if (schemaArchimateType != "") {
+				finalnodetype += ',"type": "' + jsonEscape(schemaArchimateType) + '"\n';
+			} else {
+				finalnodetype += ',"type": "' + jsonEscape(canonicalElementType(ele.StereotypeEx, ele.Type)) + '"\n';
+			}
 			
 			if (ele.Notes != "") {
 				finalnodetype += ',"description": "' + jsonEscape(ele.Notes) + '"\n';
@@ -1175,6 +1215,16 @@ function extractFromDiagram(currentDiagram) {
 	if (viewNotes != "") {
 		viewJson += ',"description": "' + jsonEscape(viewNotes) + '"\n';
 	}
+	var schemaIncludedElementsJson = getDiagramTag(currentDiagram, "schema_included_elements_json");
+	var schemaIncludedRelationshipsJson = getDiagramTag(currentDiagram, "schema_included_relationships_json");
+	var schemaIncludedElements = getStyleJsonArray(currentDiagram.StyleEx, "schema_included_elements_json");
+	var schemaIncludedRelationships = getStyleJsonArray(currentDiagram.StyleEx, "schema_included_relationships_json");
+	if (schemaIncludedElementsJson != "" && schemaIncludedElements != null) {
+		includedElements = schemaIdArrayToJsonStrings(schemaIncludedElements);
+	}
+	if (schemaIncludedRelationshipsJson != "" && schemaIncludedRelationships != null) {
+		includedRelationships = schemaIdArrayToJsonStrings(schemaIncludedRelationships);
+	}
 	viewJson += ',"included_elements": [\n' + includedElements.join(',\n') + '\n]\n';
 	viewJson += ',"included_relationships": [\n' + includedRelationships.join(',\n') + '\n]\n';
 	viewJson += '}';
@@ -1287,9 +1337,11 @@ function main() {
 	}
 	
 	var finalJsonString = '{\n';
+	var packageElement = null;
+	var rootRelationshipsJson = "";
+	var rootViewsJson = "";
 	
 	if (ppele == null) {
-		var packageElement = null;
 		try {
 			packageElement = ppkg.Element;
 		} catch (ignore) {
@@ -1309,6 +1361,8 @@ function main() {
 		if (rootAttributesJson != "" && rootAttributesJson != "[]") {
 			finalJsonString += '"attributes": ' + rootAttributesJson + ',\n';
 		}
+		rootRelationshipsJson = packageElement != null ? getElementTag(packageElement, "schema_relationships_json") : "";
+		rootViewsJson = packageElement != null ? getElementTag(packageElement, "schema_views_json") : "";
 	} else {
 		finalJsonString += '"name": "' + jsonEscape(ppele.Name) + '",\n';
 		finalJsonString += '"description": "' + jsonEscape(safeSchemaString(ppele.Notes, "Exported from EA element " + ppele.Name)) + '",\n';
@@ -1372,10 +1426,18 @@ function main() {
 			relationshipsArray.push(globalRelationships[key]);
 		}
 	}
+	var relationshipsJson = '[\n' + relationshipsArray.join(',\n') + '\n]';
+	if (rootRelationshipsJson != "" && rootRelationshipsJson != "[]") {
+		relationshipsJson = rootRelationshipsJson;
+	}
+	var viewsJson = '[\n' + globalViews.join(',\n') + '\n]';
+	if (rootViewsJson != "" && rootViewsJson != "[]") {
+		viewsJson = rootViewsJson;
+	}
 
 	finalJsonString += '"elements": [\n' + elementsArray.join(',\n') + '\n],\n';
-	finalJsonString += '"relationships": [\n' + relationshipsArray.join(',\n') + '\n],\n';
-	finalJsonString += '"views": [\n' + globalViews.join(',\n') + '\n]\n';
+	finalJsonString += '"relationships": ' + relationshipsJson + ',\n';
+	finalJsonString += '"views": ' + viewsJson + '\n';
     finalJsonString += '}';
     // --- FILE WRITING (UTF-8 WITHOUT BOM) ---
     try {

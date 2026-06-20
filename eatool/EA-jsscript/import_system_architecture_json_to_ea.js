@@ -172,6 +172,8 @@ function applyRootMetadata(pkg, graph) {
       putTag(pkgElement.TaggedValues, 'schema_root_name', graph.name);
       putTag(pkgElement.TaggedValues, 'schema_root_description', safeString(graph.description));
       putJsonTag(pkgElement.TaggedValues, 'schema_root_attributes_json', graph.attributes || []);
+      putJsonTag(pkgElement.TaggedValues, 'schema_relationships_json', graph.relationships || []);
+      putJsonTag(pkgElement.TaggedValues, 'schema_views_json', graph.views || []);
       pkgElement.Update();
       pkgElement.TaggedValues.Refresh();
     }
@@ -648,6 +650,8 @@ function putDiagramTags(diagram, viewData) {
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_view_id', viewData.view_id);
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_parent_element_id', safeString(viewData.parent_element_id));
     diagram.StyleEx = setStyleToken(diagram.StyleEx, 'schema_parent_element_name', safeString(viewData.parent_element_name));
+    diagram.StyleEx = setStyleJsonToken(diagram.StyleEx, 'schema_included_elements_json', viewData.included_elements || []);
+    diagram.StyleEx = setStyleJsonToken(diagram.StyleEx, 'schema_included_relationships_json', viewData.included_relationships || []);
   } catch (ignore) {
   }
 }
@@ -752,6 +756,12 @@ function mapElementTypeToEaStereotype(archimateType) {
   var normalized = normalizeArchimateName(archimateType);
   if (normalized == '') {
     return '';
+  }
+  switch (normalized) {
+    case 'SystemSoftware':
+      return 'ArchiMate_SystemSoftware';
+    case 'Constraint':
+      return 'ArchiMate_Constraint';
   }
   return normalized;
 }
@@ -1117,6 +1127,10 @@ function setStyleToken(styleText, key, value) {
     source += ';';
   }
   return source + key + '=' + value + ';';
+}
+
+function setStyleJsonToken(styleText, key, value) {
+  return setStyleToken(styleText, key, encodeURIComponent(JSON.stringify(value)));
 }
 
 function escapeRegExp(text) {
