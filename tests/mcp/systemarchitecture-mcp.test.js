@@ -35,6 +35,8 @@ async function main() {
   await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
   await removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
   await removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
+  await removesElementThroughFocusedTool(tempGraphPath);
+  await removesRelationshipThroughFocusedTool(tempGraphPath);
   await previewsValidElementMutation(tempGraphPath);
   await appliesExistingElementToAdditionalView(tempGraphPath);
   await removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
@@ -64,6 +66,8 @@ async function validatesFocusedViewToolsAreListed() {
   assert(toolNames.includes('addArchitectureView'));
   assert(toolNames.includes('updateArchitectureView'));
   assert(toolNames.includes('removeArchitectureView'));
+  assert(toolNames.includes('removeArchitectureElement'));
+  assert(toolNames.includes('removeArchitectureRelationship'));
   assert(!toolNames.includes('addViewMembership'));
   assert(!toolNames.includes('removeViewMembership'));
 }
@@ -458,6 +462,73 @@ async function removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraph
   const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
   assert(!writtenGraph.relationships.some(relationship => relationship.id === 'mcp-global-remove-relationship'));
   assert(writtenGraph.views.every(view => !(view.included_relationships || []).includes('mcp-global-remove-relationship')));
+}
+
+async function removesElementThroughFocusedTool(tempGraphPath) {
+  await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['237'],
+        element: {
+          id: 'mcp-focused-remove-element',
+          name: 'Focused remove element',
+          type: 'Outcome',
+          description: 'Used to validate the focused removeArchitectureElement tool.',
+        },
+      },
+    ],
+  });
+
+  const response = await callTool('removeArchitectureElement', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    id: 'mcp-focused-remove-element',
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.elements.some(element => element.id === 'mcp-focused-remove-element'));
+  assert(writtenGraph.views.every(view => !(view.included_elements || []).includes('mcp-focused-remove-element')));
+}
+
+async function removesRelationshipThroughFocusedTool(tempGraphPath) {
+  await callTool('applySystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addRelationship',
+        view_ids: ['237'],
+        relationship: {
+          id: 'mcp-focused-remove-relationship',
+          statement: 'Orchestrator --(Association)--> IntentionDesign',
+          name: 'Association',
+          source_id: '1798',
+          target_id: '1799',
+          source_name: 'Orchestrator',
+          target_name: 'IntentionDesign',
+        },
+      },
+    ],
+  });
+
+  const response = await callTool('removeArchitectureRelationship', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    id: 'mcp-focused-remove-relationship',
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, true);
+
+  const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
+  assert(!writtenGraph.relationships.some(relationship => relationship.id === 'mcp-focused-remove-relationship'));
+  assert(writtenGraph.views.every(view => !(view.included_relationships || []).includes('mcp-focused-remove-relationship')));
 }
 
 async function removesElementFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath) {

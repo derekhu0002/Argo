@@ -87,6 +87,20 @@ const TOOLS = [
     },
   },
   {
+    name: 'removeArchitectureElement',
+    description: 'Remove one element from selected views, or from all views and the graph when no view_ids are provided.',
+    inputSchema: {
+      type: 'object',
+      required: ['id'],
+      properties: {
+        id: { type: 'string' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'addArchitectureRelationship',
     description: 'Add one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
@@ -109,6 +123,20 @@ const TOOLS = [
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeArchitectureRelationship',
+    description: 'Remove one relationship from selected views, or from all views and the graph when no view_ids are provided.',
+    inputSchema: {
+      type: 'object',
+      required: ['id'],
+      properties: {
+        id: { type: 'string' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -910,6 +938,11 @@ async function callTool(name, args = {}) {
     return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], true));
   }
 
+  if (name === 'removeArchitectureElement') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], true));
+  }
+
   if (name === 'addArchitectureRelationship') {
     const context = loadContext(args);
     return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], true));
@@ -918,6 +951,11 @@ async function callTool(name, args = {}) {
   if (name === 'updateArchitectureRelationship') {
     const context = loadContext(args);
     return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], true));
+  }
+
+  if (name === 'removeArchitectureRelationship') {
+    const context = loadContext(args);
+    return toolResult(buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], true));
   }
 
   if (name === 'addArchitectureView') {

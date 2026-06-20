@@ -33,8 +33,10 @@ const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
   'applySystemArchitectureMutation',
   'addArchitectureElement',
   'updateArchitectureElement',
+  'removeArchitectureElement',
   'addArchitectureRelationship',
   'updateArchitectureRelationship',
+  'removeArchitectureRelationship',
   'addArchitectureView',
   'updateArchitectureView',
   'removeArchitectureView',
@@ -138,6 +140,20 @@ const TOOLS = [
     },
   },
   {
+    name: 'removeArchitectureElement',
+    description: 'Remove one element from selected views, or from all views and the graph when no view_ids are provided.',
+    inputSchema: {
+      type: 'object',
+      required: ['id'],
+      properties: {
+        id: { type: 'string' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'addArchitectureRelationship',
     description: 'Add one relationship through the governed SystemArchitecture mutation gateway.',
     inputSchema: {
@@ -160,6 +176,20 @@ const TOOLS = [
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'removeArchitectureRelationship',
+    description: 'Remove one relationship from selected views, or from all views and the graph when no view_ids are provided.',
+    inputSchema: {
+      type: 'object',
+      required: ['id'],
+      properties: {
+        id: { type: 'string' },
+        view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
       },
       additionalProperties: false,
