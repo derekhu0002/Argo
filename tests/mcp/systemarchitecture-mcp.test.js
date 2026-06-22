@@ -35,6 +35,7 @@ async function main() {
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath);
+  await rejectsElementAdditionWhenViewWouldExceedSevenElements();
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
   await returnsIntentElementContextWithSemanticTraversal();
   await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
@@ -212,6 +213,76 @@ function validatesImplementationTraceProposalSchema() {
   assert(anchorSchema.properties.implementationElementKind.enum.includes('stable-directory'));
   assert(anchorSchema.properties.implementationElementKind.enum.includes('explicit-test-entry'));
   assert.deepStrictEqual(anchorSchema.properties.implementsType.enum, ['direct', 'indirect']);
+}
+
+async function rejectsElementAdditionWhenViewWouldExceedSevenElements() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'view-limit-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildSevenElementViewGraph(), null, 2));
+
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addElement',
+        view_ids: ['seven-element-view'],
+        element: {
+          id: 'eighth-element',
+          name: 'Eighth Element',
+          type: 'Application Component',
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert.strictEqual(payload.written, false);
+  assert(
+    payload.errors.some(error => error.includes('must contain at most 7 elements')),
+    `Expected view size limit error, got: ${JSON.stringify(payload.errors)}`,
+  );
+  assertGuidanceIncludes(payload, ['split the view into layered sub-views', 'parent_element_id']);
+}
+
+function buildSevenElementViewGraph() {
+  const elements = Array.from({ length: 7 }, (_, index) => ({
+    id: `element-${index + 1}`,
+    name: `Element ${index + 1}`,
+    type: 'Application Component',
+  }));
+  return {
+    name: 'SystemArchitecture',
+    description: 'Temporary graph for view element limit tests.',
+    elements,
+    relationships: [
+      {
+        id: 'root-association',
+        statement: 'Element 1 --(Association)--> Element 2',
+        name: 'Association',
+        type: 'Association',
+        source_id: 'element-1',
+        target_id: 'element-2',
+        source_name: 'Element 1',
+        target_name: 'Element 2',
+      },
+    ],
+    views: [
+      {
+        view_id: 'root-view',
+        view_name: 'SystemArchitecture',
+        included_elements: ['element-1'],
+      },
+      {
+        view_id: 'seven-element-view',
+        view_name: 'Seven Element View',
+        parent_element_id: 'element-1',
+        parent_element_name: 'Element 1',
+        included_elements: elements.map(element => element.id),
+        included_relationships: ['root-association'],
+      },
+    ],
+  };
 }
 
 function ensureTempDirectory() {

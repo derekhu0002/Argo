@@ -686,6 +686,8 @@ function applyMutations(document, mutations) {
   const nextDocument = clone(document);
   const touchedElementIds = new Set();
   const touchedRelationshipIds = new Set();
+  const touchedViewIds = new Set();
+  const viewLimitCheckIds = new Set();
   const mutationSummaries = [];
 
   if (!Array.isArray(mutations) || mutations.length === 0) {
@@ -707,6 +709,8 @@ function applyMutations(document, mutations) {
       }
       for (const view of scopedViews) {
         view.included_elements = addUnique(view.included_elements || [], [mutation.element.id]);
+        touchedViewIds.add(view.view_id);
+        viewLimitCheckIds.add(view.view_id);
       }
       touchedElementIds.add(mutation.element.id);
       mutationSummaries.push({
@@ -747,6 +751,7 @@ function applyMutations(document, mutations) {
       for (const view of scopedViews) {
         view.included_elements = removeEntries(view.included_elements || [], [mutation.id]);
         view.included_relationships = removeEntries(view.included_relationships || [], relatedRelationshipIds);
+        touchedViewIds.add(view.view_id);
       }
       const stillIncludedInView = nextDocument.views.some(view => (
         Array.isArray(view.included_elements) && view.included_elements.includes(mutation.id)
@@ -754,6 +759,7 @@ function applyMutations(document, mutations) {
       if (!stillIncludedInView) {
         for (const view of nextDocument.views) {
           view.included_relationships = removeEntries(view.included_relationships || [], relatedRelationshipIds);
+          touchedViewIds.add(view.view_id);
         }
         nextDocument.elements = nextDocument.elements.filter(entry => entry.id !== mutation.id);
       }
@@ -790,6 +796,7 @@ function applyMutations(document, mutations) {
       }
       for (const view of scopedViews) {
         view.included_relationships = addUnique(view.included_relationships || [], [mutation.relationship.id]);
+        touchedViewIds.add(view.view_id);
       }
       touchedRelationshipIds.add(mutation.relationship.id);
       mutationSummaries.push({
@@ -826,6 +833,7 @@ function applyMutations(document, mutations) {
         : requireViewScope(nextDocument.views, mutation.view_ids, 'mutation.view_ids');
       for (const view of scopedViews) {
         view.included_relationships = removeEntries(view.included_relationships || [], [mutation.id]);
+        touchedViewIds.add(view.view_id);
       }
       const stillIncludedInView = nextDocument.views.some(view => (
         Array.isArray(view.included_relationships) && view.included_relationships.includes(mutation.id)
@@ -849,6 +857,8 @@ function applyMutations(document, mutations) {
         throw new Error(`View '${mutation.view.view_id}' already exists`);
       }
       nextDocument.views.push(clone(mutation.view));
+      touchedViewIds.add(mutation.view.view_id);
+      viewLimitCheckIds.add(mutation.view.view_id);
       mutationSummaries.push({ type: mutation.type, id: mutation.view.view_id });
       continue;
     }
@@ -861,6 +871,10 @@ function applyMutations(document, mutations) {
         throw new Error(`View '${mutation.view_id}' does not exist`);
       }
       Object.assign(view, clone(mutation.patch));
+      touchedViewIds.add(view.view_id);
+      if (Object.prototype.hasOwnProperty.call(mutation.patch, 'included_elements')) {
+        viewLimitCheckIds.add(view.view_id);
+      }
       mutationSummaries.push({ type: mutation.type, id: view.view_id });
       continue;
     }
@@ -882,6 +896,8 @@ function applyMutations(document, mutations) {
     document: nextDocument,
     touchedElementIds: Array.from(touchedElementIds),
     touchedRelationshipIds: Array.from(touchedRelationshipIds),
+    touchedViewIds: Array.from(touchedViewIds),
+    viewLimitCheckIds: Array.from(viewLimitCheckIds),
     mutationSummaries,
   };
 }
@@ -1001,6 +1017,7 @@ function buildMutationResult(context, mutations, write) {
   const errors = validateDocument(mutationResult.document, context.schema, {
     touchedRelationshipIds: mutationResult.touchedRelationshipIds,
   });
+  validateTouchedViewElementLimit(mutationResult.document, mutationResult.viewLimitCheckIds, errors);
   const afterSummary = summarizeDocument(mutationResult.document);
   const result = {
     status: errors.length === 0 ? 'passed' : 'failed',
@@ -1010,6 +1027,8 @@ function buildMutationResult(context, mutations, write) {
     mutations: mutationResult.mutationSummaries,
     touchedElementIds: mutationResult.touchedElementIds,
     touchedRelationshipIds: mutationResult.touchedRelationshipIds,
+    touchedViewIds: mutationResult.touchedViewIds,
+    viewLimitCheckIds: mutationResult.viewLimitCheckIds,
     before: beforeSummary,
     after: afterSummary,
     errors,
@@ -1056,6 +1075,9 @@ function addGuidanceForError(guidance, error) {
   }
   if (error.includes('must declare parent_element_id') || error.includes('top-level view')) {
     pushUnique(guidance, 'Keep exactly one top-level view named SystemArchitecture. For any sub-view, set parent_element_id to an existing element and keep parent_element_name aligned with that element name.');
+  }
+  if (error.includes('must contain at most 7 elements')) {
+    pushUnique(guidance, 'Do not force more than 7 elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.');
   }
   if (error.includes('does not exist') || error.includes('references missing')) {
     pushUnique(guidance, 'Refresh current ids with getSystemArchitecture. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
@@ -1198,6 +1220,22 @@ function validateGraphSemantics(document, errors) {
   for (const relationship of relationships) {
     if (relationship && typeof relationship === 'object' && !relationshipIdsIncludedInViews.has(relationship.id)) {
       errors.push(`relationships '${relationship.id}' must be included in at least one view`);
+    }
+  }
+}
+
+function validateTouchedViewElementLimit(document, touchedViewIds, errors) {
+  if (!Array.isArray(touchedViewIds) || touchedViewIds.length === 0) {
+    return;
+  }
+  const touchedViewIdSet = new Set(touchedViewIds);
+  for (const view of document.views || []) {
+    if (!view || !touchedViewIdSet.has(view.view_id)) {
+      continue;
+    }
+    const elementCount = Array.isArray(view.included_elements) ? view.included_elements.length : 0;
+    if (elementCount > 7) {
+      errors.push(`views '${view.view_id}' must contain at most 7 elements; found ${elementCount}. Split the content into layered sub-views before adding more elements.`);
     }
   }
 }
