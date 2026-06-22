@@ -100,6 +100,12 @@
 ,"description": "design\\KG\\SystemArchitecture.json"
 }
 ]
+,"subdiagram_views": [
+{
+"view_id": "241",
+"view_name": "应用数据与测试访问"
+}
+]
 },
 {
 "id": "1804",
@@ -128,6 +134,12 @@
 {
 "name": "impl"
 ,"description": ".opencode\\tools\\validator.ts"
+}
+]
+,"subdiagram_views": [
+{
+"view_id": "242",
+"view_name": "验证工具分配"
 }
 ]
 },
@@ -340,12 +352,27 @@
 "1799",
 "1800",
 "1801",
+"1802"
+]
+,"included_relationships": [
+"1733",
+"1734",
+"1735"
+]
+},
+{
+"view_id": "241",
+"view_name": "应用数据与测试访问"
+,"parent_element_id": "1803"
+,"parent_element_name": "SystemArchitecture"
+,"included_elements": [
+"1799",
+"1800",
+"1801",
 "1802",
 "1803",
 "1804",
-"1805",
-"1806",
-"1807"
+"1805"
 ]
 ,"included_relationships": [
 "1726",
@@ -355,15 +382,26 @@
 "1730",
 "1731",
 "1732",
-"1733",
-"1734",
-"1735",
-"1736",
-"1737",
-"1738",
 "1739",
 "1740",
 "1741"
+]
+},
+{
+"view_id": "242",
+"view_name": "验证工具分配"
+,"parent_element_id": "1806"
+,"parent_element_name": "validator_validateSystemArchitecture"
+,"included_elements": [
+"1799",
+"1800",
+"1806",
+"1807"
+]
+,"included_relationships": [
+"1736",
+"1737",
+"1738"
 ]
 },
 {

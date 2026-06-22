@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const graphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
+const graphRelativePath = path.join('design', 'KG', 'SystemArchitecture.json');
+const graphPath = path.join(repoRoot, graphRelativePath);
 const schemaPathCandidates = [
     path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'),
 ];
@@ -338,6 +339,9 @@ function validateGraphSemantics(document, errors) {
         }
 
         const includedElements = Array.isArray(view.included_elements) ? view.included_elements : [];
+        if (includedElements.length > 7) {
+            errors.push(`views '${view.view_id}' must contain at most 7 elements; found ${includedElements.length}. Split the content into layered sub-views before adding more elements.`);
+        }
         includedElements.forEach(elementId => {
             elementIdsIncludedInViews.add(elementId);
             if (!elementById.has(elementId)) {

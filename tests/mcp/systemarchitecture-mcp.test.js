@@ -21,6 +21,7 @@ async function main() {
   validatesArchimate32RuleCoverage();
   validatesRelationshipSchemaRequiresTypeAndSeparatesName();
   validatesImplementationTraceProposalSchema();
+  validatesTotalValidatorUsesFixedGraphAndViewLimitRule();
   await validatesFocusedViewToolsAreListed();
   await validatesAgentFacingToolGuidance();
   await validatesCurrentGraph();
@@ -50,6 +51,8 @@ async function main() {
   await removesElementFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
   await appliesExistingRelationshipToAdditionalView(tempGraphPath);
   await previewsViewLifecycleMutations(tempGraphPath);
+  await allowsViewLifecycleWithoutExistingMembers(tempGraphPath);
+  await rejectsViewLifecycleWithMissingMembers(tempGraphPath);
   await rejectsSubviewWithoutParentElement(tempGraphPath);
 }
 
@@ -109,6 +112,7 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'addArchitectureView', ['one top-level view', 'sub-views']);
   assertDescriptionIncludes(toolByName, 'getIntentElementContext', ['read-only', 'subgraph', 'dependencyDepth']);
   assertDescriptionIncludes(toolByName, 'validateTraceProposal', ['Validate', 'ImplementationToIntentTraceProposal']);
+  assert.deepStrictEqual(toolByName.get('validateSystemArchitecture').inputSchema.properties, {});
 }
 
 function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
@@ -213,6 +217,13 @@ function validatesImplementationTraceProposalSchema() {
   assert(anchorSchema.properties.implementationElementKind.enum.includes('stable-directory'));
   assert(anchorSchema.properties.implementationElementKind.enum.includes('explicit-test-entry'));
   assert.deepStrictEqual(anchorSchema.properties.implementsType.enum, ['direct', 'indirect']);
+}
+
+function validatesTotalValidatorUsesFixedGraphAndViewLimitRule() {
+  const script = fs.readFileSync(path.join(repoRoot, 'scripts', 'validateSystemArchitecture.js'), 'utf8');
+  assert(script.includes("path.join('design', 'KG', 'SystemArchitecture.json')"));
+  assert(!script.includes('process.argv[2]'));
+  assert(script.includes('must contain at most 7 elements'));
 }
 
 async function rejectsElementAdditionWhenViewWouldExceedSevenElements() {
@@ -1075,6 +1086,102 @@ async function previewsViewLifecycleMutations(tempGraphPath) {
   assert.strictEqual(payload.written, false);
   assert.strictEqual(payload.after.viewCount, payload.before.viewCount);
   assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['addView', 'updateView', 'removeView']);
+}
+
+async function allowsViewLifecycleWithoutExistingMembers(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-empty-member-view',
+          view_name: 'Empty member view',
+          parent_element_id: '1798',
+          parent_element_name: 'Orchestrator',
+        },
+      },
+      {
+        type: 'updateView',
+        view_id: 'mcp-empty-member-view',
+        patch: {
+          included_elements: [],
+          included_relationships: [],
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.deepStrictEqual(payload.errors, []);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.written, false);
+  assert.strictEqual(payload.after.viewCount, payload.before.viewCount + 1);
+  assert.deepStrictEqual(payload.mutations.map(mutation => mutation.type), ['addView', 'updateView']);
+}
+
+async function rejectsViewLifecycleWithMissingMembers(tempGraphPath) {
+  const addResponse = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-future-member-view',
+          view_name: 'Future member view',
+          parent_element_id: '1798',
+          parent_element_name: 'Orchestrator',
+          included_elements: ['future-element-before-it-exists'],
+          included_relationships: ['future-relationship-before-it-exists'],
+        },
+      },
+    ],
+  });
+
+  const addPayload = parseToolPayload(addResponse);
+  assert.strictEqual(addPayload.status, 'failed');
+  assert(
+    addPayload.errors.some(error => error.includes("references missing included element 'future-element-before-it-exists'")),
+    `Expected missing included element error, got: ${JSON.stringify(addPayload.errors)}`,
+  );
+  assert(
+    addPayload.errors.some(error => error.includes("references missing included relationship 'future-relationship-before-it-exists'")),
+    `Expected missing included relationship error, got: ${JSON.stringify(addPayload.errors)}`,
+  );
+
+  const updateResponse = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-update-future-member-view',
+          view_name: 'Update future member view',
+          parent_element_id: '1798',
+          parent_element_name: 'Orchestrator',
+        },
+      },
+      {
+        type: 'updateView',
+        view_id: 'mcp-update-future-member-view',
+        patch: {
+          included_elements: ['future-element-after-update'],
+          included_relationships: ['future-relationship-after-update'],
+        },
+      },
+    ],
+  });
+
+  const updatePayload = parseToolPayload(updateResponse);
+  assert.strictEqual(updatePayload.status, 'failed');
+  assert(
+    updatePayload.errors.some(error => error.includes("references missing included element 'future-element-after-update'")),
+    `Expected missing included element error, got: ${JSON.stringify(updatePayload.errors)}`,
+  );
+  assert(
+    updatePayload.errors.some(error => error.includes("references missing included relationship 'future-relationship-after-update'")),
+    `Expected missing included relationship error, got: ${JSON.stringify(updatePayload.errors)}`,
+  );
 }
 
 async function rejectsSubviewWithoutParentElement(tempGraphPath) {

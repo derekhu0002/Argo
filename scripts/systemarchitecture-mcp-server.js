@@ -47,9 +47,7 @@ const TOOLS = [
     description: 'Validate the current SystemArchitecture graph through schema, graph, and ArchiMate metadata rules.',
     inputSchema: {
       type: 'object',
-      properties: {
-        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
-      },
+      properties: {},
       additionalProperties: false,
     },
   },
@@ -296,6 +294,9 @@ function validateDocument(document, schema, options = {}) {
   const errors = [];
   validateAgainstSchema(document, schema, '#', errors, schema);
   validateGraphSemantics(document, errors);
+  if (options.validateAllViewElementLimits) {
+    validateTouchedViewElementLimit(document, (document.views || []).map(view => view && view.view_id), errors);
+  }
   validateTouchedArchiMateGrammar(document, options.touchedRelationshipIds || [], errors);
   return errors;
 }
@@ -1425,8 +1426,10 @@ async function callTool(name, args = {}) {
   }
 
   if (name === 'validateSystemArchitecture') {
-    const context = loadContext(args);
-    const errors = validateDocument(context.document, context.schema);
+    const context = loadContext({});
+    const errors = validateDocument(context.document, context.schema, {
+      validateAllViewElementLimits: true,
+    });
     return toolResult({
       status: errors.length === 0 ? 'passed' : 'failed',
       graphPath: context.graphPath.relativePath,
