@@ -49,6 +49,7 @@ Implementation Design
 1. 分析范围仅限当前工作区。先读取意图架构，再读取已有实现架构契约（若存在），再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。
 2. 先读取 `design/KG/IntentToImplementationHandoff.json`；若该交接物缺失、格式不完整，或没有把显性 testcase、冻结基线、实现目标交代清楚，请先将其报告为上游阶段缺口，不要自行脑补补齐。
 3. 本次产出必须直接落盘为代码仓中的实现架构本体：项目根目录下的 `OVERALL_ARCHITECTURE.md`、稳定实现元素目录下的 `ARCHITECTURE.md`、必要的目录/文件布局、显性测试入口、关键非显性测试与普通支撑测试护栏，以及 `design/KG/ImplementationToCodingHandoff.json`。
+3a. 若实现架构锚点需要写回意图图谱以支持任务分解或上下文提取，请按 `schema/ImplementationToIntentTraceProposal.schema.json` 产出 `design/KG/ImplementationToIntentTraceProposal.json` 供 IntentionDesign 审核。
 4. 本次产出的实现架构必须保持高层稳定边界，不要退化成源码镜像或函数级设计。
 5. 对于意图架构中的显性 testcase，你除了建立追溯关系外，还必须为每条需要落地的显性 testcase 明确其单一测试入口如何物理化，使后续编码阶段可以“直接调用而不修改”。若仓库中尚不存在该入口，本阶段应负责设计并产出对应入口文件或明确其只读落点，而不是把这项责任下推给编码阶段。
 6. 本阶段对显性 testcase 的最低交付标准[MUST]是“关键断言已落地并可执行”：至少要把核心断言口径、断言对象、控制点与观测点写入可运行入口，并避免只做空壳脚手架。对于新增或修改的显性 testcase [MUST]经过人类用户批准通过才算完成。

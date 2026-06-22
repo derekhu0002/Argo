@@ -7,6 +7,7 @@ const { promisify } = require('node:util');
 const execFileAsync = promisify(execFile);
 
 const HANDOFF_STAGES = ['intent-to-implementation', 'implementation-to-coding'];
+const DEFAULT_TRACE_PROPOSAL_PATH = 'design/KG/ImplementationToIntentTraceProposal.json';
 const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 
 const SCRIPT_CANDIDATES = {
@@ -15,6 +16,9 @@ const SCRIPT_CANDIDATES = {
   ],
   validateStageHandoff: [
     'scripts/validateStageHandoff.js',
+  ],
+  validateTraceProposal: [
+    'scripts/validateTraceProposal.js',
   ],
   runArchitectureTests: [
     'scripts/runArchitectureTests.js',
@@ -41,6 +45,20 @@ const TOOLS = [
           type: 'string',
           enum: HANDOFF_STAGES,
           description: 'Optional handoff stage to validate.',
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'validateTraceProposal',
+    description: 'Validate ImplementationToIntentTraceProposal JSON against schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        proposalPath: {
+          type: 'string',
+          description: `Optional proposal path relative to workspace root. Default: ${DEFAULT_TRACE_PROPOSAL_PATH}`,
         },
       },
       additionalProperties: false,
@@ -145,6 +163,11 @@ async function callTool(name, args) {
       throw new Error(`Unsupported handoff stage '${stage}'. Expected one of: ${HANDOFF_STAGES.join(', ')}`);
     }
     return toolResult(await runValidatorScript(workspaceRoot, 'validateStageHandoff', stage ? [stage] : []));
+  }
+
+  if (name === 'validateTraceProposal') {
+    const proposalPath = (args && args.proposalPath) || DEFAULT_TRACE_PROPOSAL_PATH;
+    return toolResult(await runValidatorScript(workspaceRoot, 'validateTraceProposal', [proposalPath]));
   }
 
   if (name === 'runArchitectureTests') {

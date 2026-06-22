@@ -20,6 +20,7 @@ async function main() {
   validatesNoDuplicateMcpExecutionAssets();
   validatesArchimate32RuleCoverage();
   validatesRelationshipSchemaRequiresTypeAndSeparatesName();
+  validatesImplementationTraceProposalSchema();
   await validatesFocusedViewToolsAreListed();
   await validatesAgentFacingToolGuidance();
   await validatesCurrentGraph();
@@ -83,6 +84,7 @@ async function validatesFocusedViewToolsAreListed() {
   assert(toolNames.includes('removeArchitectureElement'));
   assert(toolNames.includes('removeArchitectureRelationship'));
   assert(toolNames.includes('getIntentElementContext'));
+  assert(toolNames.includes('validateTraceProposal'));
   assert(!toolNames.includes('addViewMembership'));
   assert(!toolNames.includes('removeViewMembership'));
 }
@@ -105,6 +107,7 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'removeArchitectureRelationship', ['view_ids', 'all views']);
   assertDescriptionIncludes(toolByName, 'addArchitectureView', ['one top-level view', 'sub-views']);
   assertDescriptionIncludes(toolByName, 'getIntentElementContext', ['read-only', 'subgraph', 'dependencyDepth']);
+  assertDescriptionIncludes(toolByName, 'validateTraceProposal', ['Validate', 'ImplementationToIntentTraceProposal']);
 }
 
 function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
@@ -173,6 +176,42 @@ function validatesRelationshipSchemaRequiresTypeAndSeparatesName() {
   assert(relationshipSchema.required.includes('type'));
   assert.deepStrictEqual(relationshipSchema.properties.name, { $ref: '#/$defs/nonEmptyString' });
   assert.deepStrictEqual(relationshipSchema.properties.type, { $ref: '#/$defs/archimateRelationshipType' });
+}
+
+function validatesImplementationTraceProposalSchema() {
+  const schemaPath = path.join(repoRoot, 'schema', 'ImplementationToIntentTraceProposal.schema.json');
+  assert(fs.existsSync(schemaPath), 'ImplementationToIntentTraceProposal schema must exist');
+
+  const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+  assert.strictEqual(schema.additionalProperties, false);
+  assert(schema.required.includes('proposalType'));
+  assert(schema.required.includes('sourceAgent'));
+  assert(schema.required.includes('targetAgent'));
+  assert(schema.required.includes('lifecycle'));
+  assert(schema.required.includes('sourceIntentGraphPath'));
+  assert(schema.required.includes('implementationContracts'));
+  assert(schema.required.includes('anchorProposals'));
+  assert.strictEqual(schema.properties.proposalType.const, 'implementation-to-intent-trace');
+  assert.strictEqual(schema.properties.sourceAgent.const, 'ImplementationDesign');
+  assert.strictEqual(schema.properties.targetAgent.const, 'IntentionDesign');
+  assert.strictEqual(schema.properties.lifecycle.const, 'temporary-trace-proposal');
+
+  const anchorSchema = schema.$defs.anchorProposal;
+  for (const requiredField of [
+    'intentElementId',
+    'implementationElementName',
+    'implementationElementKind',
+    'implementsType',
+    'tracePurpose',
+    'contractPaths',
+    'contextEntryPoints',
+    'excludedDetails',
+  ]) {
+    assert(anchorSchema.required.includes(requiredField), `anchorProposal must require ${requiredField}`);
+  }
+  assert(anchorSchema.properties.implementationElementKind.enum.includes('stable-directory'));
+  assert(anchorSchema.properties.implementationElementKind.enum.includes('explicit-test-entry'));
+  assert.deepStrictEqual(anchorSchema.properties.implementsType.enum, ['direct', 'indirect']);
 }
 
 function ensureTempDirectory() {

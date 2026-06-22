@@ -25,6 +25,7 @@ const WINDOWS_RESERVED_NAMES = new Set([
 const VALIDATOR_TOOL_NAMES = new Set([
   'validateSystemArchitecture',
   'validateStageHandoff',
+  'validateTraceProposal',
   'runArchitectureTests',
 ]);
 const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
@@ -72,6 +73,20 @@ const TOOLS = [
           type: 'string',
           enum: ['intent-to-implementation', 'implementation-to-coding'],
           description: 'Optional handoff stage to validate.',
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'validateTraceProposal',
+    description: 'Validate ImplementationToIntentTraceProposal JSON against schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        proposalPath: {
+          type: 'string',
+          description: 'Optional proposal path relative to workspace root. Default: design/KG/ImplementationToIntentTraceProposal.json',
         },
       },
       additionalProperties: false,
