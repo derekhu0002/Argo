@@ -38,6 +38,11 @@ const TOOLS = [
     },
   },
   {
+    name: 'getIntentElementContext',
+    description: 'read-only query that returns an intent subgraph context for one element. Uses ArchiMate semantic dependency traversal with dependencyDepth and dependentDepth, preserving native subgraph elements, relationships, and views.',
+    inputSchema: intentElementContextInputSchema(),
+  },
+  {
     name: 'validateSystemArchitecture',
     description: 'Validate the current SystemArchitecture graph through schema, graph, and ArchiMate metadata rules.',
     inputSchema: {
@@ -184,6 +189,27 @@ const TOOLS = [
   },
 ];
 
+function intentElementContextInputSchema() {
+  return {
+    type: 'object',
+    properties: {
+      architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      elementId: { type: 'string' },
+      elementName: { type: 'string' },
+      profile: {
+        type: 'string',
+        enum: ['implementation-design', 'coding-repair', 'audit', 'generic-agent'],
+        description: 'Default: generic-agent. Affects workContext enrichment only; subgraph shape stays native.',
+      },
+      dependencyDepth: { type: 'number', description: 'Default: 2. Semantic dependencies needed by the focus element.' },
+      dependentDepth: { type: 'number', description: 'Default: 1. Semantic dependents that rely on the focus element.' },
+      associationDepth: { type: 'number', description: 'Default: 1. Association neighbors are expanded at least one layer.' },
+      associationNeighborDependencyDepth: { type: 'number', description: 'Default: 0. Optional dependency expansion from association neighbors.' },
+    },
+    additionalProperties: false,
+  };
+}
+
 function mutationInputSchema() {
   return {
     type: 'object',
@@ -272,6 +298,388 @@ function validateDocument(document, schema, options = {}) {
   validateGraphSemantics(document, errors);
   validateTouchedArchiMateGrammar(document, options.touchedRelationshipIds || [], errors);
   return errors;
+}
+
+function buildIntentElementContext(context, args = {}) {
+  const profile = args.profile || 'generic-agent';
+  const focusResult = resolveFocusElement(context.document, args);
+  if (focusResult.status !== 'passed') {
+    return focusResult;
+  }
+
+  const dependencyDepth = normalizeDepth(args.dependencyDepth, 2);
+  const dependentDepth = normalizeDepth(args.dependentDepth, 1);
+  const associationDepth = Math.max(1, normalizeDepth(args.associationDepth, 1));
+  const associationNeighborDependencyDepth = normalizeDepth(args.associationNeighborDependencyDepth, 0);
+  const graphIndex = buildGraphIndex(context.document);
+  const focusElement = focusResult.element;
+  const includedElementIds = new Set([focusElement.id]);
+  const includedRelationshipIds = new Set();
+  const dependencyDepthByElement = new Map([[focusElement.id, 0]]);
+  const dependentDepthByElement = new Map([[focusElement.id, 0]]);
+  const associationDepthByElement = new Map([[focusElement.id, 0]]);
+
+  traverseSemanticContext({
+    startId: focusElement.id,
+    maxDepth: dependencyDepth,
+    mode: 'dependency',
+    graphIndex,
+    includedElementIds,
+    includedRelationshipIds,
+    depthByElement: dependencyDepthByElement,
+  });
+  traverseSemanticContext({
+    startId: focusElement.id,
+    maxDepth: dependentDepth,
+    mode: 'dependent',
+    graphIndex,
+    includedElementIds,
+    includedRelationshipIds,
+    depthByElement: dependentDepthByElement,
+  });
+  traverseSemanticContext({
+    startId: focusElement.id,
+    maxDepth: associationDepth,
+    mode: 'association',
+    graphIndex,
+    includedElementIds,
+    includedRelationshipIds,
+    depthByElement: associationDepthByElement,
+  });
+
+  if (associationNeighborDependencyDepth > 0) {
+    for (const [elementId, depth] of associationDepthByElement.entries()) {
+      if (elementId === focusElement.id || depth < 1) {
+        continue;
+      }
+      traverseSemanticContext({
+        startId: elementId,
+        maxDepth: associationNeighborDependencyDepth,
+        mode: 'dependency',
+        graphIndex,
+        includedElementIds,
+        includedRelationshipIds,
+        depthByElement: new Map([[elementId, 0]]),
+      });
+    }
+  }
+
+  includeViewAnchors(context.document, includedElementIds, includedRelationshipIds, graphIndex);
+  const boundary = buildBoundary({
+    graphIndex,
+    includedElementIds,
+    dependencyDepthByElement,
+    dependentDepthByElement,
+    associationDepthByElement,
+    dependencyDepth,
+    dependentDepth,
+    associationDepth,
+  });
+  const explorationHints = buildExplorationHints(boundary, {
+    profile,
+    dependencyDepth,
+    dependentDepth,
+    associationDepth,
+  });
+
+  return {
+    status: 'passed',
+    query: {
+      architecturePath: context.graphPath.relativePath,
+      elementId: focusElement.id,
+      elementName: focusElement.name,
+      profile,
+      dependencyDepth,
+      dependentDepth,
+      associationDepth,
+      associationNeighborDependencyDepth,
+      traversalMode: 'archimate-semantic',
+    },
+    focusElementId: focusElement.id,
+    subgraph: buildNativeSubgraph(context.document, includedElementIds, includedRelationshipIds),
+    boundary,
+    explorationHints,
+    workContext: {},
+    diagnostics: [],
+  };
+}
+
+function resolveFocusElement(document, args) {
+  if (args.elementId) {
+    const element = (document.elements || []).find(entry => entry.id === args.elementId);
+    if (!element) {
+      return {
+        status: 'failed',
+        error: `Element '${args.elementId}' does not exist`,
+        candidates: [],
+      };
+    }
+    return { status: 'passed', element };
+  }
+
+  if (!args.elementName) {
+    return {
+      status: 'failed',
+      error: 'elementId or elementName is required',
+      candidates: [],
+    };
+  }
+
+  const matches = (document.elements || []).filter(element => element.name === args.elementName);
+  if (matches.length === 1) {
+    return { status: 'passed', element: matches[0] };
+  }
+  if (matches.length > 1) {
+    return {
+      status: 'ambiguous',
+      error: `Element name '${args.elementName}' matched multiple elements`,
+      candidates: matches.map(element => ({ id: element.id, name: element.name, type: element.type })),
+    };
+  }
+  return {
+    status: 'failed',
+    error: `Element name '${args.elementName}' does not exist`,
+    candidates: [],
+  };
+}
+
+function normalizeDepth(value, defaultValue) {
+  if (value === undefined || value === null || value === '') {
+    return defaultValue;
+  }
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue) || numericValue < 0) {
+    return defaultValue;
+  }
+  return Math.floor(numericValue);
+}
+
+function buildGraphIndex(document) {
+  const relationshipById = new Map();
+  const elementById = new Map((document.elements || []).map(element => [element.id, element]));
+  const relationshipsByElementId = new Map();
+  for (const relationship of document.relationships || []) {
+    relationshipById.set(relationship.id, relationship);
+    addIndexedRelationship(relationshipsByElementId, relationship.source_id, relationship);
+    addIndexedRelationship(relationshipsByElementId, relationship.target_id, relationship);
+  }
+  return { elementById, relationshipById, relationshipsByElementId };
+}
+
+function addIndexedRelationship(index, elementId, relationship) {
+  if (!index.has(elementId)) {
+    index.set(elementId, []);
+  }
+  index.get(elementId).push(relationship);
+}
+
+function traverseSemanticContext(options) {
+  const {
+    startId,
+    maxDepth,
+    mode,
+    graphIndex,
+    includedElementIds,
+    includedRelationshipIds,
+    depthByElement,
+  } = options;
+  if (maxDepth < 1) {
+    return;
+  }
+
+  const queue = [{ elementId: startId, depth: 0 }];
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    if (current.depth >= maxDepth) {
+      continue;
+    }
+    for (const edge of resolveSemanticEdges(current.elementId, graphIndex)) {
+      if (edge.kind !== mode) {
+        continue;
+      }
+      const nextDepth = current.depth + 1;
+      includedElementIds.add(edge.neighborId);
+      includedRelationshipIds.add(edge.relationship.id);
+      if (!depthByElement.has(edge.neighborId) || nextDepth < depthByElement.get(edge.neighborId)) {
+        depthByElement.set(edge.neighborId, nextDepth);
+        queue.push({ elementId: edge.neighborId, depth: nextDepth });
+      }
+    }
+  }
+}
+
+function resolveSemanticEdges(elementId, graphIndex) {
+  const edges = [];
+  for (const relationship of graphIndex.relationshipsByElementId.get(elementId) || []) {
+    const isSource = relationship.source_id === elementId;
+    const neighborId = isSource ? relationship.target_id : relationship.source_id;
+    const relationshipType = relationship.type;
+
+    if (relationshipType === 'Association') {
+      edges.push({ kind: 'association', neighborId, relationship });
+      continue;
+    }
+
+    if (relationshipType === 'Composition' || relationshipType === 'Aggregation') {
+      edges.push({ kind: 'dependency', neighborId, relationship });
+      continue;
+    }
+
+    const sourceDependsOnTarget = ['Access', 'Assignment', 'Specialization'].includes(relationshipType);
+    const targetDependsOnSource = ['Serving', 'Realization', 'Flow', 'Triggering', 'Influence'].includes(relationshipType);
+    if (sourceDependsOnTarget) {
+      edges.push({ kind: isSource ? 'dependency' : 'dependent', neighborId, relationship });
+      continue;
+    }
+    if (targetDependsOnSource) {
+      edges.push({ kind: isSource ? 'dependent' : 'dependency', neighborId, relationship });
+    }
+  }
+  return edges;
+}
+
+function includeViewAnchors(document, includedElementIds, includedRelationshipIds, graphIndex) {
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const view of document.views || []) {
+      if (!viewTouchesSubgraph(view, includedElementIds, includedRelationshipIds)) {
+        continue;
+      }
+      if (view.parent_element_id && !includedElementIds.has(view.parent_element_id) && graphIndex.elementById.has(view.parent_element_id)) {
+        includedElementIds.add(view.parent_element_id);
+        changed = true;
+      }
+    }
+    for (const elementId of Array.from(includedElementIds)) {
+      const element = graphIndex.elementById.get(elementId);
+      if (element && element.parent && !includedElementIds.has(element.parent) && graphIndex.elementById.has(element.parent)) {
+        includedElementIds.add(element.parent);
+        changed = true;
+      }
+    }
+  }
+}
+
+function viewTouchesSubgraph(view, includedElementIds, includedRelationshipIds) {
+  return (view.included_elements || []).some(elementId => includedElementIds.has(elementId))
+    || (view.included_relationships || []).some(relationshipId => includedRelationshipIds.has(relationshipId));
+}
+
+function buildBoundary(options) {
+  return {
+    truncatedDependencies: collectTruncatedBoundary({
+      ...options,
+      depthByElement: mergeBoundaryDepths(options.dependencyDepthByElement, options.associationDepthByElement),
+      maxDepth: options.dependencyDepth,
+      kind: 'dependency',
+    }),
+    truncatedDependents: collectTruncatedBoundary({
+      ...options,
+      depthByElement: options.dependentDepthByElement,
+      maxDepth: options.dependentDepth,
+      kind: 'dependent',
+    }),
+  };
+}
+
+function mergeBoundaryDepths(primaryDepths, associationDepths) {
+  const merged = new Map(primaryDepths);
+  for (const [elementId, depth] of associationDepths.entries()) {
+    if (!merged.has(elementId) || depth < merged.get(elementId)) {
+      merged.set(elementId, depth);
+    }
+  }
+  return merged;
+}
+
+function collectTruncatedBoundary(options) {
+  const {
+    graphIndex,
+    includedElementIds,
+    depthByElement,
+    maxDepth,
+    kind,
+  } = options;
+  const truncated = [];
+  if (maxDepth < 0) {
+    return truncated;
+  }
+  for (const [elementId, depth] of depthByElement.entries()) {
+    if (depth < maxDepth && kind !== 'dependency') {
+      continue;
+    }
+    const unexpandedEdges = resolveSemanticEdges(elementId, graphIndex).filter(edge => (
+      (edge.kind === kind || (kind === 'dependency' && edge.kind === 'association'))
+      && !includedElementIds.has(edge.neighborId)
+    ));
+    if (unexpandedEdges.length === 0) {
+      continue;
+    }
+    const element = graphIndex.elementById.get(elementId);
+    truncated.push({
+      elementId,
+      elementName: element ? element.name : undefined,
+      direction: kind,
+      remainingEdgeCount: unexpandedEdges.length,
+      relationshipIds: unexpandedEdges.map(edge => edge.relationship.id),
+      reason: `${kind} depth limit reached`,
+    });
+  }
+  return truncated;
+}
+
+function buildExplorationHints(boundary, defaults) {
+  const hints = [];
+  for (const entry of boundary.truncatedDependencies || []) {
+    hints.push({
+      reason: `Element ${entry.elementId} has unexpanded dependency context`,
+      suggestedTool: 'getIntentElementContext',
+      suggestedArguments: {
+        elementId: entry.elementId,
+        profile: defaults.profile,
+        dependencyDepth: Math.max(1, defaults.dependencyDepth),
+        dependentDepth: 0,
+        associationDepth: defaults.associationDepth,
+      },
+    });
+  }
+  for (const entry of boundary.truncatedDependents || []) {
+    hints.push({
+      reason: `Element ${entry.elementId} has unexpanded dependent context`,
+      suggestedTool: 'getIntentElementContext',
+      suggestedArguments: {
+        elementId: entry.elementId,
+        profile: defaults.profile,
+        dependencyDepth: 0,
+        dependentDepth: Math.max(1, defaults.dependentDepth),
+        associationDepth: defaults.associationDepth,
+      },
+    });
+  }
+  return hints;
+}
+
+function buildNativeSubgraph(document, includedElementIds, includedRelationshipIds) {
+  const elements = (document.elements || [])
+    .filter(element => includedElementIds.has(element.id))
+    .map(clone);
+  const relationships = (document.relationships || [])
+    .filter(relationship => includedRelationshipIds.has(relationship.id))
+    .map(clone);
+  const views = (document.views || [])
+    .filter(view => viewTouchesSubgraph(view, includedElementIds, includedRelationshipIds))
+    .map(view => {
+      const viewCopy = clone(view);
+      if (Array.isArray(viewCopy.included_elements)) {
+        viewCopy.included_elements = viewCopy.included_elements.filter(elementId => includedElementIds.has(elementId));
+      }
+      if (Array.isArray(viewCopy.included_relationships)) {
+        viewCopy.included_relationships = viewCopy.included_relationships.filter(relationshipId => includedRelationshipIds.has(relationshipId));
+      }
+      return viewCopy;
+    });
+  return { elements, relationships, views };
 }
 
 function applyMutations(document, mutations) {
@@ -971,6 +1379,11 @@ async function callTool(name, args = {}) {
       graphPath: context.graphPath.relativePath,
       document: context.document,
     });
+  }
+
+  if (name === 'getIntentElementContext') {
+    const context = loadContext(args);
+    return toolResult(buildIntentElementContext(context, args));
   }
 
   if (name === 'validateSystemArchitecture') {

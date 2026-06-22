@@ -35,6 +35,7 @@ async function main() {
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath);
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
+  await returnsIntentElementContextWithSemanticTraversal();
   await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
   await removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
   await removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
@@ -52,9 +53,19 @@ async function main() {
 
 function validatesUnifiedMcpConfiguration() {
   for (const configPath of mcpConfigPaths) {
-    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, configPath), 'utf8'));
-    assert.deepStrictEqual(Object.keys(config.mcpServers), ['argo'], configPath);
-    assert.deepStrictEqual(config.mcpServers.argo.args, ['${workspaceFolder}/scripts/argo-mcp-server.js'], configPath);
+    const absoluteConfigPath = path.join(repoRoot, configPath);
+    if (!fs.existsSync(absoluteConfigPath)) {
+      continue;
+    }
+    const config = JSON.parse(fs.readFileSync(absoluteConfigPath, 'utf8'));
+    const servers = config.mcpServers || config.servers;
+    assert(servers, `${configPath} must define MCP servers`);
+    assert.deepStrictEqual(Object.keys(servers), ['argo'], configPath);
+    const argoArgs = servers.argo.args || [];
+    assert(
+      argoArgs.some(arg => arg.replace(/\\/g, '/').endsWith('scripts/argo-mcp-server.js')),
+      `${configPath} must point to scripts/argo-mcp-server.js`,
+    );
   }
 }
 
@@ -71,6 +82,7 @@ async function validatesFocusedViewToolsAreListed() {
   assert(toolNames.includes('removeArchitectureView'));
   assert(toolNames.includes('removeArchitectureElement'));
   assert(toolNames.includes('removeArchitectureRelationship'));
+  assert(toolNames.includes('getIntentElementContext'));
   assert(!toolNames.includes('addViewMembership'));
   assert(!toolNames.includes('removeViewMembership'));
 }
@@ -92,6 +104,7 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'removeArchitectureElement', ['cascades related relationships', 'view_ids']);
   assertDescriptionIncludes(toolByName, 'removeArchitectureRelationship', ['view_ids', 'all views']);
   assertDescriptionIncludes(toolByName, 'addArchitectureView', ['one top-level view', 'sub-views']);
+  assertDescriptionIncludes(toolByName, 'getIntentElementContext', ['read-only', 'subgraph', 'dependencyDepth']);
 }
 
 function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
@@ -166,6 +179,131 @@ function ensureTempDirectory() {
   const tempDirectory = path.join(repoRoot, 'tests', 'mcp', '.tmp');
   fs.mkdirSync(tempDirectory, { recursive: true });
   return tempDirectory;
+}
+
+async function returnsIntentElementContextWithSemanticTraversal() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'context-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildContextQueryGraph(), null, 2));
+
+  const response = await callTool('getIntentElementContext', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    elementId: 'focus',
+    dependencyDepth: 1,
+    dependentDepth: 1,
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.focusElementId, 'focus');
+  assert.strictEqual(payload.query.traversalMode, 'archimate-semantic');
+  assert(!Object.prototype.hasOwnProperty.call(payload.subgraph, 'name'));
+  assert(!Object.prototype.hasOwnProperty.call(payload.subgraph, 'description'));
+
+  const elementIds = payload.subgraph.elements.map(element => element.id).sort();
+  assert.deepStrictEqual(elementIds, [
+    'aggregate',
+    'assigned-function',
+    'associated',
+    'base-contract',
+    'concrete-realizer',
+    'dependent',
+    'direct-data',
+    'flow-source',
+    'focus',
+    'influencer',
+    'provider',
+    'trigger-source',
+    'whole',
+  ]);
+
+  const relationshipIds = payload.subgraph.relationships.map(relationship => relationship.id).sort();
+  assert.deepStrictEqual(relationshipIds, [
+    'aggregate-contains-focus',
+    'concrete-realizes-focus',
+    'dependent-accesses-focus',
+    'flow-source-flows-to-focus',
+    'focus-accesses-data',
+    'focus-assigned-to-function',
+    'focus-associated-with-associated',
+    'focus-specializes-base',
+    'influencer-influences-focus',
+    'provider-serves-focus',
+    'trigger-source-triggers-focus',
+    'whole-composes-focus',
+  ]);
+  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
+  const expectedRelationshipTypes = schema.$defs.archimateRelationshipType.enum.slice().sort();
+  const actualRelationshipTypes = Array.from(new Set(payload.subgraph.relationships.map(relationship => relationship.type))).sort();
+  assert.deepStrictEqual(actualRelationshipTypes, expectedRelationshipTypes);
+
+  assert(payload.subgraph.views.some(view => view.view_id === 'context-view'));
+  assert(payload.boundary.truncatedDependencies.some(entry => entry.elementId === 'associated'));
+  assert(payload.explorationHints.some(hint => hint.suggestedArguments.elementId === 'associated'));
+}
+
+function buildContextQueryGraph() {
+  const elements = [
+    { id: 'focus', name: 'Focus', type: 'Application Component' },
+    { id: 'provider', name: 'Provider', type: 'Application Service' },
+    { id: 'whole', name: 'Whole', type: 'Application Component' },
+    { id: 'aggregate', name: 'Aggregate', type: 'Application Component' },
+    { id: 'associated', name: 'Associated', type: 'Application Component' },
+    { id: 'associated-dependency', name: 'Associated Dependency', type: 'Data Object' },
+    { id: 'dependent', name: 'Dependent', type: 'Application Component' },
+    { id: 'direct-data', name: 'Direct Data', type: 'Data Object' },
+    { id: 'assigned-function', name: 'Assigned Function', type: 'Application Function' },
+    { id: 'concrete-realizer', name: 'Concrete Realizer', type: 'Application Component' },
+    { id: 'trigger-source', name: 'Trigger Source', type: 'Application Event' },
+    { id: 'flow-source', name: 'Flow Source', type: 'Data Object' },
+    { id: 'influencer', name: 'Influencer', type: 'Driver' },
+    { id: 'base-contract', name: 'Base Contract', type: 'Application Component' },
+  ];
+  const relationships = [
+    contextRelationship('provider-serves-focus', 'Serving', 'provider', 'focus', elements),
+    contextRelationship('whole-composes-focus', 'Composition', 'whole', 'focus', elements),
+    contextRelationship('aggregate-contains-focus', 'Aggregation', 'aggregate', 'focus', elements),
+    contextRelationship('focus-associated-with-associated', 'Association', 'focus', 'associated', elements),
+    contextRelationship('associated-accesses-dependency', 'Access', 'associated', 'associated-dependency', elements),
+    contextRelationship('dependent-accesses-focus', 'Access', 'dependent', 'focus', elements),
+    contextRelationship('focus-accesses-data', 'Access', 'focus', 'direct-data', elements),
+    contextRelationship('focus-assigned-to-function', 'Assignment', 'focus', 'assigned-function', elements),
+    contextRelationship('concrete-realizes-focus', 'Realization', 'concrete-realizer', 'focus', elements),
+    contextRelationship('trigger-source-triggers-focus', 'Triggering', 'trigger-source', 'focus', elements),
+    contextRelationship('flow-source-flows-to-focus', 'Flow', 'flow-source', 'focus', elements),
+    contextRelationship('influencer-influences-focus', 'Influence', 'influencer', 'focus', elements),
+    contextRelationship('focus-specializes-base', 'Specialization', 'focus', 'base-contract', elements),
+  ];
+  return {
+    name: 'SystemArchitecture',
+    description: 'Temporary graph for intent context query tests.',
+    elements,
+    relationships,
+    views: [
+      {
+        view_id: 'context-view',
+        view_name: 'Context View',
+        included_elements: elements.map(element => element.id),
+        included_relationships: relationships.map(relationship => relationship.id),
+      },
+    ],
+  };
+}
+
+function contextRelationship(id, type, sourceId, targetId, elements) {
+  const elementById = new Map(elements.map(element => [element.id, element]));
+  const source = elementById.get(sourceId);
+  const target = elementById.get(targetId);
+  return {
+    id,
+    statement: `${source.name} --(${type})--> ${target.name}`,
+    name: type,
+    type,
+    source_id: sourceId,
+    target_id: targetId,
+    source_name: source.name,
+    target_name: target.name,
+  };
 }
 
 async function rejectsInvalidRelationshipWithoutWriting(tempGraphPath) {

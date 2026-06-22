@@ -29,6 +29,7 @@ const VALIDATOR_TOOL_NAMES = new Set([
 ]);
 const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
   'getSystemArchitecture',
+  'getIntentElementContext',
   'previewSystemArchitectureMutation',
   'applySystemArchitectureMutation',
   'addArchitectureElement',
@@ -100,6 +101,11 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
+  },
+  {
+    name: 'getIntentElementContext',
+    description: 'read-only query that returns an intent subgraph context for one element. Uses ArchiMate semantic dependency traversal with dependencyDepth and dependentDepth, preserving native subgraph elements, relationships, and views.',
+    inputSchema: intentElementContextInputSchema(),
   },
   {
     name: 'previewSystemArchitectureMutation',
@@ -236,6 +242,27 @@ const TOOLS = [
     },
   },
 ];
+
+function intentElementContextInputSchema() {
+  return {
+    type: 'object',
+    properties: {
+      architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+      elementId: { type: 'string' },
+      elementName: { type: 'string' },
+      profile: {
+        type: 'string',
+        enum: ['implementation-design', 'coding-repair', 'audit', 'generic-agent'],
+        description: 'Default: generic-agent. Affects workContext enrichment only; subgraph shape stays native.',
+      },
+      dependencyDepth: { type: 'number', description: 'Default: 2. Semantic dependencies needed by the focus element.' },
+      dependentDepth: { type: 'number', description: 'Default: 1. Semantic dependents that rely on the focus element.' },
+      associationDepth: { type: 'number', description: 'Default: 1. Association neighbors are expanded at least one layer.' },
+      associationNeighborDependencyDepth: { type: 'number', description: 'Default: 0. Optional dependency expansion from association neighbors.' },
+    },
+    additionalProperties: false,
+  };
+}
 
 function mutationInputSchema() {
   return {
