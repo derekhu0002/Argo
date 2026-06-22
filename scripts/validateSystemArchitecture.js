@@ -339,6 +339,7 @@ function validateGraphSemantics(document, errors) {
         }
 
         const includedElements = Array.isArray(view.included_elements) ? view.included_elements : [];
+        const includedElementIds = new Set(includedElements);
         if (includedElements.length > 7) {
             errors.push(`views '${view.view_id}' must contain at most 7 elements; found ${includedElements.length}. Split the content into layered sub-views before adding more elements.`);
         }
@@ -352,8 +353,16 @@ function validateGraphSemantics(document, errors) {
         const includedRelationships = Array.isArray(view.included_relationships) ? view.included_relationships : [];
         includedRelationships.forEach(relationshipId => {
             relationshipIdsIncludedInViews.add(relationshipId);
-            if (!relationshipById.has(relationshipId)) {
+            const relationship = relationshipById.get(relationshipId);
+            if (!relationship) {
                 errors.push(`views '${view.view_id}' references missing included relationship '${relationshipId}'`);
+                return;
+            }
+            if (!includedElementIds.has(relationship.source_id)) {
+                errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not source element '${relationship.source_id}'`);
+            }
+            if (!includedElementIds.has(relationship.target_id)) {
+                errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not target element '${relationship.target_id}'`);
             }
         });
     }

@@ -1198,6 +1198,7 @@ function validateGraphSemantics(document, errors) {
         errors.push(`views '${view.view_id}' parent_element_name '${view.parent_element_name}' does not match element '${view.parent_element_id}' name '${parent.name}'`);
       }
     }
+    const includedElementIds = new Set(view.included_elements || []);
     for (const elementId of view.included_elements || []) {
       elementIdsIncludedInViews.add(elementId);
       if (!elementById.has(elementId)) {
@@ -1206,8 +1207,16 @@ function validateGraphSemantics(document, errors) {
     }
     for (const relationshipId of view.included_relationships || []) {
       relationshipIdsIncludedInViews.add(relationshipId);
-      if (!relationshipById.has(relationshipId)) {
+      const relationship = relationshipById.get(relationshipId);
+      if (!relationship) {
         errors.push(`views '${view.view_id}' references missing included relationship '${relationshipId}'`);
+        continue;
+      }
+      if (!includedElementIds.has(relationship.source_id)) {
+        errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not source element '${relationship.source_id}'`);
+      }
+      if (!includedElementIds.has(relationship.target_id)) {
+        errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not target element '${relationship.target_id}'`);
       }
     }
   }

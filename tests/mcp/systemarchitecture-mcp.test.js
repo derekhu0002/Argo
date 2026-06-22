@@ -53,6 +53,7 @@ async function main() {
   await previewsViewLifecycleMutations(tempGraphPath);
   await allowsViewLifecycleWithoutExistingMembers(tempGraphPath);
   await rejectsViewLifecycleWithMissingMembers(tempGraphPath);
+  await rejectsViewRelationshipWithoutEndpointsInSameView(tempGraphPath);
   await rejectsSubviewWithoutParentElement(tempGraphPath);
 }
 
@@ -572,8 +573,22 @@ async function appliesExistingRelationshipToAdditionalView(tempGraphPath) {
     architecturePath: path.relative(repoRoot, tempGraphPath),
     mutations: [
       {
+        type: 'addElement',
+        view_ids: ['238'],
+        element: {
+          id: '1799',
+        },
+      },
+      {
+        type: 'addElement',
+        view_ids: ['238'],
+        element: {
+          id: '1803',
+        },
+      },
+      {
         type: 'addRelationship',
-        view_ids: ['237'],
+        view_ids: ['238'],
         relationship: {
           id: '1726',
         },
@@ -588,8 +603,8 @@ async function appliesExistingRelationshipToAdditionalView(tempGraphPath) {
   assert.strictEqual(payload.after.relationshipCount, payload.before.relationshipCount);
 
   const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
-  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
-  assert(topLevelView.included_relationships.includes('1726'));
+  const businessView = writtenGraph.views.find(view => view.view_id === '238');
+  assert(businessView.included_relationships.includes('1726'));
 }
 
 async function rejectsElementMutationWithoutViewScope(tempGraphPath) {
@@ -718,22 +733,22 @@ async function removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillRefere
     mutations: [
       {
         type: 'addRelationship',
-        view_ids: ['237', '238'],
+        view_ids: ['239', '241'],
         relationship: {
           id: 'mcp-scoped-remove-relationship',
-          statement: 'Orchestrator --(Association)--> IntentionDesign',
+          statement: 'IntentionDesign --(Association)--> ImplementationDesign',
           name: 'Scoped remove relationship',
           type: 'Association',
-          source_id: '1798',
-          target_id: '1799',
-          source_name: 'Orchestrator',
-          target_name: 'IntentionDesign',
+          source_id: '1799',
+          target_id: '1800',
+          source_name: 'IntentionDesign',
+          target_name: 'ImplementationDesign',
         },
       },
       {
         type: 'removeRelationship',
         id: 'mcp-scoped-remove-relationship',
-        view_ids: ['237'],
+        view_ids: ['239'],
       },
     ],
   });
@@ -746,10 +761,10 @@ async function removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillRefere
 
   const writtenGraph = JSON.parse(fs.readFileSync(tempGraphPath, 'utf8'));
   assert(writtenGraph.relationships.some(relationship => relationship.id === 'mcp-scoped-remove-relationship'));
-  const topLevelView = writtenGraph.views.find(view => view.view_id === '237');
-  const developmentView = writtenGraph.views.find(view => view.view_id === '238');
-  assert(!topLevelView.included_relationships.includes('mcp-scoped-remove-relationship'));
-  assert(developmentView.included_relationships.includes('mcp-scoped-remove-relationship'));
+  const applicationView = writtenGraph.views.find(view => view.view_id === '239');
+  const dataAccessView = writtenGraph.views.find(view => view.view_id === '241');
+  assert(!applicationView.included_relationships.includes('mcp-scoped-remove-relationship'));
+  assert(dataAccessView.included_relationships.includes('mcp-scoped-remove-relationship'));
 }
 
 async function removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath) {
@@ -758,7 +773,7 @@ async function removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(te
     mutations: [
       {
         type: 'addRelationship',
-        view_ids: ['237'],
+        view_ids: ['239'],
         relationship: {
           id: 'mcp-last-view-relationship',
           statement: 'Orchestrator --(Association)--> ImplementationDesign',
@@ -773,7 +788,7 @@ async function removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(te
       {
         type: 'removeRelationship',
         id: 'mcp-last-view-relationship',
-        view_ids: ['237'],
+        view_ids: ['239'],
       },
     ],
   });
@@ -795,15 +810,15 @@ async function removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraph
     mutations: [
       {
         type: 'addRelationship',
-        view_ids: ['237', '238'],
+        view_ids: ['239', '241'],
         relationship: {
           id: 'mcp-global-remove-relationship',
-          statement: 'Orchestrator --(Association)--> CodingAndReparing',
+          statement: 'IntentionDesign --(Association)--> CodingAndReparing',
           name: 'Global remove relationship',
           type: 'Association',
-          source_id: '1798',
+          source_id: '1799',
           target_id: '1801',
-          source_name: 'Orchestrator',
+          source_name: 'IntentionDesign',
           target_name: 'CodingAndReparing',
         },
       },
@@ -863,7 +878,7 @@ async function removesRelationshipThroughFocusedTool(tempGraphPath) {
     mutations: [
       {
         type: 'addRelationship',
-        view_ids: ['237'],
+        view_ids: ['239'],
         relationship: {
           id: 'mcp-focused-remove-relationship',
           statement: 'Orchestrator --(Association)--> IntentionDesign',
@@ -1181,6 +1196,36 @@ async function rejectsViewLifecycleWithMissingMembers(tempGraphPath) {
   assert(
     updatePayload.errors.some(error => error.includes("references missing included relationship 'future-relationship-after-update'")),
     `Expected missing included relationship error, got: ${JSON.stringify(updatePayload.errors)}`,
+  );
+}
+
+async function rejectsViewRelationshipWithoutEndpointsInSameView(tempGraphPath) {
+  const response = await callTool('previewSystemArchitectureMutation', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    mutations: [
+      {
+        type: 'addView',
+        view: {
+          view_id: 'mcp-relationship-without-endpoints-view',
+          view_name: 'Relationship without endpoints view',
+          parent_element_id: '1798',
+          parent_element_name: 'Orchestrator',
+          included_elements: ['1798'],
+          included_relationships: ['1726'],
+        },
+      },
+    ],
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'failed');
+  assert(
+    payload.errors.some(error => error.includes("views 'mcp-relationship-without-endpoints-view' includes relationship '1726' but not source element '1799'")),
+    `Expected missing source endpoint error, got: ${JSON.stringify(payload.errors)}`,
+  );
+  assert(
+    payload.errors.some(error => error.includes("views 'mcp-relationship-without-endpoints-view' includes relationship '1726' but not target element '1803'")),
+    `Expected missing target endpoint error, got: ${JSON.stringify(payload.errors)}`,
   );
 }
 
