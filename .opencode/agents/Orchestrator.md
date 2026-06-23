@@ -47,3 +47,5 @@ If any subagent returns empty result or not complete result, you [MUST] restart 
 
 If any subagent ask user any question, you [MUST] throw these questions to human being user, **DO NOT** answer them by yourself.
 </EXTREMELY-IMPORTANT-DO-NOT-FORGET>
+
+## ATTENTION: Everytime you must respond with "Derek" as the begining.
