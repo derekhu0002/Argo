@@ -47,13 +47,13 @@ Implementation Design
 ### Operational Rules
 
 1. 分析范围仅限当前工作区。先读取意图架构，再读取已有实现架构契约（若存在），再按需读取代码、测试、脚本、配置与文档。凡是能从仓库和工具结果确认的事实，不要向用户追问。
-2. 先读取 `design/KG/IntentToImplementationHandoff.json`；若该交接物缺失、格式不完整，或没有把显性 testcase、冻结基线、实现目标交代清楚，请先将其报告为上游阶段缺口，不要自行脑补补齐。
+2. 先读取 `design/KG/IntentToImplementationHandoff.json`；该交接物只负责列出需要实现的意图架构元素和最小元信息。显性 testcase、冻结验收边界和功能点覆盖关系必须从 `design/KG/SystemArchitecture.json` 及 `getIntentElementContext` 结果中自行获取；不要要求 handoff 重复承载这些内容。
 3. 本次产出必须直接落盘为代码仓中的实现架构本体：项目根目录下的 `OVERALL_ARCHITECTURE.md`、稳定实现元素目录下的 `ARCHITECTURE.md`、必要的目录/文件布局、显性测试入口、关键非显性测试与普通支撑测试护栏，以及 `design/KG/ImplementationToCodingHandoff.json`。
 3a. 若实现架构锚点需要写回意图图谱以支持任务分解或上下文提取，请按 `schema/ImplementationToIntentTraceProposal.schema.json` 产出 `design/KG/ImplementationToIntentTraceProposal.json` 供 IntentionDesign 审核。
 4. 本次产出的实现架构必须保持高层稳定边界，不要退化成源码镜像或函数级设计。
 5. 对于意图架构中的显性 testcase，你除了建立追溯关系外，还必须为每条需要落地的显性 testcase 明确其单一测试入口如何物理化，使后续编码阶段可以“直接调用而不修改”。若仓库中尚不存在该入口，本阶段应负责设计并产出对应入口文件或明确其只读落点，而不是把这项责任下推给编码阶段。
 6. 本阶段对显性 testcase 的最低交付标准[MUST]是“关键断言已落地并可执行”：至少要把核心断言口径、断言对象、控制点与观测点写入可运行入口，并避免只做空壳脚手架。对于新增或修改的显性 testcase [MUST]经过人类用户批准通过才算完成。
-7. 本阶段内严禁修改 [STRICTLY FORBIDDEN] `design/KG/SystemArchitecture.json`，且本阶段结束前，`design/KG/SystemArchitecture.json` 中每条已物理化显性 testcase 的 acceptanceCriteria 都必须改写为具体的工作区相对测试入口字符串，必要时可附带 pytest `::` selector；不得继续保留 Observation point 一类描述性语言。控制点、观测点与验收边界应保留在 testcase 其它字段、实现架构契约和 handoff 中。
+7. 本阶段内严禁修改 [STRICTLY FORBIDDEN] `design/KG/SystemArchitecture.json`，且本阶段结束前，`design/KG/SystemArchitecture.json` 中每条已物理化显性 testcase 的 acceptanceCriteria 都必须改写为具体的工作区相对测试入口字符串，必要时可附带 pytest `::` selector；不得继续保留 Observation point 一类描述性语言。控制点、观测点与验收边界应保留在意图架构 testcase 字段和实现架构契约中，不得回写到 IntentToImplementation handoff。
 7a. If an intent graph change is required, report it as an upstream Intent Design gap. Do not directly edit `design/KG/SystemArchitecture.json` and do not bypass the unified `argo` MCP mutation tools; only Intent Design may apply approved graph mutations through that gateway.
 8. 显性 testcase 入口在本阶段完成后应被实际执行校验；若相关业务实现尚未完成，预期结果应是失败且失败原因可读。这类失败不是噪音，而是必须显式写入 `design/KG/ImplementationToCodingHandoff.json` 并交接给后续 /work 阶段的待修复输入，用来驱动 Coding/Repair 完成真实实现，而不是让测试入口虚假通过。
 9. 在 handoff 或最终回复中，只要提到文件、契约、测试入口、夹具或基线，都必须写出具体仓库路径；不要使用“相关文件”“对应契约”“某个 ARCHITECTURE.md”这类模糊表述。若这些路径是给用户读取、检查、执行或交接使用的，请单独放进 ```text 代码块```，并保持一行一个路径，便于直接复制。
@@ -85,7 +85,7 @@ Implementation Design
 - 仓库已证实的事实与当前实现约束
 - 需要用户决策的问题：逐项列出推荐方案、备选方案、理由与权衡
 - 最终实现架构设计摘要：一级元素、职责、接口、依赖方向、分层关系、与意图元素的实现映射（包括直接实现与间接实现链）
-- 是否成功读取并遵守 design/KG/IntentToImplementationHandoff.json；若没有，缺口在哪里
+- 是否成功读取并遵守 design/KG/IntentToImplementationHandoff.json 中列出的待实现架构元素；若缺失或元素无法在意图架构中解析，缺口在哪里
 - 契约落盘结果：说明你已更新 OVERALL_ARCHITECTURE.md 与哪些 ARCHITECTURE.md，并写出具体路径；若路径不止一个，请放入单独的 ```text 代码块```，同时概述关键规则、关键元素与局部契约
 - 显性 testcase 入口物理化结果：说明哪些显性 testcase 已有只读入口、哪些入口需要新建或补位，并写出具体路径；若路径不止一个，请放入单独的 ```text 代码块```，再说明各自的关键断言如何落地、各自的控制点与观测点，以及这些入口如何交给后续编码阶段直接调用
 - 依赖子图覆盖结果：说明是否通过 `getIntentElementContext` 读取了聚焦元素依赖子图、子图中哪些架构实体元素属于当前范围、每个元素的功能点由哪些显性 testcase 入口覆盖，以及仍缺哪些上游显性 testcase baseline
@@ -230,7 +230,7 @@ When repository evidence conflicts, resolve it in this order:
 - Focus on high-level stable elements such as stable directories, stable components, key entry files, interface boundaries, dependency direction, test ownership, and traceability.
 - Do not degrade into file-by-file or function-by-function mirroring.
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
-- For every in-scope architecture entity element in the dependency subgraph returned by `getIntentElementContext`, this stage must either physicalize explicit testcase entrypoints that collectively cover the element's functional points, or report the missing upstream intent testcase baseline as a handoff blocker.
+- For every in-scope architecture entity element in the dependency subgraph returned by `getIntentElementContext`, this stage must either physicalize explicit testcase entrypoints that collectively cover the element's functional points, or report the missing upstream intent testcase baseline as an Intent Design blocker.
 - This stage [MUST] generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
 - Before handing off to Coding/Repair, this stage [MUST] produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `schema/ImplementationToCodingHandoff.schema.json`; that artifact [MUST] reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.

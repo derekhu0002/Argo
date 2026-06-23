@@ -77,27 +77,24 @@ function validateIntentToImplementation(document, errors, filePath) {
     requireString(document, 'stage', errors, filePath);
     requireString(document, 'generatedAt', errors, filePath);
     requireString(document, 'sourceIntentGraphPath', errors, filePath);
-    requireStringArray(document, 'intentElementIds', true, errors, filePath);
-    requireStringArray(document, 'frozenBaselines', true, errors, filePath);
-    requireStringArray(document, 'requiredImplementationArtifacts', true, errors, filePath);
+    const intentElementIds = requireStringArray(document, 'intentElementIds', true, errors, filePath);
+    ['explicitTestcases', 'frozenBaselines', 'requiredImplementationArtifacts'].forEach((legacyField) => {
+        if (Object.prototype.hasOwnProperty.call(document, legacyField)) {
+            errors.push(`${filePath}.${legacyField} must not be present. Intent-to-implementation handoff only carries architecture element ids; explicit testcase baselines belong in ${SYSTEM_ARCHITECTURE_PATH}`);
+        }
+    });
 
     const graphPath = requireString(document, 'sourceIntentGraphPath', errors, filePath);
     if (graphPath) {
         ensureRepoPathExists(graphPath, `${filePath}.sourceIntentGraphPath`, errors);
     }
 
-    const testcases = requireArray(document, 'explicitTestcases', true, errors, filePath);
-    if (Array.isArray(testcases)) {
-        testcases.forEach((testcase, index) => {
-            requireString(testcase, 'name', errors, `${filePath}.explicitTestcases[${index}]`);
-            requireString(testcase, 'mountedElementId', errors, `${filePath}.explicitTestcases[${index}]`);
-            requireString(testcase, 'type', errors, `${filePath}.explicitTestcases[${index}]`);
-            requireString(testcase, 'controlPoint', errors, `${filePath}.explicitTestcases[${index}]`);
-            requireString(testcase, 'observationPoint', errors, `${filePath}.explicitTestcases[${index}]`);
-            requireString(testcase, 'acceptanceBoundary', errors, `${filePath}.explicitTestcases[${index}]`);
-            const entryKind = requireString(testcase, 'requiredEntryKind', errors, `${filePath}.explicitTestcases[${index}]`);
-            if (entryKind && !['explicit-testcase-entry', 'read-only-contract-update', 'critical-non-explicit-test'].includes(entryKind)) {
-                errors.push(`${filePath}.explicitTestcases[${index}].requiredEntryKind must be one of explicit-testcase-entry, read-only-contract-update, critical-non-explicit-test`);
+    const graphDocument = loadSystemArchitecture(errors, filePath);
+    if (graphDocument && Array.isArray(intentElementIds)) {
+        const elementIds = new Set((graphDocument.elements || []).map((element) => element && element.id).filter(Boolean));
+        intentElementIds.forEach((elementId, index) => {
+            if (!elementIds.has(elementId)) {
+                errors.push(`${filePath}.intentElementIds[${index}] references missing intent architecture element '${elementId}' in ${SYSTEM_ARCHITECTURE_PATH}`);
             }
         });
     }
