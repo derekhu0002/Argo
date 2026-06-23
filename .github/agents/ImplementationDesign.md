@@ -79,6 +79,7 @@ Implementation Design
 17. 当任务锚定某个意图架构元素时，必须调用统一 `argo` MCP tool `getIntentElementContext` 读取该元素的依赖子图；当子图不足以确认实现边界、测试入口或覆盖关系时，可以按需扩大 dependencyDepth/dependentDepth 或继续探索仓库证据。
 18. 对依赖子图中属于当前需求范围的每个架构实体元素，本阶段 [MUST] 设计并物理化显性 testcase 入口，除非能证明该元素已有显性 testcase 入口覆盖同一功能点。
 19. 每个被覆盖元素名下的显性 testcase 集合 [MUST] 合起来覆盖该元素的功能点；如果 IntentionDesign 的显性 testcase baseline 不足以覆盖依赖子图元素，必须报告为上游意图设计缺口，而不是只补实现侧测试来替代显性验收。
+20. 如果依赖子图中的上游依赖架构实体元素没有挂载对应显性 testcase，而相关 testcase 只挂在 focus 元素下，必须判定为上游 IntentionDesign 覆盖缺口并退回；不得把 focus 元素 testcase 当作上游依赖元素的覆盖。
 
 ### Required Output
 
