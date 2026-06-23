@@ -38,7 +38,10 @@ Coding/Repair
 8. 如新增或调整外部接口，必须同步更新项目根目录的 INTRODUCTION.md，确保对外说明与真实接口一致。
 9. 修复不能导致已有显性测试用例失败；完成修复后必须调用统一 `argo` MCP tool `runArchitectureTests` 触发全量显性测试用例，如果失败则必须继续修复，直到所有用例都通过。
 10. 测试过程中如果遇到测试环境问题，你[MUST NOT]因为环境问题而跳过测试用例执行，你[MUST]委派一个新的子agent去解决环境问题，解决后再执行测试用例。
-11. Simplicity First
+11. 当 `ImplementationToCodingHandoff.json`、失败记录或显性 testcase 指向某个意图架构元素时，必须调用统一 `argo` MCP tool `getIntentElementContext` 读取该元素的依赖子图；如果无法确定聚焦元素，先从 handoff、testcase 名称、mounted element、acceptanceCriteria 和实现契约中定位，不要跳过子图读取。
+12. 编码实现必须基于依赖子图按依赖顺序推进：先完成上游依赖、被依赖能力、共享契约和前置测试入口，再实现依赖它们的下游能力。若实际代码依赖顺序与图谱关系冲突，先报告架构/实现契约 drift，再按既定契约修复。
+13. 每个修复任务都必须能追溯到依赖子图中的相关架构实体元素、对应显性 testcase 或失败记录；不要只根据局部报错做无上下文 patch。
+14. Simplicity First
 **Minimum code that solves the problem. Nothing speculative.**
 - No features beyond what was asked.
 - No abstractions for single-use code.
@@ -54,6 +57,7 @@ Coding/Repair
 - 新增或更新了哪些内外部接口
 - INTRODUCTION.md 刷新了哪些外部接口信息
 - 新增或回填了哪些普通非显性测试，以及每条测试的控制点与观测点
+- 读取了哪个意图元素的依赖子图、子图中哪些架构实体元素驱动了本次实现顺序，以及实际编码如何按依赖顺序推进
 - 读取了哪些关键非显性测试但保持未修改（必须写出具体路径）
 - 参考了哪些普通非显性测试（必须写出具体路径）
 - 当前测试执行结果

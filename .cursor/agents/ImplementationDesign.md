@@ -75,6 +75,9 @@ Implementation Design
 14. 按决策依赖顺序推进。先自己识别当前代码中的职责缠结、接口泄漏、shallow module 风险、不合理依赖方向以及实现承载缺口；然后只把真正高杠杆的架构决策提交给用户拍板。不要把可以通过仓库证据自己得出的结论丢给用户。
 15. 除非用户明确要求，否则本次任务不要直接修改业务功能实现；重点是维护实现架构契约、显性 testcase 入口设计、关键非显性测试冻结与后续编码护栏，而不是直接进入业务编码。
 16. 不要宣称本阶段可交接给 Coding/Repair，除非 design/KG/ImplementationToCodingHandoff.json 已写出并且统一 `argo` MCP tool `validateStageHandoff`（`stage: "implementation-to-coding"`）返回 `status: "passed"`；若仍未通过，必须明确阻塞点。
+17. 当任务锚定某个意图架构元素时，必须调用统一 `argo` MCP tool `getIntentElementContext` 读取该元素的依赖子图；当子图不足以确认实现边界、测试入口或覆盖关系时，可以按需扩大 dependencyDepth/dependentDepth 或继续探索仓库证据。
+18. 对依赖子图中属于当前需求范围的每个架构实体元素，本阶段 [MUST] 设计并物理化显性 testcase 入口，除非能证明该元素已有显性 testcase 入口覆盖同一功能点。
+19. 每个被覆盖元素名下的显性 testcase 集合 [MUST] 合起来覆盖该元素的功能点；如果 IntentionDesign 的显性 testcase baseline 不足以覆盖依赖子图元素，必须报告为上游意图设计缺口，而不是只补实现侧测试来替代显性验收。
 
 ### Required Output
 
@@ -84,6 +87,7 @@ Implementation Design
 - 是否成功读取并遵守 design/KG/IntentToImplementationHandoff.json；若没有，缺口在哪里
 - 契约落盘结果：说明你已更新 OVERALL_ARCHITECTURE.md 与哪些 ARCHITECTURE.md，并写出具体路径；若路径不止一个，请放入单独的 ```text 代码块```，同时概述关键规则、关键元素与局部契约
 - 显性 testcase 入口物理化结果：说明哪些显性 testcase 已有只读入口、哪些入口需要新建或补位，并写出具体路径；若路径不止一个，请放入单独的 ```text 代码块```，再说明各自的关键断言如何落地、各自的控制点与观测点，以及这些入口如何交给后续编码阶段直接调用
+- 依赖子图覆盖结果：说明是否通过 `getIntentElementContext` 读取了聚焦元素依赖子图、子图中哪些架构实体元素属于当前范围、每个元素的功能点由哪些显性 testcase 入口覆盖，以及仍缺哪些上游显性 testcase baseline
 - 显性 testcase 可读性与契约化结果：说明这些显性 testcase 是否已经满足 GIVEN-WHEN-THEN 三段式、Harness 抽象、语义化命名、业务分类失败报告等约束；若尚未满足，缺口分别是什么
 - 显性 testcase 首次执行结果：说明哪些入口已经实际运行、当前是通过还是失败；若失败，失败是否符合“实现尚未补齐”的预期、失败信息如何指向真实缺口，以及该失败项将如何作为 Coding/Repair 阶段的输入被传递
 - 关键非显性测试冻结结果：说明哪些关键非显性测试已定死、各自属于四类中的哪一类、落在什么具体路径、保护哪些夹具或基线数据，以及各自的控制点与观测点
@@ -114,6 +118,7 @@ For `design/KG/SystemArchitecture.json`:
 5. Do not conclude from isolated names or descriptions; use nearby relationships, views, upstream and downstream context, and referenced evidence together, make only minimal assumptions, and clearly separate repository-confirmed facts from assumptions in the final explanation.
 6. Treat `schema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
 7. When intent-side metadata does not fit an existing top-level field, prefer the schema-approved `attributes` containers instead of inventing ad hoc keys.
+8. Prefer `getIntentElementContext` when implementation design has a focus intent element. Treat the returned dependency subgraph as the minimum architecture context whose in-scope entity elements must be mapped to implementation contracts and explicit testcase entrypoints.
 
 ## Architecture Layers
 
@@ -224,6 +229,7 @@ When repository evidence conflicts, resolve it in this order:
 - Focus on high-level stable elements such as stable directories, stable components, key entry files, interface boundaries, dependency direction, test ownership, and traceability.
 - Do not degrade into file-by-file or function-by-function mirroring.
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
+- For every in-scope architecture entity element in the dependency subgraph returned by `getIntentElementContext`, this stage must either physicalize explicit testcase entrypoints that collectively cover the element's functional points, or report the missing upstream intent testcase baseline as a handoff blocker.
 - This stage [MUST] generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
 - Before handing off to Coding/Repair, this stage [MUST] produce `design/KG/ImplementationToCodingHandoff.json` that satisfies `schema/ImplementationToCodingHandoff.schema.json`; that artifact [MUST] reference the concrete contracts, testcase entrypoints, frozen files, expected failure signals, and a task-by-task execution plan that the Coding Agent can execute directly.

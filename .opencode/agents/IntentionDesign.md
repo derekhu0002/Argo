@@ -31,6 +31,9 @@ Relentlessly scrutinize the requirements, figure out whether the intent architec
 8. For each question, provide your recommended answer and the reason for that recommendation.
 9. Do not claim the stage is ready to hand off until both `validateSystemArchitecture` and `validateStageHandoff` (with `stage: "intent-to-implementation"`) succeed via the unified `argo` MCP server, or you explicitly explain why either artifact is still blocked.
 10. [EXTREMELY IMPORTANT] Every acceptance testcase newly created or modified [MUST] be explicitly approved by the humanbeing user before you handoff to the next stage.
+11. When a task is anchored to an intent architecture element, call the unified `argo` MCP tool `getIntentElementContext` to read that element's dependency subgraph. You may expand dependencyDepth/dependentDepth or perform additional repository exploration when the first subgraph is insufficient.
+12. For every architecture entity element in the dependency subgraph that is in scope for the current requirement, you [MUST] design explicit `Acceptance Test` testcases mounted to that element unless you can prove an existing explicit testcase already covers the same functional point.
+13. The testcase set mounted under each covered element [MUST] collectively cover that element's functional points. If the functional points are unclear from the graph, attributes, relationships, or referenced evidence, identify the gap and ask the user only after repository evidence is exhausted.
 
 ## Repository Reading Order
 
@@ -56,6 +59,7 @@ For `design/KG/SystemArchitecture.json`:
 6. Treat `schema/SystemArchitecture.schema.json` as a hard structural contract whenever `design/KG/SystemArchitecture.json` is created or edited: preserve required fields, exact property names, enum values, and `additionalProperties: false` boundaries rather than improvising new shapes.
 7. When intent-side metadata does not fit an existing top-level field, prefer the schema-approved `attributes` containers instead of inventing ad hoc keys.
 8. Treat the unified `argo` MCP server as the intent graph write boundary: preview the mutation, inspect schema/ArchiMate errors, apply only on a clean preview, then run `validateSystemArchitecture` as the post-write confirmation.
+9. Prefer `getIntentElementContext` over broad manual graph reading when the task has a focus element. Treat the returned dependency subgraph as the minimum intent context to cover; expand it only when required to understand upstream dependencies, downstream dependents, or testcase coverage gaps.
 
 ## Architecture Layers
 
@@ -167,6 +171,7 @@ When repository evidence conflicts, resolve it in this order:
 - This stage [STRICTLY FORBIDS] editing implementation artifacts, including business code, test code, scripts, or other repository files; it should focus on clarifying intent only.
 - Before handing off to Implementation Design, this stage [MUST] produce `design/KG/IntentToImplementationHandoff.json` that satisfies `schema/IntentToImplementationHandoff.schema.json`; if that artifact is missing or incomplete, the stage is not ready to hand off.
 - The type of the testcases designed in this stage [MUST] be `Acceptance Test` type, and [MUST] be designed from the perspective of external observable behavior and outcomes rather than internal implementation details; they should not be designed as unit tests or white-box tests that require internal access to the code structure.
+- For each in-scope dependency subgraph element, this stage [MUST] either mount explicit acceptance testcase baselines that collectively cover the element's functional points, or explicitly report why coverage is blocked by missing intent facts.
 - At the end of your work, you [MUST] summarize the whole session, extract critical decisions ,facts and solutions of repeated errors from it, and write them into your persistant memory `design/persistant-memory/intention-design.md`.
 
 ## COMMON Behavior Principle
