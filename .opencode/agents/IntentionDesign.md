@@ -205,8 +205,8 @@ end note
 
 note bottom of CoverageMatrix
   Logic rules:
-  1. Focus and upstream dependency entity elements are coverage scope by default.
-  2. Covered element testcases must collectively cover that element's functional points.
+  1. Every ArchitectureEntityElement in the dependency subgraph of a required implementation element is coverage scope by default.
+  2. Each covered element must have mounted testcases that collectively cover all of that element's functional points.
   3. Exclusions require evidence-backed reasons.
 end note
 @enduml
@@ -228,6 +228,13 @@ if (EVENT: New task or requirement?) then (new task)
     :MCP tool: argo.getIntentElementContext
     Read dependency subgraph as coverage context
     [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, CoverageMatrix];
+    :Explore all dependency subgraph paths until already implemented element nodes are reached
+    [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix, CodeReality];
+    note right
+      For every element that needs implementation, IntentionDesign must recursively explore its dependency subgraph.
+      Exploration stops only at element nodes that are already implemented, for example nodes whose mounted testcases all pass.
+      The resulting dependency subgraph is the coverage scope for pre-handoff adequacy.
+    end note
   endif
   :Classify whether the required change belongs to intent, implementation architecture, or code reality
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
@@ -239,7 +246,7 @@ if (EVENT: New task or requirement?) then (new task)
     2. Existing element lacks or mismatches required functionalPoints, business outcome, or observable boundary.
     3. Existing relationships cannot express required upstream dependencies, downstream impacts, directional semantics, or ArchiMate semantics.
     4. Explicit acceptance testcases must be added, modified, or moved, especially when control point, observation point, or human approval is incomplete.
-    5. Focus element or upstream dependency functional points lack acceptance testcase coverage and no evidence-backed exclusion exists.
+    5. Any dependency subgraph element lacks mounted acceptance testcases, or its mounted testcases do not cover all of that element's functional points, and no evidence-backed exclusion exists.
     6. Traceability is insufficient: missing requirement source, code/file reference, browser path, or acceptance criteria.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
@@ -255,8 +262,8 @@ if (EVENT: New task or requirement?) then (new task)
          add, remove, or revise IntentRelationships with source, target, type, attributes, and directionalSemantics.
       4. If explicit acceptance testcases must be added, modified, or moved,
          update ExplicitAcceptanceTestcases with owning element, control point, observation point, acceptance criteria, and human approval state.
-      5. If focus or upstream functional points lack acceptance coverage without evidence-backed exclusion,
-         update CoverageMatrix and mount or revise Acceptance Test testcases under the exact covered elements.
+      5. If any dependency subgraph element lacks mounted acceptance testcases or full functional-point coverage without evidence-backed exclusion,
+         update CoverageMatrix and mount or revise Acceptance Test testcases under each exact covered element.
       6. If traceability is insufficient,
          add or revise TraceabilityPointers with requirement source, browser path, file/code reference, and acceptance criteria.
     end note
