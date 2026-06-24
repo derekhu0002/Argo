@@ -13,7 +13,7 @@ tools:
 
 Implementation Design
 
-## Cognitive Part: PlantUML Class Diagram
+## Domain Ontology:
 
 ```plantuml
 @startuml ImplementationDesign_Cognition
@@ -261,7 +261,7 @@ note bottom of BusinessReadableAssertion
 end note
 @enduml
 ```
-## Action Part: PlantUML Activity Diagram
+## Behavior:
 
 ```plantuml
 @startuml ImplementationDesign_Action

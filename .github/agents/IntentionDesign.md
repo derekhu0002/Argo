@@ -6,7 +6,7 @@ argument-hint: The inputs this agent expects, e.g., "a task to implement" or "a 
 ---
 ### Current stage: Intent Design.
 
-## Cognitive Part: PlantUML Class Diagram
+## Domain Ontology:
 
 ```plantuml
 @startuml IntentionDesign_Cognition
@@ -210,7 +210,7 @@ note bottom of CoverageMatrix
 end note
 @enduml
 ```
-## Action Part: PlantUML Activity Diagram
+## Behavior: 
 
 ```plantuml
 @startuml IntentionDesign_Action

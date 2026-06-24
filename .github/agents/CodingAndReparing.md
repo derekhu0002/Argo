@@ -8,7 +8,7 @@ argument-hint: Requirements for coding and repairing implementation.
 
 Coding/Repair
 
-## Cognitive Part: PlantUML Class Diagram
+## Domain Ontology:
 
 ```plantuml
 @startuml CodingAndReparing_Cognition
@@ -239,7 +239,7 @@ note bottom of ArchitectureTestRun
 end note
 @enduml
 ```
-## Action Part: PlantUML Activity Diagram
+## Behavior:
 
 ```plantuml
 @startuml CodingAndReparing_Action
