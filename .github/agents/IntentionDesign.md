@@ -226,16 +226,49 @@ if (EVENT: New task or requirement?) then (new task)
   endif
   :Classify whether the required change belongs to intent, implementation architecture, or code reality
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
-  if (Intent ontology must change?) then (yes)
+  :Check pre-handoff intent architecture adequacy
+  [acts on: IntentArchitecture, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
+  note right
+    Intent ontology mutation is required before handoff when any condition is true:
+    1. Requirement cannot map precisely to an existing ArchitectureEntityElement.
+    2. Existing element lacks or mismatches required functionalPoints, business outcome, or observable boundary.
+    3. Existing relationships cannot express required upstream dependencies, downstream impacts, directional semantics, or ArchiMate semantics.
+    4. Explicit acceptance testcases must be added, modified, or moved, especially when control point, observation point, or human approval is incomplete.
+    5. Focus element or upstream dependency functional points lack acceptance testcase coverage and no evidence-backed exclusion exists.
+    6. Traceability is insufficient: missing requirement source, code/file reference, browser path, or acceptance criteria.
+  end note
+  if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
+    :Declare required intent architecture updates before applying mutation
+    [acts on: IntentArchitecture, IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
+    note right
+      The declaration must map each triggered adequacy condition to its required update:
+      1. If the requirement cannot map precisely to an existing ArchitectureEntityElement,
+         add or modify the ArchitectureEntityElement with name, description, attributes, and optional View membership.
+      2. If the existing element lacks or mismatches functionalPoints, business outcome, or observable boundary,
+         add or revise those FunctionalPoints under the owning ArchitectureEntityElement.
+      3. If relationships cannot express required dependencies, impacts, direction, or ArchiMate semantics,
+         add, remove, or revise IntentRelationships with source, target, type, attributes, and directionalSemantics.
+      4. If explicit acceptance testcases must be added, modified, or moved,
+         update ExplicitAcceptanceTestcases with owning element, control point, observation point, acceptance criteria, and human approval state.
+      5. If focus or upstream functional points lack acceptance coverage without evidence-backed exclusion,
+         update CoverageMatrix and mount or revise Acceptance Test testcases under the exact covered elements.
+      6. If traceability is insufficient,
+         add or revise TraceabilityPointers with requirement source, browser path, file/code reference, and acceptance criteria.
+    end note
     :Shape intent deltas and acceptance coverage at the ontology level
-    [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
+    [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
     :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
     Persist approved graph mutation to design/KG/SystemArchitecture.json
     [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase];
     :MCP tool: argo.validateSystemArchitecture
-    Validate changed intent ontology
+    Validate completed intent ontology
     [acts on: IntentArchitecture];
+  else (no)
+    :Record that existing intent architecture satisfies all pre-handoff adequacy conditions
+    [acts on: IntentArchitecture, CoverageMatrix];
   endif
+  :Confirm intent architecture is complete before handoff output
+  [acts on: IntentArchitecture, CoverageMatrix];
   :Write design/KG/IntentToImplementationHandoff.json only at architecture-element granularity
   [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
   :MCP tool: argo.validateStageHandoff
