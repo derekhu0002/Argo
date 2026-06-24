@@ -1,6 +1,6 @@
 ---
 name: CodingAndReparing
-description: Coding/Repair stage: fix implementation from failure records and handoff without rewriting frozen tests. Use when test failures exist or user asks to implement/fix code.
+description: Coding/Repair stage fix implementation from failure records and handoff without rewriting frozen tests. Use when test failures exist or user asks to implement/fix code.
 model: inherit
 readonly: false
 ---

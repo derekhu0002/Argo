@@ -1,6 +1,6 @@
 ---
 name: IntentionDesign
-description: Intent Design stage: clarify requirements, update intent architecture, and produce IntentToImplementation handoff. Use when starting intent work or redesigning SystemArchitecture.json.
+description: Intent Design stage clarify requirements, update intent architecture, and produce IntentToImplementation handoff. Use when starting intent work or redesigning SystemArchitecture.json.
 model: inherit
 readonly: false
 ---
