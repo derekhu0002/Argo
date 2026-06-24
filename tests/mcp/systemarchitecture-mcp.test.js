@@ -25,6 +25,8 @@ async function main() {
   await validatesFocusedViewToolsAreListed();
   await validatesAgentFacingToolGuidance();
   await validatesCurrentGraph();
+  rejectsIntentHandoffWhenListedElementHasNoMountedTestcase();
+  allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase();
 
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
   const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
@@ -301,6 +303,136 @@ function ensureTempDirectory() {
   const tempDirectory = path.join(repoRoot, 'tests', 'mcp', '.tmp');
   fs.mkdirSync(tempDirectory, { recursive: true });
   return tempDirectory;
+}
+
+function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-coverage-'));
+  fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, 'schema'), { recursive: true });
+  fs.copyFileSync(
+    path.join(repoRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(tempRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+  );
+  fs.writeFileSync(
+    path.join(tempRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    JSON.stringify(buildIntentHandoffCoverageGraph(), null, 2),
+  );
+  fs.writeFileSync(
+    path.join(tempRoot, 'design', 'KG', 'IntentToImplementationHandoff.json'),
+    JSON.stringify({
+      stage: 'intent-to-implementation',
+      generatedAt: '2026-06-24T00:00:00.000Z',
+      sourceIntentGraphPath: 'design/KG/SystemArchitecture.json',
+      intentElementIds: ['focus'],
+    }, null, 2),
+  );
+
+  const result = spawnSync(process.execPath, [path.join(repoRoot, 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
+    cwd: tempRoot,
+    env: {
+      ...process.env,
+      ARGO_REPO_ROOT: tempRoot,
+    },
+    encoding: 'utf8',
+  });
+
+  assert.notStrictEqual(result.status, 0, result.stdout);
+  assert(
+    result.stderr.includes("intent element 'focus'"),
+    `Expected missing focus testcase error, got stderr: ${result.stderr}`,
+  );
+  assert(
+    result.stderr.includes('Mount Acceptance Test testcases that cover this element'),
+    `Expected testcase mounting guidance, got stderr: ${result.stderr}`,
+  );
+  assert(
+    !result.stderr.includes("intent element 'dependency'"),
+    `Validator must only check listed handoff elements, got stderr: ${result.stderr}`,
+  );
+}
+
+function allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-focus-only-'));
+  fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, 'schema'), { recursive: true });
+  fs.copyFileSync(
+    path.join(repoRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(tempRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+  );
+  fs.writeFileSync(
+    path.join(tempRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    JSON.stringify(buildIntentHandoffCoverageGraph({ focusHasTestcase: true }), null, 2),
+  );
+  fs.writeFileSync(
+    path.join(tempRoot, 'design', 'KG', 'IntentToImplementationHandoff.json'),
+    JSON.stringify({
+      stage: 'intent-to-implementation',
+      generatedAt: '2026-06-24T00:00:00.000Z',
+      sourceIntentGraphPath: 'design/KG/SystemArchitecture.json',
+      intentElementIds: ['focus'],
+    }, null, 2),
+  );
+
+  const result = spawnSync(process.execPath, [path.join(repoRoot, 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
+    cwd: tempRoot,
+    env: {
+      ...process.env,
+      ARGO_REPO_ROOT: tempRoot,
+    },
+    encoding: 'utf8',
+  });
+
+  assert.strictEqual(result.status, 0, result.stderr);
+}
+
+function buildIntentHandoffCoverageGraph(options = {}) {
+  const focusElement = {
+    id: 'focus',
+    name: 'Focus Element',
+    type: 'Application Component',
+    attributes: [
+      { name: 'functionalPoint', description: 'The focus behavior must be observable.' },
+    ],
+  };
+
+  if (options.focusHasTestcase) {
+    focusElement.testcases = [
+      {
+        name: 'focus_acceptance_test',
+        description: 'Covers the focus behavior.',
+        type: 'Acceptance Test',
+        Input: 'Run the focus acceptance entrypoint.',
+        acceptanceCriteria: 'tests/explicit/entries/runIntentGraphTopLevelDrilldown.js',
+      },
+    ];
+  }
+
+  return {
+    name: 'SystemArchitecture',
+    elements: [
+      focusElement,
+      {
+        id: 'dependency',
+        name: 'Dependency Element',
+        type: 'Data Object',
+        attributes: [
+          { name: 'functionalPoint', description: 'The dependency behavior must be observable.' },
+        ],
+      },
+    ],
+    relationships: [
+      {
+        id: 'focus-access-dependency',
+        statement: 'Focus Element --(Access)--> Dependency Element',
+        name: 'Access',
+        type: 'Access',
+        source_id: 'focus',
+        target_id: 'dependency',
+        source_name: 'Focus Element',
+        target_name: 'Dependency Element',
+      },
+    ],
+  };
 }
 
 async function returnsIntentElementContextWithSemanticTraversal() {

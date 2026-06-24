@@ -97,6 +97,7 @@ function validateIntentToImplementation(document, errors, filePath) {
                 errors.push(`${filePath}.intentElementIds[${index}] references missing intent architecture element '${elementId}' in ${SYSTEM_ARCHITECTURE_PATH}`);
             }
         });
+        validateIntentElementTestcases(graphDocument, intentElementIds, errors, filePath);
     }
 
     const questions = document.openQuestions;
@@ -107,6 +108,65 @@ function validateIntentToImplementation(document, errors, filePath) {
             requireString(question, 'reason', errors, `${filePath}.openQuestions[${index}]`);
         });
     }
+}
+
+function validateIntentElementTestcases(graphDocument, intentElementIds, errors, filePath) {
+    const elementsById = buildElementsById(graphDocument);
+
+    intentElementIds.forEach((elementId, index) => {
+        if (!elementsById.has(elementId)) {
+            return;
+        }
+
+        const element = elementsById.get(elementId);
+        if (!hasMountedTestcase(element)) {
+            errors.push(buildMissingMountedTestcaseError(filePath, index, element, elementId));
+        }
+    });
+}
+
+function buildElementsById(graphDocument) {
+    const elementsById = new Map();
+
+    (graphDocument.elements || []).forEach((element) => {
+        if (element && typeof element.id === 'string' && element.id.trim() !== '') {
+            elementsById.set(element.id, element);
+        }
+    });
+
+    return elementsById;
+}
+
+function hasMountedTestcase(element) {
+    return Array.isArray(element && element.testcases) && element.testcases.length > 0;
+}
+
+function buildMissingMountedTestcaseError(filePath, handoffElementIndex, element, fallbackElementId) {
+    const elementId = element && element.id ? element.id : fallbackElementId;
+    const elementName = element && element.name ? element.name : '<unnamed>';
+    const functionalPointHint = describeFunctionalPointHint(element);
+    return `${filePath}.intentElementIds[${handoffElementIndex}] intent element '${elementId}' ('${elementName}') has no mounted testcases. ` +
+        `Mount Acceptance Test testcases that cover this element${functionalPointHint} under the exact element before validating intent-to-implementation.`;
+}
+
+function describeFunctionalPointHint(element) {
+    const functionalPoints = extractFunctionalPointDescriptions(element);
+    if (functionalPoints.length === 0) {
+        return "'s functional points";
+    }
+
+    return `'s functional points (${functionalPoints.join('; ')})`;
+}
+
+function extractFunctionalPointDescriptions(element) {
+    if (!Array.isArray(element && element.attributes)) {
+        return [];
+    }
+
+    return element.attributes
+        .filter((attribute) => attribute && typeof attribute.name === 'string' && /functional/i.test(attribute.name))
+        .map((attribute) => typeof attribute.description === 'string' ? attribute.description.trim() : '')
+        .filter(Boolean);
 }
 
 function validateImplementationToCoding(document, errors, filePath) {
