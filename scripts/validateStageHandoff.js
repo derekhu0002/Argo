@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = process.env.ARGO_REPO_ROOT
+    || process.env.WORKSPACE_FOLDER
+    || path.resolve(__dirname, '..');
 const SYSTEM_ARCHITECTURE_PATH = 'design/KG/SystemArchitecture.json';
 const SUPPORTED_ACCEPTANCE_ENTRY_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.py']);
 const DISALLOWED_ACCEPTANCE_CRITERIA_PATTERNS = [
