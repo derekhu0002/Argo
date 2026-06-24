@@ -1,6 +1,6 @@
 # SystemArchitecture Schema 与 EA 映射
 
-本文基于 `schema/SystemArchitecture.schema.json` 与 `eatool/EA-jsscript/project_auto_gen_suitable_for_LLM-V2.js`，说明当前 `design/KG/SystemArchitecture.json` schema 字段与 Enterprise Architect(EA) 模型字段的对应关系。
+本文基于 `.argo/schema/SystemArchitecture.schema.json` 与 `eatool/EA-jsscript/project_auto_gen_suitable_for_LLM-V2.js`，说明当前 `design/KG/SystemArchitecture.json` schema 字段与 Enterprise Architect(EA) 模型字段的对应关系。
 
 ## 当前 Schema 范围
 

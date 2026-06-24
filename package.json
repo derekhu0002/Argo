@@ -163,7 +163,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run compile:webviews",
-    "compile:webviews": "node scripts/buildWebviews.js",
+    "compile:webviews": "node .argo/scripts/buildWebviews.js",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "test:architecture:commands-entry-boundary": "node tests/architecture/commands-entry-boundary.test.js",
@@ -179,11 +179,11 @@
     "test:explicit:intent-graph-search-expansion": "node tests/explicit/entries/runIntentGraphSearchExpansion.js",
     "test:support:intent-graph-structural-discovery": "node tests/support/intent-graph-structural-discovery.test.js",
     "test:mcp:systemarchitecture": "node tests/mcp/systemarchitecture-mcp.test.js",
-    "validate:system-architecture": "node scripts/validateSystemArchitecture.js",
-    "validate:handoff": "node scripts/validateStageHandoff.js",
-    "validate:handoff:intent": "node scripts/validateStageHandoff.js intent-to-implementation",
-    "validate:handoff:implementation": "node scripts/validateStageHandoff.js implementation-to-coding",
-    "test:argo": "node scripts/runArchitectureTests.js",
+    "validate:system-architecture": "node .argo/scripts/validateSystemArchitecture.js",
+    "validate:handoff": "node .argo/scripts/validateStageHandoff.js",
+    "validate:handoff:intent": "node .argo/scripts/validateStageHandoff.js intent-to-implementation",
+    "validate:handoff:implementation": "node .argo/scripts/validateStageHandoff.js implementation-to-coding",
+    "test:argo": "node .argo/scripts/runArchitectureTests.js",
     "test:e2e:workspace-bootstrap": "node tests/e2e/runWorkspaceBootstrapE2E.js"
   },
   "devDependencies": {

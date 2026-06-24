@@ -9,8 +9,8 @@ Argo HARNESS is a multi-agent delivery workflow for OpenCode. It separates work 
 .opencode/skills/       Workflow skills
 .opencode/commands/     /argoinit and /argotest command entrypoints
 .opencode/mcp.json      MCP configuration; registers only the root-level `argo` server
-scripts/                Canonical MCP servers and deterministic execution scripts
-schema/                 Canonical JSON Schema assets
+.argo/scripts/          Canonical MCP servers and deterministic execution scripts
+.argo/schema/           Canonical JSON Schema assets
 ```
 
 ## Unified MCP Server
@@ -20,7 +20,7 @@ All three platform bundles, `.cursor`, `.github`, and `.opencode`, register one 
 The only MCP server entrypoint is:
 
 ```text
-scripts/argo-mcp-server.js
+.argo/scripts/argo-mcp-server.js
 ```
 
 Primary tools exposed by the unified server:
@@ -44,30 +44,30 @@ Agents must not call legacy OpenCode custom tools for these operations. Determin
 
 ## Canonical Scripts
 
-MCP-related executable code is centralized under root-level `scripts/`:
+MCP-related executable code is centralized under `.argo/scripts/`:
 
 ```text
-scripts/argo-mcp-server.js
-scripts/systemarchitecture-mcp-server.js
-scripts/validator-mcp-server.js
-scripts/validateSystemArchitecture.js
-scripts/validateStageHandoff.js
-scripts/runArchitectureTests.js
+.argo/scripts/argo-mcp-server.js
+.argo/scripts/systemarchitecture-mcp-server.js
+.argo/scripts/validator-mcp-server.js
+.argo/scripts/validateSystemArchitecture.js
+.argo/scripts/validateStageHandoff.js
+.argo/scripts/runArchitectureTests.js
 ```
 
 The `.cursor`, `.github`, and `.opencode` bundles do not keep validator script or MCP wrapper copies.
 
 ## Canonical Schemas
 
-Schemas are centralized under root-level `schema/`:
+Schemas are centralized under `.argo/schema/`:
 
 ```text
-schema/SystemArchitecture.schema.json
-schema/IntentToImplementationHandoff.schema.json
-schema/ImplementationToCodingHandoff.schema.json
+.argo/schema/SystemArchitecture.schema.json
+.argo/schema/IntentToImplementationHandoff.schema.json
+.argo/schema/ImplementationToCodingHandoff.schema.json
 ```
 
-Agents, skills, MCP servers, validators, and viewers must read schema files from root-level `schema/`.
+Agents, skills, MCP servers, validators, and viewers must read schema files from `.argo/schema/`.
 
 ## Agent Summary
 

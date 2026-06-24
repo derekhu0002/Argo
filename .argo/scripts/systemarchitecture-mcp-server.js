@@ -4,7 +4,7 @@ const readline = require('node:readline');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const SCHEMA_PATH_CANDIDATES = [
-  'schema/SystemArchitecture.schema.json',
+  '.argo/schema/SystemArchitecture.schema.json',
 ];
 
 const {
@@ -243,7 +243,7 @@ function mutationInputSchema() {
 function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
-    || path.resolve(__dirname, '..');
+    || path.resolve(__dirname, '..', '..');
 }
 
 function resolveWorkspacePath(workspaceRoot, relativePath) {

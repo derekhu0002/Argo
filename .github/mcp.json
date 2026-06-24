@@ -3,7 +3,7 @@
     "argo": {
       "type": "stdio",
       "command": "node",
-      "args": ["scripts/argo-mcp-server.js"],
+      "args": [".argo/scripts/argo-mcp-server.js"],
       "cwd": "${workspaceFolder}",
       "env": {
         "ARGO_REPO_ROOT": "${workspaceFolder}"

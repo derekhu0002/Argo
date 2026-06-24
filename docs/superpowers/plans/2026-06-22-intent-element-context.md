@@ -37,8 +37,8 @@ Expected: FAIL because `getIntentElementContext` is not listed and `callTool` do
 ### Task 2: Implement Read-Only Context Query
 
 **Files:**
-- Modify: `scripts/systemarchitecture-mcp-server.js`
-- Modify: `scripts/argo-mcp-server.js`
+- Modify: `.argo/scripts/systemarchitecture-mcp-server.js`
+- Modify: `.argo/scripts/argo-mcp-server.js`
 - Test: `npm run test:mcp:systemarchitecture`
 
 - [ ] **Step 1: Add tool schema**
@@ -86,7 +86,7 @@ When depth limits stop further traversal, report truncated dependency/dependent/
 
 - [ ] **Step 6: Expose through unified argo server**
 
-Add `getIntentElementContext` to `SYSTEM_ARCHITECTURE_TOOL_NAMES` and the unified tool list in `scripts/argo-mcp-server.js`.
+Add `getIntentElementContext` to `SYSTEM_ARCHITECTURE_TOOL_NAMES` and the unified tool list in `.argo/scripts/argo-mcp-server.js`.
 
 - [ ] **Step 7: Run GREEN**
 
@@ -97,8 +97,8 @@ Expected: PASS.
 ### Task 3: Verification
 
 **Files:**
-- Validate: `scripts/systemarchitecture-mcp-server.js`
-- Validate: `scripts/argo-mcp-server.js`
+- Validate: `.argo/scripts/systemarchitecture-mcp-server.js`
+- Validate: `.argo/scripts/argo-mcp-server.js`
 - Validate: `tests/mcp/systemarchitecture-mcp.test.js`
 
 - [ ] **Step 1: Run focused MCP tests**

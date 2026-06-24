@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "./schema/ImplementationToIntentTraceProposal.schema.json",
+  "$id": "./.argo/schema/ImplementationToIntentTraceProposal.schema.json",
   "title": "Implementation To Intent Trace Proposal Schema",
   "type": "object",
   "additionalProperties": false,

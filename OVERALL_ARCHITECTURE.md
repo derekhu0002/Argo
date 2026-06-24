@@ -23,9 +23,9 @@ scope: repository-root
 ### Included Paths
 - path: src/
   reason: primary implementation runtime and stable component boundaries
-- path: scripts/
+- path: .argo/scripts/
   reason: canonical MCP servers and deterministic execution scripts used by all platform bundles
-- path: schema/
+- path: .argo/schema/
   reason: canonical JSON Schema assets used by validators, MCP tools, agents, and viewers
 - path: tests/explicit/
   reason: read-only physical landing zone for explicit testcase single-entry files
@@ -46,11 +46,11 @@ scope: repository-root
   kind: LayeredRuntime
   responsibility: host composition root plus internal runtime layers
   local_contract: src/ARCHITECTURE.md
-- path: scripts/
+- path: .argo/scripts/
   name: canonical-execution-scripts
   kind: ScriptExecutionZone
   responsibility: single source of truth for MCP servers, SystemArchitecture mutation gateway, validators, handoff validators, and explicit testcase execution
-- path: schema/
+- path: .argo/schema/
   name: canonical-schema-assets
   kind: SchemaContractZone
   responsibility: single source of truth for SystemArchitecture and stage handoff JSON schemas
@@ -92,10 +92,10 @@ scope: repository-root
   - Engine -> Support
 - bootstrap_dependency_direction:
   - src/commands/argoInit.ts -> src/utils/workspaceBootstrap.ts
-  - src/utils/workspaceBootstrap.ts -> scripts/
-  - src/utils/workspaceBootstrap.ts -> schema/
+  - src/utils/workspaceBootstrap.ts -> .argo/scripts/
+  - src/utils/workspaceBootstrap.ts -> .argo/schema/
   - src/utils/workspaceBootstrap.ts -> package.json bootstrap manifest updates
-  - package.json -> scripts/runArchitectureTests.js
+  - package.json -> .argo/scripts/runArchitectureTests.js
 - forbidden_shortcuts:
   - Commands -> Engine implementation internals
   - Visual Explorer -> Commands

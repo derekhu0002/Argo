@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = process.env.ARGO_REPO_ROOT
+    || process.env.WORKSPACE_FOLDER
+    || path.resolve(__dirname, '..', '..');
 const DEFAULT_PROPOSAL_PATH = 'design/KG/ImplementationToIntentTraceProposal.json';
-const TRACE_PROPOSAL_SCHEMA_PATH = 'schema/ImplementationToIntentTraceProposal.schema.json';
+const TRACE_PROPOSAL_SCHEMA_PATH = '.argo/schema/ImplementationToIntentTraceProposal.schema.json';
 
 function main() {
     const proposalPath = process.argv[2] || DEFAULT_PROPOSAL_PATH;

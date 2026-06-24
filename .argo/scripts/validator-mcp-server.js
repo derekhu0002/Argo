@@ -12,23 +12,23 @@ const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 
 const SCRIPT_CANDIDATES = {
   validateSystemArchitecture: [
-    'scripts/validateSystemArchitecture.js',
+    '.argo/scripts/validateSystemArchitecture.js',
   ],
   validateStageHandoff: [
-    'scripts/validateStageHandoff.js',
+    '.argo/scripts/validateStageHandoff.js',
   ],
   validateTraceProposal: [
-    'scripts/validateTraceProposal.js',
+    '.argo/scripts/validateTraceProposal.js',
   ],
   runArchitectureTests: [
-    'scripts/runArchitectureTests.js',
+    '.argo/scripts/runArchitectureTests.js',
   ],
 };
 
 const TOOLS = [
   {
     name: 'validateSystemArchitecture',
-    description: 'Validate design/KG/SystemArchitecture.json against schema/SystemArchitecture.schema.json and Argo graph rules.',
+    description: 'Validate design/KG/SystemArchitecture.json against .argo/schema/SystemArchitecture.schema.json and Argo graph rules.',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -52,7 +52,7 @@ const TOOLS = [
   },
   {
     name: 'validateTraceProposal',
-    description: 'Validate ImplementationToIntentTraceProposal JSON against schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
+    description: 'Validate ImplementationToIntentTraceProposal JSON against .argo/schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -83,7 +83,7 @@ const TOOLS = [
 function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
-    || path.resolve(__dirname, '..');
+    || path.resolve(__dirname, '..', '..');
 }
 
 function resolveScriptPath(workspaceRoot, candidates) {

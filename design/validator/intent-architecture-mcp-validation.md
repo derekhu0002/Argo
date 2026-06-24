@@ -1,12 +1,12 @@
 # Intent Architecture MCP Validation
 
-本文归档意图架构 `design/KG/SystemArchitecture.json` 相关 MCP 校验逻辑，包括触发环节、校验方法和失败引导。当前统一入口为 `scripts/argo-mcp-server.js`，核心 mutation 校验位于 `scripts/systemarchitecture-mcp-server.js`，总校验位于 `scripts/validateSystemArchitecture.js`。
+本文归档意图架构 `design/KG/SystemArchitecture.json` 相关 MCP 校验逻辑，包括触发环节、校验方法和失败引导。当前统一入口为 `.argo/scripts/argo-mcp-server.js`，核心 mutation 校验位于 `.argo/scripts/systemarchitecture-mcp-server.js`，总校验位于 `.argo/scripts/validateSystemArchitecture.js`。
 
 ## 校验触发环节
 
 | 触发环节 | MCP/脚本入口 | 校验对象 | 是否写入 | 校验方法 | 失败返回/引导 |
 |---|---|---|---:|---|---|
-| 总校验 | MCP `validateSystemArchitecture`，由 `scripts/validator-mcp-server.js` 调用 `scripts/validateSystemArchitecture.js` | 固定项目图谱 `design/KG/SystemArchitecture.json` | 否 | JSON Schema、图语义、全部关系 ArchiMate 端点矩阵、全部 view 元素数、view 关系端点共现 | 脚本 `stderr` 输出错误列表；MCP payload `status: failed` |
+| 总校验 | MCP `validateSystemArchitecture`，由 `.argo/scripts/validator-mcp-server.js` 调用 `.argo/scripts/validateSystemArchitecture.js` | 固定项目图谱 `design/KG/SystemArchitecture.json` | 否 | JSON Schema、图语义、全部关系 ArchiMate 端点矩阵、全部 view 元素数、view 关系端点共现 | 脚本 `stderr` 输出错误列表；MCP payload `status: failed` |
 | Mutation 预览 | MCP `previewSystemArchitectureMutation` | 指定 mutation 应用后的候选图谱 | 否 | mutation 前置校验、JSON Schema、图语义、触达关系 ArchiMate 端点矩阵、触达 view 元素数、view 关系端点共现 | payload `errors` + `guidance` |
 | Mutation 写入 | MCP `applySystemArchitectureMutation` | 指定 mutation 应用后的候选图谱 | 仅通过后写入 | 与预览完全一致；失败时不写入 | payload `errors` + `guidance` |
 | Focused 元素工具 | `addArchitectureElement` / `updateArchitectureElement` / `removeArchitectureElement` | 单元素操作转换成 mutation 后的候选图谱 | add/remove/update 按工具语义 | 复用 `applySystemArchitectureMutation` 校验链 | payload `errors` + `guidance` |

@@ -6,7 +6,7 @@
   "mcp": {
     "argo": {
       "type": "local",
-      "command": ["node", "scripts/argo-mcp-server.js"]
+      "command": ["node", ".argo/scripts/argo-mcp-server.js"]
     }
   }
 }

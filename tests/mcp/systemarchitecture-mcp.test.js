@@ -10,8 +10,8 @@ const mcpConfigPaths = [
   '.github/mcp.json',
   '.opencode/mcp.json',
 ];
-const { callTool } = require('../../scripts/argo-mcp-server.js');
-const archimateRules = require('../../scripts/archimate32-rules.js');
+const { callTool } = require('../../.argo/scripts/argo-mcp-server.js');
+const archimateRules = require('../../.argo/scripts/archimate32-rules.js');
 
 async function main() {
   process.env.ARGO_REPO_ROOT = repoRoot;
@@ -71,8 +71,8 @@ function validatesUnifiedMcpConfiguration() {
     assert.deepStrictEqual(Object.keys(servers), ['argo'], configPath);
     const argoArgs = servers.argo.args || [];
     assert(
-      argoArgs.some(arg => arg.replace(/\\/g, '/').endsWith('scripts/argo-mcp-server.js')),
-      `${configPath} must point to scripts/argo-mcp-server.js`,
+      argoArgs.some(arg => arg.replace(/\\/g, '/').endsWith('.argo/scripts/argo-mcp-server.js')),
+      `${configPath} must point to .argo/scripts/argo-mcp-server.js`,
     );
   }
 }
@@ -177,7 +177,7 @@ function validatesArchimate32RuleCoverage() {
 }
 
 function validatesRelationshipSchemaRequiresTypeAndSeparatesName() {
-  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
+  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, '.argo', 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
   const relationshipSchema = schema.$defs.relationship;
 
   assert(relationshipSchema.required.includes('name'));
@@ -187,7 +187,7 @@ function validatesRelationshipSchemaRequiresTypeAndSeparatesName() {
 }
 
 function validatesImplementationTraceProposalSchema() {
-  const schemaPath = path.join(repoRoot, 'schema', 'ImplementationToIntentTraceProposal.schema.json');
+  const schemaPath = path.join(repoRoot, '.argo', 'schema', 'ImplementationToIntentTraceProposal.schema.json');
   assert(fs.existsSync(schemaPath), 'ImplementationToIntentTraceProposal schema must exist');
 
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
@@ -223,7 +223,7 @@ function validatesImplementationTraceProposalSchema() {
 }
 
 function validatesTotalValidatorUsesFixedGraphAndViewLimitRule() {
-  const script = fs.readFileSync(path.join(repoRoot, 'scripts', 'validateSystemArchitecture.js'), 'utf8');
+  const script = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'validateSystemArchitecture.js'), 'utf8');
   assert(script.includes("path.join('design', 'KG', 'SystemArchitecture.json')"));
   assert(!script.includes('process.argv[2]'));
   assert(script.includes('must contain at most 7 elements'));
@@ -308,10 +308,10 @@ function ensureTempDirectory() {
 function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-coverage-'));
   fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
-  fs.mkdirSync(path.join(tempRoot, 'schema'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, '.argo', 'schema'), { recursive: true });
   fs.copyFileSync(
-    path.join(repoRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
-    path.join(tempRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(repoRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(tempRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
   );
   fs.writeFileSync(
     path.join(tempRoot, 'design', 'KG', 'SystemArchitecture.json'),
@@ -327,7 +327,7 @@ function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
     }, null, 2),
   );
 
-  const result = spawnSync(process.execPath, [path.join(repoRoot, 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
+  const result = spawnSync(process.execPath, [path.join(repoRoot, '.argo', 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
     cwd: tempRoot,
     env: {
       ...process.env,
@@ -354,10 +354,10 @@ function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
 function allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase() {
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-focus-only-'));
   fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
-  fs.mkdirSync(path.join(tempRoot, 'schema'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, '.argo', 'schema'), { recursive: true });
   fs.copyFileSync(
-    path.join(repoRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
-    path.join(tempRoot, 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(repoRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
+    path.join(tempRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
   );
   fs.writeFileSync(
     path.join(tempRoot, 'design', 'KG', 'SystemArchitecture.json'),
@@ -373,7 +373,7 @@ function allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase() {
     }, null, 2),
   );
 
-  const result = spawnSync(process.execPath, [path.join(repoRoot, 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
+  const result = spawnSync(process.execPath, [path.join(repoRoot, '.argo', 'scripts', 'validateStageHandoff.js'), 'intent-to-implementation'], {
     cwd: tempRoot,
     env: {
       ...process.env,
@@ -486,7 +486,7 @@ async function returnsIntentElementContextWithSemanticTraversal() {
     'trigger-source-triggers-focus',
     'whole-composes-focus',
   ]);
-  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
+  const schema = JSON.parse(fs.readFileSync(path.join(repoRoot, '.argo', 'schema', 'SystemArchitecture.schema.json'), 'utf8'));
   const expectedRelationshipTypes = schema.$defs.archimateRelationshipType.enum.slice().sort();
   const actualRelationshipTypes = Array.from(new Set(payload.subgraph.relationships.map(relationship => relationship.type))).sort();
   assert.deepStrictEqual(actualRelationshipTypes, expectedRelationshipTypes);
@@ -1395,7 +1395,7 @@ function parseToolPayload(response) {
 }
 
 async function callMcpStdio(requests) {
-  const result = spawnSync(process.execPath, ['scripts/argo-mcp-server.js'], {
+  const result = spawnSync(process.execPath, ['.argo/scripts/argo-mcp-server.js'], {
     cwd: repoRoot,
     input: `${requests.map(request => JSON.stringify(request)).join('\n')}\n`,
     encoding: 'utf8',

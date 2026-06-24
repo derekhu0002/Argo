@@ -24,7 +24,7 @@ You are a specialist auditor for `design/KG/SystemArchitecture.json` from the pe
 Read sources in this order:
 
 1. `design/KG/SystemArchitecture.json`
-2. `schema/SystemArchitecture.schema.json`
+2. `.argo/schema/SystemArchitecture.schema.json`
 3. `OVERALL_ARCHITECTURE.md`
 4. Relevant local `ARCHITECTURE.md` files only when they are needed as implementation evidence
 

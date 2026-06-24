@@ -80,7 +80,7 @@ const TOOLS = [
   },
   {
     name: 'validateTraceProposal',
-    description: 'Validate ImplementationToIntentTraceProposal JSON against schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
+    description: 'Validate ImplementationToIntentTraceProposal JSON against .argo/schema/ImplementationToIntentTraceProposal.schema.json and repository path references.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -327,7 +327,7 @@ function mutationInputSchema() {
 function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
-    || path.resolve(__dirname, '..');
+    || path.resolve(__dirname, '..', '..');
 }
 
 async function callTool(name, args = {}) {
