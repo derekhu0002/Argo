@@ -2,13 +2,13 @@
 
 Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实现可追溯、可验证、可回归的高质量AI自动化交付，同时形成产品、架构决策等组织资产沉淀。它基于当前AI Coding主流方法论(SDD、TDD)做了进一步增强，包括：
 * SDD增强：采用形式化建模语言进行意图规格编写，并通过工具自动检查AI输出的架构模型，从而使得SPEC的编写更规范、更可控；
-* TDD增强：传统的TDD是在编码阶段才开始写测试用例，而本实践是在意图设计阶段就    开始设计验收测试用例，实现架构设计阶段基于验收用例进一步构建测试框架并细分出系统测试用例和集成测试用例传递给编码阶段；
+* TDD增强：传统的TDD是在编码阶段才开始写测试用例，而本实践是在意图设计阶段就开始设计验收测试用例，实现架构设计阶段基于验收用例进一步构建测试框架并细分出系统测试用例和集成测试用例传递给编码阶段；
 * DDD引入：通过意图图谱和实现架构契约显性沉淀领域概念、业务能力、约束、关系和边界，使领域知识不只停留在对话中，而是成为后续设计、编码、验收和回归的稳定上下文；
 * 复盘自进化：通过会话偏航复盘和迭代后持久化记忆复盘，将稳定复现的Agent行为约束、工作流和守卫固化为SKILL、RULE、INSTRUCTION或hook，并清理临时记忆，形成可持续进化的AI协作机制；
 
 架构模型、测试用例和复盘提炼出的规则/技能均是天然的项目事实资产，一旦形成便成了AI持续迭代的上下文，从而组织成一个可重复、可验证、可回归、可自进化的闭环。
 
-本项目背后的核心理念见《[ARGO工程哲学](notes/ARGO%20工程哲学：确定性交付公式的工程化.md)》。
+本项目背后的核心理念见《[ARGO工程哲学](notes/ARGO%20工程哲学：确定性交付公式的工程化.md)》；三阶段 Agent 如何通过 **Domain Ontology（领域本体）** 与 **Behavior（事件驱动行为流）** 构成可审计的认知规格，见《[ARGO 领域本体与 Agent 行为：认知规格与事件驱动交付](notes/ARGO%20领域本体与%20Agent%20行为：认知规格与事件驱动交付.md)》。
 
 ## 持续扩展
 本项目是一个顶层脚手架，不同的项目均可以基于本脚手架进一步扩展，包括：
@@ -44,11 +44,13 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 ### 部署
 
+各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`），主要工具包括 `initializeWorkspace`、`validateSystemArchitecture`、`validateStageHandoff`、`runArchitectureTests`、`getIntentElementContext` 及意图图谱 mutation 系列。
+
 | 版本 | 适用环境 | 说明 |
 | --- | --- | --- |
-| [Copilot 版](.github/README.md) | GitHub Copilot | 拷贝`.github`目录到您的工作区根目录 |
-| [OpenCode 版](.opencode/README.md) | OpenCode | 拷贝`.opencode`目录到您的工作区根目录 |
-| [Cursor 版](.cursor/README.md) | Cursor | 拷贝`.cursor`目录到您的工作区根目录 |
+| [Copilot 版](.github/README.md) | GitHub Copilot | 拷贝 `.github` 与 `.argo` 到工作区根目录 |
+| [OpenCode 版](.opencode/README.md) | OpenCode | 拷贝 `.opencode` 与 `.argo` 到工作区根目录；初始化用 `/argoinit`，全量架构测试用 `/argotest` |
+| [Cursor 版](.cursor/README.md) | Cursor | 拷贝 `.cursor` 与 `.argo` 到工作区根目录；MCP 入口为 `.argo/scripts/argo-mcp-server.js` |
 
 #### 平台入口
 
