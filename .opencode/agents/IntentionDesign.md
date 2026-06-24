@@ -210,7 +210,8 @@ note bottom of CoverageMatrix
   1. Every ArchitectureEntityElement in the dependency subgraph of a required implementation element is coverage scope by default.
   2. Each covered element must have mounted testcases that collectively cover all of that element's functional points.
   3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
-  4. Exclusions require evidence-backed reasons.
+  4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
+  5. Exclusions require evidence-backed reasons.
 end note
 @enduml
 ```
@@ -246,6 +247,8 @@ if (EVENT: New task or requirement?) then (new task)
       2. List the exact mounted ExplicitAcceptanceTestcase ids under that same element.
       3. Map each functionalPoint to one or more mounted testcase ids that cover it.
       4. For already implemented boundary nodes, cite evidence that the mounted testcases pass.
+      Do not treat design/solution documents, terms, flows, roles, risks, interfaces, validateSystemArchitecture,
+      validateStageHandoff, or ReadLints results as a substitute for same-element mounted testcase ids.
       If any element has no mounted testcase, any functionalPoint has no mapped mounted testcase, or pass evidence is required but missing,
       condition 5 is true and IntentionDesign must not claim the subgraph is covered.
     end note
@@ -260,7 +263,7 @@ if (EVENT: New task or requirement?) then (new task)
     2. Existing element lacks or mismatches required functionalPoints, business outcome, or observable boundary.
     3. Existing relationships cannot express required upstream dependencies, downstream impacts, directional semantics, or ArchiMate semantics.
     4. Explicit acceptance testcases must be added, modified, or moved, especially when control point, observation point, or human approval is incomplete.
-    5. The explicit dependency-subgraph coverage proof is missing or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists.
+    5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists.
     6. Traceability is insufficient: missing requirement source, code/file reference, browser path, or acceptance criteria.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
@@ -276,7 +279,7 @@ if (EVENT: New task or requirement?) then (new task)
          add, remove, or revise IntentRelationships with source, target, type, attributes, and directionalSemantics.
       4. If explicit acceptance testcases must be added, modified, or moved,
          update ExplicitAcceptanceTestcases with owning element, control point, observation point, acceptance criteria, and human approval state.
-      5. If the explicit dependency-subgraph coverage proof is missing or shows missing mounted testcases, missing functional-point coverage, or missing required pass evidence without evidence-backed exclusion,
+      5. If the explicit dependency-subgraph coverage proof is missing, document-derived, validation-derived, or shows missing mounted testcases, missing functional-point coverage, or missing required pass evidence without evidence-backed exclusion,
          update CoverageMatrix and mount or revise Acceptance Test testcases under each exact covered element before claiming coverage.
       6. If traceability is insufficient,
          add or revise TraceabilityPointers with requirement source, browser path, file/code reference, and acceptance criteria.
