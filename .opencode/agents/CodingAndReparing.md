@@ -218,6 +218,8 @@ note bottom of RepairTask
   1. Every repair task must trace to a handoff item, failure record, explicit testcase, or dependency-subgraph entity.
   2. Repairs follow dependency order: upstream dependencies, shared contracts, and prerequisite entrypoints before downstream capabilities.
   3. Repair changes the real production behavior with the minimum code needed.
+  4. Simplicity first: no speculative features, single-use abstractions, unrequested configurability, or impossible-scenario handling.
+  5. If the implementation can be much smaller while preserving behavior, rewrite toward the smaller real-behavior repair.
 end note
 
 note bottom of TestAsset
@@ -225,6 +227,7 @@ note bottom of TestAsset
   1. Frozen explicit testcases and frozen critical non-explicit tests are read-only in Coding/Repair.
   2. Supporting non-explicit tests may be added or refined only inside contract-allowed locations.
   3. Every test-related design or summary must preserve control point and observation point.
+  4. design/KG/SystemArchitecture.json, frozen test assets, and their associated frozen contracts are not edited in Coding/Repair.
 end note
 
 note bottom of TestOnlyBusinessCodeShortcut
@@ -250,6 +253,16 @@ title CodingAndReparing Event-Driven Action Flow
 start
 :Load design/persistant-memory/coding-and-repairing.md, design/KG/SystemArchitecture.json, implementation contracts, handoff, and failure records; recognize incoming EVENT
 [acts on: IntentArchitecture, ImplementationArchitecture, ImplementationToCodingHandoff, TestFailureRecord, CodeReality];
+:Enforce Coding/Repair stage communication and edit guardrails
+[acts on: ImplementationToCodingHandoff, TestFailureRecord, TestAsset, CodeReality];
+note right
+  Stage guardrails:
+  1. Read design/KG/ImplementationToCodingHandoff.json before changing code.
+  2. If the handoff is missing, incomplete, or conflicts with repository state so work cannot execute, report an Implementation Design gap instead of skipping it.
+  3. Use the handoff and failure records as the repair queue; do not patch from isolated local errors without architecture context.
+  4. User-facing responses begin with "Derek".
+  5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
+end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
   :Build traceable repair queue from design/KG/ImplementationToCodingHandoff.json, design/KG/test-failure-records.json, OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and existing tests
@@ -285,7 +298,7 @@ elseif (EVENT: Architecture test regression?) then (regression)
   [acts on: RepairTask, RepositoryFile, ProductionBehavior, FrozenExplicitTestcase];
 
 elseif (EVENT: Test environment blocker?) then (environment)
-  :Resolve or delegate environment setup without skipping required tests
+  :Stop coding work and ask the human partner for environment help without skipping required tests
   [acts on: TestEnvironment, ArchitectureTestRun];
   :Rerun the blocked existing entrypoints after environment recovery
   [acts on: ArchitectureTestRun, FrozenExplicitTestcase, TestFailureRecord];
@@ -296,6 +309,16 @@ endif
 
 :Report code changes, preserved frozen assets, test results, and remaining repair risks
 [acts on: RepositoryFile, CriticalNonExplicitTest, SupportingNonExplicitTest, ArchitectureTestRun, TestEnvironment];
+note right
+  Report guardrails:
+  1. State whether ImplementationToCodingHandoff was read and obeyed; if not, name the gap.
+  2. Use concrete repository paths for contracts, changed files, frozen tests, supporting tests, fixtures, and entrypoints.
+  3. Put user-facing path lists in a separate text block, one path per line.
+  4. Include external interface changes and INTRODUCTION.md updates when applicable.
+  5. Include added or refined non-explicit tests with control point and observation point.
+  6. Include which intent dependency subgraph drove repair order and how the implementation followed it.
+  7. Include current test execution results and how the test environment was identified or why it remains blocked.
+end note
 :Write session-level repair decisions and repeated-error solutions to design/persistant-memory/coding-and-repairing.md
 [acts on: RepairTask, ArchitectureDrift, CodeReality];
 stop

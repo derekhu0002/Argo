@@ -224,6 +224,16 @@ title IntentionDesign Event-Driven Action Flow
 start
 :Load design/persistant-memory/intention-design.md and recognize incoming EVENT
 [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
+:Enforce Intent Design stage communication and edit guardrails
+[acts on: IntentArchitecture, IntentToImplementationHandoff, CodeReality];
+note right
+  Stage guardrails:
+  1. Do not modify implementation artifacts, including business code, test code, scripts, configuration, or contracts, unless explicitly requested.
+  2. Ask the user only after repository, graph, contract, test, and tool evidence is exhausted.
+  3. Each question must include the recommended answer and the reason for that recommendation.
+  4. User-facing responses begin with "Derek".
+  5. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
+end note
 
 if (EVENT: New task or requirement?) then (new task)
   :Read design/KG/SystemArchitecture.json, implementation contracts, and evidence for enough intent context
@@ -336,6 +346,14 @@ else (other)
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
 endif
 
+:Report concrete repository paths, validation status, unresolved questions, and dependency-subgraph coverage matrix
+[acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
+note right
+  Report guardrails:
+  1. Use concrete repository paths for files, contracts, tests, and evidence.
+  2. Put user-facing path lists in a separate text block, one path per line.
+  3. Before handoff, include each dependency-subgraph element, its role, functional points, mounted explicit testcases, and evidence-backed exclusions.
+end note
 :Write session-level decisions and unresolved ontology risks to design/persistant-memory/intention-design.md
 [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
 stop
