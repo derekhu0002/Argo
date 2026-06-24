@@ -91,21 +91,16 @@ ARGO 的边界约束主要来自强阶段和强门禁：
 
 ## G：用 task-tidy 降低任务颗粒度
 
-公式中的 **G** 是任务颗粒度，位于分母。单次任务越大，随机干扰越多，AI 越容易在一个上下文里同时处理业务、架构、实现、测试和调试，最终导致判断混乱。
+公式中的 **G** 是任务颗粒度，位于分母。单次交付范围越大，随机干扰越多，AI 越容易在一个上下文里同时处理业务、架构、实现、测试和调试，最终导致判断混乱。
 
-ARGO 使用 `task-tidy` 把分析结果整理到 `design/tasks/`，并要求每个任务独立成文，包含：
+ARGO 使用 `/task-tidy` 把 Business Partner 或 `/grill-me` 的分析结果**内化进** `design/KG/SystemArchitecture.json`，而不是整理成 `design/tasks/` 下的独立 Markdown。内化时：
 
-- 任务背景。
-- 相关 PRD 或业务来源。
-- 执行内容。
-- 验收标准。
+- 优先刷新 Motivation、Strategy、Business、Application、Technology 各层 intent element 与 ArchiMate 关系。
+- 将目标、约束、决策 rationale、验收标准、PRD 上下文挂载到最相关的 intent element（attributes 或 `ExplicitAcceptanceTestcase`）。
+- 用显式依赖关系表达纵向顺序；横向正交性体现在元素边界与 view 组织上。
+- 仅在无法表示为 durable architecture intent 时，才保留 `Work Package` 作为残余交付协调。
 
-任务切分同时遵循两个方向：
-
-- **横向切分**：按功能模块或业务流程切出相互正交的任务。
-- **纵向切分**：按依赖顺序组织任务，保证前置条件先被满足。
-
-但 ARGO 不鼓励多个任务并发交给 Agent 执行。即使任务可以横向区分，也建议由人类伙伴按顺序逐个启动新会话提交给 `Orchestrator`。这样做是为了让每次 AI 执行面对更小、更纯净、更可验证的上下文。
+ARGO **不鼓励**多个交付范围并发交给 Agent 执行。即使图谱中存在可并行的 `Work Package` 或 element 范围，也建议由人类伙伴按依赖顺序逐个启动新会话提交给 `Orchestrator`。这样做是为了让每次 AI 执行面对更小、更纯净、更可验证的上下文。
 
 降低 **G** 的目标不是“把流程变慢”，而是减少单次跳跃的不确定性，让每一次迭代都足够小、足够清楚、足够可验收。
 
@@ -129,7 +124,7 @@ ARGO 使用 `task-tidy` 把分析结果整理到 `design/tasks/`，并要求每�
 ARGO 并不追求全自动。它明确把人类伙伴放在关键节点上：
 
 - 通过 `business-partner` 提交和校准需求。
-- 通过 `task-tidy` 确认任务切分。
+- 通过 `task-tidy` 将业务结论内化到意图架构并确认依赖顺序。
 - 按顺序启动新会话并提交任务。
 - 审核意图验收用例和实现验收用例。
 - 在测试环境、外部依赖、权限、设备等问题上提供帮助。
