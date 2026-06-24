@@ -256,16 +256,23 @@ package "Test Ontology" {
 
 package "Handoff Ontology" {
   class IntentToImplementationHandoff {
-    +implementedIntentElements
-    +minimalMetadata
+    +intentElementIds
+    +relationshipIds
+    +summary
+    +openQuestions
+    +notes
+    +sourceIntentGraphPath
   }
 
   class ImplementationToCodingHandoff {
-    +concreteContracts
-    +testcaseEntrypoints
-    +frozenFiles
-    +expectedFailureSignals
+    +implementationContracts
+    +explicitEntrypoints
+    +criticalNonExplicitTests
+    +supportingNonExplicitTests
+    +expectedFailureRecordsPath
+    +codingTargets
     +taskExecutionPlan
+    +frozenFiles
   }
 
   class ImplementationToIntentTraceProposal {
@@ -367,7 +374,7 @@ ArchitectureTestRun --> TestEnvironment : requires
 SupportingNonExplicitTest --> RepairTask : may verify local repair
 TestOnlyBusinessCodeShortcut --> ProductionBehavior : forbidden contamination
 
-IntentToImplementationHandoff --> ArchitectureEntityElement : identifies elements needing implementation
+IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
 ImplementationToCodingHandoff --> RootImplementationContract
 ImplementationToCodingHandoff --> LocalImplementationContract
 ImplementationToCodingHandoff --> TestAsset
@@ -391,7 +398,7 @@ note bottom of ExplicitAcceptanceTestcase
   Logic rules:
   1. Every testcase must be an Acceptance Test.
   2. Every testcase must have a control point and observation point.
-  3. Every new or modified testcase requires human approval before handoff.
+  3. Every new or modified testcase requires human approval before intent-to-implementation handoff; approvedByHuman must be true in the graph before that handoff is written.
   4. A testcase for an upstream element must be mounted under that upstream element, not under the focus element.
 end note
 
@@ -442,7 +449,7 @@ note bottom of TestAsset
   2. Test assets are owned by stable architecture elements per contract.
   3. Explicit testcase entrypoints and critical non-explicit tests are read-only in Coding/Repair.
   4. Supporting non-explicit tests may be added or refined only inside contract-allowed locations.
-  5. design/KG/SystemArchitecture.json, frozen test assets, and their associated frozen contracts are not edited in Coding/Repair.
+  5. design/KG/SystemArchitecture.json, frozen test assets, and contract documents listed in frozenFiles or implementationContracts are not edited in Coding/Repair; contract-allowed source and configuration files declared by those contracts remain editable.
 end note
 
 note bottom of RepairTask
@@ -483,19 +490,17 @@ note right
   Stage guardrails:
   1. Read design/KG/ImplementationToCodingHandoff.json before changing code.
   2. If the handoff is missing, incomplete, or conflicts with repository state so work cannot execute, report an Implementation Design gap instead of skipping it.
-  3. Use the handoff and failure records as the repair queue; do not patch from isolated local errors without architecture context.
+  3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
   4. User-facing responses begin with "Derek".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
-  :Build traceable repair queue from design/KG/ImplementationToCodingHandoff.json, design/KG/test-failure-records.json, OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and existing tests
+  :Build traceable repair queue from design/KG/ImplementationToCodingHandoff.json, handoff.expectedFailureRecordsPath, OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and existing tests
   [acts on: RepairTask, ImplementationToCodingHandoff, TestFailureRecord, ExplicitTestcaseEntrypoint, ImplementationContract];
-  if (Repair queue maps to intent elements?) then (yes)
-    :MCP tool: argo.getIntentElementContext
-    Read dependency subgraph to choose repair order
-    [acts on: DependencySubgraph, IntentElement, RepairTask];
-  endif
+  :MCP tool: argo.getIntentElementContext when repair queue spans multiple intent-linked elements or upstream dependencies
+  Read dependency subgraph to choose repair order
+  [acts on: DependencySubgraph, ArchitectureEntityElement, RepairTask];
   :Modify contract-allowed source or configuration files to repair real production behavior while preserving frozen assets
   [acts on: ProductionBehavior, RepositoryArtifact, RepairTask, ExplicitTestcaseEntrypoint, CriticalNonExplicitTest];
   :Add or refine only contract-allowed supporting test files when useful
@@ -513,13 +518,14 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
 elseif (EVENT: Architecture test regression?) then (regression)
   :Trace regression to contract, dependency subgraph, or production behavior drift
   [acts on: ArchitectureTestRun, ArchitectureDrift, ImplementationContract, ProductionBehavior];
-  if (Regression maps to an intent element?) then (yes)
-    :MCP tool: argo.getIntentElementContext
-    Read focused dependency subgraph
-    [acts on: DependencySubgraph, IntentElement, RepairTask];
-  endif
+  :MCP tool: argo.getIntentElementContext when regression maps to an intent element
+  Read focused dependency subgraph
+  [acts on: DependencySubgraph, ArchitectureEntityElement, RepairTask];
   :Modify the minimum contract-allowed implementation files and rerun affected tests
   [acts on: RepairTask, RepositoryArtifact, ProductionBehavior, ExplicitTestcaseEntrypoint];
+  :MCP tool: argo.runArchitectureTests
+  Run full explicit architecture tests before completion
+  [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
 
 elseif (EVENT: Test environment blocker?) then (environment)
   :Stop coding work and ask the human partner for environment help without skipping required tests

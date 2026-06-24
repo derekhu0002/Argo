@@ -227,16 +227,23 @@ package "Test Ontology" {
 
 package "Handoff Ontology" {
   class IntentToImplementationHandoff {
-    +implementedIntentElements
-    +minimalMetadata
+    +intentElementIds
+    +relationshipIds
+    +summary
+    +openQuestions
+    +notes
+    +sourceIntentGraphPath
   }
 
   class ImplementationToCodingHandoff {
-    +concreteContracts
-    +testcaseEntrypoints
-    +frozenFiles
-    +expectedFailureSignals
+    +implementationContracts
+    +explicitEntrypoints
+    +criticalNonExplicitTests
+    +supportingNonExplicitTests
+    +expectedFailureRecordsPath
+    +codingTargets
     +taskExecutionPlan
+    +frozenFiles
   }
 
   class ImplementationToIntentTraceProposal {
@@ -297,7 +304,7 @@ ExplicitTestcaseEntrypoint --> TestHarness : uses
 CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
 StableArchitectureElement "1" o-- "many" TestAsset : owns
 
-IntentToImplementationHandoff --> ArchitectureEntityElement : identifies elements needing implementation
+IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
 ImplementationToCodingHandoff --> RootImplementationContract
 ImplementationToCodingHandoff --> LocalImplementationContract
 ImplementationToCodingHandoff --> TestAsset
@@ -314,7 +321,7 @@ note bottom of ExplicitAcceptanceTestcase
   Logic rules:
   1. Every testcase must be an Acceptance Test.
   2. Every testcase must have a control point and observation point.
-  3. Every new or modified testcase requires human approval before handoff.
+  3. Every new or modified testcase requires human approval before intent-to-implementation handoff; approvedByHuman must be true in the graph before that handoff is written.
   4. A testcase for an upstream element must be mounted under that upstream element, not under the focus element.
 end note
 
@@ -380,10 +387,11 @@ start
 note right
   Stage guardrails:
   1. Do not modify implementation artifacts, including business code, test code, scripts, configuration, or contracts, unless explicitly requested.
-  2. Ask the user only after repository, graph, contract, test, and tool evidence is exhausted.
-  3. Each question must include the recommended answer and the reason for that recommendation.
-  4. User-facing responses begin with "Derek".
-  5. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
+  2. May run existing tests read-only to gather pass/fail evidence; running tests does not authorize creating or modifying test code.
+  3. Ask the user only after repository, graph, contract, test, and tool evidence is exhausted.
+  4. Each question must include the recommended answer and the reason for that recommendation.
+  5. User-facing responses begin with "Derek".
+  6. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
 if (EVENT: New task or requirement?) then (new task)
@@ -413,6 +421,12 @@ if (EVENT: New task or requirement?) then (new task)
       If any element has no mounted testcase, any functionalPoint has no mapped mounted testcase, or pass evidence is required but missing,
       condition 5 is true and IntentionDesign must not claim the subgraph is covered.
     end note
+  else (not anchored)
+    note right
+      When the task is not anchored to an intent element, skip dependency-subgraph coverage proof
+      unless the planned handoff scope still includes ArchitectureEntityElements requiring downstream implementation.
+      In that case, anchor the scope first or treat adequacy condition 5 as triggered until coverage proof is built.
+    end note
   endif
   :Classify whether the required change belongs to intent, implementation architecture, or code reality
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
@@ -424,8 +438,9 @@ if (EVENT: New task or requirement?) then (new task)
     2. Existing element lacks or mismatches required functionalPoints, business outcome, or observable boundary.
     3. Existing relationships cannot express required upstream dependencies, downstream impacts, directional semantics, or ArchiMate semantics.
     4. Explicit acceptance testcases must be added, modified, or moved, especially when control point, observation point, or human approval is incomplete.
-    5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists.
+    5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists. This condition applies only when the task or handoff scope includes ArchitectureEntityElements requiring downstream implementation.
     6. Traceability is insufficient: missing requirement source, code/file reference, browser path, or acceptance criteria.
+    7. Any mounted ExplicitAcceptanceTestcase in handoff scope was added or modified in this session but approvedByHuman is not true.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
     :Declare required intent architecture updates before applying mutation
@@ -444,6 +459,8 @@ if (EVENT: New task or requirement?) then (new task)
          update CoverageMatrix and mount or revise Acceptance Test testcases under each exact covered element before claiming coverage.
       6. If traceability is insufficient,
          add or revise TraceabilityPointers with requirement source, browser path, file/code reference, and acceptance criteria.
+      7. If any mounted ExplicitAcceptanceTestcase in handoff scope lacks approvedByHuman=true,
+         obtain human approval before handoff or revert the testcase change.
     end note
     :Shape intent deltas and acceptance coverage at the ontology level
     [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
@@ -459,12 +476,17 @@ if (EVENT: New task or requirement?) then (new task)
   endif
   :Confirm intent architecture is complete before handoff output
   [acts on: IntentArchitecture, CoverageMatrix];
-  :Write design/KG/IntentToImplementationHandoff.json only at architecture-element granularity
-  [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
-  :MCP tool: argo.validateStageHandoff
-  stage = "intent-to-implementation"
-  Validate handoff
-  [acts on: IntentToImplementationHandoff];
+  if (Any pre-handoff adequacy condition remains unsatisfied?) then (blocked)
+    :Report unresolved adequacy blockers and record openQuestions; do not write handoff
+    [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
+  else (ready)
+    :Write design/KG/IntentToImplementationHandoff.json with intentElementIds at architecture-element granularity
+    [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
+    :MCP tool: argo.validateStageHandoff
+    stage = "intent-to-implementation"
+    Validate handoff
+    [acts on: IntentToImplementationHandoff];
+  endif
 
 elseif (EVENT: Intent architecture audit?) then (audit)
   :Audit graph semantics, coverage, and traceability without assuming implementation fixes

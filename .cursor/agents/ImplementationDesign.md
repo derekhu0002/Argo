@@ -229,16 +229,23 @@ package "Test Ontology" {
 
 package "Handoff Ontology" {
   class IntentToImplementationHandoff {
-    +implementedIntentElements
-    +minimalMetadata
+    +intentElementIds
+    +relationshipIds
+    +summary
+    +openQuestions
+    +notes
+    +sourceIntentGraphPath
   }
 
   class ImplementationToCodingHandoff {
-    +concreteContracts
-    +testcaseEntrypoints
-    +frozenFiles
-    +expectedFailureSignals
+    +implementationContracts
+    +explicitEntrypoints
+    +criticalNonExplicitTests
+    +supportingNonExplicitTests
+    +expectedFailureRecordsPath
+    +codingTargets
     +taskExecutionPlan
+    +frozenFiles
   }
 
   class ImplementationToIntentTraceProposal {
@@ -299,7 +306,7 @@ ExplicitTestcaseEntrypoint --> TestHarness : uses
 CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
 StableArchitectureElement "1" o-- "many" TestAsset : owns
 
-IntentToImplementationHandoff --> ArchitectureEntityElement : identifies elements needing implementation
+IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
 ImplementationToCodingHandoff --> RootImplementationContract
 ImplementationToCodingHandoff --> LocalImplementationContract
 ImplementationToCodingHandoff --> TestAsset
@@ -316,7 +323,7 @@ note bottom of ExplicitAcceptanceTestcase
   Logic rules:
   1. Every testcase must be an Acceptance Test.
   2. Every testcase must have a control point and observation point.
-  3. Every new or modified testcase requires human approval before handoff.
+  3. Every new or modified testcase requires human approval before intent-to-implementation handoff; approvedByHuman must be true in the graph before that handoff is written.
   4. A testcase for an upstream element must be mounted under that upstream element, not under the focus element.
 end note
 
@@ -401,13 +408,13 @@ if (EVENT: Intent-to-implementation handoff received?) then (handoff)
   [acts on: ImplementationArchitecture, InterfaceBoundary, ImplementationDependency, ExplicitTestcaseEntrypoint, CriticalNonExplicitTest];
   :Write or update OVERALL_ARCHITECTURE.md and relevant **/ARCHITECTURE.md contracts for stable boundaries, dependency direction, and implements mappings
   [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ImplementsMapping];
-  :If intent baselines are missing, mounted under the wrong element, or lack concrete entrypoints, report upstream Intent Design gap or write ImplementationToIntentTraceProposal
+  :If ExplicitAcceptanceTestcase entries are missing, mounted under the wrong element, or lack concrete entrypoints, report upstream Intent Design gap or write ImplementationToIntentTraceProposal
   [acts on: IntentArchitecture, ExplicitAcceptanceTestcase, ImplementationToIntentTraceProposal];
   :Write contract-owned explicit testcase entrypoints and selected guardrails at approved test paths
   [acts on: ExplicitTestcaseEntrypoint, BusinessReadableAssertion, TestHarness, CriticalNonExplicitTest, SupportingNonExplicitTest];
   :Run representative physicalized entrypoints to classify pass, expected failure, or design blocker
   [acts on: ExplicitTestcaseEntrypoint, CodeReality, ImplementationToCodingHandoff];
-  :Write design/KG/ImplementationToCodingHandoff.json from contracts, frozen assets, and expected failures
+  :Write design/KG/ImplementationToCodingHandoff.json from contracts, frozenFiles, expectedFailureRecordsPath, and taskExecutionPlan
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
@@ -450,7 +457,7 @@ note right
   1. Use concrete repository paths for contracts, entrypoints, fixtures, baselines, and handoff artifacts.
   2. Put user-facing path lists in a separate text block, one path per line.
   3. Include explicit testcase control points, observation points, GIVEN/WHEN/THEN readability, Harness abstraction, and expected failure signals.
-  4. Include critical non-explicit test category, frozen assets, protected fixtures, protected baselines, and remaining blockers.
+  4. Include critical non-explicit test category, files listed in frozenFiles, protected fixtures, protected baselines, expectedFailureRecordsPath, and remaining blockers.
 end note
 :Write session-level decisions, contract changes, and open architecture risks to design/persistant-memory/implementation-design.md
 [acts on: ImplementationArchitecture, ImplementationToCodingHandoff, TestAsset];
