@@ -69,7 +69,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 ```mermaid
 flowchart TD
     A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[🤖 结构化分析目标、约束、方案和验收控制点]
-    B --> D[👤 同一会话执行 /task-tidy，将业务拆解、依赖与验收标准内化进 SystemArchitecture.json]
+    B --> D[👤 同一会话执行 /task-tidy，将业务分析、架构依赖与验收标准内化进 SystemArchitecture.json]
     D --> E[🤖 转入开发迭代复用流程]
     classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
     classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
@@ -207,7 +207,7 @@ flowchart TD
 | 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，再转入开发迭代复用流程，由人类伙伴按 intent 范围顺序提交给 `Orchestrator` 交付 |
 | 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先判断是否属于意图架构问题；纯代码 BUG 直接进入 `CodingAndReparing`，涉及实现架构调整时先更新实现架构再编码修复 |
 | 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出候选并深挖收敛，再通过 `/task-tidy` 内化进意图架构；凡涉及开发交付的范围，统一转入开发迭代复用流程 |
-| 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、任务拆解，以及从验收方视角定义的控制点和观测点                                                               |
+| 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、架构依赖分析，以及从验收方视角定义的控制点和观测点                                                               |
 | 意图内化               | 业务分析或拷问已经完成，需要把结果写入意图架构                               | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；不创建 `design/tasks/` 独立 Markdown |
 | 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
 | 浏览架构图谱             | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属  | `/arch-viewer`                                          | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情                                                                 |
@@ -254,7 +254,7 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `grill-me` | 意图设计 / 通用 | 以强批判性思维无情拷问计划或设计，逐分支遍历决策树直到达成共识；可从仓库自行取证；各阶段均可使用但效果因阶段边界而异 | `/grill-me` |
 | `improve-codebase-architecture` | 意图设计（前置探索） | 在不引入功能需求的前提下，先识别 shallow module、接缝泄漏、测试面失焦等架构优化候选，再将选中方向交给 `grill-me` 深挖；宜作为独立迭代的需求输入而非单次指令 | `/improve-codebase-architecture` |
 | `business-partner` | 前置/业务 | 与 `BusinessPartner` Agent 等效的业务方案拷问流程：MECE 决策树拆解、SMART 问题定义、验收 testcase 输出 | `/business-partner` |
-| `task-tidy` | 前置/意图 | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务拆解、依赖顺序和验收标准内化进 `SystemArchitecture.json`；优先写入 durable architecture intent，仅在必要时保留 `Work Package`；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy` |
+| `task-tidy` | 前置/意图 | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务分析、架构依赖关系（横向 concern 边界与纵向前置/后置）和验收标准内化进 `SystemArchitecture.json`；优先写入 durable architecture intent，仅在必要时保留 `Work Package`；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy` |
 | `market-research` | 前置/业务 | 市场、竞品、投资人或技术趋势研究，要求来源归因，区分事实/推断/建议，输出面向决策的结论 | `/market-research` |
 | `implementation-delivery-acceptance` | 双层验收（意图架构侧） | 审计当前实现是否满足意图架构设计要求；不一致时写出实现 GAP 并给实现架构设计师下一步建议 | `/implementation-delivery-acceptance` |
 | `impl-gap-report` | 双层验收（意图架构侧） | 当实现仍存在 GAP 时，分析是否需要修改实现架构并下发后续开发任务 | `/impl-gap-report` |
