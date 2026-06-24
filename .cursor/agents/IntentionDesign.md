@@ -82,6 +82,27 @@ package "Implementation Ontology" {
     +guardrails
   }
 
+  abstract class ImplementationContract {
+    +path
+    +declaredStableElements
+    +declaredDependencies
+    +declaredImplementsMappings
+  }
+
+  class RootImplementationContract {
+    +path = "OVERALL_ARCHITECTURE.md"
+    +rootRules
+    +stableElementMap
+    +implementsMappings
+  }
+
+  class LocalImplementationContract {
+    +path = "ARCHITECTURE.md"
+    +localResponsibilities
+    +localDependencies
+    +ownedTests
+  }
+
   class StableArchitectureElement {
     +path
     +contractPath
@@ -89,11 +110,23 @@ package "Implementation Ontology" {
     +publicBoundary
   }
 
-  class ImplementationContract {
-    +path
-    +declaredStableElements
-    +declaredDependencies
-    +declaredImplementsMappings
+  class InterfaceBoundary {
+    +providedCapabilities
+    +consumedCapabilities
+    +allowedDependencies
+  }
+
+  class ImplementationDependency {
+    +sourceStableElement
+    +targetStableElement
+    +direction
+    +reason
+  }
+
+  class ImplementsMapping {
+    +implementationElement
+    +intentElement
+    +directOrIndirect
   }
 
   class ImplementationGuardrail {
@@ -144,10 +177,71 @@ package "Coverage Ontology" {
   }
 }
 
+package "Test Ontology" {
+  abstract class TestAsset {
+    +path
+    +owner
+    +controlPoint
+    +observationPoint
+  }
+
+  class ExplicitTestcaseEntrypoint {
+    +singleEntrypoint
+    +readOnlyInCodingStage
+    +keyAssertions
+    +expectedFailureSignal
+  }
+
+  class CriticalNonExplicitTest {
+    +category
+    +frozenEntrypoint
+    +protectedFixtures
+    +protectedBaselines
+  }
+
+  class SupportingNonExplicitTest {
+    +guardrailPurpose
+    +evolvableInCodingStage
+  }
+
+  class TestHarness {
+    +businessReadableMethods
+    +hidesSqlCypherGraphqlHttpEnvPlumbing
+  }
+
+  class BusinessReadableAssertion {
+    +given
+    +when
+    +then
+    +semanticDataNames
+    +businessFailureCategory
+  }
+
+  enum CriticalNonExplicitCategory {
+    ArchitectureBoundaryGuard
+    DependencyDirectionGuard
+    ExplicitEntrypointCorrectnessGuard
+    KeyImplementationTraceabilityGuard
+  }
+}
+
 package "Handoff Ontology" {
   class IntentToImplementationHandoff {
     +implementedIntentElements
     +minimalMetadata
+  }
+
+  class ImplementationToCodingHandoff {
+    +concreteContracts
+    +testcaseEntrypoints
+    +frozenFiles
+    +expectedFailureSignals
+    +taskExecutionPlan
+  }
+
+  class ImplementationToIntentTraceProposal {
+    +implementationAnchors
+    +proposedIntentTraceLinks
   }
 }
 
@@ -169,9 +263,19 @@ View --> IntentRelationship : includes
 
 ImplementationArchitecture "1" *-- "many" StableArchitectureElement
 ImplementationArchitecture "1" *-- "many" ImplementationContract
+ImplementationArchitecture "1" *-- "many" InterfaceBoundary
+ImplementationArchitecture "1" *-- "many" ImplementationDependency
+ImplementationArchitecture "1" *-- "many" ImplementsMapping
 ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
+ImplementationContract <|-- RootImplementationContract
+ImplementationContract <|-- LocalImplementationContract
+RootImplementationContract --> StableArchitectureElement : declares root-level map
+LocalImplementationContract --> StableArchitectureElement : owns local rules
 StableArchitectureElement --> ArchitectureEntityElement : realizes directly or indirectly
-ImplementationContract --> StableArchitectureElement : declares
+InterfaceBoundary --> StableArchitectureElement : bounds
+ImplementationDependency --> StableArchitectureElement : source/target
+ImplementsMapping --> StableArchitectureElement
+ImplementsMapping --> ArchitectureEntityElement
 ImplementationGuardrail --> StableArchitectureElement : protects
 
 CodeReality "1" *-- "many" RepositoryArtifact
@@ -183,7 +287,21 @@ DependencySubgraph "1" o-- "many" ArchitectureEntityElement : upstream/dependent
 CoverageMatrix --> DependencySubgraph : describes coverage over
 CoverageMatrix --> DependencyRole : classifies each element
 CoverageMatrix --> ExplicitAcceptanceTestcase : records mounted baselines
+
+TestAsset <|-- ExplicitTestcaseEntrypoint
+TestAsset <|-- CriticalNonExplicitTest
+TestAsset <|-- SupportingNonExplicitTest
+ExplicitAcceptanceTestcase --> ExplicitTestcaseEntrypoint : physicalized as
+ExplicitTestcaseEntrypoint --> BusinessReadableAssertion : contains
+ExplicitTestcaseEntrypoint --> TestHarness : uses
+CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
+StableArchitectureElement "1" o-- "many" TestAsset : owns
+
 IntentToImplementationHandoff --> ArchitectureEntityElement : identifies elements needing implementation
+ImplementationToCodingHandoff --> RootImplementationContract
+ImplementationToCodingHandoff --> LocalImplementationContract
+ImplementationToCodingHandoff --> TestAsset
+ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes
 
 note bottom of IntentArchitecture
   Logic rules:
@@ -207,6 +325,44 @@ note bottom of CoverageMatrix
   3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
   4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
   5. Exclusions require evidence-backed reasons.
+end note
+
+note bottom of ImplementationArchitecture
+  Logic rules:
+  1. Implementation architecture is expressed by repository contracts and stable layout.
+  2. Stable elements are high-level boundaries, not mirrors of every source file or function.
+  3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
+  4. Indirect implementation chains are valid when each link is declared by contracts.
+  5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
+     Separation of Concerns, and stable dependency direction as active criteria.
+end note
+
+note bottom of ImplementationContract
+  Logic rules:
+  1. OVERALL_ARCHITECTURE.md is the single root contract for root-level rules.
+  2. Local ARCHITECTURE.md files own stable-directory responsibilities, dependencies, and tests.
+  3. Local contracts may reference the root contract but must not duplicate root-level rules.
+end note
+
+note bottom of ExplicitTestcaseEntrypoint
+  Logic rules:
+  1. Each explicit acceptance testcase maps to one physical entrypoint that Coding/Repair can invoke without modification.
+  2. The entrypoint must contain executable key assertions, not placeholders.
+  3. Expected failures are valid only when they expose missing implementation through readable failure signals.
+  4. Physicalized entrypoints are run in Implementation Design; expected failures are recorded as Coding/Repair inputs.
+end note
+
+note bottom of BusinessReadableAssertion
+  Logic rules:
+  1. Explicit testcase bodies use GIVEN / WHEN / THEN.
+  2. Test bodies use Harness abstractions rather than low-level plumbing.
+  3. Names and failure categories must express business meaning.
+end note
+
+note bottom of TestAsset
+  Logic rules:
+  1. Every test asset must preserve control point and observation point.
+  2. Test assets are owned by stable architecture elements per contract.
 end note
 @enduml
 ```
