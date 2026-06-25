@@ -7,3 +7,4 @@ node_modules/
 tests/mcp/.tmp/
 .obsidian
 copilot/copilot-conversations/
+__pycache__
