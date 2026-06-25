@@ -58,6 +58,13 @@ while (Implementation design ready?) is (no)
     :Resume same @ImplementationDesign session with answer;
   elseif (Output empty or incomplete?) then (yes)
     :Resume same @ImplementationDesign task id;
+  elseif (ImplementationToIntentTraceProposal received?) then (yes)
+    :Interrupt current design flow;
+    :Route proposal to @IntentionDesign;
+    while (SystemArchitecture physically updated by argo tool and validated?) is (no)
+      :Resume @IntentionDesign until proposal is applied to design/KG/SystemArchitecture.json;
+    endwhile (yes)
+    :Resume same @ImplementationDesign session after intent graph update;
   elseif (Intent graph change required?) then (yes)
     :Route change request to @IntentionDesign;
   elseif (ImplementationToCodingHandoff missing or validateStageHandoff implementation-to-coding failed?) then (yes)
