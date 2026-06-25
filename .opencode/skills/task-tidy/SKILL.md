@@ -1,38 +1,59 @@
 ---
 name: task-tidy
-description: "Use when business analysis or architecture dependency analysis output needs to be internalized into the intent architecture across motivation, strategy, business, application, and technology layers."
+description: "Internalize business analysis into the intent architecture AND produce a sequential gravity chain with G-estimation for the subsequent workflow."
 argument-hint: scope
 disable-model-invocation: true
 ---
 
 # Task Tidy
 
-将 Business Partner 的业务分析、架构依赖分析（横向正交 concern 与纵向前置/后置关系）、验收标准内化进意图架构，而不是整理成独立 task 文件或默认整理成 `Work Package` 清单。交付任务从架构依赖关系中自然派生，本 skill 不单独产出任务清单。
+将 Business Partner 的业务分析与架构依赖分析内化进意图架构。本 skill 的核心目标是消除语义歧义（C），并通过拓扑排序和规模预估（G）为后续交付流程锁定确定性轨道。
 
 ## Rules
 
-- **MUST NOT** create per-task markdown files under `design/tasks/` or any other standalone task-file directory.
 - **MUST** use the unified `argo` MCP mutation tools to write into `design/KG/SystemArchitecture.json`; do not edit the JSON file directly.
-- **MUST** refresh the core intent architecture first: Motivation, Strategy, Business, Application, and Technology layers.
-- **MUST** model goals, drivers, assessments, decision rationale, principles, requirements, constraints, and outcomes as ArchiMate Motivation elements and relationships.
-- **MUST** internalize Business Partner conclusions into durable architecture elements and relationships whenever possible, instead of creating task-shaped architecture. Use `Work Package` only for residual delivery coordination that cannot be represented as durable architecture intent.
-- **MUST** preserve acceptance criteria, scope, assumptions, and related PRD context as attributes or testcases on the most relevant intent element.
-- **MUST** materialize horizontal dependency analysis as orthogonal architecture elements with clear concern boundaries, placed in appropriate layered views.
-- **MUST** materialize vertical dependency analysis as explicit ArchiMate relationships between architecture elements, choosing relationship types that match prerequisite, realization, influence, serving, access, flow, triggering, composition, or other validated dependency meanings; validate through preview before apply.
+- **MUST** model goals, principles, requirements, and constraints as ArchiMate Motivation elements.
+- **MUST** internalize Business Partner conclusions into durable architecture elements (Application/Business/Data layers).
+- **MUST: Sequential Gravity Chain**: 必须根据 ArchiMate 依赖语义（Serving, Realization, Access, Composition）对受影响元素进行拓扑排序。
+- **MUST: G-Estimation**: 为列表中的每个元素计算单次规模 ($G_{self}$) 与累积规模 ($G_{cumulative}$)。
+- **MUST: Handoff Guidance**: 产出明确的架构元素列表与任务说明，作为后续 `Orchestrator` 的输入。
 
 ## Workflow
 
-1. Extract architectural intent from Business Partner output: motivation, strategy/business capability impact, application behavior/data impact, technology impact, acceptance criteria, horizontal concern boundaries, and vertical prerequisite/post-requisite dependencies.
-2. Call `getSystemArchitecture` to inspect existing Motivation, Strategy, Business, Application, Technology elements, relevant views, and relationship ids.
-3. Plan MCP mutations:
-   - add or update Motivation elements for goals, assessments, decisions, principles, requirements, constraints, and outcomes;
-   - add or update Strategy/Business/Application/Technology elements so each orthogonal concern and its changes become part of the durable architecture;
-   - attach acceptance criteria and PRD context as attributes/testcases on the relevant architecture elements;
-   - add ArchiMate relationships that express vertical dependency order and cross-concern couplings;
-   - place elements and relationships into appropriate layered views, keeping view constraints valid.
-4. Call `previewSystemArchitectureMutation` first. Fix any schema, graph, view, or ArchiMate validation errors.
-5. Call `applySystemArchitectureMutation` only after preview passes.
+### 1. Intent Extraction & Internalization (基础内化)
+- 提取 Motivation、Strategy、Business、Application、Technology 各层意图。
+- 调用 `getSystemArchitecture` 识别现有节点。
+- 执行 MCP 变更为图谱打下“引力桩”。
+
+### 2. Dependency Topology Sorting (重力序分析)
+- **Identify Impact Subgraph**: 识别本次需求涉及的所有 `Pending` 或 `Dirty` 状态的元素。
+- **Topological Sort**: 按照依赖顺序排列。
+  - 规则：被依赖的（地基）在前，依赖他人的（上层）在后。
+  - 若存在循环依赖，必须作为“架构风险”向用户报告。
+
+### 3. G-Estimation Logic (规模预估算子)
+- **Estimate $G_{self}$**: 
+  - 计算单节点复杂度。基准：1个 Functional Point = 1.5G；1个外部 Interface = 2G。
+- **Compute $G_{cumulative}$**: 
+  - 计算到达该节点所需的总能量：$G_{cumulative} = G_{self} + \sum (\text{所有状态非 PASSED 的上游依赖之 } G_{self})$。
+- **Risk Alert**: 
+  - 若 $G_{cumulative} > 10$，标记为“高熵风险”，必须建议 Orchestrator 采用拆分交付策略。
+
+### 4. Persistence (落盘)
+- 调用 `applySystemArchitectureMutation` 持久化图谱。
 
 ## Output
 
-Return a short summary of refreshed intent elements by layer, horizontal concern boundaries, key motivation relationships, vertical dependency relationships, acceptance criteria locations, and any residual delivery coordination that could not be safely internalized as durable architecture intent.
+输出一份结构化的 **“意图交付路由表 (Intent Delivery Roadmap)”**，包含：
+
+### 1. Sequential Gravity Table
+| 建议顺序 | 元素 ID | 变更性质 | $G_{self}$ | $G_{cumulative}$ | 确定性等级 | 任务简述 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 (地基) | [ID] | [Add/Mod] | [1-10] | [Sum] | [Stable/Drift] | [Delta说明] |
+| 2 | ... | ... | ... | ... | ... | ... |
+
+### 2. Context Anchors (引力锚点)
+- 列出后续工作流必须加载的关键上游契约文件或图谱视图。
+
+### 3. Residual Coordination
+- 无法进入图谱的长链条任务描述。
