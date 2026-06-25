@@ -1,6 +1,6 @@
 ---
 name: task-tidy
-description: "Internalize business analysis into the intent architecture AND produce a sequential gravity chain with G-estimation for the subsequent workflow."
+description: "Internalize business analysis into the intent architecture AND dynamically analyze the sequential gravity chain with G-estimation for the subsequent workflow."
 argument-hint: scope
 disable-model-invocation: true
 ---
@@ -14,9 +14,11 @@ disable-model-invocation: true
 - **MUST** use the unified `argo` MCP mutation tools to write into `design/KG/SystemArchitecture.json`; do not edit the JSON file directly.
 - **MUST** model goals, principles, requirements, and constraints as ArchiMate Motivation elements.
 - **MUST** internalize Business Partner conclusions into durable architecture elements (Application/Business/Data layers).
+- **MUST: Dynamic Impact Discovery**: 严禁依赖静态状态字段。必须通过比对“新内化的意图”与“代码仓事实/测试记录”动态判定受影响元素：
+  - **New**: 在图谱中定义但仓库中尚无物理实现或追踪证据的元素。
+  - **Dirty**: 现有元素的 FunctionalPoint 已更新，但代码逻辑或测试结果尚未与之同步。
 - **MUST: Sequential Gravity Chain**: 必须根据 ArchiMate 依赖语义（Serving, Realization, Access, Composition）对受影响元素进行拓扑排序。
 - **MUST: G-Estimation**: 为列表中的每个元素计算单次规模 ($G_{self}$) 与累积规模 ($G_{cumulative}$)。
-- **MUST: Handoff Guidance**: 产出明确的架构元素列表与任务说明，作为后续 `Orchestrator` 的输入。
 
 ## Workflow
 
@@ -25,21 +27,22 @@ disable-model-invocation: true
 - 调用 `getSystemArchitecture` 识别现有节点。
 - 执行 MCP 变更为图谱打下“引力桩”。
 
-### 2. Dependency Topology Sorting (重力序分析)
-- **Identify Impact Subgraph**: 识别本次需求涉及的所有 `Pending` 或 `Dirty` 状态的元素。
+### 2. Dynamic Ripple Analysis (自动影响分析)
+- **Trace the Ripple**: 从新注入的 Motivation 节点出发，沿着 Realization 或 Influence 关系向下游探测受影响的 Application/Business 元素。
+- **Cross-Check Reality**: 将图谱中的元素定义与 `Code Reality`（代码、测试记录、`test-failure-records.json`）进行交叉比对。
+- **Identify Delta**: 识别出哪些元素属于 **New**（缺失实现）或 **Dirty**（实现过期/测试失败），形成动态变更子图。
+
+### 3. Dependency Topology Sorting (重力序分析)
 - **Topological Sort**: 按照依赖顺序排列。
   - 规则：被依赖的（地基）在前，依赖他人的（上层）在后。
   - 若存在循环依赖，必须作为“架构风险”向用户报告。
 
-### 3. G-Estimation Logic (规模预估算子)
-- **Estimate $G_{self}$**: 
-  - 计算单节点复杂度。基准：1个 Functional Point = 1.5G；1个外部 Interface = 2G。
-- **Compute $G_{cumulative}$**: 
-  - 计算到达该节点所需的总能量：$G_{cumulative} = G_{self} + \sum (\text{所有状态非 PASSED 的上游依赖之 } G_{self})$。
-- **Risk Alert**: 
-  - 若 $G_{cumulative} > 10$，标记为“高熵风险”，必须建议 Orchestrator 采用拆分交付策略。
+### 4. G-Estimation Logic (规模预估算子)
+- **Estimate $G_{self}$**: 计算单节点复杂度。基准：1个 Functional Point = 1.5G；1个外部 Interface = 2G。
+- **Compute $G_{cumulative}$**: 递归求和：该元素的 $G_{self}$ + 依赖链上所有其他受影响元素的 $G_{self}$。
+- **Risk Alert**: 若 $G_{cumulative} > 10$，标记为“高熵风险”，建议 Orchestrator 采用分段交付策略。
 
-### 4. Persistence (落盘)
+### 5. Persistence (落盘)
 - 调用 `applySystemArchitectureMutation` 持久化图谱。
 
 ## Output
@@ -47,9 +50,9 @@ disable-model-invocation: true
 输出一份结构化的 **“意图交付路由表 (Intent Delivery Roadmap)”**，包含：
 
 ### 1. Sequential Gravity Table
-| 建议顺序 | 元素 ID | 变更性质 | $G_{self}$ | $G_{cumulative}$ | 确定性等级 | 任务简述 |
+| 建议顺序 | 元素 ID | 变更性质 (New/Dirty) | $G_{self}$ | $G_{cumulative}$ | 确定性等级 | 任务简述 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 (地基) | [ID] | [Add/Mod] | [1-10] | [Sum] | [Stable/Drift] | [Delta说明] |
+| 1 (地基) | [ID] | [动态分析得出] | [1-10 Score] | [Sum] | [Stable/Drift] | [Delta说明] |
 | 2 | ... | ... | ... | ... | ... | ... |
 
 ### 2. Context Anchors (引力锚点)
