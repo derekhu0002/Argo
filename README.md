@@ -44,7 +44,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 ### 部署
 
-各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`），主要工具包括 `initializeWorkspace`、`validateSystemArchitecture`、`validateStageHandoff`、`runArchitectureTests`、`getIntentElementContext` 及意图图谱 mutation 系列。
+各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`），主要工具包括 `initializeWorkspace`、`validateSystemArchitecture`、`validateStageHandoff`、`validateTraceProposal`、`runArchitectureTests`、`getSystemArchitecture`、`getIntentElementContext`、`previewSystemArchitectureMutation`、`applySystemArchitectureMutation` 及意图图谱 focused mutation 系列。
 
 | 版本 | 适用环境 | 说明 |
 | --- | --- | --- |
@@ -71,7 +71,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 ```mermaid
 flowchart TD
     A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[🤖 结构化分析目标、约束、方案和验收控制点]
-    B --> D[👤 同一会话执行 /task-tidy，将业务分析、架构依赖与验收标准内化进 SystemArchitecture.json]
+    B --> D[👤 同一会话执行 /task-tidy，内化意图并输出交付路由表]
     D --> E[🤖 转入开发迭代复用流程]
     classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
     classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
@@ -79,7 +79,7 @@ flowchart TD
     class B,E ai
 ```
 
-新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚；分析完成后，在同一个会话继续执行 `/task-tidy`，通过 `argo` MCP 将结论内化进 `design/KG/SystemArchitecture.json`（Motivation、Strategy、Business、Application、Technology 分层），并把验收标准挂载到相关 intent element。**不得**创建 `design/tasks/` 下的独立任务 Markdown；仅在无法完全内化为 durable architecture intent 时，才保留 `Work Package` 作为残余交付协调。横向切分与纵向依赖应体现为图谱元素、关系与 view，而不是独立 task 文件。意图内化完成后，涉及开发交付的范围统一转入下面的开发迭代复用流程。
+新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚；分析完成后，在同一个会话继续执行 `/task-tidy`，通过 `argo` MCP 将结论内化进 `design/KG/SystemArchitecture.json`（Motivation、Strategy、Business、Application、Technology 分层），并把验收标准挂载到相关 intent element。最新版 `/task-tidy` 还会动态比对新意图与代码/测试现实，识别 `New` / `Dirty` 影响元素，按 ArchiMate 依赖关系形成 Sequential Gravity Chain，并用 `G_self` / `G_cumulative` 给出交付规模和风险提示。**不得**创建 `design/tasks/` 下的独立任务 Markdown；仅在无法完全内化为 durable architecture intent 时，才保留 `Work Package` 作为残余交付协调。横向切分与纵向依赖应体现为图谱元素、关系与 view，而不是独立 task 文件。意图内化完成后，涉及开发交付的范围统一转入下面的开发迭代复用流程。
 
 ##### 开发迭代复用流程
 
@@ -115,7 +115,7 @@ flowchart TD
     class G,I,K,L,N,O,P,Q,R,S,U ai
 ```
 
-意图内化完成后，由人类伙伴按 intent 图谱中的 `Work Package` 或 `ArchitectureEntityElement` 范围顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
+意图内化完成后，由人类伙伴优先按 `/task-tidy` 输出的 Intent Delivery Roadmap / Sequential Gravity Table 顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代；若 `G_cumulative > 10` 或存在高熵风险，应优先分段交付，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
 
 ##### 问题处理
 
@@ -126,7 +126,7 @@ flowchart TD
     C --> D{🤖 问题属于意图架构或验收边界偏差?}
     D -- 是 --> E[🤖 转入新需求开发前置流程]
     E --> F[👤🤖 通过 business-partner 重整需求和验收边界]
-    F --> G[👤🤖 执行 task-tidy 内化意图架构]
+    F --> G[👤🤖 执行 task-tidy 内化意图并刷新交付路由]
     G --> P[🤖 转入开发迭代复用流程]
     D -- 否 --> H[🤖 ImplementationDesign 判断实现架构或代码层问题]
     H --> I{🤖 问题类型?}
@@ -190,7 +190,7 @@ AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会
 flowchart TD
     A[业务方案仍不稳定] --> B[👤 business-partner 或 grill-me]
     B --> C[👤🤖 形成可验证的目标、方案和风险清单]
-    C --> D[👤🤖 task-tidy 内化意图架构]
+    C --> D[👤🤖 task-tidy 内化意图并刷新交付路由]
     D --> E[🤖 涉及开发时转入开发迭代复用流程]
 
     K[Agent 行为偏航或迭代后持久化记忆复盘] --> L[👤 distill-agent-rules]
@@ -206,15 +206,15 @@ flowchart TD
 
 | 场景                 | 适用时机                                                    | 推荐入口                                                    | 期望产出                                                                                                  |
 | ------------------ | ------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，再转入开发迭代复用流程，由人类伙伴按 intent 范围顺序提交给 `Orchestrator` 交付 |
+| 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，输出交付路由与 G 估算，再转入开发迭代复用流程，由人类伙伴按顺序提交给 `Orchestrator` 交付 |
 | 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先判断是否属于意图架构问题；纯代码 BUG 直接进入 `CodingAndReparing`，涉及实现架构调整时先更新实现架构再编码修复 |
 | 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出候选并深挖收敛，再通过 `/task-tidy` 内化进意图架构；凡涉及开发交付的范围，统一转入开发迭代复用流程 |
 | 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、架构依赖分析，以及从验收方视角定义的控制点和观测点                                                               |
-| 意图内化               | 业务分析或拷问已经完成，需要把结果写入意图架构                               | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；不创建 `design/tasks/` 独立 Markdown |
+| 意图内化与交付排序        | 业务分析或拷问已经完成，需要把结果写入意图架构，并确定后续交付顺序                   | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；动态识别 `New`/`Dirty` 影响元素，输出 Sequential Gravity Table 与 G 估算；不创建 `design/tasks/` 独立 Markdown |
 | 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
-| 浏览架构图谱             | 需要理解 `SystemArchitecture.json` 中的元素、关系、视图或 testcase 归属  | `/arch-viewer`                                          | 启动本地知识图谱查看器，可搜索、按视图浏览并检查 schema 对齐的详情                                                                 |
 | 意图图谱语义审计           | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit`                              | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现                                                          |
 | 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
+| 交付归档               | `Orchestrator` 迭代已验收或准备结束，需要沉淀 PRD、设计、交付和验收证据            | `/delivery-archive`                                     | 在 `docs/YYYY-MM-DD-[需求或问题名称]/` 下创建 `PRD.md`、`架构设计.md`、`代码交付自测试.md`、`规格验收.md`，所有结论标注证据或缺口 |
 | Agent 行为与记忆治理       | Agent 在会话中越权、漏读契约、误改冻结测试、反复出现同类偏差，或迭代后需要复盘 `design/persistant-memory` | `/distill-agent-rules`                                  | 将偏差或成熟记忆提炼为可执行规则、适用范围、触发条件和推荐落地位置；固化为 `SKILL`/`RULE`/`INSTRUCTION`/hook 后清理源记忆 |
 | HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用   | `/harmonyos-development` + `/arkts-coding-standard`     | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移                                                                |
 
@@ -228,7 +228,7 @@ flowchart TD
 | 已知失败 | 附上失败命令、错误摘要、日志片段、失败测试路径 | 便于 `CodingAndReparing` 将失败记录转化为修复队列 |
 | 不确定的方案 | 先用 `BusinessPartner`、`/business-partner` 或 `/grill-me` | 在进入实现前先收敛业务和设计分支，避免后续返工 |
 
-## 当前已录SubAgents 和 Skills
+## 当前已录入 SubAgents 和 Skills
 
 Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 四个阶段；另有 **编排、前置业务、治理复盘、辅助工具** 等横切能力。下表说明每个 SubAgent 与 Skill 的适用阶段及其作用。
 
@@ -236,10 +236,10 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 
 | 名称 | 适用阶段 | 作用 | 平台 |
 | --- | --- | --- | --- |
-| `Orchestrator` | 编排（全阶段） | 总调度者：接收需求或问题后按阶段转交子 Agent，在编码完成后触发实现架构与意图架构双向审计，审计失败时要求对应阶段返工；禁止直接处理需求或修改实现产物 | Copilot、OpenCode（主 Agent） |
+| `Orchestrator` | 编排（全阶段） | 总调度者：接收需求或问题后按阶段转交子 Agent，强制执行 `validateStageHandoff`、显性 testcase 人类审核、实现测试设计审计、编码交付审计与意图交付审计；遇到 `ImplementationToIntentTraceProposal` 时回路到意图设计；禁止直接处理需求或修改实现产物 | Copilot、OpenCode（主 Agent）；Cursor 由 `/orchestrating` Skill 承担 |
 | `IntentionDesign` | 意图设计 | 以 `design/KG/SystemArchitecture.json` 为第一真相源，澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `IntentToImplementationHandoff.json`；禁止修改业务代码与测试代码 | 全平台 |
-| `ImplementationDesign` | 实现设计 | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出 `ImplementationToCodingHandoff.json`；禁止修改意图图谱 | 全平台 |
-| `CodingAndReparing` | 编码/修复 | 依据 `ImplementationToCodingHandoff.json` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台 |
+| `ImplementationDesign` | 实现设计 | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台 |
+| `CodingAndReparing` | 编码/修复 | 依据 `ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台 |
 | `ArchimateLanguagistAudit` | 意图设计（审计） | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件 | 全平台 |
 | `BusinessPartner` | 前置/业务 | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，产出含控制点与观测点的验收标准；聚焦业务本身，不进入架构与代码 | Copilot、OpenCode |
 | `Init` | 初始化 | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件） | OpenCode |
@@ -252,18 +252,18 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 
 | 名称 | 适用阶段 | 作用 | 调用方式 |
 | --- | --- | --- | --- |
-| `orchestrating` | 编排（全阶段） | Cursor 版总调度：固化意图设计 → 实现设计 → 编码/修复 → 双向审计的完整工作流规则，禁止主 Agent 越权直接处理需求或修改实现 | `/orchestrating` |
+| `orchestrating` | 编排（全阶段） | Cursor 版总调度：固化意图设计 → 实现设计 → 编码/修复 → 实现测试设计审计 → 编码交付审计 → 意图交付审计的完整工作流；强制 handoff 校验、人类审核、返工路由与环境阻塞求助，禁止主 Agent 越权直接实现 | `/orchestrating` |
 | `grill-me` | 意图设计 / 通用 | 以强批判性思维无情拷问计划或设计，逐分支遍历决策树直到达成共识；可从仓库自行取证；各阶段均可使用但效果因阶段边界而异 | `/grill-me` |
 | `improve-codebase-architecture` | 意图设计（前置探索） | 在不引入功能需求的前提下，先识别 shallow module、接缝泄漏、测试面失焦等架构优化候选，再将选中方向交给 `grill-me` 深挖；宜作为独立迭代的需求输入而非单次指令 | `/improve-codebase-architecture` |
 | `business-partner` | 前置/业务 | 与 `BusinessPartner` Agent 等效的业务方案拷问流程：MECE 决策树拆解、SMART 问题定义、验收 testcase 输出 | `/business-partner` |
-| `task-tidy` | 前置/意图 | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务分析、架构依赖关系（横向 concern 边界与纵向前置/后置）和验收标准内化进 `SystemArchitecture.json`；优先写入 durable architecture intent，仅在必要时保留 `Work Package`；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy` |
+| `task-tidy` | 前置/意图 | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务分析、架构依赖关系和验收标准内化进 `SystemArchitecture.json`；动态识别 `New`/`Dirty` 影响元素，按依赖拓扑形成 Sequential Gravity Chain，并输出 `G_self` / `G_cumulative` 交付规模预估；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy` |
 | `market-research` | 前置/业务 | 市场、竞品、投资人或技术趋势研究，要求来源归因，区分事实/推断/建议，输出面向决策的结论 | `/market-research` |
 | `implementation-delivery-acceptance` | 双层验收（意图架构侧） | 审计当前实现是否满足意图架构设计要求；不一致时写出实现 GAP 并给实现架构设计师下一步建议 | `/implementation-delivery-acceptance` |
 | `impl-gap-report` | 双层验收（意图架构侧） | 当实现仍存在 GAP 时，分析是否需要修改实现架构并下发后续开发任务 | `/impl-gap-report` |
 | `coding-delivery-acceptance` | 双层验收（实现架构侧） | 审计编码交付是否满足实现架构契约；不一致时给出 GAP 与下一步开发建议 | `/coding-delivery-acceptance` |
 | `coding-gap-report` | 编码/修复 | 当编码交付仍存在 GAP 时，驱动继续开发直至所有缺口补齐 | `/coding-gap-report` |
 | `brief` | 交付后/文档 | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md` | `/brief` |
-| `arch-viewer` | 辅助/通用 | 在本地 schema 驱动的 Web Viewer 中浏览 `SystemArchitecture.json` 知识图谱（元素、关系、视图、详情） | `/arch-viewer` |
+| `delivery-archive` | 交付后/归档 | 在一次 `Orchestrator` 交付迭代验收或结束后，基于需求、handoff、代码变更、测试和验收证据归档 PRD、架构设计、代码交付自测试与规格验收文档 | `/delivery-archive` |
 | `distill-agent-rules` | 治理/复盘 | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源 | `/distill-agent-rules` |
 | `harmonyos-development` | 编码/修复（领域） | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流 | `/harmonyos-development` |
 | `arkts-coding-standard` | 编码/修复（领域） | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规 | `/arkts-coding-standard` |
