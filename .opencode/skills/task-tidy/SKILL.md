@@ -47,13 +47,38 @@ disable-model-invocation: true
 
 ## Output
 
-输出一份结构化的 **“意图交付路由表 (Intent Delivery Roadmap)”**，包含：
+输出一份结构化的 **“意图交付路由图 (Intent Delivery Roadmap)”**，包含：
 
-### 1. Sequential Gravity Table
-| 建议顺序 | 元素 ID | 变更性质 (New/Dirty) | $G_{self}$ | $G_{cumulative}$ | 确定性等级 | 任务简述 |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 (地基) | [ID] | [动态分析得出] | [1-10 Score] | [Sum] | [Stable/Drift] | [Delta说明] |
-| 2 | ... | ... | ... | ... | ... | ... |
+### 1. PlantUML ArchiMate Dependency Graph
+- 必须输出一个 `plantuml` 代码块，表达基于 ArchiMate 语义的受影响元素依赖图。
+- 节点必须包含：建议交付顺序、元素 ID和名称、ArchiMate 元素类型、变更性质（New/Dirty）、$G_{self}$、$G_{cumulative}$、确定性等级和任务简述。
+- 边必须使用 ArchiMate 关系名标注：`Serving`、`Realization`、`Access`、`Composition` 或其他实际存在的关系；方向必须体现“被依赖的地基 -> 依赖它的上层”。
+- 若存在循环依赖，必须在图中标出 `Cycle Risk`，并在图后说明为什么不能形成稳定的 Sequential Gravity Chain。
+
+```plantuml
+@startuml
+title Intent Delivery Roadmap - ArchiMate Dependency Graph
+
+skinparam rectangle {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+}
+skinparam note {
+  BackgroundColor #FFF7ED
+  BorderColor #EA580C
+}
+
+rectangle "1. [Element Name]\nID: [element-id]\nType: [ArchiMateType]\nDelta: [New|Dirty]\nG: [self]/[cumulative]\nCertainty: [Stable|Drift]\nTask: [short task]" as E1 <<[ArchiMateType]>>
+rectangle "2. [Element Name]\nID: [element-id]\nType: [ArchiMateType]\nDelta: [New|Dirty]\nG: [self]/[cumulative]\nCertainty: [Stable|Drift]\nTask: [short task]" as E2 <<[ArchiMateType]>>
+
+E1 --> E2 : [Serving|Realization|Access|Composition]
+
+note right of E1
+地基优先：先交付上游依赖，
+再进入下游消费者。
+end note
+@enduml
+```
 
 ### 2. Context Anchors (引力锚点)
 - 列出后续工作流必须加载的关键上游契约文件或图谱视图。

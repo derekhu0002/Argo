@@ -74,7 +74,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 ```mermaid
 flowchart TD
     A[👤 通过 BusinessPartner 或 /business-partner 提交需求] --> B[🤖 结构化分析目标、约束、方案和验收控制点]
-    B --> D[👤 同一会话执行 /task-tidy，内化意图并输出交付路由表]
+    B --> D[👤 同一会话执行 /task-tidy，内化意图并输出交付路由图]
     D --> E[🤖 转入开发迭代复用流程]
     classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
     classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
@@ -118,7 +118,7 @@ flowchart TD
     class G,I,K,L,N,O,P,Q,R,S,U ai
 ```
 
-意图内化完成后，由人类伙伴优先按 `/task-tidy` 输出的 Intent Delivery Roadmap / Sequential Gravity Table 顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代；若 `G_cumulative > 10` 或存在高熵风险，应优先分段交付，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
+意图内化完成后，由人类伙伴优先按 `/task-tidy` 输出的 Intent Delivery Roadmap / PlantUML ArchiMate Dependency Graph 顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代；若 `G_cumulative > 10` 或存在高熵风险，应优先分段交付，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
 
 ##### 问题处理
 
@@ -209,11 +209,11 @@ flowchart TD
 
 | 场景                 | 适用时机                                                    | 推荐入口                                                    | 期望产出                                                                                                  |
 | ------------------ | ------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，输出交付路由与 G 估算，再转入开发迭代复用流程，由人类伙伴按顺序提交给 `Orchestrator` 交付 |
+| 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，输出 PlantUML 交付路由图与 G 估算，再转入开发迭代复用流程，由人类伙伴按顺序提交给 `Orchestrator` 交付 |
 | 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先判断是否属于意图架构问题；纯代码 BUG 直接进入 `CodingAndReparing`，涉及实现架构调整时先更新实现架构再编码修复 |
 | 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出候选并深挖收敛，再通过 `/task-tidy` 内化进意图架构；凡涉及开发交付的范围，统一转入开发迭代复用流程 |
 | 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、架构依赖分析，以及从验收方视角定义的控制点和观测点                                                               |
-| 意图内化与交付排序        | 业务分析或拷问已经完成，需要把结果写入意图架构，并确定后续交付顺序                   | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；动态识别 `New`/`Dirty` 影响元素，输出 Sequential Gravity Table 与 G 估算；不创建 `design/tasks/` 独立 Markdown |
+| 意图内化与交付排序        | 业务分析或拷问已经完成，需要把结果写入意图架构，并确定后续交付顺序                   | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；动态识别 `New`/`Dirty` 影响元素，输出 PlantUML ArchiMate 依赖图与 G 估算；不创建 `design/tasks/` 独立 Markdown |
 | 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
 | 意图图谱语义审计           | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit`                              | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现                                                          |
 | 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
