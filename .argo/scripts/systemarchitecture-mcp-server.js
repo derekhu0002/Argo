@@ -12,6 +12,7 @@ const {
   relationshipCategoryByType,
   auditRelationshipEndpointTypes,
 } = require('./archimate32-rules');
+const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js');
 
 const HANDLED_MUTATION_TYPES = new Set([
   'addElement',
@@ -48,6 +49,24 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'generateArchitectureDiffPlantuml',
+    description: 'Generate a timestamped PlantUML Markdown tree for current git diff changes in SystemArchitecture.json. The tool compares HEAD and working tree, extracts changed elements/relationships, and writes to .argo/temp/architecture_analysis/.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        architecturePath: {
+          type: 'string',
+          description: `Optional architecture graph path relative to workspace root. Default: ${DEFAULT_GRAPH_PATH}`,
+        },
+        outputDir: {
+          type: 'string',
+          description: 'Optional output directory relative to workspace root. Default: .argo/temp/architecture_analysis',
+        },
+      },
       additionalProperties: false,
     },
   },
@@ -1447,6 +1466,14 @@ async function callTool(name, args = {}) {
     });
   }
 
+  if (name === 'generateArchitectureDiffPlantuml') {
+    return toolResult(architectureDiffPlantuml.generateArchitectureDiffPlantuml({
+      workspaceRoot: resolveWorkspaceRoot(),
+      architecturePath: args.architecturePath,
+      outputDir: args.outputDir,
+    }));
+  }
+
   if (name === 'previewSystemArchitectureMutation') {
     const context = loadContext(args);
     return toolResult(buildMutationResult(context, args.mutations, false));
@@ -1605,6 +1632,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  TOOLS,
   applyMutations,
   callTool,
   loadContext,
