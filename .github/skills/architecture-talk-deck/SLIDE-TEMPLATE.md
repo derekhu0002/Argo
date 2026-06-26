@@ -1,6 +1,6 @@
 # Slide Template Reference
 
-`deck.md` 使用 Marp 分页符 `---`。每页结构：**结论型标题 → MECE 要点 → 可选图 → 讲者备注**。
+`deck.md` 是生成最终 `deck.pptx` 的唯一源稿，使用 Marp 分页符 `---`。最终交付必须包含可打开、可演示的 `deck.pptx`；每页结构：**结论型标题 → MECE 要点 → 可选图 → 讲者备注**。
 
 所有页标题必须是可被证明的判断句，不使用空泛主题标题。示例：
 
@@ -385,3 +385,12 @@ flowchart LR
   "generatedAt": "YYYY-MM-DD"
 }
 ```
+
+## 输出物要求
+
+最终目录必须包含：
+
+- `deck.pptx`：最终可演示 PPTX，必交付
+- `deck.md`：PPTX 的唯一源稿
+- `traceability.md`：追溯矩阵
+- `scope.json`：子图范围元数据

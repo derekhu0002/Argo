@@ -1,13 +1,13 @@
 ---
 name: architecture-talk-deck
-description: "Generates a project talk deck and speaker script from an ArchiMate intent architecture subgraph through design mechanisms to delivery evidence. Use when the user asks for a PPT, presentation, briefing deck, talk script, or walkthrough scoped by architecture view, element, subgraph, or project trace."
+description: "Generates a final PPTX project talk deck and speaker script from an ArchiMate intent architecture subgraph through design mechanisms to delivery evidence. Use when the user asks for a PPT, presentation, briefing deck, talk script, or walkthrough scoped by architecture view, element, subgraph, or project trace."
 argument-hint: architecture-subgraph-scope
 disable-model-invocation: true
 ---
 
 # Architecture Talk Deck
 
-Use when the user wants a PPT, presentation, briefing deck, talk script, or architecture walkthrough from an ArchiMate view, element, subgraph, or project trace.
+Use when the user wants a final PPTX, presentation, briefing deck, talk script, or architecture walkthrough from an ArchiMate view, element, subgraph, or project trace.
 
 ## Domain Ontology
 
@@ -174,6 +174,13 @@ package "Policy Ontology" {
     +ordinaryDeckUsesMermaidPlantUMLTablesShapes
   }
 
+  class PptxExportPolicy {
+    +pptxIsFinalRequiredOutput
+    +deckMdIsSingleSourceOfTruth
+    +exportMustNotChangeArgumentStructure
+    +reportBlockerIfPptxCannotBeProduced
+  }
+
   class MutationPolicy {
     +readOnlyPresentationTask
     +mustNotModifyArchitectureGraph
@@ -203,10 +210,10 @@ package "Deck Ontology" {
   }
 
   class OutputArtifact {
-    +deckMd = "docs/YYYY-MM-DD-[scope]-讲稿/deck.md"
+    +pptx = "docs/YYYY-MM-DD-[scope]-讲稿/deck.pptx"
+    +deckMd = "intermediate source: docs/YYYY-MM-DD-[scope]-讲稿/deck.md"
     +traceabilityMd
     +scopeJson
-    +optionalPptx
   }
 
   class QualityGate {
@@ -218,6 +225,8 @@ package "Deck Ontology" {
     +evidenceMappedOrGapMarked
     +visualPolicyPass
     +assetPolicyPass
+    +pptxExists
+    +pptxMatchesDeckMdStructure
   }
 }
 
@@ -244,6 +253,7 @@ ProjectTypePolicy --> DeliveryEvidence : constrains
 EvidencePolicy --> TraceabilityMatrix : constrains
 VisualDesignPolicy --> VisualDesignSpec : constrains
 AssetPolicy --> VisualDesignSpec : constrains
+PptxExportPolicy --> OutputArtifact : final output required
 MutationPolicy --> OutputArtifact : read-only boundary
 VisualDesignSpec --> Slide : constrains
 DeckPlan --> OutputArtifact : materializes
@@ -328,19 +338,21 @@ if (External image or icon needed?) then (yes)
 else (no)
 endif
 
-:Write OutputArtifact(deck.md, traceability.md, scope.json);
+:Write source artifacts(deck.md, traceability.md, scope.json);
+:Export required final deck.pptx from deck.md without changing argument structure;
 
-if (User requested pptx?) then (yes)
-  :Export from deck.md without changing argument structure;
+if (PPTX export unavailable or failed?) then (yes)
+  :Report blocker with source artifact paths and missing export capability;
+  stop
 else (no)
 endif
 
-:Run QualityGate(scope, dependency, pyramid, evidence, visual, asset, read-only);
+:Run QualityGate(scope, dependency, pyramid, evidence, visual, asset, pptx, read-only);
 
 if (QualityGate failed?) then (yes)
   :Fix deck artifacts or report blocker/gap explicitly;
 else (pass)
-  :Return output paths, ArchitectureThesis, GoverningThought, DependencyStoryline, key subgraph/element pages, visual/asset notes, evidence gaps;
+  :Return final PPTX path plus source artifact paths, ArchitectureThesis, GoverningThought, DependencyStoryline, key subgraph/element pages, visual/asset notes, evidence gaps;
 endif
 
 stop
