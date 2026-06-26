@@ -218,6 +218,7 @@ flowchart TD
 | 意图图谱语义审计           | 担心 `SystemArchitecture.json` 的 ArchiMate 元素、关系、方向或措辞不准确 | `ArchimateLanguagistAudit`                              | 输出 schema、ArchiMate 语义、语言精确性、视图一致性和追踪质量的审计发现                                                          |
 | 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
 | 交付归档               | `Orchestrator` 迭代已验收或准备结束，需要沉淀 PRD、设计、交付和验收证据            | `/delivery-archive`                                     | 在 `docs/YYYY-MM-DD-[需求或问题名称]/` 下创建 `PRD.md`、`架构设计.md`、`代码交付自测试.md`、`规格验收.md`，所有结论标注证据或缺口 |
+| 架构子图讲稿             | 需要基于指定 ArchiMate view/element/子图，做结构化 PPT 路演或内部分享              | `/architecture-talk-deck`                               | 先判断项目类型并归纳 Architecture Thesis 与 Governing Thought，再按依赖关系逐步展开主链、关键子图和关键元素，并用金字塔原理组织 SCQA、MECE 论证、意图→设计机制→落地证据链；采用 executive architecture briefing 视觉标准；产出 `deck.md`、`traceability.md`、`scope.json` |
 | Agent 行为与记忆治理       | Agent 在会话中越权、漏读契约、误改冻结测试、反复出现同类偏差，或迭代后需要复盘 `design/persistant-memory` | `/distill-agent-rules`                                  | 将偏差或成熟记忆提炼为可执行规则、适用范围、触发条件和推荐落地位置；固化为 `SKILL`/`RULE`/`INSTRUCTION`/hook 后清理源记忆 |
 | HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用   | `/harmonyos-development` + `/arkts-coding-standard`     | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移                                                                |
 
@@ -267,6 +268,7 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `coding-gap-report` | 编码/修复 | 当编码交付仍存在 GAP 时，驱动继续开发直至所有缺口补齐 | `/coding-gap-report` |
 | `brief` | 交付后/文档 | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md` | `/brief` |
 | `delivery-archive` | 交付后/归档 | 在一次 `Orchestrator` 交付迭代验收或结束后，基于需求、handoff、代码变更、测试和验收证据归档 PRD、架构设计、代码交付自测试与规格验收文档 | `/delivery-archive` |
+| `architecture-talk-deck` | 讲解/文档 | 以 Ontology + Behavior（PlantUML）约束讲稿生成认知流程；从用户指定的 ArchiMate 架构子图出发，先形成架构命题和中心结论，再沿依赖关系逐步展开；关键子图与关键架构元素单独起页讲解；默认采用咨询级 executive architecture briefing 视觉风格 | `/architecture-talk-deck` |
 | `distill-agent-rules` | 治理/复盘 | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源 | `/distill-agent-rules` |
 | `harmonyos-development` | 编码/修复（领域） | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流 | `/harmonyos-development` |
 | `arkts-coding-standard` | 编码/修复（领域） | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规 | `/arkts-coding-standard` |
