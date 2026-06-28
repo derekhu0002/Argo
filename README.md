@@ -187,6 +187,65 @@ AI Coding 的质量和架构 clean 程度密切相关。干净整洁的架构会
 
 该 Skill 使用的核心架构优化原则包括：用 **deletion test** 判断模块是否只是 pass-through；用 **depth** 判断接口是否真正替调用方隐藏复杂度；优先让测试跨 **interface** 断言可观察行为，而不是穿透实现内部；用 “一个 adapter 可能是假 seam，两个 adapter 才更像真实 seam” 判断间接层是否必要；同时评估 **locality**、**leverage**、**testability** 三类收益。依赖也会被区分为进程内、本地可替换、远程但自有、真正外部四类，以决定是加深模块、定义稳定 port、隔离 adapter，还是删除不必要的间接层。
 
+##### 架构初始化提取-既有代码仓架构反推
+
+```mermaid
+flowchart TD
+    A[👤 提供已有代码仓、测试范围或关键入口] --> B[👤 执行 /reverse-architecture-extraction]
+    B --> C[🤖 ReverseArchitectureExtraction 测试优先、代码入口补充]
+    C --> D[🤖 输出候选实现架构、候选意图架构、证据矩阵和开放问题]
+    D --> E{🤖 候选实现架构足够明确?}
+    E -- 是 --> F[🤖 ImplementationDesign 固化实现契约和 handoff]
+    E -- 否 --> G[👤 补充范围、测试或业务判断]
+    G --> C
+    D --> H{🤖 候选意图架构足够明确?}
+    H -- 是 --> I[🤖 IntentionDesign 做业务语义门禁和 MCP 图谱更新]
+    H -- 否 --> J[👤 回答业务开放问题]
+    J --> I
+    F --> K[🤖 转入开发迭代复用流程]
+    I --> K
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef humanDecision fill:#fed7aa,stroke:#c2410c,color:#7c2d12,stroke-width:3px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,B,G,J human
+    class E,H humanDecision
+    class C,D,F,I,K ai
+```
+
+当项目已经有实现和测试，但缺少可靠的 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md` 或局部 `ARCHITECTURE.md` 时，不应直接让 `IntentionDesign` 或 `ImplementationDesign` 猜测架构。先执行 `/reverse-architecture-extraction`，由 `ReverseArchitectureExtraction` 以测试为第一证据源、代码入口为边界校验源，生成候选实现架构、候选意图架构、证据矩阵和开放问题。该阶段只产出候选，不直接修改正式图谱、实现契约或 handoff。
+
+反推结果再分流到两个正式阶段：候选实现架构交给 `ImplementationDesign`，由它固化稳定边界、依赖方向、测试归属、实现契约和 `ImplementationToCodingHandoff.json`；候选意图架构交给 `IntentionDesign`，由它执行业务可观察、业务可决策、业务可验收的语义门禁，并通过 `argo` MCP preview/apply/validate 更新 `design/KG/SystemArchitecture.json`。没有测试覆盖的代码只能作为低置信实现事实；纯技术细节只能作为实现锚点、排除项或开放问题，不得直接提升为业务意图。
+
+##### 架构漂移恢复-多人协作变更后的测试和代码处理
+
+```mermaid
+flowchart TD
+    A[👤 人类判断已有可信架构基线且外部修改了测试或代码] --> B[👤 执行 /architecture-drift-recovery 并说明变更范围]
+    B --> C[🤖 ReverseArchitectureExtraction 读取既有意图/实现架构基线]
+    C --> D[🤖 对变更测试和代码入口做 drift 分类]
+    D --> E{🤖 漂移类型?}
+    E -- intent drift --> F[🤖 IntentionDesign 做业务语义门禁和图谱刷新]
+    E -- implementation architecture drift --> G[🤖 ImplementationDesign 刷新实现契约和 handoff]
+    E -- code drift --> H[🤖 记录代码漂移，必要时转 CodingAndReparing]
+    E -- test drift --> I[👤 确认测试是否越权改变验收语义]
+    E -- no architecture impact --> J[🤖 记录无架构影响]
+    F --> K[🤖 validateSystemArchitecture / validateStageHandoff]
+    G --> K
+    I --> F
+    classDef human fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-width:2px
+    classDef humanDecision fill:#fed7aa,stroke:#c2410c,color:#7c2d12,stroke-width:3px
+    classDef ai fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    class A,B human
+    class E,I humanDecision
+    class C,D,F,G,H,J,K ai
+```
+
+当人类明确判断当前已有可信 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 或 handoff，且多人协作导致测试和代码被外部修改时，应执行 `/architecture-drift-recovery`，而不是让 LLM 自行判断使用 bootstrap 还是 drift recovery。此时既有意图图谱和实现契约是架构基线，测试/代码变更只是漂移证据。`ReverseArchitectureExtraction` 需要把每个变更归类为 `intent drift`、`implementation architecture drift`、`code drift`、`test drift` 或 `no architecture impact`。
+
+只有 `intent drift` 才能交给 `IntentionDesign` 评估是否刷新意图图谱；只有 `implementation architecture drift` 才能交给 `ImplementationDesign` 刷新实现契约、测试归属或 handoff。`code drift` 说明代码偏离或扩展了实现但架构仍有效，应记录并必要时转编码修复；`test drift` 说明测试可能越权改变验收语义，必须先由人类确认业务意图，不能让测试直接覆盖架构事实。该流程的核心目标是让多人协作后的测试/代码现实重新对齐架构资产，同时防止未经确认的实现变化污染意图图谱。
+
+选择哪个入口由人类负责：缺少可靠意图/实现架构基线时使用 `/reverse-architecture-extraction` 做初始化提取；已有可信架构基线且测试/代码被外部修改时使用 `/architecture-drift-recovery` 做漂移恢复。Agent 不自行切换入口；如果调用意图不清楚，应停止并要求人类选择正确 Skill。
+
 ##### 其他关键业务流程
 
 ```mermaid
@@ -212,6 +271,8 @@ flowchart TD
 | 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，输出 PlantUML 交付路由图与 G 估算，再转入开发迭代复用流程，由人类伙伴按顺序提交给 `Orchestrator` 交付 |
 | 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先判断是否属于意图架构问题；纯代码 BUG 直接进入 `CodingAndReparing`，涉及实现架构调整时先更新实现架构再编码修复 |
 | 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出候选并深挖收敛，再通过 `/task-tidy` 内化进意图架构；凡涉及开发交付的范围，统一转入开发迭代复用流程 |
+| 既有代码仓架构反推        | 已有实现和测试，但缺少可靠意图图谱、实现架构契约或 handoff，需要从下到上恢复候选架构事实            | `/reverse-architecture-extraction`                         | 先由 `ReverseArchitectureExtraction` 从测试和代码生成候选实现架构、候选意图架构、证据矩阵和开放问题，再分别交 `ImplementationDesign` 固化契约、交 `IntentionDesign` 审核并提升意图图谱 |
+| 多人协作后的架构漂移恢复        | 人类已确认存在可信意图/实现架构基线，且测试或代码被外部修改，需要判断是否刷新架构资产或回退漂移            | `/architecture-drift-recovery`                              | 先对变更测试/代码做 drift 分类；`intent drift` 交 `IntentionDesign`，`implementation architecture drift` 交 `ImplementationDesign`，`code/test drift` 不得直接污染正式架构 |
 | 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、架构依赖分析，以及从验收方视角定义的控制点和观测点                                                               |
 | 意图内化与交付排序        | 业务分析或拷问已经完成，需要把结果写入意图架构，并确定后续交付顺序                   | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；动态识别 `New`/`Dirty` 影响元素，输出 PlantUML ArchiMate 依赖图与 G 估算；不创建 `design/tasks/` 独立 Markdown |
 | 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
@@ -244,6 +305,7 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `IntentionDesign` | 意图设计 | 以 `design/KG/SystemArchitecture.json` 为第一真相源，澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `IntentToImplementationHandoff.json`；禁止修改业务代码与测试代码 | 全平台 |
 | `ImplementationDesign` | 实现设计 | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台 |
 | `CodingAndReparing` | 编码/修复 | 依据 `ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台 |
+| `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵和开放问题；不直接修改正式图谱、契约或 handoff | 全平台 |
 | `ArchimateLanguagistAudit` | 意图设计（审计） | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件 | 全平台 |
 | `BusinessPartner` | 前置/业务 | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，产出含控制点与观测点的验收标准；聚焦业务本身，不进入架构与代码 | Copilot、OpenCode |
 | `Init` | 初始化 | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件） | OpenCode |
@@ -257,6 +319,8 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | 名称 | 适用阶段 | 作用 | 调用方式 |
 | --- | --- | --- | --- |
 | `orchestrating` | 编排（全阶段） | Cursor 版总调度：固化意图设计 → 实现设计 → 编码/修复 → 实现测试设计审计 → 编码交付审计 → 意图交付审计的完整工作流；强制 handoff 校验、人类审核、返工路由与环境阻塞求助，禁止主 Agent 越权直接实现 | `/orchestrating` |
+| `reverse-architecture-extraction` | 反推启动/架构发现 | 人类明确选择初始化提取时使用；调度 `ReverseArchitectureExtraction` 从只有测试和代码、缺少可靠架构基线的仓库中恢复候选实现架构与候选意图架构，再由正式阶段固化契约和图谱；禁止直接修改正式架构资产 | `/reverse-architecture-extraction` |
+| `architecture-drift-recovery` | 架构漂移恢复 | 人类明确选择漂移恢复时使用；调度 `ReverseArchitectureExtraction` 对外部测试/代码变更做 drift 分类，再把 `intent drift` 交 `IntentionDesign`、`implementation architecture drift` 交 `ImplementationDesign`；禁止由测试/代码漂移直接覆盖正式架构资产 | `/architecture-drift-recovery` |
 | `grill-me` | 意图设计 / 通用 | 以强批判性思维无情拷问计划或设计，逐分支遍历决策树直到达成共识；可从仓库自行取证；各阶段均可使用但效果因阶段边界而异 | `/grill-me` |
 | `improve-codebase-architecture` | 意图设计（前置探索） | 在不引入功能需求的前提下，先识别 shallow module、接缝泄漏、测试面失焦等架构优化候选，再将选中方向交给 `grill-me` 深挖；宜作为独立迭代的需求输入而非单次指令 | `/improve-codebase-architecture` |
 | `business-partner` | 前置/业务 | 与 `BusinessPartner` Agent 等效的业务方案拷问流程：MECE 决策树拆解、SMART 问题定义、验收 testcase 输出 | `/business-partner` |

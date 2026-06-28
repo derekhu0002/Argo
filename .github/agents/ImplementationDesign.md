@@ -396,7 +396,27 @@ note right
   6. If test-environment setup blocks evidence gathering or entrypoint execution, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
-if (EVENT: Bootstrap implementation architecture from reverse extraction?) then (bootstrap)
+if (EVENT: Refresh implementation architecture from changed tests and code?) then (refresh)
+  :Read ArchitectureDriftReport, EvidenceMatrix, changed tests, changed code entrypoints, and existing implementation contracts
+  [acts on: ImplementationArchitecture, ImplementationContract, StableArchitectureElement, TestAsset, CodeReality];
+  :Classify each implementation-side delta as implementation architecture drift, code drift, test drift, or no architecture impact
+  [acts on: ImplementationArchitecture, ImplementationDependency, InterfaceBoundary, TestAsset, CodeReality];
+  :Reject code/test changes that contradict current implementation contracts without evidence-backed architecture rationale
+  [acts on: ImplementationContract, CodeReality, TestAsset];
+  :Update OVERALL_ARCHITECTURE.md, relevant **/ARCHITECTURE.md contracts, and test ownership only for accepted implementation architecture drift
+  [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, TestAsset];
+  :Update design/KG/ImplementationToCodingHandoff.json when refreshed contracts change entrypoints, frozenFiles, expectedFailureRecordsPath, or taskExecutionPlan
+  [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
+  :MCP tool: argo.validateStageHandoff
+  stage = "implementation-to-coding"
+  Validate refreshed implementation handoff when emitted
+  [acts on: ImplementationToCodingHandoff];
+  if (Implementation drift implies intent semantics changed?) then (yes)
+    :Write design/KG/ImplementationToIntentTraceProposal.json or report upstream Intent Design refresh need
+    [acts on: ImplementationToIntentTraceProposal, ImplementsMapping, IntentArchitecture];
+  endif
+
+elseif (EVENT: Bootstrap implementation architecture from reverse extraction?) then (bootstrap)
   :Read CandidateImplementationArchitectureReport, EvidenceMatrix, code entrypoints, and open questions from ReverseArchitectureExtraction
   [acts on: ImplementationArchitecture, StableArchitectureElement, TestAsset, CodeReality];
   :Reject any candidate stable element that lacks test evidence unless it is explicitly marked low-confidence code reality
@@ -479,6 +499,7 @@ note right
   3. Include explicit testcase control points, observation points, GIVEN/WHEN/THEN readability, Harness abstraction, and expected failure signals.
   4. Include critical non-explicit test category, files listed in frozenFiles, protected fixtures, protected baselines, expectedFailureRecordsPath, and remaining blockers.
   5. For reverse-extraction bootstrap, distinguish evidence-backed contracts from low-confidence code facts that were not promoted.
+  6. For external test/code refresh, distinguish accepted implementation architecture drift from code drift, test drift, and no-impact changes.
 end note
 :Write session-level decisions, contract changes, and open architecture risks to design/persistant-memory/implementation-design.md
 [acts on: ImplementationArchitecture, ImplementationToCodingHandoff, TestAsset];

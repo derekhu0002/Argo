@@ -394,7 +394,36 @@ note right
   6. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
-if (EVENT: Candidate intent architecture from reverse extraction?) then (reverse extraction)
+if (EVENT: Refresh intent architecture from changed tests and code?) then (refresh)
+  :Read ArchitectureDriftReport, CandidateIntentArchitectureReport, EvidenceMatrix, changed tests, changed code entrypoints, and current SystemArchitecture graph
+  [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality, CoverageMatrix];
+  :Classify each intent-side delta as intent drift, implementation architecture drift, code drift, test drift, or no architecture impact
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix];
+  :Reject external code/test changes that contradict approved intent without business evidence and human decision
+  [acts on: IntentArchitecture, ExplicitAcceptanceTestcase, CodeReality];
+  :Apply business semantic gate to accepted intent drift: business observable, business decidable, and business acceptable
+  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase, TraceabilityPointer];
+  :Declare required graph/testcase updates, rejected drifts, and unresolved business questions before applying mutation
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, TraceabilityPointer];
+  if (Accepted intent drift requires graph mutation and human approval is sufficient?) then (yes)
+    :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
+    Persist approved refresh mutation to design/KG/SystemArchitecture.json
+    [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase];
+    :MCP tool: argo.validateSystemArchitecture
+    Validate refreshed intent ontology
+    [acts on: IntentArchitecture];
+  else (blocked or no mutation)
+    :Record unresolved adequacy blockers, rejected drift, and business openQuestions
+    [acts on: IntentArchitecture, CoverageMatrix, CodeReality];
+  endif
+  :Repair design/KG/IntentToImplementationHandoff.json only when refreshed intent scope has adequate mounted testcase coverage and no unresolved adequacy blockers
+  [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
+  :MCP tool: argo.validateStageHandoff
+  stage = "intent-to-implementation"
+  Validate refreshed handoff when emitted
+  [acts on: IntentToImplementationHandoff];
+
+elseif (EVENT: Candidate intent architecture from reverse extraction?) then (reverse extraction)
   :Read CandidateIntentArchitectureReport, EvidenceMatrix, supporting code entrypoints, excludedDetails, and openQuestions
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality, CoverageMatrix];
   :Apply business semantic gate to each candidate: business observable, business decidable, and business acceptable
@@ -556,6 +585,7 @@ note right
   2. Put user-facing path lists in a separate text block, one path per line.
   3. Before handoff, include each dependency-subgraph element, its role, functional points, mounted explicit testcases, and evidence-backed exclusions.
   4. For reverse-extraction candidates, distinguish accepted business intent from rejected implementation details and unresolved business questions.
+  5. For external test/code refresh, distinguish accepted intent drift from implementation architecture drift, code drift, test drift, and no-impact changes.
 end note
 :Write session-level decisions and unresolved ontology risks to design/persistant-memory/intention-design.md
 [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
