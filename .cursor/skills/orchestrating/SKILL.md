@@ -23,6 +23,17 @@ disable-model-invocation: true
 @startuml
 start
 :Receive user requirement or issue;
+:Inspect .argo/temp for temporary files;
+if (Temporary files exist?) then (yes)
+  :Ask user whether to delete stale .argo/temp files;
+  if (User agrees?) then (yes)
+    :Delete stale .argo/temp files automatically;
+  else (no)
+    :Stop and report temp isolation blocker;
+    stop
+  endif
+else (no)
+endif
 :Do not solve directly;
 :Dispatch to @IntentionDesign;
 
