@@ -78,7 +78,8 @@ Agents, skills, MCP servers, validators, and viewers must read schema files from
 | `ImplementationDesign` | Implementation architect | Produce implementation contracts, test entrypoints, guardrails, and implementation handoff files. | Must not directly modify `SystemArchitecture.json`. |
 | `CodingAndReparing` | Coding/repair executor | Fix real implementation issues from handoff and failure records, then run explicit architecture tests. | Must not modify frozen tests, frozen contracts, or the intent graph. |
 | `ArchimateLanguagistAudit` | ArchiMate auditor | Review schema compliance, ArchiMate semantics, wording precision, view consistency, and traceability. | Read-only by default. |
-| `BusinessPartner` | Business challenger | Pressure-test business options with MECE decision trees and SMART acceptance criteria. | Does not enter software architecture or coding implementation. |
+| `BusinessPartner` | Business challenger | Pressure-test business options with MECE decision trees, SMART acceptance criteria, and structured `DecisionTreeRecord` output. | Stays in business decisions and acceptance semantics; does not enter implementation design or coding. |
+| `TaskTidyGraphIntegrator` | Intent graph integrator | Integrate the decision-tree table written by `task-tidy` into `SystemArchitecture.json` and return coverage evidence for host validation. | Does not re-litigate the business decision tree; final acceptance stays with the `task-tidy` host agent. |
 | `Init` | Init command agent | Handles `/argoinit` by calling `initializeWorkspace`. | Startup preparation only. |
 | `Test` | Test command agent | Handles `/argotest` by calling `runArchitectureTests`. | Acceptance test execution only. |
 
