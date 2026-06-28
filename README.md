@@ -22,19 +22,19 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 本文对比 ARGO、OpenSpec、SUPERPOWER、ECC 四类 AI Coding Harness 方案。完整分析见 `design/marketing/solution-comparison-argo-openspec-superpower-ecc.md`；下表保留最关键的选型维度。
 
-| 对比维度 | ARGO | OpenSpec | SUPERPOWER | ECC |
-| --- | --- | --- | --- | --- |
-| 一句话定位 | 面向高确定性交付的架构治理工作流 | 面向快速协作的轻量规格层 | 面向高效率执行的技能驱动开发操作流 | 面向跨平台、多语言、多场景的 AI 工程操作系统 |
-| 核心目标 | 稳定交付、架构一致性、可追溯、可审计 | 轻量规格协作、快速迭代、低门槛落地 | 将优秀工程习惯流程化、自动化，提高开发执行效率 | 提供跨 harness、跨语言、跨项目的统一工程能力池 |
-| 流程风格 | 强阶段、强门禁、强闭环：意图设计 → 实现设计 → 编码/修复 → 双层验收 | 动作驱动，围绕 proposal/specs/design/tasks 灵活往返 | 技能触发驱动，强调 brainstorming、planning、TDD、code review 等工程动作 | commands、skills、agents、hooks、rules 密集组合，偏工程操作系统 |
-| 治理强度 | 高：图谱、Schema、交接物、测试入口和 validator 共同约束 | 中低：规格清晰但更依赖团队补充验收与治理机制 | 中：对 Agent 跑偏有帮助，但偏执行流程治理 | 中高：能力完整且可配置，但治理策略需要团队自行设计 |
-| 架构治理能力 | 强：将意图架构、实现架构、冻结测试和双层审计绑定成闭环 | 中：适合规格组织，但复杂场景下容易出现规格与实现漂移 | 中：能规范工程动作，但对契约级架构治理覆盖不足 | 中高：生态能力强，但需要明确规则与流程才能稳定治理 |
-| 自动化执行深度 | 中高：通过阶段交接、失败记录和 validator 驱动确定性执行 | 中：自动化程度取决于团队如何接入工具链 | 高：技能、子代理、TDD、评审等动作自动化程度高 | 高：覆盖会话管理、持续学习、验证、安全和跨平台自动化 |
-| 上手成本 | 高：适合愿意接受强流程和强契约的团队 | 低：适合快速启动规格先行协作 | 中：需要理解技能触发与工程动作链路 | 中高：能力面广，认知和配置成本较高 |
-| 适合团队/项目规模 | 中大型复杂系统、核心业务链路、高风险交付、多团队协作 | 小中型到中大型项目，尤其适合需求探索频繁阶段 | 小中型到中大型团队，适合已有基本工程规范但缺自动化执行 | 中大型、多团队、多技术栈、多 harness 并行的工程平台 |
-| 主要优势 | 偏差可发现、交接可复现、验收可执行、责任边界清晰 | 轻、快、灵活，便于建立规格协作习惯 | 执行效率高，能把工程最佳实践变成日常动作 | 覆盖面广、扩展性强，适合规模化工程能力建设 |
-| 主要不足 | 小需求可能显得重，对流程纪律要求高 | 严格治理和验收机制不足，需团队自补 | 若缺少上层治理，容易偏执行而弱一致性控制 | 体系复杂，若缺少治理策略容易出现选择负担 |
-| 优先选择场景 | 最在意稳定交付、可追溯、可审计、架构一致性 | 最在意轻量、快速、低门槛、需求探索 | 最在意开发节奏自动化和工程习惯落地 | 最在意跨平台、规模化能力和统一 AI 工程操作层 |
+| 对比维度      | ARGO                                   | OpenSpec                                 | SUPERPOWER                                             | ECC                                             |
+| --------- | -------------------------------------- | ---------------------------------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| 一句话定位     | 面向高确定性交付的架构治理工作流                       | 面向快速协作的轻量规格层                             | 面向高效率执行的技能驱动开发操作流                                      | 面向跨平台、多语言、多场景的 AI 工程操作系统                        |
+| 核心目标      | 稳定交付、架构一致性、可追溯、可审计                     | 轻量规格协作、快速迭代、低门槛落地                        | 将优秀工程习惯流程化、自动化，提高开发执行效率                                | 提供跨 harness、跨语言、跨项目的统一工程能力池                     |
+| 流程风格      | 强阶段、强门禁、强闭环：意图设计 → 实现设计 → 编码/修复 → 双层验收 | 动作驱动，围绕 proposal/specs/design/tasks 灵活往返 | 技能触发驱动，强调 brainstorming、planning、TDD、code review 等工程动作 | commands、skills、agents、hooks、rules 密集组合，偏工程操作系统 |
+| 治理强度      | 高：图谱、Schema、交接物、测试入口和 validator 共同约束   | 中低：规格清晰但更依赖团队补充验收与治理机制                   | 中：对 Agent 跑偏有帮助，但偏执行流程治理                               | 中高：能力完整且可配置，但治理策略需要团队自行设计                       |
+| 架构治理能力    | 强：将意图架构、实现架构、冻结测试和双层审计绑定成闭环            | 中：适合规格组织，但复杂场景下容易出现规格与实现漂移               | 中：能规范工程动作，但对契约级架构治理覆盖不足                                | 中高：生态能力强，但需要明确规则与流程才能稳定治理                       |
+| 自动化执行深度   | 中高：通过阶段交接、失败记录和 validator 驱动确定性执行      | 中：自动化程度取决于团队如何接入工具链                      | 高：技能、子代理、TDD、评审等动作自动化程度高                               | 高：覆盖会话管理、持续学习、验证、安全和跨平台自动化                      |
+| 上手成本      | 高：适合愿意接受强流程和强契约的团队                     | 低：适合快速启动规格先行协作                           | 中：需要理解技能触发与工程动作链路                                      | 中高：能力面广，认知和配置成本较高                               |
+| 适合团队/项目规模 | 中大型复杂系统、核心业务链路、高风险交付、多团队协作             | 小中型到中大型项目，尤其适合需求探索频繁阶段                   | 小中型到中大型团队，适合已有基本工程规范但缺自动化执行                            | 中大型、多团队、多技术栈、多 harness 并行的工程平台                  |
+| 主要优势      | 偏差可发现、交接可复现、验收可执行、责任边界清晰               | 轻、快、灵活，便于建立规格协作习惯                        | 执行效率高，能把工程最佳实践变成日常动作                                   | 覆盖面广、扩展性强，适合规模化工程能力建设                           |
+| 主要不足      | 小需求可能显得重，对流程纪律要求高                      | 严格治理和验收机制不足，需团队自补                        | 若缺少上层治理，容易偏执行而弱一致性控制                                   | 体系复杂，若缺少治理策略容易出现选择负担                            |
+| 优先选择场景    | 最在意稳定交付、可追溯、可审计、架构一致性                  | 最在意轻量、快速、低门槛、需求探索                        | 最在意开发节奏自动化和工程习惯落地                                      | 最在意跨平台、规模化能力和统一 AI 工程操作层                        |
 
 推荐组合策略：
 
@@ -212,9 +212,9 @@ flowchart TD
     class C,D,F,I,K ai
 ```
 
-当项目已经有实现和测试，但缺少可靠的 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md` 或局部 `ARCHITECTURE.md` 时，不应直接让 `IntentionDesign` 或 `ImplementationDesign` 猜测架构。先执行 `/reverse-architecture-extraction`，由 `ReverseArchitectureExtraction` 以测试为第一证据源、代码入口为边界校验源，生成候选实现架构、候选意图架构、证据矩阵和开放问题。该阶段只产出候选，不直接修改正式图谱、实现契约或 handoff。
+当项目已经有实现和测试，但缺少可靠的 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md` 或局部 `ARCHITECTURE.md` 时，不应直接让 `IntentionDesign` 或 `ImplementationDesign` 猜测架构。先执行 `/reverse-architecture-extraction`，由 `ReverseArchitectureExtraction` 以测试为第一证据源、代码入口为边界校验源，生成候选实现架构、候选意图架构、证据矩阵和开放问题。该 Skill 与 Agent 均采用 **Domain Ontology + Behavior** 作为可审计规则规格：Ontology 明确人类选择、证据、本体对象、候选报告、控制规则和下游阶段；Behavior 明确事件流、路由条件、验收门禁和阻塞报告。该阶段只产出候选，不直接修改正式图谱、实现契约或 handoff。
 
-反推结果再分流到两个正式阶段：候选实现架构交给 `ImplementationDesign`，由它固化稳定边界、依赖方向、测试归属、实现契约和 `ImplementationToCodingHandoff.json`；候选意图架构交给 `IntentionDesign`，由它执行业务可观察、业务可决策、业务可验收的语义门禁，并通过 `argo` MCP preview/apply/validate 更新 `design/KG/SystemArchitecture.json`。没有测试覆盖的代码只能作为低置信实现事实；纯技术细节只能作为实现锚点、排除项或开放问题，不得直接提升为业务意图。
+反推结果再分流到两个正式阶段：候选实现架构交给 `ImplementationDesign`，由它固化稳定边界、依赖方向、测试归属、实现契约和 `ImplementationToCodingHandoff.json`；候选意图架构交给 `IntentionDesign`，由它执行业务可观察、业务可决策、业务可验收的语义门禁，并通过 `argo` MCP preview/apply/validate 更新 `design/KG/SystemArchitecture.json`。没有测试覆盖的代码只能作为低置信实现事实；纯技术细节只能作为实现锚点、排除项或开放问题，不得直接提升为业务意图。所有 guardrail、输出契约和 acceptance gate 都应被表达在 Ontology 或 Behavior 图中，避免在规则文档中形成第二套散落文本事实。
 
 ##### 架构漂移恢复-多人协作变更后的测试和代码处理
 
@@ -240,11 +240,11 @@ flowchart TD
     class C,D,F,G,H,J,K ai
 ```
 
-当人类明确判断当前已有可信 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 或 handoff，且多人协作导致测试和代码被外部修改时，应执行 `/architecture-drift-recovery`，而不是让 LLM 自行判断使用 bootstrap 还是 drift recovery。此时既有意图图谱和实现契约是架构基线，测试/代码变更只是漂移证据。`ReverseArchitectureExtraction` 需要把每个变更归类为 `intent drift`、`implementation architecture drift`、`code drift`、`test drift` 或 `no architecture impact`。
+当人类明确判断当前已有可信 `SystemArchitecture.json`、`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 或 handoff，且多人协作导致测试和代码被外部修改时，应执行 `/architecture-drift-recovery`，而不是让 LLM 自行判断使用 bootstrap 还是 drift recovery。该 Skill 同样采用 **Domain Ontology + Behavior** 作为规则规格：Ontology 把可信基线、外部变更、漂移类型、控制规则和下游阶段显式建模；Behavior 描述 drift recovery 事件流、drift 分类、分流规则和验收门禁。此时既有意图图谱和实现契约是架构基线，测试/代码变更只是漂移证据。`ReverseArchitectureExtraction` 需要把每个变更归类为 `intent drift`、`implementation architecture drift`、`code drift`、`test drift` 或 `no architecture impact`。
 
 只有 `intent drift` 才能交给 `IntentionDesign` 评估是否刷新意图图谱；只有 `implementation architecture drift` 才能交给 `ImplementationDesign` 刷新实现契约、测试归属或 handoff。`code drift` 说明代码偏离或扩展了实现但架构仍有效，应记录并必要时转编码修复；`test drift` 说明测试可能越权改变验收语义，必须先由人类确认业务意图，不能让测试直接覆盖架构事实。该流程的核心目标是让多人协作后的测试/代码现实重新对齐架构资产，同时防止未经确认的实现变化污染意图图谱。
 
-选择哪个入口由人类负责：缺少可靠意图/实现架构基线时使用 `/reverse-architecture-extraction` 做初始化提取；已有可信架构基线且测试/代码被外部修改时使用 `/architecture-drift-recovery` 做漂移恢复。Agent 不自行切换入口；如果调用意图不清楚，应停止并要求人类选择正确 Skill。
+选择哪个入口由人类负责：缺少可靠意图/实现架构基线时使用 `/reverse-architecture-extraction` 做初始化提取；已有可信架构基线且测试/代码被外部修改时使用 `/architecture-drift-recovery` 做漂移恢复。Agent 不自行切换入口；如果调用意图不清楚，应停止并要求人类选择正确 Skill。相关 PlantUML Behavior 图应使用可稳定解析的 activity 语法；事件、约束、输出契约和验收条件通过 action 与 note 表达，不使用独立散落章节替代图内规则。
 
 ##### 其他关键业务流程
 
@@ -271,8 +271,8 @@ flowchart TD
 | 新需求开发              | 已有明确业务需求、PRD、用户故事或功能描述，需要进入完整交付链路                       | `BusinessPartner` 或 `/business-partner`，随后 `/task-tidy` | 先完成业务分析并将结论内化进意图架构，输出 PlantUML 交付路由图与 G 估算，再转入开发迭代复用流程，由人类伙伴按顺序提交给 `Orchestrator` 交付 |
 | 缺陷修复               | 已知问题、失败现象、报错日志、回归缺陷或测试失败，需要定位并修复                        | OpenCode/Copilot：`Orchestrator`；Cursor：`/orchestrating` | 先判断是否属于意图架构问题；纯代码 BUG 直接进入 `CodingAndReparing`，涉及实现架构调整时先更新实现架构再编码修复 |
 | 架构优化/重构候选梳理        | 不新增功能，目标是改善模块边界、降低耦合、修复浅模块、提升可测试性或提升 AI 可导航性            | `/improve-codebase-architecture`，必要时接 `/grill-me`       | 先输出候选并深挖收敛，再通过 `/task-tidy` 内化进意图架构；凡涉及开发交付的范围，统一转入开发迭代复用流程 |
-| 既有代码仓架构反推        | 已有实现和测试，但缺少可靠意图图谱、实现架构契约或 handoff，需要从下到上恢复候选架构事实            | `/reverse-architecture-extraction`                         | 先由 `ReverseArchitectureExtraction` 从测试和代码生成候选实现架构、候选意图架构、证据矩阵和开放问题，再分别交 `ImplementationDesign` 固化契约、交 `IntentionDesign` 审核并提升意图图谱 |
-| 多人协作后的架构漂移恢复        | 人类已确认存在可信意图/实现架构基线，且测试或代码被外部修改，需要判断是否刷新架构资产或回退漂移            | `/architecture-drift-recovery`                              | 先对变更测试/代码做 drift 分类；`intent drift` 交 `IntentionDesign`，`implementation architecture drift` 交 `ImplementationDesign`，`code/test drift` 不得直接污染正式架构 |
+| 既有代码仓架构反推        | 已有实现和测试，但缺少可靠意图图谱、实现架构契约或 handoff，需要从下到上恢复候选架构事实            | `/reverse-architecture-extraction`                         | 以 Ontology + Behavior 规则调度 `ReverseArchitectureExtraction`，从测试和代码生成候选实现架构、候选意图架构、证据矩阵和开放问题，再分别交 `ImplementationDesign` 固化契约、交 `IntentionDesign` 审核并提升意图图谱 |
+| 多人协作后的架构漂移恢复        | 人类已确认存在可信意图/实现架构基线，且测试或代码被外部修改，需要判断是否刷新架构资产或回退漂移            | `/architecture-drift-recovery`                              | 以 Ontology + Behavior 规则对变更测试/代码做 drift 分类；`intent drift` 交 `IntentionDesign`，`implementation architecture drift` 交 `ImplementationDesign`，`code/test drift` 不得直接污染正式架构 |
 | 业务方案拷问             | 需求还不稳定，需要先验证业务问题是否清晰、目标是否 SMART、拆解是否 MECE               | `BusinessPartner` 或 `/business-partner`                 | 业务决策树、关键追问、推荐答案、架构依赖分析，以及从验收方视角定义的控制点和观测点                                                               |
 | 意图内化与交付排序        | 业务分析或拷问已经完成，需要把结果写入意图架构，并确定后续交付顺序                   | `/task-tidy`                                            | 通过 `argo` MCP 刷新 Motivation/Strategy/Business/Application/Technology 分层，挂载 acceptance criteria/testcases，建立 ArchiMate 依赖关系；动态识别 `New`/`Dirty` 影响元素，输出 PlantUML ArchiMate 依赖图与 G 估算；不创建 `design/tasks/` 独立 Markdown |
 | 市场/竞品/技术趋势研究       | 需要在开发前判断市场机会、竞品差异、技术方向或投资人信息                            | `/market-research`                                      | 带来源归因的事实、推断、风险和建议，服务于是否进入后续需求设计                                                                       |
@@ -299,40 +299,40 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 
 ### SubAgents
 
-| 名称 | 适用阶段 | 作用 | 平台 |
-| --- | --- | --- | --- |
-| `Orchestrator` | 编排（全阶段） | 总调度者：接收需求或问题后按阶段转交子 Agent，强制执行 `validateStageHandoff`、显性 testcase 人类审核、实现测试设计审计、编码交付审计与意图交付审计；遇到 `ImplementationToIntentTraceProposal` 时回路到意图设计；禁止直接处理需求或修改实现产物 | Copilot、OpenCode（主 Agent）；Cursor 由 `/orchestrating` Skill 承担 |
-| `IntentionDesign` | 意图设计 | 以 `design/KG/SystemArchitecture.json` 为第一真相源，澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `IntentToImplementationHandoff.json`；禁止修改业务代码与测试代码 | 全平台 |
-| `ImplementationDesign` | 实现设计 | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台 |
-| `CodingAndReparing` | 编码/修复 | 依据 `ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台 |
-| `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵和开放问题；不直接修改正式图谱、契约或 handoff | 全平台 |
-| `ArchimateLanguagistAudit` | 意图设计（审计） | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件 | 全平台 |
-| `BusinessPartner` | 前置/业务 | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，产出含控制点与观测点的验收标准；聚焦业务本身，不进入架构与代码 | Copilot、OpenCode |
-| `Init` | 初始化 | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件） | OpenCode |
-| `Test` | 编码/修复（验收执行） | 承接 `/argotest`，调用统一 `argo` MCP tool `runArchitectureTests` 执行全量显性 testcase 并刷新 `test-failure-records.json`，为编码阶段提供修复队列 | OpenCode |
-| `teacher` | 辅助/通用 | 循序渐进的教学伙伴，帮助用户深入理解任意主题并形成共同认知；不承担主交付链路 | 全平台 |
+| 名称                              | 适用阶段           | 作用                                                                                                                                                                                                                                                | 平台                                                           |
+| ------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `Orchestrator`                  | 编排（全阶段）        | 总调度者：接收需求或问题后按阶段转交子 Agent，强制执行 `validateStageHandoff`、显性 testcase 人类审核、实现测试设计审计、编码交付审计与意图交付审计；遇到 `ImplementationToIntentTraceProposal` 时回路到意图设计；禁止直接处理需求或修改实现产物                                                                                   | Copilot、OpenCode（主 Agent）；Cursor 由 `/orchestrating` Skill 承担 |
+| `IntentionDesign`               | 意图设计           | 以 `design/KG/SystemArchitecture.json` 为第一真相源，澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `IntentToImplementationHandoff.json`；禁止修改业务代码与测试代码                                                                                                       | 全平台                                                          |
+| `ImplementationDesign`          | 实现设计           | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台                                                          |
+| `CodingAndReparing`             | 编码/修复          | 依据 `ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约                                                                                                | 全平台                                                          |
+| `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 以 `Domain Ontology` + `Behavior` 作为可审计认知规格，服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵、下游路由和开放问题；不直接修改正式图谱、契约或 handoff                                              | 全平台                                                          |
+| `ArchimateLanguagistAudit`      | 意图设计（审计）       | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件                                                                                                                                                     | 全平台                                                          |
+| `BusinessPartner`               | 前置/业务          | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，产出含控制点与观测点的验收标准；聚焦业务本身，不进入架构与代码                                                                                                                                                                        | Copilot、OpenCode                                             |
+| `Init`                          | 初始化            | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件）                                                                                                                                                         | OpenCode                                                     |
+| `Test`                          | 编码/修复（验收执行）    | 承接 `/argotest`，调用统一 `argo` MCP tool `runArchitectureTests` 执行全量显性 testcase 并刷新 `test-failure-records.json`，为编码阶段提供修复队列                                                                                                                            | OpenCode                                                     |
+| `teacher`                       | 辅助/通用          | 循序渐进的教学伙伴，帮助用户深入理解任意主题并形成共同认知；不承担主交付链路                                                                                                                                                                                                            | 全平台                                                          |
 
 > **Cursor 说明**：Cursor 不支持自定义主 Agent，因此 `Orchestrator` 的角色由 `/orchestrating` Skill 承担（见下表）。
 
 ### Skills
 
-| 名称 | 适用阶段 | 作用 | 调用方式 |
-| --- | --- | --- | --- |
-| `orchestrating` | 编排（全阶段） | Cursor 版总调度：固化意图设计 → 实现设计 → 编码/修复 → 实现测试设计审计 → 编码交付审计 → 意图交付审计的完整工作流；强制 handoff 校验、人类审核、返工路由与环境阻塞求助，禁止主 Agent 越权直接实现 | `/orchestrating` |
-| `reverse-architecture-extraction` | 反推启动/架构发现 | 人类明确选择初始化提取时使用；调度 `ReverseArchitectureExtraction` 从只有测试和代码、缺少可靠架构基线的仓库中恢复候选实现架构与候选意图架构，再由正式阶段固化契约和图谱；禁止直接修改正式架构资产 | `/reverse-architecture-extraction` |
-| `architecture-drift-recovery` | 架构漂移恢复 | 人类明确选择漂移恢复时使用；调度 `ReverseArchitectureExtraction` 对外部测试/代码变更做 drift 分类，再把 `intent drift` 交 `IntentionDesign`、`implementation architecture drift` 交 `ImplementationDesign`；禁止由测试/代码漂移直接覆盖正式架构资产 | `/architecture-drift-recovery` |
-| `grill-me` | 意图设计 / 通用 | 以强批判性思维无情拷问计划或设计，逐分支遍历决策树直到达成共识；可从仓库自行取证；各阶段均可使用但效果因阶段边界而异 | `/grill-me` |
-| `improve-codebase-architecture` | 意图设计（前置探索） | 在不引入功能需求的前提下，先识别 shallow module、接缝泄漏、测试面失焦等架构优化候选，再将选中方向交给 `grill-me` 深挖；宜作为独立迭代的需求输入而非单次指令 | `/improve-codebase-architecture` |
-| `business-partner` | 前置/业务 | 与 `BusinessPartner` Agent 等效的业务方案拷问流程：MECE 决策树拆解、SMART 问题定义、验收 testcase 输出 | `/business-partner` |
-| `task-tidy` | 前置/意图 | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务分析、架构依赖关系和验收标准内化进 `SystemArchitecture.json`；动态识别 `New`/`Dirty` 影响元素，按依赖拓扑形成 Sequential Gravity Chain，并输出 `G_self` / `G_cumulative` 交付规模预估；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy` |
-| `market-research` | 前置/业务 | 市场、竞品、投资人或技术趋势研究，要求来源归因，区分事实/推断/建议，输出面向决策的结论 | `/market-research` |
-| `implementation-delivery-acceptance` | 双层验收（意图架构侧） | 审计当前实现是否满足意图架构设计要求；不一致时写出实现 GAP 并给实现架构设计师下一步建议 | `/implementation-delivery-acceptance` |
-| `impl-gap-report` | 双层验收（意图架构侧） | 当实现仍存在 GAP 时，分析是否需要修改实现架构并下发后续开发任务 | `/impl-gap-report` |
-| `coding-delivery-acceptance` | 双层验收（实现架构侧） | 审计编码交付是否满足实现架构契约；不一致时给出 GAP 与下一步开发建议 | `/coding-delivery-acceptance` |
-| `coding-gap-report` | 编码/修复 | 当编码交付仍存在 GAP 时，驱动继续开发直至所有缺口补齐 | `/coding-gap-report` |
-| `brief` | 交付后/文档 | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md` | `/brief` |
-| `delivery-archive` | 交付后/归档 | 在一次 `Orchestrator` 交付迭代验收或结束后，基于需求、handoff、代码变更、测试和验收证据归档 PRD、架构设计、代码交付自测试与规格验收文档 | `/delivery-archive` |
-| `architecture-talk-deck` | 讲解/文档 | 以 Ontology + Behavior（PlantUML）约束讲稿生成认知流程；从用户指定的 ArchiMate 架构子图出发，先形成架构命题和中心结论，再沿依赖关系逐步展开；关键子图与关键架构元素单独起页讲解；最终必须输出可演示 `deck.pptx` | `/architecture-talk-deck` |
-| `distill-agent-rules` | 治理/复盘 | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源 | `/distill-agent-rules` |
-| `harmonyos-development` | 编码/修复（领域） | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流 | `/harmonyos-development` |
-| `arkts-coding-standard` | 编码/修复（领域） | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规 | `/arkts-coding-standard` |
+| 名称                                   | 适用阶段        | 作用                                                                                                                                                                                                                                     | 调用方式                                  |
+| ------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `orchestrating`                      | 编排（全阶段）     | Cursor 版总调度：固化意图设计 → 实现设计 → 编码/修复 → 实现测试设计审计 → 编码交付审计 → 意图交付审计的完整工作流；强制 handoff 校验、人类审核、返工路由与环境阻塞求助，禁止主 Agent 越权直接实现                                                                                                                   | `/orchestrating`                      |
+| `reverse-architecture-extraction`    | 反推启动/架构发现   | 人类明确选择初始化提取时使用；以 Ontology + Behavior 规则调度 `ReverseArchitectureExtraction` 从只有测试和代码、缺少可靠架构基线的仓库中恢复候选实现架构与候选意图架构，再由正式阶段固化契约和图谱；禁止直接修改正式架构资产                                                                                              | `/reverse-architecture-extraction`    |
+| `architecture-drift-recovery`        | 架构漂移恢复      | 人类明确选择漂移恢复时使用；以 Ontology + Behavior 规则调度 `ReverseArchitectureExtraction` 对外部测试/代码变更做 drift 分类，再把 `intent drift` 交 `IntentionDesign`、`implementation architecture drift` 交 `ImplementationDesign`；禁止由测试/代码漂移直接覆盖正式架构资产                  | `/architecture-drift-recovery`        |
+| `grill-me`                           | 意图设计 / 通用   | 以强批判性思维无情拷问计划或设计，逐分支遍历决策树直到达成共识；可从仓库自行取证；各阶段均可使用但效果因阶段边界而异                                                                                                                                                                             | `/grill-me`                           |
+| `improve-codebase-architecture`      | 意图设计（前置探索）  | 在不引入功能需求的前提下，先识别 shallow module、接缝泄漏、测试面失焦等架构优化候选，再将选中方向交给 `grill-me` 深挖；宜作为独立迭代的需求输入而非单次指令                                                                                                                                            | `/improve-codebase-architecture`      |
+| `business-partner`                   | 前置/业务       | 与 `BusinessPartner` Agent 等效的业务方案拷问流程：MECE 决策树拆解、SMART 问题定义、验收 testcase 输出                                                                                                                                                             | `/business-partner`                   |
+| `task-tidy`                          | 前置/意图       | 在 `business-partner` 或 `/grill-me` 产出后，通过 `argo` MCP 将业务分析、架构依赖关系和验收标准内化进 `SystemArchitecture.json`；动态识别 `New`/`Dirty` 影响元素，按依赖拓扑形成 Sequential Gravity Chain，并输出 `G_self` / `G_cumulative` 交付规模预估；**禁止**创建 `design/tasks/` 独立 Markdown | `/task-tidy`                          |
+| `market-research`                    | 前置/业务       | 市场、竞品、投资人或技术趋势研究，要求来源归因，区分事实/推断/建议，输出面向决策的结论                                                                                                                                                                                           | `/market-research`                    |
+| `implementation-delivery-acceptance` | 双层验收（意图架构侧） | 审计当前实现是否满足意图架构设计要求；不一致时写出实现 GAP 并给实现架构设计师下一步建议                                                                                                                                                                                         | `/implementation-delivery-acceptance` |
+| `impl-gap-report`                    | 双层验收（意图架构侧） | 当实现仍存在 GAP 时，分析是否需要修改实现架构并下发后续开发任务                                                                                                                                                                                                     | `/impl-gap-report`                    |
+| `coding-delivery-acceptance`         | 双层验收（实现架构侧） | 审计编码交付是否满足实现架构契约；不一致时给出 GAP 与下一步开发建议                                                                                                                                                                                                   | `/coding-delivery-acceptance`         |
+| `coding-gap-report`                  | 编码/修复       | 当编码交付仍存在 GAP 时，驱动继续开发直至所有缺口补齐                                                                                                                                                                                                          | `/coding-gap-report`                  |
+| `brief`                              | 交付后/文档      | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md`                                                                                                                                               | `/brief`                              |
+| `delivery-archive`                   | 交付后/归档      | 在一次 `Orchestrator` 交付迭代验收或结束后，基于需求、handoff、代码变更、测试和验收证据归档 PRD、架构设计、代码交付自测试与规格验收文档                                                                                                                                                      | `/delivery-archive`                   |
+| `architecture-talk-deck`             | 讲解/文档       | 以 Ontology + Behavior（PlantUML）约束讲稿生成认知流程；从用户指定的 ArchiMate 架构子图出发，先形成架构命题和中心结论，再沿依赖关系逐步展开；关键子图与关键架构元素单独起页讲解；最终必须输出可演示 `deck.pptx`                                                                                                      | `/architecture-talk-deck`             |
+| `distill-agent-rules`                | 治理/复盘       | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源                                                                              | `/distill-agent-rules`                |
+| `harmonyos-development`              | 编码/修复（领域）   | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流                                                                                                                                                           | `/harmonyos-development`              |
+| `arkts-coding-standard`              | 编码/修复（领域）   | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规                                                                                                                                                                            | `/arkts-coding-standard`              |
