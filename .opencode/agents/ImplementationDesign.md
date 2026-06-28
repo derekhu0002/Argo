@@ -387,7 +387,7 @@ end note
 title ImplementationDesign Event-Driven Action Flow
 
 start
-:Load design/persistant-memory/implementation-design.md, design/KG/SystemArchitecture.json, and design/KG/IntentToImplementationHandoff.json; recognize incoming EVENT
+:Load design/persistant-memory/implementation-design.md, design/KG/SystemArchitecture.json, optional design/KG/IntentToImplementationHandoff.json, and any ReverseArchitectureExtraction candidate report; recognize incoming EVENT
 [acts on: IntentArchitecture, IntentToImplementationHandoff, ImplementationArchitecture, CodeReality];
 :Enforce Implementation Design stage communication and edit guardrails
 [acts on: IntentArchitecture, ImplementationArchitecture, ImplementationToCodingHandoff, CodeReality];
@@ -401,7 +401,27 @@ note right
   6. If test-environment setup blocks evidence gathering or entrypoint execution, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
-if (EVENT: Intent-to-implementation handoff received?) then (handoff)
+if (EVENT: Bootstrap implementation architecture from reverse extraction?) then (bootstrap)
+  :Read CandidateImplementationArchitectureReport, EvidenceMatrix, code entrypoints, and open questions from ReverseArchitectureExtraction
+  [acts on: ImplementationArchitecture, StableArchitectureElement, TestAsset, CodeReality];
+  :Reject any candidate stable element that lacks test evidence unless it is explicitly marked low-confidence code reality
+  [acts on: StableArchitectureElement, TestAsset, CodeReality];
+  :Resolve implementation boundaries, dependency direction, public entrypoints, test ownership, and guardrails from repository evidence
+  [acts on: StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ExplicitTestcaseEntrypoint, CriticalNonExplicitTest];
+  :Write or update OVERALL_ARCHITECTURE.md and relevant **/ARCHITECTURE.md contracts only for evidence-backed stable boundaries
+  [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ImplementsMapping];
+  :Write design/KG/ImplementationToCodingHandoff.json when enough contract-owned entrypoints and frozenFiles are available
+  [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
+  :MCP tool: argo.validateStageHandoff
+  stage = "implementation-to-coding"
+  Validate implementation handoff when emitted
+  [acts on: ImplementationToCodingHandoff];
+  if (Candidate implementation anchors imply missing or mismatched intent semantics?) then (yes)
+    :Write design/KG/ImplementationToIntentTraceProposal.json or report upstream Intent Design gap for reverse-extraction candidates
+    [acts on: ImplementationToIntentTraceProposal, ImplementsMapping, IntentArchitecture];
+  endif
+
+elseif (EVENT: Intent-to-implementation handoff received?) then (handoff)
   :Interpret intent scope and current implementation architecture at stable-boundary level
   [acts on: IntentElement, ExplicitAcceptanceTestcase, ImplementationArchitecture, StableArchitectureElement, ImplementationContract];
   if (Scope is anchored to intent elements?) then (yes)
@@ -463,6 +483,7 @@ note right
   2. Put user-facing path lists in a separate text block, one path per line.
   3. Include explicit testcase control points, observation points, GIVEN/WHEN/THEN readability, Harness abstraction, and expected failure signals.
   4. Include critical non-explicit test category, files listed in frozenFiles, protected fixtures, protected baselines, expectedFailureRecordsPath, and remaining blockers.
+  5. For reverse-extraction bootstrap, distinguish evidence-backed contracts from low-confidence code facts that were not promoted.
 end note
 :Write session-level decisions, contract changes, and open architecture risks to design/persistant-memory/implementation-design.md
 [acts on: ImplementationArchitecture, ImplementationToCodingHandoff, TestAsset];

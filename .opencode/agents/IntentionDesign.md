@@ -385,7 +385,7 @@ end note
 title IntentionDesign Event-Driven Action Flow
 
 start
-:Load design/persistant-memory/intention-design.md and recognize incoming EVENT
+:Load design/persistant-memory/intention-design.md, design/KG/SystemArchitecture.json, and any ReverseArchitectureExtraction candidate report; recognize incoming EVENT
 [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
 :Enforce Intent Design stage communication and edit guardrails
 [acts on: IntentArchitecture, IntentToImplementationHandoff, CodeReality];
@@ -399,7 +399,36 @@ note right
   6. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
 end note
 
-if (EVENT: New task or requirement?) then (new task)
+if (EVENT: Candidate intent architecture from reverse extraction?) then (reverse extraction)
+  :Read CandidateIntentArchitectureReport, EvidenceMatrix, supporting code entrypoints, excludedDetails, and openQuestions
+  [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality, CoverageMatrix];
+  :Apply business semantic gate to each candidate: business observable, business decidable, and business acceptable
+  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase, TraceabilityPointer];
+  :Reject candidates that are pure implementation details, low-confidence code facts, or lack acceptance-party control and observation points
+  [acts on: IntentArchitecture, CodeReality, ExplicitAcceptanceTestcase];
+  :Map accepted candidates to existing ArchitectureEntityElements and IntentRelationships where possible
+  [acts on: IntentElement, IntentRelationship, CoverageMatrix];
+  :Declare required intent architecture updates and unresolved business questions before applying any mutation
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, TraceabilityPointer];
+  if (Any accepted candidate requires graph mutation and human approval is sufficient?) then (yes)
+    :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
+    Persist approved reverse-extraction mutation to design/KG/SystemArchitecture.json
+    [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase];
+    :MCP tool: argo.validateSystemArchitecture
+    Validate completed intent ontology
+    [acts on: IntentArchitecture];
+  else (blocked or no mutation)
+    :Record unresolved adequacy blockers, rejected candidates, low-confidence facts, and business openQuestions
+    [acts on: IntentArchitecture, CoverageMatrix, CodeReality];
+  endif
+  :Write or repair design/KG/IntentToImplementationHandoff.json only when accepted candidates have adequate mounted testcase coverage and no unresolved adequacy blockers
+  [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
+  :MCP tool: argo.validateStageHandoff
+  stage = "intent-to-implementation"
+  Validate handoff when emitted
+  [acts on: IntentToImplementationHandoff];
+
+elseif (EVENT: New task or requirement?) then (new task)
   :Read design/KG/SystemArchitecture.json, implementation contracts, and evidence for enough intent context
   [acts on: IntentArchitecture, TraceabilityPointer, ImplementationArchitecture, CodeReality];
   if (Task is anchored to an intent element?) then (yes)
@@ -531,6 +560,7 @@ note right
   1. Use concrete repository paths for files, contracts, tests, and evidence.
   2. Put user-facing path lists in a separate text block, one path per line.
   3. Before handoff, include each dependency-subgraph element, its role, functional points, mounted explicit testcases, and evidence-backed exclusions.
+  4. For reverse-extraction candidates, distinguish accepted business intent from rejected implementation details and unresolved business questions.
 end note
 :Write session-level decisions and unresolved ontology risks to design/persistant-memory/intention-design.md
 [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
