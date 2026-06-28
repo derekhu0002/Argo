@@ -2,14 +2,7 @@
 description: xxx
 mode: all
 temperature: 0.1
-permission:
-  task:
-    "*": deny
 
-tools:
-  validator: true
-  argo: true
-  skill: true
 ---
 
 **Role:**

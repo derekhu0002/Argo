@@ -1,7 +1,7 @@
 ---
 name: BusinessPartner
 description: "Business partner agent."
-tools: [read, search, execute]
+# tools: [read, search, execute]
 argument-hint: "critically "
 ---
 

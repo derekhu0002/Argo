@@ -2,7 +2,7 @@
 name: Orchestrator
 description: Orchestrator
 argument-hint: scope
-tools: [agent]
+# tools: [agent]
 agents:
   - IntentionDesign
   - ImplementationDesign
