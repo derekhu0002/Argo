@@ -488,7 +488,7 @@ start
 [acts on: ImplementationToCodingHandoff, TestFailureRecord, TestAsset, CodeReality];
 note right
   Stage guardrails:
-  1. Read design/KG/ImplementationToCodingHandoff.json before changing code.
+  1. Read .argo/temp/ImplementationToCodingHandoff.json before changing code.
   2. If the handoff is missing, incomplete, or conflicts with repository state so work cannot execute, report an Implementation Design gap instead of skipping it.
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
   4. User-facing responses begin with "Derek".
@@ -496,7 +496,7 @@ note right
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
-  :Build traceable repair queue from design/KG/ImplementationToCodingHandoff.json, handoff.expectedFailureRecordsPath, OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and existing tests
+  :Build traceable repair queue from .argo/temp/ImplementationToCodingHandoff.json, handoff.expectedFailureRecordsPath, OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and existing tests
   [acts on: RepairTask, ImplementationToCodingHandoff, TestFailureRecord, ExplicitTestcaseEntrypoint, ImplementationContract];
   :MCP tool: argo.getIntentElementContext when repair queue spans multiple intent-linked elements or upstream dependencies
   Read dependency subgraph to choose repair order

@@ -13,8 +13,8 @@ disable-model-invocation: true
 
 | Stage | Ready when |
 |-------|------------|
-| Intent Design | `design/KG/IntentToImplementationHandoff.json` 存在；`argo.validateStageHandoff` stage=`intent-to-implementation` 通过；IntentionDesign 未报告 unresolved adequacy blockers（未满足时不应写 handoff） |
-| Implementation Design | `design/KG/ImplementationToCodingHandoff.json` 存在；`argo.validateStageHandoff` stage=`implementation-to-coding` 通过；contracts、explicit entrypoints、`expectedFailureRecordsPath`、`frozenFiles` 已物化 |
+| Intent Design | `.argo/temp/IntentToImplementationHandoff.json` 存在；`argo.validateStageHandoff` stage=`intent-to-implementation` 通过；IntentionDesign 未报告 unresolved adequacy blockers（未满足时不应写 handoff） |
+| Implementation Design | `.argo/temp/ImplementationToCodingHandoff.json` 存在；`argo.validateStageHandoff` stage=`implementation-to-coding` 通过；contracts、explicit entrypoints、`expectedFailureRecordsPath`、`frozenFiles` 已物化 |
 | Coding/Repair | 已读取并遵守 ImplementationToCodingHandoff；`argo.runArchitectureTests` 全量显性架构测试通过；CodingAndReparing 未报告 Implementation Design gap 或 environment blocker |
 
 ## Workflow

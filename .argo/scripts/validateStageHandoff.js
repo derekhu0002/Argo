@@ -14,12 +14,12 @@ const DISALLOWED_ACCEPTANCE_CRITERIA_PATTERNS = [
 
 const HANDOFFS = {
     'intent-to-implementation': {
-        filePath: 'design/KG/IntentToImplementationHandoff.json',
+        filePath: '.argo/temp/IntentToImplementationHandoff.json',
         schemaPath: '.argo/schema/IntentToImplementationHandoff.schema.json',
         validate: validateIntentToImplementation,
     },
     'implementation-to-coding': {
-        filePath: 'design/KG/ImplementationToCodingHandoff.json',
+        filePath: '.argo/temp/ImplementationToCodingHandoff.json',
         schemaPath: '.argo/schema/ImplementationToCodingHandoff.schema.json',
         validate: validateImplementationToCoding,
     },

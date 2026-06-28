@@ -6,8 +6,8 @@ const validatorMcp = require('./validator-mcp-server.js');
 const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
 
 const HANDOFF_FILES_TO_RESET = [
-  ['design', 'KG', 'IntentToImplementationHandoff.json'],
-  ['design', 'KG', 'ImplementationToCodingHandoff.json'],
+  ['.argo', 'temp', 'IntentToImplementationHandoff.json'],
+  ['.argo', 'temp', 'ImplementationToCodingHandoff.json'],
 ];
 const EA_TEMPLATE_PATH_CANDIDATES = [
   ['.opencode', 'customtools', 'EA-model-template.feap'],

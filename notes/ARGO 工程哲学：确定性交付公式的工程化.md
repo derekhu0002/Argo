@@ -55,8 +55,8 @@ ARGO 的答案不是“换一个更强模型”，而是承认模型能力只是
 
 - `design/KG/SystemArchitecture.json`：意图架构和领域事实的结构化载体。
 - `OVERALL_ARCHITECTURE.md` 与局部 `ARCHITECTURE.md`：实现架构契约。
-- `IntentToImplementationHandoff.json`：意图设计向实现设计的交接契约。
-- `ImplementationToCodingHandoff.json`：实现设计向编码修复的交接契约。
+- `.argo/temp/IntentToImplementationHandoff.json`：意图设计向实现设计的临时交接契约。
+- `.argo/temp/ImplementationToCodingHandoff.json`：实现设计向编码修复的临时交接契约。
 - 显性验收 testcase、系统测试、集成测试和测试入口。
 
 这些资产共同定义了 AI 可以走的“合法路径”。它们不是事后文档，而是后续 Agent 执行任务时必须读取、遵循、更新或验收的协议层。

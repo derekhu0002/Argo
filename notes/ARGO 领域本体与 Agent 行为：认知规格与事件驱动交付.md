@@ -36,7 +36,7 @@ ARGO 的做法是把交付链路中的 **事实源** 抽象为分层本体，并
 | **Code Ontology** | `CodeReality`、`RepositoryArtifact`、`ProductionBehavior` | 业务代码、脚本、配置、文档 | 代码现实可证明实现状态，也可与契约/意图发生 **ArchitectureDrift** |
 | **Coverage Ontology** | `DependencySubgraph`、`CoverageMatrix` | 意图元素依赖子图 + 挂载 testcase | 覆盖须逐元素证明：每个 `functionalPoint` 映射到**同元素下**已挂载的显性 testcase；文档、校验通过结果不能替代覆盖证据 |
 | **Test Ontology** | `ExplicitTestcaseEntrypoint`、`CriticalNonExplicitTest`、`BusinessReadableAssertion` | 实现设计阶段物理化的测试入口 | 显性 testcase 一人一入口、GIVEN/WHEN/THEN、Harness 抽象；关键非显性测试在编码阶段只读冻结 |
-| **Handoff Ontology** | `IntentToImplementationHandoff`、`ImplementationToCodingHandoff` | `design/KG/*Handoff.json` | 阶段交接是协议对象，须经 `validateStageHandoff` 校验后才能驱动下游 |
+| **Handoff Ontology** | `IntentToImplementationHandoff`、`ImplementationToCodingHandoff` | `.argo/temp/*Handoff.json` | 阶段交接是协议对象，须经 `validateStageHandoff` 校验后才能驱动下游 |
 | **Repair / Forbidden Shortcut Ontology** | `RepairTask`、`TestFailureRecord`、`TestOnlyBusinessCodeShortcut` | `test-failure-records.json`、失败记录 | 修复队列来自 handoff 与失败记录；禁止用测试桩、后门或 mock 假通过污染 `ProductionBehavior` |
 
 ### 意图层：图谱即规格，而非注释

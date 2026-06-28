@@ -382,7 +382,7 @@ end note
 title ImplementationDesign Event-Driven Action Flow
 
 start
-:Load design/persistant-memory/implementation-design.md, design/KG/SystemArchitecture.json, optional design/KG/IntentToImplementationHandoff.json, and any ReverseArchitectureExtraction candidate report; recognize incoming EVENT
+:Load design/persistant-memory/implementation-design.md, design/KG/SystemArchitecture.json, optional .argo/temp/IntentToImplementationHandoff.json, and any ReverseArchitectureExtraction candidate report; recognize incoming EVENT
 [acts on: IntentArchitecture, IntentToImplementationHandoff, ImplementationArchitecture, CodeReality];
 :Enforce Implementation Design stage communication and edit guardrails
 [acts on: IntentArchitecture, ImplementationArchitecture, ImplementationToCodingHandoff, CodeReality];
@@ -405,7 +405,7 @@ if (EVENT: Refresh implementation architecture from changed tests and code?) the
   [acts on: ImplementationContract, CodeReality, TestAsset];
   :Update OVERALL_ARCHITECTURE.md, relevant **/ARCHITECTURE.md contracts, and test ownership only for accepted implementation architecture drift
   [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, TestAsset];
-  :Update design/KG/ImplementationToCodingHandoff.json when refreshed contracts change entrypoints, frozenFiles, expectedFailureRecordsPath, or taskExecutionPlan
+  :Update .argo/temp/ImplementationToCodingHandoff.json when refreshed contracts change entrypoints, frozenFiles, expectedFailureRecordsPath, or taskExecutionPlan
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
@@ -425,7 +425,7 @@ elseif (EVENT: Bootstrap implementation architecture from reverse extraction?) t
   [acts on: StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ExplicitTestcaseEntrypoint, CriticalNonExplicitTest];
   :Write or update OVERALL_ARCHITECTURE.md and relevant **/ARCHITECTURE.md contracts only for evidence-backed stable boundaries
   [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ImplementsMapping];
-  :Write design/KG/ImplementationToCodingHandoff.json when enough contract-owned entrypoints and frozenFiles are available
+  :Write .argo/temp/ImplementationToCodingHandoff.json when enough contract-owned entrypoints and frozenFiles are available
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
@@ -454,7 +454,7 @@ elseif (EVENT: Intent-to-implementation handoff received?) then (handoff)
   [acts on: ExplicitTestcaseEntrypoint, BusinessReadableAssertion, TestHarness, CriticalNonExplicitTest, SupportingNonExplicitTest];
   :Run representative physicalized entrypoints to classify pass, expected failure, or design blocker
   [acts on: ExplicitTestcaseEntrypoint, CodeReality, ImplementationToCodingHandoff];
-  :Write design/KG/ImplementationToCodingHandoff.json from contracts, frozenFiles, expectedFailureRecordsPath, and taskExecutionPlan
+  :Write .argo/temp/ImplementationToCodingHandoff.json from contracts, frozenFiles, expectedFailureRecordsPath, and taskExecutionPlan
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
@@ -479,7 +479,7 @@ elseif (EVENT: Implementation architecture audit?) then (audit)
 elseif (EVENT: Test entrypoint or guardrail gap?) then (test gap)
   :Write the minimal contract-owned testcase or guardrail asset that closes the gap
   [acts on: ExplicitTestcaseEntrypoint, CriticalNonExplicitTest, SupportingNonExplicitTest, TestAsset, StableArchitectureElement];
-  :Update affected OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and design/KG/ImplementationToCodingHandoff.json when appropriate
+  :Update affected OVERALL_ARCHITECTURE.md, **/ARCHITECTURE.md, and .argo/temp/ImplementationToCodingHandoff.json when appropriate
   [acts on: ImplementationContract, ImplementationToCodingHandoff];
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"

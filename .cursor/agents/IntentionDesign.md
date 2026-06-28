@@ -416,7 +416,7 @@ if (EVENT: Refresh intent architecture from changed tests and code?) then (refre
     :Record unresolved adequacy blockers, rejected drift, and business openQuestions
     [acts on: IntentArchitecture, CoverageMatrix, CodeReality];
   endif
-  :Repair design/KG/IntentToImplementationHandoff.json only when refreshed intent scope has adequate mounted testcase coverage and no unresolved adequacy blockers
+  :Repair .argo/temp/IntentToImplementationHandoff.json only when refreshed intent scope has adequate mounted testcase coverage and no unresolved adequacy blockers
   [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
   :MCP tool: argo.validateStageHandoff
   stage = "intent-to-implementation"
@@ -445,7 +445,7 @@ elseif (EVENT: Candidate intent architecture from reverse extraction?) then (rev
     :Record unresolved adequacy blockers, rejected candidates, low-confidence facts, and business openQuestions
     [acts on: IntentArchitecture, CoverageMatrix, CodeReality];
   endif
-  :Write or repair design/KG/IntentToImplementationHandoff.json only when accepted candidates have adequate mounted testcase coverage and no unresolved adequacy blockers
+  :Write or repair .argo/temp/IntentToImplementationHandoff.json only when accepted candidates have adequate mounted testcase coverage and no unresolved adequacy blockers
   [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
   :MCP tool: argo.validateStageHandoff
   stage = "intent-to-implementation"
@@ -538,7 +538,7 @@ elseif (EVENT: New task or requirement?) then (new task)
     :Report unresolved adequacy blockers and record openQuestions; do not write handoff
     [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
   else (ready)
-    :Write design/KG/IntentToImplementationHandoff.json with intentElementIds at architecture-element granularity
+    :Write .argo/temp/IntentToImplementationHandoff.json with intentElementIds at architecture-element granularity
     [acts on: IntentToImplementationHandoff, ArchitectureEntityElement, CoverageMatrix];
     :MCP tool: argo.validateStageHandoff
     stage = "intent-to-implementation"
@@ -566,7 +566,7 @@ elseif (EVENT: Intent architecture audit?) then (audit)
   endif
 
 elseif (EVENT: Handoff or validation blocker repair?) then (blocker)
-  :Repair the minimal blocked intent-side file: design/KG/SystemArchitecture.json or design/KG/IntentToImplementationHandoff.json
+  :Repair the minimal blocked intent-side file: design/KG/SystemArchitecture.json or .argo/temp/IntentToImplementationHandoff.json
   [acts on: IntentArchitecture, IntentToImplementationHandoff, CoverageMatrix];
   :MCP tool: argo.validateStageHandoff
   stage = "intent-to-implementation"

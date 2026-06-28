@@ -13,8 +13,8 @@
 
 若以下交接物存在且与当前问题直接相关，可按需读取：
 
-- `design/KG/IntentToImplementationHandoff.json`
-- `design/KG/ImplementationToCodingHandoff.json`
+- `.argo/temp/IntentToImplementationHandoff.json`
+- `.argo/temp/ImplementationToCodingHandoff.json`
 
 ## Mapping Rules
 

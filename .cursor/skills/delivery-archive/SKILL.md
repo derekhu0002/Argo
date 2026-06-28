@@ -33,8 +33,8 @@ If the exact requirement name is ambiguous, ask the user for the archive directo
 Prefer evidence in this order:
 
 1. User-stated requirement, PRD notes, issue description, or problem statement.
-2. `design/KG/IntentToImplementationHandoff.json` and IntentionDesign outputs.
-3. `design/KG/ImplementationToCodingHandoff.json` and ImplementationDesign outputs.
+2. `.argo/temp/IntentToImplementationHandoff.json` and IntentionDesign outputs.
+3. `.argo/temp/ImplementationToCodingHandoff.json` and ImplementationDesign outputs.
 4. Git diff, relevant commits, changed files, and CodingAndReparing delivery notes.
 5. Test commands, `argo.runArchitectureTests`, lints, manual verification, and acceptance audit outputs.
 

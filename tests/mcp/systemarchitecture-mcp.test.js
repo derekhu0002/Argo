@@ -309,6 +309,7 @@ function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-coverage-'));
   fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
   fs.mkdirSync(path.join(tempRoot, '.argo', 'schema'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, '.argo', 'temp'), { recursive: true });
   fs.copyFileSync(
     path.join(repoRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
     path.join(tempRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
@@ -318,7 +319,7 @@ function rejectsIntentHandoffWhenListedElementHasNoMountedTestcase() {
     JSON.stringify(buildIntentHandoffCoverageGraph(), null, 2),
   );
   fs.writeFileSync(
-    path.join(tempRoot, 'design', 'KG', 'IntentToImplementationHandoff.json'),
+    path.join(tempRoot, '.argo', 'temp', 'IntentToImplementationHandoff.json'),
     JSON.stringify({
       stage: 'intent-to-implementation',
       generatedAt: '2026-06-24T00:00:00.000Z',
@@ -355,6 +356,7 @@ function allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase() {
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'handoff-focus-only-'));
   fs.mkdirSync(path.join(tempRoot, 'design', 'KG'), { recursive: true });
   fs.mkdirSync(path.join(tempRoot, '.argo', 'schema'), { recursive: true });
+  fs.mkdirSync(path.join(tempRoot, '.argo', 'temp'), { recursive: true });
   fs.copyFileSync(
     path.join(repoRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
     path.join(tempRoot, '.argo', 'schema', 'IntentToImplementationHandoff.schema.json'),
@@ -364,7 +366,7 @@ function allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase() {
     JSON.stringify(buildIntentHandoffCoverageGraph({ focusHasTestcase: true }), null, 2),
   );
   fs.writeFileSync(
-    path.join(tempRoot, 'design', 'KG', 'IntentToImplementationHandoff.json'),
+    path.join(tempRoot, '.argo', 'temp', 'IntentToImplementationHandoff.json'),
     JSON.stringify({
       stage: 'intent-to-implementation',
       generatedAt: '2026-06-24T00:00:00.000Z',
