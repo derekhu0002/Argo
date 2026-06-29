@@ -160,7 +160,17 @@ Event is Recover architecture drift from changed tests and code.
 Required outputs are ArchitectureDriftReport, EvidenceMatrix,
 CandidateImplementationArchitectureReport when implementation drift exists,
 CandidateIntentArchitectureReport when intent drift exists, and OpenQuestions.
+If the agent raises any question that needs human partner
+confirmation, the skill must forward that question to the human
+and resume the same ReverseArchitectureExtraction Agent session
+after the answer. Do not silently drop, summarize away, or defer
+human-confirmation questions as ordinary report residue.
 end note
+
+while (Agent has human-confirmation question?) is (yes)
+  :Forward exact question, recommended answer, and reason to human partner;
+  :Resume same ReverseArchitectureExtraction Agent session with human answer;
+endwhile (no)
 
 if (Intent drift exists?) then (yes)
   :Dispatch IntentionDesign refresh event;

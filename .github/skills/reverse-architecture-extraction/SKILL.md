@@ -167,7 +167,17 @@ Event is Bootstrap architecture extraction from tests and code.
 Required outputs are CandidateImplementationArchitectureReport,
 CandidateIntentArchitectureReport, EvidenceMatrix, OpenQuestions,
 and optional ReverseArchitectureExtractionReport draft.
+If the agent raises any question that needs human partner
+confirmation, the skill must forward that question to the human
+and resume the same ReverseArchitectureExtraction Agent session
+after the answer. Do not silently drop, summarize away, or defer
+human-confirmation questions as ordinary report residue.
 end note
+
+while (Agent has human-confirmation question?) is (yes)
+  :Forward exact question, recommended answer, and reason to human partner;
+  :Resume same ReverseArchitectureExtraction Agent session with human answer;
+endwhile (no)
 
 if (Candidate implementation architecture is evidence backed?) then (yes)
   :Dispatch ImplementationDesign bootstrap event;
