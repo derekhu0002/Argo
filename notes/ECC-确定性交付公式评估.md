@@ -38,6 +38,29 @@ $$TC_{node} = \left[ C \times \frac{(P \cdot B) \times E_{sys}}{G} \right] \cdot
 | Observability / Operator 状态 | `scripts/status.js`, `scripts/orchestration-status.js`, `scripts/observability-readiness.js`, `scripts/hooks/ecc-metrics-bridge.js` | $B$, $E_{sys}$, $\prod TC$ | 活跃会话、skill 成功率、安装健康、治理事件、work items 等指标使 harness 可观测，便于定位子节点失败来源。 |
 | GitHub / CI 集成 | `.github/workflows/`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/`, `.github/CODEOWNERS` | $B$, $\prod TC$ | PR 模板、issue 模板、CODEOWNERS、依赖更新和 CI 让本地交付结果进入远端审查与自动化验证，形成最终上行确定性检查。 |
 
+### 能力到公式因子的映射
+
+下面这张表不再按文件或目录分类，而是按 ECC 实际提供的“能力”分类。一个能力通常由多种载体共同实现：Skill 负责流程知识，Agent 负责执行角色，Rules 负责静态边界，Hooks 负责自动拦截，Commands 负责入口，Scripts/Tests/MCP/CI 负责确定性执行与验证。
+
+| 能力 | 主要实现方式 | 代表实现 | 映射因子 | 具体作用 |
+| --- | --- | --- | --- | --- |
+| 需求澄清与任务定向能力 | Rules, Commands, Skills, 顶层指令 | `AGENTS.md`, `CLAUDE.md`, `commands/plan.md`, `skills/product-capability/` | $C$, $P$, $G$ | 将用户的自然语言请求压缩成项目内可执行任务类型，明确成功标准、边界和拆解方式，避免模型从模糊语义云直接进入生成。 |
+| 计划先行能力 | Agent, Command, Rule, Skill | `agents/planner.md`, `commands/plan.md`, `rules/common/development-workflow.md`, `skills/product-capability/` | $C$, $G$, $\prod TC$ | 在编码前先识别依赖、风险、阶段和验收点，把根任务拆成可验证子节点，使后续子任务确定性可以向上汇聚。 |
+| TDD 与测试先行能力 | Agent, Skill, Rule, Test, Command | `agents/tdd-guide.md`, `skills/tdd-workflow/`, `rules/common/testing.md`, `tests/`, `commands/tdd.md` | $P$, $B$, $\prod TC$ | 将实现路径绑定到 RED/GREEN/REFACTOR 和覆盖率要求，使代码不是“写完再看”，而是被测试断言持续牵引。 |
+| 代码质量守门能力 | Hooks, Tests, Scripts, Skills, CI | `scripts/hooks/quality-gate.js`, `scripts/hooks/stop-format-typecheck.js`, `skills/verification-loop/`, `package.json` test script | $B$, $E_{sys}$, $\prod TC$ | 在编辑后和 Stop 阶段运行格式化、类型检查、lint、测试和 validator chain，把主观完成感转化为工具判定。 |
+| 安全防护能力 | Rules, Agent, Skill, Hooks, Command | `rules/common/security.md`, `agents/security-reviewer.md`, `skills/security-review/`, `.cursor/hooks/before-submit-prompt.js`, `commands/security-scan.md` | $P$, $B$, $E_{sys}$ | 把 secrets、敏感文件、hook bypass、未验证输入等高风险路径预先降权或阻断，并通过安全代理和扫描流程补充人工式审查。 |
+| 工具接管能力 | MCP, Scripts, Commands, Skills | `mcp-configs/mcp-servers.json`, `.codex/config.toml`, `scripts/*.js`, `skills/documentation-lookup/` | $E_{sys}$, $P$, $B$ | 将文档查询、浏览器验证、GitHub 操作、记忆读取、安装审计等任务交给外部工具或脚本执行，减少模型凭记忆猜测。 |
+| 自动拦截与实时纠偏能力 | Hooks, Scripts, Rules | `hooks/hooks.json`, `.cursor/hooks.json`, `scripts/hooks/config-protection.js`, `scripts/hooks/gateguard-fact-force.js` | $B$, $P$, $E_{sys}$ | 在 Bash、Edit、Write、MCP、Stop、Session 等生命周期节点执行判定和阻断，形成“判-拦-纠”控制回路。 |
+| 上下文压缩与漂移控制能力 | Skill, Hook, Command, Script | `skills/strategic-compact/`, `scripts/hooks/suggest-compact.js`, `commands/model-route.md`, `scripts/hooks/ecc-context-monitor.js` | $G$, $B$, $E_{sys}$ | 根据 token 压力、工具调用数量、阶段边界和成本信号建议 compact 或模型路由，缩短单次自回归链路。 |
+| 子代理分工与并行能力 | Agents, Codex agent configs, Orchestration scripts | `agents/`, `.codex/agents/explorer.toml`, `.codex/agents/reviewer.toml`, `scripts/orchestrate-worktrees.js` | $G$, $E_{sys}$, $\prod TC$ | 将探索、评审、安全、构建修复、语言专项任务拆给专用执行单元，降低每个节点的动作空间，并通过结果回传支撑父任务。 |
+| 跨 harness 迁移能力 | Adapter configs, Install scripts, Docs, Skills | `.cursor/`, `.codex/`, `.opencode/`, `.agents/skills/`, `docs/architecture/cross-harness.md` | $P$, $E_{sys}$, $\prod TC$ | 保持 durable workflow 在 `skills/`, `rules/`, `hooks/`, `scripts/` 中统一，适配层只处理加载、事件形状和命令语义，降低不同工具之间的行为漂移。 |
+| 安装计划与环境落地能力 | Scripts, Manifests, Schemas, Tests | `scripts/install-plan.js`, `scripts/install-apply.js`, `manifests/`, `schemas/`, `tests/scripts/install-plan.test.js` | $P$, $B$, $G$ | 将安装从手工复制变成 profile/module/component/target 驱动的可 dry-run 计划，减少目标 harness 缺文件、错路径、漏配置。 |
+| 会话记忆与状态持久化能力 | Hooks, State Store, Scripts, Schema | `hooks/memory-persistence/`, `scripts/hooks/session-start.js`, `scripts/hooks/session-end.js`, `scripts/lib/state-store/`, `schemas/state-store.schema.json` | $C$, $E_{sys}$, $\prod TC$ | 保存 session、decision、skillRun、installState、governanceEvent 等事实状态，让后续任务从结构化记忆而非聊天残影出发。 |
+| 持续学习与经验沉淀能力 | Skill, Hooks, Scripts, State | `skills/continuous-learning-v2/`, `scripts/hooks/observe-runner.js`, `scripts/hooks/evaluate-session.js` | $C$, $P$, $\prod TC$ | 捕获用户纠错、错误修复和重复流程，将其沉淀为 project-scoped/global instincts，再演化为 skills/commands/agents。 |
+| 可观测性与运行态诊断能力 | Scripts, Hooks, State Store, Dashboard | `scripts/status.js`, `scripts/orchestration-status.js`, `scripts/observability-readiness.js`, `scripts/hooks/ecc-metrics-bridge.js`, `ecc2/` | $B$, $E_{sys}$, $\prod TC$ | 将 active sessions、skill 成功率、安装健康、治理事件、work items、上下文和成本信号暴露出来，便于发现隐性漂移。 |
+| 审计评分能力 | Script, Command, Tests | `scripts/harness-audit.js`, `commands/harness-audit.md`, `tests/scripts/` | $B$, $E_{sys}$, $\prod TC$ | 用固定 rubric 检查 Tool Coverage、Context Efficiency、Quality Gates、Memory、Eval、Security、Cost、GitHub Integration，避免只凭印象评价 harness。 |
+| 协作交付闭环能力 | CI, GitHub templates, CODEOWNERS, Commands | `.github/workflows/`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/`, `.github/CODEOWNERS` | $B$, $\prod TC$, $C$ | 将本地 agent 输出推入 PR、CI、review、issue 模板和负责人路由中，使最终交付在团队边界继续被验证和澄清。 |
+
 ### 逐项展开分析
 
 #### 1. 顶层项目指令与协作原则：把任务起点从“聊天意图”固定到“工程契约”

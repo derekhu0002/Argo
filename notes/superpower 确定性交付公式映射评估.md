@@ -96,6 +96,26 @@ Superpowers 的核心设计不是“提示词增强”，而是把 AI coding 过
 - `skills/finishing-a-development-branch/SKILL.md`
 - `RELEASE-NOTES.md`
 
+## 能力与公式因子映射表
+
+说明：表中的“强”表示该能力直接塑造该公式因子；“中”表示该能力通过流程或工具间接增强该因子；“弱”表示只在特定场景下提供辅助影响；空白表示不是该能力的主要作用面。
+
+| 能力层 | 具体实现方式 | 代表组件或证据文件 | `C` 意图晶体化 | `P` 规则管道 | `B` 闭环绑定 | `E_sys` 系统能效 | `G` 颗粒度 | `\prod TC` 递归传导 | 映射理由 |
+|---|---|---|---|---|---|---|---|---|---|
+| SKILL：流程技能 | 用 `brainstorming`、`writing-plans`、`executing-plans` 把需求从想法推进到设计、计划和执行 | `skills/brainstorming/SKILL.md`、`skills/writing-plans/SKILL.md`、`skills/executing-plans/SKILL.md` | 强 | 强 | 中 | 弱 | 强 | 中 | Brainstorming 提升起点精度；writing-plans 把设计转成任务协议并缩小单步搜索空间；executing-plans 让执行按计划推进。 |
+| SKILL：质量技能 | 用 TDD、系统化调试、完成前验证约束实现与交付声明 | `skills/test-driven-development/SKILL.md`、`skills/systematic-debugging/SKILL.md`、`skills/verification-before-completion/SKILL.md` |  | 强 | 强 | 中 | 中 | 中 | TDD 和 verification 提供可执行的判定信号；debugging 将故障拆成证据链；这些技能把“觉得对”改成“被测试和证据证明”。 |
+| SKILL：协作与收尾技能 | 用 worktree、review、branch finishing 管理隔离、审查和整合 | `skills/using-git-worktrees/SKILL.md`、`skills/requesting-code-review/SKILL.md`、`skills/finishing-a-development-branch/SKILL.md` | 弱 | 中 | 强 | 中 | 中 | 强 | Worktree 降低工作区污染；review 与 finishing 让子任务结果在进入父节点前被检查、整合和收束。 |
+| AGENT：任务执行代理 | 每个计划任务派发 fresh implementer subagent | `skills/subagent-driven-development/SKILL.md`、`skills/subagent-driven-development/implementer-prompt.md` |  | 中 | 中 | 强 | 强 | 强 | Fresh subagent 只接收当前 task、接口和全局约束，降低上下文污染；任务完成后才向父流程回传结果。 |
+| AGENT：审查代理 | 每个 task reviewer 检查 spec compliance 与 code quality，最终 reviewer 检查整枝 diff | `skills/subagent-driven-development/task-reviewer-prompt.md`、`skills/requesting-code-review/code-reviewer.md` |  | 中 | 强 | 强 | 中 | 强 | Reviewer 是独立 Judge；它读取 diff package 而非相信实现者自评，使子节点在上传前经过审查校准。 |
+| RULES：会话级行为规则 | `using-superpowers` 要求行动前检查 relevant skill，且用户指令优先 | `skills/using-superpowers/SKILL.md` | 中 | 强 | 强 | 中 | 中 | 中 | 它把“先找技能再行动”设为默认轨道，是所有后续 skill 生效的入口规则。 |
+| RULES：仓库贡献规则 | PR 必须说明真实问题、搜索既有 PR、披露 agent 环境、human review、目标 `dev` | `CLAUDE.md`、`.github/PULL_REQUEST_TEMPLATE.md` | 强 | 强 | 强 |  | 弱 | 强 | 这些规则把最终交付出口纳入控制系统，防止没有真实问题、缺少证据或无人工审查的结果进入主干。 |
+| HOOK：SessionStart 注入 | 每次会话启动自动注入 `using-superpowers` bootstrap | `hooks/hooks-cursor.json`、`hooks/session-start`、`.opencode/plugins/superpowers.js`、`.pi/extensions/superpowers.ts` | 中 | 强 | 强 | 强 |  | 中 | Hook 让规则在第一秒进入上下文，避免依赖用户手动提示；同时通过平台能力完成自动注入。 |
+| TOOL MAPPING：工具适配 | 把“读文件、编辑、运行 shell、派发 subagent、维护 todo”等抽象动作映射到 harness 工具 | `docs/porting-to-a-new-harness.md`、`.opencode/plugins/superpowers.js`、`.pi/extensions/superpowers.ts` |  | 强 | 强 | 强 | 中 | 中 | Tool mapping 把概率性语言决策转成可执行工具动作；没有它，skill 规则无法稳定落到具体 harness。 |
+| MANIFEST：插件承载 | 通过各 harness manifest 声明 skills、hooks、extensions、marketplace 元数据 | `.cursor-plugin/plugin.json`、`.codex-plugin/plugin.json`、`.claude-plugin/plugin.json`、`package.json` |  | 强 | 中 | 强 |  | 中 | Manifest 是方法论进入平台的物理入口，决定 skills 是否可发现、bootstrap 是否可注入、用户能否正确安装。 |
+| TESTS：插件代码测试 | 验证 hooks、插件加载、brainstorm server、manifest wiring 等非 LLM 代码 | `docs/testing.md`、`tests/` |  | 中 | 强 | 强 |  | 中 | 插件测试保证底层集成节点不漂移；它不直接验证 agent 行为，但能防止工具和注入链路断裂。 |
+| EVALS：行为评估 | 用真实 LLM session 验证 agent 是否按 skill 行为执行 | `docs/testing.md`、`RELEASE-NOTES.md`、外部 `superpowers-evals` | 中 | 强 | 强 | 中 | 中 | 强 | Behavior eval 验证“规则是否真的改变 agent 行为”，是 skills 作为行为代码的系统级回归测试。 |
+| DOCS：架构与迁移文档 | 明确 harness porting 不变量、能力要求、验收测试和降级策略 | `docs/porting-to-a-new-harness.md`、`README.md`、`docs/testing.md` | 中 | 强 | 中 | 强 | 中 | 中 | 文档把跨平台实现经验固化为协议，减少新 harness 集成时的猜测和漂移。 |
+
 ## 系统组成映射
 
 ### 1. Skills Library：行为内核
