@@ -588,7 +588,10 @@ function serializeDeploymentConnector(conn, connectorInfo, state) {
 }
 
 function serializeInteractionConnector(conn, connectorInfo, state) {
-	return buildBaseConnectorExport(conn, connectorInfo, state);
+	var result = buildBaseConnectorExport(conn, connectorInfo, state);
+	result.sequence = resolveInteractionSequenceDisplay(conn, connectorInfo);
+	result.message_label = buildInteractionMessageLabel(conn, connectorInfo);
+	return result;
 }
 
 function serializeGenericConnector(conn, connectorInfo, state) {
@@ -645,6 +648,106 @@ function buildBaseConnectorExport(conn, connectorInfo, state) {
 			shown_in_views: sortedKeys(connectorInfo.shownInViews)
 		}
 	};
+}
+
+function resolveInteractionSequenceDisplay(conn, connectorInfo) {
+	var diagramLinkSequence = extractSequenceFromDiagramLinks(connectorInfo);
+	if (diagramLinkSequence != '') {
+		return diagramLinkSequence;
+	}
+
+	var rawSequence = safeString(safeProperty(conn, 'SequenceNo', ''));
+	if (rawSequence != '') {
+		return rawSequence;
+	}
+
+	var nameSequence = extractLeadingSequenceToken(safeString(conn.Name));
+	if (nameSequence != '') {
+		return nameSequence;
+	}
+
+	return '';
+}
+
+function buildInteractionMessageLabel(conn, connectorInfo) {
+	var name = safeString(conn.Name);
+	if (name == '') {
+		return '';
+	}
+
+	var existingLabelSequence = extractLeadingSequenceToken(name);
+	if (existingLabelSequence != '') {
+		return name;
+	}
+
+	var displaySequence = resolveInteractionSequenceDisplay(conn, connectorInfo);
+	if (displaySequence == '') {
+		return name;
+	}
+
+	return displaySequence + ': ' + name;
+}
+
+function extractSequenceFromDiagramLinks(connectorInfo) {
+	if (connectorInfo == null || connectorInfo.diagramLinks == null) {
+		return '';
+	}
+
+	for (var i = 0; i < connectorInfo.diagramLinks.length; i++) {
+		var entry = connectorInfo.diagramLinks[i];
+		if (entry == null || entry.diagramLink == null) {
+			continue;
+		}
+
+		var diagramLink = entry.diagramLink;
+		var candidates = [
+			safeString(safeProperty(diagramLink, 'Geometry', '')),
+			safeString(safeProperty(diagramLink, 'Path', '')),
+			safeString(safeProperty(diagramLink, 'Style', ''))
+		];
+
+		for (var j = 0; j < candidates.length; j++) {
+			var sequence = extractLeadingSequenceToken(candidates[j]);
+			if (sequence != '') {
+				return sequence;
+			}
+
+			sequence = extractTaggedSequenceToken(candidates[j]);
+			if (sequence != '') {
+				return sequence;
+			}
+		}
+	}
+
+	return '';
+}
+
+function extractLeadingSequenceToken(text) {
+	var value = safeString(text);
+	if (value == '') {
+		return '';
+	}
+
+	var matches = value.match(/(?:^|[^0-9])([0-9]+(?:\.[0-9]+)*)(?=\s*:)/);
+	if (matches != null && matches.length > 1) {
+		return safeString(matches[1]);
+	}
+
+	return '';
+}
+
+function extractTaggedSequenceToken(text) {
+	var value = safeString(text);
+	if (value == '') {
+		return '';
+	}
+
+	var matches = value.match(/(?:SEQ|SEQN|LABEL|LTXT)\s*=\s*([0-9]+(?:\.[0-9]+)*)/i);
+	if (matches != null && matches.length > 1) {
+		return safeString(matches[1]);
+	}
+
+	return '';
 }
 
 function serializeDiagram(diagramInfo, state) {
