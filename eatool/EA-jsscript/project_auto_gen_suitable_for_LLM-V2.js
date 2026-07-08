@@ -370,7 +370,7 @@ function displayArchimateName(normalized) {
 	switch (trimString(normalized)) {
 		case "Class": return "Grouping";
 		case "ValueStream": return "Value Stream";
-		case "CourseofAction": return "Course of Action";
+		case "CourseOfAction": return "Course of Action";
 		case "BusinessActor": return "Business Actor";
 		case "BusinessRole": return "Business Role";
 		case "BusinessCollaboration": return "Business Collaboration";
