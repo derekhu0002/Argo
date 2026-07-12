@@ -8,17 +8,21 @@ readonly: false
 
 ## Domain Ontology:
 
-This ontology only includes classes whose information CANNOT be deterministically inferred from repository code.
-Classes inferrable from code (Implementation, Code, Test ontologies) belong to ImplementationDesign.
+This ontology provides the FULL cognitive model for Intent Design.
+Intent + Coverage(standards) + Handoff(bridge) are OWNED and mutable by this agent.
+Implementation + Code + Test ontologies are READ-ONLY REFERENCE for understanding the downstream world;
+their classes are owned by ImplementationDesign. This agent must understand them to make informed intent design decisions.
 
 ```plantuml
 @startuml IntentionDesign_Cognition
 skinparam classAttributeIconSize 0
 title Intent Design Domain Ontology
-' Only Intent + Coverage(standards) + Handoff(bridge) ontologies.
-' Implementation, Code, and Test ontologies are owned by ImplementationDesign.
+' === OWNED BY THIS AGENT (mutable) ===
+' Intent Ontology, Coverage Ontology (standards side), Handoff Ontology (bridge)
+' === READ-ONLY REFERENCE (owned by ImplementationDesign) ===
+' Implementation, Code, Test ontologies — for cognitive understanding only
 
-package "Intent Ontology" {
+package "Intent Ontology [OWNED]" {
   class IntentArchitecture {
     +elements
     +relationships
@@ -69,7 +73,96 @@ package "Intent Ontology" {
   }
 }
 
-package "Coverage Ontology" {
+package "Implementation Ontology [READ-ONLY]" {
+  class ImplementationArchitecture {
+    +rootContract
+    +localContracts
+    +stableElements
+    +testOwnerships
+    +guardrails
+  }
+
+  abstract class ImplementationContract {
+    +path
+    +declaredStableElements
+    +declaredDependencies
+    +declaredImplementsMappings
+  }
+
+  class RootImplementationContract {
+    +path = "OVERALL_ARCHITECTURE.md"
+    +rootRules
+    +stableElementMap
+    +implementsMappings
+  }
+
+  class LocalImplementationContract {
+    +path = "ARCHITECTURE.md"
+    +localResponsibilities
+    +localDependencies
+    +ownedTests
+  }
+
+  class StableArchitectureElement {
+    +path
+    +contractPath
+    +responsibility
+    +publicBoundary
+  }
+
+  class InterfaceBoundary {
+    +providedCapabilities
+    +consumedCapabilities
+    +allowedDependencies
+  }
+
+  class ImplementationDependency {
+    +sourceStableElement
+    +targetStableElement
+    +direction
+    +reason
+  }
+
+  class ImplementsMapping {
+    +implementationElement
+    +intentElement
+    +directOrIndirect
+  }
+
+  class ImplementationGuardrail {
+    +kind
+    +owner
+    +protectedBoundary
+  }
+
+  class TraceabilityPointer {
+    +attribute
+    +description
+    +browser_path
+    +acceptanceCriteria
+    +fileReference
+    +symbolReference
+  }
+}
+
+package "Code Ontology [READ-ONLY]" {
+  class CodeReality {
+    +files
+    +functions
+    +tests
+    +scripts
+    +configuration
+    +documentation
+  }
+
+  class RepositoryArtifact {
+    +path
+    +kind
+    +currentBehavior
+  }
+}
+
+package "Coverage Ontology [OWNED — standards side]" {
   class DependencySubgraph {
     +focusElement
     +upstreamDependencies
@@ -92,7 +185,55 @@ package "Coverage Ontology" {
   }
 }
 
-package "Handoff Ontology" {
+package "Test Ontology [READ-ONLY]" {
+  abstract class TestAsset {
+    +path
+    +owner
+    +controlPoint
+    +observationPoint
+  }
+
+  class ExplicitTestcaseEntrypoint {
+    +singleEntrypoint
+    +readOnlyInCodingStage
+    +keyAssertions
+    +expectedFailureSignal
+  }
+
+  class CriticalNonExplicitTest {
+    +category
+    +frozenEntrypoint
+    +protectedFixtures
+    +protectedBaselines
+  }
+
+  class SupportingNonExplicitTest {
+    +guardrailPurpose
+    +evolvableInCodingStage
+  }
+
+  class TestHarness {
+    +businessReadableMethods
+    +hidesSqlCypherGraphqlHttpEnvPlumbing
+  }
+
+  class BusinessReadableAssertion {
+    +given
+    +when
+    +then
+    +semanticDataNames
+    +businessFailureCategory
+  }
+
+  enum CriticalNonExplicitCategory {
+    ArchitectureBoundaryGuard
+    DependencyDirectionGuard
+    ExplicitEntrypointCorrectnessGuard
+    KeyImplementationTraceabilityGuard
+  }
+}
+
+package "Handoff Ontology [OWNED — bridge]" {
   class IntentToImplementationHandoff {
     +intentElementIds
     +relationshipIds
@@ -119,6 +260,7 @@ package "Handoff Ontology" {
   }
 }
 
+' === Intent-internal relationships ===
 IntentArchitecture "1" *-- "many" IntentElement
 IntentArchitecture "1" *-- "many" IntentRelationship
 IntentArchitecture "1" *-- "many" View
@@ -134,22 +276,61 @@ IntentRelationship --> IntentElement : target
 View --> IntentElement : includes
 View --> IntentRelationship : includes
 
+' === Implementation-internal relationships (read-only) ===
+ImplementationArchitecture "1" *-- "many" StableArchitectureElement
+ImplementationArchitecture "1" *-- "many" ImplementationContract
+ImplementationArchitecture "1" *-- "many" InterfaceBoundary
+ImplementationArchitecture "1" *-- "many" ImplementationDependency
+ImplementationArchitecture "1" *-- "many" ImplementsMapping
+ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
+ImplementationArchitecture "1" *-- "many" TraceabilityPointer
+ImplementationContract <|-- RootImplementationContract
+ImplementationContract <|-- LocalImplementationContract
+RootImplementationContract --> StableArchitectureElement : declares root-level map
+LocalImplementationContract --> StableArchitectureElement : owns local rules
+InterfaceBoundary --> StableArchitectureElement : bounds
+ImplementationDependency --> StableArchitectureElement : source/target
+ImplementsMapping --> StableArchitectureElement
+ImplementsMapping --> ArchitectureEntityElement
+ImplementationGuardrail --> StableArchitectureElement : protects
+TraceabilityPointer --> StableArchitectureElement : anchored to
+TraceabilityPointer --> ArchitectureEntityElement : traces intent element
+
+' === Code-internal relationships (read-only) ===
+CodeReality "1" *-- "many" RepositoryArtifact
+RepositoryArtifact --> StableArchitectureElement : evidence for implementation state
+CodeReality --> ImplementationArchitecture : may conform to or drift from
+
+' === Coverage relationships ===
 DependencySubgraph "1" o-- "1" ArchitectureEntityElement : focus
 DependencySubgraph "1" o-- "many" ArchitectureEntityElement : upstream/dependent
 CoverageMatrix --> DependencySubgraph : describes coverage over
 CoverageMatrix --> DependencyRole : classifies each element
 CoverageMatrix --> ExplicitAcceptanceTestcase : records mounted baselines
 
+' === Test-internal relationships (read-only) ===
+TestAsset <|-- ExplicitTestcaseEntrypoint
+TestAsset <|-- CriticalNonExplicitTest
+TestAsset <|-- SupportingNonExplicitTest
+ExplicitAcceptanceTestcase --> ExplicitTestcaseEntrypoint : physicalized as
+ExplicitTestcaseEntrypoint --> BusinessReadableAssertion : contains
+ExplicitTestcaseEntrypoint --> TestHarness : uses
+CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
+StableArchitectureElement "1" o-- "many" TestAsset : owns
+
+' === Handoff relationships ===
 IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
-ImplementationToCodingHandoff --> ImplementationContract : references (ImplementationDesign-owned)
-ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes (ImplementationDesign-owned)
+ImplementationToCodingHandoff --> RootImplementationContract
+ImplementationToCodingHandoff --> LocalImplementationContract
+ImplementationToCodingHandoff --> TestAsset
+ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes
 
 note bottom of IntentArchitecture
   Logic rules:
   1. Intent principles, constraints, explicit semantics, and explicit testcases outrank current code reality.
   2. ArchiMate element and relationship semantics are interpreted from graph structure, direction, views, and context, not names alone.
   3. Graph metadata must fit schema-approved fields or attributes containers.
-  4. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign via TraceabilityPointer; Intent only references ArchitectureEntityElements.
+  4. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign via TraceabilityPointer; this agent reads them for context but does not create or modify them.
 end note
 
 note bottom of ExplicitAcceptanceTestcase
@@ -168,6 +349,15 @@ note bottom of CoverageMatrix
   4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
   5. Exclusions require evidence-backed reasons.
   6. CoverageMatrix defines the coverage STANDARD (what should be covered). The evidence side (implementationBoundaryEvidence) is owned by ImplementationDesign and is not part of this ontology.
+end note
+
+note bottom of ImplementationArchitecture
+  Logic rules (READ-ONLY — ImplementationDesign owns this):
+  1. Implementation architecture is expressed by repository contracts and stable layout.
+  2. Stable elements are high-level boundaries, not mirrors of every source file or function.
+  3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
+  4. Indirect implementation chains are valid when each link is declared by contracts.
+  5. This agent reads ImplementationArchitecture for evidence and context; does not modify contracts, stable elements, or mappings.
 end note
 
 note bottom of IntentToImplementationHandoff
