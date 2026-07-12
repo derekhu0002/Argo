@@ -349,12 +349,12 @@ function resolveWorkspaceRoot() {
     || path.resolve(__dirname, '..', '..');
 }
 
-async function callTool(name, args = {}) {
+async function callTool(name, args = {}, progressToken = null) {
   if (name === 'initializeWorkspace') {
     return toolResult(await initializeWorkspace(resolveWorkspaceRoot()));
   }
   if (VALIDATOR_TOOL_NAMES.has(name)) {
-    return validatorMcp.callTool(name, args);
+    return validatorMcp.callTool(name, args, progressToken);
   }
   if (SYSTEM_ARCHITECTURE_TOOL_NAMES.has(name)) {
     return systemArchitectureMcp.callTool(name, args);
@@ -475,7 +475,8 @@ async function handleRequest(request) {
 
   if (method === 'tools/call') {
     try {
-      const result = await callTool(params.name, params.arguments || {});
+      const progressToken = (params._meta && params._meta.progressToken) || null;
+      const result = await callTool(params.name, params.arguments || {}, progressToken);
       return { jsonrpc: '2.0', id, result };
     } catch (error) {
       return {

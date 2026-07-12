@@ -402,6 +402,24 @@ function logTestcaseFinish(index, total, result) {
     } else if (result.stdout) {
         console.log(`        stdout: ${truncateSingleLine(result.stdout)}`);
     }
+    console.log(`[PROGRESS] ${JSON.stringify(buildProgressPayload(index, total, result))}`);
+}
+
+function buildProgressPayload(index, total, result) {
+    return {
+        index,
+        total,
+        testcaseName: result.testcaseName,
+        testDescription: result.testDescription,
+        elementId: result.elementId,
+        acceptanceCriteria: result.acceptanceCriteria,
+        resolvedScriptPath: result.resolvedScriptPath,
+        executionCommand: result.executionCommand,
+        status: result.status,
+        passed: result.passed,
+        exitCode: result.exitCode,
+        durationMs: result.durationMs,
+    };
 }
 
 function formatTestcaseLabel(index, total, testcaseName) {

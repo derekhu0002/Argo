@@ -1,4 +1,4 @@
-const { execFile } = require('node:child_process');
+const { execFile, spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
@@ -97,6 +97,75 @@ function resolveScriptPath(workspaceRoot, candidates) {
   throw new Error(`Unable to locate validator script. Checked: ${candidates.join(', ')}`);
 }
 
+async function runValidatorScriptStreaming(workspaceRoot, scriptKey, args, progressToken) {
+  const { absolutePath, relativePath } = resolveScriptPath(workspaceRoot, SCRIPT_CANDIDATES[scriptKey]);
+  const command = process.execPath;
+  const commandArgs = [absolutePath, ...args];
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, commandArgs, {
+      cwd: workspaceRoot,
+      env: {
+        ...process.env,
+        ARGO_REPO_ROOT: workspaceRoot,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    const stdoutLines = readline.createInterface({ input: child.stdout, crlfDelay: Infinity });
+
+    stdoutLines.on('line', (line) => {
+      stdout += line + '\n';
+
+      const progressMatch = line.match(/^\[PROGRESS\]\s*(.+)$/);
+      if (progressMatch) {
+        try {
+          const payload = JSON.parse(progressMatch[1]);
+          send({
+            jsonrpc: '2.0',
+            method: 'notifications/progress',
+            params: {
+              progressToken,
+              progress: payload.passedCount !== undefined
+                ? payload.passedCount
+                : payload.index + 1,
+              total: payload.total,
+              message: `${payload.testcaseName || '(unnamed)'}: ${payload.status}`,
+            },
+          });
+        } catch (_) {
+          // ignore malformed progress lines
+        }
+      }
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (exitCode) => {
+      const code = exitCode === null ? 1 : exitCode;
+      const passed = code === 0;
+      resolve({
+        status: passed ? 'passed' : 'failed',
+        exitCode: code,
+        workspaceRoot,
+        scriptPath: relativePath,
+        command: [command, ...commandArgs],
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+      });
+    });
+  });
+}
+
 async function runValidatorScript(workspaceRoot, scriptKey, args = []) {
   const { absolutePath, relativePath } = resolveScriptPath(workspaceRoot, SCRIPT_CANDIDATES[scriptKey]);
   const command = process.execPath;
@@ -150,7 +219,7 @@ function toolResult(payload) {
   };
 }
 
-async function callTool(name, args) {
+async function callTool(name, args, progressToken = null) {
   const workspaceRoot = resolveWorkspaceRoot();
 
   if (name === 'validateSystemArchitecture') {
@@ -172,6 +241,9 @@ async function callTool(name, args) {
 
   if (name === 'runArchitectureTests') {
     const architecturePath = (args && args.architecturePath) || DEFAULT_ARCHITECTURE_GRAPH_PATH;
+    if (progressToken) {
+      return toolResult(await runValidatorScriptStreaming(workspaceRoot, 'runArchitectureTests', [architecturePath], progressToken));
+    }
     return toolResult(await runValidatorScript(workspaceRoot, 'runArchitectureTests', [architecturePath]));
   }
 
