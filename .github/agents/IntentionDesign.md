@@ -8,10 +8,15 @@ argument-hint: The inputs this agent expects, e.g., "a task to implement" or "a 
 
 ## Domain Ontology:
 
+This ontology only includes classes whose information CANNOT be deterministically inferred from repository code.
+Classes inferrable from code (Implementation, Code, Test ontologies) belong to ImplementationDesign.
+
 ```plantuml
 @startuml IntentionDesign_Cognition
 skinparam classAttributeIconSize 0
 title Intent Design Domain Ontology
+' Only Intent + Coverage(standards) + Handoff(bridge) ontologies.
+' Implementation, Code, and Test ontologies are owned by ImplementationDesign.
 
 package "Intent Ontology" {
   class IntentArchitecture {
@@ -46,15 +51,6 @@ package "Intent Ontology" {
     +directionalSemantics
   }
 
-  class TraceabilityPointer {
-    +attribute
-    +description
-    +browser_path
-    +acceptanceCriteria
-    +fileReference
-    +symbolReference
-  }
-
   class ExplicitAcceptanceTestcase {
     +id
     +name
@@ -73,86 +69,6 @@ package "Intent Ontology" {
   }
 }
 
-package "Implementation Ontology" {
-  class ImplementationArchitecture {
-    +rootContract
-    +localContracts
-    +stableElements
-    +testOwnerships
-    +guardrails
-  }
-
-  abstract class ImplementationContract {
-    +path
-    +declaredStableElements
-    +declaredDependencies
-    +declaredImplementsMappings
-  }
-
-  class RootImplementationContract {
-    +path = "OVERALL_ARCHITECTURE.md"
-    +rootRules
-    +stableElementMap
-    +implementsMappings
-  }
-
-  class LocalImplementationContract {
-    +path = "ARCHITECTURE.md"
-    +localResponsibilities
-    +localDependencies
-    +ownedTests
-  }
-
-  class StableArchitectureElement {
-    +path
-    +contractPath
-    +responsibility
-    +publicBoundary
-  }
-
-  class InterfaceBoundary {
-    +providedCapabilities
-    +consumedCapabilities
-    +allowedDependencies
-  }
-
-  class ImplementationDependency {
-    +sourceStableElement
-    +targetStableElement
-    +direction
-    +reason
-  }
-
-  class ImplementsMapping {
-    +implementationElement
-    +intentElement
-    +directOrIndirect
-  }
-
-  class ImplementationGuardrail {
-    +kind
-    +owner
-    +protectedBoundary
-  }
-}
-
-package "Code Ontology" {
-  class CodeReality {
-    +files
-    +functions
-    +tests
-    +scripts
-    +configuration
-    +documentation
-  }
-
-  class RepositoryArtifact {
-    +path
-    +kind
-    +currentBehavior
-  }
-}
-
 package "Coverage Ontology" {
   class DependencySubgraph {
     +focusElement
@@ -165,7 +81,6 @@ package "Coverage Ontology" {
     +functionalPoints
     +mountedExplicitTestcases
     +testcaseToFunctionalPointMappings
-    +implementationBoundaryEvidence
     +excludedElements
     +exclusionEvidence
   }
@@ -174,54 +89,6 @@ package "Coverage Ontology" {
     Focus
     UpstreamDependency
     DownstreamDependent
-  }
-}
-
-package "Test Ontology" {
-  abstract class TestAsset {
-    +path
-    +owner
-    +controlPoint
-    +observationPoint
-  }
-
-  class ExplicitTestcaseEntrypoint {
-    +singleEntrypoint
-    +readOnlyInCodingStage
-    +keyAssertions
-    +expectedFailureSignal
-  }
-
-  class CriticalNonExplicitTest {
-    +category
-    +frozenEntrypoint
-    +protectedFixtures
-    +protectedBaselines
-  }
-
-  class SupportingNonExplicitTest {
-    +guardrailPurpose
-    +evolvableInCodingStage
-  }
-
-  class TestHarness {
-    +businessReadableMethods
-    +hidesSqlCypherGraphqlHttpEnvPlumbing
-  }
-
-  class BusinessReadableAssertion {
-    +given
-    +when
-    +then
-    +semanticDataNames
-    +businessFailureCategory
-  }
-
-  enum CriticalNonExplicitCategory {
-    ArchitectureBoundaryGuard
-    DependencyDirectionGuard
-    ExplicitEntrypointCorrectnessGuard
-    KeyImplementationTraceabilityGuard
   }
 }
 
@@ -260,7 +127,6 @@ IntentArchitecture "1" *-- "many" Constraint
 IntentElement <|-- ArchitectureEntityElement
 IntentElement <|-- Principle
 IntentElement <|-- Constraint
-IntentElement "1" o-- "many" TraceabilityPointer
 ArchitectureEntityElement "1" o-- "many" FunctionalPoint
 ArchitectureEntityElement "1" o-- "many" ExplicitAcceptanceTestcase : mounted under exact element
 IntentRelationship --> IntentElement : source
@@ -268,53 +134,22 @@ IntentRelationship --> IntentElement : target
 View --> IntentElement : includes
 View --> IntentRelationship : includes
 
-ImplementationArchitecture "1" *-- "many" StableArchitectureElement
-ImplementationArchitecture "1" *-- "many" ImplementationContract
-ImplementationArchitecture "1" *-- "many" InterfaceBoundary
-ImplementationArchitecture "1" *-- "many" ImplementationDependency
-ImplementationArchitecture "1" *-- "many" ImplementsMapping
-ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
-ImplementationContract <|-- RootImplementationContract
-ImplementationContract <|-- LocalImplementationContract
-RootImplementationContract --> StableArchitectureElement : declares root-level map
-LocalImplementationContract --> StableArchitectureElement : owns local rules
-StableArchitectureElement --> ArchitectureEntityElement : realizes directly or indirectly
-InterfaceBoundary --> StableArchitectureElement : bounds
-ImplementationDependency --> StableArchitectureElement : source/target
-ImplementsMapping --> StableArchitectureElement
-ImplementsMapping --> ArchitectureEntityElement
-ImplementationGuardrail --> StableArchitectureElement : protects
-
-CodeReality "1" *-- "many" RepositoryArtifact
-RepositoryArtifact --> StableArchitectureElement : evidence for implementation state
-CodeReality --> ImplementationArchitecture : may conform to or drift from
-
 DependencySubgraph "1" o-- "1" ArchitectureEntityElement : focus
 DependencySubgraph "1" o-- "many" ArchitectureEntityElement : upstream/dependent
 CoverageMatrix --> DependencySubgraph : describes coverage over
 CoverageMatrix --> DependencyRole : classifies each element
 CoverageMatrix --> ExplicitAcceptanceTestcase : records mounted baselines
 
-TestAsset <|-- ExplicitTestcaseEntrypoint
-TestAsset <|-- CriticalNonExplicitTest
-TestAsset <|-- SupportingNonExplicitTest
-ExplicitAcceptanceTestcase --> ExplicitTestcaseEntrypoint : physicalized as
-ExplicitTestcaseEntrypoint --> BusinessReadableAssertion : contains
-ExplicitTestcaseEntrypoint --> TestHarness : uses
-CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
-StableArchitectureElement "1" o-- "many" TestAsset : owns
-
 IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
-ImplementationToCodingHandoff --> RootImplementationContract
-ImplementationToCodingHandoff --> LocalImplementationContract
-ImplementationToCodingHandoff --> TestAsset
-ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes
+ImplementationToCodingHandoff --> ImplementationContract : references (ImplementationDesign-owned)
+ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes (ImplementationDesign-owned)
 
 note bottom of IntentArchitecture
   Logic rules:
   1. Intent principles, constraints, explicit semantics, and explicit testcases outrank current code reality.
   2. ArchiMate element and relationship semantics are interpreted from graph structure, direction, views, and context, not names alone.
   3. Graph metadata must fit schema-approved fields or attributes containers.
+  4. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign via TraceabilityPointer; Intent only references ArchitectureEntityElements.
 end note
 
 note bottom of ExplicitAcceptanceTestcase
@@ -332,44 +167,14 @@ note bottom of CoverageMatrix
   3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
   4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
   5. Exclusions require evidence-backed reasons.
+  6. CoverageMatrix defines the coverage STANDARD (what should be covered). The evidence side (implementationBoundaryEvidence) is owned by ImplementationDesign and is not part of this ontology.
 end note
 
-note bottom of ImplementationArchitecture
+note bottom of IntentToImplementationHandoff
   Logic rules:
-  1. Implementation architecture is expressed by repository contracts and stable layout.
-  2. Stable elements are high-level boundaries, not mirrors of every source file or function.
-  3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
-  4. Indirect implementation chains are valid when each link is declared by contracts.
-  5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
-     Separation of Concerns, and stable dependency direction as active criteria.
-end note
-
-note bottom of ImplementationContract
-  Logic rules:
-  1. OVERALL_ARCHITECTURE.md is the single root contract for root-level rules.
-  2. Local ARCHITECTURE.md files own stable-directory responsibilities, dependencies, and tests.
-  3. Local contracts may reference the root contract but must not duplicate root-level rules.
-end note
-
-note bottom of ExplicitTestcaseEntrypoint
-  Logic rules:
-  1. Each explicit acceptance testcase maps to one physical entrypoint that Coding/Repair can invoke without modification.
-  2. The entrypoint must contain executable key assertions, not placeholders.
-  3. Expected failures are valid only when they expose missing implementation through readable failure signals.
-  4. Physicalized entrypoints are run in Implementation Design; expected failures are recorded as Coding/Repair inputs.
-end note
-
-note bottom of BusinessReadableAssertion
-  Logic rules:
-  1. Explicit testcase bodies use GIVEN / WHEN / THEN.
-  2. Test bodies use Harness abstractions rather than low-level plumbing.
-  3. Names and failure categories must express business meaning.
-end note
-
-note bottom of TestAsset
-  Logic rules:
-  1. Every test asset must preserve control point and observation point.
-  2. Test assets are owned by stable architecture elements per contract.
+  1. Handoff must not be written before all adequacy conditions are satisfied.
+  2. Handoff carries intentElementIds at architecture-element granularity.
+  3. Handoff is validated by argo.validateStageHandoff before downstream consumption.
 end note
 @enduml
 ```
@@ -402,9 +207,9 @@ if (EVENT: Refresh intent architecture from changed tests and code?) then (refre
   :Reject external code/test changes that contradict approved intent without business evidence and human decision
   [acts on: IntentArchitecture, ExplicitAcceptanceTestcase, CodeReality];
   :Apply business semantic gate to accepted intent drift: business observable, business decidable, and business acceptable
-  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase, TraceabilityPointer];
+  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase];
   :Declare required graph/testcase updates, rejected drifts, and unresolved business questions before applying mutation
-  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, TraceabilityPointer];
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint];
   if (Accepted intent drift requires graph mutation and human approval is sufficient?) then (yes)
     :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
     Persist approved refresh mutation to design/KG/SystemArchitecture.json
@@ -427,13 +232,13 @@ elseif (EVENT: Candidate intent architecture from reverse extraction?) then (rev
   :Read CandidateIntentArchitectureReport, EvidenceMatrix, supporting code entrypoints, excludedDetails, and openQuestions
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality, CoverageMatrix];
   :Apply business semantic gate to each candidate: business observable, business decidable, and business acceptable
-  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase, TraceabilityPointer];
+  [acts on: ArchitectureEntityElement, FunctionalPoint, ExplicitAcceptanceTestcase];
   :Reject candidates that are pure implementation details, low-confidence code facts, or lack acceptance-party control and observation points
   [acts on: IntentArchitecture, CodeReality, ExplicitAcceptanceTestcase];
   :Map accepted candidates to existing ArchitectureEntityElements and IntentRelationships where possible
   [acts on: IntentElement, IntentRelationship, CoverageMatrix];
   :Declare required intent architecture updates and unresolved business questions before applying any mutation
-  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, TraceabilityPointer];
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint];
   if (Any accepted candidate requires graph mutation and human approval is sufficient?) then (yes)
     :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
     Persist approved reverse-extraction mutation to design/KG/SystemArchitecture.json
@@ -454,7 +259,7 @@ elseif (EVENT: Candidate intent architecture from reverse extraction?) then (rev
 
 elseif (EVENT: New task or requirement?) then (new task)
   :Read design/KG/SystemArchitecture.json, implementation contracts, and evidence for enough intent context
-  [acts on: IntentArchitecture, TraceabilityPointer, ImplementationArchitecture, CodeReality];
+  [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
   if (Task is anchored to an intent element?) then (yes)
     :MCP tool: argo.getIntentElementContext
     Read dependency subgraph as coverage context
@@ -489,7 +294,7 @@ elseif (EVENT: New task or requirement?) then (new task)
   :Classify whether the required change belongs to intent, implementation architecture, or code reality
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
   :Check pre-handoff intent architecture adequacy
-  [acts on: IntentArchitecture, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
+  [acts on: IntentArchitecture, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
   note right
     Intent ontology mutation is required before handoff when any condition is true:
     1. Requirement cannot map precisely to an existing ArchitectureEntityElement.
@@ -497,12 +302,12 @@ elseif (EVENT: New task or requirement?) then (new task)
     3. Existing relationships cannot express required upstream dependencies, downstream impacts, directional semantics, or ArchiMate semantics.
     4. Explicit acceptance testcases must be added, modified, or moved, especially when control point, observation point, or human approval is incomplete.
     5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists. This condition applies only when the task or handoff scope includes ArchitectureEntityElements requiring downstream implementation.
-    6. Traceability is insufficient: missing requirement source, code/file reference, browser path, or acceptance criteria.
+    6. Traceability is insufficient: missing requirement source or acceptance criteria anchors in the intent graph. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign's TraceabilityPointer and is not an intent-level adequacy condition.
     7. Any mounted ExplicitAcceptanceTestcase in handoff scope was added or modified in this session but approvedByHuman is not true.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
     :Declare required intent architecture updates before applying mutation
-    [acts on: IntentArchitecture, IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
+    [acts on: IntentArchitecture, IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
     note right
       The declaration must map each triggered adequacy condition to its required update:
       1. If the requirement cannot map precisely to an existing ArchitectureEntityElement,
@@ -515,13 +320,13 @@ elseif (EVENT: New task or requirement?) then (new task)
          update ExplicitAcceptanceTestcases with owning element, control point, observation point, acceptance criteria, and human approval state.
       5. If the explicit dependency-subgraph coverage proof is missing, document-derived, validation-derived, or shows missing mounted testcases, missing functional-point coverage, or missing required pass evidence without evidence-backed exclusion,
          update CoverageMatrix and mount or revise Acceptance Test testcases under each exact covered element before claiming coverage.
-      6. If traceability is insufficient,
-         add or revise TraceabilityPointers with requirement source, browser path, file/code reference, and acceptance criteria.
+      6. If traceability is insufficient at the business-semantic level (missing requirement source or acceptance criteria anchors),
+         add requirement source references as ArchitectureEntityElement attributes; do NOT create TraceabilityPointers (those belong to ImplementationDesign).
       7. If any mounted ExplicitAcceptanceTestcase in handoff scope lacks approvedByHuman=true,
          obtain human approval before handoff or revert the testcase change.
     end note
     :Shape intent deltas and acceptance coverage at the ontology level
-    [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix, TraceabilityPointer];
+    [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
     :MCP tools: argo.previewSystemArchitectureMutation then argo.applySystemArchitectureMutation
     Persist approved graph mutation to design/KG/SystemArchitecture.json
     [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase];
@@ -547,8 +352,8 @@ elseif (EVENT: New task or requirement?) then (new task)
   endif
 
 elseif (EVENT: Intent architecture audit?) then (audit)
-  :Audit graph semantics, coverage, and traceability without assuming implementation fixes
-  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix, TraceabilityPointer];
+  :Audit graph semantics, coverage, and traceability at the business-semantic level without assuming implementation fixes
+  [acts on: IntentArchitecture, IntentElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix];
   if (Audit scope has a focus element?) then (yes)
     :MCP tool: argo.getIntentElementContext
     Read focus dependency subgraph

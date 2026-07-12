@@ -56,8 +56,9 @@ package "Intent Ontology" {
     +fileReference
     +symbolReference
   }
+}
 
-  class ExplicitAcceptanceTestcase {
+package "Code Ontology" {
     +id
     +name
     +type = "Acceptance Test"
@@ -135,6 +136,15 @@ package "Implementation Ontology" {
     +kind
     +owner
     +protectedBoundary
+  }
+
+  class TraceabilityPointer {
+    +attribute
+    +description
+    +browser_path
+    +acceptanceCriteria
+    +fileReference
+    +symbolReference
   }
 }
 
@@ -322,7 +332,6 @@ IntentArchitecture "1" *-- "many" Constraint
 IntentElement <|-- ArchitectureEntityElement
 IntentElement <|-- Principle
 IntentElement <|-- Constraint
-IntentElement "1" o-- "many" TraceabilityPointer
 ArchitectureEntityElement "1" o-- "many" FunctionalPoint
 ArchitectureEntityElement "1" o-- "many" ExplicitAcceptanceTestcase : mounted under exact element
 IntentRelationship --> IntentElement : source
@@ -336,6 +345,7 @@ ImplementationArchitecture "1" *-- "many" InterfaceBoundary
 ImplementationArchitecture "1" *-- "many" ImplementationDependency
 ImplementationArchitecture "1" *-- "many" ImplementsMapping
 ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
+ImplementationArchitecture "1" *-- "many" TraceabilityPointer
 ImplementationContract <|-- RootImplementationContract
 ImplementationContract <|-- LocalImplementationContract
 RootImplementationContract --> StableArchitectureElement : declares root-level map
@@ -346,6 +356,8 @@ ImplementationDependency --> StableArchitectureElement : source/target
 ImplementsMapping --> StableArchitectureElement
 ImplementsMapping --> ArchitectureEntityElement
 ImplementationGuardrail --> StableArchitectureElement : protects
+TraceabilityPointer --> StableArchitectureElement : anchored to
+TraceabilityPointer --> ArchitectureEntityElement : traces intent element
 
 CodeReality "1" *-- "many" RepositoryArtifact
 RepositoryArtifact --> StableArchitectureElement : evidence for implementation state

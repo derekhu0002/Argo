@@ -10,12 +10,17 @@ Implementation Design
 
 ## Domain Ontology:
 
+This ontology includes all classes whose information CAN be deterministically inferred from repository code
+(Implementation, Code, Test ontologies), plus read-only references to Intent-side classes and bridge Handoff classes.
+
 ```plantuml
 @startuml ImplementationDesign_Cognition
 skinparam classAttributeIconSize 0
 title Implementation Design Domain Ontology
+' Intent Ontology classes are READ-ONLY REFERENCE for this agent.
+' Implementation, Code, and Test ontologies are owned by ImplementationDesign.
 
-package "Intent Ontology" {
+package "Intent Ontology (read-only reference)" {
   class IntentArchitecture {
     +elements
     +relationships
@@ -46,15 +51,6 @@ package "Intent Ontology" {
     +target
     +attributes
     +directionalSemantics
-  }
-
-  class TraceabilityPointer {
-    +attribute
-    +description
-    +browser_path
-    +acceptanceCriteria
-    +fileReference
-    +symbolReference
   }
 
   class ExplicitAcceptanceTestcase {
@@ -135,6 +131,15 @@ package "Implementation Ontology" {
     +kind
     +owner
     +protectedBoundary
+  }
+
+  class TraceabilityPointer {
+    +attribute
+    +description
+    +browser_path
+    +acceptanceCriteria
+    +fileReference
+    +symbolReference
   }
 }
 
@@ -262,7 +267,6 @@ IntentArchitecture "1" *-- "many" Constraint
 IntentElement <|-- ArchitectureEntityElement
 IntentElement <|-- Principle
 IntentElement <|-- Constraint
-IntentElement "1" o-- "many" TraceabilityPointer
 ArchitectureEntityElement "1" o-- "many" FunctionalPoint
 ArchitectureEntityElement "1" o-- "many" ExplicitAcceptanceTestcase : mounted under exact element
 IntentRelationship --> IntentElement : source
@@ -276,6 +280,7 @@ ImplementationArchitecture "1" *-- "many" InterfaceBoundary
 ImplementationArchitecture "1" *-- "many" ImplementationDependency
 ImplementationArchitecture "1" *-- "many" ImplementsMapping
 ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
+ImplementationArchitecture "1" *-- "many" TraceabilityPointer
 ImplementationContract <|-- RootImplementationContract
 ImplementationContract <|-- LocalImplementationContract
 RootImplementationContract --> StableArchitectureElement : declares root-level map
@@ -286,6 +291,8 @@ ImplementationDependency --> StableArchitectureElement : source/target
 ImplementsMapping --> StableArchitectureElement
 ImplementsMapping --> ArchitectureEntityElement
 ImplementationGuardrail --> StableArchitectureElement : protects
+TraceabilityPointer --> StableArchitectureElement : anchored to
+TraceabilityPointer --> ArchitectureEntityElement : traces intent element
 
 CodeReality "1" *-- "many" RepositoryArtifact
 RepositoryArtifact --> StableArchitectureElement : evidence for implementation state
@@ -334,6 +341,14 @@ note bottom of CoverageMatrix
   3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
   4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
   5. Exclusions require evidence-backed reasons.
+  6. CoverageMatrix on this side records implementationBoundaryEvidence: pass/fail results of physicalized test entrypoints against intent coverage standards.
+end note
+
+note bottom of TraceabilityPointer
+  Logic rules:
+  1. TraceabilityPointer connects StableArchitectureElements back to intent ArchitectureEntityElements.
+  2. fileReference, symbolReference, and browser_path anchor to concrete code artifacts.
+  3. TraceabilityPointer is fully owned by ImplementationDesign; IntentionDesign does not create or modify them.
 end note
 
 note bottom of ImplementationArchitecture
