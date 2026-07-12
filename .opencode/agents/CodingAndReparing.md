@@ -15,135 +15,24 @@ Coding/Repair
 
 ## Domain Ontology:
 
+This agent is the lowest level in the delivery pipeline. Its cognitive model includes only Code and Repair ontologies.
+Intent, Implementation, Coverage, Test, and Handoff ontologies belong to higher agents and are NOT in this ontology.
+Implementation contracts (.md), handoff files (.json), test entrypoints, and failure records are read as DATA.
+
 ```plantuml
 @startuml CodingAndReparing_Cognition
 skinparam classAttributeIconSize 0
 title Coding/Repair Domain Ontology
+' === OWNED BY THIS AGENT ===
+' Code Ontology, Repair Ontology, Forbidden Shortcut Ontology
+' === NOT IN THIS ONTOLOGY (owned by higher agents) ===
+' Intent Ontology → IntentionDesign
+' Implementation Ontology → ImplementationDesign
+' Coverage Ontology → IntentionDesign
+' Test Ontology → ImplementationDesign
+' Handoff Ontology → shared, read as data via .argo/temp/*Handoff.json
 
-package "Intent Ontology" {
-  class IntentArchitecture {
-    +elements
-    +relationships
-    +views
-    +principles
-    +constraints
-    +acceptanceBoundaries
-  }
-
-  abstract class IntentElement {
-    +id
-    +name
-    +type
-    +description
-    +attributes
-    +functionalPoints
-  }
-
-  class ArchitectureEntityElement
-  class Principle
-  class Constraint
-  class View
-
-  abstract class IntentRelationship {
-    +id
-    +type
-    +source
-    +target
-    +attributes
-    +directionalSemantics
-  }
-
-  class TraceabilityPointer {
-    +attribute
-    +description
-    +browser_path
-    +acceptanceCriteria
-    +fileReference
-    +symbolReference
-  }
-
-  class ExplicitAcceptanceTestcase {
-    +id
-    +name
-    +type = "Acceptance Test"
-    +acceptanceCriteria
-    +controlPoint
-    +observationPoint
-    +approvedByHuman
-  }
-
-  class FunctionalPoint {
-    +id
-    +description
-    +businessOutcome
-    +observableBoundary
-  }
-}
-
-package "Implementation Ontology" {
-  class ImplementationArchitecture {
-    +rootContract
-    +localContracts
-    +stableElements
-    +testOwnerships
-    +guardrails
-  }
-
-  abstract class ImplementationContract {
-    +path
-    +declaredStableElements
-    +declaredDependencies
-    +declaredImplementsMappings
-  }
-
-  class RootImplementationContract {
-    +path = "OVERALL_ARCHITECTURE.md"
-    +rootRules
-    +stableElementMap
-    +implementsMappings
-  }
-
-  class LocalImplementationContract {
-    +path = "ARCHITECTURE.md"
-    +localResponsibilities
-    +localDependencies
-    +ownedTests
-  }
-
-  class StableArchitectureElement {
-    +path
-    +contractPath
-    +responsibility
-    +publicBoundary
-  }
-
-  class InterfaceBoundary {
-    +providedCapabilities
-    +consumedCapabilities
-    +allowedDependencies
-  }
-
-  class ImplementationDependency {
-    +sourceStableElement
-    +targetStableElement
-    +direction
-    +reason
-  }
-
-  class ImplementsMapping {
-    +implementationElement
-    +intentElement
-    +directOrIndirect
-  }
-
-  class ImplementationGuardrail {
-    +kind
-    +owner
-    +protectedBoundary
-  }
-}
-
-package "Code Ontology" {
+package "Code Ontology [OWNED]" {
   class CodeReality {
     +files
     +functions
@@ -175,118 +64,7 @@ package "Code Ontology" {
   }
 }
 
-package "Coverage Ontology" {
-  class DependencySubgraph {
-    +focusElement
-    +upstreamDependencies
-    +downstreamDependents
-  }
-
-  class CoverageMatrix {
-    +elementRole
-    +functionalPoints
-    +mountedExplicitTestcases
-    +testcaseToFunctionalPointMappings
-    +implementationBoundaryEvidence
-    +excludedElements
-    +exclusionEvidence
-  }
-
-  enum DependencyRole {
-    Focus
-    UpstreamDependency
-    DownstreamDependent
-  }
-}
-
-package "Test Ontology" {
-  abstract class TestAsset {
-    +path
-    +owner
-    +controlPoint
-    +observationPoint
-  }
-
-  class ExplicitTestcaseEntrypoint {
-    +singleEntrypoint
-    +readOnlyInCodingStage
-    +keyAssertions
-    +expectedFailureSignal
-  }
-
-  class CriticalNonExplicitTest {
-    +category
-    +frozenEntrypoint
-    +protectedFixtures
-    +protectedBaselines
-  }
-
-  class SupportingNonExplicitTest {
-    +guardrailPurpose
-    +evolvableInCodingStage
-  }
-
-  class TestHarness {
-    +businessReadableMethods
-    +hidesSqlCypherGraphqlHttpEnvPlumbing
-  }
-
-  class BusinessReadableAssertion {
-    +given
-    +when
-    +then
-    +semanticDataNames
-    +businessFailureCategory
-  }
-
-  enum CriticalNonExplicitCategory {
-    ArchitectureBoundaryGuard
-    DependencyDirectionGuard
-    ExplicitEntrypointCorrectnessGuard
-    KeyImplementationTraceabilityGuard
-  }
-
-  class TestEnvironment {
-    +requiredServices
-    +requiredFixtures
-    +requiredConfiguration
-  }
-
-  class ArchitectureTestRun {
-    +entrypoints
-    +result
-    +remainingFailures
-  }
-}
-
-package "Handoff Ontology" {
-  class IntentToImplementationHandoff {
-    +intentElementIds
-    +relationshipIds
-    +summary
-    +openQuestions
-    +notes
-    +sourceIntentGraphPath
-  }
-
-  class ImplementationToCodingHandoff {
-    +implementationContracts
-    +explicitEntrypoints
-    +criticalNonExplicitTests
-    +supportingNonExplicitTests
-    +expectedFailureRecordsPath
-    +codingTargets
-    +taskExecutionPlan
-    +frozenFiles
-  }
-
-  class ImplementationToIntentTraceProposal {
-    +implementationAnchors
-    +proposedIntentTraceLinks
-  }
-}
-
-package "Repair Ontology" {
+package "Repair Ontology [OWNED]" {
   class TestFailureRecord {
     +testcase
     +acceptanceCriteriaEntrypoint
@@ -295,7 +73,7 @@ package "Repair Ontology" {
   }
 
   class RepairTask {
-    +targetArchitectureEntity
+    +targetArchitectureEntityId
     +targetFailureRecord
     +requiredBehaviorChange
     +traceability
@@ -306,9 +84,21 @@ package "Repair Ontology" {
     +violatedContract
     +repairDirection
   }
+
+  class ArchitectureTestRun {
+    +entrypoints
+    +result
+    +remainingFailures
+  }
+
+  class TestEnvironment {
+    +requiredServices
+    +requiredFixtures
+    +requiredConfiguration
+  }
 }
 
-package "Forbidden Shortcut Ontology" {
+package "Forbidden Shortcut Ontology [OWNED]" {
   class TestOnlyBusinessCodeShortcut {
     +testStub
     +testBranch
@@ -319,151 +109,36 @@ package "Forbidden Shortcut Ontology" {
   }
 }
 
-IntentArchitecture "1" *-- "many" IntentElement
-IntentArchitecture "1" *-- "many" IntentRelationship
-IntentArchitecture "1" *-- "many" View
-IntentArchitecture "1" *-- "many" Principle
-IntentArchitecture "1" *-- "many" Constraint
-IntentElement <|-- ArchitectureEntityElement
-IntentElement <|-- Principle
-IntentElement <|-- Constraint
-IntentElement "1" o-- "many" TraceabilityPointer
-ArchitectureEntityElement "1" o-- "many" FunctionalPoint
-ArchitectureEntityElement "1" o-- "many" ExplicitAcceptanceTestcase : mounted under exact element
-IntentRelationship --> IntentElement : source
-IntentRelationship --> IntentElement : target
-View --> IntentElement : includes
-View --> IntentRelationship : includes
-
-ImplementationArchitecture "1" *-- "many" StableArchitectureElement
-ImplementationArchitecture "1" *-- "many" ImplementationContract
-ImplementationArchitecture "1" *-- "many" InterfaceBoundary
-ImplementationArchitecture "1" *-- "many" ImplementationDependency
-ImplementationArchitecture "1" *-- "many" ImplementsMapping
-ImplementationArchitecture "1" *-- "many" ImplementationGuardrail
-ImplementationContract <|-- RootImplementationContract
-ImplementationContract <|-- LocalImplementationContract
-RootImplementationContract --> StableArchitectureElement : declares root-level map
-LocalImplementationContract --> StableArchitectureElement : owns local rules
-StableArchitectureElement --> ArchitectureEntityElement : realizes directly or indirectly
-InterfaceBoundary --> StableArchitectureElement : bounds
-ImplementationDependency --> StableArchitectureElement : source/target
-ImplementsMapping --> StableArchitectureElement
-ImplementsMapping --> ArchitectureEntityElement
-ImplementationGuardrail --> StableArchitectureElement : protects
-
+' === Code-internal relationships ===
 CodeReality "1" *-- "many" RepositoryArtifact
-RepositoryArtifact --> StableArchitectureElement : evidence for implementation state
 RepositoryArtifact --> ProductionBehavior : implements
 ProductionBehavior --> ExternalInterface : may expose
-CodeReality --> ImplementationArchitecture : may conform to or drift from
-ArchitectureDrift --> ImplementationContract : violates
-ArchitectureDrift --> RepositoryArtifact : observed in
 
-DependencySubgraph "1" o-- "1" ArchitectureEntityElement : focus
-DependencySubgraph "1" o-- "many" ArchitectureEntityElement : upstream/dependent
-CoverageMatrix --> DependencySubgraph : describes coverage over
-CoverageMatrix --> DependencyRole : classifies each element
-CoverageMatrix --> ExplicitAcceptanceTestcase : records mounted baselines
-
-TestAsset <|-- ExplicitTestcaseEntrypoint
-TestAsset <|-- CriticalNonExplicitTest
-TestAsset <|-- SupportingNonExplicitTest
-ExplicitAcceptanceTestcase --> ExplicitTestcaseEntrypoint : physicalized as
-ExplicitTestcaseEntrypoint --> BusinessReadableAssertion : contains
-ExplicitTestcaseEntrypoint --> TestHarness : uses
-CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
-StableArchitectureElement "1" o-- "many" TestAsset : owns
-ArchitectureTestRun --> ExplicitTestcaseEntrypoint : executes
-ArchitectureTestRun --> TestEnvironment : requires
-SupportingNonExplicitTest --> RepairTask : may verify local repair
-TestOnlyBusinessCodeShortcut --> ProductionBehavior : forbidden contamination
-
-IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
-ImplementationToCodingHandoff --> RootImplementationContract
-ImplementationToCodingHandoff --> LocalImplementationContract
-ImplementationToCodingHandoff --> TestAsset
-ImplementationToCodingHandoff --> RepairTask : defines queue
-ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes
-TestFailureRecord --> ExplicitTestcaseEntrypoint : records failing acceptance boundary
+' === Repair-internal relationships ===
 TestFailureRecord --> RepairTask : creates
-RepairTask --> ArchitectureEntityElement : traceable to
 RepairTask --> RepositoryArtifact : modifies allowed files
 RepairTask --> ProductionBehavior : repairs real behavior
 RepairTask --> ArchitectureDrift : may resolve
+ArchitectureDrift --> RepositoryArtifact : observed in
+ArchitectureTestRun --> TestEnvironment : requires
 
-note bottom of IntentArchitecture
-  Logic rules:
-  1. Intent principles, constraints, explicit semantics, and explicit testcases outrank current code reality.
-  2. ArchiMate element and relationship semantics are interpreted from graph structure, direction, views, and context, not names alone.
-  3. Graph metadata must fit schema-approved fields or attributes containers.
-end note
+' === Forbidden relationships ===
+TestOnlyBusinessCodeShortcut --> ProductionBehavior : forbidden contamination
 
-note bottom of ExplicitAcceptanceTestcase
-  Logic rules:
-  1. Every testcase must be an Acceptance Test.
-  2. Every testcase must have a control point and observation point.
-  3. Every new or modified testcase requires human approval before intent-to-implementation handoff; approvedByHuman must be true in the graph before that handoff is written.
-  4. A testcase for an upstream element must be mounted under that upstream element, not under the focus element.
-end note
-
-note bottom of CoverageMatrix
-  Logic rules:
-  1. Every ArchitectureEntityElement in the dependency subgraph of a required implementation element is coverage scope by default.
-  2. Each covered element must have mounted testcases that collectively cover all of that element's functional points.
-  3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
-  4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
-  5. Exclusions require evidence-backed reasons.
-end note
-
-note bottom of ImplementationArchitecture
-  Logic rules:
-  1. Implementation architecture is expressed by repository contracts and stable layout.
-  2. Stable elements are high-level boundaries, not mirrors of every source file or function.
-  3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
-  4. Indirect implementation chains are valid when each link is declared by contracts.
-  5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
-     Separation of Concerns, and stable dependency direction as active criteria.
-end note
-
-note bottom of ImplementationContract
-  Logic rules:
-  1. OVERALL_ARCHITECTURE.md is the single root contract for root-level rules.
-  2. Local ARCHITECTURE.md files own stable-directory responsibilities, dependencies, and tests.
-  3. Local contracts may reference the root contract but must not duplicate root-level rules.
-end note
-
-note bottom of ExplicitTestcaseEntrypoint
-  Logic rules:
-  1. Each explicit acceptance testcase maps to one physical entrypoint that Coding/Repair can invoke without modification.
-  2. The entrypoint must contain executable key assertions, not placeholders.
-  3. Expected failures are valid only when they expose missing implementation through readable failure signals.
-  4. Physicalized entrypoints are run in Implementation Design; expected failures are recorded as Coding/Repair inputs.
-end note
-
-note bottom of BusinessReadableAssertion
-  Logic rules:
-  1. Explicit testcase bodies use GIVEN / WHEN / THEN.
-  2. Test bodies use Harness abstractions rather than low-level plumbing.
-  3. Names and failure categories must express business meaning.
-end note
-
-note bottom of TestAsset
-  Logic rules:
-  1. Every test asset must preserve control point and observation point.
-  2. Test assets are owned by stable architecture elements per contract.
-  3. Explicit testcase entrypoints and critical non-explicit tests are read-only in Coding/Repair.
-  4. Supporting non-explicit tests may be added or refined only inside contract-allowed locations.
-  5. design/KG/SystemArchitecture.json, frozen test assets, and contract documents listed in frozenFiles or implementationContracts are not edited in Coding/Repair; contract-allowed source and configuration files declared by those contracts remain editable.
-end note
+' === Cross-layer references (data-driven, not ontology classes) ===
+' TestFailureRecord references test entrypoints by path (from ImplementationDesign)
+' RepairTask references intent element IDs (from IntentionDesign)
+' RepairTask references contract-allowed files (from ImplementationDesign)
+' ArchitectureTestRun executes test entrypoints (from ImplementationDesign)
 
 note bottom of RepairTask
   Logic rules:
-  1. Every repair task must trace to a handoff item, failure record, explicit testcase, or dependency-subgraph entity.
+  1. Every repair task must trace to a handoff item, failure record, or explicit testcase entrypoint.
   2. Repairs follow dependency order: upstream dependencies, shared contracts, and prerequisite entrypoints before downstream capabilities.
   3. Repair changes the real production behavior with the minimum code needed.
   4. Simplicity first: no speculative features, single-use abstractions, unrequested configurability, or impossible-scenario handling.
   5. If the implementation can be much smaller while preserving behavior, rewrite toward the smaller real-behavior repair.
+  6. Contract-allowed files are determined by reading ImplementationDesign's contracts (.md files) and handoff; those ontology classes are above this agent.
 end note
 
 note bottom of TestOnlyBusinessCodeShortcut
@@ -477,6 +152,17 @@ note bottom of ArchitectureTestRun
   1. Existing failing entrypoints are rerun until repaired.
   2. Full explicit architecture tests must pass before completion.
   3. Test environment problems are resolved rather than used to skip tests.
+  4. Test entrypoint definitions and classification (explicit/critical/supporting) are owned by ImplementationDesign (above).
+end note
+
+note bottom of CodingRepairBoundary
+  Logic rules:
+  1. This agent's output domain: repaired ProductionBehavior, updated RepositoryArtifacts, resolved ArchitectureDrift.
+  2. Reads ImplementationToCodingHandoff.json and test-failure-records.json as data; does not modify them.
+  3. Reads ARCHITECTURE.md contracts as data to determine allowed edit scope; does not modify them.
+  4. Reads design/KG/SystemArchitecture.json for intent context; does not modify it.
+  5. Frozen test assets (explicit entrypoints, critical non-explicit tests) are read-only.
+  6. This agent must NOT define new test entrypoints, guardrails, stable elements, or implementation contracts.
 end note
 @enduml
 ```
@@ -537,6 +223,37 @@ elseif (EVENT: Test environment blocker?) then (environment)
   [acts on: TestEnvironment, ArchitectureTestRun];
   :Rerun the blocked existing entrypoints after environment recovery
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint, TestFailureRecord];
+
+elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then (distill)
+  :Review design/persistant-memory/coding-and-repairing.md for repeated error patterns and the final conditions that led to success
+  [acts on: RepairTask, ArchitectureDrift, CodeReality];
+  :Classify each error pattern against the determinism formula: C(意图清晰度), P(协议规范), σ(遵循系数), B(物理护栏), E(有效能效), G(任务颗粒度), recursive(递归传导)
+  [acts on: RepairTask, ProductionBehavior];
+  note right
+    Formula-factor → CodingAndReparing improvement mapping:
+    C (Apparent Intent): confirm repair scope from handoff and failure records before editing any file
+    P (Protocol): refine forbidden-shortcut detection categories; strengthen "no test-only code branches" rules
+    σ (Adherence): strengthen "do not modify frozen test assets" guard; never skip handoff validation
+    B (Binding Power): run argo.runArchitectureTests after every repair batch; verify all explicit tests pass before completion
+    E (Eff. Efficacy): improve dependency-order repair sequencing; resolve upstream dependencies before downstream
+    G (Granularity): repair one TestFailureRecord at a time; one ProductionBehavior change per step
+    Recursive (依赖传导): verify all architecture tests pass before declaring completion; report remaining failures
+  end note
+  :Distill 1-3 executable rules following distill-agent-rules methodology:
+  fix incident boundary → rewrite complaint to observable rule → classify scope → select minimal承载位置
+  [acts on: RepairTask, CodeReality];
+  note right
+    Must produce per distilled rule:
+    1. Observable trigger condition
+    2. Scope classification
+    3. Recommended承载位置 + candidate text
+    4. Why this is not overfitting or duplicate constraint
+  end note
+  :Write distilled rules to the appropriate承载位置 at minimal necessary scope
+  [acts on: agent spec, skills, instructions, hooks];
+  :Remove distilled content from design/persistant-memory/coding-and-repairing.md to avoid dual fact sources
+  [acts on: RepairTask, CodeReality];
+
 else (other)
   :Ask for the missing coding or repair event frame before editing code
   [acts on: RepairTask, CodeReality, ImplementationToCodingHandoff];
