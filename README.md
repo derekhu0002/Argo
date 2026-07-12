@@ -4,14 +4,15 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 * SDD增强：采用形式化建模语言进行意图规格编写，并通过工具自动检查AI输出的架构模型，从而使得SPEC的编写更规范、更可控；
 * TDD增强：传统的TDD是在编码阶段才开始写测试用例，而本实践是在意图设计阶段就开始设计验收测试用例，实现架构设计阶段基于验收用例进一步构建测试框架并细分出系统测试用例和集成测试用例传递给编码阶段；
 * DDD引入：通过意图图谱和实现架构契约显性沉淀领域概念、业务能力、约束、关系和边界，使领域知识不只停留在对话中，而是成为后续设计、编码、验收和回归的稳定上下文；
-* 复盘自进化：通过会话偏航复盘和迭代后持久化记忆复盘，将稳定复现的Agent行为约束、工作流和守卫固化为SKILL、RULE、INSTRUCTION或hook，并清理临时记忆，形成可持续进化的AI协作机制；
+* 复盘自进化：通过会话偏航复盘和迭代后持久化记忆复盘，将稳定复现的 Agent 行为约束、工作流和守卫固化为 SKILL、RULE、INSTRUCTION 或 hook；各阶段 Agent Behavior 中内置 `distill` EVENT 分支，可在连续犯错后成功后按确定性公式因子自动触发自蒸馏，形成可持续进化的 AI 协作机制；
 
 架构模型、测试用例和复盘提炼出的规则/技能均是天然的项目事实资产，一旦形成便成了AI持续迭代的上下文，从而组织成一个可重复、可验证、可回归、可自进化的闭环。
 
 本项目背后的核心理念见：
  * 《[ARGO工程哲学](notes/ARGO%20工程哲学：确定性交付公式的工程化.md)》；
  * 基于架构依赖、Sequential Gravity Chain 与 G 估算的 AI 任务编排方法论，见《[驯服高维空间的重力：基于架构依赖的 AI 任务编排方法论](notes/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD)》；
- * 三阶段 Agent 如何通过 **Domain Ontology（领域本体）** 与 **Behavior（事件驱动行为流）** 构成可审计的认知规格，见《[ARGO 领域本体与 Agent 行为：认知规格与事件驱动交付](notes/ARGO%20领域本体与%20Agent%20行为：认知规格与事件驱动交付.md)》。
+ * 三阶段 Agent 如何通过 **Domain Ontology（领域本体）** 与 **Behavior（事件驱动行为流）** 构成可审计的认知规格，见《[ARGO 领域本体与 Agent 行为：认知规格与事件驱动交付](notes/ARGO%20领域本体与%20Agent%20行为：认知规格与事件驱动交付.md)》；
+ * 确定性交付公式与 Agent 自进化机制，见《[影响 AI 成功交付的第一性原理：从概率滑行到确定性收敛](notes/影响%20AI%20成功交付的第一性原理：从概率滑行到确定性收敛.md)》。
 
 ## 持续扩展
 本项目是一个顶层脚手架，不同的项目均可以基于本脚手架进一步扩展，包括：
@@ -284,7 +285,7 @@ flowchart TD
 | 外部说明文档刷新           | 实现或接口稳定后，需要更新面向采用者的产品简介                                 | `/brief`                                                | 仅基于架构来源生成或更新 `INTRODUCTION.md`，覆盖产品概览、能力、接口、约束和使用方式                                                   |
 | 交付归档               | `Orchestrator` 迭代已验收或准备结束，需要沉淀 PRD、设计、交付和验收证据            | `/delivery-archive`                                     | 在 `docs/YYYY-MM-DD-[需求或问题名称]/` 下创建 `PRD.md`、`架构设计.md`、`代码交付自测试.md`、`规格验收.md`，所有结论标注证据或缺口 |
 | 架构子图讲稿             | 需要基于指定 ArchiMate view/element/子图，做结构化 PPT 路演或内部分享              | `/architecture-talk-deck`                               | 先判断项目类型并归纳 Architecture Thesis 与 Governing Thought，再按依赖关系逐步展开主链、关键子图和关键元素，并用金字塔原理组织 SCQA、MECE 论证、意图→设计机制→落地证据链；采用 executive architecture briefing 视觉标准；最终产出 `deck.pptx`，并保留 `deck.md`、`traceability.md`、`scope.json` |
-| Agent 行为与记忆治理       | Agent 在会话中越权、漏读契约、误改冻结测试、反复出现同类偏差，或迭代后需要复盘 `design/persistant-memory` | `/distill-agent-rules`                                  | 将偏差或成熟记忆提炼为可执行规则、适用范围、触发条件和推荐落地位置；固化为 `SKILL`/`RULE`/`INSTRUCTION`/hook 后清理源记忆 |
+| Agent 行为与记忆治理       | Agent 在会话中越权、漏读契约、误改冻结测试、反复出现同类偏差，或迭代后需要复盘 `design/persistant-memory` | `/distill-agent-rules`（人工触发）或各 Agent Behavior 内置 `distill` EVENT（自动触发） | 将偏差或成熟记忆提炼为可执行规则、适用范围、触发条件和推荐落地位置；固化为 `SKILL`/`RULE`/`INSTRUCTION`/hook 后清理源记忆 |
 | HarmonyOS/ArkTS 开发 | 项目涉及 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio 或鸿蒙原生应用   | `/harmonyos-development` + `/arkts-coding-standard`     | 获取鸿蒙平台开发知识与 ArkTS 严格编码规范，辅助编码、审查、调试或迁移                                                                |
 
 #### 输入建议
@@ -297,6 +298,37 @@ flowchart TD
 | 已知失败 | 附上失败命令、错误摘要、日志片段、失败测试路径 | 便于 `CodingAndReparing` 将失败记录转化为修复队列 |
 | 不确定的方案 | 先用 `BusinessPartner`、`/business-partner` 或 `/grill-me` | 在进入实现前先收敛业务和设计分支，避免后续返工 |
 
+## 分层认知模型与自进化机制
+
+### Agent 认知分层
+
+Argo 的 Agent 认知模型遵循 **"上可见下，下不越上"** 的分层原则：
+
+```
+BusinessPartner (最高层)  → 看到全部六层本体，只读分析
+    ↓
+IntentionDesign           → 拥有 Intent/Coverage(标准)/Handoff，可见下层 Impl/Code/Test
+    ↓
+ImplementationDesign      → 拥有 Impl/Code/Test/Handoff，不将 Intent/Coverage 纳入认知
+    ↓
+CodingAndReparing (底层)  → 仅拥有 Code/Repair/ForbiddenShortcut，其余层通过数据文件读取
+```
+
+上层 Agent 可以在认知模型中完整理解下层世界，以做出更精准的设计决策；下层 Agent 不纳入上层本体类，跨层引用通过 ID 实现（如 `ImplementsMapping.intentElementId`、`TraceabilityPointer.intentElementId`）。
+
+### 连续犯错后的自蒸馏
+
+每个阶段 Agent 的行为规范中均包含 `EVENT: Self-improvement after iterative error-followed-by-success?` (distill) 分支。
+当 Agent 在某一类任务中连续犯错并最终成功后，可触发该分支：
+
+1. 读取 `design/persistant-memory/*.md` 中的重复错误模式
+2. 按确定性公式因子（$\mathcal{C}, P, \sigma, B, \mathcal{E}, G, \prod \mathcal{R}$）分类根因
+3. 按照 `/distill-agent-rules` 方法论提炼 1-3 条可执行规则
+4. 选择最小必要承载位置（agent spec / skill / instructions / hook）写入
+5. 从 persistent-memory 中删除已蒸馏内容，避免双重事实源
+
+这使 Argo 不仅能在当前会话中走强阶段闭环，还能将 Agent 的失败经验持续固化为长期机制。详见《[影响 AI 成功交付的第一性原理：从概率滑行到确定性收敛](notes/影响%20AI%20成功交付的第一性原理：从概率滑行到确定性收敛.md)》。
+
 ## 当前已录入 SubAgents 和 Skills
 
 Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 四个阶段；另有 **编排、前置业务、治理复盘、辅助工具** 等横切能力。下表说明每个 SubAgent 与 Skill 的适用阶段及其作用。
@@ -306,9 +338,9 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | 名称                              | 适用阶段           | 作用                                                                                                                                                                                                                                                | 平台                                                           |
 | ------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `Orchestrator`                  | 编排（全阶段）        | 总调度者：接收需求或问题后按阶段转交子 Agent，强制执行 `validateStageHandoff`、显性 testcase 人类审核、实现测试设计审计、编码交付审计与意图交付审计；遇到 `ImplementationToIntentTraceProposal` 时回路到意图设计；禁止直接处理需求或修改实现产物                                                                                   | Copilot、OpenCode（主 Agent）；Cursor 由 `/orchestrating` Skill 承担 |
-| `IntentionDesign`               | 意图设计           | 以 `design/KG/SystemArchitecture.json` 为第一真相源，澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `.argo/temp/IntentToImplementationHandoff.json`；禁止修改业务代码与测试代码                                                                                                       | 全平台                                                          |
-| `ImplementationDesign`          | 实现设计           | 将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `.argo/temp/ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台                                                          |
-| `CodingAndReparing`             | 编码/修复          | 依据 `.argo/temp/ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约                                                                                                | 全平台                                                          |
+| `IntentionDesign`               | 意图设计           | 以 `design/KG/SystemArchitecture.json` 为唯一可变更事实源；Domain Ontology 包含 Intent（OWNED）、Coverage 标准侧（OWNED）、Handoff 桥接（OWNED），以及 Impl/Code/Test 层（READ-ONLY 认知参考）；澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `.argo/temp/IntentToImplementationHandoff.json`；禁止修改业务代码、测试代码与实现契约 | 全平台                                                          |
+| `ImplementationDesign`          | 实现设计           | Domain Ontology 包含 Impl/Code/Test/Handoff（OWNED），Intent/Coverage 不在其认知模型中（通过 ID 引用上层元素）；将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏与 `TraceabilityPointer`，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `.argo/temp/ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台                                                          |
+| `CodingAndReparing`             | 编码/修复          | Domain Ontology 仅包含 Code/Repair/ForbiddenShortcut（OWNED）；Intent/Impl/Coverage/Test/Handoff 不在其认知模型中（通过读取数据文件获取上下文）；依据 `.argo/temp/ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台                                                          |
 | `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 以 `Domain Ontology` + `Behavior` 作为可审计认知规格，服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵、下游路由和开放问题；不直接修改正式图谱、契约或 handoff                                              | 全平台                                                          |
 | `ArchimateLanguagistAudit`      | 意图设计（审计）       | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件                                                                                                                                                     | 全平台                                                          |
 | `BusinessPartner`               | 前置/业务          | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，输出结构化 `DecisionTreeRecord`、架构依赖分析、控制点与观测点；聚焦业务本身，不进入实现设计和编码                                                                                                                                                                        | Copilot、OpenCode                                             |
@@ -338,6 +370,6 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `brief`                              | 交付后/文档      | 仅基于 `OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md` 与意图图谱，创建或更新面向外部采用者的 `INTRODUCTION.md`                                                                                                                                               | `/brief`                              |
 | `delivery-archive`                   | 交付后/归档      | 在一次 `Orchestrator` 交付迭代验收或结束后，基于需求、handoff、代码变更、测试和验收证据归档 PRD、架构设计、代码交付自测试与规格验收文档                                                                                                                                                      | `/delivery-archive`                   |
 | `architecture-talk-deck`             | 讲解/文档       | 以 Ontology + Behavior（PlantUML）约束讲稿生成认知流程；从用户指定的 ArchiMate 架构子图出发，先形成架构命题和中心结论，再沿依赖关系逐步展开；关键子图与关键架构元素单独起页讲解；最终必须输出可演示 `deck.pptx`                                                                                                      | `/architecture-talk-deck`             |
-| `distill-agent-rules`                | 治理/复盘       | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源                                                                              | `/distill-agent-rules`                |
+| `distill-agent-rules`                | 治理/复盘       | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源。各 Agent 的 Behavior 中也内置了 `distill` EVENT 分支，可在连续犯错后成功后自动触发自蒸馏 | `/distill-agent-rules`                |
 | `harmonyos-development`              | 编码/修复（领域）   | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流                                                                                                                                                           | `/harmonyos-development`              |
 | `arkts-coding-standard`              | 编码/修复（领域）   | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规                                                                                                                                                                            | `/arkts-coding-standard`              |
