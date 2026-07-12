@@ -10,68 +10,22 @@ Implementation Design
 
 ## Domain Ontology:
 
-This ontology includes all classes whose information CAN be deterministically inferred from repository code
-(Implementation, Code, Test ontologies), plus read-only references to Intent-side classes and bridge Handoff classes.
+This agent's cognitive model includes only ontologies at or below its level in the delivery pipeline.
+Intent Ontology and Coverage Ontology (standards side) belong to IntentionDesign (above) and are NOT in this ontology.
+References to intent elements (ArchitectureEntityElement) are by ID, read from design/KG/SystemArchitecture.json.
+Implementation + Code + Test + Handoff are OWNED by this agent.
 
 ```plantuml
 @startuml ImplementationDesign_Cognition
 skinparam classAttributeIconSize 0
 title Implementation Design Domain Ontology
-' Intent Ontology classes are READ-ONLY REFERENCE for this agent.
-' Implementation, Code, and Test ontologies are owned by ImplementationDesign.
+' === OWNED BY THIS AGENT ===
+' Implementation, Code, Test ontologies, plus Handoff (bridge)
+' === NOT IN THIS ONTOLOGY (owned by IntentionDesign above) ===
+' Intent Ontology, Coverage Ontology (standards side)
+' Intent elements are referenced by ID from design/KG/SystemArchitecture.json
 
-package "Intent Ontology (read-only reference)" {
-  class IntentArchitecture {
-    +elements
-    +relationships
-    +views
-    +principles
-    +constraints
-    +acceptanceBoundaries
-  }
-
-  abstract class IntentElement {
-    +id
-    +name
-    +type
-    +description
-    +attributes
-    +functionalPoints
-  }
-
-  class ArchitectureEntityElement
-  class Principle
-  class Constraint
-  class View
-
-  abstract class IntentRelationship {
-    +id
-    +type
-    +source
-    +target
-    +attributes
-    +directionalSemantics
-  }
-
-  class ExplicitAcceptanceTestcase {
-    +id
-    +name
-    +type = "Acceptance Test"
-    +acceptanceCriteria
-    +controlPoint
-    +observationPoint
-    +approvedByHuman
-  }
-
-  class FunctionalPoint {
-    +id
-    +description
-    +businessOutcome
-    +observableBoundary
-  }
-}
-
-package "Implementation Ontology" {
+package "Implementation Ontology [OWNED]" {
   class ImplementationArchitecture {
     +rootContract
     +localContracts
@@ -123,7 +77,7 @@ package "Implementation Ontology" {
 
   class ImplementsMapping {
     +implementationElement
-    +intentElement
+    +intentElementId
     +directOrIndirect
   }
 
@@ -140,10 +94,11 @@ package "Implementation Ontology" {
     +acceptanceCriteria
     +fileReference
     +symbolReference
+    +intentElementId
   }
 }
 
-package "Code Ontology" {
+package "Code Ontology [OWNED]" {
   class CodeReality {
     +files
     +functions
@@ -160,31 +115,7 @@ package "Code Ontology" {
   }
 }
 
-package "Coverage Ontology" {
-  class DependencySubgraph {
-    +focusElement
-    +upstreamDependencies
-    +downstreamDependents
-  }
-
-  class CoverageMatrix {
-    +elementRole
-    +functionalPoints
-    +mountedExplicitTestcases
-    +testcaseToFunctionalPointMappings
-    +implementationBoundaryEvidence
-    +excludedElements
-    +exclusionEvidence
-  }
-
-  enum DependencyRole {
-    Focus
-    UpstreamDependency
-    DownstreamDependent
-  }
-}
-
-package "Test Ontology" {
+package "Test Ontology [OWNED]" {
   abstract class TestAsset {
     +path
     +owner
@@ -232,7 +163,7 @@ package "Test Ontology" {
   }
 }
 
-package "Handoff Ontology" {
+package "Handoff Ontology [OWNED — bridge]" {
   class IntentToImplementationHandoff {
     +intentElementIds
     +relationshipIds
@@ -259,21 +190,7 @@ package "Handoff Ontology" {
   }
 }
 
-IntentArchitecture "1" *-- "many" IntentElement
-IntentArchitecture "1" *-- "many" IntentRelationship
-IntentArchitecture "1" *-- "many" View
-IntentArchitecture "1" *-- "many" Principle
-IntentArchitecture "1" *-- "many" Constraint
-IntentElement <|-- ArchitectureEntityElement
-IntentElement <|-- Principle
-IntentElement <|-- Constraint
-ArchitectureEntityElement "1" o-- "many" FunctionalPoint
-ArchitectureEntityElement "1" o-- "many" ExplicitAcceptanceTestcase : mounted under exact element
-IntentRelationship --> IntentElement : source
-IntentRelationship --> IntentElement : target
-View --> IntentElement : includes
-View --> IntentRelationship : includes
-
+' === Implementation-internal relationships ===
 ImplementationArchitecture "1" *-- "many" StableArchitectureElement
 ImplementationArchitecture "1" *-- "many" ImplementationContract
 ImplementationArchitecture "1" *-- "many" InterfaceBoundary
@@ -285,70 +202,49 @@ ImplementationContract <|-- RootImplementationContract
 ImplementationContract <|-- LocalImplementationContract
 RootImplementationContract --> StableArchitectureElement : declares root-level map
 LocalImplementationContract --> StableArchitectureElement : owns local rules
-StableArchitectureElement --> ArchitectureEntityElement : realizes directly or indirectly
 InterfaceBoundary --> StableArchitectureElement : bounds
 ImplementationDependency --> StableArchitectureElement : source/target
-ImplementsMapping --> StableArchitectureElement
-ImplementsMapping --> ArchitectureEntityElement
 ImplementationGuardrail --> StableArchitectureElement : protects
+' ImplementsMapping and TraceabilityPointer reference intent elements by ID (from SystemArchitecture.json)
+' Intent element classes are NOT in this ontology (owned by IntentionDesign above)
+ImplementsMapping --> StableArchitectureElement
 TraceabilityPointer --> StableArchitectureElement : anchored to
-TraceabilityPointer --> ArchitectureEntityElement : traces intent element
 
 CodeReality "1" *-- "many" RepositoryArtifact
 RepositoryArtifact --> StableArchitectureElement : evidence for implementation state
 CodeReality --> ImplementationArchitecture : may conform to or drift from
 
-DependencySubgraph "1" o-- "1" ArchitectureEntityElement : focus
-DependencySubgraph "1" o-- "many" ArchitectureEntityElement : upstream/dependent
-CoverageMatrix --> DependencySubgraph : describes coverage over
-CoverageMatrix --> DependencyRole : classifies each element
-CoverageMatrix --> ExplicitAcceptanceTestcase : records mounted baselines
-
+' === Test-internal relationships ===
 TestAsset <|-- ExplicitTestcaseEntrypoint
 TestAsset <|-- CriticalNonExplicitTest
 TestAsset <|-- SupportingNonExplicitTest
-ExplicitAcceptanceTestcase --> ExplicitTestcaseEntrypoint : physicalized as
 ExplicitTestcaseEntrypoint --> BusinessReadableAssertion : contains
 ExplicitTestcaseEntrypoint --> TestHarness : uses
 CriticalNonExplicitTest --> CriticalNonExplicitCategory : classified by
 StableArchitectureElement "1" o-- "many" TestAsset : owns
+' ExplicitAcceptanceTestcase (intent-level) physicalized as ExplicitTestcaseEntrypoint;
+' intent testcase classes are in IntentionDesign's ontology (above), referenced by ID
 
-IntentToImplementationHandoff --> ArchitectureEntityElement : scopes elements for downstream implementation
+' === Handoff relationships ===
+IntentToImplementationHandoff --> StableArchitectureElement : implemented by
 ImplementationToCodingHandoff --> RootImplementationContract
 ImplementationToCodingHandoff --> LocalImplementationContract
 ImplementationToCodingHandoff --> TestAsset
 ImplementationToIntentTraceProposal --> ImplementsMapping : proposes upstream trace changes
 
-note bottom of IntentArchitecture
+note bottom of ImplementsMapping
   Logic rules:
-  1. Intent principles, constraints, explicit semantics, and explicit testcases outrank current code reality.
-  2. ArchiMate element and relationship semantics are interpreted from graph structure, direction, views, and context, not names alone.
-  3. Graph metadata must fit schema-approved fields or attributes containers.
-end note
-
-note bottom of ExplicitAcceptanceTestcase
-  Logic rules:
-  1. Every testcase must be an Acceptance Test.
-  2. Every testcase must have a control point and observation point.
-  3. Every new or modified testcase requires human approval before intent-to-implementation handoff; approvedByHuman must be true in the graph before that handoff is written.
-  4. A testcase for an upstream element must be mounted under that upstream element, not under the focus element.
-end note
-
-note bottom of CoverageMatrix
-  Logic rules:
-  1. Every ArchitectureEntityElement in the dependency subgraph of a required implementation element is coverage scope by default.
-  2. Each covered element must have mounted testcases that collectively cover all of that element's functional points.
-  3. Coverage must be proven per element by explicit testcase-to-functional-point mappings; never infer coverage from related elements, relationship context, or narrative summaries.
-  4. Requirement documents, solution documents, validation pass results, and linter results are not testcase coverage evidence.
-  5. Exclusions require evidence-backed reasons.
-  6. CoverageMatrix on this side records implementationBoundaryEvidence: pass/fail results of physicalized test entrypoints against intent coverage standards.
+  1. Maps a StableArchitectureElement to an intent ArchitectureEntityElement by ID (read from SystemArchitecture.json).
+  2. Intent element classes are NOT in this ontology; they are owned by IntentionDesign (above).
+  3. Direct or indirect implementation chains are valid when each link is declared by contracts.
 end note
 
 note bottom of TraceabilityPointer
   Logic rules:
-  1. TraceabilityPointer connects StableArchitectureElements back to intent ArchitectureEntityElements.
+  1. TraceabilityPointer anchors StableArchitectureElements to code artifacts and intent element IDs.
   2. fileReference, symbolReference, and browser_path anchor to concrete code artifacts.
-  3. TraceabilityPointer is fully owned by ImplementationDesign; IntentionDesign does not create or modify them.
+  3. intentElementId references ArchitectureEntityElement from IntentionDesign's ontology (above).
+  4. TraceabilityPointer is fully owned by ImplementationDesign.
 end note
 
 note bottom of ImplementationArchitecture
@@ -359,6 +255,7 @@ note bottom of ImplementationArchitecture
   4. Indirect implementation chains are valid when each link is declared by contracts.
   5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
      Separation of Concerns, and stable dependency direction as active criteria.
+  6. Intent-level coverage standards (CoverageMatrix, DependencySubgraph) are owned by IntentionDesign (above); this agent records implementationBoundaryEvidence.
 end note
 
 note bottom of ImplementationContract
