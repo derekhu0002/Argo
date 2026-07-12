@@ -567,6 +567,37 @@ elseif (EVENT: Handoff or validation blocker repair?) then (blocker)
   stage = "intent-to-implementation"
   Re-validate repaired handoff
   [acts on: IntentToImplementationHandoff];
+
+elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then (distill)
+  :Review design/persistant-memory/intention-design.md for repeated error patterns and the final conditions that led to success
+  [acts on: IntentArchitecture, CoverageMatrix, IntentToImplementationHandoff];
+  :Classify each error pattern against the determinism formula: C(意图清晰度), P(协议规范), σ(遵循系数), B(物理护栏), E(有效能效), G(任务颗粒度), recursive(递归传导)
+  [acts on: IntentArchitecture, CoverageMatrix];
+  note right
+    Formula-factor → IntentionDesign improvement mapping:
+    C (Apparent Intent): replay intent summary before graph mutation; confirm understanding before editing
+    P (Protocol): refine pre-handoff adequacy conditions; tighten coverage proof rules; clarify element ownership
+    σ (Adherence): strengthen coverage proof requirements; never accept documents as coverage evidence
+    B (Binding Power): add argo.validateSystemArchitecture after every mutation; stage guardrails
+    E (Eff. Efficacy): improve dependency-subgraph exploration depth; stop only at implemented boundary nodes
+    G (Granularity): mutate one ArchitectureEntityElement at a time; one relationship direction per step
+    Recursive (依赖传导): validate handoff completeness (all conditions satisfied, no unresolved blockers) before emitting
+  end note
+  :Distill 1-3 executable rules following distill-agent-rules methodology:
+  fix incident boundary → rewrite complaint to observable rule → classify scope → select minimal承载位置
+  [acts on: IntentArchitecture, CoverageMatrix];
+  note right
+    Must produce per distilled rule:
+    1. Observable trigger condition ("when X happens, do Y, not Z")
+    2. Scope classification (stage-wide / workflow / file-level / hook)
+    3. Recommended承载位置 + candidate text
+    4. Why this is not overfitting or duplicate constraint
+  end note
+  :Write distilled rules to the appropriate承载位置 at minimal necessary scope
+  [acts on: agent spec, skills, instructions, hooks];
+  :Remove distilled content from design/persistant-memory/intention-design.md to avoid dual fact sources
+  [acts on: IntentArchitecture, CoverageMatrix];
+
 else (other)
   :Ask for the missing event frame before changing ontology artifacts
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];

@@ -218,6 +218,37 @@ elseif (EVENT: Test environment blocker?) then (environment)
   [acts on: TestEnvironment, ArchitectureTestRun];
   :Rerun the blocked existing entrypoints after environment recovery
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint, TestFailureRecord];
+
+elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then (distill)
+  :Review design/persistant-memory/coding-and-repairing.md for repeated error patterns and the final conditions that led to success
+  [acts on: RepairTask, ArchitectureDrift, CodeReality];
+  :Classify each error pattern against the determinism formula: C(意图清晰度), P(协议规范), σ(遵循系数), B(物理护栏), E(有效能效), G(任务颗粒度), recursive(递归传导)
+  [acts on: RepairTask, ProductionBehavior];
+  note right
+    Formula-factor → CodingAndReparing improvement mapping:
+    C (Apparent Intent): confirm repair scope from handoff and failure records before editing any file
+    P (Protocol): refine forbidden-shortcut detection categories; strengthen "no test-only code branches" rules
+    σ (Adherence): strengthen "do not modify frozen test assets" guard; never skip handoff validation
+    B (Binding Power): run argo.runArchitectureTests after every repair batch; verify all explicit tests pass before completion
+    E (Eff. Efficacy): improve dependency-order repair sequencing; resolve upstream dependencies before downstream
+    G (Granularity): repair one TestFailureRecord at a time; one ProductionBehavior change per step
+    Recursive (依赖传导): verify all architecture tests pass before declaring completion; report remaining failures
+  end note
+  :Distill 1-3 executable rules following distill-agent-rules methodology:
+  fix incident boundary → rewrite complaint to observable rule → classify scope → select minimal承载位置
+  [acts on: RepairTask, CodeReality];
+  note right
+    Must produce per distilled rule:
+    1. Observable trigger condition
+    2. Scope classification
+    3. Recommended承载位置 + candidate text
+    4. Why this is not overfitting or duplicate constraint
+  end note
+  :Write distilled rules to the appropriate承载位置 at minimal necessary scope
+  [acts on: agent spec, skills, instructions, hooks];
+  :Remove distilled content from design/persistant-memory/coding-and-repairing.md to avoid dual fact sources
+  [acts on: RepairTask, CodeReality];
+
 else (other)
   :Ask for the missing coding or repair event frame before editing code
   [acts on: RepairTask, CodeReality, ImplementationToCodingHandoff];

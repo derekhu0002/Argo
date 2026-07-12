@@ -397,6 +397,37 @@ elseif (EVENT: Test entrypoint or guardrail gap?) then (test gap)
   stage = "implementation-to-coding"
   Validate updated handoff when emitted
   [acts on: ImplementationToCodingHandoff];
+
+elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then (distill)
+  :Review design/persistant-memory/implementation-design.md for repeated error patterns and the final conditions that led to success
+  [acts on: ImplementationArchitecture, ImplementationToCodingHandoff, TestAsset];
+  :Classify each error pattern against the determinism formula: C(意图清晰度), P(协议规范), σ(遵循系数), B(物理护栏), E(有效能效), G(任务颗粒度), recursive(递归传导)
+  [acts on: ImplementationArchitecture, ImplementationContract];
+  note right
+    Formula-factor → ImplementationDesign improvement mapping:
+    C (Apparent Intent): confirm understanding of intent scope and handoff element IDs before designing contracts
+    P (Protocol): refine contract rules for stable boundaries, dependency direction, and test ownership
+    σ (Adherence): strengthen implementation guardrail definitions; tighten interface boundary rules
+    B (Binding Power): run argo.validateStageHandoff before emitting handoff; run physicalized entrypoints to classify pass/expected-failure/blocker
+    E (Eff. Efficacy): improve boundary decomposition; one stable element per contract scope
+    G (Granularity): design one StableArchitectureElement at a time; one test entrypoint per explicit testcase
+    Recursive (依赖传导): validate frozenFiles completeness; verify all explicit entrypoints have key assertions, not placeholders
+  end note
+  :Distill 1-3 executable rules following distill-agent-rules methodology:
+  fix incident boundary → rewrite complaint to observable rule → classify scope → select minimal承载位置
+  [acts on: ImplementationArchitecture, ImplementationContract];
+  note right
+    Must produce per distilled rule:
+    1. Observable trigger condition
+    2. Scope classification
+    3. Recommended承载位置 + candidate text
+    4. Why this is not overfitting or duplicate constraint
+  end note
+  :Write distilled rules to the appropriate承载位置 at minimal necessary scope
+  [acts on: agent spec, skills, instructions, hooks];
+  :Remove distilled content from design/persistant-memory/implementation-design.md to avoid dual fact sources
+  [acts on: ImplementationArchitecture];
+
 else (other)
   :Ask for the missing implementation-design event frame before changing contracts or tests
   [acts on: ImplementationArchitecture, TestAsset, CodeReality];
