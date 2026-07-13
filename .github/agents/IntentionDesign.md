@@ -333,6 +333,18 @@ note bottom of IntentArchitecture
   4. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign via TraceabilityPointer; this agent reads them for context but does not create or modify them.
 end note
 
+note bottom of ArchitectureEntityElement
+  Delivery status (hard guardrail, NOT maintained by agents):
+  1. delivery status is stored as an element attribute: `{ name: "deliveryStatus", value: "delivered" }` in the element's `attributes` array (schema-compliant per `.argo/schema/SystemArchitecture.schema.json`).
+  2. It is automatically refreshed by `runArchitectureTests` (`.argo/scripts/runArchitectureTests.js`) every time architecture tests are executed.
+  3. An element is marked "delivered" by the test runner when:
+     a. It has at least one mounted ExplicitAcceptanceTestcase.
+     b. All its mounted ExplicitAcceptanceTestcases pass.
+     c. All its upstream dependency elements (determined by ArchiMate relationship semantics) are also "delivered".
+  4. Agents MUST NOT set or modify the deliveryStatus attribute. They read it as a read-only signal for dependency-subgraph boundary decisions.
+  5. IntentionDesign uses delivered elements as the stopping condition for dependency-subgraph exploration (see pre-handoff exploration rules).
+end note
+
 note bottom of ExplicitAcceptanceTestcase
   Logic rules:
   1. Every testcase must be an Acceptance Test.
@@ -455,11 +467,12 @@ elseif (EVENT: New task or requirement?) then (new task)
     :MCP tool: argo.getIntentElementContext
     Read dependency subgraph as coverage context
     [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, CoverageMatrix];
-    :Explore all dependency subgraph paths until already implemented element nodes are reached
+    :Explore all dependency subgraph paths until delivered element nodes are reached (attributes deliveryStatus = "delivered", refreshed by runArchitectureTests)
     [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix, CodeReality];
     note right
       For every element that needs implementation, IntentionDesign must recursively explore its dependency subgraph.
-      Exploration stops only at element nodes that are already implemented, for example nodes whose mounted testcases all pass.
+      Exploration stops only at element nodes that carry attributes deliveryStatus = "delivered" (set automatically by runArchitectureTests, not by agents).
+      An element is delivered when all its upstream dependencies are delivered AND all its own mounted testcases pass.
       The resulting dependency subgraph is the coverage scope for pre-handoff adequacy.
     end note
     :Build explicit dependency-subgraph coverage proof
@@ -469,7 +482,7 @@ elseif (EVENT: New task or requirement?) then (new task)
       1. List all functionalPoints on the element.
       2. List the exact mounted ExplicitAcceptanceTestcase ids under that same element.
       3. Map each functionalPoint to one or more mounted testcase ids that cover it.
-      4. For already implemented boundary nodes, cite evidence that the mounted testcases pass.
+      4. For delivered boundary nodes (attributes deliveryStatus = "delivered", refreshed by runArchitectureTests), cite evidence that all mounted testcases pass and all upstream dependencies are also delivered.
       Do not treat design/solution documents, terms, flows, roles, risks, interfaces, validateSystemArchitecture,
       validateStageHandoff, or ReadLints results as a substitute for same-element mounted testcase ids.
       If any element has no mounted testcase, any functionalPoint has no mapped mounted testcase, or pass evidence is required but missing,
@@ -583,7 +596,7 @@ elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then
     P (Protocol): refine pre-handoff adequacy conditions; tighten coverage proof rules; clarify element ownership
     σ (Adherence): strengthen coverage proof requirements; never accept documents as coverage evidence
     B (Binding Power): add argo.validateSystemArchitecture after every mutation; stage guardrails
-    E (Eff. Efficacy): improve dependency-subgraph exploration depth; stop only at implemented boundary nodes
+    E (Eff. Efficacy): improve dependency-subgraph exploration depth; stop only at delivered boundary nodes (attributes deliveryStatus = "delivered")
     G (Granularity): mutate one ArchitectureEntityElement at a time; one relationship direction per step
     Recursive (依赖传导): validate handoff completeness (all conditions satisfied, no unresolved blockers) before emitting
   end note

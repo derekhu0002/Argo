@@ -128,6 +128,15 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
 
     await writeFailureRecords(workspaceRoot, failureRecords);
 
+    const deliveryChanges = refreshDeliveryStatus(graph, results);
+    if (deliveryChanges.length > 0) {
+        await writeArchitectureGraph(graphPath, graph);
+        console.log(`[DELIVERY] Refreshed delivery status: ${deliveryChanges.length} element(s) changed`);
+        for (const change of deliveryChanges) {
+            console.log(`[DELIVERY]   ${change.id} "${change.name}" → ${change.deliveryStatus}`);
+        }
+    }
+
     return {
         architecturePath: resolvedArchitecturePath,
         failureRecordsPath: FAILURE_RECORDS_PATH,
@@ -135,6 +144,7 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
         passedCount: results.filter(result => result.passed).length,
         failedCount: failureRecords.length,
         missingCriteriaCount: results.filter(result => result.status === 'missing-criteria').length,
+        deliveryChanges,
         results,
         failureRecords,
     };
@@ -440,6 +450,139 @@ function printSummary(summary) {
         console.log(`- ${result.testcaseName || '(unnamed testcase)'}: ${result.status} | ${result.resolvedScriptPath || '(missing)'} | ${result.executionCommand || '(n/a)'} | exitCode: ${exitCode}`);
     }
     console.log(JSON.stringify(summary, null, 2));
+}
+
+async function writeArchitectureGraph(graphPath, graph) {
+    await fs.promises.writeFile(graphPath, JSON.stringify(graph, null, 2) + '\n', 'utf8');
+}
+
+// --- Delivery Status Refresh (hard guardrail: computed by test runner, not by agents) ---
+
+/**
+ * Dependency direction for delivery:
+ * For element X, its upstream dependencies = elements X needs to be delivered first.
+ * Mirrors resolveSemanticEdges from systemarchitecture-mcp-server.js.
+ *
+ *   - Access, Assignment, Specialization: source depends on target
+ *   - Serving, Realization, Flow, Triggering, Influence: target depends on source
+ *   - Composition, Aggregation: both directions are dependencies
+ */
+const DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = new Set(['Access', 'Assignment', 'Specialization']);
+const DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE = new Set(['Serving', 'Realization', 'Flow', 'Triggering', 'Influence']);
+const DEPENDENCY_TYPES_BIDIRECTIONAL = new Set(['Composition', 'Aggregation']);
+
+/**
+ * Resolve upstream dependencies for a single element.
+ * Returns the set of element IDs that this element depends on.
+ */
+function resolveUpstreamDependencies(elementId, relationships) {
+    const dependencies = new Set();
+    for (const rel of relationships || []) {
+        const sourceId = String(rel.source_id || rel.source || '');
+        const targetId = String(rel.target_id || rel.target || '');
+        const relType = String(rel.type || '');
+
+        if (elementId === sourceId && elementId === targetId) continue;
+
+        if (DEPENDENCY_TYPES_BIDIRECTIONAL.has(relType)) {
+            if (elementId === sourceId) dependencies.add(targetId);
+            if (elementId === targetId) dependencies.add(sourceId);
+            continue;
+        }
+
+        if (DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET.has(relType) && elementId === sourceId) {
+            dependencies.add(targetId);
+            continue;
+        }
+
+        if (DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE.has(relType) && elementId === targetId) {
+            dependencies.add(sourceId);
+        }
+    }
+    return dependencies;
+}
+
+/**
+ * Refresh delivery status for all elements based on test results and dependency topology.
+ * An element is "delivered" when:
+ *   1. It has at least one testcase AND all its testcases passed
+ *   2. All its upstream dependencies are also "delivered"
+ *
+ * Processes iteratively until fixed point to handle transitive dependency chains.
+ * Returns the list of elements whose delivery status changed.
+ */
+function refreshDeliveryStatus(graph, testResults) {
+    if (!graph || !graph.elements) return [];
+
+    // Build test-results map: elementId → { allPassed, hasTestcases }
+    const testResultByElement = new Map();
+    for (const result of testResults) {
+        const eid = String(result.elementId || '');
+        if (!testResultByElement.has(eid)) {
+            testResultByElement.set(eid, { allPassed: true, hasTestcases: false });
+        }
+        const entry = testResultByElement.get(eid);
+        entry.hasTestcases = true;
+        if (!result.passed) {
+            entry.allPassed = false;
+        }
+    }
+
+    // Build upstream dependency map for all elements
+    const upstreamDeps = new Map();
+    for (const element of graph.elements) {
+        const eid = String(element.id || '');
+        upstreamDeps.set(eid, resolveUpstreamDependencies(eid, graph.relationships));
+    }
+
+    // Current delivery status from graph (stored in attributes array per schema)
+    const deliveryStatus = new Map();
+    for (const element of graph.elements) {
+        const eid = String(element.id || '');
+        const attr = (element.attributes || []).find(a => a.name === 'deliveryStatus');
+        deliveryStatus.set(eid, attr ? attr.value : '');
+    }
+
+    // Iterate to fixed point
+    const changes = [];
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const element of graph.elements) {
+            const eid = String(element.id || '');
+            if (deliveryStatus.get(eid) === 'delivered') continue;
+
+            const testInfo = testResultByElement.get(eid);
+            // Only mark elements that have testcases
+            if (!testInfo || !testInfo.hasTestcases) continue;
+            if (!testInfo.allPassed) continue;
+
+            // Check all upstream deps are delivered
+            const deps = upstreamDeps.get(eid) || new Set();
+            let allDepsDelivered = true;
+            for (const depId of deps) {
+                if (deliveryStatus.get(depId) !== 'delivered') {
+                    allDepsDelivered = false;
+                    break;
+                }
+            }
+            if (!allDepsDelivered) continue;
+
+            // Mark as delivered — store in attributes array (schema-compliant, per .argo/schema/)
+            if (!element.attributes) element.attributes = [];
+            const existing = element.attributes.find(a => a.name === 'deliveryStatus');
+            if (existing) {
+                existing.value = 'delivered';
+            } else {
+                element.attributes.push({ name: 'deliveryStatus', value: 'delivered' });
+            }
+            deliveryStatus.set(eid, 'delivered');
+            changes.push({ id: eid, name: element.name, deliveryStatus: 'delivered' });
+            changed = true;
+        }
+    }
+
+    return changes;
 }
 
 main();
