@@ -254,7 +254,7 @@ note bottom of ImplementationArchitecture
   3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
   4. Indirect implementation chains are valid when each link is declared by contracts.
   5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
-     Separation of Concerns, and stable dependency direction as active criteria.
+     Separation of Concerns, and stable dependency direction as active criteria.(use the principles from the book "Clean Architecture: A Craftsman’s Guide to Software Structure and Design” by Robert C. “Uncle Bob” Martin.")
   6. Intent-level coverage standards (CoverageMatrix, DependencySubgraph) are owned by IntentionDesign (above); this agent records implementationBoundaryEvidence.
 end note
 
