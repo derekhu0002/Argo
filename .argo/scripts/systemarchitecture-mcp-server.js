@@ -975,22 +975,6 @@ function requirePatchDoesNotChangeRelationshipIdentityOrType(relationshipId, pat
   }
 }
 
-function requireElementInViews(elementId, views) {
-  for (const view of views) {
-    if (!Array.isArray(view.included_elements) || !view.included_elements.includes(elementId)) {
-      throw new Error(`Element '${elementId}' is not included in view '${view.view_id}'`);
-    }
-  }
-}
-
-function requireRelationshipInViews(relationshipId, views) {
-  for (const view of views) {
-    if (!Array.isArray(view.included_relationships) || !view.included_relationships.includes(relationshipId)) {
-      throw new Error(`Relationship '${relationshipId}' is not included in view '${view.view_id}'`);
-    }
-  }
-}
-
 function findById(entries, id) {
   return Array.isArray(entries) ? entries.find(entry => entry && entry.id === id) : undefined;
 }
