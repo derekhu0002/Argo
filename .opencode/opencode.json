@@ -7,6 +7,10 @@
     "argo": {
       "type": "local",
       "command": ["node", ".argo/scripts/argo-mcp-server.js"]
+    },
+    "Enterprise Architect": {
+      "type": "local",
+      "command": ["C:\\Program Files\\Sparx Systems\\EA\\MCP_Server\\MCP3.exe"]
     }
   }
 }

@@ -7,6 +7,10 @@
       "env": {
         "ARGO_REPO_ROOT": "${workspaceFolder}"
       }
+    },
+    "Enterprise Architect": {
+      "command": "C:\\Program Files\\Sparx Systems\\EA\\MCP_Server\\MCP3.exe",
+      "args": [""]
     }
   }
 }
