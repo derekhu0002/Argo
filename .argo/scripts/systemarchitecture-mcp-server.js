@@ -268,7 +268,8 @@ function resolveWorkspaceRoot() {
 function resolveWorkspacePath(workspaceRoot, relativePath) {
   const normalizedPath = normalizeRelativePath(relativePath || DEFAULT_GRAPH_PATH);
   const absolutePath = path.resolve(workspaceRoot, normalizedPath);
-  if (!absolutePath.startsWith(workspaceRoot)) {
+  const normalizedRoot = path.resolve(workspaceRoot);
+  if (!absolutePath.startsWith(normalizedRoot)) {
     throw new Error(`Path escapes workspace root: ${relativePath}`);
   }
   return { absolutePath, relativePath: normalizedPath };
