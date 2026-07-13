@@ -56,15 +56,6 @@ const TOOLS = [
     },
   },
   {
-    name: 'validateSystemArchitecture',
-    description: 'Validate design/KG/SystemArchitecture.json through the repository-native schema and graph validator.',
-    inputSchema: {
-      type: 'object',
-      properties: {},
-      additionalProperties: false,
-    },
-  },
-  {
     name: 'validateStageHandoff',
     description: 'Validate Argo stage handoff JSON. Use stage intent-to-implementation or implementation-to-coding, or omit to validate all supported stages.',
     inputSchema: {
@@ -469,7 +460,7 @@ async function handleRequest(request) {
     return {
       jsonrpc: '2.0',
       id,
-      result: { tools: TOOLS },
+      result: { tools: [...TOOLS, ...systemArchitectureMcp.TOOLS] },
     };
   }
 

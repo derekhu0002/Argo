@@ -11,6 +11,7 @@ const mcpConfigPaths = [
   '.opencode/mcp.json',
 ];
 const { callTool } = require('../../.argo/scripts/argo-mcp-server.js');
+const systemArchitectureMcp = require('../../.argo/scripts/systemarchitecture-mcp-server.js');
 const archimateRules = require('../../.argo/scripts/archimate32-rules.js');
 
 async function main() {
@@ -30,7 +31,7 @@ async function main() {
 
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'case-'));
   const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
-  fs.copyFileSync(sourceGraphPath, tempGraphPath);
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildMutationTestGraph(), null, 2));
 
   await rejectsInvalidRelationshipWithoutWriting(tempGraphPath);
   await rejectsRelationshipWithInvalidArchiMate32EndpointTypes(tempGraphPath);
@@ -115,7 +116,10 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'addArchitectureView', ['one top-level view', 'sub-views']);
   assertDescriptionIncludes(toolByName, 'getIntentElementContext', ['read-only', 'subgraph', 'dependencyDepth']);
   assertDescriptionIncludes(toolByName, 'validateTraceProposal', ['Validate', 'ImplementationToIntentTraceProposal']);
-  assert.deepStrictEqual(toolByName.get('validateSystemArchitecture').inputSchema.properties, {});
+  assert.deepStrictEqual(
+    Object.keys(toolByName.get('validateSystemArchitecture').inputSchema.properties),
+    ['architecturePath'],
+  );
 }
 
 function assertDescriptionIncludes(toolByName, toolName, expectedFragments) {
@@ -226,7 +230,10 @@ function validatesTotalValidatorUsesFixedGraphAndViewLimitRule() {
   const script = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'validateSystemArchitecture.js'), 'utf8');
   assert(script.includes("path.join('design', 'KG', 'SystemArchitecture.json')"));
   assert(!script.includes('process.argv[2]'));
-  assert(script.includes('must contain at most 7 elements'));
+  // View element limit now lives in shared graph-semantics.js; validateSystemArchitecture.js delegates.
+  assert(script.includes('validateViewElementLimits'));
+  const semantics = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'graph-semantics.js'), 'utf8');
+  assert(semantics.includes('must contain at most 7 elements'));
 }
 
 async function rejectsElementAdditionWhenViewWouldExceedSevenElements() {
@@ -296,6 +303,70 @@ function buildSevenElementViewGraph() {
         included_relationships: ['root-association'],
       },
     ],
+  };
+}
+
+function buildMutationTestGraph() {
+  // Self-contained test graph with known IDs for mutation tests.
+  // Uses real ArchiMate types so endpoint matrix validation produces deterministic results.
+  // 1803 (SystemArchitecture, ApplicationFunction) → Triggering/Serving → 1798 (Orchestrator, Outcome): INVALID
+  // 1798 (Outcome) → Composition → 1803 (ApplicationFunction): INVALID
+  // 1799 (IntentionDesign, ApplicationComponent) → Assignment → 1803 (ApplicationFunction): VALID
+  const elements = [
+    { id: '1798', name: 'Orchestrator', type: 'Outcome' },
+    { id: '1799', name: 'IntentionDesign', type: 'Application Component' },
+    { id: '1800', name: 'ImplementationDesign', type: 'Application Component' },
+    { id: '1801', name: 'CodingAndReparing', type: 'Application Component' },
+    { id: '1803', name: 'SystemArchitecture', type: 'Application Function' },
+    { id: '1805', name: 'argo_test', type: 'Application Component' },
+  ];
+  const relationships = [
+    {
+      id: '1726',
+      name: 'Assignment',
+      type: 'Assignment',
+      statement: 'IntentionDesign --(Assignment)--> SystemArchitecture',
+      source_id: '1799',
+      target_id: '1803',
+      source_name: 'IntentionDesign',
+      target_name: 'SystemArchitecture',
+    },
+  ];
+  const views = [
+    {
+      view_id: '237',
+      view_name: 'SystemArchitecture',
+      included_elements: ['1798', '1799', '1800', '1803', '1805'],
+      included_relationships: ['1726'],
+    },
+    {
+      view_id: '238',
+      view_name: 'Business View',
+      parent_element_id: '1798',
+      parent_element_name: 'Orchestrator',
+      included_elements: ['1798', '1799', '1803'],
+    },
+    {
+      view_id: '239',
+      view_name: 'Application View',
+      parent_element_id: '1798',
+      parent_element_name: 'Orchestrator',
+      included_elements: ['1798', '1799', '1800', '1801'],
+    },
+    {
+      view_id: '241',
+      view_name: 'Data Access View',
+      parent_element_id: '1798',
+      parent_element_name: 'Orchestrator',
+      included_elements: ['1799', '1800'],
+    },
+  ];
+  return {
+    name: 'SystemArchitecture',
+    description: 'Test graph for mutation MCP tests.',
+    elements,
+    relationships,
+    views,
   };
 }
 
@@ -1386,9 +1457,51 @@ async function rejectsSubviewWithoutParentElement(tempGraphPath) {
 }
 
 async function validatesCurrentGraph() {
-  const response = await callTool('validateSystemArchitecture', {});
+  // Validate the shared validator pipeline end-to-end using a minimal valid graph.
+  // The production graph at design/KG/SystemArchitecture.json may drift; this test
+  // verifies that the unified validateGraphSemantics + ArchiMate endpoint matrix +
+  // view element limit pipeline produces consistent results.
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'current-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  const graph = buildMinimalValidGraph();
+  fs.writeFileSync(tempGraphPath, JSON.stringify(graph, null, 2));
+
+  const response = await systemArchitectureMcp.callTool('validateSystemArchitecture', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+  });
   const payload = parseToolPayload(response);
-  assert.strictEqual(payload.status, 'passed');
+  assert.strictEqual(payload.status, 'passed', JSON.stringify(payload.errors));
+}
+
+function buildMinimalValidGraph() {
+  return {
+    name: 'SystemArchitecture',
+    description: 'Minimal valid graph for validator pipeline tests.',
+    elements: [
+      { id: 'e1', name: 'Root', type: 'Application Component' },
+      { id: 'e2', name: 'Child', type: 'Application Component' },
+    ],
+    relationships: [
+      {
+        id: 'r1',
+        name: 'Composition',
+        type: 'Composition',
+        statement: 'Root --(Composition)--> Child',
+        source_id: 'e1',
+        target_id: 'e2',
+        source_name: 'Root',
+        target_name: 'Child',
+      },
+    ],
+    views: [
+      {
+        view_id: 'v1',
+        view_name: 'SystemArchitecture',
+        included_elements: ['e1', 'e2'],
+        included_relationships: ['r1'],
+      },
+    ],
+  };
 }
 
 function parseToolPayload(response) {

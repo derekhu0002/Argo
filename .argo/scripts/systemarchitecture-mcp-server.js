@@ -8,10 +8,10 @@ const SCHEMA_PATH_CANDIDATES = [
 ];
 
 const {
-  elementTypeMetadata,
-  relationshipCategoryByType,
-  auditRelationshipEndpointTypes,
-} = require('./archimate32-rules');
+  validateGraphSemantics,
+  validateArchiMateEndpointMatrix,
+  validateViewElementLimits,
+} = require('./graph-semantics.js');
 const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js');
 
 const HANDLED_MUTATION_TYPES = new Set([
@@ -45,10 +45,12 @@ const TOOLS = [
   },
   {
     name: 'validateSystemArchitecture',
-    description: 'Validate the current SystemArchitecture graph through schema, graph, and ArchiMate metadata rules.',
+    description: 'Validate design/KG/SystemArchitecture.json through the repository-native schema and graph validator.',
     inputSchema: {
       type: 'object',
-      properties: {},
+      properties: {
+        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+      },
       additionalProperties: false,
     },
   },
@@ -314,10 +316,14 @@ function validateDocument(document, schema, options = {}) {
   const errors = [];
   validateAgainstSchema(document, schema, '#', errors, schema);
   validateGraphSemantics(document, errors);
-  if (options.validateAllViewElementLimits) {
-    validateTouchedViewElementLimit(document, (document.views || []).map(view => view && view.view_id), errors);
-  }
-  validateTouchedArchiMateGrammar(document, options.touchedRelationshipIds || [], errors);
+  validateArchiMateEndpointMatrix(document, errors, {
+    touchedRelationshipIds: options.touchedRelationshipIds,
+  });
+  validateViewElementLimits(document, errors, {
+    touchedViewIds: options.validateAllViewElementLimits
+      ? (document.views || []).map(view => view && view.view_id)
+      : options.touchedViewIds,
+  });
   return errors;
 }
 
@@ -1021,8 +1027,8 @@ function buildMutationResult(context, mutations, write) {
   }
   const errors = validateDocument(mutationResult.document, context.schema, {
     touchedRelationshipIds: mutationResult.touchedRelationshipIds,
+    touchedViewIds: mutationResult.viewLimitCheckIds,
   });
-  validateTouchedViewElementLimit(mutationResult.document, mutationResult.viewLimitCheckIds, errors);
   const afterSummary = summarizeDocument(mutationResult.document);
   const result = {
     status: errors.length === 0 ? 'passed' : 'failed',
@@ -1107,159 +1113,6 @@ function writeGraph(graphPath, document) {
   const tempPath = `${graphPath}.${process.pid}.${Date.now()}.tmp`;
   fs.writeFileSync(tempPath, `${JSON.stringify(document, null, 2)}\n`, 'utf8');
   fs.renameSync(tempPath, graphPath);
-}
-
-function validateGraphSemantics(document, errors) {
-  if (!document || typeof document !== 'object') {
-    return;
-  }
-
-  const elements = Array.isArray(document.elements) ? document.elements : [];
-  const relationships = Array.isArray(document.relationships) ? document.relationships : [];
-  const views = Array.isArray(document.views) ? document.views : [];
-  const elementById = new Map();
-  const relationshipById = new Map();
-
-  for (const element of elements) {
-    if (!element || typeof element !== 'object') {
-      continue;
-    }
-    if (elementById.has(element.id)) {
-      errors.push(`elements contains duplicate id '${element.id}'`);
-      continue;
-    }
-    elementById.set(element.id, element);
-    if (!elementTypeMetadata.has(element.type)) {
-      errors.push(`elements '${element.id}' uses unsupported ArchiMate element type '${element.type}'`);
-    }
-  }
-
-  for (const element of elements) {
-    if (!element || typeof element !== 'object' || !element.parent) {
-      continue;
-    }
-    if (!elementById.has(element.parent)) {
-      errors.push(`elements '${element.id}' references missing parent '${element.parent}'`);
-    }
-  }
-
-  for (const relationship of relationships) {
-    if (!relationship || typeof relationship !== 'object') {
-      continue;
-    }
-    if (relationshipById.has(relationship.id)) {
-      errors.push(`relationships contains duplicate id '${relationship.id}'`);
-      continue;
-    }
-    relationshipById.set(relationship.id, relationship);
-    if (!relationshipCategoryByType.has(relationship.type)) {
-      errors.push(`relationships '${relationship.id}' uses unsupported ArchiMate relationship type '${relationship.type}'`);
-    }
-
-    const source = elementById.get(relationship.source_id);
-    if (!source) {
-      errors.push(`relationships '${relationship.id}' references missing source_id '${relationship.source_id}'`);
-    } else if (relationship.source_name !== source.name) {
-      errors.push(`relationships '${relationship.id}' source_name '${relationship.source_name}' does not match element '${relationship.source_id}' name '${source.name}'`);
-    }
-
-    const target = elementById.get(relationship.target_id);
-    if (!target) {
-      errors.push(`relationships '${relationship.id}' references missing target_id '${relationship.target_id}'`);
-    } else if (relationship.target_name !== target.name) {
-      errors.push(`relationships '${relationship.id}' target_name '${relationship.target_name}' does not match element '${relationship.target_id}' name '${target.name}'`);
-    }
-
-    const expectedStatement = source && target
-      ? `${source.name} --(${relationship.type})--> ${target.name}`
-      : undefined;
-    if (expectedStatement && relationship.statement !== expectedStatement) {
-      errors.push(`relationships '${relationship.id}' statement must be '${expectedStatement}'`);
-    }
-  }
-
-  const topLevelViews = views.filter(view => view && typeof view === 'object' && !view.parent_element_id);
-  if (topLevelViews.length !== 1) {
-    errors.push(`views must contain exactly one top-level view named 'SystemArchitecture'; found ${topLevelViews.length}`);
-  } else if (topLevelViews[0].view_name !== 'SystemArchitecture') {
-    errors.push(`top-level view '${topLevelViews[0].view_id}' view_name must be 'SystemArchitecture'`);
-  }
-
-  const elementIdsIncludedInViews = new Set();
-  const relationshipIdsIncludedInViews = new Set();
-  for (const view of views) {
-    if (!view || typeof view !== 'object') {
-      continue;
-    }
-    if (!view.parent_element_id && view.view_name !== 'SystemArchitecture') {
-      errors.push(`views '${view.view_id}' must declare parent_element_id unless it is the top-level SystemArchitecture view`);
-    }
-    if (view.parent_element_id) {
-      const parent = elementById.get(view.parent_element_id);
-      if (!parent) {
-        errors.push(`views '${view.view_id}' references missing parent_element_id '${view.parent_element_id}'`);
-      } else if (view.parent_element_name && view.parent_element_name !== parent.name) {
-        errors.push(`views '${view.view_id}' parent_element_name '${view.parent_element_name}' does not match element '${view.parent_element_id}' name '${parent.name}'`);
-      }
-    }
-    const includedElementIds = new Set(view.included_elements || []);
-    for (const elementId of view.included_elements || []) {
-      elementIdsIncludedInViews.add(elementId);
-      if (!elementById.has(elementId)) {
-        errors.push(`views '${view.view_id}' references missing included element '${elementId}'`);
-      }
-    }
-    for (const relationshipId of view.included_relationships || []) {
-      relationshipIdsIncludedInViews.add(relationshipId);
-      const relationship = relationshipById.get(relationshipId);
-      if (!relationship) {
-        errors.push(`views '${view.view_id}' references missing included relationship '${relationshipId}'`);
-        continue;
-      }
-      if (!includedElementIds.has(relationship.source_id)) {
-        errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not source element '${relationship.source_id}'`);
-      }
-      if (!includedElementIds.has(relationship.target_id)) {
-        errors.push(`views '${view.view_id}' includes relationship '${relationshipId}' but not target element '${relationship.target_id}'`);
-      }
-    }
-  }
-
-  for (const element of elements) {
-    if (element && typeof element === 'object' && !elementIdsIncludedInViews.has(element.id)) {
-      errors.push(`elements '${element.id}' must be included in at least one view`);
-    }
-  }
-
-  for (const relationship of relationships) {
-    if (relationship && typeof relationship === 'object' && !relationshipIdsIncludedInViews.has(relationship.id)) {
-      errors.push(`relationships '${relationship.id}' must be included in at least one view`);
-    }
-  }
-}
-
-function validateTouchedViewElementLimit(document, touchedViewIds, errors) {
-  if (!Array.isArray(touchedViewIds) || touchedViewIds.length === 0) {
-    return;
-  }
-  const touchedViewIdSet = new Set(touchedViewIds);
-  for (const view of document.views || []) {
-    if (!view || !touchedViewIdSet.has(view.view_id)) {
-      continue;
-    }
-    const elementCount = Array.isArray(view.included_elements) ? view.included_elements.length : 0;
-    if (elementCount > 7) {
-      errors.push(`views '${view.view_id}' must contain at most 7 elements; found ${elementCount}. Split the content into layered sub-views before adding more elements.`);
-    }
-  }
-}
-
-function validateTouchedArchiMateGrammar(document, touchedRelationshipIds, errors) {
-  if (!Array.isArray(touchedRelationshipIds) || touchedRelationshipIds.length === 0) {
-    return;
-  }
-
-  errors.push(...auditRelationshipEndpointTypes(document, touchedRelationshipIds));
 }
 
 function validateAgainstSchema(value, schemaNode, pointer, errors, rootSchema) {
@@ -1439,7 +1292,7 @@ async function callTool(name, args = {}) {
   }
 
   if (name === 'validateSystemArchitecture') {
-    const context = loadContext({});
+    const context = loadContext(args);
     const errors = validateDocument(context.document, context.schema, {
       validateAllViewElementLimits: true,
     });
