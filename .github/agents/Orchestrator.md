@@ -96,6 +96,13 @@ while (Testcase design audit passed?) is (no)
   :Resume original @IntentionDesign session to audit again;
 endwhile (yes)
 
+:Confirm human partner approved ImplementationToCodingHandoff (contracts, entrypoints, guardrails, frozenFiles, expectedFailureRecordsPath, taskExecutionPlan) before coding;
+if (Human approval incomplete?) then (yes)
+  :Forward approval question to user;
+  :Resume same @ImplementationDesign session after approval;
+else (approved)
+endif
+
 :Dispatch to @CodingAndReparing;
 
 while (Coding delivery ready?) is (no)

@@ -365,6 +365,7 @@ note bottom of IntentToImplementationHandoff
   1. Handoff must not be written before all adequacy conditions are satisfied.
   2. Handoff carries intentElementIds at architecture-element granularity.
   3. Handoff is validated by argo.validateStageHandoff before downstream consumption.
+  4. Handoff must not be emitted to downstream stages without global human approval; approvedByHuman must be true on the IntentToImplementationHandoff itself before Orchestrator dispatches it to ImplementationDesign. This is independent of per-testcase approval and applies to the entire handoff scope.
 end note
 @enduml
 ```
@@ -494,6 +495,7 @@ elseif (EVENT: New task or requirement?) then (new task)
     5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists. This condition applies only when the task or handoff scope includes ArchitectureEntityElements requiring downstream implementation.
     6. Traceability is insufficient: missing requirement source or acceptance criteria anchors in the intent graph. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign's TraceabilityPointer and is not an intent-level adequacy condition.
     7. Any mounted ExplicitAcceptanceTestcase in handoff scope was added or modified in this session but approvedByHuman is not true.
+    8. The overall IntentToImplementationHandoff has not received global human approval; approvedByHuman on the handoff itself is not true. This condition is independent of per-testcase approval and must be satisfied even when no testcases were added or modified in this session.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
     :Declare required intent architecture updates before applying mutation
@@ -514,6 +516,8 @@ elseif (EVENT: New task or requirement?) then (new task)
          add requirement source references as ArchitectureEntityElement attributes; do NOT create TraceabilityPointers (those belong to ImplementationDesign).
       7. If any mounted ExplicitAcceptanceTestcase in handoff scope lacks approvedByHuman=true,
          obtain human approval before handoff or revert the testcase change.
+      8. If the overall IntentToImplementationHandoff lacks global human approval (approvedByHuman on the handoff itself is not true),
+         present the complete handoff summary (intentElementIds, relationshipIds, coverage proof, openQuestions) to the human partner and obtain explicit approval before emission.
     end note
     :Shape intent deltas and acceptance coverage at the ontology level
     [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
