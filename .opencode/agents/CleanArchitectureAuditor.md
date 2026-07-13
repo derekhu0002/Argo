@@ -1,8 +1,8 @@
 ---
-name: CleanArchitectureAuditor
-description: "Cross-stage architecture auditor specializing in Clean Architecture principles from Robert C. Martin's \"Clean Architecture: A Craftsman's Guide to Software Structure and Design\". Audits both intent architecture (SystemArchitecture.json) and implementation architecture (contracts, directory layout, dependency direction). Keywords: clean architecture audit, dependency rule, component principles, SOLID at architecture level, stable dependencies, boundary audit."
-tools: [read, search, execute]
-argument-hint: "Describe the audit scope, such as 'audit the full architecture for Clean Architecture compliance' or 'review component dependencies and boundary crossings'."
+description: Cross-stage architecture auditor specializing in Clean Architecture principles from Robert C. Martin's \"Clean Architecture: A Craftsman's Guide to Software Structure and Design\". Audits both intent architecture (SystemArchitecture.json) and implementation architecture (contracts, directory layout, dependency direction). Keywords: clean architecture audit, dependency rule, component principles, SOLID at architecture level, stable dependencies, boundary audit.
+mode: all
+temperature: 0.5
+
 ---
 
 ## Current Stage
@@ -132,6 +132,7 @@ Flag elements that sit at the wrong layer or have dependencies pointing outward.
 ### 5. Ranked Findings
 ```
 P0 (Critical) — must fix before next delivery:
+  - [C14-ADP] Dependency cycle: A → B → C → A
   - [C11-DIP] Domain entity imports database driver
 
 P1 (High) — should fix in next design iteration:

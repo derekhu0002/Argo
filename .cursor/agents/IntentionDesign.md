@@ -333,6 +333,18 @@ note bottom of IntentArchitecture
   4. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign via TraceabilityPointer; this agent reads them for context but does not create or modify them.
 end note
 
+note bottom of ArchitectureEntityElement
+  Delivery status (hard guardrail, NOT maintained by agents):
+  1. delivery status is stored as an element attribute: `{ name: "deliveryStatus", value: "delivered" }` in the element's `attributes` array (schema-compliant per `.argo/schema/SystemArchitecture.schema.json`).
+  2. It is automatically refreshed by `runArchitectureTests` (`.argo/scripts/runArchitectureTests.js`) every time architecture tests are executed.
+  3. An element is marked "delivered" by the test runner when:
+     a. It has at least one mounted ExplicitAcceptanceTestcase.
+     b. All its mounted ExplicitAcceptanceTestcases pass.
+     c. All its upstream dependency elements (determined by ArchiMate relationship semantics) are also "delivered".
+  4. Agents MUST NOT set or modify the deliveryStatus attribute. They read it as a read-only signal for dependency-subgraph boundary decisions.
+  5. IntentionDesign uses delivered elements as the stopping condition for dependency-subgraph exploration (see pre-handoff exploration rules).
+end note
+
 note bottom of ExplicitAcceptanceTestcase
   Logic rules:
   1. Every testcase must be an Acceptance Test.
@@ -365,6 +377,7 @@ note bottom of IntentToImplementationHandoff
   1. Handoff must not be written before all adequacy conditions are satisfied.
   2. Handoff carries intentElementIds at architecture-element granularity.
   3. Handoff is validated by argo.validateStageHandoff before downstream consumption.
+  4. Handoff must not be emitted to downstream stages without global human approval; approvedByHuman must be true on the IntentToImplementationHandoff itself before Orchestrator dispatches it to ImplementationDesign. This is independent of per-testcase approval and applies to the entire handoff scope.
 end note
 @enduml
 ```
@@ -454,11 +467,12 @@ elseif (EVENT: New task or requirement?) then (new task)
     :MCP tool: argo.getIntentElementContext
     Read dependency subgraph as coverage context
     [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, CoverageMatrix];
-    :Explore all dependency subgraph paths until already implemented element nodes are reached
+    :Explore all dependency subgraph paths until delivered element nodes are reached (attributes deliveryStatus = "delivered", refreshed by runArchitectureTests)
     [acts on: DependencySubgraph, ArchitectureEntityElement, IntentRelationship, ExplicitAcceptanceTestcase, CoverageMatrix, CodeReality];
     note right
       For every element that needs implementation, IntentionDesign must recursively explore its dependency subgraph.
-      Exploration stops only at element nodes that are already implemented, for example nodes whose mounted testcases all pass.
+      Exploration stops only at element nodes that carry attributes deliveryStatus = "delivered" (set automatically by runArchitectureTests, not by agents).
+      An element is delivered when all its upstream dependencies are delivered AND all its own mounted testcases pass.
       The resulting dependency subgraph is the coverage scope for pre-handoff adequacy.
     end note
     :Build explicit dependency-subgraph coverage proof
@@ -468,7 +482,7 @@ elseif (EVENT: New task or requirement?) then (new task)
       1. List all functionalPoints on the element.
       2. List the exact mounted ExplicitAcceptanceTestcase ids under that same element.
       3. Map each functionalPoint to one or more mounted testcase ids that cover it.
-      4. For already implemented boundary nodes, cite evidence that the mounted testcases pass.
+      4. For delivered boundary nodes (attributes deliveryStatus = "delivered", refreshed by runArchitectureTests), cite evidence that all mounted testcases pass and all upstream dependencies are also delivered.
       Do not treat design/solution documents, terms, flows, roles, risks, interfaces, validateSystemArchitecture,
       validateStageHandoff, or ReadLints results as a substitute for same-element mounted testcase ids.
       If any element has no mounted testcase, any functionalPoint has no mapped mounted testcase, or pass evidence is required but missing,
@@ -494,6 +508,7 @@ elseif (EVENT: New task or requirement?) then (new task)
     5. The explicit dependency-subgraph coverage proof is missing, relies on documents or validation pass results instead of same-element mounted testcase ids, or shows any element lacks mounted acceptance testcases, any functionalPoint lacks mapped testcase coverage under its owning element, or required pass evidence is missing, and no evidence-backed exclusion exists. This condition applies only when the task or handoff scope includes ArchitectureEntityElements requiring downstream implementation.
     6. Traceability is insufficient: missing requirement source or acceptance criteria anchors in the intent graph. Code-level traceability (fileReference, symbolReference, browser_path) is owned by ImplementationDesign's TraceabilityPointer and is not an intent-level adequacy condition.
     7. Any mounted ExplicitAcceptanceTestcase in handoff scope was added or modified in this session but approvedByHuman is not true.
+    8. The overall IntentToImplementationHandoff has not received global human approval; approvedByHuman on the handoff itself is not true. This condition is independent of per-testcase approval and must be satisfied even when no testcases were added or modified in this session.
   end note
   if (Any pre-handoff adequacy condition requires intent mutation?) then (yes)
     :Declare required intent architecture updates before applying mutation
@@ -514,6 +529,8 @@ elseif (EVENT: New task or requirement?) then (new task)
          add requirement source references as ArchitectureEntityElement attributes; do NOT create TraceabilityPointers (those belong to ImplementationDesign).
       7. If any mounted ExplicitAcceptanceTestcase in handoff scope lacks approvedByHuman=true,
          obtain human approval before handoff or revert the testcase change.
+      8. If the overall IntentToImplementationHandoff lacks global human approval (approvedByHuman on the handoff itself is not true),
+         present the complete handoff summary (intentElementIds, relationshipIds, coverage proof, openQuestions) to the human partner and obtain explicit approval before emission.
     end note
     :Shape intent deltas and acceptance coverage at the ontology level
     [acts on: IntentElement, IntentRelationship, View, Principle, Constraint, ExplicitAcceptanceTestcase, FunctionalPoint, CoverageMatrix];
@@ -579,7 +596,7 @@ elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then
     P (Protocol): refine pre-handoff adequacy conditions; tighten coverage proof rules; clarify element ownership
     σ (Adherence): strengthen coverage proof requirements; never accept documents as coverage evidence
     B (Binding Power): add argo.validateSystemArchitecture after every mutation; stage guardrails
-    E (Eff. Efficacy): improve dependency-subgraph exploration depth; stop only at implemented boundary nodes
+    E (Eff. Efficacy): improve dependency-subgraph exploration depth; stop only at delivered boundary nodes (attributes deliveryStatus = "delivered")
     G (Granularity): mutate one ArchitectureEntityElement at a time; one relationship direction per step
     Recursive (依赖传导): validate handoff completeness (all conditions satisfied, no unresolved blockers) before emitting
   end note

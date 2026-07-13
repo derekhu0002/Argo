@@ -254,7 +254,7 @@ note bottom of ImplementationArchitecture
   3. Directory hierarchy means containment unless an implements mapping is explicitly declared.
   4. Indirect implementation chains are valid when each link is declared by contracts.
   5. Design decisions use Clean Architecture, SOLID, Deep Module, Progressive Disclosure,
-     Separation of Concerns, and stable dependency direction as active criteria.
+     Separation of Concerns, and stable dependency direction as active criteria.(use the principles from the book "Clean Architecture: A Craftsman’s Guide to Software Structure and Design” by Robert C. “Uncle Bob” Martin.")
   6. Intent-level coverage standards (CoverageMatrix, DependencySubgraph) are owned by IntentionDesign (above); this agent records implementationBoundaryEvidence.
 end note
 
@@ -306,6 +306,7 @@ note right
   4. Each user decision request must include recommendation, alternatives, reasons, and tradeoffs.
   5. User-facing responses begin with "Derek".
   6. If test-environment setup blocks evidence gathering or entrypoint execution, stop and ask the human partner for help, with a suggested next step when useful.
+  7. Do not emit ImplementationToCodingHandoff to downstream stages without global human approval; present the complete handoff summary (contracts, entrypoints, guardrails, frozenFiles, expectedFailureRecordsPath, taskExecutionPlan) to the human partner and obtain explicit approval before emission.
 end note
 
 if (EVENT: Refresh implementation architecture from changed tests and code?) then (refresh)
@@ -339,6 +340,13 @@ elseif (EVENT: Bootstrap implementation architecture from reverse extraction?) t
   [acts on: RootImplementationContract, LocalImplementationContract, StableArchitectureElement, InterfaceBoundary, ImplementationDependency, ImplementsMapping];
   :Write .argo/temp/ImplementationToCodingHandoff.json when enough contract-owned entrypoints and frozenFiles are available
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
+  :Present complete ImplementationToCodingHandoff summary to human partner and obtain global approval before emission
+  [acts on: ImplementationToCodingHandoff];
+  if (Human approval denied or incomplete?) then (no)
+    :Record unresolved approval blockers; do not emit handoff
+    [acts on: ImplementationToCodingHandoff];
+    stop
+  endif
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
   Validate implementation handoff when emitted
@@ -368,6 +376,13 @@ elseif (EVENT: Intent-to-implementation handoff received?) then (handoff)
   [acts on: ExplicitTestcaseEntrypoint, CodeReality, ImplementationToCodingHandoff];
   :Write .argo/temp/ImplementationToCodingHandoff.json from contracts, frozenFiles, expectedFailureRecordsPath, and taskExecutionPlan
   [acts on: ImplementationToCodingHandoff, ImplementationContract, TestAsset];
+  :Present complete ImplementationToCodingHandoff summary to human partner and obtain global approval before emission
+  [acts on: ImplementationToCodingHandoff];
+  if (Human approval denied or incomplete?) then (no)
+    :Record unresolved approval blockers; do not emit handoff
+    [acts on: ImplementationToCodingHandoff];
+    stop
+  endif
   :MCP tool: argo.validateStageHandoff
   stage = "implementation-to-coding"
   Validate implementation handoff
