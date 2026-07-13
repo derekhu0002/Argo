@@ -179,6 +179,7 @@ note right
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
   4. User-facing responses begin with "Derek".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
+  6. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (all explicit tests pass, frozen unmodified), B1-B2 (critical non-explicit tests pass), C1-C6 (contract compliance, no forbidden edits), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (gates: runArchitectureTests passes, handoff complete, no env blockers).
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
