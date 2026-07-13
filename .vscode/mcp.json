@@ -11,7 +11,11 @@
     },
     "Enterprise Architect": {
       "command": "C:\\Program Files\\Sparx Systems\\EA\\MCP_Server\\MCP3.exe",
-      "args": [""]
+      "args": [
+        "-enableEdit",
+        "-setTimeout", "30",
+        "-modifiedInfoPath", "${workspaceFolder}/.argo/logs/mcp3-modifications.csv"
+      ]
     }
   }
 }
