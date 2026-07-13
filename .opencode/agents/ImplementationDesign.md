@@ -312,6 +312,7 @@ note right
   5. User-facing responses begin with "Derek".
   6. If test-environment setup blocks evidence gathering or entrypoint execution, stop and ask the human partner for help, with a suggested next step when useful.
   7. Do not emit ImplementationToCodingHandoff to downstream stages without global human approval; present the complete handoff summary (contracts, entrypoints, guardrails, frozenFiles, expectedFailureRecordsPath, taskExecutionPlan) to the human partner and obtain explicit approval before emission.
+  8. Before emitting handoff, read_file .argo/IMPLEMENTATION_DESIGN_CHECKLIST.md and self-audit: confirm A1-A2 (contracts), B1-B4 (test assets), C1 (all 8 fields), D1 (if needed), E1-E2 (runtime records) are written to the filesystem. Then run F1 (validateStageHandoff).
 end note
 
 if (EVENT: Refresh implementation architecture from changed tests and code?) then (refresh)
