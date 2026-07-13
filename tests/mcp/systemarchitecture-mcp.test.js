@@ -25,6 +25,7 @@ async function main() {
   validatesTotalValidatorUsesFixedGraphAndViewLimitRule();
   await validatesFocusedViewToolsAreListed();
   await validatesAgentFacingToolGuidance();
+  await validatesFocusedToolDryRunDoesNotWrite();
   await validatesCurrentGraph();
   rejectsIntentHandoffWhenListedElementHasNoMountedTestcase();
   allowsIntentHandoffWhenOnlyDependencyElementHasNoMountedTestcase();
@@ -109,7 +110,7 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'getSystemArchitecture', ['Start here', 'read-only']);
   assertDescriptionIncludes(toolByName, 'previewSystemArchitectureMutation', ['Use before apply', 'dry-run', 'does not write']);
   assertDescriptionIncludes(toolByName, 'applySystemArchitectureMutation', ['Use for multi-step', 'atomic']);
-  assertDescriptionIncludes(toolByName, 'addArchitectureElement', ['Use for one element', 'view_ids']);
+  assertDescriptionIncludes(toolByName, 'addArchitectureElement', ['Use for one element', 'view_ids', 'dryRun']);
   assertDescriptionIncludes(toolByName, 'addArchitectureRelationship', ['relationship.type', 'ArchiMate 3.2']);
   assertDescriptionIncludes(toolByName, 'removeArchitectureElement', ['cascades related relationships', 'view_ids']);
   assertDescriptionIncludes(toolByName, 'removeArchitectureRelationship', ['view_ids', 'all views']);
@@ -1454,6 +1455,41 @@ async function rejectsSubviewWithoutParentElement(tempGraphPath) {
     payload.errors.some(error => error.includes('must declare parent_element_id')),
     `Expected missing parent_element_id error, got: ${JSON.stringify(payload.errors)}`,
   );
+}
+
+async function validatesFocusedToolDryRunDoesNotWrite() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'dryrun-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildMinimalValidGraph(), null, 2));
+
+  const beforeContent = fs.readFileSync(tempGraphPath, 'utf8');
+  const relativePath = path.relative(repoRoot, tempGraphPath);
+
+  // dryRun: true → should NOT write
+  const dryResponse = await systemArchitectureMcp.callTool('addArchitectureElement', {
+    architecturePath: relativePath,
+    element: { id: 'e3', name: 'DryRunElement', type: 'Application Component' },
+    view_ids: ['v1'],
+    dryRun: true,
+  });
+  const dryPayload = parseToolPayload(dryResponse);
+  assert.strictEqual(dryPayload.status, 'passed', JSON.stringify(dryPayload.errors));
+  assert.strictEqual(dryPayload.written, false);
+  assert.strictEqual(dryPayload.after.elementCount, dryPayload.before.elementCount + 1);
+  assert.strictEqual(fs.readFileSync(tempGraphPath, 'utf8'), beforeContent,
+    'dryRun must not modify the graph file');
+
+  // dryRun: false (default) → should write
+  const writeResponse = await systemArchitectureMcp.callTool('addArchitectureElement', {
+    architecturePath: relativePath,
+    element: { id: 'e3', name: 'DryRunElement', type: 'Application Component' },
+    view_ids: ['v1'],
+  });
+  const writePayload = parseToolPayload(writeResponse);
+  assert.strictEqual(writePayload.status, 'passed', JSON.stringify(writePayload.errors));
+  assert.strictEqual(writePayload.written, true);
+  assert.notStrictEqual(fs.readFileSync(tempGraphPath, 'utf8'), beforeContent,
+    'default (no dryRun) must write to the graph file');
 }
 
 async function validatesCurrentGraph() {

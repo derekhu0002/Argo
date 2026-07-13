@@ -84,13 +84,14 @@ const TOOLS = [
   },
   {
     name: 'addArchitectureElement',
-    description: 'Use for one element. Creates a new element or adds an existing element to view_ids. view_ids is required so elements never exist outside views.',
+    description: 'Use for one element. Creates a new element or adds an existing element to view_ids. view_ids is required so elements never exist outside views. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['element', 'view_ids'],
       properties: {
         element: { type: 'object' },
         view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -98,13 +99,14 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureElement',
-    description: 'Use for one global element metadata patch. Does not change view membership. Element id and type are immutable; remove and re-add to change them.',
+    description: 'Use for one global element metadata patch. Does not change view membership. Element id and type are immutable; remove and re-add to change them. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -112,13 +114,14 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureElement',
-    description: 'Use for one element removal. With view_ids, removes only from those views and cascades related relationships in the same views; without view_ids, removes from all views and the graph.',
+    description: 'Use for one element removal. With view_ids, removes only from those views and cascades related relationships in the same views; without view_ids, removes from all views and the graph. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['id'],
       properties: {
         id: { type: 'string' },
         view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -126,13 +129,14 @@ const TOOLS = [
   },
   {
     name: 'addArchitectureRelationship',
-    description: 'Use for one relationship. Creates a new relationship or adds an existing relationship to view_ids. relationship.type is the ArchiMate 3.2 relationship type and is validated against endpoint element types.',
+    description: 'Use for one relationship. Creates a new relationship or adds an existing relationship to view_ids. relationship.type is the ArchiMate 3.2 relationship type and is validated against endpoint element types. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['relationship', 'view_ids'],
       properties: {
         relationship: { type: 'object' },
         view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -140,13 +144,14 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureRelationship',
-    description: 'Use for one global relationship metadata patch, such as name, statement, source_name, or target_name. Relationship id and type are immutable; remove and re-add to change them.',
+    description: 'Use for one global relationship metadata patch, such as name, statement, source_name, or target_name. Relationship id and type are immutable; remove and re-add to change them. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['id', 'patch'],
       properties: {
         id: { type: 'string' },
         patch: { type: 'object' },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -154,13 +159,14 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureRelationship',
-    description: 'Use for one relationship removal. With view_ids, removes only from those views; without view_ids, removes from all views and deletes it from the graph.',
+    description: 'Use for one relationship removal. With view_ids, removes only from those views; without view_ids, removes from all views and deletes it from the graph. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['id'],
       properties: {
         id: { type: 'string' },
         view_ids: { type: 'array', minItems: 1, items: { type: 'string' } },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -168,12 +174,13 @@ const TOOLS = [
   },
   {
     name: 'addArchitectureView',
-    description: 'Use for one view. The graph must have exactly one top-level view named SystemArchitecture; all sub-views must attach to an element with parent_element_id.',
+    description: 'Use for one view. The graph must have exactly one top-level view named SystemArchitecture; all sub-views must attach to an element with parent_element_id. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['view'],
       properties: {
         view: { type: 'object' },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -181,13 +188,14 @@ const TOOLS = [
   },
   {
     name: 'updateArchitectureView',
-    description: 'Use for one view metadata or membership patch. Keep the one top-level view named SystemArchitecture and attach sub-views to parent elements.',
+    description: 'Use for one view metadata or membership patch. Keep the one top-level view named SystemArchitecture and attach sub-views to parent elements. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['view_id', 'patch'],
       properties: {
         view_id: { type: 'string' },
         patch: { type: 'object' },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -195,12 +203,13 @@ const TOOLS = [
   },
   {
     name: 'removeArchitectureView',
-    description: 'Use for one view removal. After removal, every remaining element and relationship must still belong to at least one view.',
+    description: 'Use for one view removal. After removal, every remaining element and relationship must still belong to at least one view. Set dryRun to preview without writing.',
     inputSchema: {
       type: 'object',
       required: ['view_id'],
       properties: {
         view_id: { type: 'string' },
+        dryRun: { type: 'boolean', description: 'When true, validates and returns the result without writing to the graph. Default: false.' },
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
       },
       additionalProperties: false,
@@ -1324,47 +1333,47 @@ async function callTool(name, args = {}) {
 
   if (name === 'addArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], !args.dryRun));
   }
 
   if (name === 'updateArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], !args.dryRun));
   }
 
   if (name === 'removeArchitectureElement') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], !args.dryRun));
   }
 
   if (name === 'addArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], !args.dryRun));
   }
 
   if (name === 'updateArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], !args.dryRun));
   }
 
   if (name === 'removeArchitectureRelationship') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], !args.dryRun));
   }
 
   if (name === 'addArchitectureView') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addView', view: args.view }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'addView', view: args.view }], !args.dryRun));
   }
 
   if (name === 'updateArchitectureView') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], !args.dryRun));
   }
 
   if (name === 'removeArchitectureView') {
     const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], true));
+    return toolResult(buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], !args.dryRun));
   }
 
   throw new Error(`Unknown tool: ${name}`);
