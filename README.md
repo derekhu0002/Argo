@@ -123,7 +123,7 @@ flowchart TD
     class G,I,K,L,N,O,P,Q,R,S,U ai
 ```
 
-意图内化完成后，由人类伙伴优先按 `/task-tidy` 输出的 Intent Delivery Roadmap / PlantUML ArchiMate Dependency Graph 顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代；若 `G_cumulative > 10` 或存在高熵风险，应优先分段交付，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到所有显性 testcase 和必要测试通过再交付。
+意图内化完成后，由人类伙伴优先按 `/task-tidy` 输出的 Intent Delivery Roadmap / PlantUML ArchiMate Dependency Graph 顺序逐个启动新会话，并将当前范围提交给 `Orchestrator`。每个交付范围都应走完整的 **意图设计 → 实现设计 → 编码/修复 → 代码实现验收 → 实现交付验收** 迭代；若 `G_cumulative > 10` 或存在高熵风险，应优先分段交付，不建议并发执行多个范围，避免多个 Agent 同时修改架构事实、测试入口或代码边界导致上下文漂移。当前范围交付后，如果还有下一个范围，应再次启动新会话进入 `Orchestrator`，由人类伙伴继续按顺序提交。`IntentionDesign` 和 `ImplementationDesign` 产出的验收测试用例必须经过人类伙伴审核；只有验收边界被确认后，才进入编码阶段。编码阶段如果遇到测试环境、依赖安装、外部服务、权限、设备等问题且 Agent 无法自行解决，应明确求助人类伙伴，环境恢复后继续执行，直到当前 handoff 范围内的显性 testcase 全部通过再交付。
 
 ##### 问题处理
 
@@ -329,6 +329,18 @@ CodingAndReparing (底层)  → 仅拥有 Code/Repair/ForbiddenShortcut，其余
 
 这使 Argo 不仅能在当前会话中走强阶段闭环，还能将 Agent 的失败经验持续固化为长期机制。详见《[影响 AI 成功交付的第一性原理：从概率滑行到确定性收敛](notes/影响%20AI%20成功交付的第一性原理：从概率滑行到确定性收敛.md)》。
 
+### 阶段交付自检清单
+
+为解决长上下文下 Agent 注意力稀释导致的交付遗漏问题，每个阶段都有独立的交付件自检清单，Agent 在关键门禁点通过 `read_file` 显式加载并逐项确认：
+
+| 阶段 | 清单文件 | 门禁点 | 项数 | 人类审批 |
+|------|----------|--------|------|----------|
+| IntentionDesign | `.argo/INTENTION_DESIGN_CHECKLIST.md` | emit IntentToImplementationHandoff 前 | 18 | ✅ 需要（per-testcase + handoff 全局） |
+| ImplementationDesign | `.argo/IMPLEMENTATION_DESIGN_CHECKLIST.md` | emit ImplementationToCodingHandoff 前 | 18 | ✅ 需要（handoff 摘要审批） |
+| CodingAndReparing | `.argo/CODING_DELIVERY_ACCEPTANCE.md` | 修复队列清空后 | 23 | ❌ 无需（机器可验证；ImplementationDesign audit 审计） |
+
+清单作为独立文件而非内嵌在 Agent 定义中，利用检索增强效应确保 Agent 在门禁点获得高密度、结构化的交付要求，而非从数百行的 Domain Ontology 和 Behavior 中隐式提取。
+
 ## 当前已录入 SubAgents 和 Skills
 
 Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 四个阶段；另有 **编排、前置业务、治理复盘、辅助工具** 等横切能力。下表说明每个 SubAgent 与 Skill 的适用阶段及其作用。
@@ -338,9 +350,9 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | 名称                              | 适用阶段           | 作用                                                                                                                                                                                                                                                | 平台                                                           |
 | ------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `Orchestrator`                  | 编排（全阶段）        | 总调度者：接收需求或问题后按阶段转交子 Agent，强制执行 `validateStageHandoff`、显性 testcase 人类审核、实现测试设计审计、编码交付审计与意图交付审计；遇到 `ImplementationToIntentTraceProposal` 时回路到意图设计；禁止直接处理需求或修改实现产物                                                                                   | Copilot、OpenCode（主 Agent）；Cursor 由 `/orchestrating` Skill 承担 |
-| `IntentionDesign`               | 意图设计           | 以 `design/KG/SystemArchitecture.json` 为唯一可变更事实源；Domain Ontology 包含 Intent（OWNED）、Coverage 标准侧（OWNED）、Handoff 桥接（OWNED），以及 Impl/Code/Test 层（READ-ONLY 认知参考）；澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，产出并校验 `.argo/temp/IntentToImplementationHandoff.json`；禁止修改业务代码、测试代码与实现契约 | 全平台                                                          |
-| `ImplementationDesign`          | 实现设计           | Domain Ontology 包含 Impl/Code/Test/Handoff（OWNED），Intent/Coverage 不在其认知模型中（通过 ID 引用上层元素）；将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏与 `TraceabilityPointer`，产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `.argo/temp/ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台                                                          |
-| `CodingAndReparing`             | 编码/修复          | Domain Ontology 仅包含 Code/Repair/ForbiddenShortcut（OWNED）；Intent/Impl/Coverage/Test/Handoff 不在其认知模型中（通过读取数据文件获取上下文）；依据 `.argo/temp/ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行既有测试入口直至显性 testcase 全部通过；禁止修改冻结测试与架构契约 | 全平台                                                          |
+| `IntentionDesign`               | 意图设计           | 以 `design/KG/SystemArchitecture.json` 为唯一可变更事实源；Domain Ontology 包含 Intent（OWNED）、Coverage 标准侧（OWNED）、Handoff 桥接（OWNED），以及 Impl/Code/Test 层（READ-ONLY 认知参考）；澄清需求，维护意图元素/关系/视图/原则/约束/显性验收 testcase，emit 前自检 `.argo/INTENTION_DESIGN_CHECKLIST.md` 全部 18 项；产出并校验 `.argo/temp/IntentToImplementationHandoff.json`；禁止修改业务代码、测试代码与实现契约 | 全平台                                                          |
+| `ImplementationDesign`          | 实现设计           | Domain Ontology 包含 Impl/Code/Test/Handoff（OWNED），Intent/Coverage 不在其认知模型中（通过 ID 引用上层元素）；将意图架构落盘为实现架构契约（`OVERALL_ARCHITECTURE.md`、局部 `ARCHITECTURE.md`）、显性 testcase 物理入口、关键非显性测试护栏与 `TraceabilityPointer`，emit 前自检 `.argo/IMPLEMENTATION_DESIGN_CHECKLIST.md` 全部 18 项；产出包含 `expectedFailureRecordsPath`、`frozenFiles` 与执行计划的 `.argo/temp/ImplementationToCodingHandoff.json`；发现意图追踪缺口时写 `ImplementationToIntentTraceProposal`；禁止直接修改意图图谱 | 全平台                                                          |
+| `CodingAndReparing`             | 编码/修复          | Domain Ontology 仅包含 Code/Repair/ForbiddenShortcut（OWNED）；Intent/Impl/Coverage/Test/Handoff 不在其认知模型中（通过读取数据文件获取上下文）；依据 `.argo/temp/ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行当前 handoff 范围内的测试入口直至全部通过（非本 handoff 范围的测试失败不阻塞）；完成前自检 `.argo/CODING_DELIVERY_ACCEPTANCE.md` 全部 23 项（机器可验证，无需人类报告；由 ImplementationDesign audit 事件审计）；禁止修改冻结测试与架构契约 | 全平台                                                          |
 | `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 以 `Domain Ontology` + `Behavior` 作为可审计认知规格，服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵、下游路由和开放问题；不直接修改正式图谱、契约或 handoff                                              | 全平台                                                          |
 | `ArchimateLanguagistAudit`      | 意图设计（审计）       | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件                                                                                                                                                     | 全平台                                                          |
 | `BusinessPartner`               | 前置/业务          | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，输出结构化 `DecisionTreeRecord`、架构依赖分析、控制点与观测点；聚焦业务本身，不进入实现设计和编码                                                                                                                                                                        | Copilot、OpenCode                                             |

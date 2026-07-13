@@ -7,7 +7,9 @@
 
 ## 核心验收准则
 
-> **所有显式测试用例通过（All Explicit Testcases Pass）**，且满足以下全部约束。
+> **当前 handoff 范围内所有显式测试用例通过**，且满足以下全部约束。
+>
+> ⚠️ **范围限定**：仅要求 `ImplementationToCodingHandoff.json` 中 `explicitEntrypoints` 和 `criticalNonExplicitTests` 列出的测试通过。其他测试（不属于本 handoff 交付范围的旧测试、未来迭代测试、非本模块测试）即使失败也不阻塞当前阶段完成。
 
 ---
 
