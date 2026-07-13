@@ -20,11 +20,12 @@ Use this skill when:
 1. 使用本地日期 `YYYY-MM-DD`。
 2. 从本次需求、缺陷或解决的问题中提取一个短名称，使用中文或英文均可；移除路径非法字符，空格可替换为 `-`。
 3. 创建目录：`docs/YYYY-MM-DD-[需求或解决的问题名称]/`。
-4. 在目录下创建且只创建这 4 个核心文档：
+4. 在目录下创建且只创建这 5 个核心文档：
    - `PRD.md`
    - `架构设计.md`
    - `代码交付自测试.md`
    - `规格验收.md`
+   - `人类验收测试指导.md`
 
 If the exact requirement name is ambiguous, ask the user for the archive directory name before writing files.
 
@@ -45,8 +46,8 @@ Do not invent missing facts. If evidence is absent, write `未提供/未找到�
 1. Identify iteration scope: requirement/problem name, accepted behavior, changed modules, and involved agents.
 2. Inspect relavant envidence, do not modify any file ,and do not execute any test.
 3. Create the archive directory under `docs/`.
-4. Write the four markdown files using the templates below.
-5. Verify all four files exist and each file has concrete evidence or explicit gaps.
+4. Write the five markdown files using the templates below.
+5. Verify all five files exist and each file has concrete evidence or explicit gaps.
 6. Return a concise summary with archive path, evidence used, and any missing evidence.
 
 ## Document Templates
@@ -190,6 +191,46 @@ flowchart TD
 
 ## 证据来源
 - [验收报告、测试记录、handoff、代码变更]
+
+### 人类验收测试指导.md
+
+# 人类验收测试指导
+
+## 测试目标
+[本次验收测试的业务目标与范围概述]
+
+## 测试环境
+- 环境：[测试环境说明，如本地/CI/预发布等]
+- 条件：[前置条件，如数据准备、配置、权限等]
+
+## 测试用例清单
+
+| 序号 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 | 关联 PRD 验收标准 |
+|------|----------|----------|----------|----------|-------------------|
+| 1 | [场景名称] | [前置条件] | [操作步骤] | [预期结果] | [PRD 验收标准引用] |
+| 2 | [场景名称] | [前置条件] | [操作步骤] | [预期结果] | [PRD 验收标准引用] |
+
+> 根据实际需要增加或减少行数。
+
+## 测试结果记录
+
+| 序号 | 实际结果 | 状态（通过/失败/阻塞） | 备注 |
+|------|----------|------------------------|------|
+| 1 | [实际结果] | [状态] | [备注] |
+| 2 | [实际结果] | [状态] | [备注] |
+
+## 边界与异常测试
+- [异常输入、边界值、并发、权限等场景]
+
+## 回归检查清单
+- [受影响的已有功能是否正常]
+
+## 测试结论
+[通过/有条件通过/不通过]  
+[总结与建议]
+
+## 证据来源
+- [手动测试记录、截图、录屏、测试报告等]
 
 # Quality Bar
 
