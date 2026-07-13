@@ -620,10 +620,45 @@ function ensureDiagram(importPkg, viewData, elementMap, viewMap, subdiagramParen
   var diagram = addDiagramToOwner(importPkg, parentElement, safeName(viewData.view_name, viewData.view_id));
   diagram.Notes = safeString(viewData.description);
   putDiagramTags(diagram, viewData);
+  storeDiagramViewIdFallback(parentElement, viewData.view_id, viewData.view_name);
   diagram.Update();
   viewMap[viewData.view_id] = diagram;
   Session.Output('Created view: ' + diagram.Name + ' (' + viewData.view_id + ')');
   return diagram;
+}
+
+function storeDiagramViewIdFallback(parentElement, viewId, viewName) {
+  if (parentElement == null) {
+    return;
+  }
+  try {
+    var tags = parentElement.TaggedValues;
+    var existingJson = '';
+    // Read existing schema_sub_view_map tag (equivalent to getElementTag)
+    try {
+      var existingTag = tags.GetByName('schema_sub_view_map');
+      if (existingTag != null) {
+        if (existingTag.Value == '<memo>' && existingTag.Notes != '') {
+          existingJson = '' + existingTag.Notes;
+        } else if (existingTag.Value != '') {
+          existingJson = '' + existingTag.Value;
+        } else {
+          existingJson = '' + existingTag.Notes;
+        }
+      }
+    } catch (ignore) {
+    }
+    var map = {};
+    if (existingJson != '') {
+      try { map = JSON.parse(existingJson); } catch (e) { map = {}; }
+    }
+    map[safeString(viewName)] = viewId;
+    putJsonTag(tags, 'schema_sub_view_map', map);
+    parentElement.Update();
+    parentElement.TaggedValues.Refresh();
+  } catch (e) {
+    // Non-critical fallback; StyleEx-based lookup remains primary.
+  }
 }
 
 function addDiagramToOwner(importPkg, parentElement, diagramName) {
@@ -1119,9 +1154,11 @@ function sanitizeTagName(name) {
 
 function setStyleToken(styleText, key, value) {
   var source = safeString(styleText);
-  var pattern = new RegExp('(^|;)' + escapeRegExp(key) + '=[^;]*', 'i');
-  if (pattern.test(source)) {
-    return source.replace(pattern, '$1' + key + '=' + value);
+  var escapedKey = escapeRegExp(key);
+  var pattern = new RegExp('(^|;)' + escapedKey + '=[^;]*', 'i');
+  var replaced = source.replace(pattern, '$1' + key + '=' + value);
+  if (replaced != source) {
+    return replaced;
   }
   if (source != '' && source.charAt(source.length - 1) != ';') {
     source += ';';

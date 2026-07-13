@@ -776,6 +776,24 @@ function getDiagramIdentifier(diagram) {
 	if (schemaId != "") {
 		return schemaId;
 	}
+	// Fallback: look up schema_sub_view_map TaggedValue on parent element by diagram name.
+	// This covers cases where EA silently drops StyleEx tokens.
+	if (diagram.ParentID != 0) {
+		var parentEle = Repository.GetElementByID(diagram.ParentID);
+		if (parentEle != null) {
+			var subViewMapJson = getElementTag(parentEle, "schema_sub_view_map");
+			if (subViewMapJson != "") {
+				try {
+					var subViewMap = JSON.parse(subViewMapJson);
+					if (subViewMap[diagram.Name] != null) {
+						return "" + subViewMap[diagram.Name];
+					}
+				} catch (e) {
+					// Ignore parse error; fall through to DiagramID.
+				}
+			}
+		}
+	}
 	if (typeof diagram.DiagramID != "undefined" && diagram.DiagramID != null && diagram.DiagramID != "") {
 		return "" + diagram.DiagramID;
 	}
