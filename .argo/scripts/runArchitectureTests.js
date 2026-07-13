@@ -13,13 +13,67 @@ const DEFAULT_ARCHITECTURE_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const FAILURE_RECORDS_PATH = 'design/KG/test-failure-records.json';
 const DEFAULT_TEST_TIMEOUT_MS = 120000;
 const TEST_TIMEOUT_MS = readPositiveInteger(process.env.ARGO_TEST_TIMEOUT_MS, DEFAULT_TEST_TIMEOUT_MS);
-const SUPPORTED_TEST_SCRIPT_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.py', '.ps1', '.cmd', '.bat']);
+const TEST_EXECUTORS_DIR = path.join(__dirname, 'test-executors');
 const DISALLOWED_ACCEPTANCE_CRITERIA_PATTERNS = [
     /[\r\n]/,
     /[|&;<>]/,
     /^['"].*['"]$/,
     /^(?:npm|pnpm|yarn|npx|node|python|py|powershell|pwsh|cmd|bash|sh)\b/i,
 ];
+
+// --- Test Executor Registry ---
+
+/** @type {Array<{name:string, canHandle:(criteria:string, wsRoot:string)=>boolean, execute:(criteria:string, wsRoot:string)=>Promise<{exitCode:number|null, stdout:string, stderr:string}>, getCommandPreview?:(criteria:string, wsRoot:string)=>string|null}>} */
+let executors = [];
+
+function loadExecutors() {
+    if (executors.length > 0) return;
+
+    // Always load the built-in default executor first
+    const defaultExecutor = require('./test-executors/default.js');
+    executors.push(defaultExecutor);
+
+    // Discover additional executors from the test-executors directory
+    if (!fs.existsSync(TEST_EXECUTORS_DIR)) return;
+
+    const entries = fs.readdirSync(TEST_EXECUTORS_DIR);
+    for (const entry of entries) {
+        if (entry === 'default.js') continue; // already loaded
+        if (entry.startsWith('_') || entry.startsWith('.')) continue; // templates / hidden files
+        if (!entry.endsWith('.js') && !entry.endsWith('.cjs') && !entry.endsWith('.mjs')) continue;
+
+        try {
+            const mod = require(path.join(TEST_EXECUTORS_DIR, entry));
+            if (mod && typeof mod.canHandle === 'function' && typeof mod.execute === 'function') {
+                executors.push(mod);
+                console.log(`[EXECUTOR] Loaded custom executor: ${mod.name || entry}`);
+            }
+        } catch (err) {
+            console.error(`[EXECUTOR] Failed to load ${entry}: ${err.message}`);
+        }
+    }
+
+    // Sort: default executor last (fallback), custom executors first
+    executors.sort((a, b) => {
+        if (a.name === 'default') return 1;
+        if (b.name === 'default') return -1;
+        return 0;
+    });
+}
+
+/**
+ * Find the first executor that can handle the given acceptanceCriteria.
+ * Returns null if no executor matches.
+ */
+function findExecutor(acceptanceCriteria) {
+    loadExecutors();
+    for (const executor of executors) {
+        if (executor.canHandle(acceptanceCriteria, repoRoot)) {
+            return executor;
+        }
+    }
+    return null;
+}
 
 async function main() {
     const architecturePath = normalizeRelativePath(process.argv[2] || DEFAULT_ARCHITECTURE_GRAPH_PATH);
@@ -86,19 +140,17 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
             continue;
         }
 
-        const parsedAcceptanceCriteria = parseAcceptanceCriteria(resolvedScriptPath);
-        const executionCommand = buildExecutionCommandPreview(parsedAcceptanceCriteria);
-        const scriptPath = path.join(workspaceRoot, ...parsedAcceptanceCriteria.scriptRelativePath.split('/'));
-        if (!fs.existsSync(scriptPath)) {
+        const executor = findExecutor(resolvedScriptPath);
+        if (!executor) {
             const result = buildExecutionResult({
                 testcase,
                 resolvedScriptPath,
-                executionCommand,
-                status: 'missing-file',
+                executionCommand: '',
+                status: 'invalid-criteria',
                 exitCode: null,
                 durationMs: 0,
                 stdout: '',
-                stderr: `test script not found: ${resolvedScriptPath}`,
+                stderr: `no test executor can handle: ${resolvedScriptPath}`,
             });
             results.push(result);
             logTestcaseFinish(index, explicitTestcases.length, result);
@@ -106,8 +158,12 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
             continue;
         }
 
+        const executionCommand = typeof executor.getCommandPreview === 'function'
+            ? executor.getCommandPreview(resolvedScriptPath, workspaceRoot)
+            : `[executor: ${executor.name || 'unknown'}] ${resolvedScriptPath}`;
+
         const start = Date.now();
-        const execution = await executeAcceptanceScript(parsedAcceptanceCriteria, workspaceRoot, scriptPath);
+        const execution = await executor.execute(resolvedScriptPath, workspaceRoot);
         const passed = execution.exitCode === 0;
         const result = buildExecutionResult({
             testcase,
@@ -212,33 +268,6 @@ function buildFailureError(result) {
     return `Test status: ${result.status}`;
 }
 
-async function executeAcceptanceScript(criteria, cwd, scriptPath) {
-    if (criteria.selector) {
-        return runPythonPytestNodeId(criteria, cwd);
-    }
-
-    const extension = path.extname(scriptPath).toLowerCase();
-    switch (extension) {
-        case '.js':
-        case '.cjs':
-        case '.mjs':
-            return runCommand(process.execPath, [scriptPath], cwd);
-        case '.py':
-            return runCommand(PYTHON_EXECUTABLE, [scriptPath], cwd);
-        case '.ps1':
-            return runCommand('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath], cwd);
-        case '.cmd':
-        case '.bat':
-            return runCommand(scriptPath, [], cwd);
-        default:
-            return runCommand(scriptPath, [], cwd);
-    }
-}
-
-async function runPythonPytestNodeId(criteria, cwd) {
-    return runCommand(PYTHON_EXECUTABLE, ['-m', 'pytest', buildPytestNodeId(criteria)], cwd);
-}
-
 function resolvePythonExecutable(workspaceRoot) {
     const candidates = process.platform === 'win32'
         ? [
@@ -278,7 +307,7 @@ async function runCommand(command, args, cwd) {
             exitCode: typeof error.code === 'number' ? error.code : 1,
             stdout: String(error.stdout || '').trim(),
             stderr: timedOut
-                ? `Command timed out after ${TEST_TIMEOUT_MS}ms: ${formatCommand(command, args)}`
+                ? `Command timed out after ${TEST_TIMEOUT_MS}ms: ${[command, ...args].join(' ')}`
                 : String(error.stderr || error.message || error).trim(),
         };
     }
@@ -298,76 +327,9 @@ function validateAcceptanceCriteria(value) {
         }
     }
 
-    const parsed = parseAcceptanceCriteria(value);
-    const extension = path.extname(parsed.scriptRelativePath).toLowerCase();
-    if (!SUPPORTED_TEST_SCRIPT_EXTENSIONS.has(extension)) {
-        return {
-            valid: false,
-            reason: `acceptanceCriteria must point to a single executable script file (${Array.from(SUPPORTED_TEST_SCRIPT_EXTENSIONS).join(', ')})`,
-        };
-    }
-
-    if (parsed.selector && extension !== '.py') {
-        return {
-            valid: false,
-            reason: 'only Python pytest node ids like tests/test_x.py::test_y are supported when acceptanceCriteria includes :: selectors',
-        };
-    }
-
-    if (parsed.selector && !parsed.selector.trim()) {
-        return {
-            valid: false,
-            reason: 'pytest node id selectors cannot be empty',
-        };
-    }
-
+    // Format-specific validation is delegated to test executors via canHandle().
+    // If no executor matches, the test loop reports 'invalid-criteria'.
     return { valid: true };
-}
-
-function parseAcceptanceCriteria(value) {
-    const [scriptRelativePath, ...selectorParts] = value.split('::');
-    return {
-        scriptRelativePath: normalizeRelativePath(scriptRelativePath),
-        selector: selectorParts.length > 0 ? selectorParts.join('::').trim() : undefined,
-    };
-}
-
-function buildPytestNodeId(criteria) {
-    return criteria.selector
-        ? `${criteria.scriptRelativePath}::${criteria.selector}`
-        : criteria.scriptRelativePath;
-}
-
-function buildExecutionCommandPreview(criteria) {
-    if (criteria.selector) {
-        return formatCommand('python', ['-m', 'pytest', buildPytestNodeId(criteria)]);
-    }
-
-    const scriptPath = criteria.scriptRelativePath;
-    const extension = path.extname(scriptPath).toLowerCase();
-    switch (extension) {
-        case '.js':
-        case '.cjs':
-        case '.mjs':
-            return formatCommand(process.execPath, [scriptPath]);
-        case '.py':
-            return formatCommand('python', [scriptPath]);
-        case '.ps1':
-            return formatCommand('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath]);
-        case '.cmd':
-        case '.bat':
-            return formatCommand(scriptPath, []);
-        default:
-            return formatCommand(scriptPath, []);
-    }
-}
-
-function formatCommand(command, args) {
-    return [quoteCommandPart(command), ...args.map(quoteCommandPart)].join(' ');
-}
-
-function quoteCommandPart(value) {
-    return /\s/.test(value) ? `"${value}"` : value;
 }
 
 function collectExplicitTestcases(graph) {
