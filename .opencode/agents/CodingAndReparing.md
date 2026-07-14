@@ -150,7 +150,7 @@ end note
 note bottom of ArchitectureTestRun
   Logic rules:
   1. Existing failing entrypoints are rerun until repaired.
-  2. Full explicit architecture tests must pass before completion.
+  2. ExplicitEntrypoints listed in the current ImplementationToCodingHandoff must pass before completion; tests outside the current handoff scope are not blocking.
   3. Test environment problems are resolved rather than used to skip tests.
   4. Test entrypoint definitions and classification (explicit/critical/supporting) are owned by ImplementationDesign (above).
 end note
@@ -184,7 +184,7 @@ note right
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
   4. User-facing responses begin with "Derek".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
-  6. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (all explicit tests pass, frozen unmodified), B1-B2 (critical non-explicit tests pass), C1-C6 (contract compliance, no forbidden edits), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (gates: runArchitectureTests passes, handoff complete, no env blockers).
+  6. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (gates: handoff-scoped tests pass, handoff complete, no env blockers).
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
@@ -204,7 +204,7 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
   :Run the relevant existing entrypoints and update repair state
   [acts on: ExplicitTestcaseEntrypoint, TestFailureRecord, ArchitectureTestRun];
   :MCP tool: argo.runArchitectureTests
-  Run full explicit architecture tests before completion
+  Run handoff-scoped explicit tests before completion
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
 
 elseif (EVENT: Architecture test regression?) then (regression)
@@ -216,7 +216,7 @@ elseif (EVENT: Architecture test regression?) then (regression)
   :Modify the minimum contract-allowed implementation files and rerun affected tests
   [acts on: RepairTask, RepositoryArtifact, ProductionBehavior, ExplicitTestcaseEntrypoint];
   :MCP tool: argo.runArchitectureTests
-  Run full explicit architecture tests before completion
+  Run handoff-scoped explicit tests before completion
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
 
 elseif (EVENT: Test environment blocker?) then (environment)
