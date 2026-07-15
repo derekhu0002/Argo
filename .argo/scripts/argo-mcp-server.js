@@ -457,10 +457,18 @@ async function handleRequest(request) {
   }
 
   if (method === 'tools/list') {
+    // Deduplicate tools by name — last writer wins.
+    // Priority order: validatorMcp > systemArchitectureMcp > local TOOLS.
+    // This ensures zero duplicate tool names in the response, which would
+    // cause VS Code's MCP client to silently drop tools.
+    const toolMap = new Map();
+    for (const tool of [...TOOLS, ...systemArchitectureMcp.TOOLS, ...validatorMcp.TOOLS]) {
+      toolMap.set(tool.name, tool);
+    }
     return {
       jsonrpc: '2.0',
       id,
-      result: { tools: [...TOOLS, ...systemArchitectureMcp.TOOLS] },
+      result: { tools: [...toolMap.values()] },
     };
   }
 

@@ -360,6 +360,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  TOOLS,
   callTool,
   main,
 };
