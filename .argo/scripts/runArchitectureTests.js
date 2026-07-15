@@ -216,6 +216,15 @@ async function readArchitectureGraph(graphPath) {
 }
 
 function buildExecutionResult(input) {
+    // Truncate stdout/stderr to bound memory: 32 tests × 4KB each = 128KB max.
+    // Error details are typically at the tail; keep the last portion.
+    const MAX_OUTPUT_CHARS = 4096;
+    const truncate = (s) => {
+        const str = String(s || '');
+        return str.length > MAX_OUTPUT_CHARS
+            ? '...(truncated)...\n' + str.slice(str.length - MAX_OUTPUT_CHARS)
+            : str;
+    };
     return {
         testcaseName: input.testcase.testcaseName,
         testDescription: input.testcase.testDescription,
@@ -227,8 +236,8 @@ function buildExecutionResult(input) {
         passed: input.status === 'passed',
         exitCode: input.exitCode,
         durationMs: input.durationMs,
-        stdout: input.stdout,
-        stderr: input.stderr,
+        stdout: truncate(input.stdout),
+        stderr: truncate(input.stderr),
     };
 }
 
@@ -517,11 +526,19 @@ function refreshDeliveryStatus(graph, testResults) {
     }
 
     // Iterate to fixed point: mark elements whose tests pass AND whose upstream deps are delivered
+    // Fixed-point iteration: an element becomes 'delivered' when its own tests pass
+    // AND all its upstream dependencies are already 'delivered'.  We must guard against
+    // re-processing already-delivered elements; otherwise the loop never terminates
+    // (every iteration re-enters the marking block for delivered elements, sets
+    // changed=true, and pushes duplicate deliveryStatus attributes — OOM on 32 tests).
     let changed = true;
     while (changed) {
         changed = false;
         for (const element of graph.elements) {
             const eid = String(element.id || '');
+
+            // Skip elements already marked as delivered in a previous iteration
+            if (deliveryStatus.get(eid) === 'delivered') continue;
 
             const testInfo = testResultByElement.get(eid);
             // Only mark elements that have testcases
