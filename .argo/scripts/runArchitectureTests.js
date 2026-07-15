@@ -189,7 +189,8 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
         await writeArchitectureGraph(graphPath, graph);
         console.log(`[DELIVERY] Refreshed delivery status: ${deliveryChanges.length} element(s) changed`);
         for (const change of deliveryChanges) {
-            console.log(`[DELIVERY]   ${change.id} "${change.name}" → ${change.deliveryStatus}`);
+            const direction = change.previousStatus === 'delivered' ? 'REGRESSION' : 'DELIVERED';
+            console.log(`[DELIVERY]   ${change.id} "${change.name}" [${direction}] ${change.previousStatus || '(none)'} → ${change.deliveryStatus}`);
         }
     }
 
@@ -470,8 +471,9 @@ function resolveUpstreamDependencies(elementId, relationships) {
  *   1. It has at least one testcase AND all its testcases passed
  *   2. All its upstream dependencies are also "delivered"
  *
- * Processes iteratively until fixed point to handle transitive dependency chains.
- * Returns the list of elements whose delivery status changed.
+ * Uses a clean-slate approach: strips all existing deliveryStatus attributes,
+ * then recomputes from scratch via fixed-point iteration.
+ * Returns the list of elements whose delivery status changed (additions and regressions).
  */
 function refreshDeliveryStatus(graph, testResults) {
     if (!graph || !graph.elements) return [];
@@ -497,22 +499,29 @@ function refreshDeliveryStatus(graph, testResults) {
         upstreamDeps.set(eid, resolveUpstreamDependencies(eid, graph.relationships));
     }
 
-    // Current delivery status from graph (stored in attributes array per schema)
-    const deliveryStatus = new Map();
+    // Record previous delivery status, then strip all deliveryStatus attributes (clean slate)
+    const previousStatus = new Map();
     for (const element of graph.elements) {
         const eid = String(element.id || '');
         const attr = (element.attributes || []).find(a => a.name === 'deliveryStatus');
-        deliveryStatus.set(eid, attr ? attr.value : '');
+        previousStatus.set(eid, attr ? attr.value : '');
+        if (element.attributes) {
+            element.attributes = element.attributes.filter(a => a.name !== 'deliveryStatus');
+        }
     }
 
-    // Iterate to fixed point
-    const changes = [];
+    // Fresh delivery status map — all elements start as undelivered
+    const deliveryStatus = new Map();
+    for (const element of graph.elements) {
+        deliveryStatus.set(String(element.id || ''), '');
+    }
+
+    // Iterate to fixed point: mark elements whose tests pass AND whose upstream deps are delivered
     let changed = true;
     while (changed) {
         changed = false;
         for (const element of graph.elements) {
             const eid = String(element.id || '');
-            if (deliveryStatus.get(eid) === 'delivered') continue;
 
             const testInfo = testResultByElement.get(eid);
             // Only mark elements that have testcases
@@ -532,15 +541,20 @@ function refreshDeliveryStatus(graph, testResults) {
 
             // Mark as delivered — store in attributes array (schema-compliant, per .argo/schema/)
             if (!element.attributes) element.attributes = [];
-            const existing = element.attributes.find(a => a.name === 'deliveryStatus');
-            if (existing) {
-                existing.value = 'delivered';
-            } else {
-                element.attributes.push({ name: 'deliveryStatus', value: 'delivered' });
-            }
+            element.attributes.push({ name: 'deliveryStatus', value: 'delivered' });
             deliveryStatus.set(eid, 'delivered');
-            changes.push({ id: eid, name: element.name, deliveryStatus: 'delivered' });
             changed = true;
+        }
+    }
+
+    // Compute changes: both additions ('' → 'delivered') and regressions ('delivered' → '')
+    const changes = [];
+    for (const element of graph.elements) {
+        const eid = String(element.id || '');
+        const prev = previousStatus.get(eid) || '';
+        const curr = deliveryStatus.get(eid) || '';
+        if (prev !== curr) {
+            changes.push({ id: eid, name: element.name, previousStatus: prev, deliveryStatus: curr || 'undelivered' });
         }
     }
 
