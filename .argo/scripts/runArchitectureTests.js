@@ -545,16 +545,19 @@ function refreshDeliveryStatus(graph, testResults) {
             if (!testInfo || !testInfo.hasTestcases) continue;
             if (!testInfo.allPassed) continue;
 
-            // Check all upstream deps are delivered
+            // Check upstream deps: only those that have testcases block delivery.
+            // Elements without testcases (e.g. architectural scaffolding) cannot
+            // be marked delivered themselves, so they should not block dependents.
             const deps = upstreamDeps.get(eid) || new Set();
-            let allDepsDelivered = true;
+            let allRelevantDepsDelivered = true;
             for (const depId of deps) {
-                if (deliveryStatus.get(depId) !== 'delivered') {
-                    allDepsDelivered = false;
+                const depInfo = testResultByElement.get(depId);
+                if (depInfo && depInfo.hasTestcases && deliveryStatus.get(depId) !== 'delivered') {
+                    allRelevantDepsDelivered = false;
                     break;
                 }
             }
-            if (!allDepsDelivered) continue;
+            if (!allRelevantDepsDelivered) continue;
 
             // Mark as delivered — store in attributes array (schema-compliant, per .argo/schema/)
             if (!element.attributes) element.attributes = [];
