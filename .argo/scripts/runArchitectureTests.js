@@ -381,8 +381,6 @@ function logTestcaseFinish(index, total, result) {
     console.log(`        command: ${result.executionCommand || '(n/a)'}`);
     if (result.stderr) {
         console.log(`        stderr: ${truncateSingleLine(result.stderr)}`);
-    } else if (result.stdout) {
-        console.log(`        stdout: ${truncateSingleLine(result.stdout)}`);
     }
     console.log(`[PROGRESS] ${JSON.stringify(buildProgressPayload(index, total, result))}`);
 }
@@ -421,7 +419,6 @@ function printSummary(summary) {
         const exitCode = result.exitCode === null ? 'n/a' : String(result.exitCode);
         console.log(`- ${result.testcaseName || '(unnamed testcase)'}: ${result.status} | ${result.resolvedScriptPath || '(missing)'} | ${result.executionCommand || '(n/a)'} | exitCode: ${exitCode}`);
     }
-    console.log(JSON.stringify(summary, null, 2));
 }
 
 async function writeArchitectureGraph(graphPath, graph) {
