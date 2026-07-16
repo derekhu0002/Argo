@@ -96,8 +96,7 @@
 [ ] C2 frozenFiles 零修改
 [ ] C3 OVERALL_ARCHITECTURE.md 未修改
 [ ] C4 **/ARCHITECTURE.md 未修改
-[ ] C5 SystemArchitecture.json 未修改
-[ ] C6 ImplementationToCodingHandoff.json 未修改
+[ ] C5 ImplementationToCodingHandoff.json 未修改
 [ ] D1 生产代码无 test-only 逻辑
 [ ] D2 最小代码量修复
 [ ] D3 修复顺序遵循依赖顺序
