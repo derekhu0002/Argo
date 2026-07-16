@@ -40,8 +40,7 @@
 | C2 | `frozenFiles` 中任何文件未被修改 | `git diff --name-only` 与 frozenFiles 交集为空 |
 | C3 | `OVERALL_ARCHITECTURE.md` 未被修改 | diff 检查 |
 | C4 | 任何 `**/ARCHITECTURE.md` 未被修改 | diff 检查 |
-| C5 | `design/KG/SystemArchitecture.json` 未被修改 | diff 检查 |
-| C6 | `.argo/temp/ImplementationToCodingHandoff.json` 未被修改 | diff 检查 |
+| C5 | `.argo/temp/ImplementationToCodingHandoff.json` 未被修改 | diff 检查 |
 
 ---
 
