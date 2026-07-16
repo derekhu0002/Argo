@@ -389,16 +389,6 @@ function buildProgressPayload(index, total, result) {
     return {
         index,
         total,
-        testcaseName: result.testcaseName,
-        testDescription: result.testDescription,
-        elementId: result.elementId,
-        acceptanceCriteria: result.acceptanceCriteria,
-        resolvedScriptPath: result.resolvedScriptPath,
-        executionCommand: result.executionCommand,
-        status: result.status,
-        passed: result.passed,
-        exitCode: result.exitCode,
-        durationMs: result.durationMs,
     };
 }
 
