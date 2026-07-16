@@ -1,0 +1,2307 @@
+{
+    "name": "System",
+    "description": "Exported from EA package System",
+    "elements": [
+        {
+            "id": "1207",
+            "name": "StrategyLayerAndMotivationAspect",
+            "type": "Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "159",
+                    "view_name": "StrategyLayerAndMotivationAspect"
+                }
+            ]
+        },
+        {
+            "id": "1208",
+            "name": "BusinessLayer",
+            "type": "Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "165",
+                    "view_name": "BusinessCapabilities"
+                },
+                {
+                    "view_id": "166",
+                    "view_name": "BusinessConstraints"
+                },
+                {
+                    "view_id": "164",
+                    "view_name": "BusinessDataEntities"
+                },
+                {
+                    "view_id": "160",
+                    "view_name": "BusinessLayer"
+                }
+            ]
+        },
+        {
+            "id": "1209",
+            "name": "ApplicationLayer",
+            "type": "Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "168",
+                    "view_name": "ApplicationInteractionsAndServices"
+                },
+                {
+                    "view_id": "161",
+                    "view_name": "ApplicationLayer"
+                },
+                {
+                    "view_id": "167",
+                    "view_name": "ApplicationPages"
+                }
+            ]
+        },
+        {
+            "id": "1210",
+            "name": "TechnologyLayer",
+            "type": "Assessment",
+            "subdiagram_views": [
+                {
+                    "view_id": "162",
+                    "view_name": "TechnologyLayer"
+                }
+            ]
+        },
+        {
+            "id": "1211",
+            "name": "ProjectManagement",
+            "type": "Assessment",
+            "attributes": [
+                {
+                    "name": "historical_references",
+                    "value": ".argo/history/decision-tree/FULL-decision-tree-jetsnack-migration.md"
+                }
+            ],
+            "subdiagram_views": [
+                {
+                    "view_id": "172",
+                    "view_name": "AdditionalCrossTrace"
+                },
+                {
+                    "view_id": "173",
+                    "view_name": "BrowseDetailTrace"
+                },
+                {
+                    "view_id": "170",
+                    "view_name": "BusinessToApplicationTrace"
+                },
+                {
+                    "view_id": "169",
+                    "view_name": "GoalToBusinessTrace"
+                },
+                {
+                    "view_id": "171",
+                    "view_name": "GoalToRequirementTrace"
+                },
+                {
+                    "view_id": "163",
+                    "view_name": "ProjectManagement"
+                },
+                {
+                    "view_id": "174",
+                    "view_name": "WorkPackages"
+                }
+            ]
+        },
+        {
+            "id": "2001",
+            "name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "type": "Goal",
+            "description": "将Jetsnack零食订购Android应用完整迁移到鸿蒙平台，达成可观测的业务等价。覆盖7个正交架构关注点。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "ROOT"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ]
+        },
+        {
+            "id": "2002",
+            "name": "STAKEHOLDER-BUSINESS-PARTNER",
+            "type": "Stakeholder",
+            "description": "BusinessPartner：负责定义迁移范围、确认业务验收标准、做出业务决策。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "ROOT"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ]
+        },
+        {
+            "id": "2003",
+            "name": "DRIVER-7-CONCERNS",
+            "type": "Driver",
+            "description": "7个正交架构关注点驱动迁移分解：C1数据与状态、C2视觉主题、C3导航与页面结构、C4UI组件库、C5动画与交互、C6平台集成、C7工程质量。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "ROOT"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ]
+        },
+        {
+            "id": "2101",
+            "name": "BO-SNACK",
+            "type": "Business Object",
+            "description": "零食实体：id、name、imageUrl、price、description、tags。28种预定义零食数据。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-01 零食实体数据完整性",
+                    "description": "验证Snack数据类包含id/name/imageRes/price/tagline/tags字段，28种预定义零食数据完整 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查Snack数据模型定义+28种零食列表",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo01_snack_entity.py"
+                }
+            ]
+        },
+        {
+            "id": "2102",
+            "name": "BO-SNACK-COLLECTION",
+            "type": "Business Object",
+            "description": "零食集合：id、name、snacks列表。含6个集合（Highlight/Normal等）。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-02 零食集合数据结构",
+                    "description": "验证SnackCollection包含id/name/snacks/type字段，6个集合定义完整（含1个Highlight: Android's picks） [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查SnackCollection数据模型+SnackRepo",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo02_snack_collection.py"
+                }
+            ]
+        },
+        {
+            "id": "2103",
+            "name": "BO-FILTER",
+            "type": "Business Object",
+            "description": "过滤器：sort/price/category/lifestyle四种类型，共5种过滤器。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-03 过滤器数据完整性",
+                    "description": "验证Filter类定义+4类过滤器列表完整(sort 3项/price 4项/category 4项/lifestyle 5项) [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查Filter数据模型+过滤器列表",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo03_filter_data.py"
+                }
+            ]
+        },
+        {
+            "id": "2104",
+            "name": "BO-SEARCH-CATEGORY",
+            "type": "Business Object",
+            "description": "搜索分类：预定义的搜索类别。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-04 搜索分类数据完整性",
+                    "description": "验证SearchCategoryCollection包含Categories+ Lifestyles 2组，每组有正确categories列表 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查searchCategoryCollections数据",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo04_search_category.py"
+                }
+            ]
+        },
+        {
+            "id": "2105",
+            "name": "BO-SEARCH-SUGGESTION-GROUP",
+            "type": "Business Object",
+            "description": "搜索建议组：搜索时的建议分组。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-05 搜索建议数据完整性",
+                    "description": "验证searchSuggestions包含至少1个SearchSuggestionGroup，每组有suggestions列表 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查searchSuggestions数据",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo05_search_suggestion.py"
+                }
+            ]
+        },
+        {
+            "id": "2106",
+            "name": "BO-ORDER-LINE",
+            "type": "Business Object",
+            "description": "订单行：snack引用 + quantity数量。购物车由多个OrderLine组成。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-06 订单行数据结构",
+                    "description": "验证OrderLine包含snack引用+count数量字段，cart初始3条订单行 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查OrderLine数据模型+cart初始数据",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo06_order_line.py"
+                }
+            ]
+        },
+        {
+            "id": "2107",
+            "name": "BO-MESSAGE",
+            "type": "Business Object",
+            "description": "消息实体：用于Snackbar错误提示，如Cart increase error。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BO-07 消息实体结构",
+                    "description": "验证Message包含id(Long)+messageId(Int)字段，SnackbarManager支持showMessage和setMessageShown [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查Message数据模型+SnackbarManager",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bo07_message.py"
+                }
+            ]
+        },
+        {
+            "id": "2201",
+            "name": "BSV-BROWSE-SNACKS",
+            "type": "Business Service",
+            "description": "浏览零食：Feed页展示零食集合列表，支持点击进入详情。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BSV-01 浏览服务数据契约",
+                    "description": "验证SnackRepo.getSnacks()返回5个集合，tastyTreats为Highlight类型含13零食，其余4个Normal类型 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "调用SnackRepo.getSnacks()",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bsv01_browse_service.py"
+                }
+            ]
+        },
+        {
+            "id": "2202",
+            "name": "BSV-SEARCH-SNACKS",
+            "type": "Business Service",
+            "description": "搜索零食：搜索页支持关键词搜索、分类浏览、过滤器筛选。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BSV-02 搜索服务数据契约",
+                    "description": "验证SearchRepo.getCategories()返回2组(Categories+Lifestyles)，getSuggestions()返回至少1组建议 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "调用SearchRepo.getCategories()和getSuggestions()",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bsv02_search_service.py"
+                }
+            ]
+        },
+        {
+            "id": "2203",
+            "name": "BSV-MANAGE-CART",
+            "type": "Business Service",
+            "description": "管理购物车：查看购物车条目、增减数量（含随机失败模拟）、滑动删除条目、支持点击条目跳转详情。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BSV-03 购物车服务状态管理",
+                    "description": "验证CartViewModel从SnackRepo初始化订单行，increaseSnackCount增加数量，decreaseSnackCount减少数量并在归零时移除条目 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "初始化CartViewModel并执行增/减操作",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bsv03_cart_service.py"
+                }
+            ]
+        },
+        {
+            "id": "2204",
+            "name": "BSV-VIEW-PROFILE",
+            "type": "Business Service",
+            "description": "查看个人资料：Profile页显示占位文本This is currently work in progress。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2.2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-BSV-04 个人资料服务状态",
+                    "description": "验证Profile页仅返回WIP占位状态，无交互元素 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查Profile页面状态契约",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_bsv04_profile_service.py"
+                }
+            ]
+        },
+        {
+            "id": "2205",
+            "name": "BSV-WIDGET-RECENT-ORDERS",
+            "type": "Business Service",
+            "description": "桌面Widget查看最近订单：服务卡片展示最近订单列表，支持点击跳转至应用购物车页。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B6"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C6"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP3"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[真机测试] AT-15 Widget卡片添加与展示",
+                    "description": "添加服务卡片到桌面后应显示最近订单列表（含图片+名称+购物车图标） [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "添加Widget到桌面",
+                    "acceptanceCriteria": "work/entry/src/test/test_at15_widget_display.py"
+                },
+                {
+                    "name": "[真机测试] AT-16 Widget点击跳转",
+                    "description": "点击卡片购物车图标应跳转到应用内购物车页面 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "点击卡片购物车图标",
+                    "acceptanceCriteria": "work/entry/src/test/test_at16_widget_click.py"
+                }
+            ]
+        },
+        {
+            "id": "2301",
+            "name": "REQ-CUSTOM-DESIGN-SYSTEM",
+            "type": "Requirement",
+            "description": "自定义品牌设计系统：JetsnackColors 20+语义色令牌、8套渐变方案、自定义字体、形状样式。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B3"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C2"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-11 [MOCK测试] 颜色系统一致性",
+                    "description": "安装APP后视觉对比Android截图，颜色应在容差范围内一致 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "视觉对比Android截图",
+                    "acceptanceCriteria": "work/entry/src/test/test_at11_color_consistency.py"
+                }
+            ]
+        },
+        {
+            "id": "2302",
+            "name": "REQ-DARK-MODE",
+            "type": "Requirement",
+            "description": "明暗双主题支持：应用跟随系统暗色模式切换主题色调。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B3"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C2"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-13 [MOCK+真机] 明暗主题切换",
+                    "description": "切换系统暗色模式后应用UI应跟随切换为暗色主题 [测试环境: MOCK测试 (L2_MOCK) + 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "切换系统暗色模式",
+                    "acceptanceCriteria": "work/entry/src/test/test_at13_dark_mode.py"
+                }
+            ]
+        },
+        {
+            "id": "2303",
+            "name": "REQ-RANDOM-FAILURE",
+            "type": "Requirement",
+            "description": "随机失败模拟：模拟网络不稳定，每5次购物车增减操作触发一次随机失败，显示Snackbar错误提示。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.3"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-RF-01 随机失败计数器逻辑",
+                    "description": "验证CartViewModel.shouldRandomlyFail()在每第5次请求返回true，其他请求返回false [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "连续调用shouldRandomlyFail()10次",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_rf01_random_failure.py"
+                }
+            ]
+        },
+        {
+            "id": "2304",
+            "name": "REQ-CODE-QUALITY-COMPLIANCE",
+            "type": "Requirement",
+            "description": "交付的鸿蒙应用必须通过平台静态代码检查，零 lint 告警。这是代码质量的业务门禁要求。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "AT-14"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C7"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP3"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-14 静态检查零告警",
+                    "description": "运行 hvigor build + code-linter 后应无 lint 告警 [测试环境: L1_BUILD] 纯CLI: hvigor build + code-linter",
+                    "type": "Acceptance Test",
+                    "Input": "运行 hvigor build + code-linter",
+                    "acceptanceCriteria": "work/entry/src/test/test_at14_static_check.py"
+                }
+            ]
+        },
+        {
+            "id": "2401",
+            "name": "CONST-PROFILE-WIP",
+            "type": "Constraint",
+            "description": "Profile页面仅需可导航到占位文本This is currently work in progress，无需实现完整个人资料功能。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2.2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-CONST-01 Profile占位约束验证",
+                    "description": "验证Profile.ets仅包含Text组件渲染占位文本，不含Button/TextInput/Form/List/Image组件 [测试环境: MOCK测试 (L3_COMPONENT)]",
+                    "type": "Acceptance Test",
+                    "Input": "静态分析Profile.ets组件声明",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_const01_profile_constraint.py"
+                }
+            ]
+        },
+        {
+            "id": "2501",
+            "name": "AC-FEED",
+            "type": "Application Component",
+            "description": "Feed页：零食列表首页，展示零食集合（含Android's picks高亮集合），底部4Tab导航。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-01 [真机测试] 启动展示Feed页",
+                    "description": "启动APP后首屏显示零食分类列表及底部4个Tab [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "启动APP",
+                    "acceptanceCriteria": "work/entry/src/test/test_at01_feed_display.py"
+                }
+            ]
+        },
+        {
+            "id": "2502",
+            "name": "AC-SEARCH",
+            "type": "Application Component",
+            "description": "搜索页：展示Categories分类、Suggestions建议、Results结果三区域，支持输入关键词过滤。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1,WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-04 [真机测试] 搜索页三区域展示",
+                    "description": "切换到SEARCH Tab后显示分类/建议/结果三区域 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "切换到SEARCH Tab",
+                    "acceptanceCriteria": "work/entry/src/test/test_at04_search_regions.py"
+                },
+                {
+                    "name": "[真机测试] AT-05 搜索过滤功能",
+                    "description": "输入搜索关键词后结果列表应过滤匹配 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "输入搜索关键词",
+                    "acceptanceCriteria": "work/entry/src/test/test_at05_search_filter.py"
+                }
+            ]
+        },
+        {
+            "id": "2503",
+            "name": "AC-CART",
+            "type": "Application Component",
+            "description": "购物车页：展示商品列表及数量，支持增减操作（含随机失败）、滑动删除。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1,WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-06 [MOCK测试] 购物车条目展示",
+                    "description": "切换到CART Tab后显示商品列表及数量 [测试环境: MOCK测试 (L3_COMPONENT)]",
+                    "type": "Acceptance Test",
+                    "Input": "切换到CART Tab",
+                    "acceptanceCriteria": "work/entry/src/test/test_at06_cart_display.py"
+                },
+                {
+                    "name": "AT-07 [MOCK+真机] 购物车数量增减+随机错误",
+                    "description": "连续点击+/-按钮5次，数量应变化且第5次触发Snackbar错误提示 [测试环境: MOCK测试 (L2_MOCK) + 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "购物车页面→连续点击+按钮5次",
+                    "acceptanceCriteria": "work/entry/src/test/test_at07_cart_quantity_error.py"
+                },
+                {
+                    "name": "[真机测试] AT-08 购物车滑动删除",
+                    "description": "左滑购物车条目后条目应被删除且列表更新 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "左滑购物车条目",
+                    "acceptanceCriteria": "work/entry/src/test/test_at08_cart_swipe_delete.py"
+                },
+                {
+                    "name": "[真机测试] AT-CART-NAV 购物车条目点击跳转详情",
+                    "description": "点击购物车条目后跳转至对应商品详情页，显示完整信息（名称/图片/描述/价格），可返回购物车 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "购物车页面→点击Gingerbread条目",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_cart_nav.py"
+                }
+            ]
+        },
+        {
+            "id": "2504",
+            "name": "AC-PROFILE",
+            "type": "Application Component",
+            "description": "个人资料页：占位页面，显示This is currently work in progress。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2.2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-10 [MOCK测试] Profile占位页",
+                    "description": "切换到PROFILE Tab后显示占位文本 [测试环境: MOCK测试 (L3_COMPONENT)]",
+                    "type": "Acceptance Test",
+                    "Input": "切换到PROFILE Tab",
+                    "acceptanceCriteria": "work/entry/src/test/test_at10_profile_placeholder.py"
+                }
+            ]
+        },
+        {
+            "id": "2505",
+            "name": "AC-FILTER",
+            "type": "Application Component",
+            "description": "过滤浮层面板：可展开/收起，支持勾选过滤项（sort/price/category/lifestyle）。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1,WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[真机测试] AT-09 过滤器面板展开/勾选",
+                    "description": "点击过滤按钮后面板展开，勾选过滤项后选中状态变化 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "点击过滤→勾选Organic",
+                    "acceptanceCriteria": "work/entry/src/test/test_at09_filter_panel.py"
+                }
+            ]
+        },
+        {
+            "id": "2506",
+            "name": "AC-SNACK-DETAIL",
+            "type": "Application Component",
+            "description": "零食详情页：展示零食名称、图片、描述、价格，支持共享元素过渡动画（或降级fade），可返回Feed。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1,WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "AT-02 [真机测试] 零食详情页完整展示",
+                    "description": "点击零食卡片后详情页展示完整零食信息（名称/图片/描述/价格） [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "点击零食卡片",
+                    "acceptanceCriteria": "work/entry/src/test/test_at02_snack_detail.py"
+                },
+                {
+                    "name": "AT-03 [真机测试] 详情页返回Feed",
+                    "description": "点击返回箭头后回到Feed列表页，Feed列表状态保持 [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "点击返回箭头",
+                    "acceptanceCriteria": "work/entry/src/test/test_at03_back_navigation.py"
+                }
+            ]
+        },
+        {
+            "id": "2601",
+            "name": "AI-SHARED-TRANSITION",
+            "type": "Application Interaction",
+            "description": "共享元素过渡动画：Feed→Detail的Bounds+Image平滑过渡（三级降级策略）。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B4.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C5"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[真机测试] AT-12 共享元素过渡动画",
+                    "description": "点击零食卡片后应看到Bounds/Image平滑过渡（或降级后fade） [测试环境: 真机测试 (L4_DEVICE)]",
+                    "type": "Acceptance Test",
+                    "Input": "点击零食卡片",
+                    "acceptanceCriteria": "work/entry/src/test/test_at12_shared_transition.py"
+                }
+            ]
+        },
+        {
+            "id": "2602",
+            "name": "AI-SWIPE-DISMISS",
+            "type": "Application Interaction",
+            "description": "购物车滑动删除：左滑条目→条目从列表消失。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B4.2"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C5"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP2"
+                }
+            ]
+        },
+        {
+            "id": "2603",
+            "name": "AI-FILTER-INTERACTION",
+            "type": "Application Interaction",
+            "description": "过滤器交互：面板展开/收起、勾选/取消过滤项。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B4"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C5"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP2"
+                }
+            ]
+        },
+        {
+            "id": "2604",
+            "name": "AI-CART-QUANTITY-CHANGE",
+            "type": "Application Interaction",
+            "description": "购物车数量增减：点击+/-按钮改变OrderLine数量，每5次触发随机失败。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B1.3"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C1"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1,WP2"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-AI-01 购物车数量变更交互逻辑",
+                    "description": "验证increaseSnackCount成功时count+1且返回success，decreaseSnackCount成功时count-1，归零时移除条目 [测试环境: MOCK测试 (L2_MOCK)]",
+                    "type": "Acceptance Test",
+                    "Input": "调用CartViewModel增/减方法",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_ai01_cart_quantity.py"
+                }
+            ]
+        },
+        {
+            "id": "2701",
+            "name": "ASV-NAVIGATION",
+            "type": "Application Service",
+            "description": "导航服务：底部4Tab导航（HOME/SEARCH/CART/PROFILE）+ Feed→Detail路由传参（snackId:Long + origin:String）。",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "B2.1"
+                },
+                {
+                    "name": "deliveryStatus",
+                    "value": "delivered"
+                },
+                {
+                    "name": "horizontalConcern",
+                    "value": "C3"
+                },
+                {
+                    "name": "workPackage",
+                    "value": "WP1"
+                }
+            ],
+            "testcases": [
+                {
+                    "name": "[MOCK测试] AT-ASV-01 导航服务路由表验证",
+                    "description": "验证NavigationService提供4个Tab(HOME/SEARCH/CART/PROFILE)，Feed→Detail路由携带snackId和origin参数 [测试环境: MOCK测试 (L3_COMPONENT)]",
+                    "type": "Acceptance Test",
+                    "Input": "检查NavigationService路由表定义",
+                    "acceptanceCriteria": "work/entry/src/test/test_at_asv01_navigation_routes.py"
+                }
+            ]
+        },
+        {
+            "id": "2801",
+            "name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "type": "Work Package",
+            "description": "WP1: 可导航核心业务 — S1(工程化)+S2(数据+视觉)+S3(组件库)+S4(导航+页面), 26 elements, 9 ATs. Complete navigable snack ordering app with all 6 pages triggerable, correct data, and consistent brand design system.",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "WP-PLAN"
+                },
+                {
+                    "name": "entryCondition",
+                    "value": "None"
+                },
+                {
+                    "name": "exitCriteria",
+                    "value": "关联的所有元素下面的AT用例通过"
+                },
+                {
+                    "name": "suggest_skills",
+                    "value": "emulator-setup: 启动Android/鸿蒙模拟器并验证adb/hdc连接; wp-harmony-build-package-run-skill: 编译+打包+安装+启动鸿蒙工作空间，WP1每完成一个阶段即可构建验证; wp-delivery-preflight-skill: WP1出口验收，组合构建+UI截图对比，验证9个AT用例的可观测业务等价; delivery-archive: 交付归档，将完整交付物归档到docs/目录;android-window-analysis 和android-window-analysis这两个SKILL用来进行界面窗口的结构化分析，验证鸿蒙应用的窗口结构与Android应用一致; "
+                }
+            ],
+            "subdiagram_views": [
+                {
+                    "view_id": "179",
+                    "view_name": "WP1-AppInteractions"
+                },
+                {
+                    "view_id": "178",
+                    "view_name": "WP1-ApplicationComponents"
+                },
+                {
+                    "view_id": "176",
+                    "view_name": "WP1-BusinessObjects"
+                },
+                {
+                    "view_id": "177",
+                    "view_name": "WP1-BusinessServices"
+                },
+                {
+                    "view_id": "175",
+                    "view_name": "WP1-Strategy-Requirements"
+                }
+            ]
+        },
+        {
+            "id": "2802",
+            "name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "type": "Work Package",
+            "description": "WP2: 交互体验完善 — S0(SharedTransition预研)+S5(动画+交互), 8 elements, 4 ATs. Overlay complete animation, gesture, and custom layout interactions on top of WP1.",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "WP-PLAN"
+                },
+                {
+                    "name": "entryCondition",
+                    "value": "WP1 exit criteria passed"
+                },
+                {
+                    "name": "exitCriteria",
+                    "value": "关联的元素均交付完成"
+                },
+                {
+                    "name": "suggest_skills",
+                    "value": "emulator-setup: 启动Android/鸿蒙模拟器并验证adb/hdc连接; wp-ui-snapshot-comparison-skill: Android vs 鸿蒙截图确定性对比，验证AT-11颜色一致性、AT-12共享过渡动画效果; wp-harmony-build-package-run-skill: 每次动画/手势修改后快速构建验证，确保可编译运行; wp-delivery-preflight-skill: WP2出口验收，组合构建+截图对比，验证4个AT用例; delivery-archive: 交付归档，将完整交付物归档到docs/目录; "
+                }
+            ],
+            "subdiagram_views": [
+                {
+                    "view_id": "181",
+                    "view_name": "WP2-AppComponents"
+                },
+                {
+                    "view_id": "180",
+                    "view_name": "WP2-AppInteractions"
+                }
+            ]
+        },
+        {
+            "id": "2803",
+            "name": "WP3-PLATFORM-INTEGRATION-QUALITY",
+            "type": "Work Package",
+            "description": "WP3: 平台集成与质量 — S6(Widget服务卡片)+S7(集成+规范验证), 1 element, 3 ATs. Desktop widget migration + zero-warning HarmonyOS static checks.",
+            "attributes": [
+                {
+                    "name": "decisionTreeNodeId",
+                    "value": "WP-PLAN"
+                },
+                {
+                    "name": "entryCondition",
+                    "value": "WP2 exit criteria passed"
+                },
+                {
+                    "name": "exitCriteria",
+                    "value": "AT-14,AT-15,AT-16"
+                },
+                {
+                    "name": "suggest_skills",
+                    "value": "emulator-setup: 启动Android/鸿蒙模拟器并验证adb/hdc连接; wp-harmony-build-package-run-skill: Widget开发后的构建+安装+启动验证; wp-delivery-preflight-skill: WP3出口验收+最终交付预检，组合构建+截图对比，验证AT-15、AT-16; delivery-archive: 交付归档，将WP1+WP2+WP3的完整交付物归档到docs/目录; "
+                }
+            ],
+            "subdiagram_views": [
+                {
+                    "view_id": "182",
+                    "view_name": "WP3-BusinessService"
+                }
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "id": "3001",
+            "statement": "STAKEHOLDER-BUSINESS-PARTNER --(Association)--> GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "name": "Stakeholder has interest in Goal",
+            "type": "Association",
+            "source_id": "2002",
+            "target_id": "2001",
+            "source_name": "STAKEHOLDER-BUSINESS-PARTNER",
+            "target_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "description": "BusinessPartner defines migration scope and acceptance criteria."
+        },
+        {
+            "id": "3002",
+            "statement": "DRIVER-7-CONCERNS --(Association)--> GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "name": "Driver motivates Goal",
+            "type": "Association",
+            "source_id": "2003",
+            "target_id": "2001",
+            "source_name": "DRIVER-7-CONCERNS",
+            "target_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE"
+        },
+        {
+            "id": "3003",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> BSV-BROWSE-SNACKS",
+            "name": "Goal drives Browse Snacks",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2201",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "BSV-BROWSE-SNACKS"
+        },
+        {
+            "id": "3004",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> BSV-SEARCH-SNACKS",
+            "name": "Goal drives Search Snacks",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2202",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "BSV-SEARCH-SNACKS"
+        },
+        {
+            "id": "3005",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> BSV-MANAGE-CART",
+            "name": "Goal drives Manage Cart",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2203",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "BSV-MANAGE-CART"
+        },
+        {
+            "id": "3006",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> BSV-VIEW-PROFILE",
+            "name": "Goal drives View Profile",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2204",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "BSV-VIEW-PROFILE"
+        },
+        {
+            "id": "3007",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> BSV-WIDGET-RECENT-ORDERS",
+            "name": "Goal drives Widget Recent Orders",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2205",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "BSV-WIDGET-RECENT-ORDERS"
+        },
+        {
+            "id": "3008",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> REQ-CUSTOM-DESIGN-SYSTEM",
+            "name": "Goal drives Design System",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2301",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "REQ-CUSTOM-DESIGN-SYSTEM"
+        },
+        {
+            "id": "3009",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> REQ-DARK-MODE",
+            "name": "Goal drives Dark Mode",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2302",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "REQ-DARK-MODE"
+        },
+        {
+            "id": "3010",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> REQ-RANDOM-FAILURE",
+            "name": "Goal drives Random Failure",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2303",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "REQ-RANDOM-FAILURE"
+        },
+        {
+            "id": "3011",
+            "statement": "BSV-BROWSE-SNACKS --(Association)--> AC-FEED",
+            "name": "Browse Snacks drives Feed",
+            "type": "Association",
+            "source_id": "2201",
+            "target_id": "2501",
+            "source_name": "BSV-BROWSE-SNACKS",
+            "target_name": "AC-FEED"
+        },
+        {
+            "id": "3012",
+            "statement": "BSV-BROWSE-SNACKS --(Association)--> AC-SNACK-DETAIL",
+            "name": "Browse Snacks drives Detail",
+            "type": "Association",
+            "source_id": "2201",
+            "target_id": "2506",
+            "source_name": "BSV-BROWSE-SNACKS",
+            "target_name": "AC-SNACK-DETAIL"
+        },
+        {
+            "id": "3013",
+            "statement": "BSV-SEARCH-SNACKS --(Association)--> AC-SEARCH",
+            "name": "Search Snacks drives Search",
+            "type": "Association",
+            "source_id": "2202",
+            "target_id": "2502",
+            "source_name": "BSV-SEARCH-SNACKS",
+            "target_name": "AC-SEARCH"
+        },
+        {
+            "id": "3014",
+            "statement": "BSV-SEARCH-SNACKS --(Association)--> AC-FILTER",
+            "name": "Search Snacks drives Filter",
+            "type": "Association",
+            "source_id": "2202",
+            "target_id": "2505",
+            "source_name": "BSV-SEARCH-SNACKS",
+            "target_name": "AC-FILTER"
+        },
+        {
+            "id": "3015",
+            "statement": "BSV-MANAGE-CART --(Association)--> AC-CART",
+            "name": "Manage Cart drives Cart",
+            "type": "Association",
+            "source_id": "2203",
+            "target_id": "2503",
+            "source_name": "BSV-MANAGE-CART",
+            "target_name": "AC-CART"
+        },
+        {
+            "id": "3016",
+            "statement": "BSV-VIEW-PROFILE --(Association)--> AC-PROFILE",
+            "name": "View Profile drives Profile",
+            "type": "Association",
+            "source_id": "2204",
+            "target_id": "2504",
+            "source_name": "BSV-VIEW-PROFILE",
+            "target_name": "AC-PROFILE"
+        },
+        {
+            "id": "3017",
+            "statement": "ASV-NAVIGATION --(Serving)--> AC-FEED",
+            "name": "Navigation serves Feed",
+            "type": "Serving",
+            "source_id": "2701",
+            "target_id": "2501",
+            "source_name": "ASV-NAVIGATION",
+            "target_name": "AC-FEED"
+        },
+        {
+            "id": "3018",
+            "statement": "ASV-NAVIGATION --(Serving)--> AC-SEARCH",
+            "name": "Navigation serves Search",
+            "type": "Serving",
+            "source_id": "2701",
+            "target_id": "2502",
+            "source_name": "ASV-NAVIGATION",
+            "target_name": "AC-SEARCH"
+        },
+        {
+            "id": "3019",
+            "statement": "ASV-NAVIGATION --(Serving)--> AC-CART",
+            "name": "Navigation serves Cart",
+            "type": "Serving",
+            "source_id": "2701",
+            "target_id": "2503",
+            "source_name": "ASV-NAVIGATION",
+            "target_name": "AC-CART"
+        },
+        {
+            "id": "3020",
+            "statement": "ASV-NAVIGATION --(Serving)--> AC-PROFILE",
+            "name": "Navigation serves Profile",
+            "type": "Serving",
+            "source_id": "2701",
+            "target_id": "2504",
+            "source_name": "ASV-NAVIGATION",
+            "target_name": "AC-PROFILE"
+        },
+        {
+            "id": "3021",
+            "statement": "ASV-NAVIGATION --(Serving)--> AC-SNACK-DETAIL",
+            "name": "Navigation serves Detail",
+            "type": "Serving",
+            "source_id": "2701",
+            "target_id": "2506",
+            "source_name": "ASV-NAVIGATION",
+            "target_name": "AC-SNACK-DETAIL"
+        },
+        {
+            "id": "3022",
+            "statement": "AI-SHARED-TRANSITION --(Triggering)--> AC-SNACK-DETAIL",
+            "name": "Shared Transition triggers Detail",
+            "type": "Triggering",
+            "source_id": "2601",
+            "target_id": "2506",
+            "source_name": "AI-SHARED-TRANSITION",
+            "target_name": "AC-SNACK-DETAIL"
+        },
+        {
+            "id": "3023",
+            "statement": "AI-SWIPE-DISMISS --(Triggering)--> AC-CART",
+            "name": "Swipe Dismiss triggers Cart",
+            "type": "Triggering",
+            "source_id": "2602",
+            "target_id": "2503",
+            "source_name": "AI-SWIPE-DISMISS",
+            "target_name": "AC-CART"
+        },
+        {
+            "id": "3024",
+            "statement": "AI-FILTER-INTERACTION --(Triggering)--> AC-FILTER",
+            "name": "Filter Interaction triggers Filter",
+            "type": "Triggering",
+            "source_id": "2603",
+            "target_id": "2505",
+            "source_name": "AI-FILTER-INTERACTION",
+            "target_name": "AC-FILTER"
+        },
+        {
+            "id": "3025",
+            "statement": "AI-CART-QUANTITY-CHANGE --(Triggering)--> AC-CART",
+            "name": "Cart Quantity Change triggers Cart",
+            "type": "Triggering",
+            "source_id": "2604",
+            "target_id": "2503",
+            "source_name": "AI-CART-QUANTITY-CHANGE",
+            "target_name": "AC-CART"
+        },
+        {
+            "id": "3026",
+            "name": "WP1 precedes WP2",
+            "type": "Triggering",
+            "source_id": "2801",
+            "target_id": "2802",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "description": "WP1 is the prerequisite for WP2; WP2 interaction polish depends on WP1 navigable core.",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Triggering)--> WP2-INTERACTION-EXPERIENCE-POLISH"
+        },
+        {
+            "id": "3027",
+            "name": "WP2 precedes WP3",
+            "type": "Triggering",
+            "source_id": "2802",
+            "target_id": "2803",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "WP3-PLATFORM-INTEGRATION-QUALITY",
+            "description": "WP2 is the prerequisite for WP3; WP3 platform integration depends on WP2 interaction polish.",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Triggering)--> WP3-PLATFORM-INTEGRATION-QUALITY"
+        },
+        {
+            "id": "3101",
+            "name": "WP1 comprises GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2001",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "description": "WP1 work package comprises delivery of this goal",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE"
+        },
+        {
+            "id": "3102",
+            "name": "WP1 comprises STAKEHOLDER-BUSINESS-PARTNER",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2002",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "STAKEHOLDER-BUSINESS-PARTNER",
+            "description": "WP1 work package comprises delivery of this stakeholder",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> STAKEHOLDER-BUSINESS-PARTNER"
+        },
+        {
+            "id": "3103",
+            "name": "WP1 comprises DRIVER-7-CONCERNS",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2003",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "DRIVER-7-CONCERNS",
+            "description": "WP1 work package comprises delivery of this driver",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> DRIVER-7-CONCERNS"
+        },
+        {
+            "id": "3104",
+            "name": "WP1 comprises REQ-CUSTOM-DESIGN-SYSTEM",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2301",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "REQ-CUSTOM-DESIGN-SYSTEM",
+            "description": "WP1 work package comprises delivery of this requirement",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> REQ-CUSTOM-DESIGN-SYSTEM"
+        },
+        {
+            "id": "3105",
+            "name": "WP1 comprises REQ-DARK-MODE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2302",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "REQ-DARK-MODE",
+            "description": "WP1 work package comprises delivery of this requirement",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> REQ-DARK-MODE"
+        },
+        {
+            "id": "3106",
+            "name": "WP1 comprises REQ-RANDOM-FAILURE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2303",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "REQ-RANDOM-FAILURE",
+            "description": "WP1 work package comprises delivery of this requirement",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> REQ-RANDOM-FAILURE"
+        },
+        {
+            "id": "3107",
+            "name": "WP1 comprises CONST-PROFILE-WIP",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2401",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "CONST-PROFILE-WIP",
+            "description": "WP1 work package comprises delivery of this constraint",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> CONST-PROFILE-WIP"
+        },
+        {
+            "id": "3108",
+            "name": "WP1 comprises BO-SNACK",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2101",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-SNACK",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-SNACK"
+        },
+        {
+            "id": "3109",
+            "name": "WP1 comprises BO-SNACK-COLLECTION",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2102",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-SNACK-COLLECTION",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-SNACK-COLLECTION"
+        },
+        {
+            "id": "3110",
+            "name": "WP1 comprises BO-FILTER",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2103",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-FILTER",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-FILTER"
+        },
+        {
+            "id": "3111",
+            "name": "WP1 comprises BO-SEARCH-CATEGORY",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2104",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-SEARCH-CATEGORY",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-SEARCH-CATEGORY"
+        },
+        {
+            "id": "3112",
+            "name": "WP1 comprises BO-SEARCH-SUGGESTION-GROUP",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2105",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-SEARCH-SUGGESTION-GROUP",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-SEARCH-SUGGESTION-GROUP"
+        },
+        {
+            "id": "3113",
+            "name": "WP1 comprises BO-ORDER-LINE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2106",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-ORDER-LINE",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-ORDER-LINE"
+        },
+        {
+            "id": "3114",
+            "name": "WP1 comprises BO-MESSAGE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2107",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BO-MESSAGE",
+            "description": "WP1 work package comprises delivery of this business object",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BO-MESSAGE"
+        },
+        {
+            "id": "3115",
+            "name": "WP1 comprises BSV-BROWSE-SNACKS",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2201",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BSV-BROWSE-SNACKS",
+            "description": "WP1 work package comprises delivery of this business service",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BSV-BROWSE-SNACKS"
+        },
+        {
+            "id": "3116",
+            "name": "WP1 comprises BSV-SEARCH-SNACKS",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2202",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BSV-SEARCH-SNACKS",
+            "description": "WP1 work package comprises delivery of this business service",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BSV-SEARCH-SNACKS"
+        },
+        {
+            "id": "3117",
+            "name": "WP1 comprises BSV-MANAGE-CART",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2203",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BSV-MANAGE-CART",
+            "description": "WP1 work package comprises delivery of this business service",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BSV-MANAGE-CART"
+        },
+        {
+            "id": "3118",
+            "name": "WP1 comprises BSV-VIEW-PROFILE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2204",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "BSV-VIEW-PROFILE",
+            "description": "WP1 work package comprises delivery of this business service",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> BSV-VIEW-PROFILE"
+        },
+        {
+            "id": "3119",
+            "name": "WP1 comprises AC-FEED",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2501",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-FEED",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-FEED"
+        },
+        {
+            "id": "3120",
+            "name": "WP1 comprises AC-SEARCH",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2502",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-SEARCH",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-SEARCH"
+        },
+        {
+            "id": "3121",
+            "name": "WP1 comprises AC-CART",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2503",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-CART",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-CART"
+        },
+        {
+            "id": "3122",
+            "name": "WP1 comprises AC-PROFILE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2504",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-PROFILE",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-PROFILE"
+        },
+        {
+            "id": "3123",
+            "name": "WP1 comprises AC-FILTER",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2505",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-FILTER",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-FILTER"
+        },
+        {
+            "id": "3124",
+            "name": "WP1 comprises AC-SNACK-DETAIL",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2506",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AC-SNACK-DETAIL",
+            "description": "WP1 work package comprises delivery of this application component",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AC-SNACK-DETAIL"
+        },
+        {
+            "id": "3125",
+            "name": "WP1 comprises ASV-NAVIGATION",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2701",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "ASV-NAVIGATION",
+            "description": "WP1 work package comprises delivery of this application service",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> ASV-NAVIGATION"
+        },
+        {
+            "id": "3126",
+            "name": "WP1 comprises AI-CART-QUANTITY-CHANGE",
+            "type": "Association",
+            "source_id": "2801",
+            "target_id": "2604",
+            "source_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "target_name": "AI-CART-QUANTITY-CHANGE",
+            "description": "WP1 work package comprises delivery of this application interaction",
+            "statement": "WP1-NAVIGABLE-CORE-BUSINESS --(Association)--> AI-CART-QUANTITY-CHANGE"
+        },
+        {
+            "id": "3127",
+            "name": "WP2 comprises AI-SHARED-TRANSITION",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2601",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AI-SHARED-TRANSITION",
+            "description": "WP2 work package comprises delivery of this application interaction",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AI-SHARED-TRANSITION"
+        },
+        {
+            "id": "3128",
+            "name": "WP2 comprises AI-SWIPE-DISMISS",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2602",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AI-SWIPE-DISMISS",
+            "description": "WP2 work package comprises delivery of this application interaction",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AI-SWIPE-DISMISS"
+        },
+        {
+            "id": "3129",
+            "name": "WP2 comprises AI-FILTER-INTERACTION",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2603",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AI-FILTER-INTERACTION",
+            "description": "WP2 work package comprises delivery of this application interaction",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AI-FILTER-INTERACTION"
+        },
+        {
+            "id": "3130",
+            "name": "WP2 comprises AC-SEARCH",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2502",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AC-SEARCH",
+            "description": "WP2 work package comprises delivery of this application component",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AC-SEARCH"
+        },
+        {
+            "id": "3131",
+            "name": "WP2 comprises AC-CART",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2503",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AC-CART",
+            "description": "WP2 work package comprises delivery of this application component",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AC-CART"
+        },
+        {
+            "id": "3132",
+            "name": "WP2 comprises AC-FILTER",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2505",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AC-FILTER",
+            "description": "WP2 work package comprises delivery of this application component",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AC-FILTER"
+        },
+        {
+            "id": "3133",
+            "name": "WP2 comprises AC-SNACK-DETAIL",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2506",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AC-SNACK-DETAIL",
+            "description": "WP2 work package comprises delivery of this application component",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AC-SNACK-DETAIL"
+        },
+        {
+            "id": "3134",
+            "name": "WP2 comprises AI-CART-QUANTITY-CHANGE",
+            "type": "Association",
+            "source_id": "2802",
+            "target_id": "2604",
+            "source_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "target_name": "AI-CART-QUANTITY-CHANGE",
+            "description": "WP2 work package comprises delivery of this application interaction",
+            "statement": "WP2-INTERACTION-EXPERIENCE-POLISH --(Association)--> AI-CART-QUANTITY-CHANGE"
+        },
+        {
+            "id": "3135",
+            "name": "WP3 comprises BSV-WIDGET-RECENT-ORDERS",
+            "type": "Association",
+            "source_id": "2803",
+            "target_id": "2205",
+            "source_name": "WP3-PLATFORM-INTEGRATION-QUALITY",
+            "target_name": "BSV-WIDGET-RECENT-ORDERS",
+            "description": "WP3 work package comprises delivery of this business service",
+            "statement": "WP3-PLATFORM-INTEGRATION-QUALITY --(Association)--> BSV-WIDGET-RECENT-ORDERS"
+        },
+        {
+            "id": "3136",
+            "name": "Goal drives Code Quality Compliance",
+            "type": "Association",
+            "source_id": "2001",
+            "target_id": "2304",
+            "source_name": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE",
+            "target_name": "REQ-CODE-QUALITY-COMPLIANCE",
+            "description": "总体业务等价目标驱动代码质量合规需求",
+            "statement": "GOAL-OBSERVABLE-BUSINESS-EQUIVALENCE --(Association)--> REQ-CODE-QUALITY-COMPLIANCE"
+        },
+        {
+            "id": "3137",
+            "name": "WP3 comprises Code Quality Compliance",
+            "type": "Association",
+            "source_id": "2803",
+            "target_id": "2304",
+            "source_name": "WP3-PLATFORM-INTEGRATION-QUALITY",
+            "target_name": "REQ-CODE-QUALITY-COMPLIANCE",
+            "description": "WP3 work package comprises delivery of this requirement",
+            "statement": "WP3-PLATFORM-INTEGRATION-QUALITY --(Association)--> REQ-CODE-QUALITY-COMPLIANCE"
+        }
+    ],
+    "views": [
+        {
+            "view_id": "159",
+            "view_name": "StrategyLayerAndMotivationAspect",
+            "parent_element_id": "1207",
+            "parent_element_name": "StrategyLayerAndMotivationAspect",
+            "included_elements": [
+                "2001",
+                "2002",
+                "2003"
+            ],
+            "included_relationships": [
+                "3001",
+                "3002"
+            ]
+        },
+        {
+            "view_id": "160",
+            "view_name": "BusinessLayer",
+            "parent_element_id": "1208",
+            "parent_element_name": "BusinessLayer",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "161",
+            "view_name": "ApplicationLayer",
+            "parent_element_id": "1209",
+            "parent_element_name": "ApplicationLayer",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "162",
+            "view_name": "TechnologyLayer",
+            "parent_element_id": "1210",
+            "parent_element_name": "TechnologyLayer",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "163",
+            "view_name": "ProjectManagement",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [],
+            "included_relationships": []
+        },
+        {
+            "view_id": "158",
+            "view_name": "SystemArchitecture",
+            "included_elements": [
+                "1207",
+                "1208",
+                "1209",
+                "1210",
+                "1211"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "164",
+            "view_name": "BusinessDataEntities",
+            "parent_element_id": "1208",
+            "parent_element_name": "BusinessLayer",
+            "included_elements": [
+                "2101",
+                "2102",
+                "2103",
+                "2104",
+                "2105",
+                "2106",
+                "2107"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "165",
+            "view_name": "BusinessCapabilities",
+            "parent_element_id": "1208",
+            "parent_element_name": "BusinessLayer",
+            "included_elements": [
+                "2201",
+                "2202",
+                "2203",
+                "2204",
+                "2205"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "166",
+            "view_name": "BusinessConstraints",
+            "parent_element_id": "1208",
+            "parent_element_name": "BusinessLayer",
+            "included_elements": [
+                "2301",
+                "2302",
+                "2303",
+                "2401",
+                "2304"
+            ],
+            "included_relationships": []
+        },
+        {
+            "view_id": "167",
+            "view_name": "ApplicationPages",
+            "parent_element_id": "1209",
+            "parent_element_name": "ApplicationLayer",
+            "included_elements": [
+                "2501",
+                "2502",
+                "2503",
+                "2504",
+                "2505",
+                "2506",
+                "2701"
+            ],
+            "included_relationships": [
+                "3017",
+                "3018",
+                "3019",
+                "3020",
+                "3021"
+            ]
+        },
+        {
+            "view_id": "168",
+            "view_name": "ApplicationInteractionsAndServices",
+            "parent_element_id": "1209",
+            "parent_element_name": "ApplicationLayer",
+            "included_elements": [
+                "2601",
+                "2602",
+                "2603",
+                "2604",
+                "2701",
+                "2503",
+                "2506"
+            ],
+            "included_relationships": [
+                "3022",
+                "3023",
+                "3025"
+            ]
+        },
+        {
+            "view_id": "169",
+            "view_name": "GoalToBusinessTrace",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2001",
+                "2201",
+                "2202",
+                "2203",
+                "2204",
+                "2205"
+            ],
+            "included_relationships": [
+                "3003",
+                "3004",
+                "3005",
+                "3006",
+                "3007"
+            ]
+        },
+        {
+            "view_id": "170",
+            "view_name": "BusinessToApplicationTrace",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2201",
+                "2202",
+                "2203",
+                "2204",
+                "2501",
+                "2503",
+                "2502"
+            ],
+            "included_relationships": [
+                "3011",
+                "3013",
+                "3015"
+            ]
+        },
+        {
+            "view_id": "171",
+            "view_name": "GoalToRequirementTrace",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2001",
+                "2301",
+                "2302",
+                "2303",
+                "2304"
+            ],
+            "included_relationships": [
+                "3008",
+                "3009",
+                "3010",
+                "3136"
+            ]
+        },
+        {
+            "view_id": "172",
+            "view_name": "AdditionalCrossTrace",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2603",
+                "2505",
+                "2202",
+                "2204",
+                "2504"
+            ],
+            "included_relationships": [
+                "3014",
+                "3016",
+                "3024"
+            ]
+        },
+        {
+            "view_id": "173",
+            "view_name": "BrowseDetailTrace",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2201",
+                "2506",
+                "2601"
+            ],
+            "included_relationships": [
+                "3012"
+            ]
+        },
+        {
+            "view_id": "174",
+            "view_name": "WorkPackages",
+            "parent_element_id": "1211",
+            "parent_element_name": "ProjectManagement",
+            "included_elements": [
+                "2801",
+                "2802",
+                "2803",
+                "2001",
+                "2304"
+            ],
+            "included_relationships": [
+                "3026",
+                "3027",
+                "3136",
+                "3137"
+            ]
+        },
+        {
+            "view_id": "175",
+            "view_name": "WP1-Strategy-Requirements",
+            "parent_element_id": "2801",
+            "parent_element_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "included_elements": [
+                "2801",
+                "2001",
+                "2002",
+                "2003",
+                "2301",
+                "2302",
+                "2303"
+            ],
+            "included_relationships": [
+                "3101",
+                "3102",
+                "3103",
+                "3104",
+                "3105",
+                "3106"
+            ]
+        },
+        {
+            "view_id": "176",
+            "view_name": "WP1-BusinessObjects",
+            "parent_element_id": "2801",
+            "parent_element_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "included_elements": [
+                "2801",
+                "2401",
+                "2101",
+                "2102",
+                "2103",
+                "2104",
+                "2105"
+            ],
+            "included_relationships": [
+                "3107",
+                "3108",
+                "3109",
+                "3110",
+                "3111",
+                "3112"
+            ]
+        },
+        {
+            "view_id": "177",
+            "view_name": "WP1-BusinessServices",
+            "parent_element_id": "2801",
+            "parent_element_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "included_elements": [
+                "2801",
+                "2106",
+                "2107",
+                "2201",
+                "2202",
+                "2203",
+                "2204"
+            ],
+            "included_relationships": [
+                "3113",
+                "3114",
+                "3115",
+                "3116",
+                "3117",
+                "3118"
+            ]
+        },
+        {
+            "view_id": "178",
+            "view_name": "WP1-ApplicationComponents",
+            "parent_element_id": "2801",
+            "parent_element_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "included_elements": [
+                "2801",
+                "2501",
+                "2502",
+                "2503",
+                "2504",
+                "2505",
+                "2506"
+            ],
+            "included_relationships": [
+                "3119",
+                "3120",
+                "3121",
+                "3122",
+                "3123",
+                "3124"
+            ]
+        },
+        {
+            "view_id": "179",
+            "view_name": "WP1-AppInteractions",
+            "parent_element_id": "2801",
+            "parent_element_name": "WP1-NAVIGABLE-CORE-BUSINESS",
+            "included_elements": [
+                "2801",
+                "2701",
+                "2604"
+            ],
+            "included_relationships": [
+                "3125",
+                "3126"
+            ]
+        },
+        {
+            "view_id": "180",
+            "view_name": "WP2-AppInteractions",
+            "parent_element_id": "2802",
+            "parent_element_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "included_elements": [
+                "2802",
+                "2601",
+                "2602",
+                "2603",
+                "2502",
+                "2503",
+                "2505"
+            ],
+            "included_relationships": [
+                "3127",
+                "3128",
+                "3129",
+                "3130",
+                "3131",
+                "3132"
+            ]
+        },
+        {
+            "view_id": "181",
+            "view_name": "WP2-AppComponents",
+            "parent_element_id": "2802",
+            "parent_element_name": "WP2-INTERACTION-EXPERIENCE-POLISH",
+            "included_elements": [
+                "2802",
+                "2506",
+                "2604"
+            ],
+            "included_relationships": [
+                "3133",
+                "3134"
+            ]
+        },
+        {
+            "view_id": "182",
+            "view_name": "WP3-BusinessService",
+            "parent_element_id": "2803",
+            "parent_element_name": "WP3-PLATFORM-INTEGRATION-QUALITY",
+            "included_elements": [
+                "2803",
+                "2205",
+                "2001",
+                "2304"
+            ],
+            "included_relationships": [
+                "3135",
+                "3136",
+                "3137"
+            ]
+        }
+    ]
+}
