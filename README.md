@@ -52,17 +52,17 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 | 版本 | 适用环境 | 说明 |
 | --- | --- | --- |
-| [Copilot 版](.github/README.md) | GitHub Copilot | 拷贝 `.github` 与 `.argo` 到工作区根目录 |
-| [OpenCode 版](.opencode/README.md) | OpenCode | 拷贝 `.opencode` 与 `.argo` 到工作区根目录；初始化用 `/argoinit`，全量架构测试用 `/argotest` |
-| [Cursor 版](.cursor/README.md) | Cursor | 拷贝 `.cursor` 与 `.argo` 到工作区根目录；MCP 入口为 `.argo/scripts/argo-mcp-server.js` |
+| [Copilot 版](.github/) | GitHub Copilot | 拷贝 `.github` 与 `.argo` 到工作区根目录；主流程 Agent 与 Skill 均在 `.github/agents`、`.github/skills` 下维护 |
+| [OpenCode 版](.opencode/) | OpenCode | 拷贝 `.opencode` 与 `.argo` 到工作区根目录；初始化用 `/argoinit`，全量架构测试用 `/argotest`，对应 `Init` / `Test` Agent |
+| [Cursor 版](.cursor/) | Cursor | 拷贝 `.cursor` 与 `.argo` 到工作区根目录；主入口通过 `.cursor/skills` 模拟，阶段子 Agent 在 `.cursor/agents` 下维护；MCP 入口为 `.argo/scripts/argo-mcp-server.js` |
 
 #### 平台入口
 
 | 平台             | Argo 使用差异                                                            | 注解                                                                 |
 | -------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| OpenCode       | 支持自定义主 Agent，可直接选择 `BusinessPartner`和 `Orchestrator` 承接完整编排流程        | 文件引用使用 `@路径`，适合把需求文档、设计文档、失败记录或相关代码显式加载进上下文                        |
-| GitHub Copilot | 支持通过 `BusinessPartner`和 `Orchestrator` 主 Agent 承接完整编排流程              | 文件引用使用 `#路径`，更适合依托 Copilot 的工作区文件引用能力减少 Agent 自行查找误差               |
-| Cursor         | 不支持自定义主 Agent，使用`/business-partner`和 `/orchestrating` Skill 模拟同等编排职责 | 主 Agent 仍是 Cursor 默认 Agent，因此要通过 Skill 约束阶段边界；文件引用仍可使用 `@路径` 补充上下文 |
+| OpenCode       | 支持自定义主 Agent，可直接选择 `BusinessPartner` 和 `Orchestrator` 承接完整编排流程；`/argoinit`、`/argotest` 分别由 `Init`、`Test` Agent 承接 | 文件引用使用 `@路径`，适合把需求文档、设计文档、失败记录或相关代码显式加载进上下文                        |
+| GitHub Copilot | 支持通过 `BusinessPartner` 和 `Orchestrator` 主 Agent 承接完整编排流程；审计、反推、整合等能力以 Agent/Skill 形式维护              | 文件引用使用 `#路径`，更适合依托 Copilot 的工作区文件引用能力减少 Agent 自行查找误差               |
+| Cursor         | 不支持自定义主 Agent，使用 `/business-partner` 和 `/orchestrating` Skill 模拟同等编排职责；`IntentionDesign`、`ImplementationDesign`、`CodingAndReparing` 等仍作为阶段子 Agent 提供 | 主 Agent 仍是 Cursor 默认 Agent，因此要通过 Skill 约束阶段边界；文件引用仍可使用 `@路径` 补充上下文 |
 
 ### 主要使用场景
 
@@ -341,11 +341,11 @@ CodingAndReparing (底层)  → 仅拥有 Code/Repair/ForbiddenShortcut，其余
 
 清单作为独立文件而非内嵌在 Agent 定义中，利用检索增强效应确保 Agent 在门禁点获得高密度、结构化的交付要求，而非从数百行的 Domain Ontology 和 Behavior 中隐式提取。
 
-## 当前已录入 SubAgents 和 Skills
+## 当前已录入 Agents 和 Skills
 
-Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 四个阶段；另有 **编排、前置业务、治理复盘、辅助工具** 等横切能力。下表说明每个 SubAgent 与 Skill 的适用阶段及其作用。
+Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双层验收** 四个阶段；另有 **编排、前置业务、治理复盘、辅助工具** 等横切能力。下表说明每个 Agent 与 Skill 的适用阶段及其作用。
 
-### SubAgents
+### Agents
 
 | 名称                              | 适用阶段           | 作用                                                                                                                                                                                                                                                | 平台                                                           |
 | ------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -355,7 +355,8 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `CodingAndReparing`             | 编码/修复          | Domain Ontology 仅包含 Code/Repair/ForbiddenShortcut（OWNED）；Intent/Impl/Coverage/Test/Handoff 不在其认知模型中（通过读取数据文件获取上下文）；依据 `.argo/temp/ImplementationToCodingHandoff.json`、`expectedFailureRecordsPath` 与 `test-failure-records.json` 修复真实实现，执行当前 handoff 范围内的测试入口直至全部通过（非本 handoff 范围的测试失败不阻塞）；完成前自检 `.argo/CODING_DELIVERY_ACCEPTANCE.md` 全部 23 项（机器可验证，无需人类报告；由 ImplementationDesign audit 事件审计）；禁止修改冻结测试与架构契约 | 全平台                                                          |
 | `ReverseArchitectureExtraction` | 反推启动/架构发现/漂移恢复 | 以 `Domain Ontology` + `Behavior` 作为可审计认知规格，服从人类选择的 Skill：`reverse-architecture-extraction` 用于初始化反推，`architecture-drift-recovery` 用于已有架构基线下的漂移恢复；输出候选架构、drift 分类、证据矩阵、下游路由和开放问题；不直接修改正式图谱、契约或 handoff                                              | 全平台                                                          |
 | `ArchimateLanguagistAudit`      | 意图设计（审计）       | 从 ArchiMate 语言学家视角审计 `SystemArchitecture.json` 的 schema 合规、元素/关系语义、措辞精确性、视图一致性与追踪质量；默认只审计不改文件                                                                                                                                                     | 全平台                                                          |
-| `BusinessPartner`               | 前置/业务          | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，输出结构化 `DecisionTreeRecord`、架构依赖分析、控制点与观测点；聚焦业务本身，不进入实现设计和编码                                                                                                                                                                        | Copilot、OpenCode                                             |
+| `CleanArchitectureAuditor`       | 跨阶段架构审计       | 从 Clean Architecture 视角审计意图架构、实现契约、目录边界和依赖方向，重点检查依赖规则、稳定依赖、组件原则和跨边界耦合风险；默认只审计不改文件                                                                                                                                             | 全平台                                                          |
+| `BusinessPartner`               | 前置/业务          | 以 MECE 决策树和 SMART 标准严苛拆解业务问题，逐分支追问直到逻辑无懈可击，输出结构化 `DecisionTreeRecord`、架构依赖分析、控制点与观测点；聚焦业务本身，不进入实现设计和编码                                                                                                                                                                        | Copilot、OpenCode（主 Agent）；Cursor 由 `/business-partner` Skill 承担                                             |
 | `TaskTidyGraphIntegrator`       | 前置/意图整合       | 接收 `/task-tidy` 写入的 `.argo/temp/decision-tree/[timestamp]-[sessionname-id].md` 决策树表格，将每个决策节点映射为意图架构元素、关系、属性、view、testcase 或 residual coordination，并产出覆盖证据供 host agent 验收；不重新审判业务决策树本身                                                                                                      | 全平台                                                          |
 | `Init`                          | 初始化            | 承接 `/argoinit`，调用统一 `argo` MCP tool `initializeWorkspace` 初始化 Argo 工作区（复制 EA 模板、重置阶段交接文件）                                                                                                                                                         | OpenCode                                                     |
 | `Test`                          | 编码/修复（验收执行）    | 承接 `/argotest`，调用统一 `argo` MCP tool `runArchitectureTests` 执行全量显性 testcase 并刷新 `test-failure-records.json`，为编码阶段提供修复队列                                                                                                                            | OpenCode                                                     |
@@ -385,3 +386,10 @@ Argo 主流程分为 **意图设计 → 实现设计 → 编码/修复 → 双�
 | `distill-agent-rules`                | 治理/复盘       | 当 Agent 行为偏离预期，或迭代后需要复盘 `design/persistant-memory` 时，将偏差或成熟记忆提炼为可复用的原则、约束、触发条件与落地位置（memory / instructions / skill / hook 等）；已固化内容应从持久化记忆中清理，减少同类偏差和双重事实来源。各 Agent 的 Behavior 中也内置了 `distill` EVENT 分支，可在连续犯错后成功后自动触发自蒸馏 | `/distill-agent-rules`                |
 | `harmonyos-development`              | 编码/修复（领域）   | HarmonyOS NEXT 原生应用开发指南：ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等鸿蒙开发工作流                                                                                                                                                           | `/harmonyos-development`              |
 | `arkts-coding-standard`              | 编码/修复（领域）   | ArkTS 严格类型与编码规范：禁止 `any`、对象字面量类型、运行时形状变更等，确保 HarmonyOS 代码合规                                                                                                                                                                            | `/arkts-coding-standard`              |
+| `emulator-setup`                     | 编码/修复（领域）   | 启动 Android 与 HarmonyOS 模拟器，并确认 `adb` / `hdc` 连接状态；适合跨端调试前的设备环境准备                                                                                                                                                                   | `/emulator-setup`                     |
+| `android-window-analysis`            | 编码/修复（领域）   | 分析 Android 页面窗口：通过 `uiautomator` XML 和截图确认页面、组件结构、文本内容与视觉状态                                                                                                                                                                      | `/android-window-analysis`            |
+| `window-analysis`                    | 编码/修复（领域）   | 分析 HarmonyOS 页面窗口：通过组件树和截图确认页面、组件结构、文本内容与视觉状态                                                                                                                                                                               | `/window-analysis`                    |
+| `cross-platform-page-compare`        | 编码/修复（领域）   | 编排 Android 与 HarmonyOS 页面窗口分析，捕获布局、截图和元素差异，输出 TOP3 差距规格与视觉验收标准                                                                                                                                                              | `/cross-platform-page-compare`        |
+| `wp-harmony-build-package-run-skill` | 编码/修复（交付边界） | 通过公开入口对一个已准备好的 HarmonyOS 工作区执行编译、打包、安装和启动，并以 `summary`、`artifacts` 作为观察边界                                                                                                                                                 | `/wp-harmony-build-package-run-skill` |
+| `wp-ui-snapshot-comparison-skill`    | 编码/修复（交付边界） | 对一个命名 journey step 执行 Android 与 HarmonyOS 截图捕获、配对和比较，产出 `summary`、`evidence`、`comparison` 等交付证据                                                                                                                               | `/wp-ui-snapshot-comparison-skill`    |
+| `wp-delivery-preflight-skill`        | 编码/修复（交付边界） | 聚合 Harmony build/package/run 与 UI snapshot comparison，形成候选 Harmony 交付物的一次性 readiness 检查与证据边界                                                                                                                                       | `/wp-delivery-preflight-skill`        |

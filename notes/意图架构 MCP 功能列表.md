@@ -1,8 +1,8 @@
 # 意图架构 MCP 功能列表
 
-本文整理 ARGO 统一 **`argo` MCP 服务器**中与**意图架构**（`design/KG/SystemArchitecture.json`）直接相关的工具能力，供 Agent、Skill 与人工查阅。实现入口为 `.argo/scripts/argo-mcp-server.js`；图谱读写与 mutation 校验位于 `.argo/scripts/systemarchitecture-mcp-server.js`；总校验脚本位于 `.argo/scripts/validateSystemArchitecture.js`。
+本文整理 ARGO 统一 **`argo` MCP 服务器**中与**意图架构**（`design/KG/SystemArchitecture.json`）直接相关的工具能力，供 Agent、Skill 与人工查阅。当前统一入口为 `.argo/scripts/argo-mcp-server.js`；validator 工具委托 `.argo/scripts/validator-mcp-server.js`；图谱读写、子图查询、mutation 校验、focused 单操作和 diff 可视化位于 `.argo/scripts/systemarchitecture-mcp-server.js`；总校验脚本位于 `.argo/scripts/validateSystemArchitecture.js`。
 
-各平台（`.cursor` / `.github` / `.opencode`）通过各自 `mcp.json` 注册同名服务器 `argo`，命令为 `node ${workspaceFolder}/.argo/scripts/argo-mcp-server.js`。
+各平台（`.cursor` / `.github` / `.opencode`）通过各自 `mcp.json` 注册同名服务器 `argo`，命令为 `node ${workspaceFolder}/.argo/scripts/argo-mcp-server.js`。统一 server 当前暴露 **19 个去重后的工具**；`tools/list` 按 `local TOOLS → systemArchitectureMcp.TOOLS → validatorMcp.TOOLS` 合并，同名工具以后者为准。因此 `validateSystemArchitecture` 在统一 `argo` MCP 中采用 validator 版本：固定校验 `design/KG/SystemArchitecture.json`，不接收 `architecturePath`。
 
 ---
 
@@ -65,7 +65,7 @@
 | `validateSystemArchitecture` | 否 | 固定路径 `design/KG/SystemArchitecture.json` | 全量 schema + 图语义 + ArchiMate 端点矩阵 + view 规则 |
 | `validateStageHandoff` | 否 | 阶段交接 JSON | 意图 → 实现 / 实现 → 编码 handoff 协议门禁 |
 | `validateTraceProposal` | 否 | `ImplementationToIntentTraceProposal.json` | 实现侧发现意图缺口时的追溯提案校验 |
-| `runArchitectureTests` | 是（失败记录） | 意图图谱中的显性 testcase | 执行全量 architecture testcase，刷新 `test-failure-records.json` |
+| `runArchitectureTests` | 是（失败记录 + 图谱交付状态） | 意图图谱中的显性 testcase | 执行全量 architecture testcase，刷新 `test-failure-records.json`，并按测试结果重算元素 `deliveryStatus` |
 
 #### `validateSystemArchitecture`
 
@@ -76,17 +76,23 @@
 #### `validateStageHandoff`
 
 - **参数**：`stage`（可选）— `intent-to-implementation` 或 `implementation-to-coding`；省略则校验全部支持阶段
-- **意图相关**：`intent-to-implementation` 校验 `.argo/temp/IntentToImplementationHandoff.json` 与意图元素 scope 的一致性
+- **意图相关**：`intent-to-implementation` 校验 `.argo/temp/IntentToImplementationHandoff.json` 与意图元素 scope 的一致性；每个 `intentElementIds` 指向的元素必须存在，并且必须在该元素下挂载 testcase
+- **实现相关**：`implementation-to-coding` 校验 `.argo/temp/ImplementationToCodingHandoff.json` 中的实现契约路径、显性 entrypoint、控制点、观测点、初始执行状态、失败记录路径、编码目标和任务执行计划；显性 entrypoint 必须与 `SystemArchitecture.json` 中同名 testcase 的 `acceptanceCriteria` 对齐
+- **旧字段拦截**：`IntentToImplementationHandoff.json` 不允许携带 `explicitTestcases`、`frozenBaselines`、`requiredImplementationArtifacts` 等旧字段；显性 testcase 基线必须挂载在意图图谱元素下
 
 #### `validateTraceProposal`
 
 - **参数**：`proposalPath`（可选，默认 `design/KG/ImplementationToIntentTraceProposal.json`）
 - **意图相关**：实现阶段发现意图缺口时，由 `ImplementationDesign` 产出提案；`IntentionDesign` 消费并决定是否回写意图图谱
+- **当前硬约束**：`proposalType=implementation-to-intent-trace`、`sourceAgent=ImplementationDesign`、`targetAgent=IntentionDesign`、`lifecycle=temporary-trace-proposal`；`implementationElementKind` 仅支持 `stable-directory`、`contract-file`、`explicit-test-entry`、`critical-guardrail`、`runtime-component`、`schema-contract`、`mcp-tool`、`command`；`implementsType` 仅支持 `direct` / `indirect`
 
 #### `runArchitectureTests`
 
 - **参数**：`architecturePath`（可选，默认 `design/KG/SystemArchitecture.json`）
-- **意图相关**：testcase 定义挂载在意图元素上；结果写入 `design/KG/test-failure-records.json`，供 `CodingAndReparing` 修复队列使用
+- **意图相关**：testcase 定义挂载在意图元素 `testcases` 数组上；`acceptanceCriteria` 必须是单个 workspace-relative 测试入口路径，不允许写成 `node ...`、`npm ...`、带参数命令或 shell 串联命令
+- **执行器**：默认执行器始终加载，`.argo/scripts/test-executors/` 下可发现额外执行器；自定义执行器优先，默认执行器兜底
+- **写入副作用**：结果写入 `design/KG/test-failure-records.json`；同时按“自身 testcase 全部通过 + 已有 testcase 的上游依赖均 delivered”固定点规则重算各元素 attributes 中的 `deliveryStatus=delivered`，必要时回写 `design/KG/SystemArchitecture.json`
+- **进度**：通过 `[PROGRESS]` 行向 MCP progress notification 转发执行进度；失败记录供 `CodingAndReparing` 修复队列使用
 
 ---
 
@@ -94,13 +100,14 @@
 
 | 工具 | 写入 | 说明 |
 | --- | ---: | --- |
-| `previewSystemArchitectureMutation` | 否 | 干跑：应用 mutations 后做完整校验，**不**写文件 |
+| `previewSystemArchitectureMutation` | 否 | 干跑：应用 mutations 后运行当前 mutation 校验链，**不**写文件 |
 | `applySystemArchitectureMutation` | 是 | 原子写入：校验通过后一次性写入图谱 |
 
 #### 共用参数
 
 - `architecturePath`（可选，默认 `design/KG/SystemArchitecture.json`）
 - `mutations`：非空数组，每项须含 `type`
+- mutation 工具返回 `status`、`written`、`graphPath`、`schemaPath`、`mutations`、`touchedElementIds`、`touchedRelationshipIds`、`touchedViewIds`、`viewLimitCheckIds`、`before`、`after`、`errors`；失败时附带 `guidance`
 
 #### 支持的 mutation `type`
 
@@ -125,27 +132,27 @@ getSystemArchitecture
   → validateSystemArchitecture
 ```
 
-失败时 mutation 类工具返回 `errors` + `guidance`（见 `design/validator/intent-architecture-mcp-validation.md` 失败引导映射）。
+当前 mutation 校验链：完整 JSON Schema + 完整核心图语义校验；ArchiMate 3.2 endpoint matrix 只检查本次触达的 relationship；view 元素数上限只检查本次新增或显式替换 `included_elements` 的 view。`previewSystemArchitectureMutation` 不写文件；`applySystemArchitectureMutation` 仅在全部校验通过后通过临时文件 + rename 原子写入。失败时 mutation 类工具返回 `errors` + `guidance`（见 `design/validator/intent-architecture-mcp-validation.md` 失败引导映射）。
 
 ---
 
 ### 4. 图谱变更（Focused 单操作）
 
-Focused 工具将单步操作转换为 mutation，复用 `applySystemArchitectureMutation` 校验链；简单增删改优先使用此类工具。
+Focused 工具将单步操作转换为 mutation，复用同一套 mutation 校验链；简单增删改优先使用此类工具。当前 focused 工具均支持可选 `dryRun: true`：校验并返回结果但不写图谱；未设置或为 `false` 时，校验通过后写入。
 
 #### 元素
 
 | 工具 | 必填参数 | 要点 |
 | --- | --- | --- |
-| `addArchitectureElement` | `element`, `view_ids` | 元素不得脱离 view 存在 |
-| `updateArchitectureElement` | `id`, `patch` | 不改 view membership；不改 `id` / `type` |
+| `addArchitectureElement` | `element`, `view_ids` | 元素不得脱离 view 存在；已有元素会被加入指定 view |
+| `updateArchitectureElement` | `id`, `patch` | 不改 view membership；不改 `id` / `type`；如更新 `name`，相关 relationship 的 `source_name` / `target_name` / `statement` 需同步处理 |
 | `removeArchitectureElement` | `id` | 可选 `view_ids`：仅从这些 view 移除并级联关系；无则全图删除 |
 
 #### 关系
 
 | 工具 | 必填参数 | 要点 |
 | --- | --- | --- |
-| `addArchitectureRelationship` | `relationship`, `view_ids` | `relationship.type` 为 ArchiMate 3.2 关系类型，校验端点元素类型 |
+| `addArchitectureRelationship` | `relationship`, `view_ids` | `relationship.type` 为 ArchiMate 3.2 关系类型，校验端点元素类型；不会自动把端点元素加入 view，端点共现缺失会校验失败 |
 | `updateArchitectureRelationship` | `id`, `patch` | 可 patch `name`, `statement`, `source_name`, `target_name` 等 |
 | `removeArchitectureRelationship` | `id` | 可选 `view_ids` 限定移除范围 |
 
@@ -157,7 +164,7 @@ Focused 工具将单步操作转换为 mutation，复用 `applySystemArchitectur
 | `updateArchitectureView` | `view_id`, `patch` | 更新成员时仍须满足引用存在、端点共现、元素数上限 |
 | `removeArchitectureView` | `view_id` | 删除后每个元素/关系仍须至少属于一个 view |
 
-以上工具均支持可选 `architecturePath`（主要用于测试或临时图谱）。
+以上 focused 工具均支持可选 `architecturePath`（主要用于测试或临时图谱）和 `dryRun`（预演但不写入）。
 
 ---
 
@@ -238,6 +245,7 @@ BusinessPartner 产出 DecisionTreeRecord
 ```
 getIntentElementContext（多元素修复或回归定位）
   → runArchitectureTests
+  → 刷新 test-failure-records 与元素 deliveryStatus
   → 按 test-failure-records 修复（不得改冻结显性 testcase 入口）
 ```
 
@@ -261,31 +269,31 @@ mutation 失败时的 `guidance` 关键字映射（如 `violates ArchiMate 3.2 r
 
 ---
 
-## 完整工具名清单（22 个）
+## 完整工具名清单（19 个）
 
-按 `argo-mcp-server.js` 注册顺序：
+按当前统一 `argo` MCP `tools/list` 去重后返回顺序：
 
 1. `initializeWorkspace`
-2. `validateSystemArchitecture`
-3. `validateStageHandoff`
-4. `validateTraceProposal`
-5. `runArchitectureTests`
-6. `generateArchitectureDiffPlantuml`
-7. `getSystemArchitecture`
-8. `getIntentElementContext`
-9. `previewSystemArchitectureMutation`
-10. `applySystemArchitectureMutation`
-11. `addArchitectureElement`
-12. `updateArchitectureElement`
-13. `removeArchitectureElement`
-14. `addArchitectureRelationship`
-15. `updateArchitectureRelationship`
-16. `removeArchitectureRelationship`
-17. `addArchitectureView`
-18. `updateArchitectureView`
-19. `removeArchitectureView`
+2. `validateStageHandoff`
+3. `validateTraceProposal`
+4. `runArchitectureTests`
+5. `generateArchitectureDiffPlantuml`
+6. `getSystemArchitecture`
+7. `getIntentElementContext`
+8. `previewSystemArchitectureMutation`
+9. `applySystemArchitectureMutation`
+10. `addArchitectureElement`
+11. `updateArchitectureElement`
+12. `removeArchitectureElement`
+13. `addArchitectureRelationship`
+14. `updateArchitectureRelationship`
+15. `removeArchitectureRelationship`
+16. `addArchitectureView`
+17. `updateArchitectureView`
+18. `removeArchitectureView`
+19. `validateSystemArchitecture`
 
-其中 **1** 为工作区 bootstrap；**2–6** 为校验、测试与可视化；**7–8** 为只读查询；**9–19** 为图谱 mutation（**9–10** 批量，**11–19** focused）。
+其中 **1** 为工作区 bootstrap；**2–5、19** 为校验、测试与可视化；**6–7** 为只读查询；**8–18** 为图谱 mutation（**8–9** 批量，**10–18** focused）。`validateSystemArchitecture` 排在末尾是 `tools/list` 去重覆盖后的实际顺序，不影响调用语义。
 
 ---
 
