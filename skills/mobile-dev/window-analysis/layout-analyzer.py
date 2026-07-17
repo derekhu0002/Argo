@@ -13,6 +13,10 @@ Options:
     --tab-labels L1,L2,..  Verify tab labels match (comma-separated)
     --page-path PATH       Verify pagePath matches PATH
     --dump-json            Output structured JSON to stdout (for machine consumption)
+    --assert-dimension TEXT MIN_W MAX_W MIN_H MAX_H  Verify component width/height range
+    --assert-bgcolor TEXT #HEX  Verify component backgroundColor matches hex
+    --count-clickable-in-region Y1 Y2 MIN MAX  Verify clickable count in top-band
+    --list-card-rows MIN_H MAX_H  List card rows grouped by Y proximity with avg sizes
 
 Exit codes: 0 = all checks passed, 1 = any check failed
 """
@@ -20,6 +24,23 @@ import json
 import sys
 import os
 from collections import Counter
+
+
+def parse_bounds(bounds_str):
+    """Parse '[L,T][R,B]' into numeric dict. Returns None if malformed."""
+    try:
+        parts = bounds_str.replace('[', '').replace(']', ',').split(',')
+        nums = [int(p.strip()) for p in parts if p.strip().lstrip('-').isdigit()]
+        if len(nums) >= 4:
+            return {
+                'left': nums[0], 'top': nums[1],
+                'right': nums[2], 'bottom': nums[3],
+                'width': nums[2] - nums[0],
+                'height': nums[3] - nums[1],
+            }
+    except (ValueError, IndexError):
+        pass
+    return None
 
 
 def parse_layout(path):
@@ -50,6 +71,7 @@ def parse_layout(path):
         if info['text']:
             texts.append(info['text'])
         if info['type']:
+            info['backgroundColor'] = attrs.get('backgroundColor', '')
             components.append(info)
         for child in node.get('children', []):
             collect(child, depth + 1)
@@ -86,7 +108,10 @@ def print_summary(parsed):
     print(f"Total components: {len(parsed['components'])}")
     print(f"\nTexts on screen ({len(parsed['texts'])}):")
     for t in parsed['texts']:
-        print(f'  "{t}"')
+        try:
+            print(f'  "{t}"')
+        except UnicodeEncodeError:
+            print(f'  "(emoji)"')
     print(f"\nComponent types:")
     for t, c in parsed['type_counts'].most_common():
         print(f"  {t}: {c}")
@@ -121,6 +146,12 @@ def dump_json(parsed):
     for c in parsed['components']:
         if c['hint']:
             hints.append({'bounds': c['bounds'], 'type': c['type'], 'hint': c['hint']})
+
+    # Add parsed numeric bounds to each clickable
+    for c in clickables:
+        parsed_b = parse_bounds(c['bounds'])
+        if parsed_b:
+            c['bounds_parsed'] = parsed_b
 
     output = {
         'platform': 'harmonyos',
@@ -213,6 +244,101 @@ def main():
                 checks_passed += 1
             else:
                 print(f"FAIL: pagePath: expected '{expected_path}', got '{parsed['pagePath']}'")
+                checks_failed += 1
+
+        elif arg == '--assert-dimension':
+            i += 1
+            search_text = args[i]
+            i += 1; min_w = int(args[i])
+            i += 1; max_w = int(args[i])
+            i += 1; min_h = int(args[i])
+            i += 1; max_h = int(args[i])
+            found = None
+            for c in parsed['components']:
+                if c['text'] == search_text:
+                    found = c
+                    break
+            if found:
+                pb = parse_bounds(found['bounds'])
+                if pb:
+                    w_ok = min_w <= pb['width'] <= max_w
+                    h_ok = min_h <= pb['height'] <= max_h
+                    if w_ok and h_ok:
+                        print(f"PASS: '{search_text}' dimensions {pb['width']}x{pb['height']} in [{min_w}-{max_w}]x[{min_h}-{max_h}]")
+                        checks_passed += 1
+                    else:
+                        print(f"FAIL: '{search_text}' dimensions {pb['width']}x{pb['height']} NOT in [{min_w}-{max_w}]x[{min_h}-{max_h}]")
+                        checks_failed += 1
+                else:
+                    print(f"FAIL: Cannot parse bounds for '{search_text}'")
+                    checks_failed += 1
+            else:
+                print(f"FAIL: Component with text '{search_text}' not found")
+                checks_failed += 1
+
+        elif arg == '--assert-bgcolor':
+            i += 1
+            search_text = args[i]
+            i += 1
+            expected_hex = args[i].upper().replace('#', '')
+            found = None
+            for c in parsed['components']:
+                if c['text'] == search_text:
+                    found = c
+                    break
+            if found:
+                actual_bg = (found.get('backgroundColor') or '').upper().replace('#', '')
+                if actual_bg == expected_hex:
+                    print(f"PASS: '{search_text}' backgroundColor matches #{expected_hex}")
+                    checks_passed += 1
+                elif actual_bg == '00000000' and expected_hex == '00000000':
+                    print(f"PASS: '{search_text}' backgroundColor is transparent (expected)")
+                    checks_passed += 1
+                else:
+                    print(f"FAIL: '{search_text}' backgroundColor #{actual_bg} != #{expected_hex}")
+                    checks_failed += 1
+            else:
+                print(f"FAIL: Component with text '{search_text}' not found for bgcolor check")
+                checks_failed += 1
+
+        elif arg == '--list-card-rows':
+            i += 1; min_h = int(args[i])
+            i += 1; max_h = int(args[i])
+            cards = []
+            for c in parsed['components']:
+                pb = parse_bounds(c['bounds'])
+                if pb and c['clickable'] and min_h <= pb['height'] <= max_h:
+                    cards.append({'top': pb['top'], 'w': pb['width'], 'h': pb['height'], 'l': c['text'] or ''})
+            cards.sort(key=lambda x: x['top'])
+            rows = []
+            for c in cards:
+                if not rows or c['top'] - rows[-1][-1]['top'] > 50:
+                    rows.append([c])
+                else:
+                    rows[-1].append(c)
+            print(f'Card rows (h={min_h}-{max_h}px): {len(rows)}')
+            for ri, row in enumerate(rows):
+                aw = sum(c['w'] for c in row)//len(row)
+                ah = sum(c['h'] for c in row)//len(row)
+                lbs = [c['l'] for c in row if c['l']]
+                print(f'  Row {ri}: {len(row)} cards, avg {aw}x{ah}px, labels={lbs}')
+            checks_passed += 1
+
+        elif arg == '--count-clickable-in-region':
+            i += 1; y1 = int(args[i])
+            i += 1; y2 = int(args[i])
+            i += 1; c_min = int(args[i])
+            i += 1; c_max = int(args[i])
+            count = 0
+            for c in parsed['components']:
+                pb = parse_bounds(c['bounds'])
+                if pb and c['clickable'] and y1 <= pb['top'] <= y2:
+                    count += 1
+            if c_min <= count <= c_max:
+                print(f"PASS: {count} clickable in region [{y1}-{y2}] (expected [{c_min}-{c_max}])")
+                checks_passed += 1
+            else:
+                print(f"FAIL: {count} clickable in region [{y1}-{y2}] (expected [{c_min}-{c_max}])")
                 checks_failed += 1
 
         elif arg == '--dump-json':

@@ -13,8 +13,7 @@ Options:
     --mean-color                  Print mean RGB of image (or region if set)
     --contains-color #HEX         Check if any pixel matches target color (±30 tolerance)
     --is-dark                     Check if screenshot shows dark theme (brightness < 80)
-    --card-diversity L,T,R,B      Check card region has diverse colors (>30 unique with stride=5)
-
+    --card-diversity L,T,R,B      Check card region has diverse colors (>30 unique with stride=5)    --assert-color-at-bounds L,T,R,B #HEX [tolerance]  Crop+check color at layout bounds
 Exit codes: 0 = all checks passed, 1 = any check failed
 """
 import sys
@@ -186,6 +185,80 @@ def main():
             else:
                 print(f"FAIL: Color {hex_color} NOT found in screenshot")
                 checks_failed += 1
+
+        elif arg == '--assert-color-at-bounds':
+            i += 1
+            parts = args[i].split(',')
+            region = tuple(int(p.strip()) for p in parts)
+            i += 1
+            hex_color = args[i]
+            i += 1
+            tolerance = 30
+            if i < len(args) and args[i].isdigit():
+                tolerance = int(args[i])
+            else:
+                i -= 1
+            cropped = img.crop(region)
+            found, pos = check_color_present(cropped, hex_color)
+            if found:
+                print(f"PASS: Color {hex_color} found in bounds {region}")
+                checks_passed += 1
+            else:
+                print(f"FAIL: Color {hex_color} NOT found in bounds {region}")
+                checks_failed += 1
+
+        elif arg == '--compare-region-color':
+            i += 1
+            parts = args[i].split(',')
+            region = tuple(int(p.strip()) for p in parts)
+            i += 1; other_path = args[i]
+            i += 1; label = args[i]
+            if not os.path.exists(other_path):
+                print(f"FAIL: comparison image not found: {other_path}")
+                checks_failed += 1
+            else:
+                ca = img.crop(region); cb = Image.open(other_path).crop(region)
+                ma = get_mean_color(ca); mb = get_mean_color(cb)
+                if ma and mb:
+                    dist = sum(abs(ma[i]-mb[i]) for i in range(3))
+                    print(f"  [{label}] This: RGB{ma} Other: RGB{mb} dist={dist} {'⚠️ DIFF' if dist>80 else ''}")
+                    checks_passed += 1
+                else:
+                    print(f"FAIL: Cannot compute mean color for {label}")
+                    checks_failed += 1
+
+        elif arg == '--check-image-shape':
+            i += 1
+            parts = args[i].split(',')
+            region = tuple(int(p.strip()) for p in parts)
+            cropped = img.crop(region)
+            w, h = cropped.size
+            margin = max(2, min(w, h) // 15)
+            center = cropped.getpixel((w//2, h//2))[:3]
+            corners = [
+                cropped.getpixel((margin, margin))[:3],
+                cropped.getpixel((w-margin-1, margin))[:3],
+                cropped.getpixel((margin, h-margin-1))[:3],
+                cropped.getpixel((w-margin-1, h-margin-1))[:3],
+            ]
+            edges = [
+                cropped.getpixel((w//2, margin))[:3],
+                cropped.getpixel((w//2, h-margin-1))[:3],
+                cropped.getpixel((margin, h//2))[:3],
+                cropped.getpixel((w-margin-1, h//2))[:3],
+            ]
+            def dd(a, b):
+                return sum(abs(a[i]-b[i]) for i in range(3))
+            avg_corner = sum(dd(c, center) for c in corners) / 4
+            avg_edge = sum(dd(e, center) for e in edges) / 4
+            if avg_corner > 150 and avg_edge < 100:
+                shape = 'CIRCLE'
+            elif avg_corner > 80:
+                shape = 'ROUNDED'
+            else:
+                shape = 'SQUARE'
+            print(f"  [SHAPE] {region} -> {shape} (corner={avg_corner:.0f} edge={avg_edge:.0f})")
+            checks_passed += 1
 
         elif arg == '--is-dark':
             mean = get_mean_color(img)

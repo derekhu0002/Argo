@@ -78,6 +78,8 @@ The output is a **JSON tree** with this structure per node:
 | **Component count** | Total non-root component nodes | ≥ 15 = fully rendered |
 | **Clickable elements** | Check `clickable == "true"` | Tab bar items should be clickable |
 | **Element bounds** | Parse `bounds` to verify layout positions | Tab bar Y-range should be ~2567-2753 |
+| **Element dimensions** | `--assert-dimension "Cupcake" 50 250 30 80` | Verify component width/height in px range |
+| **Background color** | `--assert-bgcolor "Cupcake" 00000000` | Verify component backgroundColor (HarmonyOS only) |
 | **Specific text presence** | Search `text` values | Cart page should have "Checkout" or similar |
 | **Hint text** | Check `hint` for input fields | Search bar hint should be "Search snacks" |
 
@@ -93,6 +95,9 @@ python .github/skills/window-analysis/layout-analyzer.py <layout.json> [--find-t
 - `--find-type "..."` — check if component type exists
 - `--min-components N` — verify at least N components rendered
 - `--tab-labels "Home,Search,Cart,Profile"` — verify tab labels match
+- `--assert-dimension "Text" MIN_W MAX_W MIN_H MAX_H` — verify component size in px
+- `--assert-bgcolor "Text" #HEX` — verify component backgroundColor (HarmonyOS only)
+- `--dump-json` — output structured JSON with parsed numeric bounds
 
 **Exit codes:** 0 = pass, 1 = fail
 
@@ -153,6 +158,7 @@ python .github/skills/window-analysis/screenshot-analyzer.py <screenshot.jpeg> [
 - `--contains-color #HEX` — check if color exists in image
 - `--is-dark` — check if screenshot shows dark theme (brightness < 80)
 - `--card-diversity L,T,R,B` — check card region has diverse colors (>30 unique)
+- `--assert-color-at-bounds L,T,R,B #HEX [tolerance]` — crop to bounds, check color exists
 - `--summary` — print all checks as pass/fail
 
 **Exit codes:** 0 = pass, 1 = fail

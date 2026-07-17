@@ -8,6 +8,9 @@ const execFileAsync = promisify(execFile);
 
 const ARTIFACT_ROOT = path.resolve(__dirname, '..', '..', '..', 'work', 'artifacts', 'harmony-build-package-run');
 const BUILD_ARGUMENTS = ['--mode', 'module', '-p', 'product=default', '-p', 'module=entry', 'assembleHap'];
+const DEFAULT_STEP_TIMEOUT_MS = 10 * 60 * 1000;
+const DEVICE_STEP_TIMEOUT_MS = 60 * 1000;
+const DEVICE_FAILURE_PATTERNS = [/\[Fail\]/i, /\b(?:fail|failed|failure|error)\b/i];
 const KNOWN_TOOL_LOCATIONS = {
     build: [
         'C:/Program Files/Huawei/DevEco Studio/tools/hvigor/bin/hvigorw.bat',
@@ -106,6 +109,8 @@ async function runHarmonyBuildPackageRun(options) {
             logFile: path.join(artifactDirectory, 'install.log'),
             successSignal: 'hdc install completed',
             env: buildStepEnv(sdkHome, buildTool, deviceTool),
+            timeoutMs: DEVICE_STEP_TIMEOUT_MS,
+            failurePatterns: DEVICE_FAILURE_PATTERNS,
         });
         steps.push(installResult);
 
@@ -118,6 +123,8 @@ async function runHarmonyBuildPackageRun(options) {
                 logFile: path.join(artifactDirectory, 'launch.log'),
                 successSignal: 'hdc launch completed',
                 env: buildStepEnv(sdkHome, buildTool, deviceTool),
+                timeoutMs: DEVICE_STEP_TIMEOUT_MS,
+                failurePatterns: DEVICE_FAILURE_PATTERNS,
             })
             : {
                 name: 'launch',
@@ -209,15 +216,29 @@ function splitBuildResult(buildResult) {
 
 async function runStep(step) {
     const invocation = buildInvocation(step.command, step.args);
+    const timeoutMs = step.timeoutMs || DEFAULT_STEP_TIMEOUT_MS;
     try {
         const { stdout, stderr } = await execFileAsync(invocation.command, invocation.args, {
             cwd: step.cwd,
             env: step.env || process.env,
             windowsHide: true,
             maxBuffer: 1024 * 1024 * 10,
+            timeout: timeoutMs,
+            killSignal: 'SIGTERM',
         });
         const output = [stdout, stderr].filter(Boolean).join('\n').trim();
         await fs.promises.writeFile(step.logFile, output ? `${output}\n` : '', 'utf8');
+        const failureSignal = matchFailureSignal(output, step.failurePatterns);
+        if (failureSignal) {
+            return {
+                name: step.name,
+                status: 'failed',
+                ok: false,
+                signal: failureSignal,
+                command: formatCommand(invocation.command, invocation.args),
+                logFile: step.logFile,
+            };
+        }
         return {
             name: step.name,
             status: 'passed',
@@ -229,13 +250,17 @@ async function runStep(step) {
     } catch (error) {
         const stdout = String(error.stdout || '').trim();
         const stderr = String(error.stderr || error.message || error).trim();
-        const output = [stdout, stderr].filter(Boolean).join('\n').trim();
+        const timedOut = Boolean(error.killed);
+        const timeoutSignal = timedOut
+            ? `${step.name} timed out after ${formatDuration(timeoutMs)}. Check tool availability, device/emulator availability, and command responsiveness.`
+            : '';
+        const output = [timeoutSignal, stdout, stderr].filter(Boolean).join('\n').trim();
         await fs.promises.writeFile(step.logFile, output ? `${output}\n` : '', 'utf8');
         return {
             name: step.name,
-            status: 'failed',
+            status: timedOut ? 'timeout' : 'failed',
             ok: false,
-            signal: stderr || stdout || `Command failed: ${formatCommand(invocation.command, invocation.args)}`,
+            signal: timeoutSignal || stderr || stdout || `Command failed: ${formatCommand(invocation.command, invocation.args)}`,
             command: formatCommand(invocation.command, invocation.args),
             logFile: step.logFile,
         };
@@ -441,6 +466,24 @@ async function copyDirectory(sourceDirectory, targetDirectory) {
 
 function formatCommand(command, args) {
     return [command, ...args].map(quoteIfNeeded).join(' ');
+}
+
+function matchFailureSignal(output, failurePatterns) {
+    if (!output || !failurePatterns || failurePatterns.length === 0) {
+        return '';
+    }
+
+    const failedLine = output
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .find(line => failurePatterns.some(pattern => pattern.test(line)));
+
+    return failedLine || '';
+}
+
+function formatDuration(milliseconds) {
+    const seconds = Math.round(milliseconds / 1000);
+    return `${seconds}s`;
 }
 
 function quoteIfNeeded(value) {

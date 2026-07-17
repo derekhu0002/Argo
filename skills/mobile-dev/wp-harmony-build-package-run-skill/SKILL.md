@@ -20,6 +20,7 @@ Use this skill when the task needs the existing delivery boundary that compiles,
 - Environment fallback: `HARMONY_APP_WORKSPACE`
 - Default workspace when neither input is provided: `D:/Projects/ANDROID-2-HARMONYOS/work`
 - Emitted output labels: `summary` and `artifacts`
+- Device install/launch timeout: 60 seconds per step, reported in `summary.json` and the step log when exceeded
 
 ## Instructions
 

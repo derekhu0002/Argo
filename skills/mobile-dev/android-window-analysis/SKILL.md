@@ -82,6 +82,7 @@ The output is an **XML tree** with this structure per node:
 | **Component count** | Total non-root nodes | ≥ 80 = fully rendered (Compose apps have many View nodes) |
 | **Clickable elements** | Check `clickable="true"` | Tab bar items, filter chips, cards |
 | **Element bounds** | Parse `bounds` for layout positions | Tab bar Y-range ~2201-2327 |
+| **Element dimensions** | `--assert-dimension "Cupcake" 50 200 10 80` | Verify component width/height in px range |
 | **Text presence** | Search `text` values | "Delivery to 1600 Amphitheater Way" |
 | **Content descriptions** | Search `content-desc` (Compose semantics) | "Filters", "Select delivery address" |
 
@@ -98,6 +99,8 @@ python .github/skills/android-window-analysis/layout-analyzer.py <ui_dump.xml> [
 - `--min-components N` — verify at least N components rendered
 - `--tab-labels "HOME,SEARCH,CART,PROFILE"` — verify tab labels match
 - `--has-clickable` — verify at least one clickable component exists
+- `--assert-dimension "Text" MIN_W MAX_W MIN_H MAX_H` — verify component size in px
+- `--dump-json` — output structured JSON with parsed numeric bounds
 
 **Exit codes:** 0 = pass, 1 = fail
 
@@ -153,6 +156,7 @@ python .github/skills/android-window-analysis/screenshot-analyzer.py <screenshot
 - `--diff <other.png>` — verify two screenshots differ
 - `--mean-color` — print mean RGB
 - `--is-dark` — check dark theme
+- `--assert-color-at-bounds L,T,R,B #HEX [tolerance]` — crop to bounds, check color exists
 
 **Exit codes:** 0 = pass, 1 = fail
 

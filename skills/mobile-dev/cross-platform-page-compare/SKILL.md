@@ -94,10 +94,34 @@ ELSE:
 3.3 HarmonyOS 布局:
     hdc shell uitest dumpLayout -p /data/local/tmp/layout.json -b <bundle>
     hdc file recv /data/local/tmp/layout.json <archiveDir>/harmony_layout.json
+    ⚠️ dumpLayout 仅捕获可视区域，不包含 Scroll 容器内的离屏内容。
+    若 dump 中包含 Scroll 组件，必须执行 3.5 滚动补采。
 
 3.4 HarmonyOS 截图:
     hdc shell snapshot_display -f /data/local/tmp/screenshot.jpeg
     hdc file recv /data/local/tmp/screenshot.jpeg <archiveDir>/harmony_screenshot.jpeg
+
+3.5 滚动补采 (HarmonyOS 专用 — dumpLayout 仅捕获可视区域):
+    # dumpLayout 只捕获当前可视 viewport。若页面含 Scroll，需分步抓取后合并。
+    # 策略: 从顶部开始，逐次滑动 ~800px，每次抓取，直到文本不再增加。
+    #
+    # ① 顶部 (初始):
+    hdc shell uitest dumpLayout -p /data/local/tmp/layout_0.json -b <bundle>
+    # ② 滑动 + 抓取 (循环直到无新文本):
+    for i in 1 2 3; do
+        hdc shell uinput -T -m 660 2400 660 400; sleep 2
+        hdc shell uitest dumpLayout -p /data/local/tmp/layout_${i}.json -b <bundle>
+    done
+    # ③ 拉取全部 dump 并合并文本:
+    hdc file recv /data/local/tmp/layout_*.json <archiveDir>/
+    python -c "
+    all_texts = set()
+    for path in glob('<archiveDir>/layout_*.json'):
+        d = run_analyzer(path)
+        all_texts.update(d['texts'])
+    print(f'Total unique texts: {len(all_texts)}')
+    print(sorted(all_texts))
+    "
 ```
 
 ### Step 4: 程序化对比分析
@@ -115,11 +139,18 @@ ELSE:
     - 组件数量差异: a.component_count vs h.component_count
     - 可交互元素差异: a.clickable_count vs h.clickable_count
     - 组件类型差异: a.class_counts vs h.type_counts
+    - 布局尺寸差异: 使用 --assert-dimension 对比同名组件的 bounds_parsed.width/height
+    - **元素间距差异**: 对比相邻关键元素 (标题→卡片、卡片→卡片、Tab→内容) 的 bounds 间距 (gap = next.top - current.bottom)
+    - 背景色差异: 使用 --assert-bgcolor (鸿蒙) 对比组件的 backgroundColor
+    - 区域颜色差异: 使用 --assert-color-at-bounds 在截图上对比特定区域颜色
     - 截图差异: 肉眼对比或像素差异分析
+    - 图像边框形状差异: 使用 --check-image-shape 对比同名 Image bounds，检测 CIRCLE/ROUNDED/SQUARE
+    - **交互元素数量差异(按区域)**: 使用 --count-clickable-in-region 对比同 Y 区段的可点击数量，检测缺失按钮
 
 4.3 差异分级:
     🔴 高: 核心动效缺失 (共享过渡、Tab 动画、Highlight 卡片)
-    🟠 中: 静态元素缺失 (tagline、筛选图标、箭头按钮)
+    � 高: 布局间距偏差 > 2× (标题→卡片间距、元素重叠)
+    �🟠 中: 静态元素缺失 (tagline、筛选图标、箭头按钮)
     🟡 低: 风格差异 (emoji vs text、大小写)
     🟢 信息: 架构差异 (Scroll vs LazyColumn、像素密度)
 ```
@@ -228,5 +259,7 @@ design/analysis/[YYYYMMDD-HHMM]-[PAGE]_COMPARE/
 | 模拟器无法启动 | 参考 `emulator-setup` Troubleshooting: 杀进程 → 删 lock → 重启 ADB → 冷启动 |
 | 布局 dump 为空 | App 可能未在前台, 截图确认, 重新 launch |
 | 布局组件数异常少 (< 10) | 页面可能未完全渲染, 增加等待时间, 重试 |
+| 鸿蒙 dump 含 Scroll 组件 | dumpLayout 仅捕获可视区域 → 执行 Step 3.5 滚动补采 |
+| 两端卡片行数不一致 | 鸿蒙可能未滚动到完整内容 → 执行 Step 3.5, 以 Android 行数为目标 |
 | `--dump-json` 编码错误 | 分析器已配置 `stdout.reconfigure(encoding='utf-8')` + `ensure_ascii=True` |
 | 两端文本数相差 > 50% | 可能不是同一页面或鸿蒙侧功能缺失, 截图人工确认 |
