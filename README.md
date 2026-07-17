@@ -48,7 +48,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 ### 部署
 
-各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`），主要工具包括 `initializeWorkspace`、`validateSystemArchitecture`、`validateStageHandoff`、`validateTraceProposal`、`runArchitectureTests`、`getSystemArchitecture`、`getIntentElementContext`、`previewSystemArchitectureMutation`、`applySystemArchitectureMutation` 及意图图谱 focused mutation 系列。
+各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`）；具体工具清单与调用语义见「MCP 服务与意图架构工具」章节。
 
 | 版本 | 适用环境 | 说明 |
 | --- | --- | --- |
@@ -63,6 +63,30 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 | OpenCode       | 支持自定义主 Agent，可直接选择 `BusinessPartner` 和 `Orchestrator` 承接完整编排流程；`/argoinit`、`/argotest` 分别由 `Init`、`Test` Agent 承接 | 文件引用使用 `@路径`，适合把需求文档、设计文档、失败记录或相关代码显式加载进上下文                        |
 | GitHub Copilot | 支持通过 `BusinessPartner` 和 `Orchestrator` 主 Agent 承接完整编排流程；审计、反推、整合等能力以 Agent/Skill 形式维护              | 文件引用使用 `#路径`，更适合依托 Copilot 的工作区文件引用能力减少 Agent 自行查找误差               |
 | Cursor         | 不支持自定义主 Agent，使用 `/business-partner` 和 `/orchestrating` Skill 模拟同等编排职责；`IntentionDesign`、`ImplementationDesign`、`CodingAndReparing` 等仍作为阶段子 Agent 提供 | 主 Agent 仍是 Cursor 默认 Agent，因此要通过 Skill 约束阶段边界；文件引用仍可使用 `@路径` 补充上下文 |
+
+## MCP 服务与意图架构工具
+
+Argo 的统一 MCP 服务名为 `argo`，入口脚本为 `.argo/scripts/argo-mcp-server.js`。它负责把意图图谱读取、子图上下文查询、图谱 mutation、阶段 handoff 校验、显性架构测试、trace proposal 校验、diff 可视化和工作区初始化等能力暴露给 Agent 与 Skill。
+
+README 只保留 MCP 的定位和入口，避免在多个文档中重复维护工具清单。当前工具数量、参数、写入副作用、mutation 校验链、focused `dryRun` 语义、`runArchitectureTests` 的 `deliveryStatus` 刷新规则等实现细节，以《[意图架构 MCP 功能列表](notes/意图架构%20MCP%20功能列表.md)》为准。
+
+## 鸿蒙与跨端移动开发支持
+
+Argo 的鸿蒙相关能力作为领域 Skill 和交付边界挂载在 `skills/mobile-dev/` 下，主要服务于 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio、Android 到 HarmonyOS 迁移、跨端页面对齐和交付前证据采集。它们通常由 `CodingAndReparing` 在实现 handoff 约束下使用，也可以作为人工调试、验收和迁移辅助入口。
+
+| 能力 | 入口 | 典型用途 |
+| --- | --- | --- |
+| HarmonyOS 开发知识 | `/harmonyos-development` | ArkTS、ArkUI、Stage 模型、API 22–26、权限、状态管理、测试与性能等平台开发指导 |
+| ArkTS 编码规范 | `/arkts-coding-standard` | 检查 ArkTS 严格类型、对象形状、`any` 使用、运行时形状变更等合规问题 |
+| 模拟器准备 | `/emulator-setup` | 启动 Android / HarmonyOS 模拟器，并确认 `adb` / `hdc` 可连接 |
+| Android 窗口分析 | `/android-window-analysis` | 通过 `uiautomator` XML 与截图确认 Android 页面结构、文本和视觉状态 |
+| HarmonyOS 窗口分析 | `/window-analysis` | 通过组件树与截图确认 HarmonyOS 页面结构、文本和视觉状态 |
+| 跨端页面对比 | `/cross-platform-page-compare` | 编排 Android 与 HarmonyOS 页面分析，输出 TOP3 差距规格和视觉验收标准 |
+| Harmony 构建/打包/安装/启动 | `/wp-harmony-build-package-run-skill` | 对一个准备好的 HarmonyOS 工作区执行编译、打包、安装和启动，并产出交付观察证据 |
+| UI 截图对比 | `/wp-ui-snapshot-comparison-skill` | 对一个 journey step 捕获 Android 与 HarmonyOS 截图，配对比较并产出 `summary`、`evidence`、`comparison` |
+| 交付预检 | `/wp-delivery-preflight-skill` | 聚合 Harmony build/package/run 与 UI snapshot comparison，形成候选交付物 readiness 证据 |
+
+这组 Skill 不替代 Argo 的意图设计和实现设计阶段：涉及业务语义、验收边界或实现契约变化时，仍应先走 `BusinessPartner` / `IntentionDesign` / `ImplementationDesign` 的阶段闭环；它们只在编码、调试、迁移和交付验证阶段提供平台知识与可观察证据。
 
 ### 主要使用场景
 
