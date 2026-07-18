@@ -32,7 +32,14 @@ permission:
 |-------|------------|
 | Intent Design | `.argo/temp/IntentToImplementationHandoff.json` 存在；`argo.validateStageHandoff` stage=`intent-to-implementation` 通过；IntentionDesign 未报告 unresolved adequacy blockers（未满足时不应写 handoff） |
 | Implementation Design | `.argo/temp/ImplementationToCodingHandoff.json` 存在；`argo.validateStageHandoff` stage=`implementation-to-coding` 通过；contracts、explicit entrypoints、`expectedFailureRecordsPath`、`frozenFiles` 已物化 |
-| Coding/Repair | 已读取并遵守 ImplementationToCodingHandoff；`argo.runArchitectureTests` 全量显性架构测试通过；CodingAndReparing 未报告 Implementation Design gap 或 environment blocker |
+| Coding/Repair | 已读取并遵守 ImplementationToCodingHandoff；handoff-scoped explicitEntrypoints 与 criticalNonExplicitTests 通过；已运行 `argo.runArchitectureTests` 全量刷新 `deliveryStatus` 并报告非 handoff scope 剩余失败；CodingAndReparing 未报告 Implementation Design gap 或 environment blocker |
+
+## Delivery Status Governance
+
+- `deliveryStatus` is runner-owned: agents MUST NOT manually edit, revert, or fabricate it.
+- `argo.runArchitectureTests` is allowed to refresh `deliveryStatus` across the full intent graph as a side effect of Coding/Repair verification.
+- Orchestrator MUST preserve `deliveryStatus` diffs when CodingAndReparing provides fresh runner evidence (command/output summary, failure records path, and delivery changes). Treat these diffs as legitimate runner-owned state, not as CodingAndReparing graph edits.
+- If `deliveryStatus` changes appear without fresh runner evidence, or contradict the latest runner failure records, route back for verification instead of accepting or manually reverting the field.
 
 ## Workflow
 
@@ -129,7 +136,7 @@ while (Coding delivery ready?) is (no)
     :Resume same @CodingAndReparing session after recovery;
   elseif (Output empty or incomplete?) then (yes)
     :Resume same @CodingAndReparing task id;
-  elseif (Full architecture tests not passed?) then (yes)
+  elseif (Handoff-scoped acceptance not passed, runner evidence missing, or unreported out-of-scope failures?) then (yes)
     :Resume same @CodingAndReparing session;
   else (continue)
     :Resume same @CodingAndReparing session;

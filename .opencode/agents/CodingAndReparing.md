@@ -184,7 +184,8 @@ note right
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
   4. User-facing responses begin with "Derek".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
-  6. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (gates: handoff-scoped tests pass, handoff complete, no env blockers).
+  6. deliveryStatus is runner-owned: never manually edit, revert, or fabricate it. Preserve deliveryStatus diffs produced by a fresh argo.runArchitectureTests run and report the runner evidence.
+  7. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, handoff complete, no env blockers).
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
@@ -204,7 +205,7 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
   :Run the relevant existing entrypoints and update repair state
   [acts on: ExplicitTestcaseEntrypoint, TestFailureRecord, ArchitectureTestRun];
   :MCP tool: argo.runArchitectureTests
-  Run handoff-scoped explicit tests before completion
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
 
 elseif (EVENT: Architecture test regression?) then (regression)
@@ -216,7 +217,7 @@ elseif (EVENT: Architecture test regression?) then (regression)
   :Modify the minimum contract-allowed implementation files and rerun affected tests
   [acts on: RepairTask, RepositoryArtifact, ProductionBehavior, ExplicitTestcaseEntrypoint];
   :MCP tool: argo.runArchitectureTests
-  Run handoff-scoped explicit tests before completion
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
 
 elseif (EVENT: Test environment blocker?) then (environment)
@@ -235,10 +236,10 @@ elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then
     C (Apparent Intent): confirm repair scope from handoff and failure records before editing any file
     P (Protocol): refine forbidden-shortcut detection categories; strengthen "no test-only code branches" rules
     σ (Adherence): strengthen "do not modify frozen test assets" guard; never skip handoff validation
-    B (Binding Power): run argo.runArchitectureTests after every repair batch; verify all explicit tests pass before completion
+    B (Binding Power): run argo.runArchitectureTests after every repair batch; verify handoff-scoped explicit and critical tests pass before completion; report out-of-scope failures
     E (Eff. Efficacy): improve dependency-order repair sequencing; resolve upstream dependencies before downstream
     G (Granularity): repair one TestFailureRecord at a time; one ProductionBehavior change per step
-    Recursive (依赖传导): verify all architecture tests pass before declaring completion; report remaining failures
+    Recursive (依赖传导): verify handoff-scoped architecture tests pass before declaring completion; preserve runner-owned deliveryStatus refresh and report remaining out-of-scope failures
   end note
   :Distill 1-3 executable rules following distill-agent-rules methodology:
   fix incident boundary → rewrite complaint to observable rule → classify scope → select minimal承载位置
