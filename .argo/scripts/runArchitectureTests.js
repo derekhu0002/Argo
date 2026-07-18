@@ -422,13 +422,11 @@ async function writeArchitectureGraph(graphPath, graph) {
  * For element X, its upstream dependencies = elements X needs to be delivered first.
  * Mirrors resolveSemanticEdges from systemarchitecture-mcp-server.js.
  *
- *   - Access, Assignment, Specialization: source depends on target
+ *   - Access, Assignment, Specialization, Composition, Aggregation: source depends on target
  *   - Serving, Realization, Flow, Triggering, Influence: target depends on source
- *   - Composition, Aggregation: both directions are dependencies
  */
-const DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = new Set(['Access', 'Assignment', 'Specialization']);
+const DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = new Set(['Access', 'Assignment', 'Specialization', 'Composition', 'Aggregation']);
 const DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE = new Set(['Serving', 'Realization', 'Flow', 'Triggering', 'Influence']);
-const DEPENDENCY_TYPES_BIDIRECTIONAL = new Set(['Composition', 'Aggregation']);
 
 /**
  * Resolve upstream dependencies for a single element.
@@ -442,12 +440,6 @@ function resolveUpstreamDependencies(elementId, relationships) {
         const relType = String(rel.type || '');
 
         if (elementId === sourceId && elementId === targetId) continue;
-
-        if (DEPENDENCY_TYPES_BIDIRECTIONAL.has(relType)) {
-            if (elementId === sourceId) dependencies.add(targetId);
-            if (elementId === targetId) dependencies.add(sourceId);
-            continue;
-        }
 
         if (DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET.has(relType) && elementId === sourceId) {
             dependencies.add(targetId);

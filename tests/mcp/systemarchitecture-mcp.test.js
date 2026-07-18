@@ -43,6 +43,7 @@ async function main() {
   await rejectsElementAdditionWhenViewWouldExceedSevenElements();
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
   await returnsIntentElementContextWithSemanticTraversal();
+  await treatsCompositionAndAggregationAsSourceToTargetDependencies();
   await removesRelationshipFromSpecifiedViewOnlyWhenOtherViewsStillReferenceIt(tempGraphPath);
   await removesRelationshipFromGraphWhenSpecifiedViewWasLastMembership(tempGraphPath);
   await removesRelationshipFromAllViewsAndGraphWithoutViewScope(tempGraphPath);
@@ -568,6 +569,29 @@ async function returnsIntentElementContextWithSemanticTraversal() {
   assert(payload.subgraph.views.some(view => view.view_id === 'context-view'));
   assert(payload.boundary.truncatedDependencies.some(entry => entry.elementId === 'associated'));
   assert(payload.explorationHints.some(hint => hint.suggestedArguments.elementId === 'associated'));
+}
+
+async function treatsCompositionAndAggregationAsSourceToTargetDependencies() {
+  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'context-structural-direction-'));
+  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildContextQueryGraph(), null, 2));
+
+  const response = await callTool('getIntentElementContext', {
+    architecturePath: path.relative(repoRoot, tempGraphPath),
+    elementId: 'focus',
+    dependencyDepth: 1,
+    dependentDepth: 0,
+    associationDepth: 1,
+  });
+
+  const payload = parseToolPayload(response);
+  assert.strictEqual(payload.status, 'passed');
+
+  const dependencyRelationshipIds = payload.subgraph.relationships
+    .map(relationship => relationship.id)
+    .sort();
+  assert(!dependencyRelationshipIds.includes('whole-composes-focus'));
+  assert(!dependencyRelationshipIds.includes('aggregate-contains-focus'));
 }
 
 function buildContextQueryGraph() {

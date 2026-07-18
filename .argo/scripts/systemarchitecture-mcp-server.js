@@ -556,12 +556,7 @@ function resolveSemanticEdges(elementId, graphIndex) {
       continue;
     }
 
-    if (relationshipType === 'Composition' || relationshipType === 'Aggregation') {
-      edges.push({ kind: 'dependency', neighborId, relationship });
-      continue;
-    }
-
-    const sourceDependsOnTarget = ['Access', 'Assignment', 'Specialization'].includes(relationshipType);
+    const sourceDependsOnTarget = ['Access', 'Assignment', 'Specialization', 'Composition', 'Aggregation'].includes(relationshipType);
     const targetDependsOnSource = ['Serving', 'Realization', 'Flow', 'Triggering', 'Influence'].includes(relationshipType);
     if (sourceDependsOnTarget) {
       edges.push({ kind: isSource ? 'dependency' : 'dependent', neighborId, relationship });
