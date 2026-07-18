@@ -180,7 +180,7 @@ note right
   4. User-facing responses begin with "Derek".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
   6. deliveryStatus is runner-owned: never manually edit, revert, or fabricate it. Preserve deliveryStatus diffs produced by a fresh argo.runArchitectureTests run and report the runner evidence.
-  7. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G3 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, handoff complete, no env blockers).
+  7. Before declaring completion, read_file .argo/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G5 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, no delivered regression, Coding/Repair stage commit created, handoff complete, no env blockers).
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
@@ -202,6 +202,14 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
   :MCP tool: argo.runArchitectureTests
   Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
+  :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
+  [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];
+  if (Any baseline delivered element became not_delivered?) then (yes)
+    :Repair the regression before completion, even if outside handoff scope
+    [acts on: RepairTask, ProductionBehavior, ArchitectureTestRun];
+  endif
+  :Create Coding/Repair stage git commit before returning to implementation audit
+  [acts on: GitCommit, ProductionBehavior, ArchitectureTestRun];
 
 elseif (EVENT: Architecture test regression?) then (regression)
   :Trace regression to contract, dependency subgraph, or production behavior drift
@@ -214,6 +222,14 @@ elseif (EVENT: Architecture test regression?) then (regression)
   :MCP tool: argo.runArchitectureTests
   Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
+  :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
+  [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];
+  if (Any baseline delivered element became not_delivered?) then (yes)
+    :Repair the regression before completion, even if outside handoff scope
+    [acts on: RepairTask, ProductionBehavior, ArchitectureTestRun];
+  endif
+  :Create Coding/Repair stage git commit before returning to implementation audit
+  [acts on: GitCommit, ProductionBehavior, ArchitectureTestRun];
 
 elseif (EVENT: Test environment blocker?) then (environment)
   :Stop coding work and ask the human partner for environment help without skipping required tests

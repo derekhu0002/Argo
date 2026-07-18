@@ -1,7 +1,7 @@
 # ImplementationDesign 交付件清单
 
-> 由 ImplementationDesign Agent 在 emit `ImplementationToCodingHandoff.json` 之前逐项自检。
-> 触发方式：Agent 必须在 handoff 前 `read_file` 本文件并逐项确认。
+> 由 ImplementationDesign Agent 在对外 handoff 给 CodingAndReparing 之前逐项自检。
+> 触发方式：Agent 必须先写出 `ImplementationToCodingHandoff.json`，再在交接前 `read_file` 本文件并逐项确认。
 
 ---
 
@@ -69,6 +69,8 @@
 |---|------|------|
 | F1 | **schema 校验** | `argo.validateStageHandoff` 以 `stage = "implementation-to-coding"` 运行通过 |
 | F2 | **人工审批** | 向人类展示完整 handoff 摘要（contracts + entrypoints + guardrails + frozenFiles + expectedFailureRecordsPath + taskExecutionPlan），获得**显式批准**后才可 emit |
+| F3 | **pre-coding delivery baseline** | handoff 前运行全量 `argo.runArchitectureTests`，刷新 `deliveryStatus` 与 failure records；该结果作为 Coding 阶段 delivered 回归检测基线 |
+| F4 | **阶段提交** | 写出并校验 `ImplementationToCodingHandoff.json` 后、handoff 给 CodingAndReparing 前完成 ImplementationDesign 阶段 git commit，提交 contracts、test entrypoints、handoff、runner 刷新的 `deliveryStatus`/failure records 等本阶段产物 |
 
 ---
 
@@ -91,4 +93,6 @@
 [ ] E2 测试运行分类结果已记录
 [ ] F1 argo.validateStageHandoff 通过
 [ ] F2 人类已审批完整 handoff 摘要
+[ ] F3 已运行全量 argo.runArchitectureTests 并形成 pre-coding deliveryStatus 基线
+[ ] F4 已完成 ImplementationDesign 阶段 git commit
 ```

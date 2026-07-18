@@ -84,6 +84,8 @@
 | G1 | `argo.runArchitectureTests` 已全量运行；handoff-scoped explicitEntrypoints 与 criticalNonExplicitTests 通过；非 scope 失败已报告 | 本 handoff 范围 0 失败；全量 failure records 中剩余失败均标注为 out-of-scope |
 | G2 | Handoff 完整性检查 | 如果 handoff 缺失/不完整/与仓库状态冲突导致无法工作，报告 Implementation Design gap（而非跳过） |
 | G3 | 测试环境问题不能作为跳过理由 | 如测试环境阻塞，停止并向人类求助 |
+| G4 | delivered 回归检查 | 对比 ImplementationDesign 阶段 pre-coding 基线 commit 与 Coding 后全量 runner 结果；任何基线中 `delivered` 的元素变为 `not_delivered` 都是阻塞回归，必须修复 |
+| G5 | 阶段提交 | Coding/Repair 完成后、进入 ImplementationDesign audit 前，提交 Coding 阶段 git commit，包含代码修复、允许的支撑测试、全量 runner 刷新的 `deliveryStatus`/failure records |
 
 ---
 
@@ -111,4 +113,6 @@
 [ ] G1 argo.runArchitectureTests 已全量运行；handoff scope 0 失败；非 scope 剩余失败已报告
 [ ] G2 Handoff 完整性无 gap
 [ ] G3 无测试环境阻塞
+[ ] G4 无 delivered -> not_delivered 回归
+[ ] G5 已完成 Coding/Repair 阶段 git commit
 ```

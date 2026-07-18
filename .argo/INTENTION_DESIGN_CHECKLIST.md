@@ -1,7 +1,7 @@
 # IntentionDesign 交付件清单
 
-> 由 IntentionDesign Agent 在 emit `IntentToImplementationHandoff.json` 之前逐项自检。
-> 触发方式：Agent 必须在 handoff 前 `read_file` 本文件并逐项确认。
+> 由 IntentionDesign Agent 在对外 handoff 给 ImplementationDesign 之前逐项自检。
+> 触发方式：Agent 必须先写出 `IntentToImplementationHandoff.json`，再在交接前 `read_file` 本文件并逐项确认。
 
 ---
 
@@ -66,6 +66,7 @@
 | # | 交付件 | 路径 | 要求 |
 |---|--------|------|------|
 | F1 | **会话决策记录** | `design/persistant-memory/intention-design.md` | 记录关键决策、覆盖证明摘要、开放问题 |
+| F2 | **阶段提交** | git commit | 写出并校验 `IntentToImplementationHandoff.json` 后、handoff 给 ImplementationDesign 前完成 IntentDesign 阶段 git commit，提交 intent graph、handoff、会话记录以及本阶段拥有的意图产物 |
 
 ---
 
@@ -87,4 +88,5 @@
 [ ] E2 argo.validateStageHandoff 通过
 [ ] E3 Handoff 全局人类审批 approvedByHuman=true
 [ ] F1 会话决策记录已写
+[ ] F2 已完成 IntentDesign 阶段 git commit
 ```
