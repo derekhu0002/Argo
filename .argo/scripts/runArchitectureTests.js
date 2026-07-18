@@ -189,7 +189,7 @@ async function runArchitectureTests(workspaceRoot, architecturePath) {
         await writeArchitectureGraph(graphPath, graph);
         console.log(`[DELIVERY] Refreshed delivery status: ${deliveryChanges.length} element(s) changed`);
         for (const change of deliveryChanges) {
-            const direction = change.previousStatus === 'delivered' ? 'REGRESSION' : 'DELIVERED';
+            const direction = change.deliveryStatus === 'delivered' ? 'DELIVERED' : 'NOT_DELIVERED';
             console.log(`[DELIVERY]   ${change.id} "${change.name}" [${direction}] ${change.previousStatus || '(none)'} → ${change.deliveryStatus}`);
         }
     }
@@ -462,13 +462,15 @@ function resolveUpstreamDependencies(elementId, relationships) {
 }
 
 /**
- * Refresh delivery status for all elements based on test results and dependency topology.
- * An element is "delivered" when:
+ * Refresh delivery status for elements with mounted testcases based on test results and dependency topology.
+ * An element with mounted testcases is:
+ *   - "delivered" when:
  *   1. It has at least one testcase AND all its testcases passed
  *   2. All its upstream dependencies are also "delivered"
+ *   - "not_delivered" otherwise
  *
- * Uses a clean-slate approach: strips all existing deliveryStatus attributes,
- * then recomputes from scratch via fixed-point iteration.
+ * Elements without mounted testcases are left untouched: no new deliveryStatus
+ * is added, and any existing status remains as-is.
  * Returns the list of elements whose delivery status changed (additions and regressions).
  */
 function refreshDeliveryStatus(graph, testResults) {
@@ -495,21 +497,27 @@ function refreshDeliveryStatus(graph, testResults) {
         upstreamDeps.set(eid, resolveUpstreamDependencies(eid, graph.relationships));
     }
 
-    // Record previous delivery status, then strip all deliveryStatus attributes (clean slate)
+    // Record previous delivery status, then strip only mounted-testcase elements.
+    // Untested architectural scaffolding is not marked by this runner.
     const previousStatus = new Map();
     for (const element of graph.elements) {
         const eid = String(element.id || '');
         const attr = (element.attributes || []).find(a => a.name === 'deliveryStatus');
         previousStatus.set(eid, attr ? attr.value : '');
-        if (element.attributes) {
+        const testInfo = testResultByElement.get(eid);
+        if (testInfo && testInfo.hasTestcases && element.attributes) {
             element.attributes = element.attributes.filter(a => a.name !== 'deliveryStatus');
         }
     }
 
-    // Fresh delivery status map — all elements start as undelivered
+    // Fresh delivery status map — tested elements start as not_delivered.
+    // Untested elements preserve their previous status for reporting/dependency
+    // bookkeeping but do not block dependents.
     const deliveryStatus = new Map();
     for (const element of graph.elements) {
-        deliveryStatus.set(String(element.id || ''), '');
+        const eid = String(element.id || '');
+        const testInfo = testResultByElement.get(eid);
+        deliveryStatus.set(eid, testInfo && testInfo.hasTestcases ? 'not_delivered' : (previousStatus.get(eid) || ''));
     }
 
     // Iterate to fixed point: mark elements whose tests pass AND whose upstream deps are delivered
@@ -528,7 +536,7 @@ function refreshDeliveryStatus(graph, testResults) {
             if (deliveryStatus.get(eid) === 'delivered') continue;
 
             const testInfo = testResultByElement.get(eid);
-            // Only mark elements that have testcases
+            // Only mark elements that have testcases.
             if (!testInfo || !testInfo.hasTestcases) continue;
             if (!testInfo.allPassed) continue;
 
@@ -546,22 +554,32 @@ function refreshDeliveryStatus(graph, testResults) {
             }
             if (!allRelevantDepsDelivered) continue;
 
-            // Mark as delivered — store in attributes array (schema-compliant, per .argo/schema/)
-            if (!element.attributes) element.attributes = [];
-            element.attributes.push({ name: 'deliveryStatus', value: 'delivered' });
             deliveryStatus.set(eid, 'delivered');
             changed = true;
         }
     }
 
-    // Compute changes: both additions ('' → 'delivered') and regressions ('delivered' → '')
+    // Persist final status for every mounted-testcase element.
+    for (const element of graph.elements) {
+        const eid = String(element.id || '');
+        const testInfo = testResultByElement.get(eid);
+        if (!testInfo || !testInfo.hasTestcases) continue;
+
+        if (!element.attributes) element.attributes = [];
+        element.attributes.push({ name: 'deliveryStatus', value: deliveryStatus.get(eid) || 'not_delivered' });
+    }
+
+    // Compute changes for mounted-testcase elements only.
     const changes = [];
     for (const element of graph.elements) {
         const eid = String(element.id || '');
+        const testInfo = testResultByElement.get(eid);
+        if (!testInfo || !testInfo.hasTestcases) continue;
+
         const prev = previousStatus.get(eid) || '';
-        const curr = deliveryStatus.get(eid) || '';
+        const curr = deliveryStatus.get(eid) || 'not_delivered';
         if (prev !== curr) {
-            changes.push({ id: eid, name: element.name, previousStatus: prev, deliveryStatus: curr || 'undelivered' });
+            changes.push({ id: eid, name: element.name, previousStatus: prev, deliveryStatus: curr });
         }
     }
 
