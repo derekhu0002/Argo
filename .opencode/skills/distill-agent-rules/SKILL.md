@@ -168,7 +168,7 @@ Memory Review:
 放置原则：
 
 - 跨仓库、跨任务、长期稳定的个人偏好：放到 user memory 或用户级 instructions
-- 当前仓库大多数任务都应遵守的共享约束：放到 `.github/copilot-instructions.md`
+- 当前仓库大多数任务都应遵守的共享约束：放到 `.opencode/GLOBAL_INSTRUCTIONS.md`
 - 只在一类多步任务中才需要的工作流：做成 skill
 - 只对某些文件、目录或语言域生效的约束：做成 file instructions
 - 需要确定性拦截、批准或自动执行的规则：做成 hook
