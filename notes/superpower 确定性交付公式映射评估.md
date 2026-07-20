@@ -1,6 +1,6 @@
 # AI Coding Harness 确定性交付公式映射评估
 
-本文基于 `docs/影响 AI 成功交付的第一性原理：从概率滑行到确定性收敛.md` 中的递归任务树交付公式，对本项目构建的 AI Coding Harness 系统进行结构化评估：
+本文基于 `notes/ARGO 工程哲学：确定性交付公式的工程化.md` 中的递归任务树交付公式，对本项目构建的 AI Coding Harness 系统进行结构化评估：
 
 $$TC_{node} = \left[ C \times \frac{(P \cdot B) \times E_{sys}}{G} \right] \cdot \prod_{j \in Children} (TC_j)^{d_j}$$
 
