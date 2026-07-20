@@ -36,6 +36,16 @@ Common ArchiMate 3.2 example viewpoints include:
 
 If no suitable viewpoint exists in the model, define or request the Architecture Viewpoint first. Existing baseline viewpoint Grouping elements may be used as repository-local viewpoint anchors.
 
+## Viewpoint Modeling Skills
+
+After selecting a viewpoint, check `.argo/skills/modeling/` for the matching viewpoint skill and use its `SKILL.md` as the detailed modeling guide when it exists. Skill directories use normalized lowercase hyphen names, for example:
+
+- `Outcome Realization Viewpoint` -> `.argo/skills/modeling/outcome-realization-viewpoint/SKILL.md`
+- `Capability Map Viewpoint` -> `.argo/skills/modeling/capability-map-viewpoint/SKILL.md`
+- `Migration Viewpoint` -> `.argo/skills/modeling/migration-viewpoint/SKILL.md`
+
+If the selected viewpoint has no matching modeling skill, continue from this rule and the ArchiMate 3.2 viewpoint definition, and record the absence only when it affects modeling confidence.
+
 ## Mutation And Audit Rules
 
 - Do not add or update view content without an explicit viewpoint binding.
