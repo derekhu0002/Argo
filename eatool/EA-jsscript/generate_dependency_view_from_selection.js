@@ -9,9 +9,8 @@
  * Dependency rules mirror resolveSemanticEdges from ARGO's
  * systemarchitecture-mcp-server.js:
  *
- *   - Access, Assignment, Specialization: source depends on target
+ *   - Access, Assignment, Specialization, Composition, Aggregation: source depends on target
  *   - Serving, Realization, Flow, Triggering, Influence: target depends on source
- *   - Composition, Aggregation: bidirectional (both directions are dependencies)
  *   - Association: NOT a dependency (excluded from traversal)
  *
  * Usage:
@@ -34,9 +33,8 @@ var MAX_DOWNSTREAM_DEPTH = 1;
 
 // --- Dependency direction constants (mirrors ARGO resolveSemanticEdges) ---
 
-var DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = ['Access', 'Assignment', 'Specialization'];
+var DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = ['Access', 'Assignment', 'Specialization', 'Composition', 'Aggregation'];
 var DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE = ['Serving', 'Realization', 'Flow', 'Triggering', 'Influence'];
-var DEPENDENCY_TYPES_BIDIRECTIONAL = ['Composition', 'Aggregation'];
 
 /**
  * Returns true if the given ArchiMate stereotype represents a dependency-bearing
@@ -69,12 +67,6 @@ function resolveUpstream(elementId, connectorCache) {
     if (!isDependencyConnectorType(relType)) continue;
     if (elementId === neighborId) continue;
 
-    if (contains(DEPENDENCY_TYPES_BIDIRECTIONAL, relType)) {
-      // Both directions are dependencies
-      upstreamIds.push(neighborId);
-      continue;
-    }
-
     if (contains(DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET, relType) && isSource) {
       // Source depends on target → target is upstream
       upstreamIds.push(neighborId);
@@ -106,11 +98,6 @@ function resolveDownstream(elementId, connectorCache) {
 
     if (!isDependencyConnectorType(relType)) continue;
     if (elementId === neighborId) continue;
-
-    if (contains(DEPENDENCY_TYPES_BIDIRECTIONAL, relType)) {
-      downstreamIds.push(neighborId);
-      continue;
-    }
 
     if (contains(DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE, relType) && isSource) {
       // Target depends on source → target is downstream
