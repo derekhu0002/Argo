@@ -28,6 +28,10 @@ const RELATIONSHIP_TYPE_BASE_G = {
   Composition: 10,
 };
 
+// Keep dependency direction aligned with runArchitectureTests.js delivery semantics.
+const DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET = new Set(['Access', 'Assignment', 'Specialization', 'Composition', 'Aggregation']);
+const DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE = new Set(['Serving', 'Realization', 'Flow', 'Triggering', 'Influence']);
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
   const workspaceRoot = resolveWorkspaceRoot(options.workspaceRoot);
@@ -324,7 +328,11 @@ function buildTreeEdges(elementEntries, relationshipEntries) {
     if (!source || !target) {
       continue;
     }
-    const { parent, child } = orientDependencyEdge(relationshipEntry.item, source, target);
+    const dependencyEdge = orientDependencyEdge(relationshipEntry.item, source, target);
+    if (!dependencyEdge) {
+      continue;
+    }
+    const { parent, child } = dependencyEdge;
     edges.push({
       kind: 'relationship',
       relationship: relationshipEntry,
@@ -356,10 +364,14 @@ function buildTreeEdges(elementEntries, relationshipEntries) {
 }
 
 function orientDependencyEdge(relationship, source, target) {
-  if (['Realization', 'Assignment', 'Influence'].includes(relationship.type)) {
+  const relationshipType = String(relationship.type || '');
+  if (DEPENDENCY_TYPES_SOURCE_DEPENDS_ON_TARGET.has(relationshipType)) {
+    return { parent: source, child: target };
+  }
+  if (DEPENDENCY_TYPES_TARGET_DEPENDS_ON_SOURCE.has(relationshipType)) {
     return { parent: target, child: source };
   }
-  return { parent: source, child: target };
+  return null;
 }
 
 function buildPlantuml(elementEntries, relationshipEntries, treeEdges, totalG) {
