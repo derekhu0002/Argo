@@ -72,7 +72,7 @@ README 只保留 MCP 的定位和入口，避免在多个文档中重复维护�
 
 ## 鸿蒙与跨端移动开发支持
 
-Argo 的鸿蒙相关能力作为领域 Skill 和交付边界挂载在 `skills/mobile-dev/` 下，主要服务于 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio、Android 到 HarmonyOS 迁移、跨端页面对齐和交付前证据采集。它们通常由 `CodingAndReparing` 在实现 handoff 约束下使用，也可以作为人工调试、验收和迁移辅助入口。
+Argo 的鸿蒙相关能力作为领域 Skill 和交付边界挂载在 `.argo/skills/mobile-dev/` 下，主要服务于 HarmonyOS NEXT、ArkTS、ArkUI、DevEco Studio、Android 到 HarmonyOS 迁移、跨端页面对齐和交付前证据采集。它们通常由 `CodingAndReparing` 在实现 handoff 约束下使用，也可以作为人工调试、验收和迁移辅助入口。
 
 | 能力 | 入口 | 典型用途 |
 | --- | --- | --- |

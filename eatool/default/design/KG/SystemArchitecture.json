@@ -10,7 +10,7 @@
             "attributes": [
                 {
                     "name": "modelingSkillPaths",
-                    "value": "skills/modeling/stakeholder-viewpoint/SKILL.md; skills/modeling/goal-realization-viewpoint/SKILL.md; skills/modeling/motivation-viewpoint/SKILL.md"
+                    "value": ".argo/skills/modeling/stakeholder-viewpoint/SKILL.md; .argo/skills/modeling/goal-realization-viewpoint/SKILL.md; .argo/skills/modeling/motivation-viewpoint/SKILL.md"
                 }
             ],
             "subdiagram_views": [
@@ -28,7 +28,7 @@
             "attributes": [
                 {
                     "name": "modelingSkillPaths",
-                    "value": "skills/modeling/strategy-viewpoint/SKILL.md; skills/modeling/capability-map-viewpoint/SKILL.md; skills/modeling/value-stream-viewpoint/SKILL.md; skills/modeling/outcome-realization-viewpoint/SKILL.md; skills/modeling/resource-map-viewpoint/SKILL.md"
+                    "value": ".argo/skills/modeling/strategy-viewpoint/SKILL.md; .argo/skills/modeling/capability-map-viewpoint/SKILL.md; .argo/skills/modeling/value-stream-viewpoint/SKILL.md; .argo/skills/modeling/outcome-realization-viewpoint/SKILL.md; .argo/skills/modeling/resource-map-viewpoint/SKILL.md"
                 }
             ],
             "subdiagram_views": [
@@ -46,7 +46,7 @@
             "attributes": [
                 {
                     "name": "modelingSkillPaths",
-                    "value": "skills/modeling/organization-viewpoint/SKILL.md; skills/modeling/product-viewpoint/SKILL.md; skills/modeling/business-process-cooperation-viewpoint/SKILL.md; skills/modeling/service-realization-viewpoint/SKILL.md"
+                    "value": ".argo/skills/modeling/organization-viewpoint/SKILL.md; .argo/skills/modeling/product-viewpoint/SKILL.md; .argo/skills/modeling/business-process-cooperation-viewpoint/SKILL.md; .argo/skills/modeling/service-realization-viewpoint/SKILL.md"
                 }
             ],
             "subdiagram_views": [
@@ -64,7 +64,7 @@
             "attributes": [
                 {
                     "name": "modelingSkillPaths",
-                    "value": "skills/modeling/requirements-realization-viewpoint/SKILL.md; skills/modeling/application-usage-viewpoint/SKILL.md; skills/modeling/application-structure-viewpoint/SKILL.md; skills/modeling/application-cooperation-viewpoint/SKILL.md; skills/modeling/information-structure-viewpoint/SKILL.md; skills/modeling/technology-usage-viewpoint/SKILL.md; skills/modeling/technology-viewpoint/SKILL.md; skills/modeling/implementation-deployment-viewpoint/SKILL.md"
+                    "value": ".argo/skills/modeling/requirements-realization-viewpoint/SKILL.md; .argo/skills/modeling/application-usage-viewpoint/SKILL.md; .argo/skills/modeling/application-structure-viewpoint/SKILL.md; .argo/skills/modeling/application-cooperation-viewpoint/SKILL.md; .argo/skills/modeling/information-structure-viewpoint/SKILL.md; .argo/skills/modeling/technology-usage-viewpoint/SKILL.md; .argo/skills/modeling/technology-viewpoint/SKILL.md; .argo/skills/modeling/implementation-deployment-viewpoint/SKILL.md"
                 }
             ],
             "subdiagram_views": [
@@ -82,7 +82,7 @@
             "attributes": [
                 {
                     "name": "modelingSkillPaths",
-                    "value": "skills/modeling/project-viewpoint/SKILL.md; skills/modeling/migration-viewpoint/SKILL.md; skills/modeling/implementation-migration-viewpoint/SKILL.md; skills/modeling/layered-viewpoint/SKILL.md; skills/modeling/physical-viewpoint/SKILL.md"
+                    "value": ".argo/skills/modeling/project-viewpoint/SKILL.md; .argo/skills/modeling/migration-viewpoint/SKILL.md; .argo/skills/modeling/implementation-migration-viewpoint/SKILL.md; .argo/skills/modeling/layered-viewpoint/SKILL.md; .argo/skills/modeling/physical-viewpoint/SKILL.md"
                 }
             ],
             "subdiagram_views": [
