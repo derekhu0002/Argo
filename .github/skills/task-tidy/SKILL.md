@@ -23,7 +23,7 @@ disable-model-invocation: true
 
 ### 1. Decision Tree Inventory
 - 从 Business Partner 对话中重建决策树：问题定义、分解维度、分支、推荐答案、人类确认/否决、依赖前提、风险和验收边界。
-- 将重建后的决策树写入 `.argo/temp/decision-tree/[timestamp]-[sessionname-id].md`，其中 `timestamp` 使用当前时间戳，`sessionname-id` 使用本次 task-tidy 会话可识别名称和会话 id。
+- 将重建后的决策树写入 `.argo/history/decision-tree/[timestamp]-[sessionname-id].md`，其中 `timestamp` 使用当前时间戳，`sessionname-id` 使用本次 task-tidy 会话可识别名称和会话 id。
 - 临时 Markdown 文件必须使用表格表达决策树节点，至少包含列：`id`、`parentId`、`level`、`question`、`MECE dimension`、`branchStatus`、`recommendedAnswer`、`humanDecision`、`businessRationale`、`dependencyPremises`、`risks`、`acceptanceControlPoint`、`acceptanceObservationPoint`、`horizontalConcern`、`verticalDependency`、`evidenceSource`。
 - 后续 `TaskTidyGraphIntegrator` 必须以该临时表格文件为标准输入；不要只把决策树留在聊天上下文中。
 - 对每个分支标注状态：accepted、rejected、open、superseded。
@@ -31,7 +31,7 @@ disable-model-invocation: true
 - 对涉及现状实现、已有架构或代码行为的节点，先从仓库、图谱、测试或契约寻找答案；只有证据不足时才保留为 open question。
 
 ### 2. Dedicated Integration Delegation
-- 委托 1 个 `TaskTidyGraphIntegrator` 子 agent，并在任务 prompt 中传入 task-tidy 刚写入的具体 decision tree 文件路径，例如 `.argo/temp/decision-tree/[timestamp]-[sessionname-id].md`。
+- 委托 1 个 `TaskTidyGraphIntegrator` 子 agent，并在任务 prompt 中传入 task-tidy 刚写入的具体 decision tree 文件路径，例如 `.argo/history/decision-tree/[timestamp]-[sessionname-id].md`。
 - 子 agent 不得重新挑战已由 Business Partner 和人类达成共识的业务决策树；若发现决策树信息不足，只能作为 integration blocker 或 residual coordination 上报。
 
 ### 3. Host Validation and Synthesis
