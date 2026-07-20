@@ -1,5 +1,3 @@
-# Repository Instructions For GitHub Copilot
-
 ## Viewpoint-First Intent Architecture Modeling
 
 The canonical shared rule is `.argo/rules/intent-architecture-viewpoints.md`.
