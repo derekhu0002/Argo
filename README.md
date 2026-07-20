@@ -17,7 +17,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 ## 持续扩展
 本项目是一个顶层脚手架，不同的项目均可以基于本脚手架进一步扩展，包括：
 * 从三大阶段Agent扩展出专业子Agent；
-* 为不同类型的项目增加SKILL，配置给各阶段Agent（如鸿蒙应用开发相关的SKILL可配置给编码Agent）
+* 为不同类型的项目增加 SKILL，沉淀在 `.argo/skills/` 并配置给各阶段 Agent（如 ArchiMate viewpoint 建模 SKILL、鸿蒙应用开发相关 SKILL）
 
 ## 本方案和业界主流AI Coding Harness方案的对比：
 
@@ -48,7 +48,7 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 
 ### 部署
 
-各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本与 JSON Schema；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`）；具体工具清单与调用语义见「MCP 服务与意图架构工具」章节。
+各平台 bundle（`.cursor` / `.github` / `.opencode`）依赖统一的 **`.argo`** 目录提供 MCP 服务、validator 脚本、JSON Schema 与跨平台领域 SKILL；部署时须将对应平台目录 **与** `.argo` 一并拷贝到工作区根目录。三平台均注册名为 `argo` 的统一 MCP 服务器（`.argo/scripts/argo-mcp-server.js`）；具体工具清单与调用语义见「MCP 服务与意图架构工具」章节。
 
 | 版本 | 适用环境 | 说明 |
 | --- | --- | --- |
@@ -69,6 +69,20 @@ Argo 是一套AI Coding Harness，主要面向企业级复杂项目开发，实�
 Argo 的统一 MCP 服务名为 `argo`，入口脚本为 `.argo/scripts/argo-mcp-server.js`。它负责把意图图谱读取、子图上下文查询、图谱 mutation、阶段 handoff 校验、显性架构测试、trace proposal 校验、diff 可视化和工作区初始化等能力暴露给 Agent 与 Skill。
 
 README 只保留 MCP 的定位和入口，避免在多个文档中重复维护工具清单。当前工具数量、参数、写入副作用、mutation 校验链、focused `dryRun` 语义、`runArchitectureTests` 的 `deliveryStatus` 刷新规则等实现细节，以《[意图架构 MCP 功能列表](notes/意图架构%20MCP%20功能列表.md)》为准。
+
+## 意图建模与 Viewpoint Skill
+
+`design/KG/SystemArchitecture.json` 的默认入口不再按 ArchiMate 元素 layer 分桶，而是采用 5 个面向业务关注点的 baseline viewpoint：
+
+| Baseline Viewpoint | 建模关注点 | 挂载的官方 ArchiMate viewpoint skill |
+| --- | --- | --- |
+| `StakeholderIntentViewpoint` | 谁关心、为什么做、成功对谁有价值 | Stakeholder、Goal Realization、Motivation |
+| `OutcomeCapabilityViewpoint` | 业务结果、能力边界、价值流、资源和投资焦点 | Strategy、Capability Map、Value Stream、Outcome Realization、Resource Map |
+| `BusinessBehaviorViewpoint` | 业务角色、流程、事件、服务、产品和业务对象如何协作 | Organization、Product、Business Process Cooperation、Service Realization |
+| `CapabilityRealizationViewpoint` | 业务能力如何被应用服务、组件、数据和技术责任承载 | Requirements Realization、Application Usage、Application Structure、Application Cooperation、Information Structure、Technology Usage、Technology、Implementation and Deployment |
+| `AcceptanceDeliveryViewpoint` | 验收语义、风险、横向 concern、纵向依赖和交付顺序 | Project、Migration、Implementation and Migration、Layered、Physical |
+
+每个 baseline viewpoint 元素通过 `attributes[].name = "modelingSkillPaths"` 挂载对应的 `.argo/skills/modeling/*/SKILL.md`。后续 Agent 在对某个 view 建模时，应先读取该属性指向的 skill，再按该 viewpoint 的 stakeholders、concerns、purpose、scope、元素范围和关系语义进行建模。ArchiMate layer 仍由元素 `type` 隐含表达，可用于校验和专门子视图，但不作为默认建模入口。
 
 ## 鸿蒙与跨端移动开发支持
 
@@ -111,7 +125,7 @@ flowchart TD
     class B,C,E,F,G,H ai
 ```
 
-新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚，并输出可追踪的 `DecisionTreeRecord`。分析完成后，在同一个会话继续执行 `/task-tidy`：它先将决策树规范化为 `.argo/temp/decision-tree/[timestamp]-[sessionname-id].md` Markdown 表格，再把具体文件路径传给 `TaskTidyGraphIntegrator` 子 Agent，由子 Agent 产出图谱整合候选。随后 `/task-tidy` 所在 host agent 负责验收“决策树整理进意图架构”的完整度、合理性和可追踪性；如发现遗漏、冲突或不可追踪节点，必须 resume 同一个 `TaskTidyGraphIntegrator` 会话继续修正。通过验收后，`/task-tidy` 通过 `argo` MCP 将结论内化进 `design/KG/SystemArchitecture.json`（Motivation、Strategy、Business、Application、Technology 分层），挂载验收标准，并调用 `/architecture-diff-plantuml` 输出 PlantUML ArchiMate 依赖图、Sequential Gravity Chain 和 G 估算。**不得**创建 `design/tasks/` 下的独立任务 Markdown；仅在无法完全内化为 durable architecture intent 时，才保留残余协调事项。横向切分与纵向依赖应体现为图谱元素、关系与 view，而不是独立 task 文件。意图内化完成后，涉及开发交付的范围统一转入下面的开发迭代复用流程。
+新需求不要先进入普通开发会话，更不要直接进入编码。应通过 `BusinessPartner` Agent 或 `/business-partner` Skill 提交需求，让它作为需求入口把目标、约束、方案、风险、验收控制点和观测点分析清楚，并输出可追踪的 `DecisionTreeRecord`。分析完成后，在同一个会话继续执行 `/task-tidy`：它先将决策树规范化为 `.argo/temp/decision-tree/[timestamp]-[sessionname-id].md` Markdown 表格，再把具体文件路径传给 `TaskTidyGraphIntegrator` 子 Agent，由子 Agent 产出图谱整合候选。随后 `/task-tidy` 所在 host agent 负责验收“决策树整理进意图架构”的完整度、合理性和可追踪性；如发现遗漏、冲突或不可追踪节点，必须 resume 同一个 `TaskTidyGraphIntegrator` 会话继续修正。通过验收后，`/task-tidy` 通过 `argo` MCP 将结论内化进 `design/KG/SystemArchitecture.json`，优先落到 5 个 baseline viewpoint 或其下游子 view，并按 view 挂载的 `.argo/skills/modeling/*/SKILL.md` 选择建模规则、挂载验收标准，再调用 `/architecture-diff-plantuml` 输出 PlantUML ArchiMate 依赖图、Sequential Gravity Chain 和 G 估算。**不得**创建 `design/tasks/` 下的独立任务 Markdown；仅在无法完全内化为 durable architecture intent 时，才保留残余协调事项。横向切分与纵向依赖应体现为图谱元素、关系与 view，而不是独立 task 文件。意图内化完成后，涉及开发交付的范围统一转入下面的开发迭代复用流程。
 
 ##### 开发迭代复用流程
 
