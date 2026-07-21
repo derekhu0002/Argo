@@ -250,6 +250,8 @@ function ensureElement(importPkg, schemaId, elementDataMap, elementMap) {
   elementMap[schemaId] = element;
 
   applyElementCoreFields(element, elementData);
+  // EA child collections are safest to mutate after owner field changes are persisted.
+  element.Update();
   applyElementAttributes(element, elementData.attributes);
   applyElementSpecialMethods(element, elementData);
   applyProjectInfo(element, elementData.project_info);
