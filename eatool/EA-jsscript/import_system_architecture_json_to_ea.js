@@ -330,9 +330,11 @@ function applyElementAttributes(element, attributes) {
       continue;
     }
     var attr = element.Attributes.AddNew(data.name, 'String');
-    attr.Notes = isNonEmptyString(data.content) ? data.content : safeString(data.description);
-    if (isNonEmptyString(data.value)) {
-      attr.Default = data.value;
+    var attributeValue = safeString(data.value);
+    if (isNonEmptyString(attributeValue)) {
+      attr.Notes = attributeValue;
+    } else {
+      attr.Notes = isNonEmptyString(data.content) ? data.content : safeString(data.description);
     }
     if (isNonEmptyString(data.content)) {
       attr.Alias = 'content';

@@ -910,11 +910,9 @@ function extractFromDiagram(currentDiagram) {
 					}
 				} else {
 					var attbbbjss = '{\n"name": "' + jsonEscape(attr.Name) + '"\n';
-					if (attr.Notes != "") {
-						attbbbjss += ',"description": "' + jsonEscape(attr.Notes) + '"\n';
-					}
-					if (attr.Default != "") {
-						attbbbjss += ',"value": "' + jsonEscape(attr.Default) + '"\n';
+					var attributeValue = attr.Notes != "" ? attr.Notes : attr.Default;
+					if (attributeValue != "") {
+						attbbbjss += ',"value": "' + jsonEscape(attributeValue) + '"\n';
 					}
 					attbbbjss += '}';
 					attributesJsonStrings.push(attbbbjss);
@@ -1413,11 +1411,9 @@ function main() {
 				}
 			} else {
 				var attbbbjss = '{\n"name": "' + jsonEscape(attr.Name) + '"\n';
-				if (attr.Notes != "") {
-					attbbbjss += ',"description": "' + jsonEscape(attr.Notes) + '"\n';
-				}
-				if (attr.Default != "") {
-					attbbbjss += ',"value": "' + jsonEscape(attr.Default) + '"\n';
+				var attributeValue = attr.Notes != "" ? attr.Notes : attr.Default;
+				if (attributeValue != "") {
+					attbbbjss += ',"value": "' + jsonEscape(attributeValue) + '"\n';
 				}
 				attbbbjss += '}';
 				attributesJsonStrings.push(attbbbjss);

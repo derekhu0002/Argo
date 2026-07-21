@@ -8,6 +8,7 @@ const importerPath = path.join(repoRoot, 'eatool', 'EA-jsscript', 'import_system
 
 function main() {
   importsElementAttributesAfterPersistingCoreFieldChanges();
+  importsElementAttributeValuesAsNotes();
 }
 
 function importsElementAttributesAfterPersistingCoreFieldChanges() {
@@ -35,9 +36,48 @@ function importsElementAttributesAfterPersistingCoreFieldChanges() {
   assert.strictEqual(element.persistedAttributes.length, 1, 'attribute is persisted on the EA element');
   assert.strictEqual(element.persistedAttributes[0].Name, 'modelingSkillPaths');
   assert.strictEqual(
-    element.persistedAttributes[0].Default,
+    element.persistedAttributes[0].Notes,
     '.argo/skills/modeling/application-structure-viewpoint/SKILL.md',
   );
+  assert.strictEqual(element.persistedAttributes[0].Default, '', 'value is not written to EA Default');
+  assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'value is not written to tagged values');
+}
+
+function importsElementAttributeValuesAsNotes() {
+  const context = loadImporterContext();
+  const importPackage = new EaPackage();
+  const elementMap = {};
+  const longValue = [
+    '.argo/skills/modeling/requirements-realization-viewpoint/SKILL.md',
+    '.argo/skills/modeling/application-usage-viewpoint/SKILL.md',
+    '.argo/skills/modeling/application-structure-viewpoint/SKILL.md',
+    '.argo/skills/modeling/application-cooperation-viewpoint/SKILL.md',
+    '.argo/skills/modeling/information-structure-viewpoint/SKILL.md',
+    '.argo/skills/modeling/technology-usage-viewpoint/SKILL.md',
+    '.argo/skills/modeling/technology-viewpoint/SKILL.md',
+    '.argo/skills/modeling/implementation-deployment-viewpoint/SKILL.md',
+  ].join('; ');
+  const elementDataMap = {
+    'el-long': {
+      id: 'el-long',
+      name: 'Element With Long Attribute',
+      type: 'Grouping',
+      attributes: [
+        {
+          name: 'modelingSkillPaths',
+          value: longValue,
+        },
+      ],
+    },
+  };
+
+  const element = context.ensureElement(importPackage, 'el-long', elementDataMap, elementMap);
+
+  assert.ok(element, 'element is created');
+  assert.strictEqual(element.persistedAttributes.length, 1, 'attribute is persisted on the EA element');
+  assert.strictEqual(element.persistedAttributes[0].Notes, longValue, 'long value is written to EA Notes');
+  assert.strictEqual(element.persistedAttributes[0].Default, '', 'long value is not written to EA Default');
+  assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'long value is not written to tagged values');
 }
 
 function loadImporterContext() {
@@ -176,6 +216,19 @@ class EaAttribute {
   constructor(name, type) {
     this.Name = name;
     this.Type = type;
+    this._default = '';
+    this.TaggedValues = new TaggedValueCollection();
+  }
+
+  get Default() {
+    return this._default;
+  }
+
+  set Default(value) {
+    if (String(value).length > 250) {
+      throw new Error('EA Attribute.Default exceeds short text limit');
+    }
+    this._default = value;
   }
 
   Update() {}
