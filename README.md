@@ -1,6 +1,6 @@
 # ARGO HARNESS
 
-ARGO 是一套由**架构知识图谱驱动**的 AI Coding Harness，面向企业级复杂项目，把业务意图、架构决策、测试门禁和 Agent 协作组织成可追溯、可验证、可回归的交付闭环。
+ARGO 是一套由**架构知识图谱驱动**的 AI Coding Harness，面向企业级复杂项目，通过精准上下文管理，把业务意图、架构决策、测试门禁和 Agent 协作组织成可追溯、可验证、可回归的交付闭环。
 
 它不假设模型天然稳定，而是通过工程系统提高交付确定性：
 
@@ -42,6 +42,53 @@ flowchart LR
 3. **HARNESS 工程流**：BusinessPartner、IntentionDesign、ImplementationDesign、CodingAndReparing 与双层验收在明确权限下协作。
 
 深入了解：[总体架构](design/architecture.md) · [意图架构设计](design/intent-architecture/README.md) · [HARNESS 工程流程](design/argo-harness/README.md)
+
+## 核心优势：精准上下文管理
+
+ARGO 的优势不是向模型一次性塞入更多文件，而是让 Agent 在**正确阶段，只获得完成当前任务所需的正确事实、依赖、权限和验证证据**。这解决了大型项目中最常见的上下文问题：信息过载、事实冲突、跨阶段越权、长会话衰减，以及代码现实无声覆盖业务意图。
+
+```mermaid
+flowchart LR
+    I[业务需求与决策] --> G[(意图架构图谱<br/>长期事实源)]
+    T[当前交付范围] --> Q[argo MCP<br/>查询 focus dependency subgraph]
+    G --> Q
+    Q --> V[相关 viewpoint<br/>目标 · 能力 · 依赖 · 约束 · testcase]
+    V --> H[阶段 handoff<br/>压缩为当前 Agent 的执行上下文]
+    H --> A[阶段 Agent<br/>明确可读、可写与禁止边界]
+    A --> E[测试、validator 与失败记录<br/>提供客观反馈]
+    E -->|GAP 回流| G
+```
+
+精准管理由六个机制共同实现：
+
+1. **图谱化，而不是依赖聊天记忆**
+   需求、目标、能力、约束、依赖和显性 testcase 被内化到 `SystemArchitecture.json`。跨会话的长期事实从自然语言历史中抽离，避免 Agent 每次重新猜测系统意图。
+
+2. **按架构相关性提取，而不是全仓库灌入**
+   Agent 以当前 architecture element 为 focus，通过 `getIntentElementContext` 获取必要的上游依赖、下游影响和关联邻居。Viewpoint 把大图切成面向单一关注点的小视图，使上下文范围由架构语义决定，而不是由关键词搜索或文件距离决定。
+
+3. **按阶段压缩，而不是让每个 Agent 理解全部世界**
+   `IntentionDesign`、`ImplementationDesign` 和 `CodingAndReparing` 只拥有本阶段需要的本体、契约和权限。阶段 handoff 将上游结论压缩成结构化输入；下层通过 ID 追踪上层事实，但不能越权修改它。
+
+4. **按依赖切分任务，而不是让单次会话吞下整个需求**
+   `/task-tidy` 将决策映射到架构元素和依赖关系，生成 Sequential Gravity Chain 与 G 估算。人类按依赖顺序逐个提交小范围，使每轮上下文保持高信噪比。
+
+5. **把知识、规则与环境按需挂载，而不是永久混入 Prompt**
+   Viewpoint 通过 `modelingSkillPaths` 挂载建模 Skill；领域模板按场景组合知识库、编码规范、测试环境和观察工具。Agent 只在触发对应工作时加载它们。
+
+6. **用执行证据刷新上下文，而不是让错误结论继续传播**
+   Schema、MCP validator、冻结测试、失败记录和双层验收共同判断当前上下文是否可信。发现 GAP 时回到意图设计、实现设计或编码阶段修正，确保错误不会作为“既定事实”传给下一阶段。
+
+因此，ARGO 的“精准”同时包含四层含义：
+
+| 精准维度 | 回答的问题 | 工程实现 |
+| --- | --- | --- |
+| 事实精准 | 哪些信息具有权威性？ | 图谱、实现契约、handoff、冻结测试的事实源优先级 |
+| 范围精准 | 当前任务真正需要哪些信息？ | focus element、依赖子图、viewpoint、G 切分 |
+| 权限精准 | 当前 Agent 能读什么、改什么？ | 分层本体、阶段职责、只读/可写边界 |
+| 时机精准 | 何时加载、验证和更新信息？ | Skill 按需加载、阶段门禁、测试反馈与 GAP 回流 |
+
+这种方式直接提高公式中的 `C`、`P` 和 `E`，增强 `B`，同时降低上下文噪声与任务颗粒度 `G`。更完整的机制说明见[意图架构设计](design/intent-architecture/README.md)、[HARNESS 工程流程](design/argo-harness/README.md)和[基于架构依赖的任务编排方法论](notes/ai-engineering/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD)。
 
 ## 一次交付如何运行
 
