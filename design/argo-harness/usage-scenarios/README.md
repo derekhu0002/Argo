@@ -2,6 +2,8 @@
 
 本目录是 ARGO 使用方式的权威入口。先根据“当前是否有可信架构基线”和“变化属于意图、实现还是代码”选择流程，不要把所有问题都直接交给编码 Agent。
 
+流程图统一使用：`👤` 表示人类输入、判断或审核，`🤖` 表示 Agent、Skill 或自动化工具执行，`👤🤖` 表示人机协作。
+
 ## 场景速查
 
 | 场景 | 判断条件 | 首选入口 | 期望产出 |
@@ -22,10 +24,11 @@
 
 ```mermaid
 flowchart LR
-    A[提交需求] --> B[BusinessPartner<br/>澄清目标与验收]
-    B --> C[task-tidy<br/>整理决策树]
-    C --> D[TaskTidyGraphIntegrator<br/>生成并验收图谱候选]
-    D --> E[按依赖顺序进入主交付流程]
+    A[👤 提交需求] --> B[👤🤖 BusinessPartner<br/>澄清目标与验收]
+    B --> C[👤🤖 task-tidy<br/>整理决策树]
+    C --> D[🤖 TaskTidyGraphIntegrator<br/>生成图谱候选]
+    D --> E[👤🤖 host 验收图谱候选]
+    E --> F[👤 按依赖顺序提交主交付流程]
 ```
 
 要求：
@@ -41,20 +44,20 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[提交现象、复现步骤与失败证据] --> B[Orchestrator 接收问题]
-    B --> C[IntentionDesign 检查意图与验收边界]
-    C --> D{意图是否正确且完整?}
-    D -- 否 --> E[回到业务澄清与 task-tidy]
-    E --> F[刷新意图图谱与验收 testcase]
-    F --> G[进入主交付流程]
-    D -- 是 --> H[ImplementationDesign 检查实现契约]
-    H --> I{问题类型?}
-    I -- 实现架构问题 --> J[更新契约与测试入口]
-    J --> K[人类审核实现验收]
-    K --> L[CodingAndReparing 修复]
+    A[👤 提交现象、复现步骤与失败证据] --> B[🤖 Orchestrator 接收问题]
+    B --> C[🤖 IntentionDesign 检查意图与验收边界]
+    C --> D{🤖 意图是否正确且完整?}
+    D -- 否 --> E[👤🤖 回到业务澄清与 task-tidy]
+    E --> F[🤖 刷新意图图谱与验收 testcase]
+    F --> G[👤🤖 进入主交付流程]
+    D -- 是 --> H[🤖 ImplementationDesign 检查实现契约]
+    H --> I{🤖 问题类型?}
+    I -- 实现架构问题 --> J[🤖 更新契约与测试入口]
+    J --> K[👤 审核实现验收]
+    K --> L[🤖 CodingAndReparing 修复]
     I -- 纯代码 BUG --> L
-    I -- 无需开发或证据不足 --> N[说明结论或请求最小必要信息]
-    L --> O[测试与双层验收]
+    I -- 无需开发或证据不足 --> N[🤖 说明结论或请求最小必要信息]
+    L --> O[🤖 测试与双层验收]
 ```
 
 “问题”不等于“代码 BUG”。Orchestrator 先让 `IntentionDesign` 判断业务意图和验收边界是否正确：
@@ -70,18 +73,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[发现边界、依赖或可测试性问题] --> B[improve-codebase-architecture]
-    B --> C[按事实源顺序取证]
-    C --> D[识别 shallow module、错误 seam 与依赖风险]
-    D --> E{存在值得推进的候选?}
-    E -- 否 --> F[记录保持现状的理由]
-    E -- 是 --> G[输出候选、收益、风险和建议强度]
-    G --> H[人类选择候选]
-    H --> I[grill-me 深挖并形成决策树]
-    I --> J[task-tidy 内化到意图架构]
-    J --> K{是否涉及代码交付?}
-    K -- 是 --> L[进入主交付流程]
-    K -- 否 --> M[完成架构决策沉淀]
+    A[👤 发现边界、依赖或可测试性问题] --> B[🤖 improve-codebase-architecture]
+    B --> C[🤖 按事实源顺序取证]
+    C --> D[🤖 识别 shallow module、错误 seam 与依赖风险]
+    D --> E{🤖 存在值得推进的候选?}
+    E -- 否 --> F[🤖 记录保持现状的理由]
+    E -- 是 --> G[🤖 输出候选、收益、风险和建议强度]
+    G --> H[👤 选择候选]
+    H --> I[👤🤖 grill-me 深挖并形成决策树]
+    I --> J[👤🤖 task-tidy 内化到意图架构]
+    J --> K{🤖 是否涉及代码交付?}
+    K -- 是 --> L[👤🤖 进入主交付流程]
+    K -- 否 --> M[🤖 完成架构决策沉淀]
 ```
 
 `/improve-codebase-architecture` 先按意图图谱、实现契约、局部架构文档、handoff、代码和测试的顺序取证，识别：
@@ -99,21 +102,21 @@ Skill 只输出候选，不直接修改资产。人类选择候选后用 `/grill
 
 ```mermaid
 flowchart TD
-    A[确认缺少可信架构基线] --> B[提供测试范围、代码仓与关键入口]
-    B --> C[reverse-architecture-extraction]
-    C --> D[测试优先提取证据]
-    D --> E[代码入口补充边界事实]
-    E --> F[输出候选实现架构、候选意图与证据矩阵]
-    F --> G{候选实现架构足够明确?}
-    G -- 否 --> H[补充测试、范围或技术证据]
+    A[👤 确认缺少可信架构基线] --> B[👤 提供测试范围、代码仓与关键入口]
+    B --> C[🤖 reverse-architecture-extraction]
+    C --> D[🤖 测试优先提取证据]
+    D --> E[🤖 代码入口补充边界事实]
+    E --> F[🤖 输出候选实现架构、候选意图与证据矩阵]
+    F --> G{🤖 候选实现架构足够明确?}
+    G -- 否 --> H[👤 补充测试、范围或技术证据]
     H --> C
-    G -- 是 --> I[ImplementationDesign 固化实现契约]
-    F --> J{候选意图足够明确?}
-    J -- 否 --> K[人类回答业务开放问题]
-    K --> L[IntentionDesign 语义门禁]
+    G -- 是 --> I[🤖 ImplementationDesign 固化实现契约]
+    F --> J{🤖 候选意图足够明确?}
+    J -- 否 --> K[👤 回答业务开放问题]
+    K --> L[🤖 IntentionDesign 语义门禁]
     J -- 是 --> L
-    L --> M[通过 MCP 写入并校验意图图谱]
-    I --> N[进入主交付流程]
+    L --> M[🤖 通过 MCP 写入并校验意图图谱]
+    I --> N[👤🤖 进入主交付流程]
     M --> N
 ```
 
@@ -131,19 +134,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[人类确认已有可信架构基线] --> B[提供外部代码或测试变更范围]
-    B --> C[architecture-drift-recovery]
-    C --> D[对照图谱、契约与 handoff 取证]
-    D --> E{漂移分类}
-    E -- intent drift --> F[IntentionDesign 评估并刷新图谱]
-    E -- implementation architecture drift --> G[ImplementationDesign 刷新契约与 handoff]
-    E -- code drift --> H[CodingAndReparing 修复或记录扩展]
-    E -- test drift --> I[人类确认测试是否改变验收语义]
+    A[👤 确认已有可信架构基线] --> B[👤 提供外部代码或测试变更范围]
+    B --> C[🤖 architecture-drift-recovery]
+    C --> D[🤖 对照图谱、契约与 handoff 取证]
+    D --> E{🤖 漂移分类}
+    E -- intent drift --> F[🤖 IntentionDesign 评估并刷新图谱]
+    E -- implementation architecture drift --> G[🤖 ImplementationDesign 刷新契约与 handoff]
+    E -- code drift --> H[🤖 CodingAndReparing 修复或记录扩展]
+    E -- test drift --> I[👤 确认测试是否改变验收语义]
     I --> F
-    E -- no architecture impact --> J[记录无架构影响证据]
-    F --> K[校验架构与阶段 handoff]
+    E -- no architecture impact --> J[🤖 记录无架构影响证据]
+    F --> K[🤖 校验架构与阶段 handoff]
     G --> K
-    H --> L[执行相关测试与验收]
+    H --> L[🤖 执行相关测试与验收]
 ```
 
 仅当人类确认已有可信架构基线，且代码或测试被外部修改时使用。每项变化必须分类：
@@ -162,16 +165,16 @@ Agent 不自行在“初始化反推”和“漂移恢复”之间切换；前�
 
 ```mermaid
 flowchart TD
-    A[提交尚未收敛的问题或方案] --> B[BusinessPartner 或 grill-me]
-    B --> C[SMART 校验问题定义]
-    C --> D[MECE 展开决策分支]
-    D --> E[逐分支分析方案、反例、依赖和风险]
-    E --> F{仍有未闭合分支?}
-    F -- 是 --> G[向人类提出带推荐答案的问题]
+    A[👤 提交尚未收敛的问题或方案] --> B[👤🤖 BusinessPartner 或 grill-me]
+    B --> C[👤🤖 SMART 校验问题定义]
+    C --> D[👤🤖 MECE 展开决策分支]
+    D --> E[👤🤖 逐分支分析方案、反例、依赖和风险]
+    E --> F{🤖 仍有未闭合分支?}
+    F -- 是 --> G[🤖 向人类提出带推荐答案的问题]
     G --> D
-    F -- 否 --> H[形成 DecisionTreeRecord]
-    H --> I[定义控制点、观测点和验收边界]
-    I --> J[task-tidy 内化并生成交付路由]
+    F -- 否 --> H[🤖 形成 DecisionTreeRecord]
+    H --> I[👤🤖 定义控制点、观测点和验收边界]
+    I --> J[👤🤖 task-tidy 内化并生成交付路由]
 ```
 
 需求未收敛时先用 `BusinessPartner` 或 `/grill-me`：
@@ -186,17 +189,17 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[提出市场、竞品或技术趋势问题] --> B[market-research 明确决策问题]
-    B --> C[确定范围、时间窗与证据标准]
-    C --> D[检索并交叉核验外部来源]
-    D --> E[区分事实、推断、风险与建议]
-    E --> F{证据足以支持决策?}
-    F -- 否 --> G[标注缺口并补充研究]
+    A[👤 提出市场、竞品或技术趋势问题] --> B[👤🤖 market-research 明确决策问题]
+    B --> C[👤🤖 确定范围、时间窗与证据标准]
+    C --> D[🤖 检索并交叉核验外部来源]
+    D --> E[🤖 区分事实、推断、风险与建议]
+    E --> F{🤖 证据足以支持决策?}
+    F -- 否 --> G[🤖 标注缺口并补充研究]
     G --> D
-    F -- 是 --> H[输出带来源的研究结论]
-    H --> I{是否形成产品或架构变化?}
-    I -- 是 --> J[进入业务方案探索与 task-tidy]
-    I -- 否 --> K[归档为研究依据]
+    F -- 是 --> H[🤖 输出带来源的研究结论]
+    H --> I{👤 是否形成产品或架构变化?}
+    I -- 是 --> J[👤🤖 进入业务方案探索与 task-tidy]
+    I -- 否 --> K[🤖 归档为研究依据]
 ```
 
 研究结果本身不是意图事实。只有经业务决策确认的目标、约束和验收变化，才能通过 `/task-tidy` 进入 `SystemArchitecture.json`。
@@ -205,18 +208,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[指定图谱、view、元素或关系范围] --> B[ArchimateLanguagistAudit 只读审计]
-    B --> C[检查 Schema 与引用完整性]
-    C --> D[检查元素类型、关系方向与 ArchiMate 语义]
-    D --> E[检查 view 一致性、措辞和追踪质量]
-    E --> F{发现问题?}
-    F -- 否 --> G[输出通过范围与剩余风险]
-    F -- 是 --> H[输出分级发现和证据]
-    H --> I[交 IntentionDesign 形成变更候选]
-    I --> J[MCP preview]
-    J --> K{人类与 validator 接受?}
+    A[👤 指定图谱、view、元素或关系范围] --> B[🤖 ArchimateLanguagistAudit 只读审计]
+    B --> C[🤖 检查 Schema 与引用完整性]
+    C --> D[🤖 检查元素类型、关系方向与 ArchiMate 语义]
+    D --> E[🤖 检查 view 一致性、措辞和追踪质量]
+    E --> F{🤖 发现问题?}
+    F -- 否 --> G[🤖 输出通过范围与剩余风险]
+    F -- 是 --> H[🤖 输出分级发现和证据]
+    H --> I[🤖 交 IntentionDesign 形成变更候选]
+    I --> J[🤖 MCP preview]
+    J --> K{👤🤖 人类与 validator 接受?}
     K -- 否 --> I
-    K -- 是 --> L[MCP apply 与 validate]
+    K -- 是 --> L[🤖 MCP apply 与 validate]
 ```
 
 审计 Agent 默认不直接修改图谱。修复仍由 `IntentionDesign` 按 viewpoint-first 规则和 MCP 受控变更流程执行。
@@ -225,19 +228,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[发现越权、漏读、跳阶段或重复错误] --> B[记录具体事件与影响]
-    B --> C[distill-agent-rules]
-    C --> D[读取相关 persistent memory 与现有规则]
-    D --> E[映射到确定性公式根因]
-    E --> F[提炼最少且可执行的规则]
-    F --> G{最小承载位置}
-    G --> H[Agent spec]
-    G --> I[Skill 或 Rule]
-    G --> J[Instruction 或 Hook]
-    H --> K[验证触发条件与行为边界]
+    A[👤 发现越权、漏读、跳阶段或重复错误] --> B[👤 记录具体事件与影响]
+    B --> C[👤🤖 distill-agent-rules]
+    C --> D[🤖 读取相关 persistent memory 与现有规则]
+    D --> E[🤖 映射到确定性公式根因]
+    E --> F[🤖 提炼最少且可执行的规则]
+    F --> G{🤖 最小承载位置}
+    G --> H[🤖 Agent spec]
+    G --> I[🤖 Skill 或 Rule]
+    G --> J[🤖 Instruction 或 Hook]
+    H --> K[🤖 验证触发条件与行为边界]
     I --> K
     J --> K
-    K --> L[清理源 memory 中已固化内容]
+    K --> L[🤖 清理源 memory 中已固化内容]
 ```
 
 当 Agent 越权修改、漏读契约、误改冻结测试或反复跳阶段时，使用 `/distill-agent-rules`：
@@ -252,14 +255,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[当前交付范围通过双层验收] --> B{目标产物}
-    B -- 内部交付归档 --> C[delivery-archive 汇总需求、handoff、代码与测试证据]
-    C --> D[生成 PRD、架构设计、代码自测与规格验收]
-    B -- 外部采用说明 --> E[brief 只读取正式架构事实]
-    E --> F[生成或更新 INTRODUCTION.md]
-    B -- 架构讲解 --> G[选择 ArchiMate view、element 或子图]
-    G --> H[architecture-talk-deck 生成讲稿与追踪文件]
-    D --> I[标注证据、缺口和归档范围]
+    A[🤖 当前交付范围通过双层验收] --> B{👤 选择目标产物}
+    B -- 内部交付归档 --> C[🤖 delivery-archive 汇总需求、handoff、代码与测试证据]
+    C --> D[🤖 生成 PRD、架构设计、代码自测与规格验收]
+    B -- 外部采用说明 --> E[🤖 brief 只读取正式架构事实]
+    E --> F[🤖 生成或更新 INTRODUCTION.md]
+    B -- 架构讲解 --> G[👤 选择 ArchiMate view、element 或子图]
+    G --> H[🤖 architecture-talk-deck 生成讲稿与追踪文件]
+    D --> I[🤖 标注证据、缺口和归档范围]
     F --> I
     H --> I
 ```
@@ -272,15 +275,15 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[确认业务意图与实现 handoff 已审核] --> B[选择领域模板与 Skill]
-    B --> C[加载领域知识、编码规范和环境要求]
-    C --> D[准备设备、服务或测试环境]
-    D --> E[在 handoff 边界内实现与调试]
-    E --> F[采集构建、运行、结构与视觉证据]
-    F --> G{领域检查通过?}
+    A[👤 确认业务意图与实现 handoff 已审核] --> B[👤🤖 选择领域模板与 Skill]
+    B --> C[🤖 加载领域知识、编码规范和环境要求]
+    C --> D[👤🤖 准备设备、服务或测试环境]
+    D --> E[🤖 在 handoff 边界内实现与调试]
+    E --> F[🤖 采集构建、运行、结构与视觉证据]
+    F --> G{🤖 领域检查通过?}
     G -- 否 --> E
-    G -- 是 --> H[执行通用显性 testcase]
-    H --> I[代码实现验收与意图交付验收]
+    G -- 是 --> H[🤖 执行通用显性 testcase]
+    H --> I[🤖 代码实现验收与意图交付验收]
 ```
 
 领域 Skill 提供平台知识和可观察证据，但不能取代通用意图设计、实现设计、冻结测试和双层验收。可用模板见[领域模板索引](../../specific-domain/README.md)。
