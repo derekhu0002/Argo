@@ -328,7 +328,46 @@ graph TD
 4. **Eval Coverage 目前偏“存在性检查”。** `harness-audit` 确认 eval skill、checkpoint command 和测试数量存在；下一步可以加入基于样例任务的行为回归评测，让 $TC$ 更接近真实 pass@k。
 5. **多语言翻译与多适配副本需要漂移治理。** 建议将 README、AGENTS、CLAUDE、rules、skills 的跨语言/跨 harness 差异纳入自动 diff 和 freshness 检查。
 
-## 七、总评
+## 七、与 ARGO、OpenSpec、Superpowers 的横向定位与选型
+
+从方案定位看，ECC（Everything Claude Code / ECC harness）是一套面向多 agent harness 的 AI 工程操作系统。它通过大规模 agents、skills、commands、hooks、rules，以及会话管理、持续学习、自动化循环和安全能力，覆盖跨平台、多语言、多项目的工程操作层。
+
+与其他方案相比：
+
+- ARGO 是面向高确定性交付的架构治理工作流，强调强阶段、强门禁、结构化交接物、架构契约、双层验收和返工闭环。
+- OpenSpec 是面向快速协作的轻量规格层，围绕 proposal、specs、design、tasks 等工件灵活往返，强调低摩擦和跨工具兼容。
+- Superpowers 是面向高效率执行的技能驱动开发操作流，以 brainstorming、planning、TDD、subagent、review 和 branch finishing 等工程动作的自动触发为核心。
+- ECC 是面向跨平台与规模化能力的 AI 工程操作系统，自动化深度和扩展能力高，但认知与治理成本也更高。
+
+ECC 的横向优势：
+
+- 跨 harness、跨语言、跨场景支持广，适合统一多项目的工程操作层。
+- agents、skills、commands、hooks 和 rules 生态丰富，扩展速度快。
+- 会话管理、持续学习、验证、安全、状态存储和可观测性形成系统化能力。
+- 相比只覆盖规格或执行流程的方案，ECC 的能力面更完整。
+
+边界与不足：
+
+- 体系复杂，上手和维护成本较高。
+- 能力面过大时容易产生选择负担、技能冲突和规则重叠。
+- 架构治理虽达到中高水平，但对关键业务链路的契约强度、阶段验收和追踪闭环通常不及 ARGO。
+- 跨 harness 的实际约束硬度受平台事件、hook 和工具能力差异影响。
+
+适用场景：
+
+- 多语言、多项目并行，并同时使用多种 agent harness。
+- 中大型或平台型团队需要统一的工程操作层和规模化能力池。
+- 团队需要集中治理自动化、安全、会话记忆、持续学习和跨平台适配。
+
+分层组合建议：
+
+- 平台型团队可采用 `ARGO + ECC`：ARGO 管理关键主链路的意图、架构契约和验收闭环，ECC 提供跨平台执行、工具、自动化与能力扩展。
+- 大型多业务团队可采用 `OpenSpec + ARGO + ECC`：OpenSpec 负责前期需求澄清和轻量规格协作，ARGO 负责关键链路治理，ECC 负责规模化执行。
+- 如果只需要快速强化开发操作流，Superpowers 通常比 ECC 更轻；如果需要跨 harness、多语言、状态与安全等平台能力，ECC 更合适。
+
+管理层可用一句话区分四者：稳定交付、可追溯和可审计优先选 ARGO；轻量、快速和低门槛优先选 OpenSpec；开发节奏自动化优先选 Superpowers；跨平台和规模化能力优先选 ECC。
+
+## 八、总评
 
 按公式评估，ECC 当前已具备完整 AI Coding Harness 的六类确定性要素：
 

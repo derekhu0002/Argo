@@ -572,6 +572,41 @@ TDD、debugging、verification、SDD review、plugin tests、evals 和 PR gate �
 
 SDD 的 per-task implementer、task reviewer、fix loop、final branch review 是递归确定性传导的核心。只要计划质量足够，父任务确定性会随子任务验证结果稳步提升。
 
+## 与 ARGO、OpenSpec、ECC 的横向定位与选型
+
+从方案定位看，Superpowers 更接近“技能驱动的开发操作流”：以 `brainstorming`、planning、subagent-driven development、TDD、code review 和 branch finishing 等技能自动触发工程动作，把优秀工程习惯流程化并自动执行。它的首要目标是提高执行效率、减少 agent 跑偏，而不是独立承担完整的架构治理。
+
+与其他方案相比：
+
+- ARGO 是面向高确定性交付的架构治理工作流，采用强阶段、强门禁和强闭环，强调意图设计、实现设计、架构契约、双层验收与返工闭环。
+- OpenSpec 是面向快速协作的轻量规格层，以 proposal、specs、design、tasks 等工件组织开发，采用 action-based 的流式动作而非 phase-locked 的阶段锁定。
+- Superpowers 以技能触发驱动工程流水线，自动化执行深度高，约束强度和上手成本居中。
+- ECC 是面向跨平台、多语言、多场景的 AI 工程操作系统，能力覆盖和扩展规模更大，体系也更复杂。
+
+Superpowers 的横向优势：
+
+- 工程动作流程化，执行效率高。
+- 子代理驱动、TDD、评审和完成前验证连接紧密。
+- 能直接约束 agent 的行动顺序，降低执行阶段跑偏概率。
+
+边界与不足：
+
+- 面对复杂系统时，契约级架构治理通常弱于 ARGO。
+- 可追溯性主要来自计划、测试、review 和 Git 交付链，不等同于完整的意图—架构—实现追踪。
+- 若缺少上层规格或架构治理，可能出现“执行严谨，但实现目标或整体架构仍有偏差”。
+
+适用场景：
+
+- 团队已有基本工程规范，但缺少自动化执行机制。
+- 希望通过技能自动触发快速提高开发节奏和工程一致性。
+- 项目规模从小中型到中大型，主要风险集中在执行质量而非跨团队架构治理。
+
+组合建议：
+
+- 轻量团队可采用 `OpenSpec + Superpowers`：OpenSpec 负责需求澄清与规格组织，Superpowers 负责实现阶段的自动化执行。
+- 成熟团队可采用 `ARGO + Superpowers`：ARGO 管理关键主链路的架构契约和验收闭环，Superpowers 提供 TDD、子代理、评审与分支收尾能力。
+- 对高风险核心业务，不宜仅依赖 Superpowers；应由 ARGO 提供上层确定性治理，再让 Superpowers 放大执行效率。
+
 ## 结语
 
 用公式语言概括，Superpowers 的 AI Coding Harness 不是单纯提高模型 `E`，而是同时提升 `C`、固化 `P`、增强 `B`、利用工具放大 `E_sys`、压低 `G`，并通过 SDD 把子任务 `TC_j` 逐层校准后再向上传导。
