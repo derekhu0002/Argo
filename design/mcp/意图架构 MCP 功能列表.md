@@ -299,8 +299,8 @@ mutation 失败时的 `guidance` 关键字映射（如 `violates ArchiMate 3.2 r
 
 ## 相关文档
 
-- [ARGO 领域本体与 Agent 行为：认知规格与事件驱动交付](ARGO%20领域本体与%20Agent%20行为：认知规格与事件驱动交付.md) — MCP 与 Behavior 绑定表
-- [ARGO HARNESS 的 ArchiMate 建模理念](ARGO%20HARNESS%20的%20ArchiMate%20建模理念.md) — 意图分层与 view 建模约定
-- [ARGO 工程哲学：确定性交付公式的工程化](ARGO%20工程哲学：确定性交付公式的工程化.md) — 意图架构在交付闭环中的位置
-- `design/validator/intent-architecture-mcp-validation.md` — 校验触发环节与失败引导明细
-- `README.md` — 平台部署与 MCP 注册说明
+- [ARGO 领域本体与 Agent 行为：认知规格与事件驱动交付](../../notes/ai-engineering/ARGO%20领域本体与%20Agent%20行为：认知规格与事件驱动交付.md) — MCP 与 Behavior 绑定表
+- [ARGO HARNESS 的 ArchiMate 建模理念](../../notes/architecture-modeling/ARGO%20HARNESS%20的%20ArchiMate%20建模理念.md) — 意图分层与 view 建模约定
+- [ARGO 工程哲学：确定性交付公式的工程化](../../notes/ai-engineering/ARGO%20工程哲学：确定性交付公式的工程化.md) — 意图架构在交付闭环中的位置
+- [MCP 校验机制](../validator/intent-architecture-mcp-validation.md) — 校验触发环节与失败引导明细
+- [根 README](../../README.md) — 平台部署与 MCP 注册说明
