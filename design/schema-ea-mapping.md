@@ -69,9 +69,10 @@ EA 导出规则：
 导出过滤规则：
 
 - 隐藏的 `EA.DiagramLink` 不导出。
-- `Geometry == ""` 的 DiagramLink 不导出。
+- 可见的 `EA.DiagramLink` 即使 `Geometry == ""` 也会导出；几何信息只是路由/布局状态，不代表关系不存在。
 - 同一 `ConnectorID` 只导出一次，但多个 view 可引用同一关系。
 - `Aggregation` 不再改写为旧的 `aggregates`。
+- 导入时保存的包级 `schema_relationships_json` 和 `schema_views_json`、Diagram `StyleEx` 中的成员列表只作为空提取结果的兼容回退；EA 当前模型中提取到的关系、视图及成员始终优先，避免导入快照覆盖后续人工编辑。
 
 ### 关系属性
 

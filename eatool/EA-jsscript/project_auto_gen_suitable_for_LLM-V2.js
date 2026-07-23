@@ -859,6 +859,27 @@ var globalElements = {};
 var globalRelationships = {};
 var globalViews = [];
 
+function shouldExportDiagramLink(link) {
+	return link != null && !link.IsHidden;
+}
+
+function selectCurrentEaJson(extractedJson, extractedCount, importedSnapshotJson) {
+	if (extractedCount > 0) {
+		return extractedJson;
+	}
+	if (importedSnapshotJson != "" && importedSnapshotJson != "[]") {
+		return importedSnapshotJson;
+	}
+	return extractedJson;
+}
+
+function selectCurrentEaArray(extractedValues, importedSnapshotValues) {
+	if (extractedValues.length > 0) {
+		return extractedValues;
+	}
+	return schemaIdArrayToJsonStrings(importedSnapshotValues);
+}
+
 function extractFromDiagram(currentDiagram) {
     var viewName = currentDiagram.Name;
     var viewNotes = currentDiagram.Notes;
@@ -1082,8 +1103,7 @@ function extractFromDiagram(currentDiagram) {
         var link as EA.DiagramLink;
         link = diaLinks.GetAt(k);	
 		
-		if (link.IsHidden) { continue;}
-		if (link.Geometry == "") { continue;}
+		if (!shouldExportDiagramLink(link)) { continue;}
         var conn as EA.Connector;
         conn = Repository.GetConnectorByID(link.ConnectorID);
 		
@@ -1237,10 +1257,10 @@ function extractFromDiagram(currentDiagram) {
 	var schemaIncludedElements = getStyleJsonArray(currentDiagram.StyleEx, "schema_included_elements_json");
 	var schemaIncludedRelationships = getStyleJsonArray(currentDiagram.StyleEx, "schema_included_relationships_json");
 	if (schemaIncludedElementsJson != "" && schemaIncludedElements != null) {
-		includedElements = schemaIdArrayToJsonStrings(schemaIncludedElements);
+		includedElements = selectCurrentEaArray(includedElements, schemaIncludedElements);
 	}
 	if (schemaIncludedRelationshipsJson != "" && schemaIncludedRelationships != null) {
-		includedRelationships = schemaIdArrayToJsonStrings(schemaIncludedRelationships);
+		includedRelationships = selectCurrentEaArray(includedRelationships, schemaIncludedRelationships);
 	}
 	viewJson += ',"included_elements": [\n' + includedElements.join(',\n') + '\n]\n';
 	viewJson += ',"included_relationships": [\n' + includedRelationships.join(',\n') + '\n]\n';
@@ -1442,13 +1462,9 @@ function main() {
 		}
 	}
 	var relationshipsJson = '[\n' + relationshipsArray.join(',\n') + '\n]';
-	if (rootRelationshipsJson != "" && rootRelationshipsJson != "[]") {
-		relationshipsJson = rootRelationshipsJson;
-	}
+	relationshipsJson = selectCurrentEaJson(relationshipsJson, relationshipsArray.length, rootRelationshipsJson);
 	var viewsJson = '[\n' + globalViews.join(',\n') + '\n]';
-	if (rootViewsJson != "" && rootViewsJson != "[]") {
-		viewsJson = rootViewsJson;
-	}
+	viewsJson = selectCurrentEaJson(viewsJson, globalViews.length, rootViewsJson);
 
 	finalJsonString += '"elements": [\n' + elementsArray.join(',\n') + '\n],\n';
 	finalJsonString += '"relationships": ' + relationshipsJson + ',\n';
