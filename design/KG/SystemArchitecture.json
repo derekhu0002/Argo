@@ -151,6 +151,10 @@
         {
           "name": "scopeBoundary",
           "value": "Phase 1 excludes token budgets, pagination, caps, and truncation or continuation decisions."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -159,7 +163,7 @@
           "description": "Acceptor perspective control point: submit legacy and semantic-query tasks against the same canonical version. Observation point: compare legacy completeness, semantic relevance, closure coherence, and version evidence.",
           "type": "Acceptance Test",
           "Input": "Legacy and semantic-query tasks referencing one canonical intent version.",
-          "acceptanceCriteria": "Legacy reading remains complete; semantic results are relevant and deterministically coherent; returned evidence identifies the governing canonical version."
+          "acceptanceCriteria": "tests/explicit/entries/runCoherentIntentReading.js"
         }
       ]
     },
@@ -188,6 +192,10 @@
         {
           "name": "functionalPoint.DT-01-consumer-continuity",
           "value": "{\"description\":\"Use the established no-argument reading contract without consumer migration.\",\"businessOutcome\":\"Existing downstream consumers remain operational while query mode is introduced.\",\"observableBoundary\":\"An unchanged no-argument consumer receives the same complete canonical graph result.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumerRole\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -213,6 +221,10 @@
         {
           "name": "functionalPoint.DT-01-complete-context-consumption",
           "value": "{\"description\":\"Consume complete canonical intent context when no query arguments are supplied.\",\"businessOutcome\":\"Existing lifecycle work retains exhaustive intent visibility.\",\"observableBoundary\":\"The consumption process observes all canonical Elements, Relationships, and Views with no semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -262,6 +274,10 @@
         {
           "name": "functionalPoint.DT-02-no-argument-full-snapshot",
           "value": "{\"description\":\"Select full-snapshot mode when no query fields are supplied.\",\"businessOutcome\":\"Complete canonical reading remains a stable service capability.\",\"observableBoundary\":\"The response contains complete canonical Elements, Relationships, and Views without semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -294,6 +310,10 @@
         {
           "name": "functionalPoint.DT-02-authoritative-complete-snapshot",
           "value": "{\"description\":\"Expose one authoritative complete snapshot including graph objects and View membership.\",\"businessOutcome\":\"Compatibility and mutation preparation use the same canonical authority.\",\"observableBoundary\":\"A full read exposes every canonical Element, Relationship, View, and membership without semantic omission.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02-CanonicalGraph\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -331,6 +351,10 @@
         {
           "name": "functionalPoint.DT-03-explicit-purpose-contract",
           "value": "{\"description\":\"Carry an explicit lifecycle purpose and require an explicit subject for audit requests.\",\"businessOutcome\":\"Request meaning is reproducible and cannot vary by wording or caller identity.\",\"observableBoundary\":\"Purpose is present as request data; audit requests without subject are distinguishable as invalid.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03-QueryRequest\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -364,6 +388,10 @@
         {
           "name": "functionalPoint.DT-03-purpose-and-audit-gate",
           "value": "{\"description\":\"Validate declared purpose and reject audit mode when subject is absent.\",\"businessOutcome\":\"Purpose policy selection is explicit and audit scope cannot be silently inferred.\",\"observableBoundary\":\"Implementation-design selects its declared policy; audit without subject returns a rejection.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -405,6 +433,10 @@
         {
           "name": "decisionTrace.DT-05-R2",
           "value": "open|caps deferred to DT-19 after precision and cardinality evidence"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -413,14 +445,14 @@
           "description": "Acceptor perspective control point: submit separate queries primarily matching an Element, a relationship statement, and a View concern. Observation point: inspect seed channel attribution.",
           "type": "Acceptance Test",
           "Input": "Three approved queries, each centered on a different canonical graph object category.",
-          "acceptanceCriteria": "Element, Relationship, and View objects can each independently become seeds and each reports its retrieval channel."
+          "acceptanceCriteria": "tests/explicit/entries/runIndependentSemanticSeeds.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-DT-05",
           "description": "Acceptor perspective control point: run a query with more qualifying peers than a typical fixed K and an unrelated query. Observation point: inspect qualifying peer completeness and empty-result behavior.",
           "type": "Acceptance Test",
           "Input": "One many-peer relevant query and one approved unrelated query.",
-          "acceptanceCriteria": "Every threshold-qualifying peer returns; the unrelated query returns zero seeds; no fixed result count or phase-1 cap is imposed."
+          "acceptanceCriteria": "tests/explicit/entries/runIndependentSemanticSeeds.js"
         }
       ]
     },
@@ -449,6 +481,10 @@
         {
           "name": "decisionTrace.DT-07-R1",
           "value": "rejected|boundary-free generic-agent purpose is removed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -457,14 +493,14 @@
           "description": "Acceptor perspective control point: query for a seed with a textually dissimilar but graph-mandatory dependency. Observation point: inspect inclusion classification.",
           "type": "Acceptance Test",
           "Input": "Approved query whose mandatory dependency is not a semantic match.",
-          "acceptanceCriteria": "The dependency returns through deterministic purpose-policy expansion and is not misreported as a semantic seed."
+          "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-DT-07",
           "description": "Acceptor perspective control point: two different Agents submit the same declared purpose and anchors. Observation point: compare selected policy and resulting graph scope.",
           "type": "Acceptance Test",
           "Input": "Equivalent purpose and anchors submitted by two Agent identities.",
-          "acceptanceCriteria": "Both requests receive the same purpose policy and mandatory graph scope; caller identity does not alter closure."
+          "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js"
         }
       ]
     },
@@ -477,6 +513,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-08|accepted|decision-lineage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -485,7 +525,7 @@
           "description": "Acceptor perspective control point: submit a capability-change decision task. Observation point: inspect motivation, decision object, business behavior, acceptance, and absence declarations.",
           "type": "Acceptance Test",
           "Input": "Approved capability-change intent-decision query.",
-          "acceptanceCriteria": "Why, What, business behavior, and Acceptance evidence are present or each missing concern is explicitly reported absent."
+          "acceptanceCriteria": "tests/explicit/entries/runIntentDecisionClosure.js"
         }
       ]
     },
@@ -498,6 +538,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-09|accepted|implementation-ready"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -506,7 +550,7 @@
           "description": "Acceptor perspective control point: select a target with multi-level upstream and downstream chains. Observation point: inspect every returned chain boundary.",
           "type": "Acceptance Test",
           "Input": "Implementation-design target with approved multi-level dependency chains.",
-          "acceptanceCriteria": "Every upstream and downstream chain terminates at a stated delivered, natural, or declared business boundary and includes governing acceptance semantics."
+          "acceptanceCriteria": "tests/explicit/entries/runImplementationDesignClosure.js"
         }
       ]
     },
@@ -519,6 +563,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-10|accepted|repair-safety"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -527,7 +575,7 @@
           "description": "Acceptor perspective control point: submit a defect where code conflicts with intent and a textually similar unrelated capability exists. Observation point: inspect authoritative behavior and closure scope.",
           "type": "Acceptance Test",
           "Input": "Approved coding-repair query containing conflicting implementation evidence and an unrelated similar capability.",
-          "acceptanceCriteria": "Business intent remains authoritative; repair-safety prerequisites, risks, guardrails, and acceptance return; the unrelated capability is not mandatory closure."
+          "acceptanceCriteria": "tests/explicit/entries/runCodingRepairClosure.js"
         }
       ]
     },
@@ -540,6 +588,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-11|accepted|explicit-proof-scope"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -548,7 +600,7 @@
           "description": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject. Observation point: inspect proof-scope completeness and exception handling.",
           "type": "Acceptance Test",
           "Input": "Explicit audit subject containing an approved low-similarity violation.",
-          "acceptanceCriteria": "The violation returns because it is inside the subject; missing evidence is reported as an exception and is never treated as passing."
+          "acceptanceCriteria": "tests/explicit/entries/runAuditProofClosure.js"
         }
       ]
     },
@@ -565,6 +617,10 @@
         {
           "name": "functionalPoint.DT-12-full-snapshot-bypass",
           "value": "{\"description\":\"Use the complete canonical snapshot for graph-tidy and bypass semantic retrieval.\",\"businessOutcome\":\"Mutation preparation sees global identity, referential integrity, View membership, and invariants.\",\"observableBoundary\":\"A graph-tidy request returns the complete canonical snapshot with no Graph RAG filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-12\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -586,6 +642,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-13|accepted|complete relationship endpoints"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -594,7 +654,7 @@
           "description": "Acceptor perspective control point: trigger a relationship seed whose endpoint text is not a semantic match. Observation point: inspect relationship, endpoint presence, and inclusion reason.",
           "type": "Acceptance Test",
           "Input": "Approved relationship-seed query with one or both textually unmatched endpoints.",
-          "acceptanceCriteria": "The relationship and both endpoint Elements return; each endpoint records endpoint-closure as its inclusion reason."
+          "acceptanceCriteria": "tests/explicit/entries/runRelationshipEndpointClosure.js"
         }
       ]
     },
@@ -607,6 +667,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-14|accepted|complete View; no implicit View cascade"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -615,7 +679,7 @@
           "description": "Acceptor perspective control point: query a View that shares members with other Views. Observation point: inspect target completeness and joined View set.",
           "type": "Acceptance Test",
           "Input": "Approved View query whose target overlaps unrelated Views.",
-          "acceptanceCriteria": "The target View returns complete; overlapping Views do not join unless independently matched; all returned relationships have both endpoints."
+          "acceptanceCriteria": "tests/explicit/entries/runCompleteViewClosure.js"
         }
       ]
     },
@@ -628,6 +692,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-15|accepted|semantic seed, endpoint, purpose expansion, or complete-View expansion"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -636,7 +704,7 @@
           "description": "Acceptor perspective control point: run an approved query exercising all four first-inclusion paths. Observation point: inspect object-level provenance and query evidence.",
           "type": "Acceptance Test",
           "Input": "Query fixture containing semantic-seed, endpoint, purpose-policy, and complete-View inclusions.",
-          "acceptanceCriteria": "Every returned object has exactly one first-inclusion reason; supplementary reasons do not replace it; purpose and canonical/index version evidence are present."
+          "acceptanceCriteria": "tests/explicit/entries/runFirstInclusionProvenance.js"
         }
       ]
     },
@@ -661,6 +729,10 @@
         {
           "name": "decisionTrace",
           "value": "DT-16|accepted|all-mutations"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -669,7 +741,7 @@
           "description": "Acceptor perspective control point: create, update, and delete each object category, including topology-only changes. Observation point: compare aligned-query results and version movement.",
           "type": "Acceptance Test",
           "Input": "Nine mutation classes across Element, Relationship, and View plus nested semantic and membership updates.",
-          "acceptanceCriteria": "Every committed mutation advances index lifecycle; aligned queries reflect current content and topology; deleted or superseded objects never remain retrievable."
+          "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
         }
       ]
     },
@@ -690,6 +762,10 @@
         {
           "name": "decisionTrace.DT-17-R2",
           "value": "rejected|semantic failure does not silently fall back to full snapshot"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -698,7 +774,7 @@
           "description": "Acceptor perspective control point: change graph semantics and force index failure. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions.",
           "type": "Acceptance Test",
           "Input": "Canonical graph change followed by Updating or failed semantic index state.",
-          "acceptanceCriteria": "Pure semantic query is rejected with canonical and index version state; no stale result or automatic full fallback is served; full and explicit-anchor canonical reads remain current."
+          "acceptanceCriteria": "tests/explicit/entries/runStaleSemanticQueryRejection.js"
         }
       ]
     },
@@ -719,6 +795,10 @@
         {
           "name": "decisionTrace.DT-18-R2",
           "value": "rejected|precision must not be prioritized over critical business-fact recall"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -727,7 +807,7 @@
           "description": "Acceptor perspective control point: run every approved benchmark query for all five purposes. Observation point: aggregate mandatory seeds, forbidden forced hits, expected closure, and precision evidence.",
           "type": "Acceptance Test",
           "Input": "Human-approved five-purpose benchmark with mandatory and forbidden seeds and expected closures.",
-          "acceptanceCriteria": "Critical seed recall is 100%; every expected closure is correct; unrelated queries have zero forced hits; observed precision is reported without an invented release threshold."
+          "acceptanceCriteria": "tests/explicit/entries/runRetrievalQualityBenchmark.js"
         }
       ]
     },
@@ -748,6 +828,10 @@
         {
           "name": "residualCoordination",
           "value": "No silent truncation or invented capacity limit is permitted in phase 1."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -756,7 +840,7 @@
           "description": "Acceptor perspective control point: record phase-1 result cardinality and precision by purpose. Observation point: inspect evidence availability and verify absence of silent truncation or a release cap.",
           "type": "Acceptance Test",
           "Input": "Phase-1 query result sizes and measured precision for each declared purpose.",
-          "acceptanceCriteria": "Cardinality and precision evidence are available for a later human decision; phase 1 introduces no silent cap, budget, pagination, truncation, or continuation rule."
+          "acceptanceCriteria": "tests/explicit/entries/runCapacityEvidence.js"
         }
       ]
     }

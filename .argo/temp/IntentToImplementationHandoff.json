@@ -1,6 +1,6 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-24T10:46:00.000Z",
+  "generatedAt": "2026-07-24T10:57:00.000Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "Deliver the backward-compatible intent-architecture reading boundary: unchanged no-argument consumers receive the complete canonical graph, query purpose is explicit, audit without subject is rejected, and graph-tidy always bypasses semantic retrieval for a complete canonical snapshot.",
   "intentElementIds": [
@@ -38,6 +38,8 @@
     "Executable acceptance entrypoints: ExplicitAcceptanceTestcase-DT-03-QueryRequest and ExplicitAcceptanceTestcase-DT-03 -> tests/explicit/entries/runQueryPurposeValidation.js.",
     "Executable acceptance entrypoint: ExplicitAcceptanceTestcase-DT-12 -> tests/explicit/entries/runGraphTidyFullSnapshot.js.",
     "Trace proposal design/KG/ImplementationToIntentTraceProposal.json was validated, accepted, and applied without changing approved behavior or View content.",
+    "Global validator correction: the remaining 16 mounted testcase acceptanceCriteria values were mapped to the 14 executable paths recorded in design/KG/ImplementationToIntentTraceProposal.json; names, semantics, Inputs, control points, observation points, functional-point mappings, relationships, and Views were unchanged.",
+    "Runner evidence preservation: the latest full architecture baseline reported 24 total, 5 passed, and 19 failed-or-invalid; all 21 runner-owned deliveryStatus attributes already present in SystemArchitecture.json were retained without manual change.",
     "Evidence-backed exclusions: viewpoint Grouping elements are navigation anchors; existing semantic retrieval, closure, index, alignment, outcome, and quality elements are unchanged context and are outside this compatibility-contract implementation slice because no-argument and graph-tidy paths bypass semantic retrieval.",
     "No deliveryStatus attribute was manually edited or used as fabricated pass evidence."
   ]
