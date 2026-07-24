@@ -14,30 +14,10 @@ const {
 } = require('./neo4j-system-architecture-store.js');
 
 const REQUIRED_TOOL_NAMES = [
-  'initializeWorkspace',
   'getSystemArchitecture',
   'applySystemArchitectureMutation',
   'validateSystemArchitecture',
 ];
-
-const HANDOFF_FILES_TO_RESET = [
-  ['.argo', 'temp', 'IntentToImplementationHandoff.json'],
-  ['.argo', 'temp', 'ImplementationToCodingHandoff.json'],
-];
-
-const EA_TEMPLATE_PATH_CANDIDATES = [
-  ['.opencode', 'customtools', 'EA-model-template.feap'],
-  ['.opencode', 'EA-model-template.feap'],
-  ['eatool', 'EA-model-template.feap'],
-  ['EA-model-template.feap'],
-  ['Argo.feap'],
-];
-
-const WINDOWS_RESERVED_NAMES = new Set([
-  'CON', 'PRN', 'AUX', 'NUL',
-  'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-  'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
-]);
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -52,7 +32,6 @@ async function main() {
   };
 
   try {
-    report.bootstrap = await ensureWorkspaceBootstrap({ workspaceRoot, checkOnly: options.checkOnly });
     report.mcp = verifyArgoMcpServer({ workspaceRoot });
     report.systemArchitecture = await verifyCanonicalSystemArchitecture();
     report.neo4j = await ensureNeo4jProjection({ checkOnly: options.checkOnly });
@@ -61,9 +40,6 @@ async function main() {
     report.error = String(error && error.stack ? error.stack : error);
   }
 
-  if (report.bootstrap && report.bootstrap.status === 'failed') {
-    report.status = 'failed';
-  }
   if (report.mcp && report.mcp.status === 'failed') {
     report.status = 'failed';
   }
@@ -102,52 +78,6 @@ function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
     || path.resolve(__dirname, '..', '..');
-}
-
-async function ensureWorkspaceBootstrap({ workspaceRoot, checkOnly }) {
-  const targetFeapName = buildTargetFileName(path.basename(workspaceRoot));
-  const targetFeapPath = path.join(workspaceRoot, targetFeapName);
-  const templateSourcePath = resolveTemplateSourcePath(workspaceRoot);
-  const staleHandoffFiles = HANDOFF_FILES_TO_RESET
-    .map(parts => path.join(workspaceRoot, ...parts))
-    .filter(candidate => fs.existsSync(candidate))
-    .map(candidate => normalizeRelativePath(path.relative(workspaceRoot, candidate)));
-
-  if (fs.existsSync(targetFeapPath)) {
-    return {
-      status: 'ok',
-      prepared: false,
-      targetFeapName,
-      templateSource: normalizeRelativePath(path.relative(workspaceRoot, templateSourcePath)),
-      staleHandoffFiles,
-      notes: staleHandoffFiles.length > 0
-        ? ['Stage handoff artifacts already exist; ARGO INIT leaves them in place unless bootstrap is needed.']
-        : [],
-    };
-  }
-
-  if (checkOnly) {
-    return {
-      status: 'failed',
-      prepared: false,
-      targetFeapName,
-      templateSource: normalizeRelativePath(path.relative(workspaceRoot, templateSourcePath)),
-      staleHandoffFiles,
-      error: `${targetFeapName} is missing and check-only mode does not modify the workspace.`,
-    };
-  }
-
-  const response = await argoMcp.callTool('initializeWorkspace', {});
-  const payload = parseToolPayload(response);
-  return {
-    status: payload.status === 'ok' ? 'ok' : 'failed',
-    prepared: true,
-    targetFeapName,
-    templateSource: normalizeRelativePath(path.relative(workspaceRoot, templateSourcePath)),
-    createdFiles: payload.createdFiles || [],
-    removedFiles: payload.removedFiles || [],
-    skippedSteps: payload.skippedSteps || [],
-  };
 }
 
 function verifyArgoMcpServer({ workspaceRoot }) {
@@ -310,31 +240,6 @@ function parseToolPayload(result) {
     throw new Error('Unexpected MCP tool result shape.');
   }
   return JSON.parse(result.content[0].text);
-}
-
-function resolveTemplateSourcePath(workspaceRoot) {
-  for (const candidate of EA_TEMPLATE_PATH_CANDIDATES) {
-    const absolutePath = path.join(workspaceRoot, ...candidate);
-    if (fs.existsSync(absolutePath)) {
-      return absolutePath;
-    }
-  }
-  throw new Error(`Unable to locate EA template. Checked: ${EA_TEMPLATE_PATH_CANDIDATES.map(candidate => candidate.join('/')).join(', ')}`);
-}
-
-function buildTargetFileName(workspaceName) {
-  const sanitized = sanitizeFileName(workspaceName) || 'workspace';
-  const safeBaseName = WINDOWS_RESERVED_NAMES.has(sanitized.toUpperCase())
-    ? `${sanitized}_workspace`
-    : sanitized;
-  return `${safeBaseName}.feap`;
-}
-
-function sanitizeFileName(value) {
-  return value
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
-    .replace(/[.\s]+$/g, '')
-    .trim();
 }
 
 function normalizeRelativePath(value) {

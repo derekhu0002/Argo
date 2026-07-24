@@ -1,24 +1,15 @@
 {
   "status": "ok",
   "workspaceRoot": "D:\\Projects\\Argo",
-  "generatedAt": "2026-07-24T03:37:48.553Z",
+  "generatedAt": "2026-07-24T04:05:09.095Z",
   "mode": "prepare-and-check",
   "reportPath": ".argo/temp/argo-harness-init-report.json",
-  "bootstrap": {
-    "status": "ok",
-    "prepared": false,
-    "targetFeapName": "Argo.feap",
-    "templateSource": "Argo.feap",
-    "staleHandoffFiles": [],
-    "notes": []
-  },
   "mcp": {
     "status": "ok",
     "protocolVersion": "2024-11-05",
     "serverName": "argo",
     "toolCount": 19,
     "checkedTools": [
-      "initializeWorkspace",
       "getSystemArchitecture",
       "applySystemArchitectureMutation",
       "validateSystemArchitecture"
@@ -49,7 +40,7 @@
       "dirty": false,
       "lastFailureAt": "2026-07-24T03:37:21.751Z",
       "lastRecoveredAt": "2026-07-24T03:37:43.097Z",
-      "lastSuccessAt": "2026-07-24T03:37:43.097Z",
+      "lastSuccessAt": "2026-07-24T03:37:49.228Z",
       "lastVerifiedCounts": {
         "elements": 6,
         "relationships": 4,
