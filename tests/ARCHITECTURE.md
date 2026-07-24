@@ -77,3 +77,9 @@ remain outside the compatible-query Coding targets:
 The coding-scope authorization guard freezes TS-08/TS-09 as mounted evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js` and `tests/harness/productionGraphRagHarness.js`, are frozen during Coding/Repair.
+
+### Supporting non-explicit guardrails
+
+- `tests/support/production-graph-rag/scoped-delivery-attribution.guard.js` verifies that scoped TS-07 completion is not confused with runner-owned global credential delivery and that no TS-09 implementation authorization is introduced.
+
+This supporting guard is not frozen and may evolve with the handoff attribution contract; it must not weaken any frozen explicit or critical asset.

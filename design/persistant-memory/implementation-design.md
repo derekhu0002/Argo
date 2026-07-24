@@ -40,3 +40,11 @@
 - `credential-source-policy.guard.js` self-tests direct-literal, fallback, ternary, direct-parameter, transitive-variable, and variableized query/parameter bypass fixtures plus a safe fixture.
 - TS-01-Native now generates an unpredictable runtime sentinel and complete multi-field result inside the injected probe, then requires exact deep propagation after one call.
 - Coding scope authorization now examines `taskExecutionPlan.executionStrategy` and any equivalent top-level strategy/completion/authorization fields in addition to coding targets and task details.
+
+## 2026-07-25 scoped delivery attribution correction
+
+- Root cause: runner delivery aggregation correctly treats each Realization target as dependent on every tested source. `grag-credential-boundary` therefore depends on both the delivered runtime and the out-of-scope, not-delivered adapter through `grag-rel-adapter-credentials`.
+- The intent relationship remains semantically valid; no intent graph mutation or trace proposal is required. The Implementation Design defect was requiring five global delivered anchors as this slice's completion condition.
+- Revised completion: six approved scoped explicit entrypoints, six frozen critical guards, zero baseline delivered regression, and passing TS-07 constitute slice completion. Global credential delivery remains runner-owned and deferred until the separate realizer is delivered.
+- Added an evolvable supporting guard for this attribution and a W2-C7 resume task that authorizes Coding only to verify and commit the already implemented C1-C6 files.
+- Because the handoff completion semantics and execution plan changed, global human reapproval is required before Coding resumes.

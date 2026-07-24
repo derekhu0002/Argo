@@ -45,3 +45,10 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 ## Owned tests
 
 Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08/TS-09 adapter/lifecycle work from this handoff.
+
+## Completion attribution
+
+- This slice is complete when its six approved explicit entrypoints and six frozen critical guards pass with no baseline delivered regression.
+- Passing TS-07 is sufficient evidence that this slice realizes the external credential boundary.
+- Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered` while the separately tested adapter realizer is not delivered.
+- A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.
