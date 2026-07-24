@@ -13,32 +13,6 @@
     "stderr": "AssertionError [ERR_ASSERTION]: DT00_QUERY_PURPOSE_MISSING: semantic evidence must preserve explicit purpose\n+ actual - expected\n\n+ undefined\n- 'implementation-design'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:20:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'implementation-design',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
-    "testdescription": "Acceptor control point: construct equal intent text for two declared purposes and construct an audit request without subject. Observation point: inspect the request data before policy selection.",
-    "acceptanceCriteria": "tests/explicit/entries/runQueryPurposeValidation.js",
-    "relatedIntentElementId": "grag-query-request",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runQueryPurposeValidation.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT03_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:62:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT03_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:62:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-03",
-    "testdescription": "Acceptor perspective control point: send identical intent under implementation-design and audit purposes while omitting the audit subject. Observation point: compare policy selection and request disposition.",
-    "acceptanceCriteria": "tests/explicit/entries/runQueryPurposeValidation.js",
-    "relatedIntentElementId": "grag-mode-validation",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runQueryPurposeValidation.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT03_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:62:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT03_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:62:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
-  },
-  {
     "testcasename": "ExplicitAcceptanceTestcase-DT-04",
     "testdescription": "Acceptor perspective control point: submit separate queries primarily matching an Element, a relationship statement, and a View concern. Observation point: inspect seed channel attribution.",
     "acceptanceCriteria": "tests/explicit/entries/runIndependentSemanticSeeds.js",
@@ -143,19 +117,6 @@
     "stderr": "AssertionError [ERR_ASSERTION]: DT11_AUDIT_VIOLATIONS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runAuditProofClosure.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-12",
-    "testdescription": "Acceptor perspective control point: prepare a local mutation with a conflicting remote ID and cross-View membership. Observation point: inspect global identity and all memberships.",
-    "acceptanceCriteria": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-    "relatedIntentElementId": "grag-graph-tidy-policy",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runGraphTidyFullSnapshot.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT12_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT12_SEMANTIC_PROBE_NOT_WIRED: semantic retrieval boundary invocation count\n\n0 !== 1\n\n    at assertSemanticRetrievalCalls (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:62:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: 1,\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
-  },
-  {
     "testcasename": "ExplicitAcceptanceTestcase-DT-13",
     "testdescription": "Acceptor perspective control point: trigger a relationship seed whose endpoint text is not a semantic match. Observation point: inspect relationship, endpoint presence, and inclusion reason.",
     "acceptanceCriteria": "tests/explicit/entries/runRelationshipEndpointClosure.js",
@@ -216,9 +177,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT17_STALE_SEMANTIC_QUERY_NOT_REJECTED\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:14:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT17_STALE_SEMANTIC_QUERY_NOT_REJECTED\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:14:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-18",

@@ -3,6 +3,13 @@ const path = require('node:path');
 const readline = require('node:readline');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
+const LEGAL_QUERY_PURPOSES = new Set([
+  'intent-decision',
+  'implementation-design',
+  'coding-repair',
+  'audit',
+  'graph-tidy',
+]);
 const SCHEMA_PATH_CANDIDATES = [
   '.argo/schema/SystemArchitecture.schema.json',
 ];
@@ -39,6 +46,18 @@ const TOOLS = [
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
+        query: {
+          type: 'object',
+          properties: {
+            purpose: {
+              type: 'string',
+              enum: Array.from(LEGAL_QUERY_PURPOSES),
+            },
+            intent: { type: 'string' },
+            subject: { type: 'string' },
+          },
+          additionalProperties: true,
+        },
       },
       additionalProperties: false,
     },
@@ -1307,6 +1326,40 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function validateExplicitQuery(query) {
+  if (!query || typeof query !== 'object' || Array.isArray(query) || !query.purpose) {
+    return queryError('QUERY_PURPOSE_REQUIRED', 'Explicit queries require a purpose');
+  }
+  if (!LEGAL_QUERY_PURPOSES.has(query.purpose)) {
+    return queryError('QUERY_PURPOSE_INVALID', `Unsupported query purpose: ${query.purpose}`);
+  }
+  if (typeof query.intent !== 'string' || query.intent.trim().length === 0) {
+    return queryError('QUERY_INTENT_REQUIRED', 'Explicit queries require a non-blank intent');
+  }
+  if (
+    query.purpose === 'audit'
+    && (typeof query.subject !== 'string' || query.subject.trim().length === 0)
+  ) {
+    return queryError('AUDIT_SUBJECT_REQUIRED', 'Audit queries require a non-blank subject');
+  }
+
+  return {
+    status: 'passed',
+    query: {
+      ...query,
+      intent: query.intent.trim(),
+      ...(query.subject === undefined ? {} : { subject: query.subject.trim() }),
+    },
+  };
+}
+
+function queryError(category, message) {
+  return {
+    status: 'failed',
+    error: { category, message },
+  };
+}
+
 function toolResult(payload) {
   return {
     content: [
@@ -1319,8 +1372,49 @@ function toolResult(payload) {
   };
 }
 
-async function callTool(name, args = {}) {
+async function callTool(name, args = {}, dependencies = undefined) {
   if (name === 'getSystemArchitecture') {
+    if (Object.prototype.hasOwnProperty.call(args, 'query')) {
+      const validation = validateExplicitQuery(args.query);
+      if (validation.status === 'failed') {
+        return toolResult(validation);
+      }
+
+      const query = validation.query;
+      if (query.purpose === 'graph-tidy') {
+        const context = await loadContext(args);
+        return toolResult(attachContextWarnings({
+          status: 'passed',
+          graphPath: context.graphPath.relativePath,
+          query: {
+            ...query,
+            mode: 'full-snapshot',
+            semanticRetrieval: 'bypassed',
+          },
+          document: context.document,
+        }, context));
+      }
+
+      const semanticRetrievalBoundary = dependencies && dependencies.semanticRetrievalBoundary;
+      if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
+        return toolResult(queryError(
+          'SEMANTIC_RETRIEVAL_UNAVAILABLE',
+          'Semantic retrieval boundary is unavailable',
+        ));
+      }
+      const document = await semanticRetrievalBoundary.retrieve(query);
+      return toolResult({
+        status: 'passed',
+        graphPath: normalizeRelativePath(args.architecturePath || DEFAULT_GRAPH_PATH),
+        query: {
+          ...query,
+          mode: 'semantic-query',
+          semanticRetrieval: 'invoked',
+        },
+        document,
+      });
+    }
+
     const context = await loadContext(args);
     return toolResult(attachContextWarnings({
       status: 'passed',

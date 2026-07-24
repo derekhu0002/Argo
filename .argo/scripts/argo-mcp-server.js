@@ -123,6 +123,18 @@ const TOOLS = [
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
+        query: {
+          type: 'object',
+          properties: {
+            purpose: {
+              type: 'string',
+              enum: ['intent-decision', 'implementation-design', 'coding-repair', 'audit', 'graph-tidy'],
+            },
+            intent: { type: 'string' },
+            subject: { type: 'string' },
+          },
+          additionalProperties: true,
+        },
       },
       additionalProperties: false,
     },
@@ -340,7 +352,7 @@ function resolveWorkspaceRoot() {
     || path.resolve(__dirname, '..', '..');
 }
 
-async function callTool(name, args = {}, progressToken = null) {
+async function callTool(name, args = {}, progressToken = null, dependencies = undefined) {
   if (name === 'initializeWorkspace') {
     return toolResult(await initializeWorkspace(resolveWorkspaceRoot()));
   }
@@ -348,7 +360,7 @@ async function callTool(name, args = {}, progressToken = null) {
     return validatorMcp.callTool(name, args, progressToken);
   }
   if (SYSTEM_ARCHITECTURE_TOOL_NAMES.has(name)) {
-    return systemArchitectureMcp.callTool(name, args);
+    return systemArchitectureMcp.callTool(name, args, dependencies);
   }
   throw new Error(`Unknown tool: ${name}`);
 }
