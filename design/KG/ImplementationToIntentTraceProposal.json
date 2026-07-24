@@ -1,0 +1,185 @@
+{
+  "proposalType": "implementation-to-intent-trace",
+  "generatedAt": "2026-07-24T10:55:00.000Z",
+  "sourceAgent": "ImplementationDesign",
+  "targetAgent": "IntentionDesign",
+  "lifecycle": "temporary-trace-proposal",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "implementationContracts": [
+    "design/architecture.md"
+  ],
+  "anchorProposals": [
+    {
+      "intentElementId": "grag-consumer-role",
+      "intentElementName": "Downstream Intent Consumer",
+      "implementationElementName": "DT-01 unchanged-consumer explicit entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-01-ConsumerRole prose acceptanceCriteria with the executable workspace-relative path tests/explicit/entries/runGraphQueryCompatibility.js so the architecture runner and implementation handoff can reference the same frozen entrypoint.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not change the approved DT-01 expectation or infer a new consumer migration requirement."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-01-ConsumerRole -> tests/explicit/entries/runGraphQueryCompatibility.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-consumption-process",
+      "intentElementName": "Consume Intent Architecture Context",
+      "implementationElementName": "DT-01 complete-context process explicit entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess prose acceptanceCriteria with tests/explicit/entries/runGraphQueryCompatibility.js before ImplementationDesign physicalizes and freezes that shared DT-01 boundary.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not change the approved requirement that no-argument consumption observes all canonical elements, relationships, and views."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess -> tests/explicit/entries/runGraphQueryCompatibility.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-query-service",
+      "intentElementName": "Intent Architecture Query Service",
+      "implementationElementName": "DT-01 and DT-02 compatible query service explicit entrypoints",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace both mounted prose acceptanceCriteria values with executable paths: ExplicitAcceptanceTestcase-DT-01 uses tests/explicit/entries/runGraphQueryCompatibility.js and ExplicitAcceptanceTestcase-DT-02 uses tests/explicit/entries/runCanonicalGraphFullSnapshot.js.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not split the approved single service interface or deprecate its no-argument full-snapshot behavior."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint.DT-01",
+          "description": "ExplicitAcceptanceTestcase-DT-01 -> tests/explicit/entries/runGraphQueryCompatibility.js"
+        },
+        {
+          "name": "acceptanceCriteria.entrypoint.DT-02",
+          "description": "ExplicitAcceptanceTestcase-DT-02 -> tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-canonical-graph",
+      "intentElementName": "Canonical Intent Graph",
+      "implementationElementName": "DT-02 canonical snapshot explicit entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-02-CanonicalGraph prose acceptanceCriteria with tests/explicit/entries/runCanonicalGraphFullSnapshot.js so canonical object and view-membership identity can be asserted by the frozen entrypoint.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not weaken exact canonical object or membership completeness."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph -> tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-query-request",
+      "intentElementName": "Graph RAG Query Intent",
+      "implementationElementName": "DT-03 explicit-purpose request entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-03-QueryRequest prose acceptanceCriteria with tests/explicit/entries/runQueryPurposeValidation.js so purpose preservation and the missing audit subject are executable observations.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not infer purpose from natural language or caller identity."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-03-QueryRequest -> tests/explicit/entries/runQueryPurposeValidation.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-mode-validation",
+      "intentElementName": "Query Mode and Purpose Validation",
+      "implementationElementName": "DT-03 purpose and audit gate explicit entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-03 prose acceptanceCriteria with tests/explicit/entries/runQueryPurposeValidation.js before the implementation handoff is created.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not change the approved rejection of audit requests that omit an explicit subject."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-03 -> tests/explicit/entries/runQueryPurposeValidation.js"
+        }
+      ]
+    },
+    {
+      "intentElementId": "grag-graph-tidy-policy",
+      "intentElementName": "Graph Tidy Full Snapshot Bypass",
+      "implementationElementName": "DT-12 graph-tidy canonical bypass explicit entrypoint",
+      "implementationElementKind": "explicit-test-entry",
+      "implementsType": "direct",
+      "tracePurpose": "Replace the mounted ExplicitAcceptanceTestcase-DT-12 prose acceptanceCriteria with tests/explicit/entries/runGraphTidyFullSnapshot.js so the runner can verify complete canonical identity, referential integrity, and cross-view membership without semantic retrieval.",
+      "contractPaths": [
+        "design/architecture.md"
+      ],
+      "contextEntryPoints": [
+        ".argo/scripts/runArchitectureTests.js"
+      ],
+      "excludedDetails": [
+        "Do not route graph-tidy through semantic retrieval, thresholding, or partial-result selection."
+      ],
+      "suggestedIntentAttributes": [
+        {
+          "name": "acceptanceCriteria.entrypoint",
+          "description": "ExplicitAcceptanceTestcase-DT-12 -> tests/explicit/entries/runGraphTidyFullSnapshot.js"
+        }
+      ]
+    }
+  ],
+  "openQuestions": [],
+  "notes": [
+    "ImplementationDesign stopped before creating contracts, test assets, ImplementationToCodingHandoff.json, running the pre-coding baseline, or committing a stage handoff because the current intent graph cannot bind any physical entrypoint.",
+    "Evidence: all 24 mounted testcases currently use prose acceptanceCriteria; none begins with tests/. The runner accepts only a direct workspace-relative script path, and validateStageHandoff requires each implementation entryPath to exactly match the graph acceptanceCriteria.",
+    "Viewpoint frame remains Application Usage Viewpoint; concern is executable preservation of no-argument compatibility, explicit purpose and audit-subject validation, and graph-tidy complete-canonical access; purpose is upstream handoff preparation. No view content change is proposed.",
+    "IntentionDesign accepted and applied all seven anchor proposals on 2026-07-24: eight mounted testcase acceptanceCriteria values now equal the four proposed executable workspace-relative paths; testcase names, descriptions, Inputs, functional-point mappings, relationships, Views, and approved DT-01/02/03/12 behavior remain unchanged."
+  ]
+}

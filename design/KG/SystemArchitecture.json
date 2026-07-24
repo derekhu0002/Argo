@@ -196,7 +196,7 @@
           "description": "Acceptor control point: execute an existing downstream consumer without changing its invocation. Observation point: inspect whether the consumer receives and can use the same complete canonical graph result.",
           "type": "Acceptance Test",
           "Input": "An existing downstream intent consumer using the no-argument query contract unchanged.",
-          "acceptanceCriteria": "The downstream consumer completes its established read without migration and receives the unchanged complete canonical graph."
+          "acceptanceCriteria": "tests/explicit/entries/runGraphQueryCompatibility.js"
         }
       ]
     },
@@ -221,7 +221,7 @@
           "description": "Acceptor control point: run the established intent-context consumption process with no query arguments. Observation point: inspect the graph objects available to the process.",
           "type": "Acceptance Test",
           "Input": "A lifecycle task using the existing no-argument intent-context consumption process.",
-          "acceptanceCriteria": "The process receives all canonical Elements, Relationships, and Views and no semantic filtering is activated."
+          "acceptanceCriteria": "tests/explicit/entries/runGraphQueryCompatibility.js"
         }
       ]
     },
@@ -270,14 +270,14 @@
           "description": "Acceptor perspective control point: run all existing no-argument consumers unchanged. Observation point: compare their externally observable graph results with the pre-query-mode behavior.",
           "type": "Acceptance Test",
           "Input": "Existing no-argument intent-architecture consumers.",
-          "acceptanceCriteria": "Every existing no-argument consumer continues to receive unchanged complete canonical results."
+          "acceptanceCriteria": "tests/explicit/entries/runGraphQueryCompatibility.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-DT-02",
           "description": "Acceptor perspective control point: submit a legacy no-argument request. Observation point: inspect returned canonical Elements, Relationships, and Views for completeness and absence of semantic filtering.",
           "type": "Acceptance Test",
           "Input": "A no-argument Intent Architecture Query Service request.",
-          "acceptanceCriteria": "The complete canonical Elements, Relationships, and Views are returned; semantic filtering is not activated."
+          "acceptanceCriteria": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
         }
       ]
     },
@@ -302,7 +302,7 @@
           "description": "Acceptor control point: request the canonical graph through the no-argument full-read boundary. Observation point: compare returned Element, Relationship, View, and membership identities with the authoritative canonical state.",
           "type": "Acceptance Test",
           "Input": "A canonical graph containing Elements, Relationships, Views, and cross-View memberships.",
-          "acceptanceCriteria": "The full-read result contains every authoritative canonical object and membership exactly once with no semantic filtering."
+          "acceptanceCriteria": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
         }
       ]
     },
@@ -339,7 +339,7 @@
           "description": "Acceptor control point: construct equal intent text for two declared purposes and construct an audit request without subject. Observation point: inspect the request data before policy selection.",
           "type": "Acceptance Test",
           "Input": "Requests with identical intent text, explicit implementation-design or audit purpose, and an audit variant lacking subject.",
-          "acceptanceCriteria": "Each request carries its explicit purpose unchanged; purpose is not inferred from text or caller identity; the audit variant exposes the missing subject."
+          "acceptanceCriteria": "tests/explicit/entries/runQueryPurposeValidation.js"
         }
       ]
     },
@@ -372,7 +372,7 @@
           "description": "Acceptor perspective control point: send identical intent under implementation-design and audit purposes while omitting the audit subject. Observation point: compare policy selection and request disposition.",
           "type": "Acceptance Test",
           "Input": "Two equal intent texts with different declared purposes; audit request has no subject.",
-          "acceptanceCriteria": "Implementation-design uses its declared policy; audit is rejected for missing explicit subject; purpose is not inferred from wording or Agent identity."
+          "acceptanceCriteria": "tests/explicit/entries/runQueryPurposeValidation.js"
         }
       ]
     },
@@ -573,7 +573,7 @@
           "description": "Acceptor perspective control point: prepare a local mutation with a conflicting remote ID and cross-View membership. Observation point: inspect global identity and all memberships.",
           "type": "Acceptance Test",
           "Input": "Graph-tidy preparation case containing a remote ID conflict and cross-View membership.",
-          "acceptanceCriteria": "The complete canonical snapshot exposes the global ID conflict, every relevant View membership, referential integrity, and global invariants without Graph RAG filtering."
+          "acceptanceCriteria": "tests/explicit/entries/runGraphTidyFullSnapshot.js"
         }
       ]
     },
