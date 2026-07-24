@@ -1,0 +1,308 @@
+{
+  "stage": "implementation-to-coding",
+  "generatedAt": "2026-07-25T00:45:00+08:00",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Implement the approved W2 production Graph RAG boundary on the Node.js and Neo4j mainline. External credentials and explicit embedding provider/model/version/dimensions approval are mandatory release gates; canonical JSON remains authoritative over the Neo4j projection.",
+  "implementationContracts": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md"
+  ],
+  "explicitEntrypoints": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
+      "entryPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
+      "controlPoint": "Submit a production semantic query with explicit embedding qualification and externally supplied credentials.",
+      "observationPoint": "Observe Node.js runtime, Neo4j-native retrieval, and absence of required Python or Neo4j GenAI Plugin dependencies.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionGraphRagRuntime.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement the contracted Node.js production boundary"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-01-Native",
+      "entryPath": "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
+      "controlPoint": "Submit an aligned production semantic query through an injected Neo4j-native retrieval boundary.",
+      "observationPoint": "Observe native platform evidence and canonical identity/version authority.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement the contracted Node.js production boundary"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-06",
+      "entryPath": "tests/explicit/entries/runEmbeddingQualificationGate.js",
+      "controlPoint": "Evaluate index delivery with unapproved, incomplete, and implicitly defaulted embedding identities.",
+      "observationPoint": "Observe stable blocking categories for absent approval, missing provider/model/version/dimensions, and implicit defaults.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingQualificationGate.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement qualification and configuration gates before index delivery"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
+      "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
+      "controlPoint": "Evaluate production delivery with Neo4j and embedding-provider credentials absent.",
+      "observationPoint": "Observe EXTERNAL_CREDENTIALS_REQUIRED and no source, environment-name, or Cypher fallback.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement the external credential boundary and remove hardcoded credential defaults"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
+      "entryPath": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+      "controlPoint": "Request the canonical graph through the no-argument full-read boundary.",
+      "observationPoint": "Observe exact complete Element, Relationship, View, and membership identity.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority",
+      "entryPath": "tests/explicit/entries/runCanonicalProjectionAuthority.js",
+      "controlPoint": "Submit a semantic query against a stale, conflicting Neo4j projection.",
+      "observationPoint": "Observe canonical state winning or CANONICAL_PROJECTION_CONFLICT; projection-only intent is never returned.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalProjectionAuthority.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement projection authority enforcement"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
+      "entryPath": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+      "controlPoint": "Attempt W7 delivery with only W1 complete.",
+      "observationPoint": "Observe DELIVERY_PREREQUISITES_INCOMPLETE and the exact missing W2-W6 sequence.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: physicalized as frozen out-of-scope evidence; no Coding task is authorized by this handoff"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+      "entryPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "controlPoint": "Generate and persist embeddings for affected Element, ArchitectureRelationship, and View records.",
+      "observationPoint": "Observe complete model evidence, no plugin or credential leakage, and non-Aligned partial persistence.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: physicalized as frozen out-of-scope evidence; no Coding task is authorized by this handoff"
+    }
+  ],
+  "criticalNonExplicitTests": [
+    {
+      "name": "Production Graph RAG stable boundary",
+      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Inspect root and local contracts for one production composition boundary.",
+      "observationPoint": "Runtime, credentials, qualification, native retrieval, and canonical authority ownership remain explicit.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Production dependency direction",
+      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Inspect every production Graph RAG JavaScript module.",
+      "observationPoint": "No dependency on tests, Python, or Neo4j embedding plugin procedures.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "W2 explicit entrypoint correctness",
+      "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "Inspect every W2 and Canonical Authority entrypoint plus the handoff freeze list.",
+      "observationPoint": "GIVEN/WHEN/THEN, Harness abstraction, key blocking categories, and frozen paths remain present.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "W2 implementation traceability",
+      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "Inspect intent anchors, contract mappings, mounted acceptance paths, and physical files.",
+      "observationPoint": "TS-01, TS-01-Native, TS-06, TS-07, and both canonical entrypoints remain traceable.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "supportingNonExplicitTests": [],
+  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "codingTargets": [
+    {
+      "path": ".argo/scripts/graph-rag/externalProductionConfig.js",
+      "failureSignal": "EXTERNAL_CREDENTIALS_REQUIRED",
+      "nextAction": "Require externally supplied Neo4j URI, username, password, and embedding credential; remove hardcoded production fallbacks, including defaults in neo4j-system-architecture-store.js."
+    },
+    {
+      "path": ".argo/scripts/graph-rag/embeddingQualificationGate.js",
+      "failureSignal": "EMBEDDING_QUALIFICATION_REQUIRED / EMBEDDING_CONFIGURATION_REQUIRED / IMPLICIT_EMBEDDING_DEFAULT_PROHIBITED",
+      "nextAction": "Implement a pure release gate requiring explicit human approval and complete provider, model, version, and dimensions."
+    },
+    {
+      "path": ".argo/scripts/graph-rag/canonicalProjectionAuthority.js",
+      "failureSignal": "TS02_CANONICAL_AUTHORITY_VIOLATED",
+      "nextAction": "Reject stale/conflicting projection evidence or return canonical state; never return projection-only intent."
+    },
+    {
+      "path": ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
+      "failureSignal": "TS01_NATIVE_RETRIEVAL_REQUIRED",
+      "nextAction": "Implement Neo4j JavaScript-driver seed retrieval with canonical identity/version evidence and no plugin/Python dependency."
+    },
+    {
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING",
+      "nextAction": "Export createProductionGraphRagRuntime(dependencies) and compose qualification, credential, native retrieval, and authority boundaries."
+    },
+    {
+      "path": ".argo/scripts/neo4j-system-architecture-store.js",
+      "failureSignal": "TS07 hardcoded Neo4j password and URI defaults",
+      "nextAction": "Remove production credential defaults and consume the external configuration boundary without changing canonical graph authority."
+    },
+    {
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "Production semantic query does not reach the contracted Graph RAG runtime",
+      "nextAction": "Delegate semantic retrieval through the production boundary while preserving no-argument and graph-tidy compatibility."
+    }
+  ],
+  "taskExecutionPlan": {
+    "executionStrategy": "Implement inward release policies first, then adapters and composition, then integrate the existing MCP boundary; run frozen entrypoints and all critical guards after each dependency layer.",
+    "tasks": [
+      {
+        "taskId": "W2-C1",
+        "title": "Enforce external configuration",
+        "objective": "Make missing Neo4j or embedding credentials a typed blocking condition with no hardcoded fallback.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-07"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/externalProductionConfig.js",
+          ".argo/scripts/neo4j-system-architecture-store.js"
+        ],
+        "steps": [
+          "Define the explicit external configuration input.",
+          "Reject each missing required credential with EXTERNAL_CREDENTIALS_REQUIRED.",
+          "Remove hardcoded URI, username, password, and provider credential fallback behavior.",
+          "Keep provider credentials out of Cypher parameters and query text."
+        ],
+        "completionSignal": "runExternalCredentialBoundary.js passes and no production source contains credential literals or fallback secrets."
+      },
+      {
+        "taskId": "W2-C2",
+        "title": "Implement embedding qualification gate",
+        "objective": "Block index delivery unless provider, model, version, and dimensions are explicitly human-approved.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-06"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/embeddingQualificationGate.js"
+        ],
+        "steps": [
+          "Require approvedByHuman=true.",
+          "Require non-empty provider, model, version, and positive integer dimensions.",
+          "Reject any implicit-default source before index delivery."
+        ],
+        "completionSignal": "runEmbeddingQualificationGate.js passes all three blocking cases without selecting a model."
+      },
+      {
+        "taskId": "W2-C3",
+        "title": "Enforce canonical projection authority",
+        "objective": "Ensure Neo4j retrieval evidence cannot redefine approved canonical intent.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
+          "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/canonicalProjectionAuthority.js"
+        ],
+        "steps": [
+          "Compare projection canonical version and identities with injected canonical state.",
+          "Reject conflicts with CANONICAL_PROJECTION_CONFLICT or replace them with canonical state.",
+          "Preserve the existing no-argument complete snapshot."
+        ],
+        "completionSignal": "Both canonical entrypoints pass and projection-only identities are never observable."
+      },
+      {
+        "taskId": "W2-C4",
+        "title": "Build Neo4j-native retrieval",
+        "objective": "Provide production seed retrieval through the Neo4j JavaScript driver with canonical evidence.",
+        "dependsOn": [
+          "W2-C1",
+          "W2-C3"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-01-Native"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/neo4jNativeRetrieval.js"
+        ],
+        "steps": [
+          "Use only externally configured neo4j-driver connectivity.",
+          "Return platform, canonical version, object type, and canonical identity for each seed.",
+          "Avoid Python, external Graph RAG frameworks, and Neo4j embedding plugin procedures."
+        ],
+        "completionSignal": "runNeo4jNativeRetrievalPlatform.js passes with injected aligned retrieval evidence."
+      },
+      {
+        "taskId": "W2-C5",
+        "title": "Compose production runtime",
+        "objective": "Expose the stable Node.js production boundary and sequence all release gates before retrieval or index delivery.",
+        "dependsOn": [
+          "W2-C1",
+          "W2-C2",
+          "W2-C3",
+          "W2-C4"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-01",
+          "ExplicitAcceptanceTestcase-TS-01-Native",
+          "ExplicitAcceptanceTestcase-TS-06",
+          "ExplicitAcceptanceTestcase-TS-07",
+          "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+        ],
+        "steps": [
+          "Export createProductionGraphRagRuntime(dependencies).",
+          "Expose querySemantic(request) and evaluateIndexDelivery(request).",
+          "Evaluate credentials and embedding qualification before native retrieval or index delivery.",
+          "Apply canonical authority before returning semantic results."
+        ],
+        "completionSignal": "All five new explicit entrypoints pass through the business-readable Harness."
+      },
+      {
+        "taskId": "W2-C6",
+        "title": "Integrate MCP semantic queries",
+        "objective": "Route production semantic requests through the new runtime without breaking compatible full reads or graph-tidy.",
+        "dependsOn": [
+          "W2-C5"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-01",
+          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "Delegate only semantic-query production behavior to the new runtime.",
+          "Preserve no-argument full snapshots and graph-tidy bypass behavior.",
+          "Run every frozen explicit entrypoint and all four production Graph RAG critical guards."
+        ],
+        "completionSignal": "New W2 tests pass, existing compatibility tests do not regress, and full argo.runArchitectureTests reports the five scoped intent anchors delivered."
+      }
+    ]
+  },
+  "frozenFiles": [
+    "tests/harness/productionGraphRagHarness.js",
+    "tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
+    "tests/explicit/entries/runEmbeddingQualificationGate.js",
+    "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
+    "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+    "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+    "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/production-graph-rag/implementation-traceability.guard.js"
+  ],
+  "openGaps": [
+    "The W2 provider/model/version/dimensions remain intentionally unselected; Coding must implement the blocking gate, not choose values.",
+    "ExplicitAcceptanceTestcase-TS-08 and ExplicitAcceptanceTestcase-TS-09 are physicalized and frozen only to satisfy global mounted-path validation; they remain outside Coding targets."
+  ]
+}

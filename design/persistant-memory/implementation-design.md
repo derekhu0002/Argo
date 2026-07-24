@@ -14,3 +14,13 @@
 - Physicalized the remaining 14 unique out-of-scope paths as frozen design evidence because implementation handoff validation globally requires every mounted path to exist.
 - Refreshed design-test baseline: 24 total, 5 passed, 19 expected failures, 0 invalid criteria, and 0 missing paths. DT-01/02 remain green; DT-03/12 remain the only failures targeted by this compatible-query handoff.
 - The other 16 failures are explicitly out of scope and remain frozen evidence for later implementation slices; Coding/Repair must not broaden this handoff to address them.
+
+## 2026-07-25 production Graph RAG W2 boundary
+
+- Accepted stable decomposition: `.argo/scripts/graph-rag/` owns one Node.js production composition boundary with inward external-configuration, embedding-qualification, Neo4j-native retrieval, and canonical-projection-authority modules.
+- Approved intent mappings are direct: TS-01 → `grag-production-runtime`, TS-01-Native → `grag-native-retrieval-service`, TS-06 → `grag-embedding-qualification`, TS-07 → `grag-credential-boundary`, and canonical snapshot/authority → `grag-canonical-graph`.
+- Physicalized six approved executable paths: five new expected-failure entrypoints plus the already-passing canonical full-snapshot entrypoint. All use business-readable Harness abstractions and freeze missing qualification, missing configuration, implicit defaults, and projection conflict as release-blocking behavior.
+- Physicalized TS-08 and TS-09 as frozen expected-failure evidence only because global handoff validation requires every mounted acceptance path to exist. They are not Coding targets in this handoff.
+- Added four production Graph RAG critical guards for architecture boundary, dependency direction, explicit entrypoint correctness, and key implementation traceability; all pass before Coding.
+- Existing code reality risk: `.argo/scripts/neo4j-system-architecture-store.js` contains hardcoded Neo4j URI/username/password defaults. Coding must remove these through the external configuration boundary; Implementation Design does not edit production behavior.
+- No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.

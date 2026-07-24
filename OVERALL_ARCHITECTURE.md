@@ -7,6 +7,9 @@
 3. Canonical JSON is authoritative. Semantic retrieval may derive context but cannot replace, mutate, or silently truncate a required full snapshot.
 4. Test Harness code may invoke public production boundaries and read approved fixtures; explicit entrypoints use Harness methods and do not expose MCP, filesystem, or process plumbing.
 5. Explicit entrypoints and critical guardrails listed in the implementation handoff are frozen during Coding/Repair.
+6. The production Graph RAG path is Node.js plus the Neo4j JavaScript driver. Python runtimes, external Graph RAG frameworks, and the Neo4j GenAI Plugin are not required production dependencies.
+7. Neo4j and embedding-provider credentials enter only through external secure configuration. Missing credentials block production startup or query delivery; source defaults and Cypher-carried provider credentials are prohibited.
+8. Index delivery is denied until an explicit qualification names the embedding provider, model identity, model version, and dimensions. Missing fields and implicit model defaults are blocking errors.
 
 ## Stable architecture elements
 
@@ -14,6 +17,7 @@
 | --- | --- | --- | --- |
 | Unified MCP Gateway | `.argo/scripts/argo-mcp-server.js` | Expose one governed tool surface and delegate intent-query work inward. | `callTool(name, args)` and MCP stdio tools |
 | Intent Architecture Query Boundary | `.argo/scripts/systemarchitecture-mcp-server.js` | Preserve no-argument reads, validate explicit query purpose, and dispatch full-snapshot or semantic-query behavior. | `getSystemArchitecture` |
+| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, and canonical-authority enforcement without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)` |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails. | Frozen Node.js entry scripts |
 
@@ -28,5 +32,10 @@
 | Intent Architecture Query Boundary / query DTO | `grag-query-request` | direct |
 | Intent Architecture Query Boundary / validation | `grag-mode-validation` | direct |
 | Intent Architecture Query Boundary / graph-tidy dispatch | `grag-graph-tidy-policy` | direct |
+| Production Graph RAG Boundary / runtime composition | `grag-production-runtime` | direct |
+| Production Graph RAG Boundary / Neo4j retrieval adapter | `grag-native-retrieval-service` | direct |
+| Production Graph RAG Boundary / embedding release gate | `grag-embedding-qualification` | direct |
+| Production Graph RAG Boundary / external configuration | `grag-credential-boundary` | direct |
+| Production Graph RAG Boundary / projection authority policy | `grag-canonical-graph` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.
