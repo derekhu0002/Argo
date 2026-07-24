@@ -48,7 +48,7 @@ Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protec
 
 ## Completion attribution
 
-- This slice is complete when its six approved explicit entrypoints and six frozen critical guards pass with no baseline delivered regression.
+- This slice is complete when its six approved explicit entrypoints and seven frozen critical guards pass with no baseline delivered regression.
 - Passing TS-07 is sufficient evidence that this slice realizes the external credential boundary.
-- Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered` while the separately tested adapter realizer is not delivered.
+- Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered`; scoped attribution uses committed mounted TS-07 evidence, runner failure records, and the handoff scope rather than uncommitted intent relationships.
 - A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.

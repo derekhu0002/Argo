@@ -11,7 +11,7 @@
 7. Neo4j and embedding-provider credentials enter only through external secure configuration. Missing credentials block production startup or query delivery; direct literals, logical/nullish/ternary fallbacks, and credential-tainted Cypher query/parameter transport are prohibited.
 8. Index delivery is denied until an explicit qualification names the embedding provider, model identity, model version, and dimensions. Missing fields and implicit model defaults are blocking errors.
 9. Mounted acceptance evidence does not itself authorize Coding scope. Only `codingTargets` and `taskExecutionPlan` in the approved handoff authorize implementation; frozen TS-08/TS-09 evidence remains out of scope for this slice.
-10. Slice completion and global intent delivery are distinct. A handoff may accept its approved explicit entrypoints and guardrails while a globally modeled intent element remains `not_delivered` because another tested upstream realizer is outside the slice; only the runner may set global `deliveryStatus`.
+10. Slice completion and global intent delivery are distinct. A handoff may accept its approved explicit entrypoints and guardrails while the full runner keeps a global intent element `not_delivered`; only committed mounted evidence, runner records, and runner-owned `deliveryStatus` may support that attribution.
 
 ## Stable architecture elements
 

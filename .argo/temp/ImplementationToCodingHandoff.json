@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T01:45:00+08:00",
+  "generatedAt": "2026-07-25T02:05:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "C1-C6 are implemented in the Coding-owned worktree and the six approved scoped explicit entrypoints pass. Resume Coding only to verify and commit the authorized files. Scoped completion accepts TS-07 as credential-boundary evidence while global deliveryStatus remains runner-owned and may stay not_delivered until the separate TS-09 realizer is delivered.",
+  "summary": "C1-C6 are implemented in the Coding-owned worktree and the six approved scoped explicit entrypoints pass. Resume Coding only to verify and commit the authorized files. Scoped completion is reproduced from committed mounted TS-07 evidence, handoff scope, and runner records while global deliveryStatus remains runner-owned and TS-09 remains failing and out of scope.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -64,7 +64,7 @@
       "observationPoint": "Observe DELIVERY_PREREQUISITES_INCOMPLETE and the exact missing W2-W6 sequence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: physicalized as frozen out-of-scope evidence; no Coding task is authorized by this handoff"
+      "failureReason": "TS08_GATE_CATEGORY_MISSING"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
@@ -73,7 +73,7 @@
       "observationPoint": "Observe complete model evidence, no plugin or credential leakage, and non-Aligned partial persistence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: physicalized as frozen out-of-scope evidence; no Coding task is authorized by this handoff"
+      "failureReason": "TS09_NODE_ADAPTER_REQUIRED"
     }
   ],
   "criticalNonExplicitTests": [
@@ -124,18 +124,17 @@
       "controlPoint": "Run direct-literal, logical fallback, nullish fallback, ternary, and variableized Cypher query/parameter fixtures through the structured source policy.",
       "observationPoint": "Every bypass fixture is detected while a safe external-config and non-secret parameterized query fixture passes.",
       "expectedStatus": "passed"
-    }
-  ],
-  "supportingNonExplicitTests": [
+    },
     {
       "name": "Scoped delivery attribution",
-      "path": "tests/support/production-graph-rag/scoped-delivery-attribution.guard.js",
-      "kind": "ScopedDeliveryAttributionGuard",
-      "controlPoint": "Inspect the global credential Realization edge and the resumed Coding handoff's final completion evidence.",
-      "observationPoint": "TS-07 can complete this approved slice without claiming global credential delivery or authorizing TS-09 implementation.",
+      "path": "tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "Inspect committed mounted TS-07 evidence, handoff scope, latest runner failure records, and runner-owned credential delivery status.",
+      "observationPoint": "TS-07 completes this approved slice without claiming global credential delivery or authorizing TS-09 implementation.",
       "expectedStatus": "passed"
     }
   ],
+  "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
@@ -175,7 +174,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "C1-C6 implementation is present in the Coding-owned worktree. Resume at W2-C7. Scoped completion is determined by the six approved explicit entrypoints, six critical guards, and zero baseline delivered regression; global intent delivery remains runner-owned and is not a prerequisite for committing this authorized slice.",
+    "executionStrategy": "C1-C6 implementation is present in the Coding-owned worktree. Resume at W2-C7. Scoped completion is determined by the six approved explicit entrypoints, seven frozen critical guards, and zero baseline delivered regression; global intent delivery remains runner-owned and is not a prerequisite for committing this authorized slice.",
     "tasks": [
       {
         "taskId": "W2-C1",
@@ -305,7 +304,7 @@
         "steps": [
           "Delegate only semantic-query production behavior to the new runtime.",
           "Preserve no-argument full snapshots and graph-tidy bypass behavior.",
-          "Run every authorized frozen explicit entrypoint and all six production Graph RAG critical guards."
+          "Run every authorized frozen explicit entrypoint and all seven production Graph RAG critical guards."
         ],
         "completionSignal": "The six approved scoped entrypoints pass, existing compatibility tests do not regress, and no baseline delivered element regresses."
       },
@@ -334,12 +333,12 @@
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Re-run the six approved scoped explicit entrypoints and six frozen critical guards without editing them.",
-          "Run the scoped delivery attribution supporting guard.",
+          "Re-run the six approved scoped explicit entrypoints and seven frozen critical guards without editing them.",
+          "Run the frozen scoped delivery attribution critical guard.",
           "Run the full architecture runner and confirm no baseline delivered regression.",
           "Commit only the authorized Coding target paths; leave design artifacts and unrelated worktree state untouched."
         ],
-        "completionSignal": "6/6 scoped explicit entrypoints pass; 6/6 critical guards pass; 0 delivered-to-not_delivered regression; TS-07 provides scoped credential evidence while global grag-credential-boundary remains runner-owned; authorized Coding files are committed."
+        "completionSignal": "6/6 scoped explicit entrypoints pass; 7/7 critical guards pass; 0 delivered-to-not_delivered regression; TS-07 provides scoped credential evidence while global grag-credential-boundary remains runner-owned; authorized Coding files are committed."
       }
     ]
   },
@@ -358,11 +357,12 @@
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
     "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
-    "tests/architecture/production-graph-rag/credential-source-policy.guard.js"
+    "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
+    "tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js"
   ],
   "openGaps": [
     "The W2 provider/model/version/dimensions remain intentionally unselected; Coding must implement the blocking gate, not choose values.",
     "ExplicitAcceptanceTestcase-TS-08 and ExplicitAcceptanceTestcase-TS-09 are physicalized and frozen only to satisfy global mounted-path validation; coding-scope-authorization.guard.js prohibits them and adapter/lifecycle work from codingTargets, task tasks, and completion conditions.",
-    "Global grag-credential-boundary delivery is legitimately deferred by grag-rel-adapter-credentials until the separate TS-09 realizer is delivered. This handoff accepts passing TS-07 as scoped evidence only and does not authorize changing the relationship, implementing TS-09, or manually changing deliveryStatus."
+    "The committed runner evidence records TS-07 as passed while global grag-credential-boundary remains runner-owned and not_delivered. This handoff accepts TS-07 as scoped evidence only and does not authorize intent relationship changes, TS-09 implementation, or manual deliveryStatus changes."
   ]
 }

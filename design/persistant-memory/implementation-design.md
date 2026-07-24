@@ -43,8 +43,8 @@
 
 ## 2026-07-25 scoped delivery attribution correction
 
-- Root cause: runner delivery aggregation correctly treats each Realization target as dependent on every tested source. `grag-credential-boundary` therefore depends on both the delivered runtime and the out-of-scope, not-delivered adapter through `grag-rel-adapter-credentials`.
-- The intent relationship remains semantically valid; no intent graph mutation or trace proposal is required. The Implementation Design defect was requiring five global delivered anchors as this slice's completion condition.
-- Revised completion: six approved scoped explicit entrypoints, six frozen critical guards, zero baseline delivered regression, and passing TS-07 constitute slice completion. Global credential delivery remains runner-owned and deferred until the separate realizer is delivered.
-- Added an evolvable supporting guard for this attribution and a W2-C7 resume task that authorizes Coding only to verify and commit the already implemented C1-C6 files.
+- The Implementation Design defect was requiring five global delivered anchors as this slice's completion condition. No intent graph mutation or trace proposal is required for a handoff-level scoped completion rule.
+- Revised completion: six approved scoped explicit entrypoints, seven frozen critical guards, zero baseline delivered regression, and passing TS-07 constitute slice completion. Global credential delivery remains runner-owned.
+- Scoped attribution relies only on committed mounted TS-07 evidence, handoff scope, runner failure records, and committed runner-owned delivery evidence; uncommitted parallel intent relationships are not evidence.
+- Added a frozen critical traceability guard for this attribution and a W2-C7 resume task that authorizes Coding only to verify and commit the already implemented C1-C6 files.
 - Because the handoff completion semantics and execution plan changed, global human reapproval is required before Coding resumes.
