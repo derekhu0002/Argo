@@ -71,6 +71,38 @@
         {
           "view_id": "162",
           "view_name": "CapabilityRealizationViewpoint"
+        },
+        {
+          "view_id": "grag-compatibility-usage",
+          "view_name": "Graph RAG Compatibility Usage"
+        },
+        {
+          "view_id": "grag-request-purpose-usage",
+          "view_name": "Graph RAG Request and Purpose Usage"
+        },
+        {
+          "view_id": "grag-seed-closure-usage",
+          "view_name": "Graph RAG Seed and Closure Usage"
+        },
+        {
+          "view_id": "grag-purpose-policies-a",
+          "view_name": "Graph RAG Purpose Policies A"
+        },
+        {
+          "view_id": "grag-purpose-policies-b",
+          "view_name": "Graph RAG Purpose Policies B"
+        },
+        {
+          "view_id": "grag-integrity-explainability",
+          "view_name": "Graph RAG Integrity and Explainability"
+        },
+        {
+          "view_id": "grag-index-consistency",
+          "view_name": "Graph RAG Index Consistency"
+        },
+        {
+          "view_id": "grag-vertical-chain-a",
+          "view_name": "Graph RAG Vertical Dependency A"
         }
       ]
     },
@@ -89,6 +121,14 @@
         {
           "view_id": "163",
           "view_name": "AcceptanceDeliveryViewpoint"
+        },
+        {
+          "view_id": "grag-quality-capacity",
+          "view_name": "Graph RAG Quality and Capacity Acceptance"
+        },
+        {
+          "view_id": "grag-vertical-chain-b",
+          "view_name": "Graph RAG Vertical Dependency B"
         }
       ]
     },
@@ -97,6 +137,628 @@
       "name": "Neo4jApplyMutationTestElement",
       "type": "Requirement",
       "description": "Viewpoint: AcceptanceDeliveryViewpoint; Concern: acceptance and delivery synchronization verification; Purpose: auditing; Scope: MCP apply mutation write-path verification for the canonical intent graph; Rationale: this temporary test element exists only to verify that applySystemArchitectureMutation writes the canonical JSON graph and synchronizes Neo4j behind the MCP boundary."
+    },
+    {
+      "id": "grag-goal",
+      "name": "Scalable Coherent Intent Reading",
+      "type": "Goal",
+      "description": "DT-00 accepted goal: preserve complete canonical reading while adding explainable Graph RAG retrieval that remains relevant, coherent, version-consistent, and traceable.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00|accepted"
+        },
+        {
+          "name": "scopeBoundary",
+          "value": "Phase 1 excludes token budgets, pagination, caps, and truncation or continuation decisions."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-00",
+          "description": "Acceptor perspective control point: submit legacy and semantic-query tasks against the same canonical version. Observation point: compare legacy completeness, semantic relevance, closure coherence, and version evidence.",
+          "type": "Acceptance Test",
+          "Input": "Legacy and semantic-query tasks referencing one canonical intent version.",
+          "acceptanceCriteria": "Legacy reading remains complete; semantic results are relevant and deterministically coherent; returned evidence identifies the governing canonical version."
+        }
+      ]
+    },
+    {
+      "id": "grag-capability",
+      "name": "Explainable Graph RAG Intent Retrieval",
+      "type": "Capability",
+      "description": "Strategy capability that adds semantic seed retrieval and deterministic graph closure without removing exhaustive canonical reading.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00|accepted|capability realization"
+        }
+      ]
+    },
+    {
+      "id": "grag-consumer-role",
+      "name": "Downstream Intent Consumer",
+      "type": "Business Role",
+      "description": "Business role performed by downstream Agents that consume intent context for decisions, design, repair, audit, or graph-tidy work.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00,DT-07|acceptor and consumer perspective"
+        },
+        {
+          "name": "functionalPoint.DT-01-consumer-continuity",
+          "value": "{\"description\":\"Use the established no-argument reading contract without consumer migration.\",\"businessOutcome\":\"Existing downstream consumers remain operational while query mode is introduced.\",\"observableBoundary\":\"An unchanged no-argument consumer receives the same complete canonical graph result.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumerRole\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-01-ConsumerRole",
+          "description": "Acceptor control point: execute an existing downstream consumer without changing its invocation. Observation point: inspect whether the consumer receives and can use the same complete canonical graph result.",
+          "type": "Acceptance Test",
+          "Input": "An existing downstream intent consumer using the no-argument query contract unchanged.",
+          "acceptanceCriteria": "The downstream consumer completes its established read without migration and receives the unchanged complete canonical graph."
+        }
+      ]
+    },
+    {
+      "id": "grag-consumption-process",
+      "name": "Consume Intent Architecture Context",
+      "type": "Business Process",
+      "description": "Business behavior in which a downstream Agent obtains sufficient intent context for its declared lifecycle task.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00,DT-01,DT-07|business behavior"
+        },
+        {
+          "name": "functionalPoint.DT-01-complete-context-consumption",
+          "value": "{\"description\":\"Consume complete canonical intent context when no query arguments are supplied.\",\"businessOutcome\":\"Existing lifecycle work retains exhaustive intent visibility.\",\"observableBoundary\":\"The consumption process observes all canonical Elements, Relationships, and Views with no semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess",
+          "description": "Acceptor control point: run the established intent-context consumption process with no query arguments. Observation point: inspect the graph objects available to the process.",
+          "type": "Acceptance Test",
+          "Input": "A lifecycle task using the existing no-argument intent-context consumption process.",
+          "acceptanceCriteria": "The process receives all canonical Elements, Relationships, and Views and no semantic filtering is activated."
+        }
+      ]
+    },
+    {
+      "id": "grag-query-service",
+      "name": "Intent Architecture Query Service",
+      "type": "Application Service",
+      "description": "DT-01 and DT-02 accepted service contract: one interface retains no-argument complete snapshots and offers an optional, unambiguous semantic-query mode.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-01",
+          "value": "accepted|compatibility-first"
+        },
+        {
+          "name": "decisionTrace.DT-01-R1",
+          "value": "rejected|capacity-first could silently omit required semantics"
+        },
+        {
+          "name": "decisionTrace.DT-01-R2",
+          "value": "rejected|unlimited single-query completeness leaves growth risk uncontrolled"
+        },
+        {
+          "name": "decisionTrace.DT-02",
+          "value": "accepted|optional-query with no-argument full snapshot"
+        },
+        {
+          "name": "decisionTrace.DT-02-R1",
+          "value": "rejected|separate semantic tool adds a duplicate navigation surface"
+        },
+        {
+          "name": "decisionTrace.DT-02-R2",
+          "value": "rejected|full reading is not deprecated because graph-tidy requires exhaustive state"
+        },
+        {
+          "name": "functionalPoint.DT-01-compatible-reading-boundary",
+          "value": "{\"description\":\"Preserve the existing no-argument service contract while adding optional query input.\",\"businessOutcome\":\"No existing service consumer is broken by the new query capability.\",\"observableBoundary\":\"No-argument responses remain externally equivalent to the pre-query service response.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01\"}"
+        },
+        {
+          "name": "functionalPoint.DT-02-no-argument-full-snapshot",
+          "value": "{\"description\":\"Select full-snapshot mode when no query fields are supplied.\",\"businessOutcome\":\"Complete canonical reading remains a stable service capability.\",\"observableBoundary\":\"The response contains complete canonical Elements, Relationships, and Views without semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-01",
+          "description": "Acceptor perspective control point: run all existing no-argument consumers unchanged. Observation point: compare their externally observable graph results with the pre-query-mode behavior.",
+          "type": "Acceptance Test",
+          "Input": "Existing no-argument intent-architecture consumers.",
+          "acceptanceCriteria": "Every existing no-argument consumer continues to receive unchanged complete canonical results."
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-02",
+          "description": "Acceptor perspective control point: submit a legacy no-argument request. Observation point: inspect returned canonical Elements, Relationships, and Views for completeness and absence of semantic filtering.",
+          "type": "Acceptance Test",
+          "Input": "A no-argument Intent Architecture Query Service request.",
+          "acceptanceCriteria": "The complete canonical Elements, Relationships, and Views are returned; semantic filtering is not activated."
+        }
+      ]
+    },
+    {
+      "id": "grag-canonical-graph",
+      "name": "Canonical Intent Graph",
+      "type": "Data Object",
+      "description": "Authoritative intent-architecture data whose complete snapshot, relationships, View membership, and mutation version govern all query results.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00,DT-12,DT-13,DT-14,DT-16,DT-17|canonical authority"
+        },
+        {
+          "name": "functionalPoint.DT-02-authoritative-complete-snapshot",
+          "value": "{\"description\":\"Expose one authoritative complete snapshot including graph objects and View membership.\",\"businessOutcome\":\"Compatibility and mutation preparation use the same canonical authority.\",\"observableBoundary\":\"A full read exposes every canonical Element, Relationship, View, and membership without semantic omission.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02-CanonicalGraph\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
+          "description": "Acceptor control point: request the canonical graph through the no-argument full-read boundary. Observation point: compare returned Element, Relationship, View, and membership identities with the authoritative canonical state.",
+          "type": "Acceptance Test",
+          "Input": "A canonical graph containing Elements, Relationships, Views, and cross-View memberships.",
+          "acceptanceCriteria": "The full-read result contains every authoritative canonical object and membership exactly once with no semantic filtering."
+        }
+      ]
+    },
+    {
+      "id": "grag-coherent-context",
+      "name": "Coherent Versioned Intent Context",
+      "type": "Outcome",
+      "description": "Externally observable result: downstream Agents receive context that is complete for the selected mode and purpose, structurally coherent, explainable, and version-consistent.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00,DT-13,DT-14,DT-15,DT-17,DT-18|observable outcome"
+        }
+      ]
+    },
+    {
+      "id": "grag-query-request",
+      "name": "Graph RAG Query Intent",
+      "type": "Data Object",
+      "description": "DT-03 request meaning: explicit purpose and natural-language intent, optional deterministic anchors, and mandatory explicit subject for audit.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-03|accepted|hybrid-explicit request"
+        },
+        {
+          "name": "functionalPoint.DT-03-explicit-purpose-contract",
+          "value": "{\"description\":\"Carry an explicit lifecycle purpose and require an explicit subject for audit requests.\",\"businessOutcome\":\"Request meaning is reproducible and cannot vary by wording or caller identity.\",\"observableBoundary\":\"Purpose is present as request data; audit requests without subject are distinguishable as invalid.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03-QueryRequest\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
+          "description": "Acceptor control point: construct equal intent text for two declared purposes and construct an audit request without subject. Observation point: inspect the request data before policy selection.",
+          "type": "Acceptance Test",
+          "Input": "Requests with identical intent text, explicit implementation-design or audit purpose, and an audit variant lacking subject.",
+          "acceptanceCriteria": "Each request carries its explicit purpose unchanged; purpose is not inferred from text or caller identity; the audit variant exposes the missing subject."
+        }
+      ]
+    },
+    {
+      "id": "grag-mode-validation",
+      "name": "Query Mode and Purpose Validation",
+      "type": "Application Function",
+      "description": "Validates full versus query invocation, declared lifecycle purpose, required intent text, optional anchors, audit subject, and index availability before semantic retrieval.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-03",
+          "value": "accepted|purpose plus intent; anchors optional; audit subject required"
+        },
+        {
+          "name": "decisionTrace.DT-03-R1",
+          "value": "rejected|natural language must not infer purpose"
+        },
+        {
+          "name": "decisionTrace.DT-03-R2",
+          "value": "rejected|Agent identity must not select task purpose"
+        },
+        {
+          "name": "functionalPoint.DT-03-purpose-and-audit-gate",
+          "value": "{\"description\":\"Validate declared purpose and reject audit mode when subject is absent.\",\"businessOutcome\":\"Purpose policy selection is explicit and audit scope cannot be silently inferred.\",\"observableBoundary\":\"Implementation-design selects its declared policy; audit without subject returns a rejection.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-03",
+          "description": "Acceptor perspective control point: send identical intent under implementation-design and audit purposes while omitting the audit subject. Observation point: compare policy selection and request disposition.",
+          "type": "Acceptance Test",
+          "Input": "Two equal intent texts with different declared purposes; audit request has no subject.",
+          "acceptanceCriteria": "Implementation-design uses its declared policy; audit is rejected for missing explicit subject; purpose is not inferred from wording or Agent identity."
+        }
+      ]
+    },
+    {
+      "id": "grag-seed-retrieval",
+      "name": "Independent Semantic Seed Retrieval",
+      "type": "Application Function",
+      "description": "DT-04 and DT-05 behavior: independently assess Element, Relationship, and View candidates with type-specific thresholds and include every qualifying candidate, including zero results.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-04",
+          "value": "accepted|independent-three retrieval channels"
+        },
+        {
+          "name": "decisionTrace.DT-04-R1",
+          "value": "rejected|heterogeneous object types do not share one global ranking"
+        },
+        {
+          "name": "decisionTrace.DT-04-R2",
+          "value": "rejected|relationship and View seeds must remain directly discoverable"
+        },
+        {
+          "name": "decisionTrace.DT-05",
+          "value": "accepted|threshold-all per object type; zero results permitted"
+        },
+        {
+          "name": "decisionTrace.DT-05-R1",
+          "value": "rejected|fixed Top-K forces false positives and arbitrary false negatives"
+        },
+        {
+          "name": "decisionTrace.DT-05-R2",
+          "value": "open|caps deferred to DT-19 after precision and cardinality evidence"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-04",
+          "description": "Acceptor perspective control point: submit separate queries primarily matching an Element, a relationship statement, and a View concern. Observation point: inspect seed channel attribution.",
+          "type": "Acceptance Test",
+          "Input": "Three approved queries, each centered on a different canonical graph object category.",
+          "acceptanceCriteria": "Element, Relationship, and View objects can each independently become seeds and each reports its retrieval channel."
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-05",
+          "description": "Acceptor perspective control point: run a query with more qualifying peers than a typical fixed K and an unrelated query. Observation point: inspect qualifying peer completeness and empty-result behavior.",
+          "type": "Acceptance Test",
+          "Input": "One many-peer relevant query and one approved unrelated query.",
+          "acceptanceCriteria": "Every threshold-qualifying peer returns; the unrelated query returns zero seeds; no fixed result count or phase-1 cap is imposed."
+        }
+      ]
+    },
+    {
+      "id": "grag-purpose-closure",
+      "name": "Purpose Policy Graph Closure",
+      "type": "Application Function",
+      "description": "DT-06 and DT-07 behavior: Graph RAG supplies seeds only; one of five explicit task-purpose policies applies deterministic ArchiMate graph expansion.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-06",
+          "value": "accepted|purpose-policy deterministic closure"
+        },
+        {
+          "name": "decisionTrace.DT-06-R1",
+          "value": "rejected|caller traversal depth is not the primary business boundary"
+        },
+        {
+          "name": "decisionTrace.DT-06-R2",
+          "value": "rejected|full connected component is not equivalent to required context"
+        },
+        {
+          "name": "decisionTrace.DT-07",
+          "value": "accepted|intent-decision, implementation-design, coding-repair, audit, graph-tidy"
+        },
+        {
+          "name": "decisionTrace.DT-07-R1",
+          "value": "rejected|boundary-free generic-agent purpose is removed"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-06",
+          "description": "Acceptor perspective control point: query for a seed with a textually dissimilar but graph-mandatory dependency. Observation point: inspect inclusion classification.",
+          "type": "Acceptance Test",
+          "Input": "Approved query whose mandatory dependency is not a semantic match.",
+          "acceptanceCriteria": "The dependency returns through deterministic purpose-policy expansion and is not misreported as a semantic seed."
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-07",
+          "description": "Acceptor perspective control point: two different Agents submit the same declared purpose and anchors. Observation point: compare selected policy and resulting graph scope.",
+          "type": "Acceptance Test",
+          "Input": "Equivalent purpose and anchors submitted by two Agent identities.",
+          "acceptanceCriteria": "Both requests receive the same purpose policy and mandatory graph scope; caller identity does not alter closure."
+        }
+      ]
+    },
+    {
+      "id": "grag-intent-decision-policy",
+      "name": "Intent Decision Closure",
+      "type": "Application Function",
+      "description": "DT-08 closure returns complete Why, What, business behavior, Acceptance lineage, and directly relevant realization-state evidence.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-08|accepted|decision-lineage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-08",
+          "description": "Acceptor perspective control point: submit a capability-change decision task. Observation point: inspect motivation, decision object, business behavior, acceptance, and absence declarations.",
+          "type": "Acceptance Test",
+          "Input": "Approved capability-change intent-decision query.",
+          "acceptanceCriteria": "Why, What, business behavior, and Acceptance evidence are present or each missing concern is explicitly reported absent."
+        }
+      ]
+    },
+    {
+      "id": "grag-implementation-policy",
+      "name": "Implementation Design Closure",
+      "type": "Application Function",
+      "description": "DT-09 closure returns target, recursive upstream prerequisites, downstream impact within the declared business boundary, and governing guardrails and acceptance semantics.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-09|accepted|implementation-ready"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-09",
+          "description": "Acceptor perspective control point: select a target with multi-level upstream and downstream chains. Observation point: inspect every returned chain boundary.",
+          "type": "Acceptance Test",
+          "Input": "Implementation-design target with approved multi-level dependency chains.",
+          "acceptanceCriteria": "Every upstream and downstream chain terminates at a stated delivered, natural, or declared business boundary and includes governing acceptance semantics."
+        }
+      ]
+    },
+    {
+      "id": "grag-repair-policy",
+      "name": "Coding Repair Closure",
+      "type": "Application Function",
+      "description": "DT-10 closure returns intended behavior, causal prerequisites, at-risk business outcomes, principles, constraints, and complete acceptance semantics without adding adjacent scope.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-10|accepted|repair-safety"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-10",
+          "description": "Acceptor perspective control point: submit a defect where code conflicts with intent and a textually similar unrelated capability exists. Observation point: inspect authoritative behavior and closure scope.",
+          "type": "Acceptance Test",
+          "Input": "Approved coding-repair query containing conflicting implementation evidence and an unrelated similar capability.",
+          "acceptanceCriteria": "Business intent remains authoritative; repair-safety prerequisites, risks, guardrails, and acceptance return; the unrelated capability is not mandatory closure."
+        }
+      ]
+    },
+    {
+      "id": "grag-audit-policy",
+      "name": "Audit Proof Closure",
+      "type": "Application Function",
+      "description": "DT-11 closure uses Graph RAG only to recommend candidates, then exhaustively returns Subject, Obligation, Evidence, and Exceptions for the explicit audit subject.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-11|accepted|explicit-proof-scope"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-11",
+          "description": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject. Observation point: inspect proof-scope completeness and exception handling.",
+          "type": "Acceptance Test",
+          "Input": "Explicit audit subject containing an approved low-similarity violation.",
+          "acceptanceCriteria": "The violation returns because it is inside the subject; missing evidence is reported as an exception and is never treated as passing."
+        }
+      ]
+    },
+    {
+      "id": "grag-graph-tidy-policy",
+      "name": "Graph Tidy Full Snapshot Bypass",
+      "type": "Application Function",
+      "description": "DT-12 closure always reads the complete canonical snapshot for graph mutation preparation and bypasses semantic retrieval and threshold selection.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-12|accepted|always-full; bypass DT-04 and DT-05"
+        },
+        {
+          "name": "functionalPoint.DT-12-full-snapshot-bypass",
+          "value": "{\"description\":\"Use the complete canonical snapshot for graph-tidy and bypass semantic retrieval.\",\"businessOutcome\":\"Mutation preparation sees global identity, referential integrity, View membership, and invariants.\",\"observableBoundary\":\"A graph-tidy request returns the complete canonical snapshot with no Graph RAG filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-12\"}"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-12",
+          "description": "Acceptor perspective control point: prepare a local mutation with a conflicting remote ID and cross-View membership. Observation point: inspect global identity and all memberships.",
+          "type": "Acceptance Test",
+          "Input": "Graph-tidy preparation case containing a remote ID conflict and cross-View membership.",
+          "acceptanceCriteria": "The complete canonical snapshot exposes the global ID conflict, every relevant View membership, referential integrity, and global invariants without Graph RAG filtering."
+        }
+      ]
+    },
+    {
+      "id": "grag-endpoint-closure",
+      "name": "Relationship Endpoint Closure",
+      "type": "Application Function",
+      "description": "DT-13 structural closure: every returned Relationship is accompanied by both endpoint Elements, with invalid canonical references reported rather than hidden.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-13|accepted|complete relationship endpoints"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-13",
+          "description": "Acceptor perspective control point: trigger a relationship seed whose endpoint text is not a semantic match. Observation point: inspect relationship, endpoint presence, and inclusion reason.",
+          "type": "Acceptance Test",
+          "Input": "Approved relationship-seed query with one or both textually unmatched endpoints.",
+          "acceptanceCriteria": "The relationship and both endpoint Elements return; each endpoint records endpoint-closure as its inclusion reason."
+        }
+      ]
+    },
+    {
+      "id": "grag-view-closure",
+      "name": "Complete View Closure",
+      "type": "Application Function",
+      "description": "DT-14 structural closure: every matched View returns complete metadata, members, relationships, and endpoints without implicit cascade to overlapping Views.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-14|accepted|complete View; no implicit View cascade"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-14",
+          "description": "Acceptor perspective control point: query a View that shares members with other Views. Observation point: inspect target completeness and joined View set.",
+          "type": "Acceptance Test",
+          "Input": "Approved View query whose target overlaps unrelated Views.",
+          "acceptanceCriteria": "The target View returns complete; overlapping Views do not join unless independently matched; all returned relationships have both endpoints."
+        }
+      ]
+    },
+    {
+      "id": "grag-provenance",
+      "name": "First Inclusion Provenance",
+      "type": "Application Function",
+      "description": "DT-15 explainability: every returned object records exactly one ordered first-inclusion reason and may record supplementary reasons, together with purpose and version evidence.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-15|accepted|semantic seed, endpoint, purpose expansion, or complete-View expansion"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-15",
+          "description": "Acceptor perspective control point: run an approved query exercising all four first-inclusion paths. Observation point: inspect object-level provenance and query evidence.",
+          "type": "Acceptance Test",
+          "Input": "Query fixture containing semantic-seed, endpoint, purpose-policy, and complete-View inclusions.",
+          "acceptanceCriteria": "Every returned object has exactly one first-inclusion reason; supplementary reasons do not replace it; purpose and canonical/index version evidence are present."
+        }
+      ]
+    },
+    {
+      "id": "grag-semantic-index",
+      "name": "Semantic Retrieval Index",
+      "type": "Data Object",
+      "description": "Versioned semantic index over Element, Relationship, and View content, including nested semantics and View membership.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-04,DT-16,DT-17|retrieval and version evidence"
+        }
+      ]
+    },
+    {
+      "id": "grag-index-lifecycle",
+      "name": "All Mutation Index Lifecycle",
+      "type": "Application Process",
+      "description": "DT-16 lifecycle advances index version for create, update, and delete of every Element, Relationship, and View; nested semantics and membership changes count as updates.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-16|accepted|all-mutations"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-16",
+          "description": "Acceptor perspective control point: create, update, and delete each object category, including topology-only changes. Observation point: compare aligned-query results and version movement.",
+          "type": "Acceptance Test",
+          "Input": "Nine mutation classes across Element, Relationship, and View plus nested semantic and membership updates.",
+          "acceptanceCriteria": "Every committed mutation advances index lifecycle; aligned queries reflect current content and topology; deleted or superseded objects never remain retrievable."
+        }
+      ]
+    },
+    {
+      "id": "grag-alignment-constraint",
+      "name": "Reject Stale Semantic Queries",
+      "type": "Constraint",
+      "description": "DT-17 constraint: pure semantic queries are accepted only while index and canonical graph are Aligned; complete and explicit-anchor canonical reads remain available during Updating or Stale/failed states.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-17",
+          "value": "accepted|reject-semantic unless Aligned"
+        },
+        {
+          "name": "decisionTrace.DT-17-R1",
+          "value": "rejected|stale semantic results are never served as usable context even with a warning"
+        },
+        {
+          "name": "decisionTrace.DT-17-R2",
+          "value": "rejected|semantic failure does not silently fall back to full snapshot"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-17",
+          "description": "Acceptor perspective control point: change graph semantics and force index failure. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions.",
+          "type": "Acceptance Test",
+          "Input": "Canonical graph change followed by Updating or failed semantic index state.",
+          "acceptanceCriteria": "Pure semantic query is rejected with canonical and index version state; no stale result or automatic full fallback is served; full and explicit-anchor canonical reads remain current."
+        }
+      ]
+    },
+    {
+      "id": "grag-quality-gate",
+      "name": "Phase 1 Retrieval Quality Gate",
+      "type": "Requirement",
+      "description": "DT-18 accepted gate: on an approved five-purpose benchmark, critical seed recall is 100%, unrelated queries have zero forced hits, closure correctness is 100%, and precision is recorded as a baseline.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-18",
+          "value": "accepted|recall-safety"
+        },
+        {
+          "name": "decisionTrace.DT-18-R1",
+          "value": "rejected|unsupported 95 percent recall and 90 percent precision gate"
+        },
+        {
+          "name": "decisionTrace.DT-18-R2",
+          "value": "rejected|precision must not be prioritized over critical business-fact recall"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-18",
+          "description": "Acceptor perspective control point: run every approved benchmark query for all five purposes. Observation point: aggregate mandatory seeds, forbidden forced hits, expected closure, and precision evidence.",
+          "type": "Acceptance Test",
+          "Input": "Human-approved five-purpose benchmark with mandatory and forbidden seeds and expected closures.",
+          "acceptanceCriteria": "Critical seed recall is 100%; every expected closure is correct; unrelated queries have zero forced hits; observed precision is reported without an invented release threshold."
+        }
+      ]
+    },
+    {
+      "id": "grag-capacity-residual",
+      "name": "Deferred Query Capacity Governance",
+      "type": "Assessment",
+      "description": "DT-19 and DT-05-R2 explicit residual coordination: phase 2 must decide token budgets, pagination, caps, and truncation or continuation semantics after phase-1 precision and cardinality evidence exists.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-05-R2",
+          "value": "open|threshold result caps deferred"
+        },
+        {
+          "name": "decisionTrace.DT-19",
+          "value": "open|human explicitly deferred budgets, pagination, caps, truncation, and continuation"
+        },
+        {
+          "name": "residualCoordination",
+          "value": "No silent truncation or invented capacity limit is permitted in phase 1."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
+          "description": "Acceptor perspective control point: record phase-1 result cardinality and precision by purpose. Observation point: inspect evidence availability and verify absence of silent truncation or a release cap.",
+          "type": "Acceptance Test",
+          "Input": "Phase-1 query result sizes and measured precision for each declared purpose.",
+          "acceptanceCriteria": "Cardinality and precision evidence are available for a later human decision; phase 1 introduces no silent cap, budget, pagination, truncation, or continuation rule."
+        }
+      ]
     }
   ],
   "relationships": [
@@ -143,6 +805,414 @@
       "target_name": "AcceptanceDeliveryViewpoint",
       "description": "Baseline navigation from realization responsibilities to acceptance and delivery sequencing.",
       "statement": "CapabilityRealizationViewpoint --(Association)--> AcceptanceDeliveryViewpoint"
+    },
+    {
+      "id": "grag-rel-role-process",
+      "name": "Consumer performs intent consumption",
+      "type": "Assignment",
+      "source_id": "grag-consumer-role",
+      "target_id": "grag-consumption-process",
+      "source_name": "Downstream Intent Consumer",
+      "target_name": "Consume Intent Architecture Context",
+      "description": "The downstream consumer role is accountable for declaring and consuming context for its lifecycle task.",
+      "statement": "Downstream Intent Consumer --(Assignment)--> Consume Intent Architecture Context",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-00,DT-07"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-service-serves-process",
+      "name": "Query service supports intent consumption",
+      "type": "Serving",
+      "source_id": "grag-query-service",
+      "target_id": "grag-consumption-process",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Consume Intent Architecture Context",
+      "description": "The application service supports the business process with either complete or purpose-bounded intent context.",
+      "statement": "Intent Architecture Query Service --(Serving)--> Consume Intent Architecture Context",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-01,DT-02"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-capability-goal",
+      "name": "Retrieval capability advances scalable reading",
+      "type": "Association",
+      "source_id": "grag-capability",
+      "target_id": "grag-goal",
+      "source_name": "Explainable Graph RAG Intent Retrieval",
+      "target_name": "Scalable Coherent Intent Reading",
+      "description": "Directional business semantics: delivering the retrieval capability advances the scalable coherent-reading goal while preserving canonical authority.",
+      "statement": "Explainable Graph RAG Intent Retrieval --(Association)--> Scalable Coherent Intent Reading",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-00"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-service-outcome",
+      "name": "Query service produces coherent context",
+      "type": "Association",
+      "source_id": "grag-query-service",
+      "target_id": "grag-coherent-context",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Coherent Versioned Intent Context",
+      "description": "Directional business semantics: successful service use produces the externally observable coherent and versioned intent-context outcome.",
+      "statement": "Intent Architecture Query Service --(Association)--> Coherent Versioned Intent Context",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-00,DT-13,DT-14,DT-15,DT-17"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-validation-request",
+      "name": "Validation reads query intent",
+      "type": "Access",
+      "source_id": "grag-mode-validation",
+      "target_id": "grag-query-request",
+      "source_name": "Query Mode and Purpose Validation",
+      "target_name": "Graph RAG Query Intent",
+      "description": "Validation reads the explicit request fields that determine mode, purpose, anchors, and audit subject.",
+      "statement": "Query Mode and Purpose Validation --(Access)--> Graph RAG Query Intent",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-03"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-validation-seeds",
+      "name": "Validated query triggers seed retrieval",
+      "type": "Triggering",
+      "source_id": "grag-mode-validation",
+      "target_id": "grag-seed-retrieval",
+      "source_name": "Query Mode and Purpose Validation",
+      "target_name": "Independent Semantic Seed Retrieval",
+      "description": "Only a valid semantic request against an Aligned index proceeds to independent seed retrieval.",
+      "statement": "Query Mode and Purpose Validation --(Triggering)--> Independent Semantic Seed Retrieval",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-03,DT-04,DT-17"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-seeds-closure",
+      "name": "Seeds trigger purpose closure",
+      "type": "Triggering",
+      "source_id": "grag-seed-retrieval",
+      "target_id": "grag-purpose-closure",
+      "source_name": "Independent Semantic Seed Retrieval",
+      "target_name": "Purpose Policy Graph Closure",
+      "description": "Qualifying semantic seeds initiate deterministic expansion governed by the declared purpose rather than further similarity.",
+      "statement": "Independent Semantic Seed Retrieval --(Triggering)--> Purpose Policy Graph Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-05,DT-06"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-intent",
+      "name": "Purpose selects intent-decision policy",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-intent-decision-policy",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Intent Decision Closure",
+      "description": "Declared intent-decision purpose selects decision-lineage closure.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Intent Decision Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-07,DT-08"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-implementation",
+      "name": "Purpose selects implementation policy",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-implementation-policy",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Implementation Design Closure",
+      "description": "Declared implementation-design purpose selects target, prerequisite, impact, and guardrail closure.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Implementation Design Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-07,DT-09"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-repair",
+      "name": "Purpose selects repair policy",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-repair-policy",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Coding Repair Closure",
+      "description": "Declared coding-repair purpose selects repair-safety closure.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Coding Repair Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-07,DT-10"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-audit",
+      "name": "Purpose selects audit policy",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-audit-policy",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Audit Proof Closure",
+      "description": "Declared audit purpose and explicit subject select exhaustive proof-scope closure.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Audit Proof Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-07,DT-11"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-tidy",
+      "name": "Purpose selects graph-tidy bypass",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-graph-tidy-policy",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Graph Tidy Full Snapshot Bypass",
+      "description": "Declared graph-tidy purpose bypasses Graph RAG and selects the complete canonical snapshot.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Graph Tidy Full Snapshot Bypass",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-07,DT-12"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-purpose-endpoints",
+      "name": "Purpose expansion requires endpoint closure",
+      "type": "Triggering",
+      "source_id": "grag-purpose-closure",
+      "target_id": "grag-endpoint-closure",
+      "source_name": "Purpose Policy Graph Closure",
+      "target_name": "Relationship Endpoint Closure",
+      "description": "After purpose expansion, every included relationship triggers inclusion of both canonical endpoints.",
+      "statement": "Purpose Policy Graph Closure --(Triggering)--> Relationship Endpoint Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-06,DT-13"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-endpoints-views",
+      "name": "Endpoint closure precedes complete View closure",
+      "type": "Triggering",
+      "source_id": "grag-endpoint-closure",
+      "target_id": "grag-view-closure",
+      "source_name": "Relationship Endpoint Closure",
+      "target_name": "Complete View Closure",
+      "description": "Structural relationship coherence is preserved while matched Views expand to complete membership without cascading to overlapping Views.",
+      "statement": "Relationship Endpoint Closure --(Triggering)--> Complete View Closure",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-13,DT-14"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-views-provenance",
+      "name": "Complete closure produces provenance",
+      "type": "Triggering",
+      "source_id": "grag-view-closure",
+      "target_id": "grag-provenance",
+      "source_name": "Complete View Closure",
+      "target_name": "First Inclusion Provenance",
+      "description": "Completed closure is classified by ordered first-inclusion reason with supplementary reasons and version evidence.",
+      "statement": "Complete View Closure --(Triggering)--> First Inclusion Provenance",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-14,DT-15"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-lifecycle-canonical",
+      "name": "Index lifecycle reads canonical mutation version",
+      "type": "Access",
+      "source_id": "grag-index-lifecycle",
+      "target_id": "grag-canonical-graph",
+      "source_name": "All Mutation Index Lifecycle",
+      "target_name": "Canonical Intent Graph",
+      "description": "Every canonical mutation class advances the version observed by the index lifecycle.",
+      "statement": "All Mutation Index Lifecycle --(Access)--> Canonical Intent Graph",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-16"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-lifecycle-index",
+      "name": "Index lifecycle updates semantic index",
+      "type": "Access",
+      "source_id": "grag-index-lifecycle",
+      "target_id": "grag-semantic-index",
+      "source_name": "All Mutation Index Lifecycle",
+      "target_name": "Semantic Retrieval Index",
+      "description": "Create, update, and delete events across all graph object categories update the semantic index and its version state.",
+      "statement": "All Mutation Index Lifecycle --(Access)--> Semantic Retrieval Index",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-16"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-lifecycle-validation",
+      "name": "Alignment state governs query validation",
+      "type": "Triggering",
+      "source_id": "grag-index-lifecycle",
+      "target_id": "grag-mode-validation",
+      "source_name": "All Mutation Index Lifecycle",
+      "target_name": "Query Mode and Purpose Validation",
+      "description": "Aligned, Updating, or Stale/failed version state determines whether pure semantic validation may proceed.",
+      "statement": "All Mutation Index Lifecycle --(Triggering)--> Query Mode and Purpose Validation",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-16,DT-17"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-alignment-service",
+      "name": "Alignment constraint governs query service",
+      "type": "Association",
+      "source_id": "grag-alignment-constraint",
+      "target_id": "grag-query-service",
+      "source_name": "Reject Stale Semantic Queries",
+      "target_name": "Intent Architecture Query Service",
+      "description": "Directional business semantics: the version-alignment constraint prohibits stale pure semantic service results while preserving current canonical reads.",
+      "statement": "Reject Stale Semantic Queries --(Association)--> Intent Architecture Query Service",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-17"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-provenance-quality",
+      "name": "Provenance evidence enables quality gate",
+      "type": "Association",
+      "source_id": "grag-provenance",
+      "target_id": "grag-quality-gate",
+      "source_name": "First Inclusion Provenance",
+      "target_name": "Phase 1 Retrieval Quality Gate",
+      "description": "Directional business semantics: object-level inclusion evidence supports benchmark recall, precision, and closure assessment.",
+      "statement": "First Inclusion Provenance --(Association)--> Phase 1 Retrieval Quality Gate",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-15,DT-18"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-quality-capacity",
+      "name": "Phase 1 evidence informs capacity decision",
+      "type": "Influence",
+      "source_id": "grag-quality-gate",
+      "target_id": "grag-capacity-residual",
+      "source_name": "Phase 1 Retrieval Quality Gate",
+      "target_name": "Deferred Query Capacity Governance",
+      "description": "Phase-1 precision and cardinality evidence influences, but does not predetermine, the later human decision on budgets, pagination, caps, and continuation semantics.",
+      "statement": "Phase 1 Retrieval Quality Gate --(Influence)--> Deferred Query Capacity Governance",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-18,DT-19"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-query-canonical",
+      "name": "Query service reads canonical graph",
+      "type": "Access",
+      "source_id": "grag-query-service",
+      "target_id": "grag-canonical-graph",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Canonical Intent Graph",
+      "description": "The query service reads the canonical graph directly; no-argument invocation reads the complete snapshot and query invocation applies only explicitly selected behavior.",
+      "statement": "Intent Architecture Query Service --(Access)--> Canonical Intent Graph",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-01,DT-02"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-validation-service",
+      "name": "Validation realizes query contract",
+      "type": "Realization",
+      "source_id": "grag-mode-validation",
+      "target_id": "grag-query-service",
+      "source_name": "Query Mode and Purpose Validation",
+      "target_name": "Intent Architecture Query Service",
+      "description": "Mode and purpose validation realizes the service boundary that preserves no-argument reads and rejects invalid explicit-purpose requests.",
+      "statement": "Query Mode and Purpose Validation --(Realization)--> Intent Architecture Query Service",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-02,DT-03"
+        }
+      ]
+    },
+    {
+      "id": "grag-rel-tidy-canonical",
+      "name": "Graph tidy reads complete canonical graph",
+      "type": "Access",
+      "source_id": "grag-graph-tidy-policy",
+      "target_id": "grag-canonical-graph",
+      "source_name": "Graph Tidy Full Snapshot Bypass",
+      "target_name": "Canonical Intent Graph",
+      "description": "Graph-tidy preparation always reads the complete canonical graph and bypasses semantic retrieval, thresholds, and partial-result selection.",
+      "statement": "Graph Tidy Full Snapshot Bypass --(Access)--> Canonical Intent Graph",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-12"
+        }
+      ]
     }
   ],
   "views": [
@@ -209,6 +1279,245 @@
         "3002",
         "3003",
         "3004"
+      ]
+    },
+    {
+      "view_id": "grag-compatibility-usage",
+      "view_name": "Graph RAG Compatibility Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: downstream Agents retain complete no-argument reading while optionally consuming coherent semantic query results; Purpose: deciding and handoff preparation; Scope: compatibility, consumer behavior, canonical source, and observable outcome; Rationale: this view shows how the intent-query application service supports the business consumption process without removing the full-snapshot behavior.",
+      "included_elements": [
+        "grag-goal",
+        "grag-capability",
+        "grag-consumer-role",
+        "grag-consumption-process",
+        "grag-query-service",
+        "grag-canonical-graph",
+        "grag-coherent-context"
+      ],
+      "included_relationships": [
+        "grag-rel-role-process",
+        "grag-rel-service-serves-process",
+        "grag-rel-capability-goal",
+        "grag-rel-service-outcome",
+        "grag-rel-query-canonical"
+      ]
+    },
+    {
+      "view_id": "grag-request-purpose-usage",
+      "view_name": "Graph RAG Request and Purpose Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: query mode and purpose are explicit, reproducible, and version-safe; Purpose: deciding and handoff preparation; Scope: request semantics, mode validation, purpose selection, and semantic availability; Rationale: this view expresses the application behavior that interprets Agent requests before retrieval and closure.",
+      "included_elements": [
+        "grag-query-service",
+        "grag-query-request",
+        "grag-mode-validation",
+        "grag-seed-retrieval",
+        "grag-purpose-closure",
+        "grag-semantic-index",
+        "grag-alignment-constraint"
+      ],
+      "included_relationships": [
+        "grag-rel-validation-request",
+        "grag-rel-validation-seeds",
+        "grag-rel-seeds-closure",
+        "grag-rel-alignment-service",
+        "grag-rel-validation-service"
+      ]
+    },
+    {
+      "view_id": "grag-seed-closure-usage",
+      "view_name": "Graph RAG Seed and Closure Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic relevance is separated from deterministic graph completeness; Purpose: deciding and handoff preparation; Scope: independent seed channels, threshold-all selection, purpose expansion, endpoint closure, View closure, and provenance; Rationale: this view captures the application dependency chain that turns semantic seeds into coherent intent context.",
+      "included_elements": [
+        "grag-canonical-graph",
+        "grag-seed-retrieval",
+        "grag-purpose-closure",
+        "grag-endpoint-closure",
+        "grag-view-closure",
+        "grag-provenance",
+        "grag-semantic-index"
+      ],
+      "included_relationships": [
+        "grag-rel-seeds-closure",
+        "grag-rel-purpose-endpoints",
+        "grag-rel-endpoints-views",
+        "grag-rel-views-provenance"
+      ]
+    },
+    {
+      "view_id": "grag-purpose-policies-a",
+      "view_name": "Graph RAG Purpose Policies A",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: each lifecycle task obtains a bounded and reproducible closure policy; Purpose: deciding and handoff preparation; Scope: purpose-policy dispatch and the five accepted lifecycle purposes; Rationale: this view shows the distinct application behaviors selected by the declared task purpose.",
+      "included_elements": [
+        "grag-purpose-closure",
+        "grag-intent-decision-policy",
+        "grag-implementation-policy",
+        "grag-repair-policy",
+        "grag-audit-policy",
+        "grag-graph-tidy-policy",
+        "grag-endpoint-closure"
+      ],
+      "included_relationships": [
+        "grag-rel-purpose-intent",
+        "grag-rel-purpose-implementation",
+        "grag-rel-purpose-repair",
+        "grag-rel-purpose-audit",
+        "grag-rel-purpose-tidy"
+      ]
+    },
+    {
+      "view_id": "grag-purpose-policies-b",
+      "view_name": "Graph RAG Purpose Policies B",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: purpose-specific results converge on common structural integrity rules; Purpose: deciding and handoff preparation; Scope: five lifecycle policies, relationship endpoints, and complete Views; Rationale: this companion view preserves the shared closure obligations without exceeding the repository View element limit.",
+      "included_elements": [
+        "grag-intent-decision-policy",
+        "grag-implementation-policy",
+        "grag-repair-policy",
+        "grag-audit-policy",
+        "grag-graph-tidy-policy",
+        "grag-endpoint-closure",
+        "grag-view-closure"
+      ],
+      "included_relationships": [
+        "grag-rel-endpoints-views"
+      ]
+    },
+    {
+      "view_id": "grag-integrity-explainability",
+      "view_name": "Graph RAG Integrity and Explainability",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: every returned relationship and View is coherent and every object has explainable inclusion provenance; Purpose: deciding and handoff preparation; Scope: structural closure, provenance evidence, canonical authority, and coherent outcome; Rationale: this view explains how application behavior preserves graph meaning for Agent consumers.",
+      "included_elements": [
+        "grag-query-service",
+        "grag-coherent-context",
+        "grag-endpoint-closure",
+        "grag-view-closure",
+        "grag-provenance",
+        "grag-quality-gate"
+      ],
+      "included_relationships": [
+        "grag-rel-service-outcome",
+        "grag-rel-endpoints-views",
+        "grag-rel-views-provenance",
+        "grag-rel-provenance-quality"
+      ]
+    },
+    {
+      "view_id": "grag-index-consistency",
+      "view_name": "Graph RAG Index Consistency",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic retrieval never contradicts the canonical graph version; Purpose: deciding and handoff preparation; Scope: all-mutation index lifecycle, alignment states, stale-query rejection, and canonical read continuity; Rationale: this view models the application and data dependencies governing semantic-query availability.",
+      "included_elements": [
+        "grag-query-service",
+        "grag-canonical-graph",
+        "grag-mode-validation",
+        "grag-seed-retrieval",
+        "grag-semantic-index",
+        "grag-index-lifecycle",
+        "grag-alignment-constraint"
+      ],
+      "included_relationships": [
+        "grag-rel-validation-seeds",
+        "grag-rel-lifecycle-canonical",
+        "grag-rel-lifecycle-index",
+        "grag-rel-lifecycle-validation",
+        "grag-rel-alignment-service"
+      ]
+    },
+    {
+      "view_id": "grag-vertical-chain-a",
+      "view_name": "Graph RAG Vertical Dependency A",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: upstream version and request prerequisites are visible in their business dependency order; Purpose: handoff preparation; Scope: canonical mutation through purpose-policy selection; Rationale: this view instantiates the first half of the accepted vertical dependency chain and makes prerequisite direction explicit.",
+      "included_elements": [
+        "grag-canonical-graph",
+        "grag-mode-validation",
+        "grag-seed-retrieval",
+        "grag-purpose-closure",
+        "grag-semantic-index",
+        "grag-index-lifecycle",
+        "grag-alignment-constraint"
+      ],
+      "included_relationships": [
+        "grag-rel-validation-seeds",
+        "grag-rel-seeds-closure",
+        "grag-rel-lifecycle-canonical",
+        "grag-rel-lifecycle-index",
+        "grag-rel-lifecycle-validation"
+      ]
+    },
+    {
+      "view_id": "grag-quality-capacity",
+      "view_name": "Graph RAG Quality and Capacity Acceptance",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: phase-1 retrieval is accepted through approved business evidence while undecided capacity controls remain explicit; Purpose: deciding and handoff preparation; Scope: quality gate, observed precision and cardinality, coherent outcome, and deferred phase-2 capacity governance; Rationale: this view belongs under the acceptance-delivery anchor because it defines release evidence and the residual decision needed for later delivery.",
+      "included_elements": [
+        "grag-goal",
+        "grag-query-service",
+        "grag-coherent-context",
+        "grag-seed-retrieval",
+        "grag-provenance",
+        "grag-quality-gate",
+        "grag-capacity-residual"
+      ],
+      "included_relationships": [
+        "grag-rel-service-outcome",
+        "grag-rel-provenance-quality",
+        "grag-rel-quality-capacity"
+      ]
+    },
+    {
+      "view_id": "grag-vertical-chain-b",
+      "view_name": "Graph RAG Vertical Dependency B",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: closure, provenance, quality proof, and deferred capacity decisions occur in an explicit delivery sequence; Purpose: handoff preparation; Scope: purpose expansion through phase-2 decision evidence; Rationale: this view instantiates the acceptance-facing half of the vertical dependency chain without mixing it with request or index design concerns.",
+      "included_elements": [
+        "grag-coherent-context",
+        "grag-purpose-closure",
+        "grag-endpoint-closure",
+        "grag-view-closure",
+        "grag-provenance",
+        "grag-quality-gate",
+        "grag-capacity-residual"
+      ],
+      "included_relationships": [
+        "grag-rel-purpose-endpoints",
+        "grag-rel-endpoints-views",
+        "grag-rel-views-provenance",
+        "grag-rel-provenance-quality",
+        "grag-rel-quality-capacity"
+      ]
+    },
+    {
+      "view_id": "grag-tidy-canonical-usage",
+      "view_name": "Graph RAG Tidy Canonical Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: graph-tidy consumers must see complete canonical identity, referential integrity, View membership, and global invariants; Purpose: deciding and handoff preparation; Scope: graph-tidy purpose selection and complete canonical snapshot access; Rationale: this view isolates the graph-tidy full-read application usage boundary from semantic retrieval and request-validation concerns.",
+      "included_elements": [
+        "grag-query-service",
+        "grag-canonical-graph",
+        "grag-purpose-closure",
+        "grag-graph-tidy-policy"
+      ],
+      "included_relationships": [
+        "grag-rel-query-canonical",
+        "grag-rel-purpose-tidy",
+        "grag-rel-tidy-canonical"
       ]
     }
   ]
