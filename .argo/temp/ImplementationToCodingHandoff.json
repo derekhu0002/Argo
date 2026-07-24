@@ -1,0 +1,239 @@
+{
+  "stage": "implementation-to-coding",
+  "generatedAt": "2026-07-24T11:42:00.000Z",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Implement the compatible getSystemArchitecture query boundary: preserve no-argument complete canonical reads, carry explicit purpose, reject audit without subject, and force graph-tidy to bypass semantic retrieval for the complete canonical snapshot.",
+  "implementationContracts": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md"
+  ],
+  "explicitEntrypoints": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-01-ConsumerRole",
+      "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
+      "controlPoint": "Execute the unchanged downstream no-argument consumer through getSystemArchitecture.",
+      "observationPoint": "Compare the returned document with every canonical Element, Relationship, View, and membership.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess",
+      "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
+      "controlPoint": "Run the established no-argument intent-context consumption process.",
+      "observationPoint": "Observe complete canonical graph availability with no consumer migration.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-01",
+      "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
+      "controlPoint": "Invoke the existing service boundary without a query object.",
+      "observationPoint": "Compare externally observable graph results with the authoritative canonical snapshot.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-02",
+      "entryPath": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+      "controlPoint": "Submit a no-argument full-snapshot request.",
+      "observationPoint": "Inspect canonical object completeness, uniqueness, and View membership.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
+      "entryPath": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+      "controlPoint": "Read the authoritative canonical graph through the public query boundary.",
+      "observationPoint": "Compare returned Element, Relationship, and View identities and memberships exactly once.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
+      "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
+      "controlPoint": "Send equal intent text with explicit implementation-design and audit purposes, omitting the audit subject.",
+      "observationPoint": "Inspect normalized purpose data and the audit request disposition before retrieval.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
+      "failureReason": "Expected implementation-design purpose metadata, but getSystemArchitecture ignored the query object: DT03_PURPOSE_NOT_PRESERVED."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
+      "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
+      "controlPoint": "Cross the mode and purpose gate with explicit implementation-design and audit requests.",
+      "observationPoint": "Observe purpose preservation and AUDIT_SUBJECT_REQUIRED rejection.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
+      "failureReason": "Expected implementation-design purpose metadata, but getSystemArchitecture ignored the query object: DT03_PURPOSE_NOT_PRESERVED."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
+      "entryPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
+      "controlPoint": "Submit an explicit graph-tidy mutation-preparation request.",
+      "observationPoint": "Inspect full-snapshot mode, semantic-retrieval bypass evidence, and complete canonical content.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runGraphTidyFullSnapshot.js",
+      "failureReason": "Expected graph-tidy full-snapshot metadata, but getSystemArchitecture ignored the query object: DT12_GRAPH_TIDY_MODE_FAILURE."
+    }
+  ],
+  "criticalNonExplicitTests": [
+    {
+      "name": "Intent query architecture boundary",
+      "path": "tests/architecture/intent-query/architecture-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Inspect the unified gateway and query runtime ownership boundary; protected baseline is OVERALL_ARCHITECTURE.md.",
+      "observationPoint": "The gateway delegates while systemarchitecture-mcp-server.js owns getSystemArchitecture.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Intent query dependency direction",
+      "path": "tests/architecture/intent-query/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Inspect runtime dependency declarations; protected boundary excludes all tests/ paths.",
+      "observationPoint": "Production runtime modules do not depend on test assets.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Explicit intent query entrypoint correctness",
+      "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "Inspect the four frozen entry files and protected Harness abstraction.",
+      "observationPoint": "Every entry preserves GIVEN/WHEN/THEN and hides low-level plumbing.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Intent query implementation traceability",
+      "path": "tests/architecture/intent-query/implementation-traceability.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "Inspect seven intent IDs, root implements mappings, mounted paths, and physical entry files; protected baseline is SystemArchitecture.json.",
+      "observationPoint": "All seven scope elements and all four unique physical entries remain traceable.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "supportingNonExplicitTests": [],
+  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "codingTargets": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "DT03_PURPOSE_NOT_PRESERVED",
+      "nextAction": "Add the optional nested query DTO to the getSystemArchitecture schema and validate explicit purpose, intent, and audit subject before retrieval."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "DT12_GRAPH_TIDY_MODE_FAILURE",
+      "nextAction": "Dispatch graph-tidy directly to the canonical full snapshot and return normalized full-snapshot and semantic-bypass metadata."
+    }
+  ],
+  "taskExecutionPlan": {
+    "executionStrategy": "Implement the deep query boundary in dependency order while keeping all frozen files read-only; run targeted entrypoints after each task and the full architecture runner after both tasks.",
+    "tasks": [
+      {
+        "taskId": "QUERY-01",
+        "title": "Validate explicit query intent",
+        "objective": "Preserve legacy no-argument behavior while accepting and normalizing an optional nested query request.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-01-ConsumerRole",
+          "ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess",
+          "ExplicitAcceptanceTestcase-DT-01",
+          "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
+          "ExplicitAcceptanceTestcase-DT-03"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "Extend only the getSystemArchitecture input schema with an optional nested query object.",
+          "Normalize explicit purpose without inferring it from text or caller identity.",
+          "Reject audit without a non-empty subject using AUDIT_SUBJECT_REQUIRED.",
+          "Run DT-01 and DT-03 entrypoints without modifying frozen files."
+        ],
+        "completionSignal": "DT-01 remains passed and runQueryPurposeValidation.js passes."
+      },
+      {
+        "taskId": "QUERY-02",
+        "title": "Route graph-tidy to canonical full snapshot",
+        "objective": "Make graph-tidy bypass semantic retrieval and expose complete canonical data with explicit mode evidence.",
+        "dependsOn": [
+          "QUERY-01"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-02",
+          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
+          "ExplicitAcceptanceTestcase-DT-12"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "Select full-snapshot mode for graph-tidy before any semantic retrieval path.",
+          "Return mode full-snapshot and semanticRetrieval bypassed metadata.",
+          "Return the unchanged complete canonical document.",
+          "Run DT-02 and DT-12 entrypoints without modifying frozen files."
+        ],
+        "completionSignal": "DT-02 remains passed and runGraphTidyFullSnapshot.js passes."
+      },
+      {
+        "taskId": "QUERY-03",
+        "title": "Verify compatible query delivery",
+        "objective": "Prove behavior, architecture boundaries, and deliveryStatus without weakening frozen expectations.",
+        "dependsOn": [
+          "QUERY-01",
+          "QUERY-02"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-01",
+          "ExplicitAcceptanceTestcase-DT-02",
+          "ExplicitAcceptanceTestcase-DT-03",
+          "ExplicitAcceptanceTestcase-DT-12"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js",
+          "design/KG/test-failure-records.json",
+          "design/KG/SystemArchitecture.json"
+        ],
+        "steps": [
+          "Run all four explicit physical entrypoints.",
+          "Run all four frozen critical guardrails.",
+          "Run the complete argo architecture test runner and retain runner-owned deliveryStatus and failure-record updates.",
+          "Report pre-existing out-of-scope invalid-criteria records separately from this slice."
+        ],
+        "completionSignal": "All eight handoff-scoped mounted testcase executions pass; no handoff-scoped failure remains in test-failure-records.json."
+      }
+    ]
+  },
+  "frozenFiles": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    "tests/explicit/entries/runGraphQueryCompatibility.js",
+    "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+    "tests/explicit/entries/runQueryPurposeValidation.js",
+    "tests/explicit/entries/runGraphTidyFullSnapshot.js",
+    "tests/architecture/intent-query/architecture-boundary.guard.js",
+    "tests/architecture/intent-query/dependency-direction.guard.js",
+    "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/intent-query/implementation-traceability.guard.js",
+    "tests/explicit/entries/runCoherentIntentReading.js",
+    "tests/explicit/entries/runIndependentSemanticSeeds.js",
+    "tests/explicit/entries/runPurposePolicyClosure.js",
+    "tests/explicit/entries/runIntentDecisionClosure.js",
+    "tests/explicit/entries/runImplementationDesignClosure.js",
+    "tests/explicit/entries/runCodingRepairClosure.js",
+    "tests/explicit/entries/runAuditProofClosure.js",
+    "tests/explicit/entries/runRelationshipEndpointClosure.js",
+    "tests/explicit/entries/runCompleteViewClosure.js",
+    "tests/explicit/entries/runFirstInclusionProvenance.js",
+    "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "tests/explicit/entries/runStaleSemanticQueryRejection.js",
+    "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "tests/explicit/entries/runCapacityEvidence.js"
+  ],
+  "openGaps": [
+    "Handoff scope expected failures: DT-03 purpose/audit validation and DT-12 graph-tidy mode metadata are not implemented.",
+    "Out-of-scope baseline: 16 mounted testcases outside DT-01/02/03/12 are now executable and fail with business-readable missing-implementation signals; they are frozen evidence but are not Coding targets in this handoff."
+  ]
+}
