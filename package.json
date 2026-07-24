@@ -164,6 +164,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run compile:webviews",
     "compile:webviews": "node .argo/scripts/buildWebviews.js",
+    "init:argo-harness": "node .argo/scripts/ensureArgoHarnessEnvironment.js",
+    "check:argo-harness": "node .argo/scripts/ensureArgoHarnessEnvironment.js --check-only",
     "sync:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js",
     "verify:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js --verify",
     "watch": "tsc -watch -p ./",

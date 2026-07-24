@@ -91,6 +91,12 @@
           "view_name": "AcceptanceDeliveryViewpoint"
         }
       ]
+    },
+    {
+      "id": "neo4j-apply-test-20260724",
+      "name": "Neo4jApplyMutationTestElement",
+      "type": "Requirement",
+      "description": "Viewpoint: AcceptanceDeliveryViewpoint; Concern: acceptance and delivery synchronization verification; Purpose: auditing; Scope: MCP apply mutation write-path verification for the canonical intent graph; Rationale: this temporary test element exists only to verify that applySystemArchitectureMutation writes the canonical JSON graph and synchronizes Neo4j behind the MCP boundary."
     }
   ],
   "relationships": [
@@ -182,7 +188,9 @@
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
       "description": "ArchiMate-inspired implementation and migration viewpoint extended with ARGO acceptance semantics. Stakeholders: business acceptors, project managers, operational managers, enterprise architects, delivery owners, and downstream agents. Concerns: acceptance control points, observation points, risk, work package scope, deliverables, plateaus, gaps, migration order, cross-cutting concerns, and consistency between delivery dependencies and architecture dependencies. Purpose: deciding and informing, with enough design detail to plan delivery. Scope: implementation and migration plus explicit business acceptance semantics. Use this view to answer how the change will be accepted, what must be observed, which work packages or plateaus are involved, what depends on what, and what risks could invalidate delivery. Typical elements: Goal, Outcome, Requirement, Constraint, Work Package, Deliverable, Implementation Event, Plateau, Gap, Business Actor, Business Role, and core elements affected by delivery. Do not use this view as a backlog dump; every item must affect acceptance, sequencing, or risk.",
-      "included_elements": [],
+      "included_elements": [
+        "neo4j-apply-test-20260724"
+      ],
       "included_relationships": []
     },
     {
