@@ -6,7 +6,7 @@ const neo4j = require('neo4j-driver');
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const DEFAULT_NEO4J_URI = 'neo4j://127.0.0.1:7687';
 const DEFAULT_NEO4J_USERNAME = 'neo4j';
-const DEFAULT_NEO4J_PASSWORD = '11111111';
+const DEFAULT_NEO4J_PASSWORD = '1357924680';
 const SYNC_STATE_RELATIVE_PATH = '.argo/temp/neo4j-system-architecture-sync-state.json';
 
 function getRepoRoot() {
