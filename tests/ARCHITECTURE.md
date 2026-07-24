@@ -41,7 +41,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/runExternalCredentialBoundary.js`
 - `tests/explicit/entries/runCanonicalProjectionAuthority.js`
 - `tests/explicit/entries/runSevenWaveDeliveryGates.js`
-- `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js`
+
+The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as out-of-scope runner evidence. It is not an explicit handoff entry because TS-09 is not mounted in the committed source intent graph.
 
 The following globally mounted entrypoints are physicalized for the runner and
 remain outside the compatible-query Coding targets:
@@ -75,6 +76,6 @@ remain outside the compatible-query Coding targets:
 - `tests/architecture/production-graph-rag/credential-source-policy.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 - `tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js` — `KeyImplementationTraceabilityGuard`
 
-The coding-scope authorization guard freezes TS-08/TS-09 as mounted evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope. The scoped-delivery attribution guard uses only committed mounted TS-07 evidence, handoff scope, runner failure records, and runner-owned delivery status.
+The coding-scope authorization guard freezes mounted TS-08 and recorded TS-09 evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope. The scoped-delivery attribution guard uses only committed mounted TS-07 evidence, handoff scope, runner failure records, and runner-owned delivery status.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js` and `tests/harness/productionGraphRagHarness.js`, are frozen during Coding/Repair.

@@ -48,3 +48,4 @@
 - Scoped attribution relies only on committed mounted TS-07 evidence, handoff scope, runner failure records, and committed runner-owned delivery evidence; uncommitted parallel intent relationships are not evidence.
 - Added a frozen critical traceability guard for this attribution and a W2-C7 resume task that authorizes Coding only to verify and commit the already implemented C1-C6 files.
 - Because the handoff completion semantics and execution plan changed, global human reapproval is required before Coding resumes.
+- Clean-checkout validation showed TS-09 is not mounted in the committed source intent graph. Its latest `TS09_NODE_ADAPTER_REQUIRED` result is therefore retained in `outOfScopeFailureEvidence`, not in `explicitEntrypoints`; the physical path remains frozen and unauthorized.

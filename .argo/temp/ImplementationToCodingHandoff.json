@@ -65,15 +65,17 @@
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
       "failureReason": "TS08_GATE_CATEGORY_MISSING"
-    },
+    }
+  ],
+  "outOfScopeFailureEvidence": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
       "entryPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
-      "controlPoint": "Generate and persist embeddings for affected Element, ArchitectureRelationship, and View records.",
-      "observationPoint": "Observe complete model evidence, no plugin or credential leakage, and non-Aligned partial persistence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
-      "failureReason": "TS09_NODE_ADAPTER_REQUIRED"
+      "failureReason": "TS09_NODE_ADAPTER_REQUIRED",
+      "evidenceSource": "design/KG/test-failure-records.json",
+      "scopeDisposition": "Frozen runner evidence only; not mounted in the committed source intent graph and not authorized for implementation."
     }
   ],
   "criticalNonExplicitTests": [
@@ -362,7 +364,7 @@
   ],
   "openGaps": [
     "The W2 provider/model/version/dimensions remain intentionally unselected; Coding must implement the blocking gate, not choose values.",
-    "ExplicitAcceptanceTestcase-TS-08 and ExplicitAcceptanceTestcase-TS-09 are physicalized and frozen only to satisfy global mounted-path validation; coding-scope-authorization.guard.js prohibits them and adapter/lifecycle work from codingTargets, task tasks, and completion conditions.",
+    "ExplicitAcceptanceTestcase-TS-08 is mounted and frozen; the TS-09 path and latest runner failure are retained as frozen out-of-scope evidence because TS-09 is not mounted in the committed source intent graph. coding-scope-authorization.guard.js prohibits both from codingTargets, task steps, and completion conditions.",
     "The committed runner evidence records TS-07 as passed while global grag-credential-boundary remains runner-owned and not_delivered. This handoff accepts TS-07 as scoped evidence only and does not authorize intent relationship changes, TS-09 implementation, or manual deliveryStatus changes."
   ]
 }
