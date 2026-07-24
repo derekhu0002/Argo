@@ -86,3 +86,47 @@
 - `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
 - `argo.validateSystemArchitecture`: passed.
 - Business open questions: none.
+
+## 2026-07-25 — Live Provider E2E Qualification
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: requirements managers, ICT architects, runtime owners, and security owners need real-provider evidence and secret isolation to be explicit, decidable release requirements rather than implementation assumptions.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- View binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because the approved Live E2E strengthens the existing embedding Requirement and credential Constraint without adding TS-09 adapter/lifecycle scope.
+- Human approval: provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`; model `qwen3.7-text-embedding`; qualification label `qualification-2026-07-25` with supplier alias drift acknowledged; explicit dimensions `1024`; approved Beijing endpoint; process secret source name `QWEN_KEY`; opt-in network and controlled-Neo4j policies; both new mounted testcases; and the complete updated handoff.
+- Secret handling: Intent Design did not read, record, use, or create a secret value and did not create `.env`.
+
+### Coverage matrix
+
+- `grag-production-runtime` — `functionalPoint.TS-01` → `ExplicitAcceptanceTestcase-TS-01`.
+- `grag-native-retrieval-service` — `functionalPoint.TS-01-native` → `ExplicitAcceptanceTestcase-TS-01-Native`.
+- `grag-embedding-qualification` — `functionalPoint.TS-06` → `ExplicitAcceptanceTestcase-TS-06`; `functionalPoint.TS-06-provider-e2e` → `ExplicitAcceptanceTestcase-TS-06-Provider-E2E`.
+- `grag-credential-boundary` — `functionalPoint.TS-07` → `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` → `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+- `grag-canonical-graph` — `functionalPoint.DT-02-authoritative-complete-snapshot` → `ExplicitAcceptanceTestcase-DT-02-CanonicalGraph`; `functionalPoint.TS-02-canonical-authority` → `ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority`.
+
+### Acceptance and dependency boundaries
+
+- Live evidence path: Node runtime → real provider → qualification/index gate → controlled Neo4j test instance.
+- The request must explicitly carry the approved model and dimensions; the response must be finite numeric values of length exactly 1024.
+- Provider errors, unapproved identity, omitted explicit model/dimensions, non-finite vectors, and dimension mismatch must produce zero index writes.
+- Live execution is explicit opt-in and restricted to controlled local or protected CI. Default/offline CI fake coverage is required but cannot substitute for Live E2E evidence.
+- `QWEN_KEY` is process/secret-manager supplied only. Secret material is excluded from `.env`, logs, Cypher text/parameters, graph state, runner failure records, snapshots, and test artifacts.
+- Local `.env` is approved only for non-sensitive configuration and must be gitignored; `.env.example` may be committed without secrets.
+- TS-09, adapter lifecycle, and incremental index lifecycle remain outside this handoff. Existing parallel graph context does not authorize them.
+- Existing runner-owned `deliveryStatus` values were preserved unchanged and were not used as evidence that the new physical entrypoints pass.
+
+### Downstream Implementation Design requirements
+
+- Define physical entrypoints for `runLiveEmbeddingProviderE2E.js` and `runLiveEmbeddingProviderSecretIsolation.js`.
+- Define critical guardrails for explicit opt-in networking, protected-CI execution, and preventing fake results from being reported as Live E2E.
+- Define the `.env` loader and non-sensitive configuration contract, with `QWEN_KEY` excluded from `.env` values.
+- Define a controlled disposable Neo4j test-instance boundary and verifiable zero-write observation point.
+- Define secret-redaction assertions over logs, Cypher text/parameters, graph data, failure records, snapshots, and test artifacts.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one View description update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
+- `argo.validateSystemArchitecture`: passed.
+- New physical entrypoints are downstream Implementation Design/Coding targets, not fabricated current pass evidence.
+- Business open questions and adequacy blockers: none.

@@ -1,8 +1,8 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-24T15:52:00Z",
+  "generatedAt": "2026-07-24T23:15:00Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Lock the production Graph RAG runtime to the Node.js and Neo4j mainline, require externally supplied Neo4j and embedding-provider credentials, preserve the canonical intent graph as authority over retrieval projection, and block index delivery unless embedding identity, version, and dimensions are explicitly approved.",
+  "summary": "Preserve the Node.js and Neo4j production mainline and canonical authority, and extend the approved embedding qualification and credential boundaries with an opt-in live Alibaba Cloud Model Studio OpenAI-compatible E2E gate. Index delivery requires an explicit qwen3.7-text-embedding request at dimensions 1024 under qualification-2026-07-25, a finite 1024-value response through a controlled Neo4j test instance, zero writes for errors or unapproved/mismatched configuration, and complete isolation of the process-injected QWEN_KEY secret.",
   "intentElementIds": [
     "grag-production-runtime",
     "grag-native-retrieval-service",
@@ -18,15 +18,21 @@
   ],
   "openQuestions": [],
   "notes": [
-    "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime, credential isolation, embedding qualification, and canonical authority are mandatory release requirements before index delivery; Purpose: designing, deciding, and handoff preparation.",
-    "Affected View: grag-native-embedding-release-requirements is an instance of Requirements Realization Viewpoint because it traces the approved requirement and constraint boundaries to the core runtime and native retrieval elements that realize them.",
-    "Human approval: on 2026-07-24 the human explicitly approved all five mounted ExplicitAcceptanceTestcase boundaries and the complete intent-to-implementation handoff.",
+    "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime, credential isolation, explicit provider qualification, real-provider evidence, and canonical authority are mandatory release requirements before index delivery; Purpose: designing, deciding, and handoff preparation.",
+    "Affected View: grag-native-embedding-release-requirements remains a Requirements Realization Viewpoint instance because it traces the strengthened qualification Requirement and credential Constraint to the existing runtime and native retrieval realizers; its membership and relationships are unchanged.",
+    "Global human approval: on 2026-07-25 the human explicitly approved provider alibaba-cloud-model-studio-openai-compatible-cn-beijing, model qwen3.7-text-embedding, qualification-2026-07-25 with supplier-alias drift acknowledged, dimensions 1024, the Beijing compatible-mode endpoint, QWEN_KEY as the secret source name, the live E2E policies, both new mounted testcase boundaries, and this updated intent-to-implementation handoff.",
     "Coverage: grag-production-runtime functionalPoint.TS-01 -> ExplicitAcceptanceTestcase-TS-01.",
     "Coverage: grag-native-retrieval-service functionalPoint.TS-01-native -> ExplicitAcceptanceTestcase-TS-01-Native.",
-    "Coverage: grag-embedding-qualification functionalPoint.TS-06 -> ExplicitAcceptanceTestcase-TS-06.",
-    "Coverage: grag-credential-boundary functionalPoint.TS-07 -> ExplicitAcceptanceTestcase-TS-07.",
+    "Coverage: grag-embedding-qualification functionalPoint.TS-06 -> ExplicitAcceptanceTestcase-TS-06; functionalPoint.TS-06-provider-e2e -> ExplicitAcceptanceTestcase-TS-06-Provider-E2E.",
+    "Coverage: grag-credential-boundary functionalPoint.TS-07 -> ExplicitAcceptanceTestcase-TS-07; functionalPoint.TS-07-provider-secret-isolation -> ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation.",
     "Coverage: grag-canonical-graph functionalPoint.DT-02-authoritative-complete-snapshot -> ExplicitAcceptanceTestcase-DT-02-CanonicalGraph; functionalPoint.TS-02-canonical-authority -> ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority.",
-    "The approved TS-01, TS-01-Native, TS-06, TS-07, and TS-02 Canonical Authority executable entrypoints are downstream Implementation Design and Coding delivery targets. Their current missing-script failure signals do not invalidate the approved intent boundary.",
-    "No deliveryStatus value was changed by Intent Design; delivery status remains runner-owned."
+    "Live boundary: Node runtime -> real provider -> qualification/index gate -> controlled Neo4j test instance. Network execution is explicit opt-in and restricted to controlled local or protected CI; default/offline CI fakes are required for deterministic checks but never substitute for live delivery evidence.",
+    "Failure boundary: omitted explicit model/dimensions, unapproved identity, provider error, non-finite response, or response length other than 1024 must produce zero index writes.",
+    "Secret boundary: QWEN_KEY is supplied only through process environment or protected secret injection; no secret value may enter .env, logs, Cypher text or parameters, graph state, failure records, snapshots, or test artifacts. Intent Design did not read or create any secret value or .env file.",
+    "Configuration boundary for downstream design: local .env is gitignored and non-sensitive only; committed .env.example contains names and non-secret examples only. Downstream configuration names are ARGO_EMBEDDING_BASE_URL, ARGO_EMBEDDING_MODEL, ARGO_EMBEDDING_PROVIDER, ARGO_EMBEDDING_MODEL_VERSION, and ARGO_EMBEDDING_DIMENSIONS; QWEN_KEY is excluded from .env values.",
+    "Implementation Design must define separate live E2E and secret-isolation entrypoints, critical opt-in/network and no-fake-substitution guardrails, an explicit .env loader/configuration contract, a controlled disposable Neo4j test-instance boundary with zero-write assertions, and redaction assertions across every observable artifact.",
+    "The new physical entrypoints tests/explicit/entries/runLiveEmbeddingProviderE2E.js and tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js are downstream delivery targets. Their absence at Intent Design time is not acceptance evidence and does not authorize fabricated pass status.",
+    "TS-09, embedding-provider-adapter lifecycle delivery, and incremental index lifecycle remain outside this handoff; no TS-09 element, testcase, relationship, or task authorization is included.",
+    "No deliveryStatus value was changed by Intent Design; values remain runner-owned and any currently displayed status predates execution of the new physical entrypoints."
   ]
 }

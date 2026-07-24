@@ -986,15 +986,35 @@
       "id": "grag-embedding-qualification",
       "name": "Embedding Model Qualification Gate",
       "type": "Requirement",
-      "description": "Provider/model/dimensions require human approval against multilingual, privacy, and offline needs before index delivery; no implicit default.",
+      "description": "W2 requires explicit human approval of provider identity, model identity, qualification version, dimensions, operating requirements, and opt-in live provider evidence before index delivery. The approved alias-based qualification version records possible supplier drift without claiming an immutable supplier revision; no implicit provider, model, dimensions, or endpoint default is permitted.",
       "attributes": [
         {
           "name": "decisionState",
-          "value": "open|human coordination required"
+          "value": "approved|provider=alibaba-cloud-model-studio-openai-compatible-cn-beijing; model=qwen3.7-text-embedding; qualificationVersion=qualification-2026-07-25; dimensions=1024; supplier alias drift explicitly acknowledged"
         },
         {
           "name": "functionalPoint.TS-06",
           "value": "{\"description\":\"Qualify and explicitly approve embedding choice.\",\"businessOutcome\":\"No implicit unsuitable model.\",\"observableBoundary\":\"Identity/version/dimensions and evidence exist or gate blocks.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06\"}"
+        },
+        {
+          "name": "functionalPoint.TS-06-provider-e2e",
+          "value": "{\"description\":\"Prove the explicitly approved embedding identity through an opt-in live provider request and controlled Neo4j index gate.\",\"businessOutcome\":\"Index delivery relies on real provider evidence for the approved alias qualification while remaining safe under provider drift or failure.\",\"observableBoundary\":\"Node runtime explicitly sends qwen3.7-text-embedding and dimensions 1024 to the approved Beijing OpenAI-compatible endpoint; the response is a finite numeric vector of exactly 1024 values; provider errors, unapproved identity, omitted explicit model/dimensions, or dimension mismatch produce zero index writes.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06-Provider-E2E\"}"
+        },
+        {
+          "name": "providerQualificationProfile",
+          "value": "provider=alibaba-cloud-model-studio-openai-compatible-cn-beijing|model=qwen3.7-text-embedding|qualificationVersion=qualification-2026-07-25|versionSemantics=human qualification label, supplier alias may drift and is not an immutable supplier revision|dimensions=1024|endpoint=https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+        },
+        {
+          "name": "liveE2ENetworkBoundary",
+          "value": "Explicit opt-in only; network access is allowed only in controlled local execution or protected CI with secret injection. Default/offline CI uses frozen fakes and never substitutes for live E2E delivery evidence."
+        },
+        {
+          "name": "requirementSource.live-provider-e2e",
+          "value": "Human-approved 2026-07-25: the approved Alibaba Cloud Model Studio OpenAI-compatible profile requires a real Node-to-provider-to-qualification/index-gate-to-controlled-Neo4j E2E before delivery."
+        },
+        {
+          "name": "acceptanceApproval.TS-06-Provider-E2E",
+          "value": "approvedByHuman=true|2026-07-25|chat approval"
         },
         {
           "name": "requirementSource.production-runtime-qualification",
@@ -1016,6 +1036,13 @@
           "type": "Acceptance Test",
           "Input": "Candidate models and coordinated requirements.",
           "acceptanceCriteria": "tests/explicit/entries/runEmbeddingQualificationGate.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
+          "description": "Acceptor control point: explicitly opt in to a Node.js live request using the human-approved provider identity, model identity, qualification version, endpoint, and dimensions, then exercise success, provider-error, unapproved, omitted-explicit-configuration, and dimension-mismatch paths through the index-delivery gate with a controlled Neo4j test instance. Observation point: the real provider receives explicit model and dimensions, returns a finite numeric vector of exactly 1024 values, successful evidence may reach the controlled index boundary, every invalid or failed case produces zero index writes, and offline/default CI results are never treated as live E2E evidence.",
+          "type": "Acceptance Test",
+          "Input": "Approved non-sensitive provider profile, a process-injected secret reference, controlled live-network opt-in, and controlled Neo4j test instance.",
+          "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js"
         }
       ]
     },
@@ -1023,11 +1050,27 @@
       "id": "grag-credential-boundary",
       "name": "External Production Credential Boundary",
       "type": "Constraint",
-      "description": "Production Neo4j and embedding credentials are externally supplied through secure configuration; no hardcoded fallback.",
+      "description": "Production Neo4j and embedding-provider credentials are supplied to the Node.js application through secure external configuration. Live provider E2E reads the embedding secret only from the process environment or a secret manager; secrets are never hardcoded, written to .env, transported through Cypher, or emitted to logs, graph state, runner records, snapshots, or test artifacts.",
       "attributes": [
         {
           "name": "functionalPoint.TS-07",
           "value": "{\"description\":\"Require external secure credentials.\",\"businessOutcome\":\"No embedded production secrets.\",\"observableBoundary\":\"Absent credentials fail safely.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07\"}"
+        },
+        {
+          "name": "functionalPoint.TS-07-provider-secret-isolation",
+          "value": "{\"description\":\"Keep the live embedding-provider credential isolated across configuration, execution, persistence, and evidence artifacts.\",\"businessOutcome\":\"A real provider can be verified without creating a durable or observable secret copy.\",\"observableBoundary\":\"The secret is sourced only from process environment variable QWEN_KEY or an equivalent protected secret injection, is never stored in .env, and does not appear in logs, Cypher text/parameters, graph data, failure records, snapshots, or test artifacts; absent secret blocks before network or index writes.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation\"}"
+        },
+        {
+          "name": "liveProviderConfigurationContract",
+          "value": "Local .env is gitignored and contains non-sensitive ARGO_EMBEDDING_BASE_URL, ARGO_EMBEDDING_MODEL, ARGO_EMBEDDING_PROVIDER, ARGO_EMBEDDING_MODEL_VERSION, and ARGO_EMBEDDING_DIMENSIONS only; committed .env.example contains names/non-secret examples only; QWEN_KEY remains process/secret-manager supplied and its value is never read into design artifacts."
+        },
+        {
+          "name": "requirementSource.live-provider-e2e",
+          "value": "Human-approved 2026-07-25: live provider verification uses process environment variable QWEN_KEY without recording or persisting its value, and requires redaction across every observable artifact."
+        },
+        {
+          "name": "acceptanceApproval.TS-07-Provider-Secret-Isolation",
+          "value": "approvedByHuman=true|2026-07-25|chat approval"
         },
         {
           "name": "requirementSource.production-runtime-qualification",
@@ -1049,6 +1092,13 @@
           "type": "Acceptance Test",
           "Input": "Credentials absent.",
           "acceptanceCriteria": "tests/explicit/entries/runExternalCredentialBoundary.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
+          "description": "Acceptor control point: execute the opt-in live provider E2E with the embedding secret supplied only through process environment variable QWEN_KEY, then inspect missing-secret behavior and all produced logs, Cypher text and parameters, graph data, runner failure records, snapshots, and test artifacts. Observation point: absent secret blocks before network/index writes; no secret value is written to .env or any inspected artifact; only approved non-sensitive provider configuration may be stored in local .env or committed .env.example.",
+          "type": "Acceptance Test",
+          "Input": "Approved non-sensitive provider profile, process-level secret reference QWEN_KEY without exposing its value, controlled network opt-in, and controlled Neo4j test instance.",
+          "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js"
         }
       ]
     },
@@ -2307,7 +2357,7 @@
       "view_name": "Native Technology and Embedding Release Requirements",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime boundary, credential isolation, embedding qualification, and canonical authority are explicit release requirements before index delivery; Purpose: designing, deciding, and handoff preparation; Scope: Node.js/Neo4j production mainline, native retrieval, approved embedding identity/version/dimensions, external credentials, canonical graph authority, and their acceptance implications; Rationale: this view traces the qualification requirement and credential constraint to the core elements that realize them, while exposing runtime selection and canonical authority as mandatory release evidence; index delivery remains blocked until every gate condition passes.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime boundary, credential isolation, explicit embedding qualification, real-provider evidence, and canonical authority are release requirements before index delivery; Purpose: designing, deciding, and handoff preparation; Scope: Node.js/Neo4j production mainline, native retrieval, the human-approved Alibaba Cloud Model Studio OpenAI-compatible provider profile, qualification-2026-07-25 with acknowledged alias drift, explicit dimensions 1024, opt-in live E2E through a controlled Neo4j instance, process/secret-manager credential isolation, and canonical graph authority; Rationale: this view traces qualification and credential constraints to the existing runtime and native retrieval realization path, requires live evidence without treating offline fakes as delivery proof, and preserves TS-09 adapter/lifecycle work outside this handoff.",
       "included_elements": [
         "grag-production-runtime",
         "grag-native-retrieval-service",
