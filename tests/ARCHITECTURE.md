@@ -9,7 +9,10 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/architecture/intent-query/` owns frozen critical non-explicit guardrails for boundaries, dependency direction, entry correctness, and traceability.
 - Explicit entrypoints preserve GIVEN / WHEN / THEN, semantic data names, control points, observation points, and readable business failure categories.
 - `tests/harness/productionGraphRagHarness.js` hides runtime composition, external configuration, injected Neo4j projection behavior, and canonical fixture plumbing for the W2 production boundary.
-- The W2 entrypoints freeze TS-01, TS-01-Native, TS-06, TS-07, and TS-02 Canonical Authority behavior, including release blocking for missing qualification, missing configuration, and implicit embedding defaults.
+- C1-C4 use independently callable configuration, qualification, canonical-authority, and native-retrieval public boundaries so missing runtime composition cannot mask their completion signals.
+- TS-06 isolates missing provider, model identity, version, and dimensions, and separately prohibits implicit defaults.
+- TS-07 isolates every missing external credential field, blocks credential-free startup and semantic query, scans source defaults, and protects the Cypher credential boundary.
+- TS-01-Native uses a Harness-owned query probe to prove exact request propagation and exactly one native-boundary call.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
 - DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
@@ -67,5 +70,8 @@ remain outside the compatible-query Coding targets:
 - `tests/architecture/production-graph-rag/dependency-direction.guard.js` — `DependencyDirectionGuard`
 - `tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 - `tests/architecture/production-graph-rag/implementation-traceability.guard.js` — `KeyImplementationTraceabilityGuard`
+- `tests/architecture/production-graph-rag/coding-scope-authorization.guard.js` — `ArchitectureBoundaryGuard`
+
+The coding-scope authorization guard freezes TS-08/TS-09 as mounted evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js` and `tests/harness/productionGraphRagHarness.js`, are frozen during Coding/Repair.

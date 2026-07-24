@@ -24,3 +24,11 @@
 - Added four production Graph RAG critical guards for architecture boundary, dependency direction, explicit entrypoint correctness, and key implementation traceability; all pass before Coding.
 - Existing code reality risk: `.argo/scripts/neo4j-system-architecture-store.js` contains hardcoded Neo4j URI/username/password defaults. Coding must remove these through the external configuration boundary; Implementation Design does not edit production behavior.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 testcase audit correction
+
+- Removed the runtime-composition masking defect: C1 external configuration, C2 embedding qualification, C3 canonical authority, and C4 Neo4j-native retrieval now target independently callable public boundaries and fail with four distinct missing-boundary signals.
+- TS-06 freezes isolated provider, model identity, version, and dimensions omissions plus unapproved and implicit-default cases.
+- TS-07 freezes four isolated credential/configuration omissions, credential-free startup and semantic query, hardcoded/default source scanning, and Cypher credential-boundary scanning.
+- TS-01-Native freezes a Harness-owned query probe, exact request propagation, and exactly one invocation so a hardcoded `neo4j-native` label cannot satisfy acceptance.
+- Added `coding-scope-authorization.guard.js`: TS-08/TS-09 remain mounted and frozen, but their testcase names and adapter/lifecycle implementation cannot appear in codingTargets, task targets/steps, or completion conditions.

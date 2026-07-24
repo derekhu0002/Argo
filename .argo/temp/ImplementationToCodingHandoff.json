@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T00:45:00+08:00",
+  "generatedAt": "2026-07-25T01:05:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "Implement the approved W2 production Graph RAG boundary on the Node.js and Neo4j mainline. External credentials and explicit embedding provider/model/version/dimensions approval are mandatory release gates; canonical JSON remains authoritative over the Neo4j projection.",
   "implementationContracts": [
@@ -21,29 +21,29 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-01-Native",
       "entryPath": "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
-      "controlPoint": "Submit an aligned production semantic query through an injected Neo4j-native retrieval boundary.",
-      "observationPoint": "Observe native platform evidence and canonical identity/version authority.",
+      "controlPoint": "Call the Neo4j-native retrieval public boundary with a semantic request and an injected counting query probe.",
+      "observationPoint": "Observe exact request propagation, exactly one probe invocation, native platform evidence, and canonical version evidence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement the contracted Node.js production boundary"
+      "failureReason": "NEO4J_NATIVE_RETRIEVAL_BOUNDARY_MISSING: implement the independently callable native retrieval boundary"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-06",
       "entryPath": "tests/explicit/entries/runEmbeddingQualificationGate.js",
-      "controlPoint": "Evaluate index delivery with unapproved, incomplete, and implicitly defaulted embedding identities.",
-      "observationPoint": "Observe stable blocking categories for absent approval, missing provider/model/version/dimensions, and implicit defaults.",
+      "controlPoint": "Call the qualification public boundary with unapproved identity, then omit provider, model, version, and dimensions one at a time, then mark identity as implicitly defaulted.",
+      "observationPoint": "Observe independent field-specific blocking evidence and prohibition of implicit defaults without runtime composition.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingQualificationGate.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement qualification and configuration gates before index delivery"
+      "failureReason": "EMBEDDING_QUALIFICATION_BOUNDARY_MISSING: implement the independently callable qualification gate"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
       "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-      "controlPoint": "Evaluate production delivery with Neo4j and embedding-provider credentials absent.",
-      "observationPoint": "Observe EXTERNAL_CREDENTIALS_REQUIRED and no source, environment-name, or Cypher fallback.",
+      "controlPoint": "Call external configuration with each credential field missing, attempt credential-free startup/query, then scan production source and Cypher boundaries.",
+      "observationPoint": "Observe exact missing fields, blocked startup/query, no hardcoded/default credentials, and no Cypher credential transport.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement the external credential boundary and remove hardcoded credential defaults"
+      "failureReason": "EXTERNAL_PRODUCTION_CONFIG_BOUNDARY_MISSING: implement the independently callable external configuration boundary"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
@@ -60,7 +60,7 @@
       "observationPoint": "Observe canonical state winning or CANONICAL_PROJECTION_CONFLICT; projection-only intent is never returned.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runCanonicalProjectionAuthority.js",
-      "failureReason": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING: implement projection authority enforcement"
+      "failureReason": "CANONICAL_PROJECTION_AUTHORITY_BOUNDARY_MISSING: implement the independently callable authority policy"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
@@ -113,6 +113,14 @@
       "controlPoint": "Inspect intent anchors, contract mappings, mounted acceptance paths, and physical files.",
       "observationPoint": "TS-01, TS-01-Native, TS-06, TS-07, and both canonical entrypoints remain traceable.",
       "expectedStatus": "passed"
+    },
+    {
+      "name": "W2 coding scope authorization",
+      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Inspect codingTargets, task testcase references, target paths, steps, completion conditions, and frozen mounted evidence.",
+      "observationPoint": "TS-08/TS-09 remain frozen and globally runnable but adapter/lifecycle implementation is not authorized by this handoff.",
+      "expectedStatus": "passed"
     }
   ],
   "supportingNonExplicitTests": [],
@@ -155,7 +163,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement inward release policies first, then adapters and composition, then integrate the existing MCP boundary; run frozen entrypoints and all critical guards after each dependency layer.",
+    "executionStrategy": "Implement and verify the four independently callable inward boundaries first, then compose the runtime, then integrate MCP. C1-C4 completion signals must pass without productionGraphRagRuntime.js; TS-08/TS-09 never authorize adapter/lifecycle work.",
     "tasks": [
       {
         "taskId": "W2-C1",
@@ -170,12 +178,13 @@
           ".argo/scripts/neo4j-system-architecture-store.js"
         ],
         "steps": [
-          "Define the explicit external configuration input.",
-          "Reject each missing required credential with EXTERNAL_CREDENTIALS_REQUIRED.",
+          "Export resolveExternalProductionConfig(configuration, context).",
+          "Reject each missing Neo4j URI, username, password, and embedding credential independently with EXTERNAL_CREDENTIALS_REQUIRED and error.field.",
+          "Block both credential-free startup and semantic-query operations.",
           "Remove hardcoded URI, username, password, and provider credential fallback behavior.",
           "Keep provider credentials out of Cypher parameters and query text."
         ],
-        "completionSignal": "runExternalCredentialBoundary.js passes and no production source contains credential literals or fallback secrets."
+        "completionSignal": "runExternalCredentialBoundary.js passes all four isolated missing-field cases, start/query blocking, hardcoded/default source scan, and Cypher credential-boundary scan without production runtime composition."
       },
       {
         "taskId": "W2-C2",
@@ -189,11 +198,12 @@
           ".argo/scripts/graph-rag/embeddingQualificationGate.js"
         ],
         "steps": [
+          "Export evaluateEmbeddingQualification(qualification).",
           "Require approvedByHuman=true.",
-          "Require non-empty provider, model, version, and positive integer dimensions.",
+          "Reject missing provider, model identity, version, and positive integer dimensions independently with error.field.",
           "Reject any implicit-default source before index delivery."
         ],
-        "completionSignal": "runEmbeddingQualificationGate.js passes all three blocking cases without selecting a model."
+        "completionSignal": "runEmbeddingQualificationGate.js passes approval, four isolated missing-field, and implicit-default blocking cases without production runtime composition or selecting a model."
       },
       {
         "taskId": "W2-C3",
@@ -208,20 +218,18 @@
           ".argo/scripts/graph-rag/canonicalProjectionAuthority.js"
         ],
         "steps": [
+          "Export enforceCanonicalProjectionAuthority(input).",
           "Compare projection canonical version and identities with injected canonical state.",
           "Reject conflicts with CANONICAL_PROJECTION_CONFLICT or replace them with canonical state.",
           "Preserve the existing no-argument complete snapshot."
         ],
-        "completionSignal": "Both canonical entrypoints pass and projection-only identities are never observable."
+        "completionSignal": "runCanonicalProjectionAuthority.js independently passes without production runtime composition, runCanonicalGraphFullSnapshot.js remains green, and projection-only identities are never observable."
       },
       {
         "taskId": "W2-C4",
         "title": "Build Neo4j-native retrieval",
         "objective": "Provide production seed retrieval through the Neo4j JavaScript driver with canonical evidence.",
-        "dependsOn": [
-          "W2-C1",
-          "W2-C3"
-        ],
+        "dependsOn": [],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-TS-01-Native"
         ],
@@ -229,11 +237,13 @@
           ".argo/scripts/graph-rag/neo4jNativeRetrieval.js"
         ],
         "steps": [
-          "Use only externally configured neo4j-driver connectivity.",
+          "Export createNeo4jNativeRetrieval(dependencies) with retrieve(request).",
+          "Forward the complete request exactly once to the injected query boundary.",
+          "Use only externally configured neo4j-driver connectivity in production composition.",
           "Return platform, canonical version, object type, and canonical identity for each seed.",
           "Avoid Python, external Graph RAG frameworks, and Neo4j embedding plugin procedures."
         ],
-        "completionSignal": "runNeo4jNativeRetrievalPlatform.js passes with injected aligned retrieval evidence."
+        "completionSignal": "runNeo4jNativeRetrievalPlatform.js independently proves exactly one injected boundary call, exact request propagation, and returned native evidence without production runtime composition."
       },
       {
         "taskId": "W2-C5",
@@ -280,7 +290,7 @@
         "steps": [
           "Delegate only semantic-query production behavior to the new runtime.",
           "Preserve no-argument full snapshots and graph-tidy bypass behavior.",
-          "Run every frozen explicit entrypoint and all four production Graph RAG critical guards."
+          "Run every authorized frozen explicit entrypoint and all five production Graph RAG critical guards."
         ],
         "completionSignal": "New W2 tests pass, existing compatibility tests do not regress, and full argo.runArchitectureTests reports the five scoped intent anchors delivered."
       }
@@ -299,10 +309,11 @@
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-graph-rag/implementation-traceability.guard.js"
+    "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js"
   ],
   "openGaps": [
     "The W2 provider/model/version/dimensions remain intentionally unselected; Coding must implement the blocking gate, not choose values.",
-    "ExplicitAcceptanceTestcase-TS-08 and ExplicitAcceptanceTestcase-TS-09 are physicalized and frozen only to satisfy global mounted-path validation; they remain outside Coding targets."
+    "ExplicitAcceptanceTestcase-TS-08 and ExplicitAcceptanceTestcase-TS-09 are physicalized and frozen only to satisfy global mounted-path validation; coding-scope-authorization.guard.js prohibits them and adapter/lifecycle work from codingTargets, task tasks, and completion conditions."
   ]
 }

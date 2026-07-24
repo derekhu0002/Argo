@@ -19,6 +19,10 @@ for (const ownership of [
   'embeddingQualificationGate.js',
   'neo4jNativeRetrieval.js',
   'canonicalProjectionAuthority.js',
+  'resolveExternalProductionConfig(configuration, context)',
+  'evaluateEmbeddingQualification(qualification)',
+  'enforceCanonicalProjectionAuthority(input)',
+  'createNeo4jNativeRetrieval(dependencies)',
   'createProductionGraphRagRuntime(dependencies)',
 ]) {
   assert(

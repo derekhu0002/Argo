@@ -12,6 +12,13 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 ## Public interface
 
+The four inward boundaries are independently callable and independently testable before runtime composition:
+
+- `resolveExternalProductionConfig(configuration, context)` identifies each missing Neo4j URI, username, password, or embedding credential and blocks both startup and semantic-query operations.
+- `evaluateEmbeddingQualification(qualification)` identifies absent approval and each missing provider, model identity, version, or dimensions field; it rejects implicit defaults.
+- `enforceCanonicalProjectionAuthority(input)` rejects or replaces stale/conflicting projection evidence without requiring runtime composition.
+- `createNeo4jNativeRetrieval(dependencies)` returns a `retrieve(request)` boundary that forwards each request exactly once to its injected Neo4j query boundary.
+
 `createProductionGraphRagRuntime(dependencies)` returns:
 
 - `querySemantic(request)` for production semantic queries.
@@ -29,11 +36,11 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 
 ## Local dependencies
 
-- Runtime composition may depend inward on the configuration, qualification, retrieval, and authority modules in this directory.
+- Runtime composition may depend inward on the configuration, qualification, retrieval, and authority modules in this directory; those modules never depend outward on runtime composition.
 - Neo4j retrieval may depend on `neo4j-driver`; no module here may depend on Python, an external Graph RAG framework, the Neo4j GenAI Plugin, or `tests/`.
 - Authority policy reads `design/KG/SystemArchitecture.json` through an injected canonical graph boundary and treats Neo4j as a projection only.
 - Credentials are values, never module-level defaults; provider credentials must never be interpolated into or transported through Cypher.
 
 ## Owned tests
 
-Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the four frozen guards in `tests/architecture/production-graph-rag/`.
+Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08/TS-09 adapter/lifecycle work from this handoff.

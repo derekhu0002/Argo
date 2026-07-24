@@ -13,17 +13,23 @@ const entryRequirements = new Map([
   ['tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js', [
     'productionGraphRagHarness.js',
     'TS01_NATIVE_RETRIEVAL_REQUIRED',
-    'TS01_NATIVE_CANONICAL_AUTHORITY_REQUIRED',
+    'TS01_NATIVE_BOUNDARY_CALL_COUNT',
+    'TS01_NATIVE_REQUEST_PROPAGATION',
   ]],
   ['tests/explicit/entries/runEmbeddingQualificationGate.js', [
     'productionGraphRagHarness.js',
     'EMBEDDING_QUALIFICATION_REQUIRED',
     'EMBEDDING_CONFIGURATION_REQUIRED',
     'IMPLICIT_EMBEDDING_DEFAULT_PROHIBITED',
+    "['provider', 'model', 'version', 'dimensions']",
   ]],
   ['tests/explicit/entries/runExternalCredentialBoundary.js', [
     'productionGraphRagHarness.js',
     'EXTERNAL_CREDENTIALS_REQUIRED',
+    "['neo4jUri', 'neo4jUsername', 'neo4jPassword', 'embeddingCredential']",
+    "['start', 'semantic-query']",
+    'TS07_HARDCODED_CREDENTIAL_DEFAULT',
+    'TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION',
   ]],
   ['tests/explicit/entries/runCanonicalGraphFullSnapshot.js', [
     'intentArchitectureQueryHarness.js',
