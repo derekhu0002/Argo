@@ -1,0 +1,32 @@
+{
+  "stage": "intent-to-implementation",
+  "generatedAt": "2026-07-24T15:52:00Z",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Lock the production Graph RAG runtime to the Node.js and Neo4j mainline, require externally supplied Neo4j and embedding-provider credentials, preserve the canonical intent graph as authority over retrieval projection, and block index delivery unless embedding identity, version, and dimensions are explicitly approved.",
+  "intentElementIds": [
+    "grag-production-runtime",
+    "grag-native-retrieval-service",
+    "grag-embedding-qualification",
+    "grag-credential-boundary",
+    "grag-canonical-graph"
+  ],
+  "relationshipIds": [
+    "grag-rel-runtime-native",
+    "grag-rel-native-canonical",
+    "grag-rel-embedding-native",
+    "grag-rel-credentials-runtime"
+  ],
+  "openQuestions": [],
+  "notes": [
+    "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime, credential isolation, embedding qualification, and canonical authority are mandatory release requirements before index delivery; Purpose: designing, deciding, and handoff preparation.",
+    "Affected View: grag-native-embedding-release-requirements is an instance of Requirements Realization Viewpoint because it traces the approved requirement and constraint boundaries to the core runtime and native retrieval elements that realize them.",
+    "Human approval: on 2026-07-24 the human explicitly approved all five mounted ExplicitAcceptanceTestcase boundaries and the complete intent-to-implementation handoff.",
+    "Coverage: grag-production-runtime functionalPoint.TS-01 -> ExplicitAcceptanceTestcase-TS-01.",
+    "Coverage: grag-native-retrieval-service functionalPoint.TS-01-native -> ExplicitAcceptanceTestcase-TS-01-Native.",
+    "Coverage: grag-embedding-qualification functionalPoint.TS-06 -> ExplicitAcceptanceTestcase-TS-06.",
+    "Coverage: grag-credential-boundary functionalPoint.TS-07 -> ExplicitAcceptanceTestcase-TS-07.",
+    "Coverage: grag-canonical-graph functionalPoint.DT-02-authoritative-complete-snapshot -> ExplicitAcceptanceTestcase-DT-02-CanonicalGraph; functionalPoint.TS-02-canonical-authority -> ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority.",
+    "The approved TS-01, TS-01-Native, TS-06, TS-07, and TS-02 Canonical Authority executable entrypoints are downstream Implementation Design and Coding delivery targets. Their current missing-script failure signals do not invalidate the approved intent boundary.",
+    "No deliveryStatus value was changed by Intent Design; delivery status remains runner-owned."
+  ]
+}

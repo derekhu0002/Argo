@@ -324,6 +324,18 @@
           "value": "{\"description\":\"Expose one authoritative complete snapshot including graph objects and View membership.\",\"businessOutcome\":\"Compatibility and mutation preparation use the same canonical authority.\",\"observableBoundary\":\"A full read exposes every canonical Element, Relationship, View, and membership without semantic omission.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02-CanonicalGraph\"}"
         },
         {
+          "name": "functionalPoint.TS-02-canonical-authority",
+          "value": "{\"description\":\"Keep canonical intent authoritative over Neo4j query projection.\",\"businessOutcome\":\"Retrieval cannot silently redefine approved intent.\",\"observableBoundary\":\"A stale or conflicting projection is rejected or yields to canonical state.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority\"}"
+        },
+        {
+          "name": "requirementSource.production-runtime-qualification",
+          "value": "Human-approved 2026-07-24: canonical graph authority is a mandatory release boundary for native retrieval."
+        },
+        {
+          "name": "acceptanceApproval.CanonicalAuthority",
+          "value": "approvedByHuman=true|2026-07-24|chat approval"
+        },
+        {
           "name": "deliveryStatus",
           "value": "not_delivered"
         }
@@ -915,6 +927,14 @@
           "value": "{\"description\":\"Run production queries without required Python sidecar.\",\"businessOutcome\":\"Preserve established runtime.\",\"observableBoundary\":\"Node/Neo4j path has no mandatory Python.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01\"}"
         },
         {
+          "name": "requirementSource.production-runtime-qualification",
+          "value": "Human-approved 2026-07-24: Node/Neo4j is the production mainline; TS-01 is mounted on grag-production-runtime."
+        },
+        {
+          "name": "acceptanceApproval.TS-01",
+          "value": "approvedByHuman=true|2026-07-24|chat approval"
+        },
+        {
           "name": "deliveryStatus",
           "value": "not_delivered"
         }
@@ -938,6 +958,14 @@
         {
           "name": "functionalPoint.TS-01-native",
           "value": "{\"description\":\"Provide Neo4j-native seed retrieval.\",\"businessOutcome\":\"Use selected production platform.\",\"observableBoundary\":\"Native evidence stays aligned to canonical authority.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01-Native\"}"
+        },
+        {
+          "name": "requirementSource.production-runtime-qualification",
+          "value": "Human-approved 2026-07-24: Neo4j-native retrieval is the selected production service and remains subordinate to canonical graph authority."
+        },
+        {
+          "name": "acceptanceApproval.TS-01-Native",
+          "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
           "name": "deliveryStatus",
@@ -969,6 +997,14 @@
           "value": "{\"description\":\"Qualify and explicitly approve embedding choice.\",\"businessOutcome\":\"No implicit unsuitable model.\",\"observableBoundary\":\"Identity/version/dimensions and evidence exist or gate blocks.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06\"}"
         },
         {
+          "name": "requirementSource.production-runtime-qualification",
+          "value": "Human-approved 2026-07-24: embedding identity, version, and dimensions require explicit approval; otherwise index delivery is blocked."
+        },
+        {
+          "name": "acceptanceApproval.TS-06",
+          "value": "approvedByHuman=true|2026-07-24|chat approval"
+        },
+        {
           "name": "deliveryStatus",
           "value": "not_delivered"
         }
@@ -992,6 +1028,14 @@
         {
           "name": "functionalPoint.TS-07",
           "value": "{\"description\":\"Require external secure credentials.\",\"businessOutcome\":\"No embedded production secrets.\",\"observableBoundary\":\"Absent credentials fail safely.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07\"}"
+        },
+        {
+          "name": "requirementSource.production-runtime-qualification",
+          "value": "Human-approved 2026-07-24: Neo4j and embedding credentials are externalized; absent credentials block safely."
+        },
+        {
+          "name": "acceptanceApproval.TS-07",
+          "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
           "name": "deliveryStatus",
@@ -1794,6 +1838,17 @@
       "target_name": "External Production Credential Boundary",
       "description": "The Node.js/Neo4j production mainline realizes the credential-isolation constraint by requiring externally supplied Neo4j and embedding credentials and by providing no hardcoded fallback; absent credentials block delivery safely.",
       "statement": "Node.js Graph RAG Production Runtime --(Realization)--> External Production Credential Boundary"
+    },
+    {
+      "id": "grag-rel-native-canonical",
+      "name": "Native retrieval reads canonical authority",
+      "type": "Access",
+      "source_id": "grag-native-retrieval-service",
+      "target_id": "grag-canonical-graph",
+      "source_name": "Neo4j Native Semantic Retrieval Service",
+      "target_name": "Canonical Intent Graph",
+      "description": "Directional semantics: the Neo4j-native retrieval service reads canonical intent identity and version evidence; stale or conflicting projection state is rejected and never becomes authority.",
+      "statement": "Neo4j Native Semantic Retrieval Service --(Access)--> Canonical Intent Graph"
     }
   ],
   "views": [
@@ -2263,7 +2318,8 @@
       "included_relationships": [
         "grag-rel-runtime-native",
         "grag-rel-embedding-native",
-        "grag-rel-credentials-runtime"
+        "grag-rel-credentials-runtime",
+        "grag-rel-native-canonical"
       ]
     }
   ]

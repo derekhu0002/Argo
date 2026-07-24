@@ -55,3 +55,34 @@
 - Mapping groups: DT-04/05 share `runIndependentSemanticSeeds.js`; DT-06/07 share `runPurposePolicyClosure.js`; DT-00, DT-08, DT-09, DT-10, DT-11, DT-13, DT-14, DT-15, DT-16, DT-17, DT-18, and DT-05-R2-DT-19 each use the dedicated entrypoint recorded in `design/KG/ImplementationToIntentTraceProposal.json`.
 - Viewpoint remains Application Usage Viewpoint for the original handoff concern; no View mutation occurred.
 - Runner evidence was preserved: the latest baseline reported 24 total, 5 passed, and 19 failed-or-invalid, and the 21 runner-owned `deliveryStatus` attributes already present in the graph were not manually changed.
+
+## 2026-07-24 — Native Runtime And Embedding Qualification Handoff
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: requirements managers, ICT architects, and runtime owners need production runtime, credential isolation, embedding qualification, and canonical authority to be explicit release requirements before index delivery.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- View binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it traces the approved requirement and constraint boundaries to the runtime and native retrieval elements that realize them.
+- Human approval: the user explicitly approved the TS-01, TS-01-Native, TS-06, TS-07, and Canonical Authority mounted testcase boundaries; confirmed that unapproved embedding identity/version/dimensions must block index delivery; and approved the complete handoff.
+
+### Coverage matrix
+
+- `grag-production-runtime` — `functionalPoint.TS-01` → `ExplicitAcceptanceTestcase-TS-01`.
+- `grag-native-retrieval-service` — `functionalPoint.TS-01-native` → `ExplicitAcceptanceTestcase-TS-01-Native`.
+- `grag-embedding-qualification` — `functionalPoint.TS-06` → `ExplicitAcceptanceTestcase-TS-06`.
+- `grag-credential-boundary` — `functionalPoint.TS-07` → `ExplicitAcceptanceTestcase-TS-07`.
+- `grag-canonical-graph` — `functionalPoint.DT-02-authoritative-complete-snapshot` → `ExplicitAcceptanceTestcase-DT-02-CanonicalGraph`; `functionalPoint.TS-02-canonical-authority` → `ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority`.
+
+### Dependency-scope decisions
+
+- The approved handoff scope is exactly the five architecture elements named by the human.
+- `grag-rel-runtime-native`, `grag-rel-native-canonical`, `grag-rel-embedding-native`, and `grag-rel-credentials-runtime` express the in-scope runtime, canonical-authority, qualification, and credential directions.
+- Existing provider-adapter, semantic-index, work-package, seed, closure, grouping, and other retrieval elements remain contextual architecture outside this approved intent slice; their existing behavior was not re-approved or added to this handoff.
+- No element is treated as a delivered stopping boundary. Missing TS entrypoint scripts are expected downstream delivery targets and remain explicit failure signals rather than fabricated pass evidence.
+- Runner-owned `deliveryStatus` values were preserved unchanged.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed after excluding the new relationship from the seven-element qualification view limit.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
+- `argo.validateSystemArchitecture`: passed.
+- Business open questions: none.
