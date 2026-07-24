@@ -8,3 +8,4 @@ tests/mcp/.tmp/
 .obsidian
 copilot/copilot-conversations/
 __pycache__
+.argo/temp/
