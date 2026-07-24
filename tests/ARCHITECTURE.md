@@ -8,11 +8,15 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/` owns the four frozen DT-01/02/03/12 entrypoints.
 - `tests/architecture/intent-query/` owns frozen critical non-explicit guardrails for boundaries, dependency direction, entry correctness, and traceability.
 - Explicit entrypoints preserve GIVEN / WHEN / THEN, semantic data names, control points, observation points, and readable business failure categories.
-- DT-01 observes the complete legacy public envelope and absence of query metadata; DT-03 observes stable rejection categories for missing purpose and missing audit subject; DT-12 observes both bypass metadata and zero semantic-path invocations.
+- DT-01 observes the complete legacy public envelope and absence of query metadata.
+- DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
+- DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
+- DT-12 first invokes a semantic positive control, then proves graph-tidy does not increment the same probe before checking bypass metadata and canonical equality.
 
 ## Local dependencies
 
 - Harness code may depend on the public `argo-mcp-server.js` boundary and canonical graph fixture.
+- The frozen Harness owns the semantic retrieval spy and injects it through the in-process dependency override; its count changes only inside the spy's `retrieve()` method and never reads response telemetry.
 - Explicit entrypoints depend only on Node assertions and Harness methods.
 - Guardrails may inspect implementation contracts, graph metadata, and dependency declarations, but must not implement production behavior.
 

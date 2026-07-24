@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-24T12:06:05.434Z",
+  "generatedAt": "2026-07-24T12:17:16.887Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Implement the compatible getSystemArchitecture query boundary: preserve the exact no-argument public envelope, require explicit purpose, reject audit without subject, and force graph-tidy to bypass semantic retrieval with zero path invocations for the complete canonical snapshot.",
+  "summary": "Implement the compatible getSystemArchitecture query boundary: preserve the exact no-argument public envelope, validate the complete explicit-query matrix before retrieval, preserve all five legal purposes, and prove graph-tidy bypass through a frozen test-owned semantic-boundary probe.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -52,29 +52,29 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
       "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-      "controlPoint": "Send equal intent text with missing, explicit implementation-design, and audit purposes, omitting the audit subject.",
-      "observationPoint": "Inspect QUERY_PURPOSE_REQUIRED, normalized explicit purpose data, and the audit request disposition before retrieval.",
+      "controlPoint": "Send all five legal purposes and the missing/invalid purpose, missing/blank intent, and missing/blank audit-subject matrix through an injected test-owned retrieval probe.",
+      "observationPoint": "Observe legal purpose preservation, stable rejection categories, positive-control probe calls, and zero probe calls for every invalid request.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
-      "failureReason": "Expected a missing-purpose request to be rejected, but getSystemArchitecture ignored the query object and returned success: DT03_MISSING_PURPOSE_NOT_REJECTED."
+      "failureReason": "Expected the first legal semantic purpose to invoke the injected test-owned boundary, but the gateway/runtime ignored the dependency override: DT03_SEMANTIC_PROBE_NOT_WIRED."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
       "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-      "controlPoint": "Cross the mode and purpose gate with missing-purpose, explicit implementation-design, and audit requests.",
-      "observationPoint": "Observe QUERY_PURPOSE_REQUIRED, purpose preservation, and AUDIT_SUBJECT_REQUIRED as stable independent outcomes.",
+      "controlPoint": "Cross validation with the full legal-purpose and invalid-request matrices using shared positive and rejection probes.",
+      "observationPoint": "Observe QUERY_PURPOSE_REQUIRED, QUERY_PURPOSE_INVALID, QUERY_INTENT_REQUIRED, AUDIT_SUBJECT_REQUIRED, all five legal purposes, and pre-retrieval rejection.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
-      "failureReason": "Expected a missing-purpose request to be rejected, but getSystemArchitecture ignored the query object and returned success: DT03_MISSING_PURPOSE_NOT_REJECTED."
+      "failureReason": "Expected the first legal semantic purpose to invoke the injected test-owned boundary, but the gateway/runtime ignored the dependency override: DT03_SEMANTIC_PROBE_NOT_WIRED."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
       "entryPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-      "controlPoint": "Submit an explicit graph-tidy mutation-preparation request.",
-      "observationPoint": "Inspect full-snapshot mode, bypass metadata, independent zero-invocation telemetry with no semantic result artifacts, and complete canonical content.",
+      "controlPoint": "Use one test-owned probe for a semantic positive control followed by an explicit graph-tidy mutation-preparation request.",
+      "observationPoint": "Observe one positive-control retrieval call, no graph-tidy increment, full-snapshot/bypass metadata, and complete canonical content.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runGraphTidyFullSnapshot.js",
-      "failureReason": "Expected graph-tidy full-snapshot metadata, but getSystemArchitecture ignored the query object: DT12_GRAPH_TIDY_MODE_FAILURE."
+      "failureReason": "Expected the semantic positive control to invoke the injected test-owned boundary, but the gateway/runtime ignored the dependency override: DT12_SEMANTIC_PROBE_NOT_WIRED."
     }
   ],
   "criticalNonExplicitTests": [
@@ -98,8 +98,8 @@
       "name": "Explicit intent query entrypoint correctness",
       "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect the four frozen entry files and protected Harness abstraction.",
-      "observationPoint": "Every entry preserves GIVEN/WHEN/THEN and hides low-level plumbing.",
+      "controlPoint": "Inspect the four frozen entry files and protected Harness-owned semantic retrieval probe.",
+      "observationPoint": "Every entry preserves GIVEN/WHEN/THEN; the probe counts only boundary calls, never response telemetry; legal and invalid matrices remain complete.",
       "expectedStatus": "passed"
     },
     {
@@ -116,15 +116,27 @@
   "codingTargets": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
+      "path": ".argo/scripts/argo-mcp-server.js",
+      "failureSignal": "DT03_SEMANTIC_PROBE_NOT_WIRED",
+      "nextAction": "Forward the internal semanticRetrievalBoundary override to systemarchitecture-mcp-server.js without adding it to the public tool schema."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT03_MISSING_PURPOSE_NOT_REJECTED",
-      "nextAction": "Add the optional nested query DTO to the getSystemArchitecture schema; reject explicit query requests without purpose as QUERY_PURPOSE_REQUIRED; preserve valid purpose; and reject audit without subject before retrieval."
+      "failureSignal": "DT03_SEMANTIC_PROBE_NOT_WIRED",
+      "nextAction": "Accept the internal semanticRetrievalBoundary override, invoke it for four semantic purposes, preserve all five legal purposes, and reject missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories before retrieval."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
+      "path": ".argo/scripts/argo-mcp-server.js",
+      "failureSignal": "DT12_SEMANTIC_PROBE_NOT_WIRED",
+      "nextAction": "Forward the same injected semanticRetrievalBoundary used by the positive control and graph-tidy request."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT12_GRAPH_TIDY_MODE_FAILURE",
-      "nextAction": "Dispatch graph-tidy directly to the canonical full snapshot, return normalized full-snapshot and semantic-bypass metadata, and expose independent execution telemetry proving zero semantic retrieval invocations."
+      "failureSignal": "DT12_SEMANTIC_PROBE_NOT_WIRED",
+      "nextAction": "Forward the internal semanticRetrievalBoundary override through the gateway, prove the positive control invokes it, and dispatch graph-tidy to the canonical full snapshot without invoking it."
     }
   ],
   "taskExecutionPlan": {
@@ -133,7 +145,7 @@
       {
         "taskId": "QUERY-01",
         "title": "Validate explicit query intent",
-        "objective": "Preserve legacy no-argument behavior while accepting and normalizing an optional nested query request.",
+        "objective": "Preserve legacy no-argument behavior while accepting, normalizing, and validating the complete optional nested query contract before retrieval.",
         "dependsOn": [],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-DT-01-ConsumerRole",
@@ -143,13 +155,17 @@
           "ExplicitAcceptanceTestcase-DT-03"
         ],
         "targetPaths": [
+          ".argo/scripts/argo-mcp-server.js",
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
           "Extend only the getSystemArchitecture input schema with an optional nested query object.",
-          "Reject a present query object without purpose using QUERY_PURPOSE_REQUIRED.",
-          "Normalize explicit purpose without inferring it from text or caller identity.",
-          "Reject audit without a non-empty subject using AUDIT_SUBJECT_REQUIRED.",
+          "Forward an internal semanticRetrievalBoundary dependency override without exposing it in the public MCP schema.",
+          "Preserve intent-decision, implementation-design, coding-repair, audit, and graph-tidy as the complete legal purpose enum.",
+          "Reject missing purpose as QUERY_PURPOSE_REQUIRED and out-of-enum purpose as QUERY_PURPOSE_INVALID.",
+          "Reject missing or blank intent as QUERY_INTENT_REQUIRED.",
+          "Reject missing or blank audit subject as AUDIT_SUBJECT_REQUIRED.",
+          "Complete validation before invoking semanticRetrievalBoundary.retrieve().",
           "Run DT-01 and DT-03 entrypoints without modifying frozen files."
         ],
         "completionSignal": "DT-01 remains passed and runQueryPurposeValidation.js passes."
@@ -157,7 +173,7 @@
       {
         "taskId": "QUERY-02",
         "title": "Route graph-tidy to canonical full snapshot",
-        "objective": "Make graph-tidy bypass semantic retrieval and expose complete canonical data with explicit mode evidence.",
+        "objective": "Make graph-tidy bypass the injected semantic retrieval boundary and expose complete canonical data with explicit mode evidence.",
         "dependsOn": [
           "QUERY-01"
         ],
@@ -167,12 +183,13 @@
           "ExplicitAcceptanceTestcase-DT-12"
         ],
         "targetPaths": [
+          ".argo/scripts/argo-mcp-server.js",
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
           "Select full-snapshot mode for graph-tidy before any semantic retrieval path.",
           "Return mode full-snapshot and semanticRetrieval bypassed metadata.",
-          "Expose semanticRetrievalInvocationCount as zero and no semantic retrieval result artifacts.",
+          "Use the injected test-owned boundary for the semantic positive control and do not invoke it for graph-tidy.",
           "Return the unchanged complete canonical document.",
           "Run DT-02 and DT-12 entrypoints without modifying frozen files."
         ],
@@ -193,6 +210,7 @@
           "ExplicitAcceptanceTestcase-DT-12"
         ],
         "targetPaths": [
+          ".argo/scripts/argo-mcp-server.js",
           ".argo/scripts/systemarchitecture-mcp-server.js",
           "design/KG/test-failure-records.json",
           "design/KG/SystemArchitecture.json"
@@ -201,7 +219,7 @@
           "Run all four explicit physical entrypoints.",
           "Run all four frozen critical guardrails.",
           "Run the complete argo architecture test runner and retain runner-owned deliveryStatus and failure-record updates.",
-          "Report pre-existing out-of-scope invalid-criteria records separately from this slice."
+          "Report the 16 executable out-of-scope expected failures separately from this slice."
         ],
         "completionSignal": "All eight handoff-scoped mounted testcase executions pass; no handoff-scoped failure remains in test-failure-records.json."
       }
@@ -236,7 +254,7 @@
     "tests/explicit/entries/runCapacityEvidence.js"
   ],
   "openGaps": [
-    "Handoff scope expected failures: DT-03 missing-purpose/purpose/audit validation and DT-12 graph-tidy mode plus zero semantic-path invocation evidence are not implemented.",
+    "Handoff scope expected failures: the internal retrieval dependency override is not forwarded; DT-03 full validation and legal-purpose matrix plus DT-12 graph-tidy bypass are not implemented.",
     "Out-of-scope baseline: 16 mounted testcases outside DT-01/02/03/12 are now executable and fail with business-readable missing-implementation signals; they are frozen evidence but are not Coding targets in this handoff."
   ]
 }

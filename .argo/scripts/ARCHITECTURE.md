@@ -18,11 +18,21 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `query.subject`: required non-empty audit subject when `purpose` is `audit`;
 - optional deterministic anchors may be added without changing no-argument behavior.
 
-An explicit query without purpose returns `status: "failed"` with `error.category: "QUERY_PURPOSE_REQUIRED"`; purpose is never defaulted or inferred. Successful explicit requests expose normalized `query` metadata. `graph-tidy` reports `mode: "full-snapshot"`, `semanticRetrieval: "bypassed"`, and independent execution telemetry with `semanticRetrievalInvocationCount: 0`. Audit without subject returns `status: "failed"` with `error.category: "AUDIT_SUBJECT_REQUIRED"`.
+All five purpose values remain legal contract inputs. `intent-decision`, `implementation-design`, `coding-repair`, and valid `audit` requests invoke the semantic retrieval boundary; `graph-tidy` never invokes it and reports `mode: "full-snapshot"` plus `semanticRetrieval: "bypassed"`.
+
+Validation occurs before retrieval and returns these stable categories:
+
+- missing purpose: `QUERY_PURPOSE_REQUIRED`;
+- purpose outside the legal enum: `QUERY_PURPOSE_INVALID`;
+- missing or blank intent: `QUERY_INTENT_REQUIRED`;
+- missing or blank audit subject: `AUDIT_SUBJECT_REQUIRED`.
+
+The in-process `callTool` boundary accepts an internal dependency override containing `semanticRetrievalBoundary.retrieve(request)` and forwards it unchanged to the deep query module. This is not part of the public MCP schema. Production supplies the real adapter; the frozen Harness supplies a test-owned spy, so acceptance tests observe boundary calls independently of response fields without creating a production dependency on `tests/`.
 
 ## Local dependencies
 
 - The unified gateway may depend on `systemarchitecture-mcp-server.js` through `callTool`.
+- The deep query module depends inward on the injected semantic retrieval boundary rather than constructing retrieval inside validation or mode selection.
 - The query boundary may depend on graph/schema validation, canonical filesystem loading, and Neo4j synchronization support.
 - Neither runtime module may depend on `tests/`, explicit entrypoints, or test-only fixtures.
 

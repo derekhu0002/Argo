@@ -5,9 +5,10 @@
 - Accepted stable decomposition: unified MCP gateway delegates to a deep intent-query runtime module; canonical JSON remains authoritative; tests depend inward through a business-readable Harness.
 - Public contract: `getSystemArchitecture` keeps its no-argument complete canonical response and accepts an optional nested `query` with explicit `purpose`, `intent`, and audit `subject`.
 - Physicalized four shared explicit entrypoints for eight mounted testcases covering DT-01, DT-02, DT-03, and DT-12.
-- Corrected audit boundary: DT-01 now freezes the exact `{ status, graphPath, document }` envelope and absence of query metadata; DT-03 independently requires `QUERY_PURPOSE_REQUIRED` and `AUDIT_SUBJECT_REQUIRED`; DT-12 requires zero semantic retrieval invocation telemetry and no semantic result artifacts.
-- The shared Harness is frozen in the coding handoff, and the explicit-entrypoint correctness guard protects these observations.
-- Latest execution: DT-01 compatibility and DT-02 canonical snapshot passed; DT-03 failed with `DT03_MISSING_PURPOSE_NOT_REJECTED`; DT-12 failed with `DT12_GRAPH_TIDY_MODE_FAILURE`.
+- DT-01 freezes the exact `{ status, graphPath, document }` envelope and absence of query metadata.
+- The shared Harness is frozen in the coding handoff, and the explicit-entrypoint correctness guard protects its assertions and probe implementation.
+- Second audit correction replaces response-derived retrieval telemetry with a frozen Harness-owned injected spy. Positive-control semantic requests prove probe wiring; DT-03 invalid requests and DT-12 graph-tidy must not increment that independent boundary count.
+- DT-03 now freezes the full validation matrix and stable categories: `QUERY_PURPOSE_REQUIRED`, `QUERY_PURPOSE_INVALID`, `QUERY_INTENT_REQUIRED`, and `AUDIT_SUBJECT_REQUIRED`, while preserving all five legal purposes.
 - Four critical guardrails passed: architecture boundary, dependency direction, explicit entrypoint correctness, and key implementation traceability.
 - IntentionDesign correction commits `f59c383db8a935721be54d67044ce05aea56e3bc` and `33798f749fa43aebb227e09999a7ed61733b394b` mapped all 24 mounted testcases to executable paths without changing semantics.
 - Physicalized the remaining 14 unique out-of-scope paths as frozen design evidence because implementation handoff validation globally requires every mounted path to exist.

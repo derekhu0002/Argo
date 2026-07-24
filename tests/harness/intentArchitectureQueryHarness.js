@@ -10,16 +10,20 @@ async function readAsUnchangedConsumer() {
   return invokeGetSystemArchitecture({});
 }
 
-async function readForPurpose({ purpose, intent, subject }) {
+async function readForPurpose({ purpose, intent, subject }, probe) {
   const query = { purpose, intent };
   if (subject !== undefined) {
     query.subject = subject;
   }
-  return invokeGetSystemArchitecture({ query });
+  return invokeGetSystemArchitecture({ query }, probe);
 }
 
-async function readWithoutPurpose({ intent }) {
-  return invokeGetSystemArchitecture({ query: { intent } });
+async function readExplicitQuery(query, probe) {
+  return invokeGetSystemArchitecture({ query }, probe);
+}
+
+async function readWithoutPurpose({ intent }, probe) {
+  return readExplicitQuery({ intent }, probe);
 }
 
 function readCanonicalSnapshot() {
@@ -38,17 +42,28 @@ function observeReturnedGraph(result) {
   return result.document;
 }
 
-function observeSemanticRetrievalActivity(result) {
-  const queryExecution = result.query && result.query.execution;
-  const semanticResult = result.result && (
-    result.result.seedsByType
-    || result.result.semanticSeeds
-    || result.result.semanticRetrieval
+function createSemanticRetrievalProbe() {
+  const invocations = [];
+  const semanticRetrievalBoundary = Object.freeze({
+    async retrieve(request) {
+      invocations.push(request);
+      return { elements: [], relationships: [], views: [] };
+    },
+  });
+  return Object.freeze({
+    semanticRetrievalBoundary,
+    invocationCount() {
+      return invocations.length;
+    },
+  });
+}
+
+function assertSemanticRetrievalCalls(probe, expectedCount, failureCategory) {
+  assert.strictEqual(
+    probe.invocationCount(),
+    expectedCount,
+    `${failureCategory}: semantic retrieval boundary invocation count`,
   );
-  return {
-    invocationCount: queryExecution && queryExecution.semanticRetrievalInvocationCount,
-    semanticResultPresent: Boolean(semanticResult),
-  };
 }
 
 function assertLegacyEnvelopeExternallyEquivalent(actual, expected) {
@@ -82,9 +97,12 @@ function assertUniqueCanonicalIdentities(graph, failureCategory) {
   assertUnique((graph.views || []).map(view => view.view_id), `${failureCategory}: duplicate View identity`);
 }
 
-async function invokeGetSystemArchitecture(args) {
+async function invokeGetSystemArchitecture(args, probe) {
   process.env.ARGO_REPO_ROOT = repoRoot;
-  const response = await callTool('getSystemArchitecture', args);
+  const testDependencies = probe
+    ? { semanticRetrievalBoundary: probe.semanticRetrievalBoundary }
+    : undefined;
+  const response = await callTool('getSystemArchitecture', args, null, testDependencies);
   assert(response && Array.isArray(response.content), 'QUERY_BOUNDARY_PROTOCOL_FAILURE: MCP response must contain content');
   return JSON.parse(response.content[0].text);
 }
@@ -97,12 +115,14 @@ module.exports = {
   assertCompleteCanonicalSnapshot,
   assertLegacyEnvelopeExternallyEquivalent,
   assertNoQueryModeMetadata,
+  assertSemanticRetrievalCalls,
   assertUniqueCanonicalIdentities,
+  createSemanticRetrievalProbe,
   expectedLegacyEnvelope,
-  observeSemanticRetrievalActivity,
   observeReturnedGraph,
   readAsUnchangedConsumer,
   readCanonicalSnapshot,
+  readExplicitQuery,
   readForPurpose,
   readWithoutPurpose,
 };

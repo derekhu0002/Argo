@@ -1,24 +1,41 @@
 const assert = require('node:assert');
 const {
   assertCompleteCanonicalSnapshot,
-  observeSemanticRetrievalActivity,
+  assertSemanticRetrievalCalls,
+  createSemanticRetrievalProbe,
   observeReturnedGraph,
   readCanonicalSnapshot,
   readForPurpose,
 } = require('../../harness/intentArchitectureQueryHarness.js');
 
 async function main() {
-  // GIVEN graph-tidy mutation preparation with global identity and cross-View concerns
+  // GIVEN graph-tidy mutation preparation and a test-owned semantic-boundary probe
   const canonicalSnapshot = readCanonicalSnapshot();
+  const semanticProbe = createSemanticRetrievalProbe();
 
-  // WHEN graph-tidy explicitly requests intent context
+  // WHEN a semantic positive control proves the probe is wired,
+  // followed by graph-tidy requesting the complete canonical context
+  await readForPurpose({
+    purpose: 'implementation-design',
+    intent: 'Verify the semantic retrieval probe control',
+  }, semanticProbe);
+  assertSemanticRetrievalCalls(
+    semanticProbe,
+    1,
+    'DT12_SEMANTIC_PROBE_NOT_WIRED',
+  );
   const graphTidyResult = await readForPurpose({
     purpose: 'graph-tidy',
     intent: 'Prepare a mutation while preserving global identity and View membership',
-  });
+  }, semanticProbe);
 
-  // THEN semantic retrieval is bypassed and the complete canonical snapshot is returned
-  const semanticActivity = observeSemanticRetrievalActivity(graphTidyResult);
+  // THEN the independent probe count does not increase, bypass metadata is reported,
+  // and the complete canonical snapshot is returned
+  assertSemanticRetrievalCalls(
+    semanticProbe,
+    1,
+    'DT12_SEMANTIC_PATH_INVOKED',
+  );
   assert.strictEqual(
     graphTidyResult.query && graphTidyResult.query.mode,
     'full-snapshot',
@@ -28,16 +45,6 @@ async function main() {
     graphTidyResult.query && graphTidyResult.query.semanticRetrieval,
     'bypassed',
     'DT12_SEMANTIC_BYPASS_FAILURE: graph-tidy must bypass semantic retrieval',
-  );
-  assert.strictEqual(
-    semanticActivity.invocationCount,
-    0,
-    'DT12_SEMANTIC_PATH_INVOKED: graph-tidy execution telemetry must observe zero semantic retrieval invocations',
-  );
-  assert.strictEqual(
-    semanticActivity.semanticResultPresent,
-    false,
-    'DT12_SEMANTIC_RESULT_LEAKED: graph-tidy must expose no semantic retrieval artifacts',
   );
   assertCompleteCanonicalSnapshot(
     observeReturnedGraph(graphTidyResult),

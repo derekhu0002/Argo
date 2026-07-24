@@ -15,13 +15,24 @@ const requiredObservations = new Map([
     'assertNoQueryModeMetadata',
   ]],
   ['tests/explicit/entries/runQueryPurposeValidation.js', [
-    'readWithoutPurpose',
+    'createSemanticRetrievalProbe',
+    'validQueries',
+    'invalidQueries',
+    "purpose: 'intent-decision'",
+    "purpose: 'implementation-design'",
+    "purpose: 'coding-repair'",
+    "purpose: 'audit'",
+    "purpose: 'graph-tidy'",
     'QUERY_PURPOSE_REQUIRED',
+    'QUERY_PURPOSE_INVALID',
+    'QUERY_INTENT_REQUIRED',
     'AUDIT_SUBJECT_REQUIRED',
+    'DT03_VALIDATION_AFTER_RETRIEVAL',
   ]],
   ['tests/explicit/entries/runGraphTidyFullSnapshot.js', [
-    'observeSemanticRetrievalActivity',
-    'semanticActivity.invocationCount',
+    'createSemanticRetrievalProbe',
+    'DT12_SEMANTIC_PROBE_NOT_WIRED',
+    'DT12_SEMANTIC_PATH_INVOKED',
   ]],
 ]);
 
@@ -49,6 +60,40 @@ for (const entryPath of entryPaths) {
     );
   }
 }
+
+const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
+const harnessSource = fs.readFileSync(harnessPath, 'utf8');
+const probeStart = harnessSource.indexOf('function createSemanticRetrievalProbe()');
+const probeEnd = harnessSource.indexOf('function assertSemanticRetrievalCalls', probeStart);
+assert(
+  probeStart >= 0 && probeEnd > probeStart,
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must own a semantic retrieval probe',
+);
+const probeSource = harnessSource.slice(probeStart, probeEnd);
+for (const requiredProbeBehavior of [
+  'const invocations = []',
+  'async retrieve(request)',
+  'invocations.push(request)',
+  'return invocations.length',
+]) {
+  assert(
+    probeSource.includes(requiredProbeBehavior),
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: probe is missing ${requiredProbeBehavior}`,
+  );
+}
+assert(
+  !probeSource.includes('response') && !probeSource.includes('result'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: probe count must not derive from the tested response',
+);
+assert(
+  harnessSource.includes('semanticRetrievalBoundary: probe.semanticRetrievalBoundary'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the test-owned probe boundary',
+);
+assert(
+  !harnessSource.includes('semanticRetrievalInvocationCount')
+    && !harnessSource.includes('observeSemanticRetrievalActivity'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: response telemetry cannot substitute for the test-owned probe',
+);
 
 const handoff = JSON.parse(fs.readFileSync(path.join(repoRoot, '.argo', 'temp', 'ImplementationToCodingHandoff.json'), 'utf8'));
 assert(
