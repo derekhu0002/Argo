@@ -120,7 +120,12 @@ async function validatesAgentFacingToolGuidance() {
   assertDescriptionIncludes(toolByName, 'validateTraceProposal', ['Validate', 'ImplementationToIntentTraceProposal']);
   assert.deepStrictEqual(
     Object.keys(toolByName.get('validateSystemArchitecture').inputSchema.properties),
-    ['architecturePath'],
+    [],
+  );
+  assert.strictEqual(
+    systemArchitectureMcp.TOOLS.some(tool => tool.name === 'validateSystemArchitecture'),
+    false,
+    'systemarchitecture-mcp-server must not expose a duplicate validateSystemArchitecture tool',
   );
 }
 
@@ -1517,20 +1522,14 @@ async function validatesFocusedToolDryRunDoesNotWrite() {
 }
 
 async function validatesCurrentGraph() {
-  // Validate the shared validator pipeline end-to-end using a minimal valid graph.
-  // The production graph at design/KG/SystemArchitecture.json may drift; this test
-  // verifies that the unified validateGraphSemantics + ArchiMate endpoint matrix +
-  // view element limit pipeline produces consistent results.
-  const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'current-'));
-  const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
-  const graph = buildMinimalValidGraph();
-  fs.writeFileSync(tempGraphPath, JSON.stringify(graph, null, 2));
-
-  const response = await systemArchitectureMcp.callTool('validateSystemArchitecture', {
-    architecturePath: path.relative(repoRoot, tempGraphPath),
-  });
+  const response = await callTool('validateSystemArchitecture', {});
   const payload = parseToolPayload(response);
   assert.strictEqual(payload.status, 'passed', JSON.stringify(payload.errors));
+  assert.strictEqual(
+    payload.command.length,
+    2,
+    `validateSystemArchitecture must not pass an architecture path: ${JSON.stringify(payload.command)}`,
+  );
 }
 
 function buildMinimalValidGraph() {

@@ -196,6 +196,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runGraphQueryCompatibility.js; exit code 0"
         }
       ],
       "testcases": [
@@ -225,6 +229,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runGraphQueryCompatibility.js; exit code 0"
         }
       ],
       "testcases": [
@@ -278,6 +286,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runGraphQueryCompatibility.js; runCanonicalGraphFullSnapshot.js; exit code 0"
         }
       ],
       "testcases": [
@@ -399,6 +411,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runQueryPurposeValidation.js; exit code 0"
         }
       ],
       "testcases": [
@@ -628,6 +644,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runGraphTidyFullSnapshot.js; exit code 0"
         }
       ],
       "testcases": [
@@ -864,6 +884,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "verified acceptance: runTypedMcpQueryContract.js; exit code 0"
         }
       ],
       "testcases": [
@@ -993,6 +1017,10 @@
         {
           "name": "affectedElements",
           "value": "grag-mcp-interface; grag-query-service"
+        },
+        {
+          "name": "deliveryEvidence.W1",
+          "value": "host-verified W1 acceptance: runTypedMcpQueryContract.js; runGraphQueryCompatibility.js; runCanonicalGraphFullSnapshot.js; runQueryPurposeValidation.js; runGraphTidyFullSnapshot.js; exit code 0"
         }
       ]
     },
@@ -1592,28 +1620,6 @@
       "statement": "Neo4j Native Semantic Retrieval Service --(Access)--> Semantic Retrieval Index"
     },
     {
-      "id": "grag-rel-embedding-native",
-      "name": "Embedding qualification gates retrieval",
-      "type": "Association",
-      "source_id": "grag-embedding-qualification",
-      "target_id": "grag-native-retrieval-service",
-      "source_name": "Embedding Model Qualification Gate",
-      "target_name": "Neo4j Native Semantic Retrieval Service",
-      "description": "Retrieval remains blocked until qualification.",
-      "statement": "Embedding Model Qualification Gate --(Association)--> Neo4j Native Semantic Retrieval Service"
-    },
-    {
-      "id": "grag-rel-credentials-runtime",
-      "name": "Credentials govern runtime",
-      "type": "Association",
-      "source_id": "grag-credential-boundary",
-      "target_id": "grag-production-runtime",
-      "source_name": "External Production Credential Boundary",
-      "target_name": "Node.js Graph RAG Production Runtime",
-      "description": "Runtime requires external credentials.",
-      "statement": "External Production Credential Boundary --(Association)--> Node.js Graph RAG Production Runtime"
-    },
-    {
       "id": "grag-rel-w1-w2",
       "name": "W1 precedes W2",
       "type": "Triggering",
@@ -1766,6 +1772,28 @@
       "target_name": "Coherent Versioned Intent Context",
       "description": "W6 realizes the externally observable coherent, structurally complete, provenance-bearing, version-consistent intent-context outcome.",
       "statement": "W6 Integrity Provenance and Coherent Result --(Realization)--> Coherent Versioned Intent Context"
+    },
+    {
+      "id": "grag-rel-embedding-native",
+      "name": "Native retrieval realizes embedding qualification",
+      "type": "Realization",
+      "source_id": "grag-native-retrieval-service",
+      "target_id": "grag-embedding-qualification",
+      "source_name": "Neo4j Native Semantic Retrieval Service",
+      "target_name": "Embedding Model Qualification Gate",
+      "description": "The production-native retrieval service realizes this release requirement only when embedding provider, model identity, version, dimensions, and qualification evidence are explicitly approved; otherwise index delivery is blocked.",
+      "statement": "Neo4j Native Semantic Retrieval Service --(Realization)--> Embedding Model Qualification Gate"
+    },
+    {
+      "id": "grag-rel-credentials-runtime",
+      "name": "Production runtime realizes credential boundary",
+      "type": "Realization",
+      "source_id": "grag-production-runtime",
+      "target_id": "grag-credential-boundary",
+      "source_name": "Node.js Graph RAG Production Runtime",
+      "target_name": "External Production Credential Boundary",
+      "description": "The Node.js/Neo4j production mainline realizes the credential-isolation constraint by requiring externally supplied Neo4j and embedding credentials and by providing no hardcoded fallback; absent credentials block delivery safely.",
+      "statement": "Node.js Graph RAG Production Runtime --(Realization)--> External Production Credential Boundary"
     }
   ],
   "views": [
@@ -2217,6 +2245,25 @@
         "grag-rel-w4-seed-retrieval",
         "grag-rel-w5-purpose-closure",
         "grag-rel-w6-coherent-context"
+      ]
+    },
+    {
+      "view_id": "grag-native-embedding-release-requirements",
+      "view_name": "Native Technology and Embedding Release Requirements",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime boundary, credential isolation, embedding qualification, and canonical authority are explicit release requirements before index delivery; Purpose: designing, deciding, and handoff preparation; Scope: Node.js/Neo4j production mainline, native retrieval, approved embedding identity/version/dimensions, external credentials, canonical graph authority, and their acceptance implications; Rationale: this view traces the qualification requirement and credential constraint to the core elements that realize them, while exposing runtime selection and canonical authority as mandatory release evidence; index delivery remains blocked until every gate condition passes.",
+      "included_elements": [
+        "grag-production-runtime",
+        "grag-native-retrieval-service",
+        "grag-embedding-qualification",
+        "grag-credential-boundary",
+        "grag-canonical-graph"
+      ],
+      "included_relationships": [
+        "grag-rel-runtime-native",
+        "grag-rel-embedding-native",
+        "grag-rel-credentials-runtime"
       ]
     }
   ]

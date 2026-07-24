@@ -146,17 +146,6 @@ const TOOLS = [
     inputSchema: intentElementContextInputSchema(),
   },
   {
-    name: 'validateSystemArchitecture',
-    description: 'Validate design/KG/SystemArchitecture.json through the repository-native schema and graph validator.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
     name: 'generateArchitectureDiffPlantuml',
     description: 'Generate a timestamped PlantUML Markdown tree for current git diff changes in SystemArchitecture.json. The tool compares HEAD and working tree, extracts changed elements/relationships, and writes to .argo/temp/architecture_analysis/.',
     inputSchema: {
@@ -1516,19 +1505,6 @@ async function callTool(name, args = {}, dependencies = undefined) {
   if (name === 'getIntentElementContext') {
     const context = await loadContext(args);
     return toolResult(attachContextWarnings(buildIntentElementContext(context, args), context));
-  }
-
-  if (name === 'validateSystemArchitecture') {
-    const context = await loadContext(args);
-    const errors = validateDocument(context.document, context.schema, {
-      validateAllViewElementLimits: true,
-    });
-    return toolResult(attachContextWarnings({
-      status: errors.length === 0 ? 'passed' : 'failed',
-      graphPath: context.graphPath.relativePath,
-      schemaPath: context.schemaPath.relativePath,
-      errors,
-    }, context));
   }
 
   if (name === 'generateArchitectureDiffPlantuml') {
