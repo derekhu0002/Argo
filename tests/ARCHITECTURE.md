@@ -14,6 +14,10 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - TS-07 isolates every missing external credential field, blocks credential-free startup and semantic query, structurally detects direct literals and logical/nullish/ternary fallbacks, and follows credential-tainted query/parameter variables into Cypher execution calls.
 - `credential-source-policy.guard.js` self-tests the TS-07 source policy with prohibited bypass fixtures and one safe fixture so scanner regressions cannot silently weaken the boundary.
 - TS-01-Native uses a Harness-owned query probe to prove exact request propagation, exactly one native-boundary call, and unchanged propagation of an unpredictable runtime-generated full result.
+- `tests/harness/liveEmbeddingProviderHarness.js` hides live-network opt-in, process-only secret access, controlled Neo4j setup/cleanup, write counting, safe error categories, and artifact scanning.
+- TS-06-Provider-E2E requires a real HTTPS call with explicit approved model/dimensions, a finite 1024-value vector, qualified controlled-Neo4j evidence, and zero writes for every invalid/failure case.
+- TS-07-Provider-Secret-Isolation scans captured logs, request evidence, Cypher text/parameters, graph evidence, failure records, snapshots, and test artifacts against the process-injected secret without printing it.
+- Default/offline CI must fail both live entrypoints with explicit opt-in categories. Deterministic fakes protect negative paths but never substitutes for live provider evidence.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
 - DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
@@ -41,6 +45,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/runExternalCredentialBoundary.js`
 - `tests/explicit/entries/runCanonicalProjectionAuthority.js`
 - `tests/explicit/entries/runSevenWaveDeliveryGates.js`
+- `tests/explicit/entries/runLiveEmbeddingProviderE2E.js`
+- `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`
 
 The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as out-of-scope runner evidence. It is not an explicit handoff entry because TS-09 is not mounted in the committed source intent graph.
 
@@ -75,7 +81,10 @@ remain outside the compatible-query Coding targets:
 - `tests/architecture/production-graph-rag/coding-scope-authorization.guard.js` — `ArchitectureBoundaryGuard`
 - `tests/architecture/production-graph-rag/credential-source-policy.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 - `tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js` — `KeyImplementationTraceabilityGuard`
+- `tests/architecture/production-graph-rag/live-provider-contract.guard.js` — `ArchitectureBoundaryGuard`
+- `tests/architecture/production-graph-rag/live-provider-opt-in.guard.js` — `ExplicitEntrypointCorrectnessGuard`
+- `tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 
 The coding-scope authorization guard freezes mounted TS-08 and recorded TS-09 evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope. The scoped-delivery attribution guard uses only committed mounted TS-07 evidence, handoff scope, runner failure records, and runner-owned delivery status.
 
-All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js` and `tests/harness/productionGraphRagHarness.js`, are frozen during Coding/Repair.
+All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.env.example`, and `.gitignore`, are frozen during Coding/Repair.

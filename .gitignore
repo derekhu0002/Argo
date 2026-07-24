@@ -9,3 +9,6 @@ tests/mcp/.tmp/
 copilot/copilot-conversations/
 __pycache__
 .argo/temp/
+.env
+.env.*
+!.env.example

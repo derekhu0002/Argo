@@ -208,6 +208,32 @@
     "stderr": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
+    "testdescription": "Acceptor control point: explicitly opt in to a Node.js live request using the human-approved provider identity, model identity, qualification version, endpoint, and dimensions, then exercise success, provider-error, unapproved, omitted-explicit-configuration, and dimension-mismatch paths through the index-delivery gate with a controlled Neo4j test instance. Observation point: the real provider receives explicit model and dimensions, returns a finite numeric vector of exactly 1024 values, successful evidence may reach the controlled index boundary, every invalid or failed case produces zero index writes, and offline/default CI results are never treated as live E2E evidence.",
+    "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+    "relatedIntentElementId": "grag-embedding-qualification",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+    "exitCode": 1,
+    "failureError": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED",
+    "stdout": "",
+    "stderr": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
+    "testdescription": "Acceptor control point: execute the opt-in live provider E2E with the embedding secret supplied only through process environment variable QWEN_KEY, then inspect missing-secret behavior and all produced logs, Cypher text and parameters, graph data, runner failure records, snapshots, and test artifacts. Observation point: absent secret blocks before network/index writes; no secret value is written to .env or any inspected artifact; only approved non-sensitive provider configuration may be stored in local .env or committed .env.example.",
+    "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "relatedIntentElementId": "grag-credential-boundary",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "exitCode": 1,
+    "failureError": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED",
+    "stdout": "",
+    "stderr": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
+  },
+  {
     "testcasename": "ExplicitAcceptanceTestcase-TS-08",
     "testdescription": "Control: attempt downstream work before prerequisites. Observe: gate blocks it and W7 cannot pass before W2-W6.",
     "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js",

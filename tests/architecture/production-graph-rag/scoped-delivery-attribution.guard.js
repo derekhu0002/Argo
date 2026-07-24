@@ -21,9 +21,6 @@ const handoffTs07 = handoff.explicitEntrypoints.find(
 const handoffTs08 = handoff.explicitEntrypoints.find(
   testcase => testcase.testcaseName === 'ExplicitAcceptanceTestcase-TS-08',
 );
-const outOfScopeTs09 = (handoff.outOfScopeFailureEvidence || []).find(
-  testcase => testcase.testcaseName === 'ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter',
-);
 const finalTask = handoff.taskExecutionPlan.tasks.find(task => task.taskId === 'W2-C7');
 
 // GIVEN committed TS-07 intent evidence and its physicalized handoff entrypoint
@@ -50,16 +47,6 @@ assert.strictEqual(
   'TS08_GATE_CATEGORY_MISSING',
   'SCOPED_DELIVERY_ATTRIBUTION_GUARD: TS-08 handoff failure category is stale',
 );
-assert.strictEqual(
-  outOfScopeTs09 && outOfScopeTs09.failureReason,
-  'TS09_NODE_ADAPTER_REQUIRED',
-  'SCOPED_DELIVERY_ATTRIBUTION_GUARD: TS-09 out-of-scope failure category is stale',
-);
-assert.strictEqual(
-  outOfScopeTs09 && outOfScopeTs09.evidenceSource,
-  handoff.expectedFailureRecordsPath,
-  'SCOPED_DELIVERY_ATTRIBUTION_GUARD: TS-09 evidence source must be runner records',
-);
 assert(
   !handoff.explicitEntrypoints.some(
     testcase => testcase.testcaseName === 'ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter',
@@ -73,10 +60,6 @@ assert(
   'SCOPED_DELIVERY_ATTRIBUTION_GUARD: latest runner records still contain TS-07 failure',
 );
 assertFailureCategory('ExplicitAcceptanceTestcase-TS-08', 'TS08_GATE_CATEGORY_MISSING');
-assertFailureCategory(
-  'ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter',
-  'TS09_NODE_ADAPTER_REQUIRED',
-);
 assert.strictEqual(
   attributeValue(credentialElement, 'deliveryStatus'),
   'not_delivered',

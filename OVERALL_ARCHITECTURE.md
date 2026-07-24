@@ -12,6 +12,9 @@
 8. Index delivery is denied until an explicit qualification names the embedding provider, model identity, model version, and dimensions. Missing fields and implicit model defaults are blocking errors.
 9. Mounted acceptance evidence does not itself authorize Coding scope. Only `codingTargets` and `taskExecutionPlan` in the approved handoff authorize implementation; frozen TS-08/TS-09 evidence remains out of scope for this slice.
 10. Slice completion and global intent delivery are distinct. A handoff may accept its approved explicit entrypoints and guardrails while the full runner keeps a global intent element `not_delivered`; only committed mounted evidence, runner records, and runner-owned `deliveryStatus` may support that attribution.
+11. Live embedding delivery uses explicit opt-in Node.js HTTPS from `alibaba-cloud-model-studio-openai-compatible-cn-beijing` at `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification version `qualification-2026-07-25`, and explicitly supplied dimensions `1024`. Offline fakes cannot count as live evidence.
+12. `QWEN_KEY` is process-injected only. It never appears in `.env`, `.env.example`, logs, error text, Cypher text or parameters, graph state, failure records, snapshots, or test artifacts.
+13. Live provider evidence becomes index-write eligible only after exact qualification and a finite 1024-value response. Provider errors, unapproved identity, omitted model or dimensions, non-finite values, and dimension mismatch produce zero writes to the controlled Neo4j test instance.
 
 ## Stable architecture elements
 
@@ -19,7 +22,7 @@
 | --- | --- | --- | --- |
 | Unified MCP Gateway | `.argo/scripts/argo-mcp-server.js` | Expose one governed tool surface and delegate intent-query work inward. | `callTool(name, args)` and MCP stdio tools |
 | Intent Architecture Query Boundary | `.argo/scripts/systemarchitecture-mcp-server.js` | Preserve no-argument reads, validate explicit query purpose, and dispatch full-snapshot or semantic-query behavior. | `getSystemArchitecture` |
-| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, and canonical-authority enforcement without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)` |
+| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, canonical-authority enforcement, and the explicitly opted-in approved-provider evidence gate without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)` and `executeApprovedEmbedding(input)` |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails. | Frozen Node.js entry scripts |
 

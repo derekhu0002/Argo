@@ -48,4 +48,15 @@
 - Scoped attribution relies only on committed mounted TS-07 evidence, handoff scope, runner failure records, and committed runner-owned delivery evidence; uncommitted parallel intent relationships are not evidence.
 - Added a frozen critical traceability guard for this attribution and a W2-C7 resume task that authorizes Coding only to verify and commit the already implemented C1-C6 files.
 - Because the handoff completion semantics and execution plan changed, global human reapproval is required before Coding resumes.
-- Clean-checkout validation showed TS-09 is not mounted in the committed source intent graph. Its latest `TS09_NODE_ADAPTER_REQUIRED` result is therefore retained in `outOfScopeFailureEvidence`, not in `explicitEntrypoints`; the physical path remains frozen and unauthorized.
+- Clean-checkout validation showed TS-09 is not mounted in the committed source intent graph. The later `ea32117f` intent handoff explicitly excludes it, so stale TS-09 runner evidence is no longer carried in the handoff; the legacy physical path remains frozen and unauthorized.
+
+## 2026-07-25 approved live provider E2E extension
+
+- Approved profile: provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`, Beijing compatible-mode endpoint, model `qwen3.7-text-embedding`, qualification label `qualification-2026-07-25` with alias drift acknowledged, and explicit dimensions `1024`.
+- Added two independent frozen entrypoints for mounted TS-06-Provider-E2E and TS-07-Provider-Secret-Isolation plus a dedicated frozen Harness. Default execution fails with explicit opt-in categories before production loading, secret access, network, or Neo4j.
+- Added three frozen critical guards: exact provider/.env/Neo4j contract, opt-in and no-fake substitution, and synthetic secret artifact scanning. The expanded slice therefore has eight scoped explicit entrypoints and ten critical guards while preserving the original six/seven checkpoint.
+- `.env.example` contains only five approved non-sensitive `ARGO_EMBEDDING_*` values. `.env` and variants are ignored; `QWEN_KEY` is process-only and absent from file-based configuration.
+- Controlled Neo4j evidence uses process-injected existing `ARGO_NEO4J_*` configuration, a disposable run marker, one success write, cleanup, and zero-write observations for provider/configuration/vector failures.
+- C1-C6 remain uncommitted Coding-owned worktree state. W2-C7 checkpoints them unchanged before W2-C8 configuration, W2-C9 provider/index gate, and W2-C10 protected live verification.
+- TS-09 remains outside intent and Coding scope. No intent graph change or trace proposal is required.
+- Full pre-coding runner baseline: 34 total, 14 passed, 20 failed. Both live entrypoints honestly fail with their explicit opt-in categories. The newly mounted live TS-06 evidence changed runner-owned `grag-embedding-qualification` from delivered to not_delivered; this is the expected new acceptance baseline, not a Coding regression. No other delivery status changed.

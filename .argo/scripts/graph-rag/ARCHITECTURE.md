@@ -9,6 +9,9 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `embeddingQualificationGate.js` accepts only explicit human-approved provider, model identity, model version, and dimensions. It must reject missing approval, missing fields, and any inferred provider/model/version/dimensions.
 - `neo4jNativeRetrieval.js` owns Neo4j JavaScript-driver retrieval and returns projection identity/version evidence; it never becomes canonical authority.
 - `canonicalProjectionAuthority.js` compares projection evidence with the canonical graph and either selects canonical state or rejects stale/conflicting projection state.
+- `liveEmbeddingProviderConfig.js` loads only approved non-sensitive `.env` names, requires exact provider/model/version/dimensions, and obtains the provider secret only from process variable `QWEN_KEY`.
+- `liveEmbeddingProviderClient.js` performs one explicitly opted-in HTTPS embedding request against the approved Beijing OpenAI-compatible endpoint; it is not a general generation or lifecycle component.
+- `liveEmbeddingIndexGate.js` sequences exact qualification, real-provider vector validation, and one controlled Neo4j evidence write. Invalid or failed paths never invoke the write boundary.
 
 ## Public interface
 
@@ -23,6 +26,13 @@ The four inward boundaries are independently callable and independently testable
 
 - `querySemantic(request)` for production semantic queries.
 - `evaluateIndexDelivery(request)` for the embedding qualification and credential release gate.
+
+`liveEmbeddingIndexGate.js` provides:
+
+- `executeApprovedEmbedding(input)` for the real opt-in path.
+- `executeFailureScenario(input)` for deterministic proof that provider errors, unapproved identity, omitted model/dimensions, non-finite vectors, and dimension mismatch produce zero writes.
+- Every rejected live-provider scenario produces zero index writes.
+- Request evidence containing only the explicit base URL, model, dimensions, and input cardinality; authorization headers and secret values are never returned.
 
 Dependencies are explicit: `configuration`, `canonicalGraph`, `neo4jRetrievalBoundary`, and `embeddingQualification`. Tests may inject fakes at these interfaces; production code must not import tests.
 
@@ -41,6 +51,10 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Authority policy reads `design/KG/SystemArchitecture.json` through an injected canonical graph boundary and treats Neo4j as a projection only.
 - Credentials are values, never module-level defaults; provider credentials must never be interpolated into or transported through Cypher.
 - Cypher credential protection follows query and parameter variables structurally into execution calls; keyword-distance windows are not acceptable enforcement.
+- Local `.env` loading accepts only `ARGO_EMBEDDING_BASE_URL`, `ARGO_EMBEDDING_MODEL`, `ARGO_EMBEDDING_PROVIDER`, `ARGO_EMBEDDING_MODEL_VERSION`, and `ARGO_EMBEDDING_DIMENSIONS`. It rejects unknown/implicit provider identity and never loads `QWEN_KEY` from a file.
+- The approved live profile is provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`, endpoint `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification `qualification-2026-07-25`, dimensions `1024`.
+- Live network access requires explicit opt-in through `ARGO_LIVE_PROVIDER_E2E=1` and is restricted to controlled local or protected CI execution. Default/offline CI remains deterministic but never substitutes fake evidence for a live pass.
+- The controlled Neo4j test boundary uses process-injected `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, `ARGO_NEO4J_PASSWORD`, and optional `ARGO_NEO4J_DATABASE`; no Neo4j credential is written to `.env.example` or persisted evidence.
 
 ## Owned tests
 
@@ -52,3 +66,4 @@ Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protec
 - Passing TS-07 is sufficient evidence that this slice realizes the external credential boundary.
 - Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered`; scoped attribution uses committed mounted TS-07 evidence, runner failure records, and the handoff scope rather than uncommitted intent relationships.
 - A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.
+- C1-C6 remain a protected checkpoint. The expanded live-provider slice completes only when all eight scoped explicit entrypoints and ten frozen critical guards pass, the live result proves a real HTTP call and controlled Neo4j evidence, and failure/redaction matrices pass with zero baseline delivered regression.
