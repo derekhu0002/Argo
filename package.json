@@ -164,6 +164,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run compile:webviews",
     "compile:webviews": "node .argo/scripts/buildWebviews.js",
+    "sync:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js",
+    "verify:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js --verify",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "test:architecture:commands-entry-boundary": "node tests/architecture/commands-entry-boundary.test.js",
@@ -203,6 +205,7 @@
     "@xyflow/react": "^12.10.2",
     "htm": "^3.1.1",
     "ignore": "^7.0.5",
+    "neo4j-driver": "^6.2.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   }

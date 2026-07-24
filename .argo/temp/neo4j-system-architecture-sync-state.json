@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "graphs": {
+    "design/KG/SystemArchitecture.json": {
+      "graphKey": "design/KG/SystemArchitecture.json",
+      "dirty": false,
+      "lastFailureAt": "2026-07-24T03:18:34.273Z",
+      "lastRecoveredAt": "2026-07-24T03:18:38.214Z",
+      "lastSuccessAt": "2026-07-24T03:18:38.215Z",
+      "lastVerifiedCounts": {
+        "elements": 5,
+        "relationships": 4,
+        "views": 6
+      }
+    }
+  }
+}

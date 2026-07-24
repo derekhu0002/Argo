@@ -13,6 +13,11 @@ const {
   validateViewElementLimits,
 } = require('./graph-semantics.js');
 const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js');
+const {
+  DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
+  recoverNeo4jSyncIfNeeded,
+  syncArchitectureToNeo4j,
+} = require('./neo4j-system-architecture-store.js');
 
 const HANDLED_MUTATION_TYPES = new Set([
   'addElement',
@@ -308,17 +313,22 @@ function readJson(filePath, label) {
   }
 }
 
-function loadContext(args = {}) {
+async function loadContext(args = {}) {
   const workspaceRoot = resolveWorkspaceRoot();
   const graphPath = resolveWorkspacePath(workspaceRoot, args.architecturePath || DEFAULT_GRAPH_PATH);
   const schemaPath = resolveSchemaPath(workspaceRoot);
-  return {
+  const context = {
     workspaceRoot,
     graphPath,
     schemaPath,
     document: readJson(graphPath.absolutePath, graphPath.relativePath),
     schema: readJson(schemaPath.absolutePath, schemaPath.relativePath),
   };
+  context.neo4jSyncRecovery = await recoverNeo4jSyncIfNeeded({
+    architecturePath: graphPath.relativePath,
+    document: context.document,
+  });
+  return context;
 }
 
 function validateDocument(document, schema, options = {}) {
@@ -1008,7 +1018,7 @@ function removeEntries(existing, removals) {
   return (Array.isArray(existing) ? existing : []).filter(entry => !removalSet.has(entry));
 }
 
-function buildMutationResult(context, mutations, write) {
+async function buildMutationResult(context, mutations, write) {
   const beforeSummary = summarizeDocument(context.document);
   let mutationResult;
   try {
@@ -1058,7 +1068,36 @@ function buildMutationResult(context, mutations, write) {
 
   writeGraph(context.graphPath.absolutePath, mutationResult.document);
   result.written = true;
+
+  if (shouldSyncCanonicalGraphToNeo4j(context.graphPath.relativePath)) {
+    try {
+      const syncResult = await syncArchitectureToNeo4j({
+        architecturePath: context.graphPath.relativePath,
+        document: mutationResult.document,
+      });
+      result.neo4jSync = {
+        status: 'passed',
+        graphKey: syncResult.graphKey,
+        counts: syncResult.counts,
+      };
+    } catch (error) {
+      const errorMessage = String(error && error.message ? error.message : error);
+      result.neo4jSync = {
+        status: 'failed',
+        error: errorMessage,
+      };
+      result.warnings = addUnique(result.warnings || [], [
+        `SystemArchitecture.json was written, but Neo4j sync failed: ${errorMessage}`,
+        'Run node .argo/scripts/syncSystemArchitectureToNeo4j.js to rebuild the Neo4j projection for the canonical intent graph.',
+      ]);
+    }
+  }
+
   return result;
+}
+
+function shouldSyncCanonicalGraphToNeo4j(relativeGraphPath) {
+  return normalizeRelativePath(relativeGraphPath) === normalizeRelativePath(NEO4J_DEFAULT_GRAPH_PATH);
 }
 
 function buildFailureGuidance(errors) {
@@ -1282,30 +1321,30 @@ function toolResult(payload) {
 
 async function callTool(name, args = {}) {
   if (name === 'getSystemArchitecture') {
-    const context = loadContext(args);
-    return toolResult({
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings({
       status: 'passed',
       graphPath: context.graphPath.relativePath,
       document: context.document,
-    });
+    }, context));
   }
 
   if (name === 'getIntentElementContext') {
-    const context = loadContext(args);
-    return toolResult(buildIntentElementContext(context, args));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(buildIntentElementContext(context, args), context));
   }
 
   if (name === 'validateSystemArchitecture') {
-    const context = loadContext(args);
+    const context = await loadContext(args);
     const errors = validateDocument(context.document, context.schema, {
       validateAllViewElementLimits: true,
     });
-    return toolResult({
+    return toolResult(attachContextWarnings({
       status: errors.length === 0 ? 'passed' : 'failed',
       graphPath: context.graphPath.relativePath,
       schemaPath: context.schemaPath.relativePath,
       errors,
-    });
+    }, context));
   }
 
   if (name === 'generateArchitectureDiffPlantuml') {
@@ -1317,61 +1356,77 @@ async function callTool(name, args = {}) {
   }
 
   if (name === 'previewSystemArchitectureMutation') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, args.mutations, false));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, false), context));
   }
 
   if (name === 'applySystemArchitectureMutation') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, args.mutations, true));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, true), context));
   }
 
   if (name === 'addArchitectureElement') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], !args.dryRun), context));
   }
 
   if (name === 'updateArchitectureElement') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], !args.dryRun), context));
   }
 
   if (name === 'removeArchitectureElement') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
   }
 
   if (name === 'addArchitectureRelationship') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], !args.dryRun), context));
   }
 
   if (name === 'updateArchitectureRelationship') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], !args.dryRun), context));
   }
 
   if (name === 'removeArchitectureRelationship') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
   }
 
   if (name === 'addArchitectureView') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'addView', view: args.view }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addView', view: args.view }], !args.dryRun), context));
   }
 
   if (name === 'updateArchitectureView') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], !args.dryRun), context));
   }
 
   if (name === 'removeArchitectureView') {
-    const context = loadContext(args);
-    return toolResult(buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], !args.dryRun));
+    const context = await loadContext(args);
+    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], !args.dryRun), context));
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+function attachContextWarnings(payload, context) {
+  const recovery = context && context.neo4jSyncRecovery;
+  if (!recovery || !recovery.attempted) {
+    return payload;
+  }
+
+  payload.neo4jRecovery = recovery;
+  if (recovery.status === 'failed') {
+    payload.warnings = addUnique(payload.warnings || [], [
+      `Neo4j automatic resync failed before servicing ${context.graphPath.relativePath}: ${recovery.error}`,
+      'The canonical JSON graph is still being served and written. Neo4j will be retried again on the next canonical read or write, or you can run node .argo/scripts/syncSystemArchitectureToNeo4j.js manually.',
+    ]);
+  }
+  return payload;
 }
 
 function send(message) {
