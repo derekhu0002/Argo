@@ -21,9 +21,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runQueryPurposeValidation.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runQueryPurposeValidation.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT03_PURPOSE_NOT_PRESERVED: implementation-design purpose must remain explicit request data\n+ actual - expected\n\n+ undefined\n- 'implementation-design'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'implementation-design',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT03_MISSING_PURPOSE_NOT_REJECTED: explicit query purpose must never default or be inferred\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:27:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT03_PURPOSE_NOT_PRESERVED: implementation-design purpose must remain explicit request data\n+ actual - expected\n\n+ undefined\n- 'implementation-design'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'implementation-design',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT03_MISSING_PURPOSE_NOT_REJECTED: explicit query purpose must never default or be inferred\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:27:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-03",
@@ -34,9 +34,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runQueryPurposeValidation.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runQueryPurposeValidation.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT03_PURPOSE_NOT_PRESERVED: implementation-design purpose must remain explicit request data\n+ actual - expected\n\n+ undefined\n- 'implementation-design'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'implementation-design',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT03_MISSING_PURPOSE_NOT_REJECTED: explicit query purpose must never default or be inferred\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:27:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT03_PURPOSE_NOT_PRESERVED: implementation-design purpose must remain explicit request data\n+ actual - expected\n\n+ undefined\n- 'implementation-design'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'implementation-design',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT03_MISSING_PURPOSE_NOT_REJECTED: explicit query purpose must never default or be inferred\n\n'passed' !== 'failed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runQueryPurposeValidation.js:27:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'failed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-04",
@@ -151,9 +151,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runGraphTidyFullSnapshot.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT12_GRAPH_TIDY_MODE_FAILURE: graph-tidy must select full-snapshot mode\n+ actual - expected\n\n+ undefined\n- 'full-snapshot'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:20:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'full-snapshot',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT12_GRAPH_TIDY_MODE_FAILURE: graph-tidy must select full-snapshot mode\n+ actual - expected\n\n+ undefined\n- 'full-snapshot'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'full-snapshot',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT12_GRAPH_TIDY_MODE_FAILURE: graph-tidy must select full-snapshot mode\n+ actual - expected\n\n+ undefined\n- 'full-snapshot'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:20:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'full-snapshot',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT12_GRAPH_TIDY_MODE_FAILURE: graph-tidy must select full-snapshot mode\n+ actual - expected\n\n+ undefined\n- 'full-snapshot'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runGraphTidyFullSnapshot.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'full-snapshot',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-13",

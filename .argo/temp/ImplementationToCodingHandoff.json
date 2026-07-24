@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-24T11:42:00.000Z",
+  "generatedAt": "2026-07-24T12:06:05.434Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Implement the compatible getSystemArchitecture query boundary: preserve no-argument complete canonical reads, carry explicit purpose, reject audit without subject, and force graph-tidy to bypass semantic retrieval for the complete canonical snapshot.",
+  "summary": "Implement the compatible getSystemArchitecture query boundary: preserve the exact no-argument public envelope, require explicit purpose, reject audit without subject, and force graph-tidy to bypass semantic retrieval with zero path invocations for the complete canonical snapshot.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -13,7 +13,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DT-01-ConsumerRole",
       "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
       "controlPoint": "Execute the unchanged downstream no-argument consumer through getSystemArchitecture.",
-      "observationPoint": "Compare the returned document with every canonical Element, Relationship, View, and membership.",
+      "observationPoint": "Compare the complete public envelope with the legacy status, graphPath, and canonical document shape, and reject query-mode metadata.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
     },
@@ -21,7 +21,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess",
       "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
       "controlPoint": "Run the established no-argument intent-context consumption process.",
-      "observationPoint": "Observe complete canonical graph availability with no consumer migration.",
+      "observationPoint": "Observe an externally equivalent legacy envelope with complete canonical graph availability and no query metadata.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
     },
@@ -29,7 +29,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DT-01",
       "entryPath": "tests/explicit/entries/runGraphQueryCompatibility.js",
       "controlPoint": "Invoke the existing service boundary without a query object.",
-      "observationPoint": "Compare externally observable graph results with the authoritative canonical snapshot.",
+      "observationPoint": "Compare the externally observable full response envelope with the exact legacy shape and authoritative canonical snapshot.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "node tests/explicit/entries/runGraphQueryCompatibility.js"
     },
@@ -52,26 +52,26 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03-QueryRequest",
       "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-      "controlPoint": "Send equal intent text with explicit implementation-design and audit purposes, omitting the audit subject.",
-      "observationPoint": "Inspect normalized purpose data and the audit request disposition before retrieval.",
+      "controlPoint": "Send equal intent text with missing, explicit implementation-design, and audit purposes, omitting the audit subject.",
+      "observationPoint": "Inspect QUERY_PURPOSE_REQUIRED, normalized explicit purpose data, and the audit request disposition before retrieval.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
-      "failureReason": "Expected implementation-design purpose metadata, but getSystemArchitecture ignored the query object: DT03_PURPOSE_NOT_PRESERVED."
+      "failureReason": "Expected a missing-purpose request to be rejected, but getSystemArchitecture ignored the query object and returned success: DT03_MISSING_PURPOSE_NOT_REJECTED."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
       "entryPath": "tests/explicit/entries/runQueryPurposeValidation.js",
-      "controlPoint": "Cross the mode and purpose gate with explicit implementation-design and audit requests.",
-      "observationPoint": "Observe purpose preservation and AUDIT_SUBJECT_REQUIRED rejection.",
+      "controlPoint": "Cross the mode and purpose gate with missing-purpose, explicit implementation-design, and audit requests.",
+      "observationPoint": "Observe QUERY_PURPOSE_REQUIRED, purpose preservation, and AUDIT_SUBJECT_REQUIRED as stable independent outcomes.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runQueryPurposeValidation.js",
-      "failureReason": "Expected implementation-design purpose metadata, but getSystemArchitecture ignored the query object: DT03_PURPOSE_NOT_PRESERVED."
+      "failureReason": "Expected a missing-purpose request to be rejected, but getSystemArchitecture ignored the query object and returned success: DT03_MISSING_PURPOSE_NOT_REJECTED."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
       "entryPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
       "controlPoint": "Submit an explicit graph-tidy mutation-preparation request.",
-      "observationPoint": "Inspect full-snapshot mode, semantic-retrieval bypass evidence, and complete canonical content.",
+      "observationPoint": "Inspect full-snapshot mode, bypass metadata, independent zero-invocation telemetry with no semantic result artifacts, and complete canonical content.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runGraphTidyFullSnapshot.js",
       "failureReason": "Expected graph-tidy full-snapshot metadata, but getSystemArchitecture ignored the query object: DT12_GRAPH_TIDY_MODE_FAILURE."
@@ -117,14 +117,14 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-03",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT03_PURPOSE_NOT_PRESERVED",
-      "nextAction": "Add the optional nested query DTO to the getSystemArchitecture schema and validate explicit purpose, intent, and audit subject before retrieval."
+      "failureSignal": "DT03_MISSING_PURPOSE_NOT_REJECTED",
+      "nextAction": "Add the optional nested query DTO to the getSystemArchitecture schema; reject explicit query requests without purpose as QUERY_PURPOSE_REQUIRED; preserve valid purpose; and reject audit without subject before retrieval."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
       "failureSignal": "DT12_GRAPH_TIDY_MODE_FAILURE",
-      "nextAction": "Dispatch graph-tidy directly to the canonical full snapshot and return normalized full-snapshot and semantic-bypass metadata."
+      "nextAction": "Dispatch graph-tidy directly to the canonical full snapshot, return normalized full-snapshot and semantic-bypass metadata, and expose independent execution telemetry proving zero semantic retrieval invocations."
     }
   ],
   "taskExecutionPlan": {
@@ -147,6 +147,7 @@
         ],
         "steps": [
           "Extend only the getSystemArchitecture input schema with an optional nested query object.",
+          "Reject a present query object without purpose using QUERY_PURPOSE_REQUIRED.",
           "Normalize explicit purpose without inferring it from text or caller identity.",
           "Reject audit without a non-empty subject using AUDIT_SUBJECT_REQUIRED.",
           "Run DT-01 and DT-03 entrypoints without modifying frozen files."
@@ -171,6 +172,7 @@
         "steps": [
           "Select full-snapshot mode for graph-tidy before any semantic retrieval path.",
           "Return mode full-snapshot and semanticRetrieval bypassed metadata.",
+          "Expose semanticRetrievalInvocationCount as zero and no semantic retrieval result artifacts.",
           "Return the unchanged complete canonical document.",
           "Run DT-02 and DT-12 entrypoints without modifying frozen files."
         ],
@@ -209,6 +211,7 @@
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
+    "tests/harness/intentArchitectureQueryHarness.js",
     "tests/explicit/entries/runGraphQueryCompatibility.js",
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runQueryPurposeValidation.js",
@@ -233,7 +236,7 @@
     "tests/explicit/entries/runCapacityEvidence.js"
   ],
   "openGaps": [
-    "Handoff scope expected failures: DT-03 purpose/audit validation and DT-12 graph-tidy mode metadata are not implemented.",
+    "Handoff scope expected failures: DT-03 missing-purpose/purpose/audit validation and DT-12 graph-tidy mode plus zero semantic-path invocation evidence are not implemented.",
     "Out-of-scope baseline: 16 mounted testcases outside DT-01/02/03/12 are now executable and fail with business-readable missing-implementation signals; they are frozen evidence but are not Coding targets in this handoff."
   ]
 }

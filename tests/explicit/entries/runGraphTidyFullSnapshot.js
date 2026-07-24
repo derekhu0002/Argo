@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const {
   assertCompleteCanonicalSnapshot,
+  observeSemanticRetrievalActivity,
   observeReturnedGraph,
   readCanonicalSnapshot,
   readForPurpose,
@@ -17,6 +18,7 @@ async function main() {
   });
 
   // THEN semantic retrieval is bypassed and the complete canonical snapshot is returned
+  const semanticActivity = observeSemanticRetrievalActivity(graphTidyResult);
   assert.strictEqual(
     graphTidyResult.query && graphTidyResult.query.mode,
     'full-snapshot',
@@ -26,6 +28,16 @@ async function main() {
     graphTidyResult.query && graphTidyResult.query.semanticRetrieval,
     'bypassed',
     'DT12_SEMANTIC_BYPASS_FAILURE: graph-tidy must bypass semantic retrieval',
+  );
+  assert.strictEqual(
+    semanticActivity.invocationCount,
+    0,
+    'DT12_SEMANTIC_PATH_INVOKED: graph-tidy execution telemetry must observe zero semantic retrieval invocations',
+  );
+  assert.strictEqual(
+    semanticActivity.semanticResultPresent,
+    false,
+    'DT12_SEMANTIC_RESULT_LEAKED: graph-tidy must expose no semantic retrieval artifacts',
   );
   assertCompleteCanonicalSnapshot(
     observeReturnedGraph(graphTidyResult),

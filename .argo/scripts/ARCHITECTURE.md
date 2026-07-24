@@ -12,13 +12,13 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 `getSystemArchitecture` accepts:
 
-- no `query`: return the existing payload shape with the complete canonical `document`;
+- no `query`: return exactly the legacy public envelope `{ status, graphPath, document }` with the complete canonical `document` and no query-mode metadata;
 - `query.purpose`: one of `intent-decision`, `implementation-design`, `coding-repair`, `audit`, or `graph-tidy`;
 - `query.intent`: required non-empty natural-language intent for an explicit query;
 - `query.subject`: required non-empty audit subject when `purpose` is `audit`;
 - optional deterministic anchors may be added without changing no-argument behavior.
 
-Successful explicit requests expose normalized `query` metadata. `graph-tidy` reports `mode: "full-snapshot"` and `semanticRetrieval: "bypassed"`. Audit without subject returns `status: "failed"` with `error.category: "AUDIT_SUBJECT_REQUIRED"`.
+An explicit query without purpose returns `status: "failed"` with `error.category: "QUERY_PURPOSE_REQUIRED"`; purpose is never defaulted or inferred. Successful explicit requests expose normalized `query` metadata. `graph-tidy` reports `mode: "full-snapshot"`, `semanticRetrieval: "bypassed"`, and independent execution telemetry with `semanticRetrievalInvocationCount: 0`. Audit without subject returns `status: "failed"` with `error.category: "AUDIT_SUBJECT_REQUIRED"`.
 
 ## Local dependencies
 

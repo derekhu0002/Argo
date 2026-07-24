@@ -1,14 +1,18 @@
 const assert = require('node:assert');
 const {
   readForPurpose,
+  readWithoutPurpose,
 } = require('../../harness/intentArchitectureQueryHarness.js');
 
 async function main() {
-  // GIVEN equal intent text with explicit implementation-design and audit purposes,
-  // and the audit request omits its subject
+  // GIVEN equal intent text with missing, implementation-design, and audit purposes,
+  // while the audit request also omits its subject
   const sharedIntent = 'Inspect the compatible intent-query boundary';
 
-  // WHEN both requests cross mode and purpose validation
+  // WHEN all requests cross mode and purpose validation
+  const missingPurposeResult = await readWithoutPurpose({
+    intent: sharedIntent,
+  });
   const implementationDesignResult = await readForPurpose({
     purpose: 'implementation-design',
     intent: sharedIntent,
@@ -18,7 +22,18 @@ async function main() {
     intent: sharedIntent,
   });
 
-  // THEN purpose remains explicit and audit without subject is rejected
+  // THEN missing purpose is rejected, explicit purpose is preserved,
+  // and audit without subject is independently rejected
+  assert.strictEqual(
+    missingPurposeResult.status,
+    'failed',
+    'DT03_MISSING_PURPOSE_NOT_REJECTED: explicit query purpose must never default or be inferred',
+  );
+  assert.strictEqual(
+    missingPurposeResult.error && missingPurposeResult.error.category,
+    'QUERY_PURPOSE_REQUIRED',
+    'DT03_MISSING_PURPOSE_CATEGORY_UNSTABLE: rejection must expose QUERY_PURPOSE_REQUIRED',
+  );
   assert.strictEqual(
     implementationDesignResult.query && implementationDesignResult.query.purpose,
     'implementation-design',

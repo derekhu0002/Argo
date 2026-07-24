@@ -18,12 +18,54 @@ async function readForPurpose({ purpose, intent, subject }) {
   return invokeGetSystemArchitecture({ query });
 }
 
+async function readWithoutPurpose({ intent }) {
+  return invokeGetSystemArchitecture({ query: { intent } });
+}
+
 function readCanonicalSnapshot() {
   return JSON.parse(fs.readFileSync(canonicalGraphPath, 'utf8'));
 }
 
+function expectedLegacyEnvelope(canonicalSnapshot) {
+  return {
+    status: 'passed',
+    graphPath: 'design/KG/SystemArchitecture.json',
+    document: canonicalSnapshot,
+  };
+}
+
 function observeReturnedGraph(result) {
   return result.document;
+}
+
+function observeSemanticRetrievalActivity(result) {
+  const queryExecution = result.query && result.query.execution;
+  const semanticResult = result.result && (
+    result.result.seedsByType
+    || result.result.semanticSeeds
+    || result.result.semanticRetrieval
+  );
+  return {
+    invocationCount: queryExecution && queryExecution.semanticRetrievalInvocationCount,
+    semanticResultPresent: Boolean(semanticResult),
+  };
+}
+
+function assertLegacyEnvelopeExternallyEquivalent(actual, expected) {
+  assert.deepStrictEqual(
+    actual,
+    expected,
+    'DT01_PUBLIC_ENVELOPE_CHANGED: no-argument response must retain the complete legacy public envelope',
+  );
+}
+
+function assertNoQueryModeMetadata(result) {
+  for (const forbiddenKey of ['query', 'mode', 'result', 'retrieval', 'provenance']) {
+    assert(
+      !Object.prototype.hasOwnProperty.call(result, forbiddenKey),
+      `DT01_QUERY_METADATA_LEAKED: no-argument response must not add '${forbiddenKey}'`,
+    );
+  }
 }
 
 function assertCompleteCanonicalSnapshot(actual, expected, failureCategory) {
@@ -53,9 +95,14 @@ function assertUnique(values, message) {
 
 module.exports = {
   assertCompleteCanonicalSnapshot,
+  assertLegacyEnvelopeExternallyEquivalent,
+  assertNoQueryModeMetadata,
   assertUniqueCanonicalIdentities,
+  expectedLegacyEnvelope,
+  observeSemanticRetrievalActivity,
   observeReturnedGraph,
   readAsUnchangedConsumer,
   readCanonicalSnapshot,
   readForPurpose,
+  readWithoutPurpose,
 };

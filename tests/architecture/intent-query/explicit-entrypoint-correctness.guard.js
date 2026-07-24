@@ -9,6 +9,21 @@ const entryPaths = [
   'tests/explicit/entries/runQueryPurposeValidation.js',
   'tests/explicit/entries/runGraphTidyFullSnapshot.js',
 ];
+const requiredObservations = new Map([
+  ['tests/explicit/entries/runGraphQueryCompatibility.js', [
+    'assertLegacyEnvelopeExternallyEquivalent',
+    'assertNoQueryModeMetadata',
+  ]],
+  ['tests/explicit/entries/runQueryPurposeValidation.js', [
+    'readWithoutPurpose',
+    'QUERY_PURPOSE_REQUIRED',
+    'AUDIT_SUBJECT_REQUIRED',
+  ]],
+  ['tests/explicit/entries/runGraphTidyFullSnapshot.js', [
+    'observeSemanticRetrievalActivity',
+    'semanticActivity.invocationCount',
+  ]],
+]);
 
 // GIVEN the handoff-scoped explicit testcase entrypoints
 for (const entryPath of entryPaths) {
@@ -27,4 +42,16 @@ for (const entryPath of entryPaths) {
     !source.includes("require('../../.argo/") && !source.includes('child_process'),
     `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${entryPath} exposes low-level runtime plumbing`,
   );
+  for (const observation of requiredObservations.get(entryPath) || []) {
+    assert(
+      source.includes(observation),
+      `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${entryPath} is missing ${observation}`,
+    );
+  }
 }
+
+const handoff = JSON.parse(fs.readFileSync(path.join(repoRoot, '.argo', 'temp', 'ImplementationToCodingHandoff.json'), 'utf8'));
+assert(
+  handoff.frozenFiles.includes('tests/harness/intentArchitectureQueryHarness.js'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: the intent-query Harness must be frozen for Coding/Repair',
+);
