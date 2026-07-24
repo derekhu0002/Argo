@@ -138,6 +138,7 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
+    outputSchema: systemArchitectureMcp.GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
   },
   {
     name: 'getIntentElementContext',

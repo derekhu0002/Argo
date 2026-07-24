@@ -10,6 +10,83 @@ const LEGAL_QUERY_PURPOSES = new Set([
   'audit',
   'graph-tidy',
 ]);
+const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
+  type: 'object',
+  required: ['version', 'mode', 'document', 'query', 'error'],
+  properties: {
+    version: {
+      type: 'string',
+      const: '1.0',
+      description: 'Version of the typed getSystemArchitecture output contract.',
+    },
+    mode: {
+      type: 'string',
+      enum: ['full-snapshot', 'semantic-query', 'error'],
+      description: 'Discriminator for the response variant.',
+    },
+    document: {
+      type: ['object', 'null'],
+      description: 'Canonical graph snapshot or semantic query result; null for errors.',
+    },
+    query: {
+      type: ['object', 'null'],
+      properties: {
+        purpose: { type: 'string', enum: Array.from(LEGAL_QUERY_PURPOSES) },
+        intent: { type: 'string' },
+        subject: { type: 'string' },
+        mode: { type: 'string', enum: ['full-snapshot', 'semantic-query'] },
+        semanticRetrieval: { type: 'string', enum: ['bypassed', 'invoked'] },
+      },
+      additionalProperties: true,
+      description: 'Normalized explicit query metadata; null for no-argument snapshots and errors.',
+    },
+    error: {
+      oneOf: [
+        {
+          type: 'object',
+          required: ['category', 'message'],
+          properties: {
+            category: { type: 'string' },
+            message: { type: 'string' },
+          },
+          additionalProperties: false,
+        },
+        { type: 'null' },
+      ],
+      description: 'Stable typed error details; null for successful responses.',
+    },
+  },
+  oneOf: [
+    {
+      properties: {
+        mode: { const: 'full-snapshot' },
+        document: { type: 'object' },
+        query: { type: ['object', 'null'] },
+        error: { type: 'null' },
+      },
+    },
+    {
+      properties: {
+        mode: { const: 'semantic-query' },
+        document: { type: 'object' },
+        query: { type: 'object' },
+        error: { type: 'null' },
+      },
+    },
+    {
+      properties: {
+        mode: { const: 'error' },
+        document: { type: 'null' },
+        query: { type: 'null' },
+        error: {
+          type: 'object',
+          required: ['category', 'message'],
+        },
+      },
+    },
+  ],
+  additionalProperties: false,
+};
 const SCHEMA_PATH_CANDIDATES = [
   '.argo/schema/SystemArchitecture.schema.json',
 ];
@@ -61,6 +138,7 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
+    outputSchema: GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
   },
   {
     name: 'getIntentElementContext',
@@ -1360,7 +1438,7 @@ function queryError(category, message) {
   };
 }
 
-function toolResult(payload) {
+function toolResult(payload, structuredContent = undefined) {
   return {
     content: [
       {
@@ -1368,8 +1446,20 @@ function toolResult(payload) {
         text: JSON.stringify(payload, null, 2),
       },
     ],
+    ...(structuredContent === undefined ? {} : { structuredContent }),
     isError: payload.status === 'failed',
   };
+}
+
+function getSystemArchitectureResult(payload) {
+  const failed = payload.status === 'failed';
+  return toolResult(payload, {
+    version: '1.0',
+    mode: failed ? 'error' : ((payload.query && payload.query.mode) || 'full-snapshot'),
+    document: failed ? null : payload.document,
+    query: failed ? null : (payload.query || null),
+    error: failed ? payload.error : null,
+  });
 }
 
 async function callTool(name, args = {}, dependencies = undefined) {
@@ -1377,13 +1467,13 @@ async function callTool(name, args = {}, dependencies = undefined) {
     if (Object.prototype.hasOwnProperty.call(args, 'query')) {
       const validation = validateExplicitQuery(args.query);
       if (validation.status === 'failed') {
-        return toolResult(validation);
+        return getSystemArchitectureResult(validation);
       }
 
       const query = validation.query;
       if (query.purpose === 'graph-tidy') {
         const context = await loadContext(args);
-        return toolResult(attachContextWarnings({
+        return getSystemArchitectureResult(attachContextWarnings({
           status: 'passed',
           graphPath: context.graphPath.relativePath,
           query: {
@@ -1397,13 +1487,13 @@ async function callTool(name, args = {}, dependencies = undefined) {
 
       const semanticRetrievalBoundary = dependencies && dependencies.semanticRetrievalBoundary;
       if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
-        return toolResult(queryError(
+        return getSystemArchitectureResult(queryError(
           'SEMANTIC_RETRIEVAL_UNAVAILABLE',
           'Semantic retrieval boundary is unavailable',
         ));
       }
       const document = await semanticRetrievalBoundary.retrieve(query);
-      return toolResult({
+      return getSystemArchitectureResult({
         status: 'passed',
         graphPath: normalizeRelativePath(args.architecturePath || DEFAULT_GRAPH_PATH),
         query: {
@@ -1416,7 +1506,7 @@ async function callTool(name, args = {}, dependencies = undefined) {
     }
 
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings({
+    return getSystemArchitectureResult(attachContextWarnings({
       status: 'passed',
       graphPath: context.graphPath.relativePath,
       document: context.document,
@@ -1623,6 +1713,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
   TOOLS,
   applyMutations,
   callTool,

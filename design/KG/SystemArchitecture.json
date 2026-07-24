@@ -241,7 +241,7 @@
       "id": "grag-query-service",
       "name": "Intent Architecture Query Service",
       "type": "Application Service",
-      "description": "DT-01 and DT-02 accepted service contract: one interface retains no-argument complete snapshots and offers an optional, unambiguous semantic-query mode.",
+      "description": "Typed Agent-facing MCP application service: preserves no-argument complete snapshots and supports optional typed structured query/results. MCP is the boundary, not the Graph RAG engine.",
       "attributes": [
         {
           "name": "decisionTrace.DT-01",
@@ -301,7 +301,7 @@
       "id": "grag-canonical-graph",
       "name": "Canonical Intent Graph",
       "type": "Data Object",
-      "description": "Authoritative intent-architecture data whose complete snapshot, relationships, View membership, and mutation version govern all query results.",
+      "description": "Authoritative design/KG/SystemArchitecture.json intent graph. Neo4j is only a query projection/index; stale or conflicting projection state never outranks canonical intent.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -313,7 +313,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -323,6 +323,13 @@
           "type": "Acceptance Test",
           "Input": "A canonical graph containing Elements, Relationships, Views, and cross-View memberships.",
           "acceptanceCriteria": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority",
+          "description": "Acceptor control point: introduce stale or conflicting query projection. Observation point: canonical graph wins or query is rejected; projection never redefines intent.",
+          "type": "Acceptance Test",
+          "Input": "Canonical state and conflicting Neo4j projection.",
+          "acceptanceCriteria": "tests/explicit/entries/runCanonicalProjectionAuthority.js"
         }
       ]
     },
@@ -408,7 +415,7 @@
       "id": "grag-seed-retrieval",
       "name": "Independent Semantic Seed Retrieval",
       "type": "Application Function",
-      "description": "DT-04 and DT-05 behavior: independently assess Element, Relationship, and View candidates with type-specific thresholds and include every qualifying candidate, including zero results.",
+      "description": "Independently evaluates Element, ArchitectureRelationship, and View with per-channel exact thresholds. Phase 1 is threshold-all with 100% critical seed recall; raw cross-channel scores are not globally ranked and ANN top-k cannot define correctness.",
       "attributes": [
         {
           "name": "decisionTrace.DT-04",
@@ -460,7 +467,7 @@
       "id": "grag-purpose-closure",
       "name": "Purpose Policy Graph Closure",
       "type": "Application Function",
-      "description": "DT-06 and DT-07 behavior: Graph RAG supplies seeds only; one of five explicit task-purpose policies applies deterministic ArchiMate graph expansion.",
+      "description": "Graph RAG discovers semantic seeds only. Five purpose policies use deterministic parameterized Cypher and ArchiMate direction semantics; free-form generated Cypher cannot determine mandatory closure.",
       "attributes": [
         {
           "name": "decisionTrace.DT-06",
@@ -712,7 +719,7 @@
       "id": "grag-semantic-index",
       "name": "Semantic Retrieval Index",
       "type": "Data Object",
-      "description": "Versioned semantic index over Element, Relationship, and View content, including nested semantics and View membership.",
+      "description": "Versioned Neo4j projection over independent Element, ArchitectureRelationship, and View channels. It exposes approved model identity/version/dimensions and content/canonical versions, never becomes authority, and keeps ANN benchmark-only for phase-1 correctness.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -815,7 +822,7 @@
       "id": "grag-capacity-residual",
       "name": "Deferred Query Capacity Governance",
       "type": "Assessment",
-      "description": "DT-19 and DT-05-R2 explicit residual coordination: phase 2 must decide token budgets, pagination, caps, and truncation or continuation semantics after phase-1 precision and cardinality evidence exists.",
+      "description": "DT-19 remains open: token budgets, pagination, caps, top-k, truncation, and continuation await human decision after phase-1 evidence. No such control defines phase-1 correctness.",
       "attributes": [
         {
           "name": "decisionTrace.DT-05-R2",
@@ -841,6 +848,248 @@
           "type": "Acceptance Test",
           "Input": "Phase-1 query result sizes and measured precision for each declared purpose.",
           "acceptanceCriteria": "tests/explicit/entries/runCapacityEvidence.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-mcp-interface",
+      "name": "Typed Agent MCP Query Interface",
+      "type": "Application Interface",
+      "description": "Typed Agent-facing boundary for compatible no-argument snapshots and optional structured query/results; not the Graph RAG engine.",
+      "attributes": [
+        {
+          "name": "functionalPoint.TS-00",
+          "value": "{\"description\":\"Expose compatible snapshots and typed optional queries.\",\"businessOutcome\":\"Agent compatibility and decidable query semantics.\",\"observableBoundary\":\"One MCP tool supports both modes.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-00\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-00",
+          "description": "Control: invoke MCP without arguments and with typed query. Observe: compatible snapshot and typed query/result semantics.",
+          "type": "Acceptance Test",
+          "Input": "No-argument and typed query requests.",
+          "acceptanceCriteria": "tests/explicit/entries/runTypedMcpQueryContract.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-production-runtime",
+      "name": "Node.js Graph RAG Production Runtime",
+      "type": "System Software",
+      "description": "Existing Node.js MCP runtime and Neo4j JavaScript driver remain production mainline; Python frameworks are benchmark/reference only.",
+      "attributes": [
+        {
+          "name": "referenceCandidates",
+          "value": "LangChain Neo4j; LlamaIndex PropertyGraphIndex; Neo4j GraphRAG Python"
+        },
+        {
+          "name": "functionalPoint.TS-01",
+          "value": "{\"description\":\"Run production queries without required Python sidecar.\",\"businessOutcome\":\"Preserve established runtime.\",\"observableBoundary\":\"Node/Neo4j path has no mandatory Python.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-01",
+          "description": "Control: production semantic query through MCP. Observe: Node.js/Neo4j path and no required Python sidecar/framework.",
+          "type": "Acceptance Test",
+          "Input": "Production semantic query.",
+          "acceptanceCriteria": "tests/explicit/entries/runProductionGraphRagRuntime.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-native-retrieval-service",
+      "name": "Neo4j Native Semantic Retrieval Service",
+      "type": "Technology Service",
+      "description": "Selected production semantic/vector platform for seed discovery, subordinate to canonical authority; ANN and external frameworks are benchmark-only for phase-1 correctness.",
+      "attributes": [
+        {
+          "name": "functionalPoint.TS-01-native",
+          "value": "{\"description\":\"Provide Neo4j-native seed retrieval.\",\"businessOutcome\":\"Use selected production platform.\",\"observableBoundary\":\"Native evidence stays aligned to canonical authority.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01-Native\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-01-Native",
+          "description": "Control: production semantic query. Observe: Neo4j-native retrieval and canonical authority enforcement.",
+          "type": "Acceptance Test",
+          "Input": "Aligned production query.",
+          "acceptanceCriteria": "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-embedding-qualification",
+      "name": "Embedding Model Qualification Gate",
+      "type": "Requirement",
+      "description": "Provider/model/dimensions require human approval against multilingual, privacy, and offline needs before index delivery; no implicit default.",
+      "attributes": [
+        {
+          "name": "decisionState",
+          "value": "open|human coordination required"
+        },
+        {
+          "name": "functionalPoint.TS-06",
+          "value": "{\"description\":\"Qualify and explicitly approve embedding choice.\",\"businessOutcome\":\"No implicit unsuitable model.\",\"observableBoundary\":\"Identity/version/dimensions and evidence exist or gate blocks.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-06",
+          "description": "Control: evaluate candidates for multilingual, privacy, and offline needs. Observe: approved identity/version/dimensions or blocked gate, never default.",
+          "type": "Acceptance Test",
+          "Input": "Candidate models and coordinated requirements.",
+          "acceptanceCriteria": "tests/explicit/entries/runEmbeddingQualificationGate.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-credential-boundary",
+      "name": "External Production Credential Boundary",
+      "type": "Constraint",
+      "description": "Production Neo4j and embedding credentials are externally supplied through secure configuration; no hardcoded fallback.",
+      "attributes": [
+        {
+          "name": "functionalPoint.TS-07",
+          "value": "{\"description\":\"Require external secure credentials.\",\"businessOutcome\":\"No embedded production secrets.\",\"observableBoundary\":\"Absent credentials fail safely.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-07",
+          "description": "Control: start/query without external credentials. Observe: safe failure and no hardcoded secret fallback.",
+          "type": "Acceptance Test",
+          "Input": "Credentials absent.",
+          "acceptanceCriteria": "tests/explicit/entries/runExternalCredentialBoundary.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-1",
+      "name": "W1 Compatibility and Typed MCP Contract",
+      "type": "Work Package",
+      "description": "Preserve compatibility and typed MCP semantics.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-mcp-interface; grag-query-service"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-2",
+      "name": "W2 Native Technology and Embedding Qualification",
+      "type": "Work Package",
+      "description": "Establish runtime, native retrieval, canonical authority, credentials, and embedding gate.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-production-runtime; grag-native-retrieval-service; grag-canonical-graph; grag-embedding-qualification; grag-credential-boundary"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-3",
+      "name": "W3 Index Lifecycle and Exact-Threshold Baseline",
+      "type": "Work Package",
+      "description": "Deliver index consistency and exact threshold-all baseline; ANN benchmark-only.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-semantic-index; grag-index-lifecycle; grag-seed-retrieval"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-4",
+      "name": "W4 Independent Three-Channel Seeds",
+      "type": "Work Package",
+      "description": "Deliver independent Element, Relationship, and View seed channels.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-seed-retrieval"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-5",
+      "name": "W5 Deterministic Five-Purpose Closures",
+      "type": "Work Package",
+      "description": "Deliver parameterized Cypher and ArchiMate closures.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-purpose-closure"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-6",
+      "name": "W6 Integrity Provenance and Coherent Result",
+      "type": "Work Package",
+      "description": "Deliver endpoint/View integrity, provenance, and coherent result.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-endpoint-closure; grag-view-closure; grag-provenance; grag-coherent-context"
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-7",
+      "name": "W7 Phase-1 Quality and DT-19 Evidence",
+      "type": "Work Package",
+      "description": "Apply quality gate and produce DT-19 evidence without capacity decisions.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-quality-gate; grag-capacity-residual"
+        }
+      ]
+    },
+    {
+      "id": "grag-seven-wave-delivery",
+      "name": "Seven-Wave Graph RAG Delivery Gate",
+      "type": "Requirement",
+      "description": "Seven gated waves add technology/embedding qualification before exact-threshold index delivery; W7 informs but does not decide DT-19.",
+      "attributes": [
+        {
+          "name": "functionalPoint.TS-08",
+          "value": "{\"description\":\"Block out-of-order delivery.\",\"businessOutcome\":\"Respect prerequisite evidence.\",\"observableBoundary\":\"W7 cannot pass before W2-W6.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-08\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-08",
+          "description": "Control: attempt downstream work before prerequisites. Observe: gate blocks it and W7 cannot pass before W2-W6.",
+          "type": "Acceptance Test",
+          "Input": "Incomplete prerequisite evidence.",
+          "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js"
         }
       ]
     }
@@ -1297,6 +1546,226 @@
           "description": "DT-12"
         }
       ]
+    },
+    {
+      "id": "grag-rel-mcp-interface-service",
+      "name": "MCP interface exposes query service",
+      "type": "Assignment",
+      "source_id": "grag-mcp-interface",
+      "target_id": "grag-query-service",
+      "source_name": "Typed Agent MCP Query Interface",
+      "target_name": "Intent Architecture Query Service",
+      "description": "Typed MCP exposes the query service.",
+      "statement": "Typed Agent MCP Query Interface --(Assignment)--> Intent Architecture Query Service"
+    },
+    {
+      "id": "grag-rel-runtime-native",
+      "name": "Runtime realizes native service",
+      "type": "Realization",
+      "source_id": "grag-production-runtime",
+      "target_id": "grag-native-retrieval-service",
+      "source_name": "Node.js Graph RAG Production Runtime",
+      "target_name": "Neo4j Native Semantic Retrieval Service",
+      "description": "Node.js and Neo4j JavaScript realize native retrieval.",
+      "statement": "Node.js Graph RAG Production Runtime --(Realization)--> Neo4j Native Semantic Retrieval Service"
+    },
+    {
+      "id": "grag-rel-native-seeds",
+      "name": "Native retrieval supports seeds",
+      "type": "Serving",
+      "source_id": "grag-native-retrieval-service",
+      "target_id": "grag-seed-retrieval",
+      "source_name": "Neo4j Native Semantic Retrieval Service",
+      "target_name": "Independent Semantic Seed Retrieval",
+      "description": "Native capabilities support semantic seeds only.",
+      "statement": "Neo4j Native Semantic Retrieval Service --(Serving)--> Independent Semantic Seed Retrieval"
+    },
+    {
+      "id": "grag-rel-native-index",
+      "name": "Native retrieval accesses index",
+      "type": "Access",
+      "source_id": "grag-native-retrieval-service",
+      "target_id": "grag-semantic-index",
+      "source_name": "Neo4j Native Semantic Retrieval Service",
+      "target_name": "Semantic Retrieval Index",
+      "description": "Native retrieval accesses projection.",
+      "statement": "Neo4j Native Semantic Retrieval Service --(Access)--> Semantic Retrieval Index"
+    },
+    {
+      "id": "grag-rel-embedding-native",
+      "name": "Embedding qualification gates retrieval",
+      "type": "Association",
+      "source_id": "grag-embedding-qualification",
+      "target_id": "grag-native-retrieval-service",
+      "source_name": "Embedding Model Qualification Gate",
+      "target_name": "Neo4j Native Semantic Retrieval Service",
+      "description": "Retrieval remains blocked until qualification.",
+      "statement": "Embedding Model Qualification Gate --(Association)--> Neo4j Native Semantic Retrieval Service"
+    },
+    {
+      "id": "grag-rel-credentials-runtime",
+      "name": "Credentials govern runtime",
+      "type": "Association",
+      "source_id": "grag-credential-boundary",
+      "target_id": "grag-production-runtime",
+      "source_name": "External Production Credential Boundary",
+      "target_name": "Node.js Graph RAG Production Runtime",
+      "description": "Runtime requires external credentials.",
+      "statement": "External Production Credential Boundary --(Association)--> Node.js Graph RAG Production Runtime"
+    },
+    {
+      "id": "grag-rel-w1-w2",
+      "name": "W1 precedes W2",
+      "type": "Triggering",
+      "source_id": "grag-wp-1",
+      "target_id": "grag-wp-2",
+      "source_name": "W1 Compatibility and Typed MCP Contract",
+      "target_name": "W2 Native Technology and Embedding Qualification",
+      "description": "Compatibility precedes qualification.",
+      "statement": "W1 Compatibility and Typed MCP Contract --(Triggering)--> W2 Native Technology and Embedding Qualification"
+    },
+    {
+      "id": "grag-rel-w2-w3",
+      "name": "W2 gates W3",
+      "type": "Triggering",
+      "source_id": "grag-wp-2",
+      "target_id": "grag-wp-3",
+      "source_name": "W2 Native Technology and Embedding Qualification",
+      "target_name": "W3 Index Lifecycle and Exact-Threshold Baseline",
+      "description": "Qualification gates index delivery.",
+      "statement": "W2 Native Technology and Embedding Qualification --(Triggering)--> W3 Index Lifecycle and Exact-Threshold Baseline"
+    },
+    {
+      "id": "grag-rel-w3-w4",
+      "name": "W3 precedes W4",
+      "type": "Triggering",
+      "source_id": "grag-wp-3",
+      "target_id": "grag-wp-4",
+      "source_name": "W3 Index Lifecycle and Exact-Threshold Baseline",
+      "target_name": "W4 Independent Three-Channel Seeds",
+      "description": "Index precedes channels.",
+      "statement": "W3 Index Lifecycle and Exact-Threshold Baseline --(Triggering)--> W4 Independent Three-Channel Seeds"
+    },
+    {
+      "id": "grag-rel-w4-w5",
+      "name": "W4 precedes W5",
+      "type": "Triggering",
+      "source_id": "grag-wp-4",
+      "target_id": "grag-wp-5",
+      "source_name": "W4 Independent Three-Channel Seeds",
+      "target_name": "W5 Deterministic Five-Purpose Closures",
+      "description": "Seeds precede closure.",
+      "statement": "W4 Independent Three-Channel Seeds --(Triggering)--> W5 Deterministic Five-Purpose Closures"
+    },
+    {
+      "id": "grag-rel-w5-w6",
+      "name": "W5 precedes W6",
+      "type": "Triggering",
+      "source_id": "grag-wp-5",
+      "target_id": "grag-wp-6",
+      "source_name": "W5 Deterministic Five-Purpose Closures",
+      "target_name": "W6 Integrity Provenance and Coherent Result",
+      "description": "Closure precedes integrity.",
+      "statement": "W5 Deterministic Five-Purpose Closures --(Triggering)--> W6 Integrity Provenance and Coherent Result"
+    },
+    {
+      "id": "grag-rel-w6-w7",
+      "name": "W6 gates W7",
+      "type": "Triggering",
+      "source_id": "grag-wp-6",
+      "target_id": "grag-wp-7",
+      "source_name": "W6 Integrity Provenance and Coherent Result",
+      "target_name": "W7 Phase-1 Quality and DT-19 Evidence",
+      "description": "W7 waits for W2-W6.",
+      "statement": "W6 Integrity Provenance and Coherent Result --(Triggering)--> W7 Phase-1 Quality and DT-19 Evidence"
+    },
+    {
+      "id": "grag-rel-delivery-w1",
+      "name": "Delivery starts W1",
+      "type": "Association",
+      "source_id": "grag-seven-wave-delivery",
+      "target_id": "grag-wp-1",
+      "source_name": "Seven-Wave Graph RAG Delivery Gate",
+      "target_name": "W1 Compatibility and Typed MCP Contract",
+      "description": "The revised gated plan starts with compatibility.",
+      "statement": "Seven-Wave Graph RAG Delivery Gate --(Association)--> W1 Compatibility and Typed MCP Contract"
+    },
+    {
+      "id": "grag-rel-w2-embedding",
+      "name": "W2 realizes embedding gate",
+      "type": "Realization",
+      "source_id": "grag-wp-2",
+      "target_id": "grag-embedding-qualification",
+      "source_name": "W2 Native Technology and Embedding Qualification",
+      "target_name": "Embedding Model Qualification Gate",
+      "description": "W2 remains blocked until qualification is approved or explicitly blocked.",
+      "statement": "W2 Native Technology and Embedding Qualification --(Realization)--> Embedding Model Qualification Gate"
+    },
+    {
+      "id": "grag-rel-w7-quality",
+      "name": "W7 realizes quality gate",
+      "type": "Realization",
+      "source_id": "grag-wp-7",
+      "target_id": "grag-quality-gate",
+      "source_name": "W7 Phase-1 Quality and DT-19 Evidence",
+      "target_name": "Phase 1 Retrieval Quality Gate",
+      "description": "W7 realizes phase-1 acceptance and produces DT-19 evidence.",
+      "statement": "W7 Phase-1 Quality and DT-19 Evidence --(Realization)--> Phase 1 Retrieval Quality Gate"
+    },
+    {
+      "id": "grag-rel-w1-mcp-interface",
+      "name": "W1 realizes typed MCP interface",
+      "type": "Realization",
+      "source_id": "grag-wp-1",
+      "target_id": "grag-mcp-interface",
+      "source_name": "W1 Compatibility and Typed MCP Contract",
+      "target_name": "Typed Agent MCP Query Interface",
+      "description": "W1 realizes the compatible typed Agent-facing MCP boundary while its affectedElements attribute remains supplementary scope evidence.",
+      "statement": "W1 Compatibility and Typed MCP Contract --(Realization)--> Typed Agent MCP Query Interface"
+    },
+    {
+      "id": "grag-rel-w3-index-lifecycle",
+      "name": "W3 realizes index lifecycle",
+      "type": "Realization",
+      "source_id": "grag-wp-3",
+      "target_id": "grag-index-lifecycle",
+      "source_name": "W3 Index Lifecycle and Exact-Threshold Baseline",
+      "target_name": "All Mutation Index Lifecycle",
+      "description": "W3 realizes the all-mutation lifecycle that keeps the Neo4j projection aligned before exact-threshold retrieval is accepted.",
+      "statement": "W3 Index Lifecycle and Exact-Threshold Baseline --(Realization)--> All Mutation Index Lifecycle"
+    },
+    {
+      "id": "grag-rel-w4-seed-retrieval",
+      "name": "W4 realizes independent seed retrieval",
+      "type": "Realization",
+      "source_id": "grag-wp-4",
+      "target_id": "grag-seed-retrieval",
+      "source_name": "W4 Independent Three-Channel Seeds",
+      "target_name": "Independent Semantic Seed Retrieval",
+      "description": "W4 realizes independent Element, ArchitectureRelationship, and View semantic seed channels.",
+      "statement": "W4 Independent Three-Channel Seeds --(Realization)--> Independent Semantic Seed Retrieval"
+    },
+    {
+      "id": "grag-rel-w5-purpose-closure",
+      "name": "W5 realizes deterministic purpose closure",
+      "type": "Realization",
+      "source_id": "grag-wp-5",
+      "target_id": "grag-purpose-closure",
+      "source_name": "W5 Deterministic Five-Purpose Closures",
+      "target_name": "Purpose Policy Graph Closure",
+      "description": "W5 realizes deterministic parameterized Cypher and ArchiMate directional closure for the five accepted purposes.",
+      "statement": "W5 Deterministic Five-Purpose Closures --(Realization)--> Purpose Policy Graph Closure"
+    },
+    {
+      "id": "grag-rel-w6-coherent-context",
+      "name": "W6 realizes coherent intent context",
+      "type": "Realization",
+      "source_id": "grag-wp-6",
+      "target_id": "grag-coherent-context",
+      "source_name": "W6 Integrity Provenance and Coherent Result",
+      "target_name": "Coherent Versioned Intent Context",
+      "description": "W6 realizes the externally observable coherent, structurally complete, provenance-bearing, version-consistent intent-context outcome.",
+      "statement": "W6 Integrity Provenance and Coherent Result --(Realization)--> Coherent Versioned Intent Context"
     }
   ],
   "views": [
@@ -1602,6 +2071,152 @@
         "grag-rel-query-canonical",
         "grag-rel-purpose-tidy",
         "grag-rel-tidy-canonical"
+      ]
+    },
+    {
+      "view_id": "grag-technology-foundation-usage",
+      "view_name": "Graph RAG Technology Foundation Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: production runtime, canonical authority, and semantic retrieval dependencies; Purpose: designing and deciding; Scope: MCP query service through Node.js and Neo4j-native technology; Rationale: this view shows technology support without treating MCP or Neo4j projection as intent authority.",
+      "included_elements": [
+        "grag-query-service",
+        "grag-mcp-interface",
+        "grag-production-runtime",
+        "grag-native-retrieval-service",
+        "grag-canonical-graph",
+        "grag-semantic-index",
+        "grag-seed-retrieval"
+      ],
+      "included_relationships": [
+        "grag-rel-mcp-interface-service",
+        "grag-rel-runtime-native",
+        "grag-rel-native-seeds",
+        "grag-rel-native-index"
+      ]
+    },
+    {
+      "view_id": "grag-technology-qualification-usage",
+      "view_name": "Graph RAG Technology Qualification Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: embedding, credential, and phase-1 correctness qualification before index delivery; Purpose: deciding and handoff preparation; Scope: runtime, native retrieval, embedding gate, credentials, index, seeds, and deferred capacity; Rationale: this view isolates production qualification dependencies.",
+      "included_elements": [
+        "grag-production-runtime",
+        "grag-native-retrieval-service",
+        "grag-embedding-qualification",
+        "grag-credential-boundary",
+        "grag-semantic-index",
+        "grag-seed-retrieval",
+        "grag-capacity-residual"
+      ],
+      "included_relationships": [
+        "grag-rel-runtime-native",
+        "grag-rel-native-seeds",
+        "grag-rel-native-index",
+        "grag-rel-embedding-native",
+        "grag-rel-credentials-runtime"
+      ]
+    },
+    {
+      "view_id": "grag-typed-mcp-usage",
+      "view_name": "Graph RAG Typed MCP Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: compatible full snapshots and typed optional query semantics for Agent consumers; Purpose: designing and deciding; Scope: consumer, process, MCP interface, query service, request, validation, and outcome; Rationale: this view isolates the affected application consumer contract.",
+      "included_elements": [
+        "grag-consumer-role",
+        "grag-consumption-process",
+        "grag-mcp-interface",
+        "grag-query-service",
+        "grag-query-request",
+        "grag-mode-validation",
+        "grag-coherent-context"
+      ],
+      "included_relationships": [
+        "grag-rel-mcp-interface-service"
+      ]
+    },
+    {
+      "view_id": "grag-seven-wave-sequence",
+      "view_name": "Graph RAG Seven-Wave Sequence",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: work packages execute in prerequisite order; Purpose: deciding and handoff preparation; Scope: W1 through W7; Rationale: this view exposes the technology qualification split and blocks out-of-order delivery.",
+      "included_elements": [
+        "grag-wp-1",
+        "grag-wp-2",
+        "grag-wp-3",
+        "grag-wp-4",
+        "grag-wp-5",
+        "grag-wp-6",
+        "grag-wp-7"
+      ],
+      "included_relationships": [
+        "grag-rel-w1-w2",
+        "grag-rel-w2-w3",
+        "grag-rel-w3-w4",
+        "grag-rel-w4-w5",
+        "grag-rel-w5-w6",
+        "grag-rel-w6-w7"
+      ]
+    },
+    {
+      "view_id": "grag-seven-wave-gates",
+      "view_name": "Graph RAG Seven-Wave Gates",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: qualification and integrity gates constrain final delivery; Purpose: deciding and handoff preparation; Scope: delivery requirement, decisive waves, embedding qualification, and quality acceptance; Rationale: this view traces the revised sequence to the gates that block index and final quality delivery.",
+      "included_elements": [
+        "grag-seven-wave-delivery",
+        "grag-wp-1",
+        "grag-wp-2",
+        "grag-wp-6",
+        "grag-wp-7",
+        "grag-embedding-qualification",
+        "grag-quality-gate"
+      ],
+      "included_relationships": [
+        "grag-rel-delivery-w1",
+        "grag-rel-w2-embedding",
+        "grag-rel-w7-quality"
+      ]
+    },
+    {
+      "view_id": "grag-delivery-impact-foundation",
+      "view_name": "Graph RAG Foundation Delivery Impacts",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: compatibility and index-baseline work packages have graph-traversable realization links to their affected architecture elements; Purpose: handoff preparation; Scope: W1 typed MCP boundary and W3 index lifecycle; Rationale: this compact impact view makes foundation delivery scope explicit without overloading the seven-wave sequence view.",
+      "included_elements": [
+        "grag-wp-1",
+        "grag-mcp-interface",
+        "grag-wp-3",
+        "grag-index-lifecycle"
+      ],
+      "included_relationships": [
+        "grag-rel-w1-mcp-interface",
+        "grag-rel-w3-index-lifecycle"
+      ]
+    },
+    {
+      "view_id": "grag-delivery-impact-retrieval",
+      "view_name": "Graph RAG Retrieval Delivery Impacts",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: seed, purpose-closure, and integrity work packages have graph-traversable realization links to their affected architecture elements; Purpose: handoff preparation; Scope: W4 seed retrieval, W5 purpose closure, and W6 coherent context; Rationale: this compact impact view aligns delivery scope with the accepted retrieval-to-coherent-result architecture chain.",
+      "included_elements": [
+        "grag-wp-4",
+        "grag-seed-retrieval",
+        "grag-wp-5",
+        "grag-purpose-closure",
+        "grag-wp-6",
+        "grag-coherent-context"
+      ],
+      "included_relationships": [
+        "grag-rel-w4-seed-retrieval",
+        "grag-rel-w5-purpose-closure",
+        "grag-rel-w6-coherent-context"
       ]
     }
   ]
