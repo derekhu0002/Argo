@@ -38,6 +38,11 @@ async function main() {
     `TS07_HARDCODED_CREDENTIAL_DEFAULT: ${sourceAudit.hardcodedDefaults.join(', ')}`,
   );
   assert.deepStrictEqual(
+    sourceAudit.fallbackCredentials,
+    [],
+    `TS07_CREDENTIAL_FALLBACK_EXPRESSION: ${sourceAudit.fallbackCredentials.join(', ')}`,
+  );
+  assert.deepStrictEqual(
     sourceAudit.cypherCredentialLeaks,
     [],
     `TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: ${sourceAudit.cypherCredentialLeaks.join(', ')}`,

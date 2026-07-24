@@ -18,6 +18,11 @@ const forbiddenImplementationPattern = /(?:embedding-provider-adapter|embeddingP
 // WHEN authorization scope is inspected
 const codingTargetsText = JSON.stringify(handoff.codingTargets);
 const tasks = handoff.taskExecutionPlan.tasks;
+const executionStrategyText = String(handoff.taskExecutionPlan.executionStrategy || '');
+const equivalentTopLevelAuthorizationText = JSON.stringify(
+  Object.fromEntries(Object.entries(handoff)
+    .filter(([key]) => /(?:strategy|completion|authorization|authorizedTargets)/i.test(key))),
+);
 
 // THEN mounted out-of-scope evidence remains frozen but cannot authorize implementation
 for (const entryPath of outOfScopeEntrypoints) {
@@ -35,6 +40,18 @@ for (const testcaseName of forbiddenTestcases) {
 assert(
   !forbiddenImplementationPattern.test(codingTargetsText),
   'CODING_SCOPE_AUTHORIZATION_GUARD: codingTargets include adapter/lifecycle delivery',
+);
+for (const testcaseName of forbiddenTestcases) {
+  assert(
+    !executionStrategyText.includes(testcaseName)
+      && !equivalentTopLevelAuthorizationText.includes(testcaseName),
+    `CODING_SCOPE_AUTHORIZATION_GUARD: top-level authorization includes ${testcaseName}`,
+  );
+}
+assert(
+  !forbiddenImplementationPattern.test(executionStrategyText)
+    && !forbiddenImplementationPattern.test(equivalentTopLevelAuthorizationText),
+  'CODING_SCOPE_AUTHORIZATION_GUARD: top-level strategy/completion authorization includes adapter/lifecycle delivery',
 );
 
 for (const task of tasks) {

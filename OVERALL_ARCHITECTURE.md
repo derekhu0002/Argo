@@ -8,7 +8,7 @@
 4. Test Harness code may invoke public production boundaries and read approved fixtures; explicit entrypoints use Harness methods and do not expose MCP, filesystem, or process plumbing.
 5. Explicit entrypoints and critical guardrails listed in the implementation handoff are frozen during Coding/Repair.
 6. The production Graph RAG path is Node.js plus the Neo4j JavaScript driver. Python runtimes, external Graph RAG frameworks, and the Neo4j GenAI Plugin are not required production dependencies.
-7. Neo4j and embedding-provider credentials enter only through external secure configuration. Missing credentials block production startup or query delivery; source defaults and Cypher-carried provider credentials are prohibited.
+7. Neo4j and embedding-provider credentials enter only through external secure configuration. Missing credentials block production startup or query delivery; direct literals, logical/nullish/ternary fallbacks, and credential-tainted Cypher query/parameter transport are prohibited.
 8. Index delivery is denied until an explicit qualification names the embedding provider, model identity, model version, and dimensions. Missing fields and implicit model defaults are blocking errors.
 9. Mounted acceptance evidence does not itself authorize Coding scope. Only `codingTargets` and `taskExecutionPlan` in the approved handoff authorize implementation; frozen TS-08/TS-09 evidence remains out of scope for this slice.
 

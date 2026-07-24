@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T01:05:00+08:00",
+  "generatedAt": "2026-07-25T01:25:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "Implement the approved W2 production Graph RAG boundary on the Node.js and Neo4j mainline. External credentials and explicit embedding provider/model/version/dimensions approval are mandatory release gates; canonical JSON remains authoritative over the Neo4j projection.",
   "implementationContracts": [
@@ -22,7 +22,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-TS-01-Native",
       "entryPath": "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
       "controlPoint": "Call the Neo4j-native retrieval public boundary with a semantic request and an injected counting query probe.",
-      "observationPoint": "Observe exact request propagation, exactly one probe invocation, native platform evidence, and canonical version evidence.",
+      "observationPoint": "Observe exact request propagation, exactly one probe invocation, and unchanged propagation of a runtime-generated unpredictable sentinel and complete native result.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
       "failureReason": "NEO4J_NATIVE_RETRIEVAL_BOUNDARY_MISSING: implement the independently callable native retrieval boundary"
@@ -30,8 +30,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-06",
       "entryPath": "tests/explicit/entries/runEmbeddingQualificationGate.js",
-      "controlPoint": "Call the qualification public boundary with unapproved identity, then omit provider, model, version, and dimensions one at a time, then mark identity as implicitly defaulted.",
-      "observationPoint": "Observe independent field-specific blocking evidence and prohibition of implicit defaults without runtime composition.",
+      "controlPoint": "Call qualification with non-boolean approval values, undefined/blank identity fields, invalid dimension types/ranges, and implicit defaults.",
+      "observationPoint": "Observe exact-boolean approval, trimmed non-empty provider/model/version, positive-integer dimensions, and no implicit default acceptance.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingQualificationGate.js",
       "failureReason": "EMBEDDING_QUALIFICATION_BOUNDARY_MISSING: implement the independently callable qualification gate"
@@ -39,8 +39,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
       "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-      "controlPoint": "Call external configuration with each credential field missing, attempt credential-free startup/query, then scan production source and Cypher boundaries.",
-      "observationPoint": "Observe exact missing fields, blocked startup/query, no hardcoded/default credentials, and no Cypher credential transport.",
+      "controlPoint": "Call external configuration with each field missing, attempt credential-free startup/query, then run structured source/Cypher policy checks and bypass self-tests.",
+      "observationPoint": "Observe exact missing fields, blocked startup/query, detection of direct literals and fallback expressions, and taint-aware variableized Cypher credential rejection.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
       "failureReason": "EXTERNAL_PRODUCTION_CONFIG_BOUNDARY_MISSING: implement the independently callable external configuration boundary"
@@ -121,6 +121,14 @@
       "controlPoint": "Inspect codingTargets, task testcase references, target paths, steps, completion conditions, and frozen mounted evidence.",
       "observationPoint": "TS-08/TS-09 remain frozen and globally runnable but adapter/lifecycle implementation is not authorized by this handoff.",
       "expectedStatus": "passed"
+    },
+    {
+      "name": "Credential source policy self-test",
+      "path": "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "Run direct-literal, logical fallback, nullish fallback, ternary, and variableized Cypher query/parameter fixtures through the structured source policy.",
+      "observationPoint": "Every bypass fixture is detected while a safe external-config and non-secret parameterized query fixture passes.",
+      "expectedStatus": "passed"
     }
   ],
   "supportingNonExplicitTests": [],
@@ -163,7 +171,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement and verify the four independently callable inward boundaries first, then compose the runtime, then integrate MCP. C1-C4 completion signals must pass without productionGraphRagRuntime.js; TS-08/TS-09 never authorize adapter/lifecycle work.",
+    "executionStrategy": "Implement and verify the four independently callable inward boundaries first, then compose the runtime, then integrate MCP. C1-C4 completion signals must pass without productionGraphRagRuntime.js; mounted evidence outside the five approved intent anchors is excluded by the frozen scope guard.",
     "tasks": [
       {
         "taskId": "W2-C1",
@@ -181,10 +189,11 @@
           "Export resolveExternalProductionConfig(configuration, context).",
           "Reject each missing Neo4j URI, username, password, and embedding credential independently with EXTERNAL_CREDENTIALS_REQUIRED and error.field.",
           "Block both credential-free startup and semantic-query operations.",
-          "Remove hardcoded URI, username, password, and provider credential fallback behavior.",
+          "Remove direct URI, username, password, and provider credential literals plus logical, nullish, and ternary fallback behavior.",
+          "Use the structured source policy to reject credential-tainted query and parameter variables at Cypher execution calls.",
           "Keep provider credentials out of Cypher parameters and query text."
         ],
-        "completionSignal": "runExternalCredentialBoundary.js passes all four isolated missing-field cases, start/query blocking, hardcoded/default source scan, and Cypher credential-boundary scan without production runtime composition."
+        "completionSignal": "runExternalCredentialBoundary.js passes all isolated fields, start/query blocking, structured source/Cypher scans, and credential-source-policy.guard.js passes all bypass and safe fixtures without production runtime composition."
       },
       {
         "taskId": "W2-C2",
@@ -199,11 +208,12 @@
         ],
         "steps": [
           "Export evaluateEmbeddingQualification(qualification).",
-          "Require approvedByHuman=true.",
-          "Reject missing provider, model identity, version, and positive integer dimensions independently with error.field.",
+          "Require approvedByHuman === true; reject undefined, strings, numbers, objects, arrays, and every other non-boolean value.",
+          "Reject undefined and whitespace-only provider, model identity, and version independently with error.field.",
+          "Require dimensions to satisfy Number.isInteger(dimensions) && dimensions > 0 without coercion.",
           "Reject any implicit-default source before index delivery."
         ],
-        "completionSignal": "runEmbeddingQualificationGate.js passes approval, four isolated missing-field, and implicit-default blocking cases without production runtime composition or selecting a model."
+        "completionSignal": "runEmbeddingQualificationGate.js passes exact-boolean approval, undefined/blank identity, invalid dimension type/range, and implicit-default matrices without production runtime composition or selecting a model."
       },
       {
         "taskId": "W2-C3",
@@ -239,11 +249,12 @@
         "steps": [
           "Export createNeo4jNativeRetrieval(dependencies) with retrieve(request).",
           "Forward the complete request exactly once to the injected query boundary.",
+          "Return the injected boundary's runtime-generated sentinel and complete result unchanged; fixed evidence labels are insufficient.",
           "Use only externally configured neo4j-driver connectivity in production composition.",
           "Return platform, canonical version, object type, and canonical identity for each seed.",
           "Avoid Python, external Graph RAG frameworks, and Neo4j embedding plugin procedures."
         ],
-        "completionSignal": "runNeo4jNativeRetrievalPlatform.js independently proves exactly one injected boundary call, exact request propagation, and returned native evidence without production runtime composition."
+        "completionSignal": "runNeo4jNativeRetrievalPlatform.js independently proves one call, exact request propagation, and deep equality with an unpredictable runtime-generated full result without production runtime composition."
       },
       {
         "taskId": "W2-C5",
@@ -290,7 +301,7 @@
         "steps": [
           "Delegate only semantic-query production behavior to the new runtime.",
           "Preserve no-argument full snapshots and graph-tidy bypass behavior.",
-          "Run every authorized frozen explicit entrypoint and all five production Graph RAG critical guards."
+          "Run every authorized frozen explicit entrypoint and all six production Graph RAG critical guards."
         ],
         "completionSignal": "New W2 tests pass, existing compatibility tests do not regress, and full argo.runArchitectureTests reports the five scoped intent anchors delivered."
       }
@@ -310,7 +321,8 @@
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js"
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+    "tests/architecture/production-graph-rag/credential-source-policy.guard.js"
   ],
   "openGaps": [
     "The W2 provider/model/version/dimensions remain intentionally unselected; Coding must implement the blocking gate, not choose values.",

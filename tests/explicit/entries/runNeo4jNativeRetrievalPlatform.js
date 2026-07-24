@@ -18,12 +18,15 @@ async function main() {
   assert.strictEqual(observation.invocationCount, 1, 'TS01_NATIVE_BOUNDARY_CALL_COUNT');
   assert.deepStrictEqual(observation.observedRequests, [request], 'TS01_NATIVE_REQUEST_PROPAGATION');
 
-  // THEN returned native evidence is real boundary output, not a hardcoded platform label
-  assert.strictEqual(result.retrievalPlatform, 'neo4j-native', 'TS01_NATIVE_RETRIEVAL_REQUIRED');
-  assert.strictEqual(result.canonicalVersion, 'canonical-v2', 'TS01_NATIVE_CANONICAL_VERSION_REQUIRED');
+  // THEN the implementation propagates the probe's runtime-generated full result unchanged
+  assert.deepStrictEqual(
+    result,
+    observation.expectedResult,
+    'TS01_NATIVE_DYNAMIC_RESULT_NOT_PROPAGATED',
+  );
   assert(
-    result.seeds.some(seed => seed.id === 'approved-element'),
-    'TS01_NATIVE_APPROVED_SEED_MISSING',
+    JSON.stringify(result).includes(observation.sentinel),
+    'TS01_NATIVE_DYNAMIC_SENTINEL_MISSING',
   );
 }
 

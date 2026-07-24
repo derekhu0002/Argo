@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -41,14 +42,31 @@ function canonicalGraphFixture() {
 
 function createNativeRetrievalProbe() {
   const requests = [];
+  const sentinel = crypto.randomUUID();
+  const expectedResult = {
+    retrievalPlatform: `neo4j-native-${sentinel}`,
+    canonicalVersion: `canonical-${sentinel}`,
+    seeds: [
+      {
+        objectType: 'Element',
+        id: `element-${sentinel}`,
+        score: Number(`0.${sentinel.replace(/\D/g, '').slice(0, 6) || '731'}`),
+      },
+      {
+        objectType: 'View',
+        id: `view-${sentinel}`,
+        membershipEvidence: [`member-${sentinel}`],
+      },
+    ],
+    providerEvidence: {
+      sentinel,
+      generatedAt: new Date().toISOString(),
+    },
+  };
   const queryBoundary = {
     async query(request) {
       requests.push(request);
-      return {
-        retrievalPlatform: 'neo4j-native',
-        canonicalVersion: 'canonical-v2',
-        seeds: [{ objectType: 'Element', id: 'approved-element' }],
-      };
+      return expectedResult;
     },
   };
   return {
@@ -59,6 +77,10 @@ function createNativeRetrievalProbe() {
     observedRequests() {
       return [...requests];
     },
+    expectedResult() {
+      return expectedResult;
+    },
+    sentinel,
   };
 }
 
@@ -166,6 +188,8 @@ async function runNativeRetrievalRequest(request) {
     result,
     invocationCount: probe.invocationCount(),
     observedRequests: probe.observedRequests(),
+    expectedResult: probe.expectedResult(),
+    sentinel: probe.sentinel,
   };
 }
 
@@ -176,18 +200,56 @@ function inspectCredentialSourceBoundary() {
   ];
   const hardcodedDefaults = [];
   const cypherCredentialLeaks = [];
+  const fallbackCredentials = [];
   for (const relativePath of sourcePaths) {
     const source = fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');
-    if (/const\s+DEFAULT_NEO4J_(?:URI|USERNAME|PASSWORD)\s*=\s*['"][^'"]+['"]/.test(source)
-      || /(?:neo4jPassword|embeddingCredential)\s*:\s*['"][^'"]+['"]/.test(source)) {
+    const result = inspectCredentialSourceText(source);
+    if (result.hardcodedCredentialLiterals.length > 0) {
       hardcodedDefaults.push(relativePath);
     }
-    if (/(?:MATCH|CALL|CREATE|MERGE)[\s\S]{0,300}(?:password|credential|apiKey)/i.test(source)
-      || /ai\.text\.embed(?:Batch)?\s*\([\s\S]{0,300}(?:password|credential|apiKey)/i.test(source)) {
+    if (result.fallbackCredentialExpressions.length > 0) {
+      fallbackCredentials.push(relativePath);
+    }
+    if (result.cypherCredentialTransports.length > 0) {
       cypherCredentialLeaks.push(relativePath);
     }
   }
-  return { hardcodedDefaults, cypherCredentialLeaks };
+  return { hardcodedDefaults, fallbackCredentials, cypherCredentialLeaks };
+}
+
+function inspectCredentialSourceText(source) {
+  const credentialName = String.raw`(?:neo4jUri|neo4jUsername|neo4jPassword|embeddingCredential|embeddingApiKey|apiKey|providerCredential)`;
+  const credentialReference = String.raw`(?:[A-Za-z_$][\w$]*\s*\.\s*)?${credentialName}`;
+  const hardcodedCredentialLiterals = collectMatches(source, new RegExp(
+    String.raw`(?:DEFAULT_[A-Z0-9_]*(?:URI|USERNAME|PASSWORD|CREDENTIAL|API_KEY)|${credentialName})\s*(?::|=)\s*(['"\x60])(?:\\.|(?!\1)[\s\S])+\1`,
+    'gi',
+  ));
+  const fallbackCredentialExpressions = [
+    ...collectMatches(source, new RegExp(`${credentialReference}\\s*(?:\\|\\||\\?\\?)`, 'gi')),
+    ...collectMatches(source, new RegExp(`${credentialReference}\\s*\\?[^:;]+:`, 'gi')),
+  ];
+
+  const taintedIdentifiers = findCredentialTaintedIdentifiers(source, credentialName);
+  const cypherCredentialTransports = [];
+  for (const call of extractRunCalls(source)) {
+    const transportsCredential = new RegExp(credentialName, 'i').test(call.arguments)
+      || [...taintedIdentifiers].some(identifier => new RegExp(`\\b${escapeRegex(identifier)}\\b`).test(call.arguments));
+    if (transportsCredential) {
+      cypherCredentialTransports.push(call.text);
+    }
+  }
+  for (const call of extractNamedCalls(source, /ai\.text\.embed(?:Batch)?/gi)) {
+    if (new RegExp(credentialName, 'i').test(call.arguments)
+      || [...taintedIdentifiers].some(identifier => new RegExp(`\\b${escapeRegex(identifier)}\\b`).test(call.arguments))) {
+      cypherCredentialTransports.push(call.text);
+    }
+  }
+
+  return {
+    hardcodedCredentialLiterals,
+    fallbackCredentialExpressions,
+    cypherCredentialTransports,
+  };
 }
 
 async function evaluateSevenWaveDelivery(completedWaves) {
@@ -275,6 +337,92 @@ function listGraphRagJavaScriptPaths() {
     .map(file => `.argo/scripts/graph-rag/${file}`);
 }
 
+function findCredentialTaintedIdentifiers(source, credentialName) {
+  const declarations = [...source.matchAll(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]*?);/g)]
+    .map(match => ({ identifier: match[1], expression: match[2] }));
+  const tainted = new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const declaration of declarations) {
+      if (tainted.has(declaration.identifier)) {
+        continue;
+      }
+      const referencesCredential = new RegExp(credentialName, 'i').test(declaration.expression);
+      const referencesTainted = [...tainted]
+        .some(identifier => new RegExp(`\\b${escapeRegex(identifier)}\\b`).test(declaration.expression));
+      if (referencesCredential || referencesTainted) {
+        tainted.add(declaration.identifier);
+        changed = true;
+      }
+    }
+  }
+  return tainted;
+}
+
+function extractRunCalls(source) {
+  return extractNamedCalls(source, /(?:session|tx|transaction|runner|executor)\s*\.\s*run/gi);
+}
+
+function extractNamedCalls(source, namePattern) {
+  const calls = [];
+  for (const match of source.matchAll(namePattern)) {
+    let cursor = match.index + match[0].length;
+    while (/\s/.test(source[cursor] || '')) {
+      cursor += 1;
+    }
+    if (source[cursor] !== '(') {
+      continue;
+    }
+    const end = findClosingParenthesis(source, cursor);
+    if (end > cursor) {
+      calls.push({
+        arguments: source.slice(cursor + 1, end),
+        text: source.slice(match.index, end + 1),
+      });
+    }
+  }
+  return calls;
+}
+
+function findClosingParenthesis(source, openingIndex) {
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  for (let index = openingIndex; index < source.length; index += 1) {
+    const character = source[index];
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (character === '\\') {
+        escaped = true;
+      } else if (character === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (character === '\'' || character === '"' || character === '`') {
+      quote = character;
+    } else if (character === '(') {
+      depth += 1;
+    } else if (character === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  return -1;
+}
+
+function collectMatches(source, pattern) {
+  return [...source.matchAll(pattern)].map(match => match[0]);
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function captureBusinessOutcome(action) {
   try {
     return await action();
@@ -303,6 +451,7 @@ module.exports = {
   evaluateSevenWaveDelivery,
   externalProductionConfiguration,
   inspectCredentialSourceBoundary,
+  inspectCredentialSourceText,
   queryWithConflictingProjection,
   runEmbeddingProviderLifecycle,
   runNativeRetrievalRequest,

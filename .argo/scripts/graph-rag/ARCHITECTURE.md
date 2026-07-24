@@ -14,10 +14,10 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 The four inward boundaries are independently callable and independently testable before runtime composition:
 
-- `resolveExternalProductionConfig(configuration, context)` identifies each missing Neo4j URI, username, password, or embedding credential and blocks both startup and semantic-query operations.
-- `evaluateEmbeddingQualification(qualification)` identifies absent approval and each missing provider, model identity, version, or dimensions field; it rejects implicit defaults.
+- `resolveExternalProductionConfig(configuration, context)` identifies each missing Neo4j URI, username, password, or embedding credential and blocks both startup and semantic-query operations. No direct literal or logical/nullish/ternary fallback may synthesize these values.
+- `evaluateEmbeddingQualification(qualification)` accepts only `approvedByHuman === true`, trimmed non-empty provider/model identity/version, and `Number.isInteger(dimensions) && dimensions > 0`; it rejects coercion and implicit defaults.
 - `enforceCanonicalProjectionAuthority(input)` rejects or replaces stale/conflicting projection evidence without requiring runtime composition.
-- `createNeo4jNativeRetrieval(dependencies)` returns a `retrieve(request)` boundary that forwards each request exactly once to its injected Neo4j query boundary.
+- `createNeo4jNativeRetrieval(dependencies)` returns a `retrieve(request)` boundary that forwards each request exactly once and returns the injected query boundary's complete dynamic result unchanged.
 
 `createProductionGraphRagRuntime(dependencies)` returns:
 
@@ -40,6 +40,7 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Neo4j retrieval may depend on `neo4j-driver`; no module here may depend on Python, an external Graph RAG framework, the Neo4j GenAI Plugin, or `tests/`.
 - Authority policy reads `design/KG/SystemArchitecture.json` through an injected canonical graph boundary and treats Neo4j as a projection only.
 - Credentials are values, never module-level defaults; provider credentials must never be interpolated into or transported through Cypher.
+- Cypher credential protection follows query and parameter variables structurally into execution calls; keyword-distance windows are not acceptable enforcement.
 
 ## Owned tests
 

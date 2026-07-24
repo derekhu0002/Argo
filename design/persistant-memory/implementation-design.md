@@ -32,3 +32,11 @@
 - TS-07 freezes four isolated credential/configuration omissions, credential-free startup and semantic query, hardcoded/default source scanning, and Cypher credential-boundary scanning.
 - TS-01-Native freezes a Harness-owned query probe, exact request propagation, and exactly one invocation so a hardcoded `neo4j-native` label cannot satisfy acceptance.
 - Added `coding-scope-authorization.guard.js`: TS-08/TS-09 remain mounted and frozen, but their testcase names and adapter/lifecycle implementation cannot appear in codingTargets, task targets/steps, or completion conditions.
+
+## 2026-07-25 second testcase audit correction
+
+- TS-06 now proves exact boolean approval, rejects undefined/string/object/array/number approval impostors, rejects undefined and whitespace identity fields, and freezes a no-coercion positive-integer dimensions matrix.
+- TS-07 replaced keyword-distance scanning with a structured executable policy that detects credential literals, logical/nullish/ternary fallback expressions, tainted variable propagation, and credential-bearing Cypher execution arguments.
+- `credential-source-policy.guard.js` self-tests direct-literal, fallback, ternary, direct-parameter, transitive-variable, and variableized query/parameter bypass fixtures plus a safe fixture.
+- TS-01-Native now generates an unpredictable runtime sentinel and complete multi-field result inside the injected probe, then requires exact deep propagation after one call.
+- Coding scope authorization now examines `taskExecutionPlan.executionStrategy` and any equivalent top-level strategy/completion/authorization fields in addition to coding targets and task details.

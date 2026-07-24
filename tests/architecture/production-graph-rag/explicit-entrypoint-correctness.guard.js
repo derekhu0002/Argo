@@ -12,16 +12,21 @@ const entryRequirements = new Map([
   ]],
   ['tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js', [
     'productionGraphRagHarness.js',
-    'TS01_NATIVE_RETRIEVAL_REQUIRED',
     'TS01_NATIVE_BOUNDARY_CALL_COUNT',
     'TS01_NATIVE_REQUEST_PROPAGATION',
+    'TS01_NATIVE_DYNAMIC_RESULT_NOT_PROPAGATED',
+    'TS01_NATIVE_DYNAMIC_SENTINEL_MISSING',
   ]],
   ['tests/explicit/entries/runEmbeddingQualificationGate.js', [
     'productionGraphRagHarness.js',
     'EMBEDDING_QUALIFICATION_REQUIRED',
     'EMBEDDING_CONFIGURATION_REQUIRED',
     'IMPLICIT_EMBEDDING_DEFAULT_PROHIBITED',
+    'EMBEDDING_VALID_QUALIFICATION_REJECTED',
     "['provider', 'model', 'version', 'dimensions']",
+    "[false, undefined, 'true', 1, {}, []]",
+    "['', ' ', '\\t\\n']",
+    "[0, -1, 1.5, '1536', Number.NaN, Number.POSITIVE_INFINITY]",
   ]],
   ['tests/explicit/entries/runExternalCredentialBoundary.js', [
     'productionGraphRagHarness.js',
@@ -29,6 +34,7 @@ const entryRequirements = new Map([
     "['neo4jUri', 'neo4jUsername', 'neo4jPassword', 'embeddingCredential']",
     "['start', 'semantic-query']",
     'TS07_HARDCODED_CREDENTIAL_DEFAULT',
+    'TS07_CREDENTIAL_FALLBACK_EXPRESSION',
     'TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION',
   ]],
   ['tests/explicit/entries/runCanonicalGraphFullSnapshot.js', [
