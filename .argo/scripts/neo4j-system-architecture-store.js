@@ -23,12 +23,25 @@ function resolveSyncStatePath() {
   return path.join(getRepoRoot(), SYNC_STATE_RELATIVE_PATH);
 }
 
+function getDefaultNeo4jDatabaseName() {
+  const repoName = path.basename(getRepoRoot());
+  const normalized = String(repoName)
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/-{2,}/g, '-');
+  const safe = normalized || 'workspace';
+  const prefixed = /^[a-z]/.test(safe) ? safe : `db-${safe}`;
+  return prefixed.slice(0, 63);
+}
+
 function getNeo4jConfig(overrides = {}) {
   return {
     uri: overrides.uri || process.env.ARGO_NEO4J_URI || DEFAULT_NEO4J_URI,
     username: overrides.username || process.env.ARGO_NEO4J_USERNAME || DEFAULT_NEO4J_USERNAME,
     password: overrides.password || process.env.ARGO_NEO4J_PASSWORD || DEFAULT_NEO4J_PASSWORD,
-    database: overrides.database || process.env.ARGO_NEO4J_DATABASE || 'neo4j',
+    database: overrides.database || process.env.ARGO_NEO4J_DATABASE || getDefaultNeo4jDatabaseName(),
   };
 }
 
@@ -222,6 +235,73 @@ async function ensureConstraints(driver, database) {
   }
 }
 
+function escapeNeo4jIdentifier(value) {
+  return String(value).replace(/`/g, '``');
+}
+
+async function ensureDatabaseExists(driver, database) {
+  const systemSession = driver.session({ database: 'system' });
+  try {
+    const existingResult = await systemSession.run(
+      'SHOW DATABASES YIELD name WHERE name = $database RETURN name',
+      { database },
+    );
+    if (existingResult.records.length > 0) {
+      return {
+        database,
+        existed: true,
+        created: false,
+      };
+    }
+
+    await systemSession.run(`CREATE DATABASE \`${escapeNeo4jIdentifier(database)}\` IF NOT EXISTS`);
+    return {
+      database,
+      existed: false,
+      created: true,
+    };
+  } finally {
+    await systemSession.close();
+  }
+}
+
+async function waitForDatabaseOnline(driver, database, options = {}) {
+  const timeoutMs = options.timeoutMs || 15000;
+  const pollIntervalMs = options.pollIntervalMs || 250;
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() <= deadline) {
+    const systemSession = driver.session({ database: 'system' });
+    try {
+      const result = await systemSession.run(
+        [
+          'SHOW DATABASES YIELD name, currentStatus, requestedStatus',
+          'WHERE name = $database',
+          'RETURN currentStatus, requestedStatus',
+        ].join('\n'),
+        { database },
+      );
+      if (result.records.length > 0) {
+        const currentStatus = String(result.records[0].get('currentStatus') || '').toLowerCase();
+        const requestedStatus = String(result.records[0].get('requestedStatus') || '').toLowerCase();
+        if (currentStatus === 'online' && requestedStatus === 'online') {
+          return {
+            database,
+            currentStatus,
+            requestedStatus,
+          };
+        }
+      }
+    } finally {
+      await systemSession.close();
+    }
+
+    await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+  }
+
+  throw new Error(`Neo4j database '${database}' did not reach online status within ${timeoutMs}ms`);
+}
+
 async function clearGraph(tx, graphKey) {
   await tx.run('MATCH (n {graphKey: $graphKey}) DETACH DELETE n', { graphKey });
 }
@@ -373,6 +453,8 @@ async function syncArchitectureToNeo4j(options = {}) {
 
   try {
     await driver.verifyConnectivity();
+    const databaseProvision = await ensureDatabaseExists(driver, config.database);
+    const databaseStatus = await waitForDatabaseOnline(driver, config.database);
     await ensureConstraints(driver, config.database);
 
     const session = driver.session({ database: config.database });
@@ -408,6 +490,10 @@ async function syncArchitectureToNeo4j(options = {}) {
     return {
       architecturePath,
       graphKey,
+      databaseProvision: {
+        ...databaseProvision,
+        ...databaseStatus,
+      },
       counts: verification.expected,
       verification,
     };
@@ -450,6 +536,7 @@ async function recoverNeo4jSyncIfNeeded(options = {}) {
       dirty: false,
       status: 'passed',
       graphKey: result.graphKey,
+      databaseProvision: result.databaseProvision,
       counts: result.counts,
       previousFailure: syncState.lastError,
     };
@@ -476,6 +563,8 @@ async function verifyArchitectureSync(options = {}) {
 
   try {
     await driver.verifyConnectivity();
+    const databaseProvision = await ensureDatabaseExists(driver, config.database);
+    const databaseStatus = await waitForDatabaseOnline(driver, config.database);
     const session = driver.session({ database: config.database });
     try {
       const countsResult = await session.executeRead(tx => tx.run(
@@ -539,6 +628,10 @@ async function verifyArchitectureSync(options = {}) {
 
       return {
         graphKey,
+        databaseProvision: {
+          ...databaseProvision,
+          ...databaseStatus,
+        },
         expected,
         actual,
         matches: (
@@ -589,8 +682,10 @@ module.exports = {
   DEFAULT_GRAPH_PATH,
   buildGraphKey,
   createDriver,
+  ensureDatabaseExists,
   getNeo4jGraphSyncState,
   getNeo4jConfig,
+  getDefaultNeo4jDatabaseName,
   isCanonicalArchitecturePath,
   markNeo4jSyncDirty,
   readArchitectureDocument,
@@ -599,4 +694,5 @@ module.exports = {
   resolveArchitecturePath,
   syncArchitectureToNeo4j,
   verifyArchitectureSync,
+  waitForDatabaseOnline,
 };

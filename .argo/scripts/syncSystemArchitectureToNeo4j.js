@@ -30,6 +30,7 @@ async function main() {
     mode: args.verifyOnly ? 'verify' : 'sync',
     architecturePath,
     database: config.database,
+    databaseProvision: verification.databaseProvision || (result && result.databaseProvision) || null,
     uri: config.uri,
     counts: verification.actual,
     matches: verification.matches,

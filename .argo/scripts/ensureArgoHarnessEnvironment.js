@@ -6,6 +6,7 @@ const argoMcp = require('./argo-mcp-server.js');
 const {
   DEFAULT_GRAPH_PATH,
   createDriver,
+  ensureDatabaseExists,
   getNeo4jConfig,
   getNeo4jGraphSyncState,
   syncArchitectureToNeo4j,
@@ -252,8 +253,12 @@ async function ensureNeo4jProjection({ checkOnly }) {
   const config = getNeo4jConfig();
   const dirtyBefore = getNeo4jGraphSyncState(DEFAULT_GRAPH_PATH);
   const driver = createDriver(config);
+  let databaseProvision = null;
   try {
     await driver.verifyConnectivity();
+    if (!checkOnly) {
+      databaseProvision = await ensureDatabaseExists(driver, config.database);
+    }
   } catch (error) {
     await driver.close();
     return {
@@ -270,6 +275,7 @@ async function ensureNeo4jProjection({ checkOnly }) {
   let syncResult = null;
   if (!checkOnly) {
     syncResult = await syncArchitectureToNeo4j({ architecturePath: DEFAULT_GRAPH_PATH, ...config });
+    databaseProvision = syncResult.databaseProvision;
   }
 
   const verification = await verifyArchitectureSync({ architecturePath: DEFAULT_GRAPH_PATH, ...config });
@@ -278,6 +284,7 @@ async function ensureNeo4jProjection({ checkOnly }) {
       status: 'failed',
       uri: config.uri,
       database: config.database,
+      databaseProvision: verification.databaseProvision || databaseProvision,
       dirtyBefore,
       initialSync: syncResult ? syncResult.counts : null,
       verification,
@@ -288,6 +295,7 @@ async function ensureNeo4jProjection({ checkOnly }) {
     status: 'ok',
     uri: config.uri,
     database: config.database,
+    databaseProvision: verification.databaseProvision || databaseProvision,
     dirtyBefore,
     initialSync: syncResult ? {
       graphKey: syncResult.graphKey,
