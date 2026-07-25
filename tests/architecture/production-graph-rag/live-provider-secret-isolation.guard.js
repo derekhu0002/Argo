@@ -66,28 +66,20 @@ assert.deepStrictEqual(
   'LIVE_PROVIDER_SECRET_GUARD: auth channel leak detector is incomplete',
 );
 const sourceAdapterSelfTest = runStructuredSourceAdapterContractSelfTest();
-assert.strictEqual(sourceAdapterSelfTest.envelopeFrozen, true);
-assert.strictEqual(sourceAdapterSelfTest.traceFrozen, true);
-assert.strictEqual(sourceAdapterSelfTest.directTrusted, true);
-assert.strictEqual(sourceAdapterSelfTest.forgedTrusted, false);
-assert.deepStrictEqual(sourceAdapterSelfTest.directTrace, {
-  sourceKind: 'process',
-  path: null,
-  key: 'QWEN_KEY',
-  operation: 'read',
-  aliasDepth: 1,
-});
-assert.strictEqual(sourceAdapterSelfTest.fileEnvelopeFrozen, true);
-assert.strictEqual(sourceAdapterSelfTest.fileTraceTrusted, true);
+assert.strictEqual(sourceAdapterSelfTest.behaviorFrozen, true);
+assert.strictEqual(sourceAdapterSelfTest.directValuePresent, true);
+assert.strictEqual(sourceAdapterSelfTest.fileEntriesPresent, true);
+assert.strictEqual(sourceAdapterSelfTest.exposesTrustVerdict, false);
 for (const mutation of ['cli', 'literal', 'fallback', 'alias', 'indirect']) {
   assert.strictEqual(sourceAdapterSelfTest.prohibited[mutation].sameValue, true);
-  assert.strictEqual(sourceAdapterSelfTest.prohibited[mutation].trusted, true);
+  assert.strictEqual(sourceAdapterSelfTest.prohibited[mutation].directReadSuppressed, true);
 }
-assert.strictEqual(sourceAdapterSelfTest.prohibited.cli.sourceKind, 'cli');
-assert.strictEqual(sourceAdapterSelfTest.prohibited.literal.sourceKind, 'literal');
-assert.strictEqual(sourceAdapterSelfTest.prohibited.fallback.operation, 'fallback');
-assert(sourceAdapterSelfTest.prohibited.alias.aliasDepth > 1);
-assert(sourceAdapterSelfTest.prohibited.indirect.aliasDepth > 1);
+assert.strictEqual(sourceAdapterSelfTest.prohibited.cli.operationMethod, 'readCliKey');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.literal.operationMethod, 'readLiteralKey');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.fallback.operationMethod, 'readFallbackKey');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.alias.operationMethod, 'readAliasedProcessKey');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.indirect.operationMethod, 'readIndirectProcessKey');
+assert.strictEqual(sourceAdapterSelfTest.mismatchMethodsPresent, true);
 // THEN configuration and entrypoint failures cannot persist or print the provider credential
 assert(/^QWEN_KEY=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: QWEN_KEY placeholder is not empty');
 assert(
@@ -227,6 +219,14 @@ for (const requiredFixture of [
   'forged-trace',
   'mutable-trace',
   'invalid-trace-schema',
+  'requested-key-trace-mismatch',
+  'requested-path-trace-mismatch',
+  'trace-missing-field',
+  'trace-extra-field',
+  'trace-wrong-field-type',
+  'untrusted-adapter',
+  'cloned-adapter',
+  'self-issued-trust',
 ]) {
   assert(
     APPROVED_SOURCE_FIXTURES.some(fixture => fixture.name === requiredFixture),

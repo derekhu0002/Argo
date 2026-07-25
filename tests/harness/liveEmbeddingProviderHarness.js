@@ -62,6 +62,14 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
   { name: 'forged-trace', expectedCategory: 'SOURCE_TRACE_UNTRUSTED', process: true, traceMutation: 'forged' },
   { name: 'mutable-trace', expectedCategory: 'SOURCE_TRACE_UNTRUSTED', process: true, traceMutation: 'mutable' },
   { name: 'invalid-trace-schema', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'invalid-schema' },
+  { name: 'requested-key-trace-mismatch', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'requested-key-mismatch' },
+  { name: 'requested-path-trace-mismatch', expectedCategory: 'SOURCE_TRACE_INVALID', file: true, traceMutation: 'requested-path-mismatch' },
+  { name: 'trace-missing-field', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'missing-field' },
+  { name: 'trace-extra-field', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'extra-field' },
+  { name: 'trace-wrong-field-type', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'wrong-field-type' },
+  { name: 'untrusted-adapter', expectedCategory: 'SOURCE_ADAPTER_UNTRUSTED', process: true, trustMutation: 'untrusted' },
+  { name: 'cloned-adapter', expectedCategory: 'SOURCE_ADAPTER_UNTRUSTED', process: true, trustMutation: 'cloned' },
+  { name: 'self-issued-trust', expectedCategory: 'SOURCE_ADAPTER_UNTRUSTED', process: true, trustMutation: 'self-issued' },
 ]);
 
 async function runLiveEmbeddingProviderE2E() {
@@ -415,20 +423,19 @@ async function resolveApprovedLiveConfiguration() {
   }
   return boundary.resolveApprovedLiveConfiguration({
     repositoryRoot: repoRoot,
-    environment: process.env,
   });
 }
 
 async function runApprovedSourceFixtureMatrix() {
-  const resolveConfiguration = loadApprovedConfigurationBoundary();
+  const configurationBoundary = loadApprovedConfigurationBoundary();
   const observations = [];
   for (const fixture of APPROVED_SOURCE_FIXTURES) {
-    observations.push(await runApprovedSourceFixture(resolveConfiguration, fixture));
+    observations.push(await runApprovedSourceFixture(configurationBoundary, fixture));
   }
   return observations;
 }
 
-async function runApprovedSourceFixture(resolveConfiguration, fixture) {
+async function runApprovedSourceFixture(configurationBoundary, fixture) {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-approved-source-'));
   const qwen = `fixture-qwen-${crypto.randomUUID()}`;
   const neo4jPassword = `fixture-neo4j-${crypto.randomUUID()}`;
@@ -443,14 +450,18 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
   const expectedAttribution = fixture.expectedSource
     ? Object.fromEntries(Object.keys(approvedValues).map(key => [key, fixture.expectedSource]))
     : undefined;
-  const sourceAdapter = createSourceFixtureAdapter(
+  const sourceBehavior = createSourceFixtureBehavior(
     fixture,
     processValues,
     fileEntries,
     filePath,
-    sourceTrace,
-    traceTrustChecks,
   );
+  const observeTrace = Object.freeze(event => {
+    if (event && event.phase === 'issued') sourceTrace.push(event.trace);
+    if (event && event.phase === 'validated') {
+      traceTrustChecks.push({ trace: event.trace, trusted: event.trusted === true });
+    }
+  });
   if (fixture.file) {
     if (fixture.duplicateKey) fileEntries.push([fixture.duplicateKey, fixture.duplicateKey === 'QWEN_KEY' ? qwen : neo4jPassword]);
     if (fixture.unknownKey) fileEntries.push([fixture.unknownKey, 'synthetic']);
@@ -465,13 +476,15 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
       try {
         return {
           status: 'accepted',
-          value: await resolveConfiguration({
+          value: await invokeFixtureConfigurationBoundary(configurationBoundary, {
+            fixture,
             repositoryRoot: temporaryRoot,
+            sourceBehavior,
+            observeTrace,
             adapters: {
               filesystem: createFilesystemFixtureAdapter(fixture),
               git: createGitFixtureAdapter(fixture),
               acl: createAclFixtureAdapter(fixture),
-              source: sourceAdapter,
               forbiddenSideEffects: createForbiddenSideEffectAdapter(effects),
             },
           }),
@@ -560,10 +573,54 @@ function loadApprovedConfigurationBoundary() {
   if (!fs.existsSync(liveConfigPath)) throw safeError('LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING');
   delete require.cache[require.resolve(liveConfigPath)];
   const boundary = require(liveConfigPath);
-  if (typeof boundary.resolveApprovedLiveConfiguration !== 'function') {
+  if (
+    typeof boundary.resolveApprovedLiveConfiguration !== 'function'
+      || typeof boundary.withApprovedLiveConfigurationTestComposition !== 'function'
+  ) {
     throw safeError('LIVE_PROVIDER_CONFIGURATION_API_MISSING');
   }
-  return boundary.resolveApprovedLiveConfiguration;
+  return Object.freeze({
+    resolveApprovedLiveConfiguration: boundary.resolveApprovedLiveConfiguration,
+    withApprovedLiveConfigurationTestComposition: boundary.withApprovedLiveConfigurationTestComposition,
+  });
+}
+
+async function invokeFixtureConfigurationBoundary(configurationBoundary, context) {
+  const {
+    fixture,
+    repositoryRoot,
+    sourceBehavior,
+    observeTrace,
+    adapters,
+  } = context;
+  if (fixture.trustMutation) {
+    return configurationBoundary.resolveApprovedLiveConfiguration({
+      repositoryRoot,
+      adapters: {
+        ...adapters,
+        source: createUntrustedSourceAdapter(fixture, sourceBehavior),
+      },
+    });
+  }
+  return configurationBoundary.withApprovedLiveConfigurationTestComposition({
+    sourceBehavior,
+    observeTrace,
+    adapters,
+  }, resolveForTest => resolveForTest({ repositoryRoot }));
+}
+
+function createUntrustedSourceAdapter(fixture, sourceBehavior) {
+  const base = {
+    readProcessKey: sourceBehavior.readProcessKey,
+    readFileEntries: sourceBehavior.readFileEntries,
+  };
+  if (fixture.trustMutation === 'self-issued') {
+    return { ...base, isIssuedTrace: () => true };
+  }
+  if (fixture.trustMutation === 'cloned') {
+    return { ...base };
+  }
+  return base;
 }
 
 function createFilesystemFixtureAdapter(fixture) {
@@ -586,126 +643,93 @@ function createFilesystemFixtureAdapter(fixture) {
   };
 }
 
-function createSourceFixtureAdapter(fixture, processValues, fileEntries, filePath, sourceTrace, traceTrustChecks) {
-  const issuedTraces = new WeakSet();
-
-  function issue(sourceKind, sourcePath, key, operation, aliasChain) {
-    const trace = {
-      sourceKind,
-      path: sourcePath,
-      key,
-      operation,
-      aliasChain: [...aliasChain],
-    };
-    if (fixture.traceMutation === 'invalid-schema' && key === 'QWEN_KEY') {
-      trace.aliasChain = [];
-    }
-    Object.freeze(trace.aliasChain);
-    Object.freeze(trace);
-    issuedTraces.add(trace);
-    let returnedTrace = trace;
-    if (fixture.traceMutation === 'forged' && key === 'QWEN_KEY') {
-      returnedTrace = { ...trace, aliasChain: [...trace.aliasChain] };
-    }
-    if (fixture.traceMutation === 'mutable' && key === 'QWEN_KEY') {
-      returnedTrace = {
-        sourceKind: trace.sourceKind,
-        path: trace.path,
-        key: trace.key,
-        operation: trace.operation,
-        aliasChain: [...trace.aliasChain],
-      };
-    }
-    sourceTrace.push(returnedTrace);
-    return returnedTrace;
-  }
-
-  return {
-    readProcessKey(key) {
-      const mutation = fixture.accessMutation && key === 'QWEN_KEY'
-        ? fixture.accessMutation
-        : 'direct';
-      const sourceKind = mutation === 'cli' || mutation === 'literal' ? mutation : 'process';
-      const operation = mutation === 'fallback' || mutation === 'indirect' ? mutation : 'read';
-      const aliasChain = mutation === 'alias'
-        ? ['QWEN_ALIAS', key]
-        : mutation === 'indirect'
-          ? ['configuration', 'credentials', key]
-          : [key];
-      const trace = issue(sourceKind, sourceKind === 'process' ? null : mutation, key, operation, aliasChain);
-      return Object.freeze({ value: processValues[key], trace });
-    },
-    readFileEntries(requestedPath) {
-      return Object.freeze(fileEntries.map(([key, value]) => Object.freeze({
-        key,
-        value,
-        trace: issue('file', requestedPath, key, 'read', [key]),
-      })));
-    },
-    isIssuedTrace(trace) {
-      const trusted = issuedTraces.has(trace);
-      traceTrustChecks.push({ trace, trusted });
-      return trusted;
-    },
+function createSourceFixtureBehavior(fixture, processValues, fileEntries, filePath) {
+  const targetKey = 'QWEN_KEY';
+  const processMutation = fixture.accessMutation || (
+    fixture.traceMutation && fixture.traceMutation !== 'requested-path-mismatch'
+      ? fixture.traceMutation
+      : undefined
+  );
+  const behavior = {
     expectedFilePath: filePath,
+    readProcessKey(key) {
+      if (key === targetKey && processMutation) return undefined;
+      return processValues[key];
+    },
+    readFileEntries() {
+      if (fixture.traceMutation === 'requested-path-mismatch') return undefined;
+      return fileEntries.map(([key, value]) => [key, value]);
+    },
   };
+  const processOperationNames = {
+    cli: 'readCliKey',
+    literal: 'readLiteralKey',
+    fallback: 'readFallbackKey',
+    alias: 'readAliasedProcessKey',
+    indirect: 'readIndirectProcessKey',
+    forged: 'readProcessKeyWithForgedTrace',
+    mutable: 'readProcessKeyWithMutableTrace',
+    'invalid-schema': 'readProcessKeyWithInvalidTraceSchema',
+    'requested-key-mismatch': 'readProcessKeyWithRequestedKeyMismatch',
+    'missing-field': 'readProcessKeyWithMissingTraceField',
+    'extra-field': 'readProcessKeyWithExtraTraceField',
+    'wrong-field-type': 'readProcessKeyWithWrongTraceFieldType',
+  };
+  if (processMutation) {
+    behavior[processOperationNames[processMutation]] = key => processValues[key];
+  }
+  if (fixture.traceMutation === 'requested-path-mismatch') {
+    behavior.readFileEntriesWithRequestedPathMismatch = () => (
+      fileEntries.map(([key, value]) => [key, value])
+    );
+  }
+  return Object.freeze(behavior);
 }
 
 function runStructuredSourceAdapterContractSelfTest() {
   const key = 'QWEN_KEY';
   const value = `source-interface-${crypto.randomUUID()}`;
-  const makeAdapter = fixture => {
-    const traces = [];
-    const checks = [];
-    return {
-      adapter: createSourceFixtureAdapter(
-        fixture,
-        { [key]: value },
-        [[key, value]],
-        'D:\\synthetic\\.argo\\.env',
-        traces,
-        checks,
-      ),
-      traces,
-      checks,
-    };
+  const makeBehavior = fixture => createSourceFixtureBehavior(
+    fixture,
+    { [key]: value },
+    [[key, value]],
+    'D:\\synthetic\\.argo\\.env',
+  );
+  const direct = makeBehavior({});
+  const prohibitedMethods = {
+    cli: 'readCliKey',
+    literal: 'readLiteralKey',
+    fallback: 'readFallbackKey',
+    alias: 'readAliasedProcessKey',
+    indirect: 'readIndirectProcessKey',
   };
-  const direct = makeAdapter({});
-  const directRead = direct.adapter.readProcessKey(key);
-  const directTrusted = direct.adapter.isIssuedTrace(directRead.trace);
-  const forgedTrusted = direct.adapter.isIssuedTrace({
-    ...directRead.trace,
-    aliasChain: [...directRead.trace.aliasChain],
-  });
-  const prohibited = {};
-  for (const mutation of ['cli', 'literal', 'fallback', 'alias', 'indirect']) {
-    const fixture = makeAdapter({ accessMutation: mutation });
-    const read = fixture.adapter.readProcessKey(key);
-    prohibited[mutation] = {
-      sameValue: read.value === value,
-      sourceKind: read.trace.sourceKind,
-      operation: read.trace.operation,
-      aliasDepth: read.trace.aliasChain.length,
-      trusted: fixture.adapter.isIssuedTrace(read.trace),
-    };
-  }
-  const file = makeAdapter({});
-  const fileRead = file.adapter.readFileEntries('D:\\synthetic\\.argo\\.env')[0];
+  const prohibited = Object.fromEntries(Object.entries(prohibitedMethods).map(([mutation, method]) => {
+    const behavior = makeBehavior({ accessMutation: mutation });
+    return [mutation, {
+      sameValue: behavior[method](key) === direct.readProcessKey(key),
+      directReadSuppressed: behavior.readProcessKey(key) === undefined,
+      operationMethod: method,
+    }];
+  }));
+  const mismatchMethods = [
+    ['requested-key-mismatch', 'readProcessKeyWithRequestedKeyMismatch'],
+    ['requested-path-mismatch', 'readFileEntriesWithRequestedPathMismatch'],
+    ['missing-field', 'readProcessKeyWithMissingTraceField'],
+    ['extra-field', 'readProcessKeyWithExtraTraceField'],
+    ['wrong-field-type', 'readProcessKeyWithWrongTraceFieldType'],
+  ];
   return {
-    envelopeFrozen: Object.isFrozen(directRead),
-    traceFrozen: Object.isFrozen(directRead.trace) && Object.isFrozen(directRead.trace.aliasChain),
-    directTrusted,
-    forgedTrusted,
-    directTrace: {
-      sourceKind: directRead.trace.sourceKind,
-      path: directRead.trace.path,
-      key: directRead.trace.key,
-      operation: directRead.trace.operation,
-      aliasDepth: directRead.trace.aliasChain.length,
-    },
-    fileEnvelopeFrozen: Object.isFrozen(fileRead),
-    fileTraceTrusted: file.adapter.isIssuedTrace(fileRead.trace),
+    behaviorFrozen: Object.isFrozen(direct),
+    directValuePresent: direct.readProcessKey(key) === value,
+    fileEntriesPresent: direct.readFileEntries('D:\\synthetic\\.argo\\.env').length === 1,
+    exposesTrustVerdict: Object.hasOwn(direct, 'isIssuedTrace'),
     prohibited,
+    mismatchMethodsPresent: mismatchMethods.every(([mutation, method]) => (
+      typeof makeBehavior({
+        traceMutation: mutation,
+        file: mutation === 'requested-path-mismatch',
+      })[method] === 'function'
+    )),
   };
 }
 
@@ -769,9 +793,13 @@ function normalizedFixtureConfigurationMatches(result, values) {
 }
 
 function acceptedSourceTraceComplete(fixture, trace, keys, filePath) {
+  const exactTraceKeys = ['aliasChain', 'key', 'operation', 'path', 'sourceKind'];
   const requiredSources = fixture.file && fixture.process ? ['process', 'file'] : [fixture.expectedSource];
   return requiredSources.every(sourceKind => keys.every(key => trace.some(access => (
-    access.sourceKind === sourceKind
+    Object.isFrozen(access)
+      && Object.isFrozen(access.aliasChain)
+      && JSON.stringify(Object.keys(access).sort()) === JSON.stringify(exactTraceKeys)
+      && access.sourceKind === sourceKind
       && access.path === (sourceKind === 'file' ? filePath : null)
       && access.key === key
       && access.operation === 'read'

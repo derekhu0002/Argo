@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T12:08:00+08:00",
+  "generatedAt": "2026-07-25T12:22:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -184,8 +184,8 @@
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inject complete nine-key values through frozen adapter-issued { value, trace } process reads and { key, value, trace } file reads, require identity-based trace trust checks for every consumed value, then run ACL and production Neo4j auth probes.",
-      "observationPoint": "Prove identical values remain distinguishable as direct, CLI, literal, fallback, alias, or indirect from immutable trusted traces; reject forged/mutable/malformed/unvalidated traces; retain prior ACL, raw/sanitized auth-channel, zero-query, zero-persistence, and redaction evidence.",
+      "controlPoint": "Use module-owned withApprovedLiveConfigurationTestComposition to wrap raw fixture operation behaviors and privately issue immutable value/trace envelopes; direct resolver calls inject untrusted/cloned/self-issued adapters; trusted composition issues exact-schema mismatch traces.",
+      "observationPoint": "Reject untrusted adapter identities with SOURCE_ADAPTER_UNTRUSTED and key/path mismatch, missing/extra fields, or wrong field types with SOURCE_TRACE_INVALID; preserve complete normalization, provenance, ACL, auth-channel, zero-side-effect, and redaction evidence.",
       "expectedStatus": "passed"
     }
   ],
@@ -230,7 +230,7 @@
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
       "failureSignal": "LIVE_PROVIDER_CONFIGURATION_REQUIRED / SECRET_SOURCE_CONFLICT / SECRET_FILE_ACL_UNSAFE",
-      "nextAction": "Consume frozen adapter-issued value/trace envelopes, validate each trace through the adapter identity capability and schema, then resolve approved configuration only after exact path/git/file/ACL/conflict preflight; return sanitized evidence only."
+      "nextAction": "Create the production source adapter internally; expose only a module-owned test composition callback that privately registers adapter/capability identity; validate exact trace schema and request correlation before consuming values."
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
@@ -433,10 +433,11 @@
         "steps": [
           "Load approved non-sensitive profile and Neo4j URL/username only from direct process variables or exact repository-relative .argo/.env.",
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
-          "Implement the public resolveApprovedLiveConfiguration({ repositoryRoot, adapters }) boundary used directly by every frozen temporary fixture; do not add a test-only resolver.",
-          "Require the structured source adapter to record source kind, path, key, read operation, and alias chain; derive provenance from that trace and reject caller-supplied provenance verdicts.",
-          "Consume source.readProcessKey(key) as frozen { value, trace } and source.readFileEntries(path) as frozen { key, value, trace } records. Require source.isIssuedTrace(trace) for every consumed value and reject cloned, mutable, malformed, or unvalidated traces.",
-          "Validate source kind/path/key/operation/frozen alias chain independently in the resolver. Only direct process and exact .argo/.env reads with a one-hop key chain are approved; identical values reached through CLI, literal, fallback, alias, or indirect traces remain prohibited.",
+          "Implement resolveApprovedLiveConfiguration({ repositoryRoot }) with its sole production source adapter created internally; reject every caller-supplied source adapter, cloned adapter, or self-issued isIssuedTrace claim as SOURCE_ADAPTER_UNTRUSTED.",
+          "Implement withApprovedLiveConfigurationTestComposition({ sourceBehavior, adapters, observeTrace }, callback) as the only frozen-test composition root. It wraps raw operation methods, privately registers adapter/capability identity, and passes only a resolver closure to the callback.",
+          "Issue frozen { value, trace } process reads and frozen { key, value, trace } file records inside that composition. Fixtures provide operation methods, never traces, trust verdicts, or provenance categories.",
+          "Validate exact five-field sourceKind/path/key/operation/aliasChain schema with no extra fields, field types, frozen trace/chain, private issued identity, requested key/path equality, and source/path/operation correlation before consuming any value.",
+          "Reject trusted key/path mismatch, missing field, extra field, and wrong-type traces as SOURCE_TRACE_INVALID. Only direct process and exact .argo/.env one-hop reads are approved; identical CLI/literal/fallback/alias/indirect values remain prohibited.",
           "Normalize only when all five ARGO_EMBEDDING_* fields, ARGO_NEO4J_DATABASE_URL/USERNAME, and both secrets are explicitly present. Return exact normalized values and per-key source attribution; never fill defaults.",
           "Require ARGO_LIVE_PROVIDER_E2E=1, then preflight exact path, git ignored/untracked state, regular/non-reparse status, Windows ACL, duplicates, unknown secret keys, and both required secret sources before transport or Neo4j construction.",
           "Resolve QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD only from direct process variables or exact .argo/.env; process wins, equal duplicates pass, differing duplicates fail closed.",
@@ -444,7 +445,7 @@
           "Reject missing/blank, root/alternate/tracked files, CLI/literal/default/fallback/alias/indirect sources, and legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases.",
           "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
         ],
-        "completionSignal": "All approved-source fixtures pass with complete normalized configuration, per-key attribution, complete source reads, and one successful trust check per consumed trace; provenance and forged/mutable/malformed trace fixtures fail exactly before side effects; .argo/.env example/git/ACL guards pass."
+        "completionSignal": "Approved fixtures pass with complete normalized configuration and private trust validation; untrusted/cloned/self-issued adapters fail SOURCE_ADAPTER_UNTRUSTED; trusted key/path/schema mismatch fixtures fail SOURCE_TRACE_INVALID; provenance and unsafe source fixtures fail exactly before side effects; .argo/.env example/git/ACL guards pass."
       },
       {
         "taskId": "W2-C9",
