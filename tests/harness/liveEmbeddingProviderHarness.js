@@ -74,8 +74,7 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
 ]);
 
 async function runLiveEmbeddingProviderE2E() {
-  requireLiveOptIn('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED');
-  const configuration = await resolveApprovedLiveConfiguration();
+  const configuration = await resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN] });
   const createGate = loadLiveGateFactory();
   const input = `Argo live embedding ${crypto.randomUUID()}`;
   const identities = dynamicEvidenceIdentities();
@@ -170,7 +169,7 @@ async function runFailureMatrix(createGate, identities, configuration) {
 }
 
 async function runLiveProviderSecretIsolation() {
-  requireLiveOptIn('LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED');
+  await resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN] });
   const sourceFixtures = await runApprovedSourceFixtureMatrix();
   const observation = await runLiveEmbeddingProviderE2E();
   const createGate = loadLiveGateFactory();
@@ -195,7 +194,7 @@ async function runLiveProviderSecretIsolation() {
 }
 
 async function runApplyMutationEmbeddingVectorE2E() {
-  requireW31LiveOptIn();
+  await resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN, W31_LIVE_OPT_IN] });
   const mutation = await applyDisposableW31MutationFixture();
   return normalizeAutomaticMutationLifecycleObservation(mutation);
 }
@@ -413,19 +412,7 @@ function dynamicEvidenceIdentities() {
   };
 }
 
-function requireLiveOptIn(category) {
-  if (process.env[LIVE_OPT_IN] !== '1') {
-    throw safeError(category);
-  }
-}
-
-function requireW31LiveOptIn() {
-  if (process.env[W31_LIVE_OPT_IN] !== '1' || process.env[LIVE_OPT_IN] !== '1') {
-    throw safeError('W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED');
-  }
-}
-
-async function resolveApprovedLiveConfiguration() {
+async function resolveApprovedLiveConfiguration(options = {}) {
   if (!fs.existsSync(liveConfigPath)) {
     throw safeError('LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING');
   }
@@ -436,6 +423,7 @@ async function resolveApprovedLiveConfiguration() {
   }
   return boundary.resolveApprovedLiveConfiguration({
     repositoryRoot: repoRoot,
+    requiredOptIns: options.requiredOptIns || [LIVE_OPT_IN],
   });
 }
 
@@ -461,7 +449,11 @@ async function runApprovedSourceFixture(configurationBoundary, fixture) {
   const sourceTrace = [];
   const traceTrustChecks = [];
   const expectedAttribution = fixture.expectedSource
-    ? Object.fromEntries(Object.keys(approvedValues).map(key => [key, fixture.expectedSource]))
+    ? Object.fromEntries(
+      Object.keys(approvedValues)
+        .filter(key => key !== W31_LIVE_OPT_IN)
+        .map(key => [key, fixture.expectedSource]),
+    )
     : undefined;
   const sourceBehavior = createSourceFixtureBehavior(
     fixture,
@@ -544,6 +536,8 @@ async function runApprovedSourceFixture(configurationBoundary, fixture) {
 
 function approvedFixtureEnvironment(qwen, neo4jPassword) {
   return {
+    ARGO_LIVE_PROVIDER_E2E: '1',
+    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
     ARGO_EMBEDDING_BASE_URL: APPROVED_PROFILE.baseUrl,
     ARGO_EMBEDDING_MODEL: APPROVED_PROFILE.model,
     ARGO_EMBEDDING_PROVIDER: APPROVED_PROFILE.provider,

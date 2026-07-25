@@ -1217,6 +1217,7 @@ async function attachMutationEmbeddingLifecycle(context, result) {
   try {
     const configuration = await resolveApprovedLiveConfiguration({
       repositoryRoot: context.workspaceRoot,
+      requiredOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
     });
     const lifecycle = createMutationEmbeddingVectorLifecycle({
       configuration,
@@ -1249,8 +1250,6 @@ function shouldRunMutationEmbeddingLifecycle(result) {
   return result
     && result.status === 'passed'
     && result.written === true
-    && process.env[LIVE_PROVIDER_OPT_IN] === '1'
-    && process.env[W31_LIVE_OPT_IN] === '1'
     && (
       (Array.isArray(result.touchedElementIds) && result.touchedElementIds.length > 0)
       || (Array.isArray(result.touchedRelationshipIds) && result.touchedRelationshipIds.length > 0)

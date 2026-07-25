@@ -9,6 +9,7 @@ const liveEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderE2E.js';
 const secretEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js';
 const w31EntryPath = 'tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js';
 const harness = read(harnessPath);
+const liveConfig = read('.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js');
 const liveEntry = read(liveEntryPath);
 const secretEntry = read(secretEntryPath);
 const w31Entry = read(w31EntryPath);
@@ -16,24 +17,26 @@ const w31Entry = read(w31EntryPath);
 // GIVEN default/offline execution
 // WHEN the Harness is inspected
 // THEN opt-in blocks before loading production boundaries, touching secret state, or opening Neo4j
-const optInCheck = harness.indexOf("requireLiveOptIn('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED')");
-const secretPresenceCheck = harness.indexOf('const configuration = await resolveApprovedLiveConfiguration()');
+const optInCheck = harness.indexOf("resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN] })");
+const w31OptInCheck = harness.indexOf("resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN, W31_LIVE_OPT_IN] })");
+const secretPresenceCheck = optInCheck;
 const boundaryLoad = harness.indexOf('const createGate = loadLiveGateFactory()');
 const transportCreation = harness.indexOf('const transport = createObservedHttpTransport(global.fetch)');
 const neo4jOpen = harness.indexOf("require('neo4j-driver')");
 assert(optInCheck >= 0, 'LIVE_PROVIDER_OPT_IN_GUARD: live opt-in category is missing');
-assert(secretPresenceCheck > optInCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: secret preflight occurs before opt-in');
+assert(w31OptInCheck >= 0, 'LIVE_PROVIDER_OPT_IN_GUARD: W3.1 opt-in category is missing');
+assert(secretPresenceCheck === optInCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: opt-in must be part of secret preflight');
 assert(boundaryLoad > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: production boundary loads before secret preflight');
 assert(transportCreation > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: transport constructs before secret preflight');
 assert(neo4jOpen > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: Neo4j opens before secret preflight');
 assert(
-  harness.includes("process.env[LIVE_OPT_IN] !== '1'"),
-  'LIVE_PROVIDER_OPT_IN_GUARD: opt-in must be exact and explicit',
+  harness.includes("resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN] })"),
+  'LIVE_PROVIDER_OPT_IN_GUARD: live opt-in must be resolved from approved configuration',
 );
 assert(
-  harness.includes("process.env[W31_LIVE_OPT_IN] !== '1'")
-    && harness.includes('W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED'),
-  'LIVE_PROVIDER_OPT_IN_GUARD: W3.1 mutation-vector opt-in must be exact and explicit',
+  harness.includes("resolveApprovedLiveConfiguration({ requiredOptIns: [LIVE_OPT_IN, W31_LIVE_OPT_IN] })")
+    && liveConfig.includes('W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED'),
+  'LIVE_PROVIDER_OPT_IN_GUARD: W3.1 mutation-vector opt-in must be resolved from approved configuration',
 );
 
 // THEN fake/default outcomes cannot satisfy live evidence

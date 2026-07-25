@@ -15,6 +15,14 @@ const CONFIG_KEYS = Object.freeze([
   'ARGO_NEO4J_DATABASE_PASSWORD',
   'QWEN_KEY',
 ]);
+const OPT_IN_KEYS = Object.freeze({
+  ARGO_LIVE_PROVIDER_E2E: 'LIVE_PROVIDER_E2E_OPT_IN_REQUIRED',
+  ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED',
+});
+const READABLE_KEYS = Object.freeze([
+  ...CONFIG_KEYS,
+  ...Object.keys(OPT_IN_KEYS),
+]);
 const LEGACY_KEYS = Object.freeze(['ARGO_NEO4J_URI', 'ARGO_NEO4J_USERNAME', 'ARGO_NEO4J_PASSWORD']);
 const SECRET_KEYS = new Set(['ARGO_NEO4J_DATABASE_PASSWORD', 'QWEN_KEY']);
 const APPROVED = Object.freeze({
@@ -32,11 +40,9 @@ const prohibitedTraces = new WeakSet();
 async function resolveApprovedLiveConfiguration(options) {
   requireProductionOptions(options);
   const repositoryRoot = requireRoot(options.repositoryRoot);
-  if (process.env.ARGO_LIVE_PROVIDER_E2E !== '1') {
-    throw safeError('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED');
-  }
   return resolveTrusted({
     repositoryRoot,
+    requiredOptIns: normalizeRequiredOptIns(options.requiredOptIns),
     adapters: {
       filesystem: fs,
       systemMetadata: createSystemMetadataCommandAdapter({ repositoryRoot }),
@@ -55,13 +61,19 @@ async function withApprovedLiveConfigurationTestComposition(
   const source = createTrustedSource({ behavior: sourceBehavior, observeTrace });
   const resolver = Object.freeze(options => resolveTrusted({
     repositoryRoot: requireRoot(options && options.repositoryRoot),
+    requiredOptIns: normalizeRequiredOptIns(options && options.requiredOptIns),
     adapters,
     source,
   }));
   return callback(resolver);
 }
 
-async function resolveTrusted({ repositoryRoot, adapters, source }) {
+async function resolveTrusted({
+  repositoryRoot,
+  requiredOptIns = ['ARGO_LIVE_PROVIDER_E2E'],
+  adapters,
+  source,
+}) {
   if (!issuedAdapters.has(source)) throw safeError('SOURCE_ADAPTER_UNTRUSTED');
   const filesystem = adapters.filesystem || fs;
   const canonicalFilePath = path.join(repositoryRoot, '.argo', '.env');
@@ -77,7 +89,7 @@ async function resolveTrusted({ repositoryRoot, adapters, source }) {
   }
 
   const processValues = new Map();
-  for (const key of [...CONFIG_KEYS, ...LEGACY_KEYS]) {
+  for (const key of [...READABLE_KEYS, ...LEGACY_KEYS]) {
     const envelope = source.readProcessKey(key);
     validateEnvelope(envelope, source, key, null, 'process');
     processValues.set(key, envelope.value);
@@ -94,7 +106,7 @@ async function resolveTrusted({ repositoryRoot, adapters, source }) {
       if (!record || !Object.isFrozen(record)) throw safeError('SOURCE_TRACE_UNTRUSTED');
       validateTrace(record.trace, source, record.key, configuredFilePath, 'file');
       if (fileValues.has(record.key)) throw safeError('SECRET_FILE_DUPLICATE_KEY');
-      if (!CONFIG_KEYS.includes(record.key)) {
+      if (!READABLE_KEYS.includes(record.key)) {
         throw safeError(secretLooking(record.key)
           ? 'SECRET_FILE_UNKNOWN_KEY'
           : 'LIVE_PROVIDER_CONFIGURATION_REQUIRED');
@@ -126,6 +138,18 @@ async function resolveTrusted({ repositoryRoot, adapters, source }) {
       error.field = key;
       throw error;
     }
+  }
+  for (const key of requiredOptIns) {
+    const processValue = processValues.get(key);
+    const fileValue = fileValues.get(key);
+    if (present(processValue) && present(fileValue) && processValue !== fileValue) {
+      throw safeError('LIVE_PROVIDER_CONFIGURATION_CONFLICT');
+    }
+    const selectedValue = present(processValue) ? processValue : fileValue;
+    if (selectedValue !== '1') {
+      throw safeError(OPT_IN_KEYS[key]);
+    }
+    attribution[key] = present(processValue) ? 'process' : 'file';
   }
   for (const [key, expected] of Object.entries(APPROVED)) {
     if (normalized[key] !== expected) throw safeError('LIVE_PROVIDER_CONFIGURATION_REQUIRED');
@@ -371,11 +395,28 @@ function requireProductionOptions(options) {
     !options
     || typeof options !== 'object'
     || Array.isArray(options)
-    || Reflect.ownKeys(options).length !== 1
-    || Reflect.ownKeys(options)[0] !== 'repositoryRoot'
+    || !Reflect.ownKeys(options).every(key => key === 'repositoryRoot' || key === 'requiredOptIns')
+    || !Reflect.ownKeys(options).includes('repositoryRoot')
   ) {
     throw safeError('SOURCE_ADAPTER_UNTRUSTED');
   }
+}
+
+function normalizeRequiredOptIns(value) {
+  const requested = value === undefined ? ['ARGO_LIVE_PROVIDER_E2E'] : value;
+  if (!Array.isArray(requested) || requested.length === 0) {
+    throw safeError('SOURCE_ADAPTER_UNTRUSTED');
+  }
+  const normalized = [];
+  for (const key of requested) {
+    if (!Object.prototype.hasOwnProperty.call(OPT_IN_KEYS, key)) {
+      throw safeError('SOURCE_ADAPTER_UNTRUSTED');
+    }
+    if (!normalized.includes(key)) {
+      normalized.push(key);
+    }
+  }
+  return normalized;
 }
 
 function present(value) {

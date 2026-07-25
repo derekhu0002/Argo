@@ -103,6 +103,11 @@ assert.strictEqual(sourceAdapterSelfTest.prohibited.alias.operationMethod, 'read
 assert.strictEqual(sourceAdapterSelfTest.prohibited.indirect.operationMethod, 'readIndirectProcessKey');
 assert.strictEqual(sourceAdapterSelfTest.mismatchMethodsPresent, true);
 // THEN configuration and entrypoint failures cannot persist or print the provider credential
+assert(/^ARGO_LIVE_PROVIDER_E2E=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: live opt-in placeholder is not empty');
+assert(
+  /^ARGO_W31_LIVE_MUTATION_VECTOR_E2E=\s*$/m.test(envExample),
+  'LIVE_PROVIDER_SECRET_GUARD: W3.1 opt-in placeholder is not empty',
+);
 assert(/^QWEN_KEY=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: QWEN_KEY placeholder is not empty');
 assert(
   /^ARGO_NEO4J_DATABASE_PASSWORD=\s*$/m.test(envExample),
