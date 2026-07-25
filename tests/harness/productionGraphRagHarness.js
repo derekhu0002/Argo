@@ -53,9 +53,13 @@ function phase1BusinessBenchmarkFixture() {
     purposes: purposes.map((purpose, index) => ({
       purpose,
       mandatoryKeySeedIds: [`${purpose}-key-seed`],
+      recalledKeySeedIds: [`${purpose}-key-seed`],
       expectedClosureIds: [`${purpose}-closure`],
+      observedClosureIds: [`${purpose}-closure`],
       unrelatedQueryId: `${purpose}-unrelated-control`,
+      unrelatedForcedHits: 0,
       minimumPrecisionEvidenceName: `precision.${purpose}`,
+      precision: Number((0.91 - (index * 0.01)).toFixed(2)),
       ordinal: index + 1,
     })),
   };

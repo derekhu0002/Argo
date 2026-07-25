@@ -1,5 +1,18 @@
 [
   {
+    "testcasename": "ExplicitAcceptanceTestcase-DT-18",
+    "testdescription": "Acceptor perspective control point: run every approved benchmark query for all five purposes before overall delivery. Observation point: aggregate mandatory key seed recall, forbidden unrelated-query forced hits, expected closure correctness, and precision evidence.",
+    "acceptanceCriteria": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "relatedIntentElementId": "grag-quality-gate",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: DT18_ACTUAL_RECALL_EVIDENCE_MISSING\n+ actual - expected\n\n+ 'passed'\n- 'blocked'\n\n    at assertQualityBenchmarkBlocked (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:101:10)\n    at async main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:58:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: DT18_ACTUAL_RECALL_EVIDENCE_MISSING\n+ actual - expected\n\n+ 'passed'\n- 'blocked'\n\n    at assertQualityBenchmarkBlocked (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:101:10)\n    at async main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:58:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  },
+  {
     "testcasename": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
     "testdescription": "Acceptor perspective control point: record phase-1 result cardinality and precision by purpose. Observation point: inspect evidence availability and verify absence of silent truncation or a release cap.",
     "acceptanceCriteria": "tests/explicit/entries/runCapacityEvidence.js",
@@ -11,5 +24,18 @@
     "failureError": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
     "stderr": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-08",
+    "testdescription": "Control point: attempt W7 or overall delivery before prerequisite wave evidence or before the W7 business quality benchmark passes. Observation point: the delivery gate blocks premature delivery and permits progression only after W2-W6 acceptance and DT-18 benchmark proof.",
+    "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "relatedIntentElementId": "grag-seven-wave-delivery",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: TS08_PRECISION_OUT_OF_RANGE_ACCEPTED\n+ actual - expected\n\n+ 'allowed'\n- 'blocked'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:47:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'allowed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: TS08_PRECISION_OUT_OF_RANGE_ACCEPTED\n+ actual - expected\n\n+ 'allowed'\n- 'blocked'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:47:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'allowed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   }
 ]

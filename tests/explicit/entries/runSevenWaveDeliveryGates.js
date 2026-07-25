@@ -29,6 +29,28 @@ async function main() {
     qualityBlocked.error.category || 'TS08_W7_QUALITY_GATE_CATEGORY_MISSING',
   );
 
+  // GIVEN W2-W6 are accepted but W7 precision evidence is outside [0, 1]
+  // WHEN whole delivery is attempted
+  const invalidPrecisionBlocked = await evaluateSevenWaveDelivery({
+    completedWaves: ['W2', 'W3', 'W4', 'W5', 'W6'],
+    qualityBenchmark: {
+      status: 'passed',
+      keySeedRecall: 1,
+      closureCorrectness: 1,
+      unrelatedForcedHits: 0,
+      aggregatePrecision: -99,
+    },
+    deliveryIntent: 'whole-delivery',
+  });
+
+  // THEN whole delivery remains blocked because invalid precision is not passing W7 evidence
+  assert.strictEqual(invalidPrecisionBlocked.status, 'blocked', 'TS08_PRECISION_OUT_OF_RANGE_ACCEPTED');
+  assert.strictEqual(
+    invalidPrecisionBlocked.error.category,
+    'W7_QUALITY_BENCHMARK_REQUIRED',
+    invalidPrecisionBlocked.error.category || 'TS08_PRECISION_GATE_CATEGORY_MISSING',
+  );
+
   // GIVEN W2-W6 are accepted and the W7 DT-18 benchmark has passed
   // WHEN whole delivery is attempted in order
   const allowed = await evaluateSevenWaveDelivery({

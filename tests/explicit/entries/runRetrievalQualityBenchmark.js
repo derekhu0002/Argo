@@ -51,6 +51,42 @@ async function main() {
     assert.strictEqual(observed.unrelatedForcedHits, 0, `DT18_UNRELATED_FORCED_HITS: ${expectation.purpose}`);
     assertRecordedPrecision(observed.precision, `DT18_PRECISION_NOT_RECORDED: ${expectation.purpose}`);
   }
+
+  // GIVEN benchmark records missing actual recall observations
+  // WHEN W7 business quality evidence is evaluated
+  // THEN expected seed ids cannot be reused as fabricated recall evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { recalledKeySeedIds: [] }),
+    'DT18_ACTUAL_RECALL_EVIDENCE_MISSING',
+  );
+
+  // GIVEN benchmark records missing actual closure observations
+  // WHEN W7 business quality evidence is evaluated
+  // THEN expected closure ids cannot be reused as fabricated closure evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { observedClosureIds: [] }),
+    'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING',
+  );
+
+  // GIVEN an empty or incomplete business benchmark
+  // WHEN W7 business quality evidence is evaluated
+  // THEN perfect scores cannot be synthesized from missing benchmark content
+  await assertQualityBenchmarkBlocked(
+    { benchmarkId: benchmark.benchmarkId, purposes: [] },
+    'DT18_BENCHMARK_EMPTY',
+  );
+  await assertQualityBenchmarkBlocked(
+    { ...benchmark, purposes: benchmark.purposes.slice(0, -1) },
+    'DT18_BENCHMARK_INCOMPLETE',
+  );
+
+  // GIVEN precision evidence outside the business range
+  // WHEN W7 business quality evidence is evaluated
+  // THEN invalid precision cannot be normalized into a passing benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 2, { precision: -0.01 }),
+    'DT18_PRECISION_OUT_OF_RANGE',
+  );
 }
 
 function assertRecordedPrecision(value, failureCategory) {
@@ -58,6 +94,25 @@ function assertRecordedPrecision(value, failureCategory) {
     typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1,
     failureCategory,
   );
+}
+
+async function assertQualityBenchmarkBlocked(benchmark, expectedCategory) {
+  const outcome = await evaluatePhase1QualityBenchmark({ benchmark });
+  assert.strictEqual(outcome.status, 'blocked', expectedCategory);
+  assert.strictEqual(
+    outcome.error && outcome.error.category,
+    expectedCategory,
+    (outcome.error && outcome.error.category) || expectedCategory,
+  );
+}
+
+function mutatePurpose(benchmark, purposeIndex, patch) {
+  return {
+    ...benchmark,
+    purposes: benchmark.purposes.map((purpose, index) => (
+      index === purposeIndex ? { ...purpose, ...patch } : { ...purpose }
+    )),
+  };
 }
 
 main().catch(error => {

@@ -172,3 +172,12 @@
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 35 passed, 3 failed, 0 missing criteria. W7 DT-18 fails with `DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING`; TS-08 fails with `TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING`; DT-19 remains failed with `DT19_CAPACITY_EVIDENCE_MISSING` and is outside this W7 Phase 1 implementation scope.
 - `argo.validateStageHandoff(stage=implementation-to-coding)` passed for `.argo/temp/ImplementationToCodingHandoff.json`.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-26 W7 negative-boundary repair
+
+- Human review found an ImplementationDesign gap: the approved W7 entrypoints did not prove that DT-18 rejects fabricated quality evidence or that TS-08 rejects invalid aggregate precision. No intent graph mutation is required; this is a handoff/test-contract repair.
+- DT-18 now freezes negative boundaries for missing actual recall observations, missing actual closure observations, empty benchmarks, incomplete five-purpose benchmark content, and precision outside `[0, 1]`. Expected seed ids and expected closure ids cannot be substituted as observed evidence.
+- TS-08 now freezes the whole-delivery counterexample where W2-W6 are accepted and `qualityBenchmark.aggregatePrecision` is `-99`; delivery must remain blocked with the W7 quality gate.
+- The repair handoff authorizes Coding only to update `.argo/scripts/graph-rag/productionGraphRagRuntime.js` for these W7 DT-18/TS-08 loopholes. DT-19 capacity evidence, test/Harness files, contracts, and runner-owned `deliveryStatus` remain frozen and out of scope.
+- Direct RED evidence before Coding: `runRetrievalQualityBenchmark.js` fails with `DT18_ACTUAL_RECALL_EVIDENCE_MISSING`; `runSevenWaveDeliveryGates.js` fails with `TS08_PRECISION_OUT_OF_RANGE_ACCEPTED`.
+- `argo.validateStageHandoff(stage=implementation-to-coding)` passed. Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 35 passed, 3 failed, 0 missing criteria. Failures are DT-18 (`DT18_ACTUAL_RECALL_EVIDENCE_MISSING`), TS-08 (`TS08_PRECISION_OUT_OF_RANGE_ACCEPTED`), and out-of-scope DT-19 (`DT19_CAPACITY_EVIDENCE_MISSING`). Runner-owned delivery status changed `grag-quality-gate` and `grag-seven-wave-delivery` from `delivered` to `not_delivered` as the new pre-coding baseline.

@@ -44,6 +44,9 @@ for (const ownership of [
   '100% key seed recall',
   'zero forced hits',
   'recorded precision',
+  'actual recalled key seed ids',
+  'actual observed closure ids',
+  'precision outside `[0, 1]`',
   'W7 Phase 1 business acceptance requires',
 ]) {
   assert(

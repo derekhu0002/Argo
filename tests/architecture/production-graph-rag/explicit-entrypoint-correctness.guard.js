@@ -52,6 +52,7 @@ const entryRequirements = new Map([
     'W7_QUALITY_BENCHMARK_REQUIRED',
     'TS08_OUT_OF_ORDER_DELIVERY_NOT_BLOCKED',
     'TS08_WHOLE_DELIVERY_WITHOUT_W7_QUALITY',
+    'TS08_PRECISION_OUT_OF_RANGE_ACCEPTED',
     'TS08_ORDERED_DELIVERY_NOT_ALLOWED',
   ]],
   ['tests/explicit/entries/runRetrievalQualityBenchmark.js', [
@@ -64,6 +65,11 @@ const entryRequirements = new Map([
     'DT18_UNRELATED_FORCED_HITS',
     'DT18_PRECISION_NOT_RECORDED',
     'DT18_INVENTED_PRECISION_THRESHOLD',
+    'DT18_ACTUAL_RECALL_EVIDENCE_MISSING',
+    'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING',
+    'DT18_BENCHMARK_EMPTY',
+    'DT18_BENCHMARK_INCOMPLETE',
+    'DT18_PRECISION_OUT_OF_RANGE',
   ]],
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',
