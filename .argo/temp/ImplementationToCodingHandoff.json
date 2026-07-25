@@ -61,6 +61,14 @@
       "controlPoint": "Inspect intent anchors, root contract mappings, and mounted W7 testcase paths.",
       "observationPoint": "Implementation mappings reference grag-quality-gate and grag-seven-wave-delivery, and mounted DT-18/TS-08 entrypoints exist.",
       "expectedStatus": "passed"
+    },
+    {
+      "name": "CodingScopeAuthorizationGuard",
+      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Inspect W7 coding targets, task plan, frozen files, and top-level authorization fields.",
+      "observationPoint": "The handoff authorizes only DT-18 and TS-08 delivery-sequence scope, keeps DT-19 capacity evidence out of Coding scope, and preserves runner-owned deliveryStatus authority.",
+      "expectedStatus": "passed"
     }
   ],
   "supportingNonExplicitTests": [],
@@ -183,10 +191,12 @@
     "tests/explicit/entries/runCompleteViewClosure.js",
     "tests/explicit/entries/runFirstInclusionProvenance.js",
     "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "tests/explicit/entries/runCapacityEvidence.js",
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-graph-rag/implementation-traceability.guard.js"
+    "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js"
   ],
   "openGaps": []
 }
