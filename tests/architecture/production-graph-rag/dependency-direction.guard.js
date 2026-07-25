@@ -35,6 +35,7 @@ for (const runtimeFile of runtimeFiles) {
 }
 
 const authorizedAdapterPath = path.join(runtimeDirectory, authorizedCommandAdapter);
+(async () => {
 if (fs.existsSync(authorizedAdapterPath)) {
   const adapterSource = fs.readFileSync(authorizedAdapterPath, 'utf8');
   assert(!/\bexec(?:File|FileSync|Sync)?\s*\(|\bspawn\s*\(/.test(adapterSource), 'SYSTEM_METADATA_COMMAND_GUARD: only spawnSync is allowed');
@@ -62,24 +63,27 @@ if (fs.existsSync(authorizedAdapterPath)) {
   assert.strictEqual(directExecutorCalls, 0, 'SYSTEM_METADATA_COMMAND_GUARD: rejected production injection executed');
 
   const safeInvocations = [];
-  withSystemMetadataCommandTestComposition({
+  let escapedSafeAdapter;
+  const compositionResult = await withSystemMetadataCommandTestComposition({
     repositoryRoot: repoRoot,
     executeMetadataCommand(executable, args, options) {
       safeInvocations.push({ executable, args, options });
       return { status: 0, stdout: executable === 'whoami' ? 'DOMAIN\\User\r\n' : 'metadata-only\r\n', stderr: '' };
     },
   }, adapter => {
-    assert.deepStrictEqual(Object.keys(adapter).sort(), [
-      'isSecretFileIgnored',
-      'isSecretFileTracked',
-      'readCurrentIdentity',
-      'readSecretFileAcl',
-    ]);
+    escapedSafeAdapter = adapter;
+    assertAdapterReflectionSurface(adapter);
     adapter.isSecretFileIgnored();
     adapter.isSecretFileTracked();
     adapter.readCurrentIdentity();
     adapter.readSecretFileAcl();
+    return {
+      adapter,
+      executor: () => safeInvocations,
+      capability: adapter.isSecretFileIgnored,
+    };
   });
+  assert.strictEqual(compositionResult, undefined, 'SYSTEM_METADATA_COMMAND_GUARD: test composition leaked callback return');
   assert.deepStrictEqual(
     safeInvocations.map(({ executable, args }) => ({ executable, args })),
     [
@@ -101,6 +105,103 @@ if (fs.existsSync(authorizedAdapterPath)) {
       Object.keys(invocation.options.env).sort().filter(key => ['PATH', 'PATHEXT', 'SystemRoot', 'WINDIR'].includes(key)),
     );
   }
+  const safeCallsAtRevocation = safeInvocations.length;
+  assertAdapterRevoked(escapedSafeAdapter, safeCallsAtRevocation, () => safeInvocations.length);
+
+  let thrownAdapter;
+  let thrownExecutorCalls = 0;
+  const callbackFailure = new Error('synthetic-callback-failure');
+  await assert.rejects(
+    Promise.resolve().then(() => withSystemMetadataCommandTestComposition({
+      repositoryRoot: repoRoot,
+      executeMetadataCommand() {
+        thrownExecutorCalls += 1;
+        return { status: 0, stdout: '', stderr: '' };
+      },
+    }, adapter => {
+      thrownAdapter = adapter;
+      throw callbackFailure;
+    })),
+    error => error === callbackFailure,
+    'SYSTEM_METADATA_COMMAND_GUARD: callback failure was replaced',
+  );
+  assertAdapterRevoked(thrownAdapter, 0, () => thrownExecutorCalls);
+
+  let rejectedAdapter;
+  let rejectedExecutorCalls = 0;
+  const asyncFailure = new Error('synthetic-async-callback-failure');
+  await assert.rejects(
+    withSystemMetadataCommandTestComposition({
+      repositoryRoot: repoRoot,
+      executeMetadataCommand() {
+        rejectedExecutorCalls += 1;
+        return { status: 0, stdout: '', stderr: '' };
+      },
+    }, async adapter => {
+      rejectedAdapter = adapter;
+      await Promise.resolve();
+      throw asyncFailure;
+    }),
+    error => error === asyncFailure,
+    'SYSTEM_METADATA_COMMAND_GUARD: async callback rejection was replaced',
+  );
+  assertAdapterRevoked(rejectedAdapter, 0, () => rejectedExecutorCalls);
+
+  let outerAdapter;
+  let innerAdapter;
+  let nestedExecutorCalls = 0;
+  await withSystemMetadataCommandTestComposition({
+    repositoryRoot: repoRoot,
+    executeMetadataCommand() {
+      nestedExecutorCalls += 1;
+      return { status: 0, stdout: 'metadata-only\r\n', stderr: '' };
+    },
+  }, async adapter => {
+    outerAdapter = adapter;
+    assertAdapterReflectionSurface(outerAdapter);
+    await withSystemMetadataCommandTestComposition({
+      repositoryRoot: repoRoot,
+      executeMetadataCommand() {
+        nestedExecutorCalls += 1;
+        return { status: 0, stdout: 'metadata-only\r\n', stderr: '' };
+      },
+    }, nested => {
+      innerAdapter = nested;
+      assertAdapterReflectionSurface(innerAdapter);
+      assertAdaptersDoNotShareCapability(outerAdapter, innerAdapter);
+      outerAdapter.isSecretFileIgnored();
+      innerAdapter.isSecretFileIgnored();
+    });
+    assertAdapterRevoked(innerAdapter, nestedExecutorCalls, () => nestedExecutorCalls);
+    outerAdapter.isSecretFileTracked();
+  });
+  assertAdapterRevoked(outerAdapter, nestedExecutorCalls, () => nestedExecutorCalls);
+
+  let firstRepeatedAdapter;
+  let secondRepeatedAdapter;
+  let repeatedExecutorCalls = 0;
+  await withSystemMetadataCommandTestComposition({
+    repositoryRoot: repoRoot,
+    executeMetadataCommand() {
+      repeatedExecutorCalls += 1;
+      return { status: 0, stdout: 'metadata-only\r\n', stderr: '' };
+    },
+  }, adapter => {
+    firstRepeatedAdapter = adapter;
+  });
+  await withSystemMetadataCommandTestComposition({
+    repositoryRoot: repoRoot,
+    executeMetadataCommand() {
+      repeatedExecutorCalls += 1;
+      return { status: 0, stdout: 'metadata-only\r\n', stderr: '' };
+    },
+  }, adapter => {
+    secondRepeatedAdapter = adapter;
+    assertAdaptersDoNotShareCapability(firstRepeatedAdapter, secondRepeatedAdapter);
+    assertAdapterRevoked(firstRepeatedAdapter, repeatedExecutorCalls, () => repeatedExecutorCalls);
+    secondRepeatedAdapter.isSecretFileIgnored();
+  });
+  assertAdapterRevoked(secondRepeatedAdapter, repeatedExecutorCalls, () => repeatedExecutorCalls);
 
   const secretCanary = 'synthetic-command-secret';
   const bypassFixtures = [
@@ -146,7 +247,58 @@ if (fs.existsSync(authorizedAdapterPath)) {
     assert.strictEqual(executorCalls, 0, `SYSTEM_METADATA_COMMAND_GUARD: rejected ${fixture.name} reached executor`);
   }
 }
+})().catch(error => {
+  console.error(error && error.stack ? error.stack : error);
+  process.exitCode = 1;
+});
 
 function exactProhibitedCategory(error) {
   return error && error.category === 'SYSTEM_METADATA_COMMAND_PROHIBITED';
+}
+
+function exactRevokedCategory(error) {
+  return error && error.category === 'TEST_SYSTEM_METADATA_ADAPTER_REVOKED';
+}
+
+function assertAdapterReflectionSurface(adapter) {
+  const capabilityNames = [
+    'isSecretFileIgnored',
+    'isSecretFileTracked',
+    'readCurrentIdentity',
+    'readSecretFileAcl',
+  ].sort();
+  assert.strictEqual(Object.getPrototypeOf(adapter), null, 'SYSTEM_METADATA_COMMAND_GUARD: adapter prototype must be null');
+  assert.strictEqual(Object.isFrozen(adapter), true, 'SYSTEM_METADATA_COMMAND_GUARD: adapter must be frozen');
+  assert.deepStrictEqual(Object.getOwnPropertyNames(adapter).sort(), capabilityNames);
+  assert.deepStrictEqual(Object.getOwnPropertySymbols(adapter), []);
+  const descriptors = Object.getOwnPropertyDescriptors(adapter);
+  for (const name of capabilityNames) {
+    const descriptor = descriptors[name];
+    assert.strictEqual(typeof descriptor.value, 'function', `SYSTEM_METADATA_COMMAND_GUARD: ${name} is not callable`);
+    assert.strictEqual(descriptor.writable, false, `SYSTEM_METADATA_COMMAND_GUARD: ${name} is writable`);
+    assert.strictEqual(descriptor.configurable, false, `SYSTEM_METADATA_COMMAND_GUARD: ${name} is configurable`);
+    assert.strictEqual(descriptor.enumerable, true, `SYSTEM_METADATA_COMMAND_GUARD: ${name} is hidden from enumeration`);
+    assert.strictEqual(Object.isFrozen(descriptor.value), true, `SYSTEM_METADATA_COMMAND_GUARD: ${name} function is mutable`);
+    assert.strictEqual(Object.getPrototypeOf(descriptor.value), Function.prototype);
+    assert.deepStrictEqual(Object.getOwnPropertySymbols(descriptor.value), []);
+    assert.deepStrictEqual(Object.getOwnPropertyNames(descriptor.value).sort(), ['length', 'name']);
+  }
+}
+
+function assertAdaptersDoNotShareCapability(left, right) {
+  assert.notStrictEqual(left, right, 'SYSTEM_METADATA_COMMAND_GUARD: compositions shared adapter identity');
+  for (const name of Object.getOwnPropertyNames(left)) {
+    assert.notStrictEqual(left[name], right[name], `SYSTEM_METADATA_COMMAND_GUARD: compositions shared ${name}`);
+  }
+}
+
+function assertAdapterRevoked(adapter, expectedCalls, readExecutorCalls) {
+  for (const name of Object.getOwnPropertyNames(adapter)) {
+    assert.throws(
+      () => adapter[name](),
+      exactRevokedCategory,
+      `SYSTEM_METADATA_COMMAND_GUARD: escaped ${name} remained callable`,
+    );
+    assert.strictEqual(readExecutorCalls(), expectedCalls, `SYSTEM_METADATA_COMMAND_GUARD: revoked ${name} reached executor`);
+  }
 }
