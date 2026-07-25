@@ -221,3 +221,36 @@
 - `argo.validateSystemArchitecture`: passed.
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for the corrected six-element W3 handoff.
 - Open business questions: none. ImplementationDesign must regenerate a TS-09-inclusive implementation handoff before Coding/Repair proceeds.
+
+## 2026-07-25 — W3.1 Mutation-Driven Live Vector Integration
+
+- Selected viewpoint: Implementation and Migration Viewpoint.
+- Stakeholder concern: requirements owners, ICT architects, implementation designers, runtime owners, and acceptors need accepted W3 lifecycle evidence integrated with the real architecture mutation lifecycle, live approved Qwen embedding, Neo4j vector persistence/queryability, and failure-state release gates before downstream semantic seed work relies on it.
+- Modeling purpose: deciding and intent-to-implementation handoff preparation.
+- Affected view bindings: `grag-w31-integration-acceptance` is a new Implementation and Migration Viewpoint instance because it isolates W3-to-W3.1-to-W4 sequencing, affected-record extraction, adapter generation, vector index persistence, and alignment release semantics under acceptance-delivery concerns; `grag-seven-wave-sequence` remains the seven-wave overview and points to the dedicated W3.1 view instead of exceeding the seven-element view limit; `grag-delivery-impact-foundation` remains a compact implementation/migration impact view with the new W3.1 work package and realization link.
+- Human approval evidence: the 2026-07-25 user request explicitly asked to supplement W3.1, add the live `applySystemArchitectureMutation -> Embedding -> Neo4j vector queryable` acceptance scope, preserve W3/TS-09 acceptance, and produce an intent-to-implementation handoff. Runtime delivery still requires downstream live-runner evidence and must not be marked delivered by Intent Design.
+
+### Coverage matrix
+
+- `grag-wp-3-1` — `functionalPoint.W3-1-live-mutation-vector-e2e` -> `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E`.
+- `grag-index-lifecycle` — `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`.
+- `grag-embedding-generation` — `functionalPoint.TS-09-affected-record-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration`.
+- `grag-embedding-provider-adapter` — `functionalPoint.TS-09-adapter-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter`.
+- `grag-semantic-index` — `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`.
+- `grag-alignment-constraint` — `functionalPoint.DT-17-unaligned-semantic-rejection` -> `ExplicitAcceptanceTestcase-DT-17`.
+- `grag-native-retrieval-service` — `functionalPoint.TS-01-native` -> `ExplicitAcceptanceTestcase-TS-01-Native`.
+- `grag-embedding-qualification` — `functionalPoint.TS-06` -> `ExplicitAcceptanceTestcase-TS-06`; `functionalPoint.TS-06-provider-e2e` -> `ExplicitAcceptanceTestcase-TS-06-Provider-E2E`.
+- `grag-credential-boundary` — `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Release semantics and prerequisites
+
+- W3.1 requires `applySystemArchitectureMutation` touched Element, ArchitectureRelationship, and View records to flow through real approved Qwen adapter generation and Neo4j vector-index persistence/query verification before the semantic index may be marked Aligned.
+- Provider failure, unapproved provider/model/dimensions, partial generation, partial persistence, vector-index write failure, or vector-query verification failure marks Stale or Failed and prohibits pure semantic queries until restored to Aligned.
+- Live execution is explicit opt-in only in controlled local or protected CI and may use only approved secret sources for `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD`; offline fakes may support development but never count as W3.1 live delivery evidence.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: first dry run failed on the seven-element view limit and missing view target; split-view retry passed.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 58 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- Open business questions: none at intent level. Live Qwen/Neo4j runner credentials and controlled execution environment are downstream prerequisites, not delivery evidence in this stage.

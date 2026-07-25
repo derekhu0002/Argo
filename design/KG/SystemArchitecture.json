@@ -484,6 +484,14 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3.DT-05",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-05|runIndependentSemanticSeeds.js|exitCode=0|exact threshold-all baseline accepted for W3"
+        },
+        {
+          "name": "scopeBoundary.W3-W4",
+          "value": "DT-04 shares runIndependentSemanticSeeds.js and currently passes, but independent three-channel seed acceptance remains exclusively W4 scope and is not evidence that W4 is accepted."
         }
       ],
       "testcases": [
@@ -784,6 +792,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16-SemanticIndex|runMutationIndexLifecycle.js|exitCode=0|complete versioned vector/evidence baseline passed"
         }
       ],
       "testcases": [
@@ -821,6 +833,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16|runMutationIndexLifecycle.js|exitCode=0|all mutation lifecycle and alignment transitions passed"
         }
       ],
       "testcases": [
@@ -862,6 +878,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-17|runStaleSemanticQueryRejection.js|exitCode=0|unaligned pure semantic rejection and canonical read continuity passed"
         }
       ],
       "testcases": [
@@ -1107,7 +1127,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1179,7 +1199,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1239,7 +1259,7 @@
       "id": "grag-wp-3",
       "name": "W3 Index Lifecycle and Exact-Threshold Baseline",
       "type": "Work Package",
-      "description": "W3 not accepted until TS-09 passes: deliver all-mutation lifecycle version advancement, complete adapter-driven generation and parameterized vector/evidence persistence, alignment-state rejection for unaligned pure semantic queries, and exact threshold-all correctness before ANN is allowed as benchmark-only performance comparison. DT-05, DT-16, and DT-17 are scoped-passed evidence only and cannot complete W3 without TS-09 adapter generation/persistence evidence.",
+      "description": "W3 accepted: adapter-driven affected-record generation, parameterized vector/evidence persistence, all-mutation lifecycle version advancement, exact threshold-all correctness, and rejection of unaligned pure semantic queries passed. DT-04 independent three-channel retrieval remains W4 scope.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -1247,31 +1267,39 @@
         },
         {
           "name": "acceptanceDecision.W3",
-          "value": "not_accepted|2026-07-25|TS-09 is blocking; DT-05, DT-16, and DT-17 scoped checks may pass but do not complete W3 without adapter generation/persistence evidence"
+          "value": "accepted|2026-07-25|all W3 mounted cases passed; full runner 23/36 remaining failures belong to DT-00, W4-W7, and TS-08"
         },
         {
           "name": "implementationGate.TS-09",
-          "value": "blocking|runEmbeddingProviderAdapterLifecycle.js fails with TS09_NODE_ADAPTER_REQUIRED because generateAffectedEmbeddings() does not expose required outcome-level runtime, neo4jGenAiPluginRequired, and adapter generation/persistence evidence"
+          "value": "passed|runEmbeddingProviderAdapterLifecycle.js|exitCode=0|adapter runtime, affected-record generation, parameterized persistence, and partial-failure isolation proven"
         },
         {
           "name": "releaseGate.TS-09",
-          "value": "runEmbeddingProviderAdapterLifecycle.js must pass before W3 acceptance; productionGraphRagRuntime.generateAffectedEmbeddings() must prove Node adapter generation and parameterized persistence path evidence"
+          "value": "passed|ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter and ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration"
         },
         {
           "name": "releaseGate.DT-05",
-          "value": "threshold-all correctness proof may be accepted as scoped evidence, but ANN top-k remains performance-only and DT-05 does not complete W3 while TS-09 is pending"
+          "value": "passed|ExplicitAcceptanceTestcase-DT-05|exact threshold-all correctness; ANN top-k remains performance-only"
         },
         {
           "name": "releaseGate.DT-16",
-          "value": "all canonical mutation classes must advance affected-record version evidence or leave the index non-Aligned; DT-16 scoped pass does not complete W3 while TS-09 is pending"
+          "value": "passed|ExplicitAcceptanceTestcase-DT-16-SemanticIndex and ExplicitAcceptanceTestcase-DT-16|complete version evidence and lifecycle advancement"
         },
         {
           "name": "releaseGate.DT-17",
-          "value": "unaligned pure semantic queries are rejected and canonical reads remain available; DT-17 scoped pass does not complete W3 while TS-09 is pending"
+          "value": "passed|ExplicitAcceptanceTestcase-DT-17|unaligned pure semantic rejection and canonical read continuity"
         },
         {
-          "name": "scopeBoundary.W2-W3",
-          "value": "W2 qualification acceptance does not imply adapter generation/persistence/alignment delivery; do not mark W3 accepted until TS-09 and remaining W3 acceptance pass."
+          "name": "scopeBoundary.W3-W4",
+          "value": "DT-04 currently passes through the shared entrypoint but remains W4 acceptance; W3 acceptance must not mark W4 or later waves delivered."
+        },
+        {
+          "name": "waveAcceptance.W3",
+          "value": "accepted|2026-07-25|W2 prerequisites and all W3 core gates passed under ARGO_LIVE_PROVIDER_E2E=1"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "ExplicitAcceptanceTestcase-DT-05=runIndependentSemanticSeeds.js; ExplicitAcceptanceTestcase-DT-16-SemanticIndex=runMutationIndexLifecycle.js; ExplicitAcceptanceTestcase-DT-16=runMutationIndexLifecycle.js; ExplicitAcceptanceTestcase-DT-17=runStaleSemanticQueryRejection.js; ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter=runEmbeddingProviderAdapterLifecycle.js; ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration=runEmbeddingProviderAdapterLifecycle.js; all exitCode=0; full runner 23/36 with ARGO_LIVE_PROVIDER_E2E=1"
         }
       ]
     },
@@ -1352,7 +1380,7 @@
       "id": "grag-embedding-provider-adapter",
       "name": "Independent Embedding Provider Adapter",
       "type": "Application Component",
-      "description": "Node.js production component that invokes the W2-qualified embedding provider outside Neo4j and persists vectors/evidence into the Neo4j vector projection; no Python sidecar or Neo4j GenAI Plugin is required. W3 acceptance is blocked until this adapter's TS-09 testcase proves runtime identity and generation/persistence evidence through productionGraphRagRuntime.generateAffectedEmbeddings().",
+      "description": "Node.js production component that invokes the W2-qualified embedding provider outside Neo4j and persists vectors/evidence into the Neo4j vector projection; no Python sidecar or Neo4j GenAI Plugin is required. W3 acceptance confirms runtime identity, affected-record generation, parameterized persistence evidence, and non-Aligned partial-failure behavior.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -1367,20 +1395,24 @@
           "value": "{\"description\":\"Generate embeddings through an independent qualified-provider adapter and persist complete vector evidence through parameterized Cypher.\",\"businessOutcome\":\"Production generation is decoupled from Neo4j plugin credentials and fails safely while proving Node runtime ownership.\",\"observableBoundary\":\"Adapter invocation through generateAffectedEmbeddings() exposes runtime='nodejs', neo4jGenAiPluginRequired=false, qualified-provider generation evidence, parameterized vector/evidence persistence, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter\"}"
         },
         {
-          "name": "blockingEvidence.TS-09",
-          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js exits 1|TS09_NODE_ADAPTER_REQUIRED|actual runtime undefined; generateAffectedEmbeddings() lacks required outcome-level runtime/plugin and adapter generation/persistence evidence"
+          "name": "acceptanceEvidence.TS-09",
+          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js|exitCode=0|runtime, adapter generation, parameterized persistence, credential isolation, and non-Aligned partial failure passed"
         },
         {
           "name": "acceptanceApproval.TS-09",
-          "value": "approvedByHuman=true|2026-07-25|human feedback: TS-09 blocks W3 acceptance until runEmbeddingProviderAdapterLifecycle.js passes"
+          "value": "approvedByHuman=true|2026-07-25|human-approved W3 gate"
         },
         {
           "name": "scopeBoundary.W2-W3",
-          "value": "W2 accepts adapter technology selection and qualified-provider boundary; TS-09 adapter-driven affected-record generation, vector/evidence persistence, and alignment lifecycle remain a blocking W3 implementation gate."
+          "value": "W2 accepts technology selection and provider qualification; W3 now accepts adapter-driven generation, vector/evidence persistence, and alignment lifecycle."
         },
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
         }
       ],
       "testcases": [
@@ -1401,23 +1433,27 @@
       "attributes": [
         {
           "name": "decisionTrace.TS-09",
-          "value": "accepted|affected-record generation and persistence path is a blocking W3 gate"
+          "value": "accepted|affected-record generation and persistence path passed as W3 gate"
         },
         {
           "name": "functionalPoint.TS-09-affected-record-generation",
-          "value": "{\"description\":\"Generate embeddings for only affected canonical records and expose complete generation/persistence outcome evidence.\",\"businessOutcome\":\"W3 cannot be accepted until mutation-driven generation proves the Node adapter path, persistence metadata, and non-Aligned failure behavior.\",\"observableBoundary\":\"For Element, ArchitectureRelationship, and View mutation cases, generateAffectedEmbeddings() reports affected records, batching/retry or failure isolation, runtime='nodejs', provider adapter evidence, persistence evidence, and non-Aligned partial failures.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration\"}"
+          "value": "{\"description\":\"Generate embeddings for only affected canonical records and expose complete generation/persistence outcome evidence.\",\"businessOutcome\":\"Mutation-driven generation proves the Node adapter path, persistence metadata, and non-Aligned failure behavior.\",\"observableBoundary\":\"For Element, ArchitectureRelationship, and View mutation cases, generateAffectedEmbeddings() reports affected records, batching/retry or failure isolation, runtime='nodejs', provider adapter evidence, persistence evidence, and non-Aligned partial failures.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration\"}"
         },
         {
-          "name": "blockingEvidence.TS-09",
-          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js exits 1|TS09_NODE_ADAPTER_REQUIRED|generation outcome does not prove runtime or adapter persistence path"
+          "name": "acceptanceEvidence.TS-09",
+          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js|exitCode=0|affected-record generation and persistence outcome evidence passed"
         },
         {
           "name": "acceptanceApproval.TS-09-EmbeddingGeneration",
-          "value": "approvedByHuman=true|2026-07-25|human feedback: TS-09 generation/persistence path blocks W3 acceptance"
+          "value": "approvedByHuman=true|2026-07-25|human-approved W3 gate"
         },
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W3",
+          "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
         }
       ],
       "testcases": [
@@ -1443,6 +1479,47 @@
         {
           "name": "qualificationBoundary",
           "value": "W2 proves provider identity, model, dimensions, live invocation, and qualification/index-gate behavior; it does not implement W3 affected-record generation or persistence lifecycle."
+        }
+      ]
+    },
+    {
+      "id": "grag-wp-3-1",
+      "name": "W3.1 Mutation-Driven Live Vector Integration",
+      "type": "Work Package",
+      "description": "W3.1 integration task: after applySystemArchitectureMutation persists canonical JSON and structural Neo4j projection, the lifecycle extracts touched Element, ArchitectureRelationship, and View records, invokes the real approved Qwen embedding adapter, persists versioned vectors/evidence into the Neo4j vector index, marks Aligned only after complete success, and marks Stale or Failed while rejecting pure semantic queries on provider, persistence, or partial failures.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-index-lifecycle; grag-embedding-generation; grag-embedding-provider-adapter; grag-semantic-index; grag-alignment-constraint; grag-native-retrieval-service; grag-embedding-qualification; grag-credential-boundary"
+        },
+        {
+          "name": "integrationBoundary.W3.1",
+          "value": "Canonical mutation control point is applySystemArchitectureMutation. Touched records are Element, ArchitectureRelationship, and View records from the committed mutation. Embedding provider is the real W2-approved Alibaba/Qwen adapter for qwen3.7-text-embedding at 1024 dimensions. Persistence target is the Neo4j vector index with queryable vector evidence and canonical/content/index/model version metadata."
+        },
+        {
+          "name": "releaseSemantics.W3.1",
+          "value": "Complete mutation-driven extraction, real Qwen embedding generation, vector persistence, version evidence, and Neo4j vector-query observation are required before Aligned. Provider failure, unapproved provider/model/dimensions, partial generation, partial persistence, vector-index write failure, or query verification failure marks Stale or Failed and prohibits pure semantic queries until restored to Aligned."
+        },
+        {
+          "name": "liveExecutionBoundary.W3.1",
+          "value": "Live provider and Neo4j vector E2E is explicit opt-in only in controlled local or protected CI. It may use only approved secret sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD; offline fakes may support development but never count as live W3.1 delivery evidence."
+        },
+        {
+          "name": "functionalPoint.W3-1-live-mutation-vector-e2e",
+          "value": "{\"description\":\"Prove the complete applySystemArchitectureMutation to real embedding to Neo4j vector-query lifecycle for changed Element, ArchitectureRelationship, and View records.\",\"businessOutcome\":\"A successful architecture mutation becomes semantically searchable only when its live Qwen-generated vector evidence is persisted and queryable in Neo4j, while unsafe or incomplete states cannot serve stale semantic context.\",\"observableBoundary\":\"Run applySystemArchitectureMutation for touched Element, ArchitectureRelationship, and View cases; observe affected-record extraction, real approved Qwen adapter invocation, finite 1024-dimensional vectors, Neo4j vector-index persistence with version/model evidence, successful vector query of the changed records, Aligned state after complete success, and Stale/Failed with pure semantic query rejection after provider or persistence failure.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E\"}"
+        },
+        {
+          "name": "acceptanceApproval.W3-1",
+          "value": "approvedByHuman=true|2026-07-25|user requested W3.1 integration task and intent-to-implementation handoff; runtime delivery still requires downstream live-runner evidence"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+          "description": "Acceptor control point: execute applySystemArchitectureMutation for cases that touch an Element, an ArchitectureRelationship, and a View, then run the production mutation-driven embedding lifecycle with explicit live opt-in against the real approved Qwen adapter and a controlled Neo4j vector index. Observation point: affected records are exactly the touched records; the adapter uses the approved qwen3.7-text-embedding profile and 1024 dimensions without leaking secrets; Neo4j persists vector rows with canonical/content/index/model version evidence; a vector query can retrieve the changed records after complete success; the lifecycle marks Aligned only after the queryable-vector check passes; provider or persistence failures mark Stale or Failed and pure semantic queries are rejected until alignment is restored.",
+          "type": "Acceptance Test",
+          "Input": "Controlled live opt-in with approved non-sensitive provider profile, approved secret-source policy for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, disposable or protected Neo4j vector index, mutation fixtures touching Element, ArchitectureRelationship, and View, and failure fixtures for provider and vector persistence.",
+          "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js"
         }
       ]
     }
@@ -1967,17 +2044,6 @@
       "statement": "W2 Native Technology and Embedding Qualification --(Triggering)--> W3 Index Lifecycle and Exact-Threshold Baseline"
     },
     {
-      "id": "grag-rel-w3-w4",
-      "name": "W3 precedes W4",
-      "type": "Triggering",
-      "source_id": "grag-wp-3",
-      "target_id": "grag-wp-4",
-      "source_name": "W3 Index Lifecycle and Exact-Threshold Baseline",
-      "target_name": "W4 Independent Three-Channel Seeds",
-      "description": "Index precedes channels.",
-      "statement": "W3 Index Lifecycle and Exact-Threshold Baseline --(Triggering)--> W4 Independent Three-Channel Seeds"
-    },
-    {
       "id": "grag-rel-w4-w5",
       "name": "W4 precedes W5",
       "type": "Triggering",
@@ -2207,6 +2273,39 @@
       "target_name": "Canonical Intent Graph",
       "description": "Directional semantics: the Neo4j-native retrieval service reads canonical intent identity and version evidence; stale or conflicting projection state is rejected and never becomes authority.",
       "statement": "Neo4j Native Semantic Retrieval Service --(Access)--> Canonical Intent Graph"
+    },
+    {
+      "id": "grag-rel-w3-w31",
+      "name": "W3 precedes W3.1 integration",
+      "type": "Triggering",
+      "source_id": "grag-wp-3",
+      "target_id": "grag-wp-3-1",
+      "source_name": "W3 Index Lifecycle and Exact-Threshold Baseline",
+      "target_name": "W3.1 Mutation-Driven Live Vector Integration",
+      "description": "Accepted W3 lifecycle and TS-09 evidence precede the W3.1 apply-mutation to live Qwen to Neo4j vector-query integration task.",
+      "statement": "W3 Index Lifecycle and Exact-Threshold Baseline --(Triggering)--> W3.1 Mutation-Driven Live Vector Integration"
+    },
+    {
+      "id": "grag-rel-w31-w4",
+      "name": "W3.1 gates W4",
+      "type": "Triggering",
+      "source_id": "grag-wp-3-1",
+      "target_id": "grag-wp-4",
+      "source_name": "W3.1 Mutation-Driven Live Vector Integration",
+      "target_name": "W4 Independent Three-Channel Seeds",
+      "description": "W4 semantic seed delivery waits for W3.1 proof that canonical mutations are embedded by the live approved provider and queryable from the Neo4j vector index.",
+      "statement": "W3.1 Mutation-Driven Live Vector Integration --(Triggering)--> W4 Independent Three-Channel Seeds"
+    },
+    {
+      "id": "grag-rel-w31-index-lifecycle",
+      "name": "W3.1 realizes live mutation vector lifecycle",
+      "type": "Realization",
+      "source_id": "grag-wp-3-1",
+      "target_id": "grag-index-lifecycle",
+      "source_name": "W3.1 Mutation-Driven Live Vector Integration",
+      "target_name": "All Mutation Index Lifecycle",
+      "description": "W3.1 realizes the integration path from applySystemArchitectureMutation through affected-record embedding, vector persistence, vector-query verification, and alignment-state enforcement.",
+      "statement": "W3.1 Mutation-Driven Live Vector Integration --(Realization)--> All Mutation Index Lifecycle"
     }
   ],
   "views": [
@@ -2586,7 +2685,7 @@
       "view_name": "Graph RAG Seven-Wave Sequence",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: work packages execute in prerequisite order; Purpose: deciding and handoff preparation; Scope: W1 through W7; Rationale: this view exposes the technology qualification split and blocks out-of-order delivery.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: work packages execute in prerequisite order, with supplemental W3.1 integration represented in a dedicated acceptance view rather than overloading this seven-wave overview; Purpose: deciding and handoff preparation; Scope: W1 through W7 baseline wave order, with W3-to-W4 now gated by the Graph RAG W3.1 Integration Acceptance view; Rationale: this view remains the compact seven-wave sequencing overview under the acceptance-delivery anchor, while the W3.1 insertion is split out to preserve the repository seven-element view limit and make the supplemental integration gate explicit.",
       "included_elements": [
         "grag-wp-1",
         "grag-wp-2",
@@ -2599,7 +2698,6 @@
       "included_relationships": [
         "grag-rel-w1-w2",
         "grag-rel-w2-w3",
-        "grag-rel-w3-w4",
         "grag-rel-w4-w5",
         "grag-rel-w5-w6",
         "grag-rel-w6-w7"
@@ -2636,11 +2734,14 @@
         "grag-wp-1",
         "grag-mcp-interface",
         "grag-wp-3",
-        "grag-index-lifecycle"
+        "grag-index-lifecycle",
+        "grag-wp-3-1"
       ],
       "included_relationships": [
         "grag-rel-w1-mcp-interface",
-        "grag-rel-w3-index-lifecycle"
+        "grag-rel-w3-index-lifecycle",
+        "grag-rel-w3-w31",
+        "grag-rel-w31-index-lifecycle"
       ]
     },
     {
@@ -2705,6 +2806,27 @@
         "grag-rel-generation-canonical",
         "grag-rel-lifecycle-generation",
         "grag-rel-adapter-credentials"
+      ]
+    },
+    {
+      "view_id": "grag-w31-integration-acceptance",
+      "view_name": "Graph RAG W3.1 Integration Acceptance",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: W3 accepted lifecycle evidence must be integrated with the real mutation write lifecycle, live approved Qwen embedding, Neo4j vector persistence/queryability, and failure-state release gates before downstream semantic seed work relies on it; Purpose: deciding and handoff preparation; Scope: W3 to W3.1 to W4 delivery sequencing, affected-record extraction, adapter generation, vector index persistence, alignment semantics, and semantic-query prohibition for unaligned states; Rationale: this view belongs under the acceptance-delivery anchor because it defines a supplemental integration work package, its observable E2E acceptance boundary, and the downstream gate it imposes on W4 without weakening existing W3/TS-09 acceptance.",
+      "included_elements": [
+        "grag-wp-3",
+        "grag-wp-3-1",
+        "grag-wp-4",
+        "grag-index-lifecycle",
+        "grag-embedding-generation",
+        "grag-embedding-provider-adapter",
+        "grag-semantic-index"
+      ],
+      "included_relationships": [
+        "grag-rel-w3-w31",
+        "grag-rel-w31-w4",
+        "grag-rel-w31-index-lifecycle"
       ]
     }
   ]
