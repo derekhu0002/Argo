@@ -88,9 +88,12 @@ for (const requiredPreflight of [
   'matching-dual',
   'SECRET_SOURCE_CONFLICT',
   'SECRET_FILE_ACL_UNVERIFIABLE',
-  'runTemporarySecretFilePreflight',
+  'runApprovedSourceFixtureMatrix',
 ]) {
-  assert(secretGuard.includes(requiredPreflight), `LIVE_PROVIDER_OPT_IN_GUARD: preflight omits ${requiredPreflight}`);
+  assert(
+    `${secretGuard}\n${harness}`.includes(requiredPreflight),
+    `LIVE_PROVIDER_OPT_IN_GUARD: preflight omits ${requiredPreflight}`,
+  );
 }
 
 function read(relativePath) {

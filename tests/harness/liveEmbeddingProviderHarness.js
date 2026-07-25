@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
@@ -25,6 +26,32 @@ const FAILURE_CASES = Object.freeze([
   { name: 'provider-error', qualification: {}, transport: 'provider-error', expectedCalls: 1 },
   { name: 'non-finite-vector', qualification: {}, transport: 'non-finite-vector', expectedCalls: 1 },
   { name: 'dimension-mismatch', qualification: {}, transport: 'dimension-mismatch', expectedCalls: 1 },
+]);
+const APPROVED_SOURCE_FIXTURES = Object.freeze([
+  { name: 'process-only', expectedStatus: 'accepted', expectedAttribution: { QWEN_KEY: 'process', ARGO_NEO4J_DATABASE_PASSWORD: 'process' } },
+  { name: 'file-only', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' } },
+  { name: 'matching-dual', expectedStatus: 'accepted', file: true, process: true, expectedAttribution: { QWEN_KEY: 'process', ARGO_NEO4J_DATABASE_PASSWORD: 'process' } },
+  { name: 'qwen-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'QWEN_KEY' },
+  { name: 'database-password-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
+  { name: 'missing-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', omitKey: 'QWEN_KEY' },
+  { name: 'blank-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', blankKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
+  { name: 'duplicate-key', expectedCategory: 'SECRET_FILE_DUPLICATE_KEY', file: true, duplicateKey: 'QWEN_KEY' },
+  { name: 'unknown-secret', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'OTHER_API_TOKEN' },
+  { name: 'root-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: '.env' },
+  { name: 'alternate-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: 'config/.env' },
+  { name: 'tracked-file', expectedCategory: 'SECRET_FILE_TRACKED', file: true, tracked: true },
+  { name: 'not-ignored', expectedCategory: 'SECRET_FILE_NOT_IGNORED', file: true, ignored: false },
+  { name: 'reparse-file', expectedCategory: 'SECRET_FILE_REPARSE_PROHIBITED', file: true, reparse: true },
+  { name: 'acl-current-allow', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' }, aclCase: 'current-allow' },
+  { name: 'acl-current-deny', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-deny' },
+  { name: 'acl-broad-inherited-allow', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'broad-inherited-allow' },
+  { name: 'acl-broad-deny-only', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' }, aclCase: 'broad-deny-only' },
+  { name: 'acl-unverifiable', expectedCategory: 'SECRET_FILE_ACL_UNVERIFIABLE', file: true, aclCase: 'unverifiable' },
+  { name: 'cli-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', argv: ['--QWEN_KEY=synthetic'] },
+  { name: 'literal-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'literal' },
+  { name: 'fallback-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'fallback' },
+  { name: 'alias-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'alias' },
+  { name: 'indirect-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'indirect' },
 ]);
 
 async function runLiveEmbeddingProviderE2E() {
@@ -125,6 +152,7 @@ async function runFailureMatrix(createGate, identities, configuration) {
 
 async function runLiveProviderSecretIsolation() {
   requireLiveOptIn('LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED');
+  const sourceFixtures = await runApprovedSourceFixtureMatrix();
   const observation = await runLiveEmbeddingProviderE2E();
   const createGate = loadLiveGateFactory();
   const redaction = await runRedactionCanaryProbe(createGate);
@@ -140,6 +168,7 @@ async function runLiveProviderSecretIsolation() {
   ];
   return {
     observation,
+    sourceFixtures,
     redaction,
     inspectedArtifactNames: observableArtifacts.map(artifact => artifact.name),
     forbiddenSecretFields: findForbiddenSecretFields(observableArtifacts),
@@ -173,7 +202,7 @@ async function runRedactionCanaryProbe(createGate) {
     ...readPersistentArtifactsRecursively(),
   ];
   const syntheticSuccess = await runSyntheticSuccessCanaryProbe(createGate);
-  const approvedSecretChannels = runApprovedSecretChannelSelfTest();
+  const neo4jAuthentication = await runNeo4jAuthenticationCanaryProbe();
   return {
     failure: {
       category: captured.result.category,
@@ -182,39 +211,13 @@ async function runRedactionCanaryProbe(createGate) {
       leaks: findSecretLeaks(failureCanary, artifacts),
     },
     syntheticSuccess,
-    approvedSecretChannels,
+    neo4jAuthentication,
     inspectedArtifactNames: [
       ...artifacts.map(artifact => artifact.name),
       'cypherTextAndParameters',
       'graphEvidence',
     ],
   };
-}
-
-function runApprovedSecretChannelSelfTest() {
-  const results = {};
-  for (const [name, canary] of [
-    ['QWEN_KEY', `qwen-channel-${crypto.randomUUID()}`],
-    ['ARGO_NEO4J_DATABASE_PASSWORD', `neo4j-channel-${crypto.randomUUID()}`],
-  ]) {
-    const rawChannels = [
-      { name: 'processSource', value: { neutral: canary } },
-      { name: 'fileSource', value: { neutral: canary } },
-      { name: 'conflictError', value: new Error(canary) },
-      { name: 'aclError', value: new Error(canary) },
-      { name: 'connectionAuthenticationError', value: new Error(canary) },
-    ];
-    const sanitizedChannels = [
-      { name: 'conflictError', value: 'SECRET_SOURCE_CONFLICT' },
-      { name: 'aclError', value: 'SECRET_FILE_ACL_UNSAFE' },
-      { name: 'connectionAuthenticationError', value: 'NEO4J_AUTHENTICATION_FAILED' },
-    ];
-    results[name] = {
-      detectedRawChannels: findSecretLeaks(canary, rawChannels),
-      sanitizedLeaks: findSecretLeaks(canary, sanitizedChannels),
-    };
-  }
-  return results;
 }
 
 async function runSyntheticSuccessCanaryProbe(createGate) {
@@ -406,6 +409,168 @@ async function resolveApprovedLiveConfiguration() {
   });
 }
 
+async function runApprovedSourceFixtureMatrix() {
+  const resolveConfiguration = loadApprovedConfigurationBoundary();
+  const observations = [];
+  for (const fixture of APPROVED_SOURCE_FIXTURES) {
+    observations.push(await runApprovedSourceFixture(resolveConfiguration, fixture));
+  }
+  return observations;
+}
+
+async function runApprovedSourceFixture(resolveConfiguration, fixture) {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-approved-source-'));
+  const qwen = `fixture-qwen-${crypto.randomUUID()}`;
+  const neo4jPassword = `fixture-neo4j-${crypto.randomUUID()}`;
+  const processValues = {};
+  const fileEntries = [];
+  const useProcess = fixture.process || !fixture.file;
+  if (useProcess && fixture.omitKey !== 'QWEN_KEY') processValues.QWEN_KEY = fixture.blankKey === 'QWEN_KEY' ? ' ' : qwen;
+  if (useProcess && fixture.omitKey !== 'ARGO_NEO4J_DATABASE_PASSWORD') {
+    processValues.ARGO_NEO4J_DATABASE_PASSWORD = fixture.blankKey === 'ARGO_NEO4J_DATABASE_PASSWORD' ? ' ' : neo4jPassword;
+  }
+  if (fixture.file) {
+    if (fixture.omitKey !== 'QWEN_KEY') fileEntries.push(['QWEN_KEY', fixture.conflictKey === 'QWEN_KEY' ? `${qwen}-different` : qwen]);
+    if (fixture.omitKey !== 'ARGO_NEO4J_DATABASE_PASSWORD') {
+      fileEntries.push(['ARGO_NEO4J_DATABASE_PASSWORD', fixture.conflictKey === 'ARGO_NEO4J_DATABASE_PASSWORD' ? `${neo4jPassword}-different` : neo4jPassword]);
+    }
+    if (fixture.duplicateKey) fileEntries.push([fixture.duplicateKey, fixture.duplicateKey === 'QWEN_KEY' ? qwen : neo4jPassword]);
+    if (fixture.unknownKey) fileEntries.push([fixture.unknownKey, 'synthetic']);
+  }
+  const relativePath = fixture.relativePath || '.argo/.env';
+  const filePath = path.join(temporaryRoot, ...relativePath.split('/'));
+  const effects = { fetch: 0, driver: 0, create: 0, write: 0 };
+  try {
+    if (fixture.file) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, fileEntries.map(([key, value]) => `${key}=${value}`).join('\n'), { flag: 'wx', mode: 0o600 });
+    }
+    const captured = await captureProcessOutput(async () => {
+      try {
+        return {
+          status: 'accepted',
+          value: await resolveConfiguration({
+            repositoryRoot: temporaryRoot,
+            environment: processValues,
+            argv: fixture.argv || [],
+            provenance: fixture.provenance || 'direct',
+            adapters: {
+              filesystem: createFilesystemFixtureAdapter(fixture),
+              git: createGitFixtureAdapter(fixture),
+              acl: createAclFixtureAdapter(fixture),
+              forbiddenSideEffects: createForbiddenSideEffectAdapter(effects),
+            },
+          }),
+        };
+      } catch (error) {
+        return { status: 'blocked', category: safeCategory(error), rawError: error };
+      }
+    });
+    const outcome = captured.result;
+    const leaks = [
+      ...findSecretLeaks(qwen, [
+        { name: 'configurationError', value: outcome.rawError },
+        { name: 'stdout', value: captured.stdout },
+        { name: 'stderr', value: captured.stderr },
+        ...readPersistentArtifactsRecursively(),
+      ]),
+      ...findSecretLeaks(neo4jPassword, [
+        { name: 'configurationError', value: outcome.rawError },
+        { name: 'stdout', value: captured.stdout },
+        { name: 'stderr', value: captured.stderr },
+        ...readPersistentArtifactsRecursively(),
+      ]),
+    ];
+    const observation = {
+      name: fixture.name,
+      status: outcome.status,
+      category: outcome.category,
+      attribution: outcome.value && outcome.value.attribution,
+      selectedValuesMatch: outcome.value
+        ? selectedFixtureValuesMatch(outcome.value, qwen, neo4jPassword)
+        : undefined,
+      effects,
+      leaks,
+      expectedStatus: fixture.expectedStatus,
+      expectedCategory: fixture.expectedCategory,
+      expectedAttribution: fixture.expectedAttribution,
+    };
+    return observation;
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+}
+
+function loadApprovedConfigurationBoundary() {
+  if (!fs.existsSync(liveConfigPath)) throw safeError('LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING');
+  delete require.cache[require.resolve(liveConfigPath)];
+  const boundary = require(liveConfigPath);
+  if (typeof boundary.resolveApprovedLiveConfiguration !== 'function') {
+    throw safeError('LIVE_PROVIDER_CONFIGURATION_API_MISSING');
+  }
+  return boundary.resolveApprovedLiveConfiguration;
+}
+
+function createFilesystemFixtureAdapter(fixture) {
+  return {
+    existsSync: fs.existsSync,
+    lstatSync(targetPath) {
+      const stat = fs.lstatSync(targetPath);
+      if (!fixture.reparse) return stat;
+      return new Proxy(stat, {
+        get(target, property) {
+          if (property === 'isSymbolicLink') return () => true;
+          return Reflect.get(target, property);
+        },
+      });
+    },
+    readFileSync: fs.readFileSync,
+    realpathSync: fs.realpathSync,
+  };
+}
+
+function createGitFixtureAdapter(fixture) {
+  return {
+    isIgnored() {
+      return fixture.ignored !== false;
+    },
+    isTracked() {
+      return fixture.tracked === true;
+    },
+  };
+}
+
+function createAclFixtureAdapter(fixture) {
+  const identity = 'ARGO\\FixtureRunner';
+  const matrix = {
+    'current-allow': { status: 0, identity, stdout: `${identity}:(R)` },
+    'current-deny': { status: 0, identity, stdout: `${identity}:(DENY)(R)` },
+    'broad-inherited-allow': { status: 0, identity, stdout: `${identity}:(F)\nBUILTIN\\Users:(I)(RX)` },
+    'broad-deny-only': { status: 0, identity, stdout: `${identity}:(R)\nEveryone:(DENY)(R)` },
+    unverifiable: { status: 1, identity, stdout: '' },
+  };
+  return {
+    inspect() {
+      return matrix[fixture.aclCase || 'current-allow'];
+    },
+  };
+}
+
+function createForbiddenSideEffectAdapter(effects) {
+  return {
+    fetch() { effects.fetch += 1; },
+    openDriver() { effects.driver += 1; },
+    createNode() { effects.create += 1; },
+    writeIndex() { effects.write += 1; },
+  };
+}
+
+function selectedFixtureValuesMatch(result, qwen, neo4jPassword) {
+  return result.configuration
+    && result.configuration.qwenKey === qwen
+    && result.configuration.neo4jDatabasePassword === neo4jPassword;
+}
+
 function loadLiveGateFactory() {
   if (!fs.existsSync(liveGatePath)) {
     throw safeError('LIVE_PROVIDER_E2E_BOUNDARY_MISSING');
@@ -418,8 +583,8 @@ function loadLiveGateFactory() {
   return boundary.createLiveEmbeddingIndexGate;
 }
 
-async function createControlledNeo4jIndexBoundary(label, configuration) {
-  const neo4j = require('neo4j-driver');
+async function createControlledNeo4jIndexBoundary(label, configuration, injectedNeo4j) {
+  const neo4j = injectedNeo4j || require('neo4j-driver');
   const uri = requireConfigurationValue(configuration, 'neo4jDatabaseUrl');
   const username = requireConfigurationValue(configuration, 'neo4jDatabaseUsername');
   const password = requireConfigurationValue(configuration, 'neo4jDatabasePassword');
@@ -475,6 +640,76 @@ async function createControlledNeo4jIndexBoundary(label, configuration) {
       await driver.close();
       closed = true;
       return remaining;
+    },
+  };
+}
+
+async function runNeo4jAuthenticationCanaryProbe() {
+  const passwordCanary = `neo4j-auth-canary-${crypto.randomUUID()}`;
+  const configuration = {
+    neo4jDatabaseUrl: 'neo4j://synthetic.invalid',
+    neo4jDatabaseUsername: 'synthetic-user',
+    neo4jDatabasePassword: passwordCanary,
+  };
+  const successAdapter = createRecordingNeo4jAdapter();
+  const boundary = await createControlledNeo4jIndexBoundary('auth-success', configuration, successAdapter);
+  await boundary.countWrites();
+  await boundary.cleanup();
+  const failureAdapter = createRecordingNeo4jAdapter(passwordCanary);
+  const failure = await captureOutcome(() => createControlledNeo4jIndexBoundary(
+    'auth-failure',
+    configuration,
+    failureAdapter,
+  ));
+  return {
+    authCalls: successAdapter.observation().authCalls.map(call => ({
+      usernameMatches: call.username === configuration.neo4jDatabaseUsername,
+      passwordMatches: call.password === passwordCanary,
+    })),
+    cypherLeaks: findSecretLeaks(passwordCanary, [
+      { name: 'cypherTextAndParameters', value: successAdapter.observation().queries },
+    ]),
+    authenticationFailure: failure,
+    authenticationFailureLeaks: findSecretLeaks(passwordCanary, [
+      { name: 'authenticationFailure', value: failure },
+    ]),
+    failureQueries: failureAdapter.observation().queries.length,
+  };
+}
+
+function createRecordingNeo4jAdapter(authenticationFailureCanary) {
+  const authCalls = [];
+  const queries = [];
+  return {
+    auth: {
+      basic(username, password) {
+        authCalls.push({ username, password });
+        return { type: 'basic-auth' };
+      },
+    },
+    driver() {
+      return {
+        async verifyConnectivity() {
+          if (authenticationFailureCanary) throw new Error(authenticationFailureCanary);
+        },
+        session() {
+          return {
+            async run(cypher, parameters) {
+              queries.push({ cypher, parameters });
+              return {
+                records: cypher.includes('RETURN count')
+                  ? [{ get: () => ({ toNumber: () => 0 }) }]
+                  : [],
+              };
+            },
+            async close() {},
+          };
+        },
+        async close() {},
+      };
+    },
+    observation() {
+      return { authCalls: [...authCalls], queries: [...queries] };
     },
   };
 }
@@ -705,12 +940,15 @@ function safeError(category) {
 }
 
 module.exports = {
+  APPROVED_SOURCE_FIXTURES,
   FAILURE_CASES,
   approvedProviderProfile,
   findForbiddenSecretFields,
   findSecretLeaks,
   runLiveEmbeddingProviderE2E,
   runLiveProviderSecretIsolation,
+  runNeo4jAuthenticationCanaryProbe,
+  runApprovedSourceFixtureMatrix,
   runRecordingBoundaryCanarySelfTest,
   runRedactionCanaryProbe,
   safeCategory,

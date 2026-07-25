@@ -9,6 +9,42 @@ async function main() {
   // WHEN the real-provider and controlled-Neo4j flow completes and observable artifacts are inspected
   const observation = await runLiveProviderSecretIsolation();
 
+  // THEN every source/path/ACL fixture is decided by the production configuration boundary
+  for (const fixture of observation.sourceFixtures) {
+    assert.strictEqual(
+      fixture.status,
+      fixture.expectedStatus || 'blocked',
+      `TS07_PROVIDER_SOURCE_STATUS:${fixture.name}`,
+    );
+    assert.strictEqual(
+      fixture.category,
+      fixture.expectedCategory,
+      `TS07_PROVIDER_SOURCE_CATEGORY:${fixture.name}`,
+    );
+    if (fixture.expectedAttribution) {
+      assert.deepStrictEqual(
+        fixture.attribution,
+        fixture.expectedAttribution,
+        `TS07_PROVIDER_SOURCE_ATTRIBUTION:${fixture.name}`,
+      );
+      assert.strictEqual(
+        fixture.selectedValuesMatch,
+        true,
+        `TS07_PROVIDER_SOURCE_SELECTION:${fixture.name}`,
+      );
+    }
+    assert.deepStrictEqual(
+      fixture.effects,
+      { fetch: 0, driver: 0, create: 0, write: 0 },
+      `TS07_PROVIDER_PREFLIGHT_SIDE_EFFECT:${fixture.name}`,
+    );
+    assert.deepStrictEqual(
+      fixture.leaks,
+      [],
+      `TS07_PROVIDER_SOURCE_CANARY_LEAK:${fixture.name}`,
+    );
+  }
+
   // THEN no secret-bearing field is exposed and the synthetic canary is absent from all observable channels
   assert.deepStrictEqual(
     observation.forbiddenSecretFields,
@@ -43,18 +79,31 @@ async function main() {
     [],
     'TS07_PROVIDER_REDACTION_GENERATED_ARTIFACT_LEAK',
   );
-  for (const secretName of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
-    assert.deepStrictEqual(
-      observation.redaction.approvedSecretChannels[secretName].detectedRawChannels,
-      ['processSource', 'fileSource', 'conflictError', 'aclError', 'connectionAuthenticationError'],
-      `TS07_PROVIDER_SECRET_CHANNEL_MATRIX_INCOMPLETE:${secretName}`,
-    );
-    assert.deepStrictEqual(
-      observation.redaction.approvedSecretChannels[secretName].sanitizedLeaks,
-      [],
-      `TS07_PROVIDER_SECRET_CHANNEL_REDACTION_FAILED:${secretName}`,
-    );
-  }
+  assert.deepStrictEqual(
+    observation.redaction.neo4jAuthentication.authCalls,
+    [{ usernameMatches: true, passwordMatches: true }],
+    'TS07_PROVIDER_NEO4J_AUTH_ARGUMENTS_REQUIRED',
+  );
+  assert.deepStrictEqual(
+    observation.redaction.neo4jAuthentication.cypherLeaks,
+    [],
+    'TS07_PROVIDER_NEO4J_PASSWORD_ENTERED_CYPHER',
+  );
+  assert.strictEqual(
+    observation.redaction.neo4jAuthentication.authenticationFailure.category,
+    'LIVE_PROVIDER_OPERATION_FAILED',
+    'TS07_PROVIDER_NEO4J_AUTH_FAILURE_CATEGORY',
+  );
+  assert.deepStrictEqual(
+    observation.redaction.neo4jAuthentication.authenticationFailureLeaks,
+    [],
+    'TS07_PROVIDER_NEO4J_AUTH_FAILURE_LEAK',
+  );
+  assert.strictEqual(
+    observation.redaction.neo4jAuthentication.failureQueries,
+    0,
+    'TS07_PROVIDER_NEO4J_AUTH_FAILURE_REACHED_QUERY',
+  );
   for (const requiredArtifact of [
     'requestObservation',
     'responseObservation',
