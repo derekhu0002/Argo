@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T11:42:00+08:00",
+  "generatedAt": "2026-07-25T12:08:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -184,8 +184,8 @@
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inject a complete nine-key approved configuration through structured process/file source adapters for every temporary path/git/file/reparse/ACL fixture, invoke production resolveApprovedLiveConfiguration, then invoke production createApprovedNeo4jBoundary with a recording adapter.",
-      "observationPoint": "Compare exact normalized configuration and per-key trace-derived attribution; prove ACL deny precedence; capture raw auth exceptions before classification and scan raw/sanitized errors, logger, stdout/stderr, auth/driver/query, graph/persistence, and artifacts with zero leaks, queries after auth failure, or persistence.",
+      "controlPoint": "Inject complete nine-key values through frozen adapter-issued { value, trace } process reads and { key, value, trace } file reads, require identity-based trace trust checks for every consumed value, then run ACL and production Neo4j auth probes.",
+      "observationPoint": "Prove identical values remain distinguishable as direct, CLI, literal, fallback, alias, or indirect from immutable trusted traces; reject forged/mutable/malformed/unvalidated traces; retain prior ACL, raw/sanitized auth-channel, zero-query, zero-persistence, and redaction evidence.",
       "expectedStatus": "passed"
     }
   ],
@@ -230,7 +230,7 @@
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
       "failureSignal": "LIVE_PROVIDER_CONFIGURATION_REQUIRED / SECRET_SOURCE_CONFLICT / SECRET_FILE_ACL_UNSAFE",
-      "nextAction": "Resolve approved configuration only after exact .argo/.env path, ignored/untracked, regular/non-reparse, ACL, duplicate/unknown-key and process/file conflict preflight; return sanitized evidence only."
+      "nextAction": "Consume frozen adapter-issued value/trace envelopes, validate each trace through the adapter identity capability and schema, then resolve approved configuration only after exact path/git/file/ACL/conflict preflight; return sanitized evidence only."
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
@@ -435,6 +435,8 @@
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
           "Implement the public resolveApprovedLiveConfiguration({ repositoryRoot, adapters }) boundary used directly by every frozen temporary fixture; do not add a test-only resolver.",
           "Require the structured source adapter to record source kind, path, key, read operation, and alias chain; derive provenance from that trace and reject caller-supplied provenance verdicts.",
+          "Consume source.readProcessKey(key) as frozen { value, trace } and source.readFileEntries(path) as frozen { key, value, trace } records. Require source.isIssuedTrace(trace) for every consumed value and reject cloned, mutable, malformed, or unvalidated traces.",
+          "Validate source kind/path/key/operation/frozen alias chain independently in the resolver. Only direct process and exact .argo/.env reads with a one-hop key chain are approved; identical values reached through CLI, literal, fallback, alias, or indirect traces remain prohibited.",
           "Normalize only when all five ARGO_EMBEDDING_* fields, ARGO_NEO4J_DATABASE_URL/USERNAME, and both secrets are explicitly present. Return exact normalized values and per-key source attribution; never fill defaults.",
           "Require ARGO_LIVE_PROVIDER_E2E=1, then preflight exact path, git ignored/untracked state, regular/non-reparse status, Windows ACL, duplicates, unknown secret keys, and both required secret sources before transport or Neo4j construction.",
           "Resolve QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD only from direct process variables or exact .argo/.env; process wins, equal duplicates pass, differing duplicates fail closed.",
@@ -442,7 +444,7 @@
           "Reject missing/blank, root/alternate/tracked files, CLI/literal/default/fallback/alias/indirect sources, and legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases.",
           "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
         ],
-        "completionSignal": "All approved-source fixtures pass, all unsafe-source fixtures fail before side effects, actual Neo4j DATABASE_* names are used, and .argo/.env.example/.gitignore guards pass."
+        "completionSignal": "All approved-source fixtures pass with complete normalized configuration, per-key attribution, complete source reads, and one successful trust check per consumed trace; provenance and forged/mutable/malformed trace fixtures fail exactly before side effects; .argo/.env example/git/ACL guards pass."
       },
       {
         "taskId": "W2-C9",
@@ -531,8 +533,9 @@
   ],
   "openGaps": [
     "Live network and real credentials remain unavailable to default CI. Both live entrypoints stay failed until controlled execution supplies both secrets through approved direct process or preflighted .argo/.env sources.",
-    "Current metadata-only preflight classifies the local ignored/untracked regular .argo/.env as ACL-unsafe because BUILTIN\\Users has broad read access. No value was read. Live execution must remain blocked until the human tightens ACLs; this file is never committed.",
+    "Human-reported metadata-only preflight now passes after ACL tightening to Administrator/Administrators/SYSTEM. No value was read or recorded; .argo/.env remains ignored, untracked, absent from HEAD, and excluded from every commit.",
     "Before Coding implements liveEmbeddingProviderConfig.js, direct execution of the frozen source matrix honestly fails with LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING. Critical design guards verify the matrix is wired to that future production export and execute exact fixture outcomes once it exists.",
+    "This revision changes frozen Harness, explicit-entry, and critical-guard contracts after the prior approval. Coding may resume C8-C10 only after explicit human re-approval of this handoff.",
     "ExplicitAcceptanceTestcase-TS-08 remains mounted and frozen out-of-scope evidence. The TS-09 physical path remains frozen for backward protection but no TS-09 element, testcase, relationship, Coding target, task, or completion authorization is included.",
     "The original six scoped entrypoints and seven critical guards remain a mandatory C1-C6 checkpoint. Expanded completion adds two live entrypoints and three critical guards without changing runner-owned global delivery semantics."
   ]

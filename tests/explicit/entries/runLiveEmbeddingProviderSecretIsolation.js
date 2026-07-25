@@ -37,6 +37,11 @@ async function main() {
         true,
         `TS07_PROVIDER_STRUCTURED_SOURCE_TRACE:${fixture.name}`,
       );
+      assert.strictEqual(
+        fixture.traceTrustValidationComplete,
+        true,
+        `TS07_PROVIDER_SOURCE_TRACE_TRUST:${fixture.name}`,
+      );
     }
     assert.deepStrictEqual(
       fixture.effects,

@@ -9,6 +9,7 @@ const {
   runApprovedSourceFixtureMatrix,
   runAuthenticationLeakDetectorSelfTest,
   runNeo4jAuthenticationCanaryProbe,
+  runStructuredSourceAdapterContractSelfTest,
 } = require('../../harness/liveEmbeddingProviderHarness.js');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
@@ -64,6 +65,29 @@ assert.deepStrictEqual(
   ],
   'LIVE_PROVIDER_SECRET_GUARD: auth channel leak detector is incomplete',
 );
+const sourceAdapterSelfTest = runStructuredSourceAdapterContractSelfTest();
+assert.strictEqual(sourceAdapterSelfTest.envelopeFrozen, true);
+assert.strictEqual(sourceAdapterSelfTest.traceFrozen, true);
+assert.strictEqual(sourceAdapterSelfTest.directTrusted, true);
+assert.strictEqual(sourceAdapterSelfTest.forgedTrusted, false);
+assert.deepStrictEqual(sourceAdapterSelfTest.directTrace, {
+  sourceKind: 'process',
+  path: null,
+  key: 'QWEN_KEY',
+  operation: 'read',
+  aliasDepth: 1,
+});
+assert.strictEqual(sourceAdapterSelfTest.fileEnvelopeFrozen, true);
+assert.strictEqual(sourceAdapterSelfTest.fileTraceTrusted, true);
+for (const mutation of ['cli', 'literal', 'fallback', 'alias', 'indirect']) {
+  assert.strictEqual(sourceAdapterSelfTest.prohibited[mutation].sameValue, true);
+  assert.strictEqual(sourceAdapterSelfTest.prohibited[mutation].trusted, true);
+}
+assert.strictEqual(sourceAdapterSelfTest.prohibited.cli.sourceKind, 'cli');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.literal.sourceKind, 'literal');
+assert.strictEqual(sourceAdapterSelfTest.prohibited.fallback.operation, 'fallback');
+assert(sourceAdapterSelfTest.prohibited.alias.aliasDepth > 1);
+assert(sourceAdapterSelfTest.prohibited.indirect.aliasDepth > 1);
 // THEN configuration and entrypoint failures cannot persist or print the provider credential
 assert(/^QWEN_KEY=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: QWEN_KEY placeholder is not empty');
 assert(
@@ -200,6 +224,9 @@ for (const requiredFixture of [
   'fallback-source',
   'alias-source',
   'indirect-source',
+  'forged-trace',
+  'mutable-trace',
+  'invalid-trace-schema',
 ]) {
   assert(
     APPROVED_SOURCE_FIXTURES.some(fixture => fixture.name === requiredFixture),
@@ -228,6 +255,7 @@ if (fs.existsSync(configPath)) {
       assert.deepStrictEqual(observation.attribution, observation.expectedAttribution, `LIVE_PROVIDER_SECRET_GUARD: attribution ${observation.name}`);
       assert.strictEqual(observation.normalizedConfigMatches, true, `LIVE_PROVIDER_SECRET_GUARD: normalized config ${observation.name}`);
       assert.strictEqual(observation.sourceTraceComplete, true, `LIVE_PROVIDER_SECRET_GUARD: source trace ${observation.name}`);
+      assert.strictEqual(observation.traceTrustValidationComplete, true, `LIVE_PROVIDER_SECRET_GUARD: source trace trust ${observation.name}`);
     }
     assert.deepStrictEqual(observation.effects, { fetch: 0, driver: 0, create: 0, write: 0 }, `LIVE_PROVIDER_SECRET_GUARD: side effect ${observation.name}`);
     assert.deepStrictEqual(observation.leaks, [], `LIVE_PROVIDER_SECRET_GUARD: source canary leaked ${observation.name}`);

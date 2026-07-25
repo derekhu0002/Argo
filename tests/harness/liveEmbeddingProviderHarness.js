@@ -59,6 +59,9 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
   { name: 'fallback-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'fallback' },
   { name: 'alias-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'alias' },
   { name: 'indirect-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'indirect' },
+  { name: 'forged-trace', expectedCategory: 'SOURCE_TRACE_UNTRUSTED', process: true, traceMutation: 'forged' },
+  { name: 'mutable-trace', expectedCategory: 'SOURCE_TRACE_UNTRUSTED', process: true, traceMutation: 'mutable' },
+  { name: 'invalid-trace-schema', expectedCategory: 'SOURCE_TRACE_INVALID', process: true, traceMutation: 'invalid-schema' },
 ]);
 
 async function runLiveEmbeddingProviderE2E() {
@@ -436,6 +439,7 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
   const relativePath = fixture.relativePath || '.argo/.env';
   const filePath = path.join(temporaryRoot, ...relativePath.split('/'));
   const sourceTrace = [];
+  const traceTrustChecks = [];
   const expectedAttribution = fixture.expectedSource
     ? Object.fromEntries(Object.keys(approvedValues).map(key => [key, fixture.expectedSource]))
     : undefined;
@@ -445,6 +449,7 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
     fileEntries,
     filePath,
     sourceTrace,
+    traceTrustChecks,
   );
   if (fixture.file) {
     if (fixture.duplicateKey) fileEntries.push([fixture.duplicateKey, fixture.duplicateKey === 'QWEN_KEY' ? qwen : neo4jPassword]);
@@ -501,6 +506,11 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
       sourceTrace,
       sourceTraceComplete: outcome.value
         ? acceptedSourceTraceComplete(fixture, sourceTrace, Object.keys(approvedValues), filePath)
+        : undefined,
+      traceTrustValidationComplete: outcome.value
+        ? sourceTrace.length > 0
+          && traceTrustChecks.length === sourceTrace.length
+          && traceTrustChecks.every(check => check.trusted)
         : undefined,
       effects,
       leaks,
@@ -576,16 +586,40 @@ function createFilesystemFixtureAdapter(fixture) {
   };
 }
 
-function createSourceFixtureAdapter(fixture, processValues, fileEntries, filePath, sourceTrace) {
-  function record(sourceKind, sourcePath, key, operation, aliasChain) {
-    sourceTrace.push({
+function createSourceFixtureAdapter(fixture, processValues, fileEntries, filePath, sourceTrace, traceTrustChecks) {
+  const issuedTraces = new WeakSet();
+
+  function issue(sourceKind, sourcePath, key, operation, aliasChain) {
+    const trace = {
       sourceKind,
       path: sourcePath,
       key,
       operation,
-      aliasChain,
-    });
+      aliasChain: [...aliasChain],
+    };
+    if (fixture.traceMutation === 'invalid-schema' && key === 'QWEN_KEY') {
+      trace.aliasChain = [];
+    }
+    Object.freeze(trace.aliasChain);
+    Object.freeze(trace);
+    issuedTraces.add(trace);
+    let returnedTrace = trace;
+    if (fixture.traceMutation === 'forged' && key === 'QWEN_KEY') {
+      returnedTrace = { ...trace, aliasChain: [...trace.aliasChain] };
+    }
+    if (fixture.traceMutation === 'mutable' && key === 'QWEN_KEY') {
+      returnedTrace = {
+        sourceKind: trace.sourceKind,
+        path: trace.path,
+        key: trace.key,
+        operation: trace.operation,
+        aliasChain: [...trace.aliasChain],
+      };
+    }
+    sourceTrace.push(returnedTrace);
+    return returnedTrace;
   }
+
   return {
     readProcessKey(key) {
       const mutation = fixture.accessMutation && key === 'QWEN_KEY'
@@ -598,16 +632,80 @@ function createSourceFixtureAdapter(fixture, processValues, fileEntries, filePat
         : mutation === 'indirect'
           ? ['configuration', 'credentials', key]
           : [key];
-      record(sourceKind, sourceKind === 'process' ? null : mutation, key, operation, aliasChain);
-      return processValues[key];
+      const trace = issue(sourceKind, sourceKind === 'process' ? null : mutation, key, operation, aliasChain);
+      return Object.freeze({ value: processValues[key], trace });
     },
     readFileEntries(requestedPath) {
-      for (const [key] of fileEntries) {
-        record('file', requestedPath, key, 'read', [key]);
-      }
-      return fileEntries.map(([key, value]) => [key, value]);
+      return Object.freeze(fileEntries.map(([key, value]) => Object.freeze({
+        key,
+        value,
+        trace: issue('file', requestedPath, key, 'read', [key]),
+      })));
+    },
+    isIssuedTrace(trace) {
+      const trusted = issuedTraces.has(trace);
+      traceTrustChecks.push({ trace, trusted });
+      return trusted;
     },
     expectedFilePath: filePath,
+  };
+}
+
+function runStructuredSourceAdapterContractSelfTest() {
+  const key = 'QWEN_KEY';
+  const value = `source-interface-${crypto.randomUUID()}`;
+  const makeAdapter = fixture => {
+    const traces = [];
+    const checks = [];
+    return {
+      adapter: createSourceFixtureAdapter(
+        fixture,
+        { [key]: value },
+        [[key, value]],
+        'D:\\synthetic\\.argo\\.env',
+        traces,
+        checks,
+      ),
+      traces,
+      checks,
+    };
+  };
+  const direct = makeAdapter({});
+  const directRead = direct.adapter.readProcessKey(key);
+  const directTrusted = direct.adapter.isIssuedTrace(directRead.trace);
+  const forgedTrusted = direct.adapter.isIssuedTrace({
+    ...directRead.trace,
+    aliasChain: [...directRead.trace.aliasChain],
+  });
+  const prohibited = {};
+  for (const mutation of ['cli', 'literal', 'fallback', 'alias', 'indirect']) {
+    const fixture = makeAdapter({ accessMutation: mutation });
+    const read = fixture.adapter.readProcessKey(key);
+    prohibited[mutation] = {
+      sameValue: read.value === value,
+      sourceKind: read.trace.sourceKind,
+      operation: read.trace.operation,
+      aliasDepth: read.trace.aliasChain.length,
+      trusted: fixture.adapter.isIssuedTrace(read.trace),
+    };
+  }
+  const file = makeAdapter({});
+  const fileRead = file.adapter.readFileEntries('D:\\synthetic\\.argo\\.env')[0];
+  return {
+    envelopeFrozen: Object.isFrozen(directRead),
+    traceFrozen: Object.isFrozen(directRead.trace) && Object.isFrozen(directRead.trace.aliasChain),
+    directTrusted,
+    forgedTrusted,
+    directTrace: {
+      sourceKind: directRead.trace.sourceKind,
+      path: directRead.trace.path,
+      key: directRead.trace.key,
+      operation: directRead.trace.operation,
+      aliasDepth: directRead.trace.aliasChain.length,
+    },
+    fileEnvelopeFrozen: Object.isFrozen(fileRead),
+    fileTraceTrusted: file.adapter.isIssuedTrace(fileRead.trace),
+    prohibited,
   };
 }
 
@@ -1178,6 +1276,7 @@ module.exports = {
   runNeo4jAuthenticationCanaryProbe,
   runApprovedSourceFixtureMatrix,
   runAuthenticationLeakDetectorSelfTest,
+  runStructuredSourceAdapterContractSelfTest,
   runRecordingBoundaryCanarySelfTest,
   runRedactionCanaryProbe,
   safeCategory,
