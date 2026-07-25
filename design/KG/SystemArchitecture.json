@@ -523,11 +523,11 @@
       "id": "grag-purpose-closure",
       "name": "Purpose Policy Graph Closure",
       "type": "Application Function",
-      "description": "Graph RAG discovers semantic seeds only. Five purpose policies use deterministic parameterized Cypher and ArchiMate direction semantics; free-form generated Cypher cannot determine mandatory closure.",
+      "description": "Graph RAG discovers semantic seeds only, then W5 converts similarity into deterministic, reviewable graph ranges. Declared purpose and approved anchors select one of five independent purpose categories; each category runs a named parameterized Cypher policy constrained by ArchiMate direction semantics. Free-form generated Cypher, caller identity, textual similarity, ad hoc traversal depth, and full connected-component expansion are forbidden as mandatory-closure decision mechanisms.",
       "attributes": [
         {
           "name": "decisionTrace.DT-06",
-          "value": "accepted|purpose-policy deterministic closure"
+          "value": "accepted|mandatory closure is decided by parameterized Cypher policy plus ArchiMate direction semantics, not by semantic similarity or free-generated Cypher"
         },
         {
           "name": "decisionTrace.DT-06-R1",
@@ -539,11 +539,27 @@
         },
         {
           "name": "decisionTrace.DT-07",
-          "value": "accepted|intent-decision, implementation-design, coding-repair, audit, graph-tidy"
+          "value": "accepted|five independent purposes: intent-decision, implementation-design, coding-repair, audit, graph-tidy"
         },
         {
           "name": "decisionTrace.DT-07-R1",
           "value": "rejected|boundary-free generic-agent purpose is removed"
+        },
+        {
+          "name": "functionalPoint.DT-06-deterministic-mandatory-closure",
+          "value": "{\"description\":\"Convert semantic seeds into mandatory graph closure through named parameterized Cypher policies and ArchiMate relationship semantics.\",\"businessOutcome\":\"A low-similarity but graph-mandatory dependency is reproducibly included while unrelated similar nodes are excluded.\",\"observableBoundary\":\"Given the same canonical graph version, declared purpose, and approved anchors, closure inclusion is decided by policy name, bound parameters, relationship type, source/target direction, and explicit stop conditions; free-form generated Cypher, caller text similarity, arbitrary depth, and full connected-component expansion cannot decide mandatory inclusion.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-06\"}"
+        },
+        {
+          "name": "functionalPoint.DT-07-purpose-category-dispatch",
+          "value": "{\"description\":\"Dispatch requests to exactly one approved purpose category with stable boundaries independent of Agent identity.\",\"businessOutcome\":\"Intent, implementation, repair, audit, and graph-tidy tasks cannot silently share or inherit each other's closure scopes.\",\"observableBoundary\":\"Equivalent declared purpose and anchors produce the same selected category and range regardless of calling Agent; different declared categories expose distinct policy ids, parameter contracts, included relationship semantics, exclusions, and rationale.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-07\"}"
+        },
+        {
+          "name": "closurePolicy.parameterization",
+          "value": "Mandatory closure may use only repository-owned query templates with bound parameters for purpose, anchors, canonical version, relationship types, directions, depth/stop conditions, and explicit subject when required; generated Cypher text is diagnostic-only and never decides mandatory scope."
+        },
+        {
+          "name": "acceptanceApproval.DT-06-DT-07",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved deterministic five-purpose closure using parameterized Cypher and ArchiMate semantics"
         },
         {
           "name": "deliveryStatus",
@@ -553,16 +569,16 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-06",
-          "description": "Acceptor perspective control point: query for a seed with a textually dissimilar but graph-mandatory dependency. Observation point: inspect inclusion classification.",
+          "description": "Acceptor perspective control point: run the same seed against a fixture containing a textually dissimilar mandatory dependency, a textually similar non-mandatory neighbor, and an attempted free-generated Cypher decision path. Observation point: inspect inclusion classification, policy id, bound parameters, ArchiMate relationship direction, explicit exclusions, and proof that generated Cypher did not decide mandatory closure.",
           "type": "Acceptance Test",
-          "Input": "Approved query whose mandatory dependency is not a semantic match.",
+          "Input": "Approved W5 query whose mandatory dependency is not a semantic match, plus a forbidden free-generated Cypher variant.",
           "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-DT-07",
-          "description": "Acceptor perspective control point: two different Agents submit the same declared purpose and anchors. Observation point: compare selected policy and resulting graph scope.",
+          "description": "Acceptor perspective control point: submit equivalent declared purpose and anchors from different Agent identities, then submit the same anchors under each of the five approved purpose categories. Observation point: compare selected policy ids, parameter contracts, closure ranges, exclusions, and rationale per category.",
           "type": "Acceptance Test",
-          "Input": "Equivalent purpose and anchors submitted by two Agent identities.",
+          "Input": "Equivalent anchors under intent-decision, implementation-design, coding-repair, audit, and graph-tidy purposes submitted by different Agent identities.",
           "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js"
         }
       ]
@@ -571,11 +587,23 @@
       "id": "grag-intent-decision-policy",
       "name": "Intent Decision Closure",
       "type": "Application Function",
-      "description": "DT-08 closure returns complete Why, What, business behavior, Acceptance lineage, and directly relevant realization-state evidence.",
+      "description": "DT-08 intent-decision closure is an independent purpose category. Its parameterized policy returns complete Why, What, business behavior, Acceptance lineage, and directly relevant realization-state evidence for deciding approved intent, without importing implementation-plan, repair, audit, or graph-tidy full-snapshot scope.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-08|accepted|decision-lineage"
+        },
+        {
+          "name": "functionalPoint.DT-08-intent-decision-boundary",
+          "value": "{\"description\":\"Return the complete decision lineage needed to decide or revise intent.\",\"businessOutcome\":\"Intent decisions are made from approved motivation, requirement, behavior, acceptance, and absence evidence rather than similarity-only context.\",\"observableBoundary\":\"For an intent-decision request, the closure includes the requested decision object, governing Why/What semantics, relevant business/application behavior, mounted acceptance lineage, explicit absence declarations, and directly relevant realization-state evidence; it excludes implementation task planning, repair-only evidence, audit proof expansion outside the decision subject, and graph-tidy global snapshot behavior.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-08\"}"
+        },
+        {
+          "name": "closurePolicy.category",
+          "value": "intent-decision|independent boundary|parameterized Cypher template selected by declared purpose and approved anchors; ArchiMate motivation, realization, serving, access, and triggering semantics are interpreted by relationship direction."
+        },
+        {
+          "name": "acceptanceApproval.DT-08",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-08 intent-decision closure boundary"
         },
         {
           "name": "deliveryStatus",
@@ -585,9 +613,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-08",
-          "description": "Acceptor perspective control point: submit a capability-change decision task. Observation point: inspect motivation, decision object, business behavior, acceptance, and absence declarations.",
+          "description": "Acceptor perspective control point: submit a capability-change intent-decision task whose required motivation or acceptance lineage is textually dissimilar to the query, while a similar implementation-only node is nearby. Observation point: inspect returned Why/What, business behavior, mounted acceptance lineage, directly relevant realization-state evidence, absence declarations, and exclusions from other purpose categories.",
           "type": "Acceptance Test",
-          "Input": "Approved capability-change intent-decision query.",
+          "Input": "Approved capability-change intent-decision query with dissimilar mandatory lineage and similar out-of-category context.",
           "acceptanceCriteria": "tests/explicit/entries/runIntentDecisionClosure.js"
         }
       ]
@@ -596,11 +624,23 @@
       "id": "grag-implementation-policy",
       "name": "Implementation Design Closure",
       "type": "Application Function",
-      "description": "DT-09 closure returns target, recursive upstream prerequisites, downstream impact within the declared business boundary, and governing guardrails and acceptance semantics.",
+      "description": "DT-09 implementation-design closure is an independent purpose category. Its parameterized policy returns the target, recursive upstream prerequisites, downstream impact inside the declared business boundary, governing guardrails, and acceptance semantics needed for implementation design; it does not inherit repair incident scope, audit proof scope, intent-decision deliberation scope, or graph-tidy full snapshot scope.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-09|accepted|implementation-ready"
+        },
+        {
+          "name": "functionalPoint.DT-09-implementation-design-boundary",
+          "value": "{\"description\":\"Return implementation-ready dependency and impact closure for a declared target.\",\"businessOutcome\":\"Implementation Design can create contracts from complete prerequisites and bounded downstream impact without using free-form similarity as architecture scope.\",\"observableBoundary\":\"For an implementation-design request, the closure includes the target element, recursively required upstream dependencies until delivered boundaries, downstream dependents within the declared business boundary, governing principles/constraints, and same-element acceptance semantics; it excludes unrelated similar capabilities, repair incident evidence outside the target, audit-only exceptions, and graph-tidy global snapshot behavior.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-09\"}"
+        },
+        {
+          "name": "closurePolicy.category",
+          "value": "implementation-design|independent boundary|parameterized Cypher template selected by declared target and purpose; recursive upstream/downstream traversal follows ArchiMate dependency direction and explicit delivered-stop semantics."
+        },
+        {
+          "name": "acceptanceApproval.DT-09",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-09 implementation-design closure boundary"
         },
         {
           "name": "deliveryStatus",
@@ -610,9 +650,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-09",
-          "description": "Acceptor perspective control point: select a target with multi-level upstream and downstream chains. Observation point: inspect every returned chain boundary.",
+          "description": "Acceptor perspective control point: select an implementation-design target with multi-level upstream prerequisites, bounded downstream dependents, and a similar but out-of-bound capability. Observation point: inspect every returned chain boundary, delivered-stop decision, guardrail, acceptance semantic, and exclusion rationale.",
           "type": "Acceptance Test",
-          "Input": "Implementation-design target with approved multi-level dependency chains.",
+          "Input": "Implementation-design target with approved multi-level dependency chains, downstream impact limits, and similar out-of-bound context.",
           "acceptanceCriteria": "tests/explicit/entries/runImplementationDesignClosure.js"
         }
       ]
@@ -621,11 +661,23 @@
       "id": "grag-repair-policy",
       "name": "Coding Repair Closure",
       "type": "Application Function",
-      "description": "DT-10 closure returns intended behavior, causal prerequisites, at-risk business outcomes, principles, constraints, and complete acceptance semantics without adding adjacent scope.",
+      "description": "DT-10 coding-repair closure is an independent purpose category. Its parameterized policy returns authoritative intended behavior, causal prerequisites, at-risk business outcomes, principles, constraints, and complete acceptance semantics needed to repair a defect without expanding to adjacent similar capabilities or implementation-planning scope.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-10|accepted|repair-safety"
+        },
+        {
+          "name": "functionalPoint.DT-10-coding-repair-boundary",
+          "value": "{\"description\":\"Return the minimal authoritative intent closure needed to repair conflicting code safely.\",\"businessOutcome\":\"Coding Repair changes behavior against approved intent and acceptance semantics while avoiding accidental adjacent scope.\",\"observableBoundary\":\"For a coding-repair request, the closure includes intended behavior, causal upstream prerequisites, at-risk outcomes, governing principles/constraints, and full acceptance semantics for the defect subject; it excludes textually similar unrelated capabilities, implementation-design downstream planning outside the defect, audit proof expansion, and graph-tidy global snapshot behavior.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-10\"}"
+        },
+        {
+          "name": "closurePolicy.category",
+          "value": "coding-repair|independent boundary|parameterized Cypher template selected by defect subject, declared purpose, and approved anchors; ArchiMate dependencies identify causal prerequisites and at-risk outcomes."
+        },
+        {
+          "name": "acceptanceApproval.DT-10",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-10 coding-repair closure boundary"
         },
         {
           "name": "deliveryStatus",
@@ -635,9 +687,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-10",
-          "description": "Acceptor perspective control point: submit a defect where code conflicts with intent and a textually similar unrelated capability exists. Observation point: inspect authoritative behavior and closure scope.",
+          "description": "Acceptor perspective control point: submit a coding-repair defect where code conflicts with approved intent, with a textually similar unrelated capability nearby. Observation point: inspect authoritative intended behavior, causal prerequisites, at-risk outcomes, governing constraints/principles, acceptance semantics, and explicit exclusion of adjacent scope.",
           "type": "Acceptance Test",
-          "Input": "Approved coding-repair query containing conflicting implementation evidence and an unrelated similar capability.",
+          "Input": "Approved coding-repair query containing conflicting implementation evidence, a defect subject, and an unrelated similar capability.",
           "acceptanceCriteria": "tests/explicit/entries/runCodingRepairClosure.js"
         }
       ]
@@ -646,11 +698,23 @@
       "id": "grag-audit-policy",
       "name": "Audit Proof Closure",
       "type": "Application Function",
-      "description": "DT-11 closure uses Graph RAG only to recommend candidates, then exhaustively returns Subject, Obligation, Evidence, and Exceptions for the explicit audit subject.",
+      "description": "DT-11 audit closure is an independent purpose category. Graph RAG may recommend candidate subjects, but the mandatory audit proof range is selected only from an explicit audit subject through parameterized policy and ArchiMate semantics, exhaustively returning Subject, Obligation, Evidence, and Exceptions.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-11|accepted|explicit-proof-scope"
+        },
+        {
+          "name": "functionalPoint.DT-11-audit-proof-boundary",
+          "value": "{\"description\":\"Return exhaustive proof material for an explicit audit subject while treating Graph RAG as recommendation only.\",\"businessOutcome\":\"Audit findings can be reviewed against complete obligations, evidence, and exceptions even when violations are low-similarity to the query.\",\"observableBoundary\":\"For an audit request, closure requires an explicit subject and includes subject identity, obligations, evidence, exceptions, and low-similarity violations inside that subject; candidate recommendation cannot become mandatory scope, and missing subject is rejected rather than inferred.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-11\"}"
+        },
+        {
+          "name": "closurePolicy.category",
+          "value": "audit|independent boundary|parameterized Cypher template requires explicit subject parameter; Graph RAG candidate ranking is advisory and cannot decide mandatory proof scope."
+        },
+        {
+          "name": "acceptanceApproval.DT-11",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-11 audit-proof closure boundary"
         },
         {
           "name": "deliveryStatus",
@@ -660,9 +724,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-11",
-          "description": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject. Observation point: inspect proof-scope completeness and exception handling.",
+          "description": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject and provide a high-similarity candidate outside it. Observation point: inspect subject, obligation, evidence, exception completeness, low-similarity inclusion, out-of-subject exclusion, and rejection of audit requests without subject.",
           "type": "Acceptance Test",
-          "Input": "Explicit audit subject containing an approved low-similarity violation.",
+          "Input": "Explicit audit subject containing an approved low-similarity violation, plus an outside high-similarity candidate and a missing-subject audit variant.",
           "acceptanceCriteria": "tests/explicit/entries/runAuditProofClosure.js"
         }
       ]
@@ -671,19 +735,27 @@
       "id": "grag-graph-tidy-policy",
       "name": "Graph Tidy Full Snapshot Bypass",
       "type": "Application Function",
-      "description": "DT-12 closure always reads the complete canonical snapshot for graph mutation preparation and bypasses semantic retrieval and threshold selection.",
+      "description": "DT-12 graph-tidy is the fifth independent purpose category and bypasses Graph RAG closure entirely. Its policy always reads the complete canonical snapshot for mutation preparation, global identity, referential integrity, and View membership checks; semantic retrieval, thresholds, purpose closure expansion, and generated Cypher are not allowed to reduce this range.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-12|accepted|always-full; bypass DT-04 and DT-05"
+          "value": "DT-12|accepted|always-full; bypass DT-04, DT-05, DT-06, and generated Cypher scope decisions"
         },
         {
           "name": "functionalPoint.DT-12-full-snapshot-bypass",
-          "value": "{\"description\":\"Use the complete canonical snapshot for graph-tidy and bypass semantic retrieval.\",\"businessOutcome\":\"Mutation preparation sees global identity, referential integrity, View membership, and invariants.\",\"observableBoundary\":\"A graph-tidy request returns the complete canonical snapshot with no Graph RAG filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-12\"}"
+          "value": "{\"description\":\"Use the complete canonical snapshot for graph-tidy and bypass semantic retrieval and purpose closure filtering.\",\"businessOutcome\":\"Mutation preparation sees global identity, referential integrity, View membership, and invariants before any local edit is proposed.\",\"observableBoundary\":\"A graph-tidy request returns the complete canonical Element, Relationship, View, membership, and invariant snapshot with no semantic filtering, no threshold selection, no generated-Cypher narrowing, and no purpose-category inheritance from intent/implementation/repair/audit closures.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-12\"}"
+        },
+        {
+          "name": "closurePolicy.category",
+          "value": "graph-tidy|independent boundary|always-full canonical read; parameterized Cypher may fetch complete canonical graph but may not filter mandatory scope."
         },
         {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphTidyFullSnapshot.js; exit code 0"
+        },
+        {
+          "name": "acceptanceApproval.DT-12",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request reaffirmed DT-12 as fifth independent graph-tidy purpose category"
         },
         {
           "name": "deliveryStatus",
@@ -693,9 +765,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-12",
-          "description": "Acceptor perspective control point: prepare a local mutation with a conflicting remote ID and cross-View membership. Observation point: inspect global identity and all memberships.",
+          "description": "Acceptor perspective control point: prepare a graph-tidy mutation with a conflicting remote ID, cross-View membership, and a semantically narrow local edit prompt. Observation point: inspect complete canonical identity, all memberships, invariant visibility, and proof that semantic retrieval, thresholding, purpose closure, and generated Cypher did not narrow the range.",
           "type": "Acceptance Test",
-          "Input": "Graph-tidy preparation case containing a remote ID conflict and cross-View membership.",
+          "Input": "Graph-tidy preparation case containing a remote ID conflict, cross-View membership, global invariant dependency, and narrow semantic wording.",
           "acceptanceCriteria": "tests/explicit/entries/runGraphTidyFullSnapshot.js"
         }
       ]
@@ -1347,11 +1419,19 @@
       "id": "grag-wp-4",
       "name": "W4 Independent Three-Channel Seeds",
       "type": "Work Package",
-      "description": "Deliver independent Element, Relationship, and View seed channels.",
+      "description": "W4 accepted: independent Element, ArchitectureRelationship, and View relevance seed channels apply per-channel threshold-all gates, return all qualifying candidates or valid zero results, and treat ANN as performance-only. Purpose closure, traversal expansion, neighborhood closure, downstream graph completion, and global cross-channel ranking remain excluded.",
       "attributes": [
         {
           "name": "affectedElements",
           "value": "grag-seed-retrieval"
+        },
+        {
+          "name": "deliveryEvidence.W4",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-04 and ExplicitAcceptanceTestcase-DT-05|runIndependentSemanticSeeds.js plus five architecture/coding guards and validateStageHandoff implementation-to-coding|all exitCode=0|full runner 24/37"
+        },
+        {
+          "name": "waveAcceptance.W4",
+          "value": "accepted|2026-07-25|independent three-channel threshold-all seed discovery passed; remaining failures belong to DT-00, W5-W7, and TS-08; no closure acceptance implied"
         }
       ]
     },
@@ -1359,11 +1439,23 @@
       "id": "grag-wp-5",
       "name": "W5 Deterministic Five-Purpose Closures",
       "type": "Work Package",
-      "description": "Deliver parameterized Cypher and ArchiMate closures.",
+      "description": "W5 delivers deterministic five-purpose graph closures: semantic seeds are converted into reproducible graph ranges through named parameterized Cypher policies and ArchiMate relationship semantics; the five independent categories are intent-decision, implementation-design, coding-repair, audit, and graph-tidy. Free-generated Cypher is forbidden for mandatory closure decisions.",
       "attributes": [
         {
           "name": "affectedElements",
-          "value": "grag-purpose-closure"
+          "value": "grag-purpose-closure; grag-intent-decision-policy; grag-implementation-policy; grag-repair-policy; grag-audit-policy; grag-graph-tidy-policy"
+        },
+        {
+          "name": "scopeBoundary.W5",
+          "value": "W5 owns deterministic purpose dispatch and the five independent closure categories. W6 structural endpoint/View/provenance integrity remains downstream unless explicitly selected by a W5 policy result; graph-tidy remains a complete canonical snapshot bypass."
+        },
+        {
+          "name": "releaseGate.W5",
+          "value": "All five purpose categories must expose independent boundaries; mandatory closure decisions must use named parameterized Cypher templates plus ArchiMate semantics, never free-generated Cypher."
+        },
+        {
+          "name": "acceptanceMapping.W5",
+          "value": "DT-06 and DT-07 mount on grag-purpose-closure; DT-08 on grag-intent-decision-policy; DT-09 on grag-implementation-policy; DT-10 on grag-repair-policy; DT-11 on grag-audit-policy; DT-12 on grag-graph-tidy-policy."
         }
       ]
     },
@@ -1747,12 +1839,16 @@
       "target_id": "grag-purpose-closure",
       "source_name": "Independent Semantic Seed Retrieval",
       "target_name": "Purpose Policy Graph Closure",
-      "description": "Qualifying semantic seeds initiate deterministic expansion governed by the declared purpose rather than further similarity.",
+      "description": "Qualifying W4 semantic seeds initiate W5 deterministic expansion governed by the declared purpose, named parameterized Cypher policy, bound anchors, and ArchiMate direction semantics rather than further similarity or generated Cypher.",
       "statement": "Independent Semantic Seed Retrieval --(Triggering)--> Purpose Policy Graph Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-05,DT-06"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Seed retrieval triggers closure; closure may inspect seed anchors but must not ask semantic similarity to decide mandatory expansion."
         }
       ]
     },
@@ -1764,12 +1860,16 @@
       "target_id": "grag-intent-decision-policy",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Intent Decision Closure",
-      "description": "Declared intent-decision purpose selects decision-lineage closure.",
+      "description": "Declared intent-decision purpose selects the independent decision-lineage closure category and cannot inherit implementation, repair, audit, or graph-tidy scope.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Intent Decision Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-07,DT-08"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose dispatcher triggers exactly one intent-decision category when declared purpose is intent-decision."
         }
       ]
     },
@@ -1781,12 +1881,16 @@
       "target_id": "grag-implementation-policy",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Implementation Design Closure",
-      "description": "Declared implementation-design purpose selects target, prerequisite, impact, and guardrail closure.",
+      "description": "Declared implementation-design purpose selects the independent implementation-ready dependency and impact closure category.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Implementation Design Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-07,DT-09"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose dispatcher triggers exactly one implementation-design category when declared purpose is implementation-design."
         }
       ]
     },
@@ -1798,12 +1902,16 @@
       "target_id": "grag-repair-policy",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Coding Repair Closure",
-      "description": "Declared coding-repair purpose selects repair-safety closure.",
+      "description": "Declared coding-repair purpose selects the independent repair-safety closure category for the defect subject.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Coding Repair Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-07,DT-10"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose dispatcher triggers exactly one coding-repair category when declared purpose is coding-repair."
         }
       ]
     },
@@ -1815,12 +1923,16 @@
       "target_id": "grag-audit-policy",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Audit Proof Closure",
-      "description": "Declared audit purpose and explicit subject select exhaustive proof-scope closure.",
+      "description": "Declared audit purpose and explicit audit subject select the independent exhaustive proof-scope closure category.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Audit Proof Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-07,DT-11"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose dispatcher triggers exactly one audit category only when declared purpose is audit and explicit subject is present."
         }
       ]
     },
@@ -1832,12 +1944,16 @@
       "target_id": "grag-graph-tidy-policy",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Graph Tidy Full Snapshot Bypass",
-      "description": "Declared graph-tidy purpose bypasses Graph RAG and selects the complete canonical snapshot.",
+      "description": "Declared graph-tidy purpose selects the independent complete canonical snapshot bypass and prevents Graph RAG or generated Cypher narrowing.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Graph Tidy Full Snapshot Bypass",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-07,DT-12"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose dispatcher triggers graph-tidy bypass; graph-tidy does not depend on semantic seeds or purpose closure expansion for mandatory range."
         }
       ]
     },
@@ -2493,7 +2609,7 @@
       "view_name": "Graph RAG Seed and Closure Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic relevance is separated from deterministic graph completeness; Purpose: deciding and handoff preparation; Scope: independent seed channels, threshold-all selection, purpose expansion, endpoint closure, View closure, and provenance; Rationale: this view captures the application dependency chain that turns semantic seeds into coherent intent context.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic relevance is separated from deterministic graph completeness; Purpose: deciding and handoff preparation; Scope: independent seed channels, threshold-all selection, deterministic purpose expansion, endpoint closure, View closure, and provenance; Rationale: this view captures the application dependency chain where W4 semantic seeds feed W5 parameterized purpose closure, and where mandatory range decisions are governed by ArchiMate semantics instead of further similarity or generated Cypher.",
       "included_elements": [
         "grag-canonical-graph",
         "grag-seed-retrieval",
@@ -2515,7 +2631,7 @@
       "view_name": "Graph RAG Purpose Policies A",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: each lifecycle task obtains a bounded and reproducible closure policy; Purpose: deciding and handoff preparation; Scope: purpose-policy dispatch and the five accepted lifecycle purposes; Rationale: this view shows the distinct application behaviors selected by the declared task purpose.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: each lifecycle task obtains a bounded, reproducible, and independently reviewable closure policy; Purpose: deciding and handoff preparation; Scope: purpose-policy dispatch and the five accepted lifecycle purposes, with each category selected by declared purpose and parameterized policy rather than Agent identity or generated Cypher; Rationale: this view shows the distinct application behaviors selected by the declared task purpose and the Triggering relationships that keep category boundaries independent.",
       "included_elements": [
         "grag-purpose-closure",
         "grag-intent-decision-policy",
@@ -2538,7 +2654,7 @@
       "view_name": "Graph RAG Purpose Policies B",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: purpose-specific results converge on common structural integrity rules; Purpose: deciding and handoff preparation; Scope: five lifecycle policies, relationship endpoints, and complete Views; Rationale: this companion view preserves the shared closure obligations without exceeding the repository View element limit.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: purpose-specific results converge on common structural integrity rules without erasing independent purpose-category boundaries; Purpose: deciding and handoff preparation; Scope: five lifecycle policies, relationship endpoints, and complete Views; Rationale: this companion view preserves shared post-closure integrity obligations while keeping W5 category selection separate from W6 endpoint/View integrity and within the repository View element limit.",
       "included_elements": [
         "grag-intent-decision-policy",
         "grag-implementation-policy",

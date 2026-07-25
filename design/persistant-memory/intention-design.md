@@ -319,3 +319,47 @@
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
 - Checklist self-audit: A1-A5 satisfied with no View mutation required; B1-B3 satisfied because no ExplicitAcceptanceTestcase was added or modified and both mounted testcase mappings are same-element; C1-C2 scoped to the single focus element with delivered upstream context and explicit exclusion of closure; D1-D8 satisfied through exact element mapping, same-element coverage, graph attributes, and schema-compliant global approval notes; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires the Intent Design stage commit.
 - Open business questions and adequacy blockers: none.
+
+## 2026-07-25 — W5 Deterministic Five-Purpose Closure
+
+- Selected viewpoint: Application Usage Viewpoint.
+- Stakeholder concern: application architects, requirements owners, implementation designers, coding repair owners, auditors, and graph-tidy operators need each lifecycle task to receive an independently reviewable deterministic closure range.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view bindings: `grag-purpose-policies-a`, `grag-purpose-policies-b`, and `grag-seed-closure-usage` remain Application Usage Viewpoint instances because they show application behavior selecting purpose policies and separating semantic seed discovery from deterministic graph completeness.
+- Human approval evidence: the orchestrating W5 request explicitly required deterministic five-purpose closure, parameterized Cypher plus ArchiMate semantics, no free-generated Cypher for mandatory closure, DT-06 through DT-12 acceptance mapping, handoff production, and an IntentDesign stage commit. The schema does not permit `approvedByHuman` fields on handoff JSON, so approval is recorded in handoff notes and schema-compliant `acceptanceApproval.*` element attributes.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved and not fabricated by Intent Design.
+
+### Coverage matrix
+
+- `grag-purpose-closure` — `functionalPoint.DT-06-deterministic-mandatory-closure` -> `ExplicitAcceptanceTestcase-DT-06`; `functionalPoint.DT-07-purpose-category-dispatch` -> `ExplicitAcceptanceTestcase-DT-07`.
+- `grag-intent-decision-policy` — `functionalPoint.DT-08-intent-decision-boundary` -> `ExplicitAcceptanceTestcase-DT-08`.
+- `grag-implementation-policy` — `functionalPoint.DT-09-implementation-design-boundary` -> `ExplicitAcceptanceTestcase-DT-09`.
+- `grag-repair-policy` — `functionalPoint.DT-10-coding-repair-boundary` -> `ExplicitAcceptanceTestcase-DT-10`.
+- `grag-audit-policy` — `functionalPoint.DT-11-audit-proof-boundary` -> `ExplicitAcceptanceTestcase-DT-11`.
+- `grag-graph-tidy-policy` — `functionalPoint.DT-12-full-snapshot-bypass` -> `ExplicitAcceptanceTestcase-DT-12`.
+
+### Acceptance boundaries
+
+- DT-06 requires mandatory closure to be decided by named parameterized Cypher templates plus ArchiMate relationship type and direction semantics, not by semantic similarity, arbitrary depth, connected-component expansion, caller identity, or free-generated Cypher.
+- DT-07 requires exactly five independent purpose categories: intent-decision, implementation-design, coding-repair, audit, and graph-tidy. Equivalent declared purpose and anchors must select the same category regardless of Agent identity; different declared categories must expose distinct policy ids, parameter contracts, inclusion rules, exclusions, and rationale.
+- DT-08 returns Why/What, business behavior, acceptance lineage, absence declarations, and directly relevant realization-state evidence for intent decisions while excluding implementation-plan, repair, audit, and graph-tidy scopes.
+- DT-09 returns the implementation target, recursive upstream prerequisites until delivered boundaries, bounded downstream impact, guardrails, and same-element acceptance semantics while excluding unrelated similar or out-of-category context.
+- DT-10 returns intended behavior, causal prerequisites, at-risk outcomes, principles, constraints, and acceptance semantics for a defect subject without expanding to adjacent similar capabilities.
+- DT-11 treats Graph RAG as candidate recommendation only; an explicit audit subject is required, and mandatory proof scope returns Subject, Obligation, Evidence, and Exceptions including low-similarity violations inside the subject.
+- DT-12 is the fifth purpose category and bypasses Graph RAG closure entirely; graph-tidy always reads the complete canonical snapshot and cannot be narrowed by semantic retrieval, thresholds, purpose closure expansion, or generated Cypher.
+
+### Dependency-scope decisions
+
+- Handoff scope is the W5 closure set: `grag-purpose-closure`, `grag-intent-decision-policy`, `grag-implementation-policy`, `grag-repair-policy`, `grag-audit-policy`, and `grag-graph-tidy-policy`.
+- Upstream `grag-seed-retrieval` remains a delivered W4 boundary with `deliveryEvidence.W4`; W5 consumes qualifying seeds but does not reopen W4 seed retrieval.
+- W6 structural endpoint closure, complete View closure, provenance, and coherent-result behavior remain downstream integrity scope and are not implementation targets in this W5 handoff.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for W5 element, relationship, and View description updates.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 58 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read `grag-purpose-closure` dependency context with implementation-design profile after mutation.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json` after removing a stale W4 JSON object that had remained after file overwrite.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound views; B1-B3 satisfied with same-element mounted DT-06 through DT-12 testcases and schema-compliant approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W4 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
+- Open business questions and adequacy blockers: none.

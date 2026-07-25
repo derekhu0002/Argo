@@ -1,26 +1,38 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T20:11:00+08:00",
+  "generatedAt": "2026-07-25T21:52:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W4 grag-seed-retrieval handoff: deliver only relevance-discovery semantic seeds for Element, Relationship, and View channels. Each channel has an independent release threshold, returns every candidate meeting that channel gate, allows valid zero-result outcomes, and excludes graph closure, traversal expansion, neighborhood closure, and downstream graph-completion behavior from this stage.",
+  "summary": "W5 deterministic five-purpose closure handoff. Implement parameterized, repository-owned Cypher templates plus ArchiMate relationship-direction semantics so semantic seeds become reproducible graph ranges. Free-generated Cypher, Agent identity, text similarity, arbitrary depth, and connected-component expansion must not decide mandatory closure.",
   "intentElementIds": [
-    "grag-seed-retrieval"
+    "grag-purpose-closure",
+    "grag-intent-decision-policy",
+    "grag-implementation-policy",
+    "grag-repair-policy",
+    "grag-audit-policy",
+    "grag-graph-tidy-policy"
   ],
   "relationshipIds": [
-    "grag-rel-validation-seeds",
-    "grag-rel-w4-seed-retrieval",
-    "grag-rel-w31-w4"
+    "grag-rel-seeds-closure",
+    "grag-rel-purpose-intent",
+    "grag-rel-purpose-implementation",
+    "grag-rel-purpose-repair",
+    "grag-rel-purpose-audit",
+    "grag-rel-purpose-tidy",
+    "grag-rel-w5-purpose-closure"
   ],
   "openQuestions": [],
   "notes": [
-    "Selected viewpoint frame: Application Usage Viewpoint. Stakeholder concern: application architects, requirements owners, implementation designers, and acceptors need seed retrieval behavior to be independently observable per canonical object channel before any closure application function runs. Purpose: designing, deciding, and handoff preparation.",
-    "Affected View rationale: no View membership changed. grag-seed-closure-usage remains contextual Application Usage architecture for the later retrieval-to-closure chain, while this handoff scope is only grag-seed-retrieval and does not authorize closure implementation. grag-delivery-impact-retrieval remains delivery sequencing context; downstream ImplementationDesign must scope this handoff to grag-seed-retrieval only.",
-    "Mutation summary: updated only grag-seed-retrieval. The element now states that W4 delivers only relevance-discovery semantic seeds for Element, ArchitectureRelationship, and View, with independent channel thresholds, all qualifying candidates returned, zero results allowed, no global cross-channel ranking, and no graph closure/traversal/neighborhood/downstream-completion output in this stage.",
-    "Coverage proof: grag-seed-retrieval functionalPoint.DT-04-three-channel-seed-discovery -> ExplicitAcceptanceTestcase-DT-04; grag-seed-retrieval functionalPoint.DT-05-threshold-all-correctness -> ExplicitAcceptanceTestcase-DT-05. Both mounted testcases stay under the exact grag-seed-retrieval element and use tests/explicit/entries/runIndependentSemanticSeeds.js.",
-    "Dependency-subgraph proof: focus element grag-seed-retrieval is the only implementation target in this handoff. Relevant context relationships are grag-rel-w31-w4 as upstream delivery gate, grag-rel-validation-seeds as the validated-query trigger into seed retrieval, and grag-rel-w4-seed-retrieval as W4 realization of seed retrieval. The downstream grag-rel-seeds-closure relationship is intentionally excluded from the handoff because closure begins after relevance seed discovery.",
-    "Acceptance boundary DT-04: the observable result exposes separate Element, Relationship, and View seed channels. Relationship and View seeds must be directly discoverable and independently attributed, not inferred through Element-only retrieval, traversal expansion, neighborhood closure, or graph completion.",
-    "Acceptance boundary DT-05: Element, Relationship, and View each have their own threshold gate. Every candidate at or above its channel threshold is returned, candidates below threshold are not released by that gate, unrelated queries may return zero results, and ANN top-k output is performance comparison only.",
-    "Human approval evidence: the 2026-07-25 user requirement explicitly requested grag-seed-retrieval, DT-04 and DT-05 acceptance mapping, independent Element/Relationship/View gates, all passing candidates returned, valid zero results, and no graph closure mixed into this stage. The handoff schema does not allow an approvedByHuman field, so global approval is recorded in this schema-compliant note and testcase approval is recorded as acceptanceApproval.DT-04 and acceptanceApproval.DT-05 attributes on grag-seed-retrieval.",
-    "Downstream ImplementationDesign should define contracts and explicit entrypoint ownership around tests/explicit/entries/runIndependentSemanticSeeds.js without adding graph closure, traversal expansion, neighborhood closure, or graph-completion obligations to this W4 seed retrieval handoff."
+    "Selected viewpoint: Application Usage Viewpoint. Concern: each lifecycle task receives an independently reviewable closure boundary. Purpose: deciding and handoff preparation. Affected views remain bound through the required Viewpoint description pattern.",
+    "Global approval evidence: the orchestrating W5 request explicitly asked to update intent architecture for deterministic five-purpose closure boundaries, acceptance mapping DT-06 through DT-12, and handoff production. Handoff approvedByHuman=true is recorded here as schema-compliant notes because the handoff schema does not permit an approvedByHuman field.",
+    "Coverage matrix: grag-purpose-closure functionalPoint.DT-06-deterministic-mandatory-closure -> ExplicitAcceptanceTestcase-DT-06; functionalPoint.DT-07-purpose-category-dispatch -> ExplicitAcceptanceTestcase-DT-07.",
+    "Coverage matrix: grag-intent-decision-policy functionalPoint.DT-08-intent-decision-boundary -> ExplicitAcceptanceTestcase-DT-08.",
+    "Coverage matrix: grag-implementation-policy functionalPoint.DT-09-implementation-design-boundary -> ExplicitAcceptanceTestcase-DT-09.",
+    "Coverage matrix: grag-repair-policy functionalPoint.DT-10-coding-repair-boundary -> ExplicitAcceptanceTestcase-DT-10.",
+    "Coverage matrix: grag-audit-policy functionalPoint.DT-11-audit-proof-boundary -> ExplicitAcceptanceTestcase-DT-11.",
+    "Coverage matrix: grag-graph-tidy-policy functionalPoint.DT-12-full-snapshot-bypass -> ExplicitAcceptanceTestcase-DT-12.",
+    "Dependency context: W5 starts after delivered W4 seed retrieval. grag-seed-retrieval carries deliveryStatus=delivered and deliveryEvidence.W4 for ExplicitAcceptanceTestcase-DT-04 and ExplicitAcceptanceTestcase-DT-05; W5 elements remain not_delivered until downstream implementation passes their mounted DT-06 through DT-12 entrypoints.",
+    "Scope boundary: W5 owns deterministic purpose dispatch and five independent category boundaries: intent-decision, implementation-design, coding-repair, audit, and graph-tidy. W6 endpoint closure, complete View closure, provenance, and coherent result remain downstream integrity scope and are not implementation targets of this handoff.",
+    "Release gate: all mandatory closure decisions must use named parameterized Cypher templates with bound parameters and ArchiMate relationship semantics. Free-generated Cypher may be diagnostic only and is forbidden for deciding mandatory closure.",
+    "Downstream implementation should preserve same-element entrypoints already mounted in the intent graph: runPurposePolicyClosure.js, runIntentDecisionClosure.js, runImplementationDesignClosure.js, runCodingRepairClosure.js, runAuditProofClosure.js, and runGraphTidyFullSnapshot.js."
   ]
 }
