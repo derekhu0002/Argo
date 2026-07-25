@@ -41,119 +41,112 @@ if (fs.existsSync(authorizedAdapterPath)) {
   assert(!/shell\s*:\s*true/.test(adapterSource), 'SYSTEM_METADATA_COMMAND_GUARD: shell execution is prohibited');
   assert(!/(?:node:)?(?:http|https|net|tls)|\bfetch\s*\(/.test(adapterSource), 'SYSTEM_METADATA_COMMAND_GUARD: network commands are prohibited');
   assert(!/QWEN_KEY|ARGO_NEO4J_DATABASE_PASSWORD/.test(adapterSource), 'SYSTEM_METADATA_COMMAND_GUARD: adapter must not know secret fields');
-  const { createSystemMetadataCommandAdapter } = require(authorizedAdapterPath);
+  const {
+    createSystemMetadataCommandAdapter,
+    withSystemMetadataCommandTestComposition,
+  } = require(authorizedAdapterPath);
   assert.strictEqual(typeof createSystemMetadataCommandAdapter, 'function', 'SYSTEM_METADATA_COMMAND_GUARD: adapter factory missing');
-  const invocations = [];
-  const adapter = createSystemMetadataCommandAdapter({
+  assert.strictEqual(typeof withSystemMetadataCommandTestComposition, 'function', 'SYSTEM_METADATA_COMMAND_GUARD: private test composition missing');
+
+  let directExecutorCalls = 0;
+  assert.throws(
+    () => createSystemMetadataCommandAdapter({
+      repositoryRoot: repoRoot,
+      executeMetadataCommand() {
+        directExecutorCalls += 1;
+      },
+    }),
+    exactProhibitedCategory,
+    'SYSTEM_METADATA_COMMAND_GUARD: production factory accepted executor injection',
+  );
+  assert.strictEqual(directExecutorCalls, 0, 'SYSTEM_METADATA_COMMAND_GUARD: rejected production injection executed');
+
+  const safeInvocations = [];
+  withSystemMetadataCommandTestComposition({
     repositoryRoot: repoRoot,
     executeMetadataCommand(executable, args, options) {
-      invocations.push({ executable, args, options });
+      safeInvocations.push({ executable, args, options });
       return { status: 0, stdout: executable === 'whoami' ? 'DOMAIN\\User\r\n' : 'metadata-only\r\n', stderr: '' };
     },
+  }, adapter => {
+    assert.deepStrictEqual(Object.keys(adapter).sort(), [
+      'isSecretFileIgnored',
+      'isSecretFileTracked',
+      'readCurrentIdentity',
+      'readSecretFileAcl',
+    ]);
+    adapter.isSecretFileIgnored();
+    adapter.isSecretFileTracked();
+    adapter.readCurrentIdentity();
+    adapter.readSecretFileAcl();
   });
-  assert.strictEqual(typeof adapter.isSecretFileIgnored, 'function');
-  assert.strictEqual(typeof adapter.isSecretFileTracked, 'function');
-  assert.strictEqual(typeof adapter.readCurrentIdentity, 'function');
-  assert.strictEqual(typeof adapter.readSecretFileAcl, 'function');
-  adapter.isSecretFileIgnored();
-  adapter.isSecretFileTracked();
-  adapter.readCurrentIdentity();
-  adapter.readSecretFileAcl();
-  assert.strictEqual(invocations.length, 4, 'SYSTEM_METADATA_COMMAND_GUARD: expected exactly four metadata commands');
-  for (const invocation of invocations) {
-    validateMetadataCommandRequest(invocation, {
-      repoRoot,
-      secretFilePath: path.join(repoRoot, '.argo', '.env'),
-    });
+  assert.deepStrictEqual(
+    safeInvocations.map(({ executable, args }) => ({ executable, args })),
+    [
+      { executable: 'git', args: ['check-ignore', '--quiet', '--', '.argo/.env'] },
+      { executable: 'git', args: ['ls-files', '--error-unmatch', '--', '.argo/.env'] },
+      { executable: 'whoami', args: [] },
+      { executable: 'icacls', args: [path.join(repoRoot, '.argo', '.env')] },
+    ],
+    'SYSTEM_METADATA_COMMAND_GUARD: safe templates changed',
+  );
+  for (const invocation of safeInvocations) {
+    assert.deepStrictEqual(Object.keys(invocation.options).sort(), ['cwd', 'encoding', 'env', 'shell', 'windowsHide']);
+    assert.strictEqual(invocation.options.cwd, repoRoot);
+    assert.strictEqual(invocation.options.encoding, 'utf8');
+    assert.strictEqual(invocation.options.shell, false);
+    assert.strictEqual(invocation.options.windowsHide, true);
+    assert.deepStrictEqual(
+      Object.keys(invocation.options.env).sort(),
+      Object.keys(invocation.options.env).sort().filter(key => ['PATH', 'PATHEXT', 'SystemRoot', 'WINDIR'].includes(key)),
+    );
+  }
+
+  const secretCanary = 'synthetic-command-secret';
+  const bypassFixtures = [
+    { name: 'capability-path-argument', capability: 'readSecretFileAcl', capabilityArgs: ['C:\\alternate\\.env'] },
+    { name: 'capability-flags-argument', capability: 'isSecretFileIgnored', capabilityArgs: ['--verbose'] },
+    { name: 'capability-executable-argument', capability: 'readCurrentIdentity', capabilityArgs: ['python'] },
+    { name: 'capability-shell-argument', capability: 'isSecretFileTracked', capabilityArgs: [{ shell: true }] },
+    { name: 'capability-stdin-argument', capability: 'readSecretFileAcl', capabilityArgs: [{ input: secretCanary }] },
+    { name: 'capability-env-argument', capability: 'isSecretFileIgnored', capabilityArgs: [{ env: { QWEN_KEY: secretCanary } }] },
+    { name: 'capability-secret-argument', capability: 'readCurrentIdentity', capabilityArgs: [secretCanary] },
+    { name: 'path-injection', mutate: request => ({ ...request, args: [...request.args.slice(0, -1), '.argo/.env;whoami'] }) },
+    { name: 'extra-flags', mutate: request => ({ ...request, args: [...request.args.slice(0, 2), '--verbose', ...request.args.slice(2)] }) },
+    { name: 'dynamic-argv', mutate: request => ({ ...request, args: [...request.args, `${Date.now()}`] }) },
+    { name: 'concatenated-command', mutate: request => ({ ...request, executable: `${request.executable} whoami` }) },
+    { name: 'python-sidecar', mutate: request => ({ ...request, executable: 'python', args: ['-c', 'print(1)'] }) },
+    { name: 'pwsh-sidecar', mutate: request => ({ ...request, executable: 'pwsh', args: ['-Command', 'whoami'] }) },
+    { name: 'powershell-sidecar', mutate: request => ({ ...request, executable: 'powershell', args: ['-Command', 'whoami'] }) },
+    { name: 'cmd-sidecar', mutate: request => ({ ...request, executable: 'cmd', args: ['/c', 'whoami'] }) },
+    { name: 'node-sidecar', mutate: request => ({ ...request, executable: 'node', args: ['metadata-sidecar.js'] }) },
+    { name: 'network-command', mutate: request => ({ ...request, executable: 'curl', args: ['https://example.invalid'] }) },
+    { name: 'arbitrary-executable', mutate: request => ({ ...request, executable: 'arbitrary.exe' }) },
+    { name: 'secret-argv', mutate: request => ({ ...request, args: [...request.args, secretCanary] }) },
+    { name: 'secret-env-key', mutate: request => ({ ...request, options: { ...request.options, env: { ...request.options.env, QWEN_KEY: secretCanary } } }) },
+    { name: 'secret-env-value', mutate: request => ({ ...request, options: { ...request.options, env: { ...request.options.env, PATH: secretCanary } } }) },
+    { name: 'shell-true', mutate: request => ({ ...request, options: { ...request.options, shell: true } }) },
+    { name: 'stdin-secret', mutate: request => ({ ...request, options: { ...request.options, input: secretCanary } }) },
+  ];
+  for (const fixture of bypassFixtures) {
+    let executorCalls = 0;
+    assert.throws(
+      () => withSystemMetadataCommandTestComposition({
+        repositoryRoot: repoRoot,
+        forbiddenValues: [secretCanary],
+        mutateInvocation: fixture.mutate,
+        executeMetadataCommand() {
+          executorCalls += 1;
+          return { status: 0, stdout: '', stderr: '' };
+        },
+      }, adapter => adapter[fixture.capability || 'isSecretFileIgnored'](...(fixture.capabilityArgs || []))),
+      exactProhibitedCategory,
+      `SYSTEM_METADATA_COMMAND_GUARD: production adapter allowed ${fixture.name}`,
+    );
+    assert.strictEqual(executorCalls, 0, `SYSTEM_METADATA_COMMAND_GUARD: rejected ${fixture.name} reached executor`);
   }
 }
 
-const secretFilePath = path.join(repoRoot, '.argo', '.env');
-const secretCanary = 'synthetic-command-secret';
-const safeOptions = Object.freeze({
-  cwd: repoRoot,
-  encoding: 'utf8',
-  windowsHide: true,
-  shell: false,
-  env: Object.freeze({ SystemRoot: 'C:\\Windows', PATH: 'C:\\safe-bin', PATHEXT: '.EXE' }),
-});
-const safeMetadataCommands = [
-  { executable: 'git', args: ['check-ignore', '--quiet', '--', '.argo/.env'], options: safeOptions },
-  { executable: 'git', args: ['ls-files', '--error-unmatch', '--', '.argo/.env'], options: safeOptions },
-  { executable: 'whoami', args: [], options: safeOptions },
-  { executable: 'icacls', args: [secretFilePath], options: safeOptions },
-];
-for (const command of safeMetadataCommands) {
-  assert.doesNotThrow(
-    () => validateMetadataCommandRequest(command, { repoRoot, secretFilePath, forbiddenValues: [secretCanary] }),
-    `PRODUCTION_GRAPH_RAG_DEPENDENCY_DIRECTION_GUARD: rejected safe metadata command ${command.executable}`,
-  );
-}
-
-const bypassMetadataCommands = [
-  { ...safeMetadataCommands[0], options: { ...safeOptions, shell: true } },
-  { ...safeMetadataCommands[0], args: ['check-ignore', '--quiet', '--verbose', '--', '.argo/.env'] },
-  { ...safeMetadataCommands[0], args: ['check-ignore', '--quiet', '--', '.argo/.env;whoami'] },
-  { executable: 'python', args: ['-c', 'print(1)'], options: safeOptions },
-  { executable: 'pwsh', args: ['-Command', 'whoami'], options: safeOptions },
-  { executable: 'powershell', args: ['-Command', 'whoami'], options: safeOptions },
-  { executable: 'cmd', args: ['/c', 'whoami'], options: safeOptions },
-  { executable: 'node', args: ['metadata-sidecar.js'], options: safeOptions },
-  { executable: 'curl', args: ['https://example.invalid'], options: safeOptions },
-  { ...safeMetadataCommands[0], args: ['check-ignore', '--quiet', '--', secretCanary] },
-  { ...safeMetadataCommands[0], options: { ...safeOptions, env: { ...safeOptions.env, QWEN_KEY: secretCanary } } },
-  { ...safeMetadataCommands[0], options: { ...safeOptions, env: { ...safeOptions.env, PATH: secretCanary } } },
-  { ...safeMetadataCommands[0], options: { ...safeOptions, input: secretCanary } },
-];
-for (const command of bypassMetadataCommands) {
-  assert.throws(
-    () => validateMetadataCommandRequest(command, { repoRoot, secretFilePath, forbiddenValues: [secretCanary] }),
-    error => error && error.category === 'SYSTEM_METADATA_COMMAND_PROHIBITED',
-    `PRODUCTION_GRAPH_RAG_DEPENDENCY_DIRECTION_GUARD: allowed command bypass ${command.executable}`,
-  );
-}
-
-function validateMetadataCommandRequest(command, context) {
-  const deny = () => {
-    const error = new Error('SYSTEM_METADATA_COMMAND_PROHIBITED');
-    error.category = 'SYSTEM_METADATA_COMMAND_PROHIBITED';
-    throw error;
-  };
-  if (!command || typeof command !== 'object' || Array.isArray(command)) deny();
-  if (!exactKeys(command, ['args', 'executable', 'options'])) deny();
-  if (typeof command.executable !== 'string' || !Array.isArray(command.args)) deny();
-  if (!command.args.every(arg => typeof arg === 'string' && !/[\0\r\n]/.test(arg))) deny();
-  const allowedTemplates = [
-    ['git', ['check-ignore', '--quiet', '--', '.argo/.env']],
-    ['git', ['ls-files', '--error-unmatch', '--', '.argo/.env']],
-    ['whoami', []],
-    ['icacls', [context.secretFilePath]],
-  ];
-  if (!allowedTemplates.some(([executable, args]) => (
-    command.executable === executable && sameArray(command.args, args)
-  ))) deny();
-  const options = command.options;
-  if (!options || typeof options !== 'object' || Array.isArray(options)) deny();
-  if (!exactKeys(options, ['cwd', 'encoding', 'env', 'shell', 'windowsHide'])) deny();
-  if (options.cwd !== context.repoRoot || options.encoding !== 'utf8'
-      || options.windowsHide !== true || options.shell !== false) deny();
-  if (!options.env || typeof options.env !== 'object' || Array.isArray(options.env)) deny();
-  const allowedEnvironmentKeys = new Set(['PATH', 'PATHEXT', 'SystemRoot', 'WINDIR']);
-  if (Object.keys(options.env).some(key => !allowedEnvironmentKeys.has(key))) deny();
-  if (Object.values(options.env).some(value => typeof value !== 'string')) deny();
-  const forbiddenValues = Array.isArray(context.forbiddenValues) ? context.forbiddenValues : [];
-  if (forbiddenValues.some(secret => (
-    typeof secret === 'string' && secret.length > 0
-      && (command.args.some(arg => arg.includes(secret))
-        || Object.values(options.env).some(value => value.includes(secret)))
-  ))) deny();
-  return true;
-}
-
-function exactKeys(value, keys) {
-  return sameArray(Object.keys(value).sort(), [...keys].sort());
-}
-
-function sameArray(left, right) {
-  return left.length === right.length && left.every((value, index) => value === right[index]);
+function exactProhibitedCategory(error) {
+  return error && error.category === 'SYSTEM_METADATA_COMMAND_PROHIBITED';
 }

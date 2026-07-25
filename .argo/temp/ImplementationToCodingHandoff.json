@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T13:25:00+08:00",
+  "generatedAt": "2026-07-25T13:32:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -120,8 +120,8 @@
       "name": "Production dependency direction",
       "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Inspect every production Graph RAG module and dynamically record the sole systemMetadataCommandAdapter capability boundary.",
-      "observationPoint": "Only four fixed metadata commands are allowed; shell/flags/path/executable/sidecar/network/secret bypass fixtures fail while tests, Python, and Neo4j plugin dependencies remain prohibited.",
+      "controlPoint": "Call the production systemMetadataCommandAdapter through its callback-scoped test composition; no guard-owned command validator is permitted.",
+      "observationPoint": "Four zero-argument safe capabilities execute exact closure-bound templates; every extra-argument or mutated request fails SYSTEM_METADATA_COMMAND_PROHIBITED with executor calls=0 while Python and other dependency prohibitions remain.",
       "expectedStatus": "passed"
     },
     {
@@ -230,7 +230,7 @@
     {
       "path": ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js",
       "failureSignal": "SYSTEM_METADATA_COMMAND_PROHIBITED",
-      "nextAction": "Own the sole Node child_process import and expose four zero-argument metadata capabilities backed only by fixed git check-ignore, git ls-files, whoami, and icacls command templates."
+      "nextAction": "Own child_process, the sole private invocation validator, and the approved executor; expose a no-injection production factory plus a callback-scoped test composition that drives the same validator without returning bypass capabilities."
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
@@ -440,8 +440,10 @@
           "Load approved non-sensitive profile and Neo4j URL/username only from direct process variables or exact repository-relative .argo/.env.",
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
           "Implement resolveApprovedLiveConfiguration({ repositoryRoot }) with its sole production source adapter created internally; reject every caller-supplied source adapter, cloned adapter, or self-issued isIssuedTrace claim as SOURCE_ADAPTER_UNTRUSTED.",
-          "Implement createSystemMetadataCommandAdapter({ repositoryRoot, executeMetadataCommand }) as the sole child_process owner. Expose only isSecretFileIgnored(), isSecretFileTracked(), readCurrentIdentity(), and readSecretFileAcl(); production composition creates it internally and injects those capabilities into the resolver.",
-          "Use spawnSync with shell false and structural argv for exactly git check-ignore --quiet -- .argo/.env, git ls-files --error-unmatch -- .argo/.env, whoami, and icacls of the exact canonical .argo/.env path. Reject command/flag/path/executable/environment/stdin variation as SYSTEM_METADATA_COMMAND_PROHIBITED.",
+          "Implement createSystemMetadataCommandAdapter({ repositoryRoot }) as the sole child_process owner. Close over the exact canonical .argo/.env path and approved executor; expose only zero-argument isSecretFileIgnored(), isSecretFileTracked(), readCurrentIdentity(), and readSecretFileAcl() capabilities.",
+          "Place one private invocation validator immediately before the private executor so every production and test-composed request traverses it. Reject extra factory properties and every capability argument before request construction or execution.",
+          "Implement withSystemMetadataCommandTestComposition({ repositoryRoot, executeMetadataCommand, mutateInvocation, forbiddenValues }, callback) only as a module-owned callback root. It may mutate an internally built request before the same production validator, but returns only the adapter to the callback and never exposes validator, executor, request builder, or policy-bypass capability.",
+          "Use spawnSync with shell false and structural argv for exactly git check-ignore --quiet -- .argo/.env, git ls-files --error-unmatch -- .argo/.env, whoami, and icacls of the closure-bound exact canonical .argo/.env path. Reject command concatenation, dynamic argv, flag/path/executable/environment/stdin variation as SYSTEM_METADATA_COMMAND_PROHIBITED.",
           "Provide only a sanitized PATH/PATHEXT/SystemRoot/WINDIR environment assembled before secret resolution. Never place configuration or secret values in executable, argv, stdin, environment increments, stdout evidence, stderr, or logs; parse stdout only into ignored/tracked booleans, current identity, and ACL metadata.",
           "Implement withApprovedLiveConfigurationTestComposition({ sourceBehavior, adapters, observeTrace }, callback) as the only frozen-test composition root. It wraps raw operation methods, privately registers adapter/capability identity, and passes only a resolver closure to the callback.",
           "Issue frozen { value, trace } process reads and frozen { key, value, trace } file records inside that composition. Fixtures provide operation methods, never traces, trust verdicts, or provenance categories.",
@@ -454,7 +456,7 @@
           "Reject missing/blank, root/alternate/tracked files, CLI/literal/default/fallback/alias/indirect sources, and legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases.",
           "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
         ],
-        "completionSignal": "Approved fixtures pass with complete normalized configuration and private trust validation; the recording metadata adapter emits exactly four allowed templates; all shell/extra-flag/path-injection/sidecar/arbitrary/network/secret-bearing command fixtures fail; provenance and unsafe source fixtures fail exactly before side effects; .argo/.env example/git/ACL guards pass."
+        "completionSignal": "Approved configuration fixtures pass; the production-owned metadata policy emits four exact safe templates; direct executor injection, capability arguments, shell/dynamic/concatenated argv/flags/path/sidecar/arbitrary/network/secret-bearing mutations fail SYSTEM_METADATA_COMMAND_PROHIBITED with zero executor calls; provenance and unsafe source fixtures fail before side effects."
       },
       {
         "taskId": "W2-C9",
@@ -545,7 +547,7 @@
     "Live network and real credentials remain unavailable to default CI. Both live entrypoints stay failed until controlled execution supplies both secrets through approved direct process or preflighted .argo/.env sources.",
     "Human-reported metadata-only preflight now passes after ACL tightening to Administrator/Administrators/SYSTEM. No value was read or recorded; .argo/.env remains ignored, untracked, absent from HEAD, and excluded from every commit.",
     "Before Coding implements liveEmbeddingProviderConfig.js, direct execution of the frozen source matrix honestly fails with LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING. Critical design guards verify the matrix is wired to that future production export and execute exact fixture outcomes once it exists.",
-    "This revision narrows the frozen dependency-direction guard from a blanket child_process ban to one fixed system-metadata command adapter and adds command-bypass fixtures. Coding may resume C8-C10 only after explicit human re-approval of this handoff.",
+    "This revision removes the guard-owned command validator and requires every safe/bypass fixture to traverse the future production adapter's private policy via a callback-scoped test composition. Coding may resume C8-C10 only after explicit human re-approval of this handoff.",
     "ExplicitAcceptanceTestcase-TS-08 remains mounted and frozen out-of-scope evidence. The TS-09 physical path remains frozen for backward protection but no TS-09 element, testcase, relationship, Coding target, task, or completion authorization is included.",
     "The original six scoped entrypoints and seven critical guards remain a mandatory C1-C6 checkpoint. Expanded completion adds two live entrypoints and three critical guards without changing runner-owned global delivery semantics."
   ]
