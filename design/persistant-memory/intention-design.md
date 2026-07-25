@@ -130,3 +130,38 @@
 - `argo.validateSystemArchitecture`: passed.
 - New physical entrypoints are downstream Implementation Design/Coding targets, not fabricated current pass evidence.
 - Business open questions and adequacy blockers: none.
+
+## 2026-07-25 — Approved Local Secret File Boundary
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: security owners, runtime owners, ICT architects, and requirements managers need the permitted secret origins, conflict behavior, local-file protections, and zero-leakage release condition to be explicit and decidable.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- View binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because the existing production runtime realizes the revised credential Constraint; membership and relationships are unchanged.
+- Human approval: the user explicitly selected and approved `allow_secret_file`, approved modifying `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`, and directed emission of the revised globally approved handoff.
+- Intent Design did not read, output, migrate, copy, or create any secret value or `.argo/.env`.
+
+### Revised secret boundary
+
+- Approved secret keys are exactly `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD`.
+- Approved sources are direct process environment variables or the unique repository-relative `.argo/.env` only.
+- Process environment is higher precedence. If both sources define the same key with different values, startup fails closed; if values agree, the process value is used. No implicit, literal, generated, logical, nullish, ternary, command-line, root-`.env`, alternate-file, or alias fallback is authorized.
+- `.argo/.env` is only for controlled local or protected CI execution. It must remain ignored and untracked, resolve to the exact canonical path, be a regular non-reparse file, reject duplicate keys, and pass a Windows ACL preflight that denies broad-principal read access while permitting the execution identity to read.
+- `QWEN_KEY` never enters Cypher. `ARGO_NEO4J_DATABASE_PASSWORD` is consumed only by the Neo4j driver authentication connection layer and never as query text or a query parameter.
+- Neither secret may enter git, stdout/stderr, errors, logs, graph evidence, failure records, snapshots, or artifacts. Unsafe or unverifiable provenance fails before provider, database, or index side effects; cleanup proves zero persistence and zero secret artifacts.
+- A committed `.env.example` or `.argo/.env.example` may list key names with empty placeholders and non-secret instructions, but never actual values.
+
+### Coverage and downstream contract
+
+- Coverage remains same-element: `grag-credential-boundary` functional point `functionalPoint.TS-07` → `ExplicitAcceptanceTestcase-TS-07`; revised `functionalPoint.TS-07-provider-secret-isolation` → revised `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+- TS-06 Provider E2E, its mounted path, provider/model/version/dimensions, controlled Neo4j success evidence, and zero-write failure matrix are unchanged.
+- Existing relationships `grag-rel-credentials-runtime`, `grag-rel-runtime-native`, `grag-rel-embedding-native`, and `grag-rel-native-canonical` remain sufficient; no relationship mutation is required.
+- Downstream Neo4j configuration names are `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`; legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` aliases are not authorized by this handoff.
+- Implementation Design must revise provenance fixtures and guards for both approved secrets and both approved sources, including agreement/conflict, missing/blank, alternate/tracked/root file, path traversal, reparse, broad ACL, CLI, literal/default/fallback, alias/indirect, duplicate-key, unknown-secret, redaction, complete value-channel, and zero-persistence cases.
+- Parallel Coding files, `.argo/.env`, example-file work, and runner-owned `deliveryStatus` residuals are outside this Intent Design commit.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for one Constraint update and one Requirements Realization View description update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
+- `argo.validateSystemArchitecture`: passed.
+- Acceptance adequacy blockers: none. Runtime verification remains downstream work and must not read real secret values in design tests.
