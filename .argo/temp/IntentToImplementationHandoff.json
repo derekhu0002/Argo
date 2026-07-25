@@ -1,32 +1,28 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T23:29:00+08:00",
+  "generatedAt": "2026-07-25T16:27:00.000Z",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Repaired W6 structural closure and coherent-result handoff. Implement same-version endpoint closure, complete non-cascading View closure, single ordered first-inclusion provenance, and a DT-00 coherent-version regression gate before W6 can be accepted.",
+  "summary": "W7 Phase 1 business acceptance handoff: prove key seed recall, closure correctness, unrelated-query safety, and recorded precision through the approved business benchmark before allowing overall delivery.",
   "intentElementIds": [
-    "grag-coherent-context",
-    "grag-endpoint-closure",
-    "grag-view-closure",
-    "grag-provenance"
+    "grag-quality-gate",
+    "grag-seven-wave-delivery"
   ],
   "relationshipIds": [
-    "grag-rel-purpose-endpoints",
-    "grag-rel-endpoints-views",
-    "grag-rel-views-provenance",
-    "grag-rel-provenance-coherent",
-    "grag-rel-w6-coherent-context"
+    "grag-rel-provenance-quality",
+    "grag-rel-quality-capacity",
+    "grag-rel-w6-w7",
+    "grag-rel-w7-quality"
   ],
   "openQuestions": [],
   "notes": [
-    "Selected viewpoint: Application Usage Viewpoint. Concern: returned Graph RAG content must be structurally complete, version-traceable, and explainable to consuming Agents. Purpose: audit repair, deciding, and intent-to-implementation handoff preparation. The touched view grag-integrity-explainability remains an Application Usage Viewpoint instance because it shows how query-service application behavior turns a W5-selected range into coherent consumer-readable context with traceable version evidence.",
-    "Human feedback repair: the prior W6 ExplicitAcceptanceTestcase boundaries were not approved. This handoff supersedes the earlier one by strengthening DT-13, DT-14, and DT-15 physical assertions and adding a DT-00 coherent-result regression gate for the current canonical-version failure. The handoff schema does not permit an approvedByHuman field, so approval for the repaired boundaries is recorded in schema-compliant notes and acceptanceApproval.* graph attributes.",
-    "Coverage matrix: grag-coherent-context functionalPoint.DT-00-coherent-result-version-regression -> ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression. Control point: submit legacy and semantic-query tasks against the same canonical version, including the known missing-canonicalVersion regression fixture. Observation point: semantic evidence identifies the governing canonical version; DT00_CANONICAL_VERSION_MISSING blocks W6 coherent-result delivery.",
-    "Coverage matrix: grag-endpoint-closure functionalPoint.DT-13-endpoint-closure -> ExplicitAcceptanceTestcase-DT-13. Control point: trigger a relationship seed with textually unmatched endpoints, dangling endpoint references, and cross-version endpoint evidence. Observation point: every returned relationship includes both same-version canonical endpoint Elements, and invalid/missing/deleted/cross-version endpoints produce explicit structural errors rather than partial relationship output.",
-    "Coverage matrix: grag-view-closure functionalPoint.DT-14-complete-view-closure -> ExplicitAcceptanceTestcase-DT-14. Control point: query a View that shares members with overlapping Views and includes in-View relationships. Observation point: the matched View includes complete metadata, viewpoint binding, parent viewpoint when present, member ids, relationship ids, member objects, relationship objects, and endpoints; overlapping Views do not cascade unless independently matched or explicitly requested.",
-    "Coverage matrix: grag-provenance functionalPoint.DT-15-first-inclusion-provenance -> ExplicitAcceptanceTestcase-DT-15. Control point: run fixtures where the same object can enter through semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure. Observation point: every object has exactly one ordered firstInclusionReason; supplementary reasons never overwrite it; declared purpose, selected policy id, policy parameters/anchors, canonical graph version, semantic index/content version, and alignment/index-state evidence are present.",
-    "Dependency context: W6 starts after W5 purpose closure. grag-purpose-closure carries deliveryStatus=delivered and W5 delivery evidence; W6 elements remain not_delivered until downstream implementation passes their mounted DT-00-W6, DT-13, DT-14, and DT-15 entrypoints. No deliveryStatus attribute was created, changed, or inferred by Intent Design.",
-    "Release gate: semantic results expose governing canonical version evidence; relations include both same-version endpoints or structural errors; matched Views include complete metadata/members/relationships/endpoints and do not cascade to overlapping Views; every returned object has exactly one stable first-inclusion reason plus non-overwriting supplementary reasons and complete policy/index/version evidence.",
-    "Scope boundary: W6 completes and explains the W5-selected result range. It does not change W4 seed discovery, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, DT-18/DT-19 evidence, or capacity governance.",
-    "Downstream implementation should preserve same-element entrypoints already mounted in the intent graph: tests/explicit/entries/runCoherentIntentReading.js, tests/explicit/entries/runRelationshipEndpointClosure.js, tests/explicit/entries/runCompleteViewClosure.js, and tests/explicit/entries/runFirstInclusionProvenance.js."
+    "Global human approval evidence: the orchestrating W7 request approved Phase 1 business acceptance, release gates, acceptance mapping DT-00/DT-18/TS-08, handoff production, and the IntentDesign stage commit.",
+    "Coverage matrix: grag-quality-gate functionalPoint.DT-18-phase1-business-quality-gate -> ExplicitAcceptanceTestcase-DT-18; grag-seven-wave-delivery functionalPoint.TS-08 -> ExplicitAcceptanceTestcase-TS-08.",
+    "DT-18 boundary: key seed recall 100%, closure correctness 100%, unrelated queries zero forced hits, and precision recorded as evidence rather than as a lower-priority substitute for recall.",
+    "TS-08 boundary: W7 and whole delivery are blocked until W2-W6 are accepted and the W7 DT-18 business benchmark passes.",
+    "DT-00 mapping is preserved as goal/coherent-reading context through grag-goal and the existing coherent-result evidence; grag-capability remains capability context and is not a downstream implementation target for this handoff.",
+    "Selected viewpoints: Application Usage Viewpoint for business-observable query/retrieval acceptance context; Implementation and Migration Viewpoint for W7 sequencing, final delivery gate, and quality/capacity acceptance views.",
+    "View bindings affected: grag-quality-capacity and grag-seven-wave-gates remain Implementation and Migration Viewpoint instances with updated W7 business benchmark rationale.",
+    "No deliveryStatus attribute was invented; existing runner-owned deliveryStatus values were preserved as read-only state.",
+    "No implementation artifacts, test code, scripts, configuration, or contracts were modified in this IntentDesign stage."
   ]
 }

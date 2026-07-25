@@ -320,6 +320,34 @@
 - Checklist self-audit: A1-A5 satisfied with no View mutation required; B1-B3 satisfied because no ExplicitAcceptanceTestcase was added or modified and both mounted testcase mappings are same-element; C1-C2 scoped to the single focus element with delivered upstream context and explicit exclusion of closure; D1-D8 satisfied through exact element mapping, same-element coverage, graph attributes, and schema-compliant global approval notes; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires the Intent Design stage commit.
 - Open business questions and adequacy blockers: none.
 
+## 2026-07-26 — W7 Phase 1 Business Acceptance Gate
+
+- Selected viewpoints: Application Usage Viewpoint for business-observable retrieval acceptance context, and Implementation and Migration Viewpoint for W7 sequencing, final delivery gating, and quality/capacity acceptance.
+- Stakeholder concern: acceptors, requirements owners, implementation designers, and downstream orchestrators need business benchmark evidence to prove recall and closure before whole Graph RAG delivery is allowed.
+- Modeling purpose: deciding and intent-to-implementation handoff preparation.
+- Affected view bindings: `grag-quality-capacity` remains an Implementation and Migration Viewpoint instance because it defines W7 business release evidence and keeps DT-19 capacity choices out of Phase 1 correctness; `grag-seven-wave-gates` remains an Implementation and Migration Viewpoint instance because it traces prerequisite waves and W7 quality acceptance to final delivery blocking semantics.
+- Human approval evidence: the orchestrating W7 request explicitly approved Phase 1 business acceptance, the release gates of key seed recall 100%, closure correctness 100%, unrelated-query zero forced hits, recorded precision, acceptance mapping DT-00/DT-18/TS-08, handoff production, and an IntentDesign stage commit. The handoff schema does not permit an `approvedByHuman` field, so global approval is recorded in handoff notes and schema-compliant `acceptanceApproval.*` element attributes.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved and not fabricated by Intent Design.
+
+### Coverage matrix
+
+- `grag-quality-gate` — `functionalPoint.DT-18-phase1-business-quality-gate` -> `ExplicitAcceptanceTestcase-DT-18`.
+- `grag-seven-wave-delivery` — `functionalPoint.TS-08` -> `ExplicitAcceptanceTestcase-TS-08`.
+
+### Acceptance boundaries
+
+- DT-18 requires the approved five-purpose business benchmark to prove key seed recall is exactly 100%, expected closure correctness is exactly 100%, forbidden unrelated queries produce zero forced hits, and precision is recorded as evidence for later governance rather than used as a release substitute for recall.
+- TS-08 requires W7 and whole delivery to remain blocked until W2-W6 are accepted and the W7 DT-18 business benchmark passes.
+- DT-00 remains the coherent canonical-reading goal context through `grag-goal` and existing coherent-result evidence. `grag-capability` remains capability context for W7, not a separate downstream implementation target in this handoff.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for five element updates and two View description updates; element count 47, relationship count 59, view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read updated `grag-quality-gate` and `grag-seven-wave-delivery` context with implementation-design profile.
+- Open business questions and adequacy blockers: none.
+
 ## 2026-07-25 — W5 Deterministic Five-Purpose Closure
 
 - Selected viewpoint: Application Usage Viewpoint.

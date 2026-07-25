@@ -142,7 +142,7 @@
       "id": "grag-goal",
       "name": "Scalable Coherent Intent Reading",
       "type": "Goal",
-      "description": "DT-00 accepted goal: preserve complete canonical reading while adding explainable Graph RAG retrieval that remains relevant, coherent, version-consistent, and traceable.",
+      "description": "DT-00 accepted goal: preserve complete canonical reading while adding explainable Graph RAG retrieval that remains relevant, coherent, version-consistent, traceable, and releasable only after W7 proves Phase 1 recall and closure through business benchmark evidence.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -151,6 +151,10 @@
         {
           "name": "scopeBoundary",
           "value": "Phase 1 excludes token budgets, pagination, caps, and truncation or continuation decisions."
+        },
+        {
+          "name": "phase1Acceptance.W7",
+          "value": "DT-00 coherent reading remains the outcome anchor; DT-18 proves critical seed recall and closure quality; TS-08 prevents whole delivery before prerequisite waves and the W7 business benchmark pass."
         },
         {
           "name": "deliveryStatus",
@@ -171,11 +175,15 @@
       "id": "grag-capability",
       "name": "Explainable Graph RAG Intent Retrieval",
       "type": "Capability",
-      "description": "Strategy capability that adds semantic seed retrieval and deterministic graph closure without removing exhaustive canonical reading.",
+      "description": "Strategy capability that adds semantic seed retrieval and deterministic graph closure without removing exhaustive canonical reading; W7 business acceptance proves the capability can satisfy Phase 1 recall and closure gates before whole delivery.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-00|accepted|capability realization"
+        },
+        {
+          "name": "phase1Acceptance.W7",
+          "value": "Capability context for grag-quality-gate: benchmark evidence must show key seed recall 100%, closure correctness 100%, unrelated-query zero forced hits, and recorded precision before overall delivery is allowed."
         }
       ]
     },
@@ -386,6 +394,14 @@
         {
           "name": "acceptanceApproval.DT-00-W6",
           "value": "approvedByHuman=true|2026-07-25|review repair required DT-00 or equivalent coherent-result regression gate because current DT-00 fails on missing canonical-version evidence"
+        },
+        {
+          "name": "deliveryEvidence.W6",
+          "value": "2026-07-26|ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression|runCoherentIntentReading.js|exitCode=0|coherent canonical-version regression and DT-00 outcome passed"
+        },
+        {
+          "name": "waveAcceptance.W6",
+          "value": "accepted|coherent versioned intent context outcome passed"
         },
         {
           "name": "deliveryStatus",
@@ -880,6 +896,14 @@
           "value": "Endpoint closure is structural completion after W5 purpose range selection. It adds required same-version source/target Elements for returned relationships and reports invalid endpoints; it does not add unrelated neighboring relationships, extra Views, or similarity-driven expansion."
         },
         {
+          "name": "deliveryEvidence.W6",
+          "value": "2026-07-26|ExplicitAcceptanceTestcase-DT-13|runRelationshipEndpointClosure.js|exitCode=0|same-version endpoints and dangling/cross-version structural errors passed"
+        },
+        {
+          "name": "waveAcceptance.W6",
+          "value": "accepted|relationship endpoint integrity passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -917,6 +941,14 @@
           "value": "View closure completes only the selected View objects. It does not expand to all Views sharing a member, all diagrams under the same viewpoint, or any View that is merely reachable through a shared Element or Relationship."
         },
         {
+          "name": "deliveryEvidence.W6",
+          "value": "2026-07-26|ExplicitAcceptanceTestcase-DT-14|runCompleteViewClosure.js|exitCode=0|complete selected View metadata, members, relationships, endpoints, and overlapping-View exclusion passed"
+        },
+        {
+          "name": "waveAcceptance.W6",
+          "value": "accepted|complete non-cascading selected-View closure passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -952,6 +984,14 @@
         {
           "name": "scopeBoundary.W6",
           "value": "Provenance explains inclusion ordering for returned objects and carries policy/index/version evidence. It does not authorize unbounded context expansion, multiple competing first reasons, or replacing canonical version evidence with narrative rationale."
+        },
+        {
+          "name": "deliveryEvidence.W6",
+          "value": "2026-07-26|ExplicitAcceptanceTestcase-DT-15|runFirstInclusionProvenance.js|exitCode=0|one ordered first reason, supplementary non-overwrite, policy parameters/anchors, canonical/content/index versions, and alignment evidence passed"
+        },
+        {
+          "name": "waveAcceptance.W6",
+          "value": "accepted|first-inclusion provenance and complete version evidence passed"
         },
         {
           "name": "deliveryStatus",
@@ -1123,7 +1163,7 @@
       "id": "grag-quality-gate",
       "name": "Phase 1 Retrieval Quality Gate",
       "type": "Requirement",
-      "description": "DT-18 accepted gate: on an approved five-purpose benchmark, critical seed recall is 100%, unrelated queries have zero forced hits, closure correctness is 100%, and precision is recorded as a baseline.",
+      "description": "W7 Phase 1 business acceptance gate: on the approved five-purpose benchmark, business evidence must prove key seed recall is 100%, closure correctness is 100%, unrelated queries have zero forced hits, and precision is recorded before overall delivery can be allowed.",
       "attributes": [
         {
           "name": "decisionTrace.DT-18",
@@ -1138,6 +1178,22 @@
           "value": "rejected|precision must not be prioritized over critical business-fact recall"
         },
         {
+          "name": "functionalPoint.DT-18-phase1-business-quality-gate",
+          "value": "{\"description\":\"Prove Phase 1 retrieval quality with an approved business benchmark before whole delivery is allowed.\",\"businessOutcome\":\"Acceptors can release the Graph RAG retrieval capability only when mandatory business facts are recalled, deterministic closure is correct, unrelated queries do not force irrelevant hits, and precision evidence is available for later capacity decisions.\",\"observableBoundary\":\"For every approved benchmark query across the five purposes, key seed recall is exactly 100%, expected closure correctness is exactly 100%, forbidden unrelated queries produce zero forced hits, and precision is recorded as evidence rather than used as a lower-priority release substitute.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-18\"}"
+        },
+        {
+          "name": "releaseGate.W7",
+          "value": "Whole delivery is blocked until DT-18 passes: key seed recall 100%; closure correctness 100%; unrelated queries zero forced hits; precision recorded."
+        },
+        {
+          "name": "acceptanceMapping.W7",
+          "value": "DT-18 -> grag-quality-gate; DT-00 -> grag-goal/coherent reading context; TS-08 -> grag-seven-wave-delivery prerequisite order."
+        },
+        {
+          "name": "acceptanceApproval.DT-18",
+          "value": "approvedByHuman=true|2026-07-26|orchestrating W7 Phase 1 business acceptance request approved key seed recall 100%, closure correctness 100%, unrelated-query zero forced hits, and recorded precision boundaries"
+        },
+        {
           "name": "deliveryStatus",
           "value": "not_delivered"
         }
@@ -1145,9 +1201,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-18",
-          "description": "Acceptor perspective control point: run every approved benchmark query for all five purposes. Observation point: aggregate mandatory seeds, forbidden forced hits, expected closure, and precision evidence.",
+          "description": "Acceptor perspective control point: run every approved benchmark query for all five purposes before overall delivery. Observation point: aggregate mandatory key seed recall, forbidden unrelated-query forced hits, expected closure correctness, and precision evidence.",
           "type": "Acceptance Test",
-          "Input": "Human-approved five-purpose benchmark with mandatory and forbidden seeds and expected closures.",
+          "Input": "Human-approved five-purpose benchmark with mandatory key seeds, forbidden unrelated-query seeds, expected closures, and precision-recording requirements.",
           "acceptanceCriteria": "tests/explicit/entries/runRetrievalQualityBenchmark.js"
         }
       ]
@@ -1592,7 +1648,7 @@
       "id": "grag-wp-6",
       "name": "W6 Integrity Provenance and Coherent Result",
       "type": "Work Package",
-      "description": "W6 delivers structural closure and explainable coherent Graph RAG results only when endpoint closure, complete non-cascading View closure, single first-inclusion provenance, and DT-00 coherent-version regression evidence all pass. The combined result realizes a coherent versioned intent context for consumers.",
+      "description": "W6 accepted: same-version relationship endpoint closure, complete non-cascading selected-View closure, exactly one ordered first-inclusion reason with non-overwriting supplementary evidence, and coherent canonical/content/index/alignment version evidence passed. The combined result realizes coherent versioned intent context without changing W7 quality or capacity scope.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -1613,6 +1669,14 @@
         {
           "name": "acceptanceApproval.W6",
           "value": "approvedByHuman=true|2026-07-25|review repair supersedes prior unapproved W6 boundaries; repaired scope includes stronger DT-13/DT-14/DT-15 assertions and DT-00 coherent-result regression gate"
+        },
+        {
+          "name": "deliveryEvidence.W6",
+          "value": "2026-07-26|DT-00-W6, DT-13, DT-14, DT-15 explicit entrypoints, four critical intent-query guards, and implementation-to-coding handoff validation|all exitCode=0|full runner 35/38 with both live opt-ins"
+        },
+        {
+          "name": "waveAcceptance.W6",
+          "value": "accepted|2026-07-26|integrity, provenance, and coherent versioned result passed; remaining failures are W7 DT-18, DT-19, and TS-08 only"
         }
       ]
     },
@@ -1620,11 +1684,19 @@
       "id": "grag-wp-7",
       "name": "W7 Phase-1 Quality and DT-19 Evidence",
       "type": "Work Package",
-      "description": "Apply quality gate and produce DT-19 evidence without capacity decisions.",
+      "description": "Run W7 Phase 1 business acceptance: prove recall and closure with the approved business benchmark, record precision and DT-19 evidence, and avoid making capacity decisions.",
       "attributes": [
         {
           "name": "affectedElements",
           "value": "grag-quality-gate; grag-capacity-residual"
+        },
+        {
+          "name": "releaseGate.W7",
+          "value": "W7 owns DT-18 Phase 1 business benchmark proof and DT-19 evidence production; it does not authorize token budgets, pagination, caps, truncation, or continuation policy."
+        },
+        {
+          "name": "acceptanceMapping.W7",
+          "value": "DT-18 is implemented through grag-quality-gate; TS-08 through grag-seven-wave-delivery; DT-00 remains the coherent canonical reading goal context."
         }
       ]
     },
@@ -1632,11 +1704,23 @@
       "id": "grag-seven-wave-delivery",
       "name": "Seven-Wave Graph RAG Delivery Gate",
       "type": "Requirement",
-      "description": "Seven gated waves add technology/embedding qualification before exact-threshold index delivery; W7 informs but does not decide DT-19.",
+      "description": "Seven gated waves add technology/embedding qualification before exact-threshold index delivery; W7 Phase 1 business benchmark evidence is the final prerequisite before whole delivery, while DT-19 remains informed but undecided.",
       "attributes": [
         {
           "name": "functionalPoint.TS-08",
-          "value": "{\"description\":\"Block out-of-order delivery.\",\"businessOutcome\":\"Respect prerequisite evidence.\",\"observableBoundary\":\"W7 cannot pass before W2-W6.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-08\"}"
+          "value": "{\"description\":\"Block out-of-order or premature whole delivery.\",\"businessOutcome\":\"Whole delivery respects prerequisite wave evidence and the final W7 business quality benchmark.\",\"observableBoundary\":\"W7 cannot pass before W2-W6 are accepted, and overall delivery cannot be allowed until the W7 DT-18 benchmark proves 100% key seed recall, 100% closure correctness, zero forced hits for unrelated queries, and recorded precision.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-08\"}"
+        },
+        {
+          "name": "releaseGate.W7",
+          "value": "TS-08 enforces order: W2-W6 accepted first; W7 DT-18 business benchmark passes next; only then may overall delivery proceed."
+        },
+        {
+          "name": "acceptanceMapping.W7",
+          "value": "TS-08 -> grag-seven-wave-delivery; DT-18 -> grag-quality-gate; DT-00 -> grag-goal/coherent reading context."
+        },
+        {
+          "name": "acceptanceApproval.TS-08",
+          "value": "approvedByHuman=true|2026-07-26|orchestrating W7 request approved using business benchmark proof before whole delivery is allowed"
         },
         {
           "name": "deliveryStatus",
@@ -1646,9 +1730,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-TS-08",
-          "description": "Control: attempt downstream work before prerequisites. Observe: gate blocks it and W7 cannot pass before W2-W6.",
+          "description": "Control point: attempt W7 or overall delivery before prerequisite wave evidence or before the W7 business quality benchmark passes. Observation point: the delivery gate blocks premature delivery and permits progression only after W2-W6 acceptance and DT-18 benchmark proof.",
           "type": "Acceptance Test",
-          "Input": "Incomplete prerequisite evidence.",
+          "Input": "Incomplete prerequisite evidence, missing or failing W7 DT-18 benchmark evidence, and a passing ordered-delivery control case.",
           "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js"
         }
       ]
@@ -2919,7 +3003,7 @@
       "view_name": "Graph RAG Quality and Capacity Acceptance",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: phase-1 retrieval is accepted through approved business evidence while undecided capacity controls remain explicit; Purpose: deciding and handoff preparation; Scope: quality gate, observed precision and cardinality, coherent outcome, and deferred phase-2 capacity governance; Rationale: this view belongs under the acceptance-delivery anchor because it defines release evidence and the residual decision needed for later delivery.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: phase-1 retrieval is accepted only through approved business benchmark evidence while undecided capacity controls remain explicit; Purpose: deciding and handoff preparation; Scope: W7 quality gate, DT-00 coherent outcome context, observed precision and cardinality, and deferred phase-2 capacity governance; Rationale: this view belongs under the acceptance-delivery anchor because it defines the business release evidence proving recall and closure before whole delivery while keeping DT-19 capacity choices out of Phase 1 correctness.",
       "included_elements": [
         "grag-goal",
         "grag-query-service",
@@ -3071,7 +3155,7 @@
       "view_name": "Graph RAG Seven-Wave Gates",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: qualification and integrity gates constrain final delivery; Purpose: deciding and handoff preparation; Scope: delivery requirement, decisive waves, embedding qualification, and quality acceptance; Rationale: this view traces the revised sequence to the gates that block index and final quality delivery.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: prerequisite waves and W7 business benchmark evidence constrain whole delivery; Purpose: deciding and handoff preparation; Scope: delivery requirement, decisive prerequisite waves, embedding qualification, W7 quality acceptance, and final delivery blocking semantics; Rationale: this view traces the gated sequence to the requirements that block index and final quality delivery until W2-W6 evidence and the DT-18 business benchmark are present.",
       "included_elements": [
         "grag-seven-wave-delivery",
         "grag-wp-1",
