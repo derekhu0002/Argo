@@ -196,9 +196,22 @@
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
-    "testdescription": "Acceptor control point: complete a canonical mutation changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure. Observation point: verify qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
+    "testdescription": "Acceptor control point: call productionGraphRagRuntime.generateAffectedEmbeddings() for canonical mutations changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure. Observation point: verify runtime='nodejs', neo4jGenAiPluginRequired=false, qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
     "acceptanceCriteria": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
     "relatedIntentElementId": "grag-embedding-provider-adapter",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: TS09_NODE_ADAPTER_REQUIRED\n+ actual - expected\n\n+ undefined\n- 'nodejs'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runEmbeddingProviderAdapterLifecycle.js:12:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'nodejs',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: TS09_NODE_ADAPTER_REQUIRED\n+ actual - expected\n\n+ undefined\n- 'nodejs'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runEmbeddingProviderAdapterLifecycle.js:12:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'nodejs',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration",
+    "testdescription": "Acceptor control point: call productionGraphRagRuntime.generateAffectedEmbeddings() with affected Element, ArchitectureRelationship, and View records after canonical mutation success. Observation point: verify affected-record extraction, batching/error isolation, runtime='nodejs', provider adapter evidence, complete persistence metadata, and non-Aligned partial failure behavior.",
+    "acceptanceCriteria": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "relatedIntentElementId": "grag-embedding-generation",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",

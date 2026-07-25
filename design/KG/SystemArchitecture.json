@@ -1107,7 +1107,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1414,6 +1414,10 @@
         {
           "name": "acceptanceApproval.TS-09-EmbeddingGeneration",
           "value": "approvedByHuman=true|2026-07-25|human feedback: TS-09 generation/persistence path blocks W3 acceptance"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [

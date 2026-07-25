@@ -10,7 +10,7 @@
 6. The production Graph RAG path is Node.js plus the Neo4j JavaScript driver. Python runtimes, external Graph RAG frameworks, and the Neo4j GenAI Plugin are not required production dependencies.
 7. Neo4j and embedding-provider credentials enter only through external secure configuration. Missing credentials block production startup or query delivery; direct literals, logical/nullish/ternary fallbacks, and credential-tainted Cypher query/parameter transport are prohibited.
 8. Index delivery is denied until an explicit qualification names the embedding provider, model identity, model version, and dimensions. Missing fields and implicit model defaults are blocking errors.
-9. Mounted acceptance evidence does not itself authorize Coding scope. Only `codingTargets` and `taskExecutionPlan` in the approved handoff authorize implementation; frozen TS-08/TS-09 evidence remains out of scope for this slice.
+9. Mounted acceptance evidence does not itself authorize Coding scope. Only `codingTargets` and `taskExecutionPlan` in the approved handoff authorize implementation; TS-08 remains out of scope unless a later handoff explicitly includes it.
 10. Slice completion and global intent delivery are distinct. A handoff may accept its approved explicit entrypoints and guardrails while the full runner keeps a global intent element `not_delivered`; only committed mounted evidence, runner records, and runner-owned `deliveryStatus` may support that attribution.
 11. Live embedding delivery uses explicit opt-in Node.js HTTPS from `alibaba-cloud-model-studio-openai-compatible-cn-beijing` at `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification version `qualification-2026-07-25`, and explicitly supplied dimensions `1024`. Offline fakes cannot count as live evidence.
 12. The only secret keys are `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD`. Each may come only from its direct process environment variable or the unique repository-relative `.argo/.env`, with process precedence; differing dual sources fail closed and matching duplicates may use process.
@@ -18,7 +18,7 @@
 14. Live HTTP proof is owned by the frozen test transport, not by a production boolean or evidence label. The Harness observes the actual request target/body/count and raw response, then correlates them with gate output and persisted evidence.
 15. Before reading `.argo/.env`, configuration must prove the exact path is ignored, untracked, regular, non-reparse, and protected by verifiable Windows ACLs without broad-principal read access. Root/alternate/tracked files, CLI/literal/default/fallback sources, duplicate keys, unknown secret keys, and unsafe or unverifiable state block before fetch, Neo4j connection, or writes.
 16. Neither approved secret may enter logs, errors, Cypher, graph state, failure records, snapshots, or artifacts. `QWEN_KEY` never enters Neo4j; `ARGO_NEO4J_DATABASE_PASSWORD` is consumed only by the driver authentication layer.
-17. W3 index delivery is not complete until threshold-all seed correctness passes before ANN comparison, every successful canonical mutation advances affected-record index evidence or leaves the index non-Aligned, and unaligned pure semantic queries are rejected while canonical reads remain available.
+17. W3 index delivery is not complete until threshold-all seed correctness passes before ANN comparison, every successful canonical mutation advances affected-record index evidence or leaves the index non-Aligned, unaligned pure semantic queries are rejected while canonical reads remain available, and TS-09 proves the Node adapter generation/persistence path through `generateAffectedEmbeddings()`.
 
 ## Stable architecture elements
 
@@ -50,5 +50,7 @@
 | Production Graph RAG Boundary / semantic index evidence | `grag-semantic-index` | direct |
 | Production Graph RAG Boundary / all-mutation lifecycle | `grag-index-lifecycle` | direct |
 | Intent Architecture Query Boundary / alignment rejection | `grag-alignment-constraint` | direct |
+| Production Graph RAG Boundary / embedding provider adapter | `grag-embedding-provider-adapter` | direct |
+| Production Graph RAG Boundary / affected-record generation | `grag-embedding-generation` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.

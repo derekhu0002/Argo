@@ -30,6 +30,8 @@ for (const ownership of [
   'DT-05 uses the shared seed entrypoint',
   'DT-16 and DT-16-SemanticIndex share the mutation lifecycle entrypoint',
   'DT-17 freezes the unaligned-query boundary',
+  'TS-09 is a corrected W3 blocking gate',
+  'DT scoped passes are necessary evidence but not sufficient for W3 acceptance while TS-09 fails',
 ]) {
   assert(
     localContract.includes(ownership) || read('tests/ARCHITECTURE.md').includes(ownership),

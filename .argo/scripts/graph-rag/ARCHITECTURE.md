@@ -15,6 +15,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - W3 seed selection proves exact threshold-all correctness before ANN comparison: every qualifying Element, ArchitectureRelationship, and View peer at or above its channel threshold is returned, unrelated queries have zero forced hits, and ANN top-k is recorded only as performance evidence.
 - W3 index lifecycle extracts only records affected by successful canonical mutations, advances canonical/content/index version evidence for Element, ArchitectureRelationship, and View records, and leaves partial or failed persistence non-Aligned.
 - W3 alignment gating rejects pure semantic queries for Updating, Stale, Failed, partial, or unknown index state while preserving no-argument full snapshots and explicit canonical-anchor reads.
+- W3 TS-09 is a blocking gate: `productionGraphRagRuntime.generateAffectedEmbeddings()` must expose `runtime: "nodejs"`, `neo4jGenAiPluginRequired: false`, provider-adapter invocation, parameterized persistence evidence, complete Element/ArchitectureRelationship/View metadata, and non-Aligned partial failure behavior before W3 can be accepted.
 
 ## Public interface
 
@@ -83,12 +84,12 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Authentication redaction captures the raw exception—including message, stack, nested causes, and aggregate errors—before safe classification, then scans it together with the sanitized error, every injected logger event, stdout/stderr, auth/driver/query recordings, graph and persistence observations, and recursive artifacts. The probe leaves zero records and never persists its canary.
 - `.argo/.env.example` is the only committed example and contains empty placeholders/instructions; `.argo/.env` remains ignored and untracked.
 - Threshold-all seed selection depends on aligned semantic-index records and channel thresholds; ANN calls, if present, are benchmark-only and cannot remove above-threshold peers or force unrelated hits.
-- Index lifecycle depends on canonical mutation evidence, qualified embedding generation, and vector persistence. It must not mark Aligned until every affected record has complete identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence.
+- Index lifecycle depends on canonical mutation evidence, qualified embedding generation, and vector persistence. It must not mark Aligned until every affected record has complete identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence. Outcome-level TS-09 evidence must identify the Node adapter path and cannot be inferred from DT-05/DT-16/DT-17 scoped passes alone.
 - Alignment gating depends inward on lifecycle state and canonical version evidence before invoking semantic retrieval. Complete canonical reads remain available without semantic fallback.
 
 ## Owned tests
 
-Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08/TS-09 adapter/lifecycle work from this handoff.
+Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08 while permitting corrected W3 handoffs to authorize TS-09 adapter/generation work.
 
 ## Completion attribution
 
@@ -97,4 +98,4 @@ Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protec
 - Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered`; scoped attribution uses committed mounted TS-07 evidence, runner failure records, and the handoff scope rather than uncommitted intent relationships.
 - A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.
 - C1-C6 remain a protected checkpoint. The expanded live-provider slice completes only when all eight scoped explicit entrypoints and ten frozen critical guards pass, the live result proves a real HTTP call and controlled Neo4j evidence, and failure/redaction matrices pass with zero baseline delivered regression.
-- W3 index lifecycle and exact-threshold baseline completion requires DT-05, DT-16, DT-16-SemanticIndex, and DT-17 to pass together with the W3 critical guards. TS-09 adapter evidence may support generation/persistence, but ANN top-k and live-provider evidence alone cannot claim Phase 1 correctness.
+- W3 index lifecycle and exact-threshold baseline completion requires DT-05, DT-16, DT-16-SemanticIndex, DT-17, TS-09-EmbeddingProviderAdapter, and TS-09-EmbeddingGeneration to pass together with the W3 critical guards. DT scoped passes are necessary evidence but not sufficient for W3 acceptance while TS-09 fails.

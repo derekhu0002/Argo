@@ -54,6 +54,10 @@ const entryRequirements = new Map([
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',
     'TS09_NODE_ADAPTER_REQUIRED',
+    'TS09_GENAI_PLUGIN_DEPENDENCY_PROHIBITED',
+    'TS09_AFFECTED_CHANNELS_INCOMPLETE',
+    'TS09_MODEL_EVIDENCE_INCOMPLETE',
+    'TS09_CYPHER_CREDENTIAL_EXPOSURE',
     'TS09_PARTIAL_PERSISTENCE_MUST_NOT_ALIGN',
   ]],
   ['tests/explicit/entries/runIndependentSemanticSeeds.js', [
@@ -78,7 +82,7 @@ const entryRequirements = new Map([
   ]],
 ]);
 
-// GIVEN every W2 and Canonical Authority explicit entrypoint
+// GIVEN every production Graph RAG explicit entrypoint protected by the handoff
 for (const [entryPath, requiredObservations] of entryRequirements) {
   const source = read(entryPath);
 

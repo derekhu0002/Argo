@@ -33,6 +33,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - DT-05 uses the shared seed entrypoint but includes explicit threshold-all assertions: all above-threshold peers are returned per channel, unrelated queries force no hits, fixed result limits are prohibited, and ANN top-k is performance-only evidence.
 - DT-16 and DT-16-SemanticIndex share the mutation lifecycle entrypoint. The entrypoint freezes the nine mutation classes, version advancement, deleted-object absence, non-Aligned partial persistence, and complete semantic-index evidence fields for Element, ArchitectureRelationship, and View records.
 - DT-17 freezes the unaligned-query boundary by requiring full canonical reads to remain available, pure semantic requests to fail with `SEMANTIC_INDEX_NOT_ALIGNED`, automatic full-snapshot fallback to be false, and explicit canonical-anchor reads to remain available.
+- TS-09 is a corrected W3 blocking gate. `runEmbeddingProviderAdapterLifecycle.js` freezes `generateAffectedEmbeddings()` outcome evidence for `runtime: "nodejs"`, no required Neo4j GenAI Plugin, affected Element/ArchitectureRelationship/View persistence, complete model/version evidence, no credential exposure, and non-Aligned partial persistence.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
 - DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
@@ -63,7 +64,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/runLiveEmbeddingProviderE2E.js`
 - `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`
 
-The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as out-of-scope runner evidence. It is not an explicit handoff entry because TS-09 is not mounted in the committed source intent graph.
+The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as the TS-09 explicit entrypoint. In corrected W3 handoffs it is in-scope acceptance evidence and a Coding target while remaining read-only during Coding/Repair.
 
 The following globally mounted entrypoints are physicalized for the runner and
 remain outside the compatible-query Coding targets:
@@ -88,6 +89,7 @@ The W3 Index Lifecycle and Exact-Threshold Baseline handoff owns these mounted e
 - `tests/explicit/entries/runIndependentSemanticSeeds.js` — `ExplicitAcceptanceTestcase-DT-05` threshold-all correctness before ANN comparison; the same physical script continues to protect DT-04 channel independence.
 - `tests/explicit/entries/runMutationIndexLifecycle.js` — `ExplicitAcceptanceTestcase-DT-16` and `ExplicitAcceptanceTestcase-DT-16-SemanticIndex` all-mutation lifecycle plus complete semantic-index evidence.
 - `tests/explicit/entries/runStaleSemanticQueryRejection.js` — `ExplicitAcceptanceTestcase-DT-17` unaligned pure semantic rejection with canonical-read continuity.
+- `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` — `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter` and `ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration` Node adapter generation/persistence proof. DT scoped passes do not complete W3 without this entrypoint passing.
 
 ### Critical non-explicit guardrails
 
@@ -106,8 +108,8 @@ The W3 Index Lifecycle and Exact-Threshold Baseline handoff owns these mounted e
 - `tests/architecture/production-graph-rag/live-provider-opt-in.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 - `tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 
-The coding-scope authorization guard freezes mounted TS-08 and recorded TS-09 evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope. The scoped-delivery attribution guard uses only committed mounted TS-07 evidence, handoff scope, runner failure records, and runner-owned delivery status.
+The coding-scope authorization guard freezes mounted TS-08 evidence while prohibiting seven-wave delivery targets from the handoff's authorized Coding scope. Corrected W3 handoffs may authorize TS-09 adapter/generation work through `codingTargets` and `taskExecutionPlan`.
 
-For the W3 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, and `implementation-traceability.guard.js` are the critical non-explicit guards. They protect the W3 stable boundary, dependency direction, frozen entrypoint assertions, and mappings to `grag-seed-retrieval`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-alignment-constraint`.
+For the W3 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, and `implementation-traceability.guard.js` are the critical non-explicit guards. They protect the W3 stable boundary, dependency direction, frozen entrypoint assertions, and mappings to `grag-seed-retrieval`, `grag-semantic-index`, `grag-index-lifecycle`, `grag-alignment-constraint`, `grag-embedding-provider-adapter`, and `grag-embedding-generation`.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.argo/.env.example`, and `.gitignore`, are frozen during Coding/Repair unless the current handoff explicitly excludes them from `frozenFiles`.

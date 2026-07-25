@@ -7,19 +7,31 @@ const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json')
 const isW3IndexLifecycleHandoff = /W3 Index Lifecycle|Exact-Threshold|DT-05|DT-16|DT-17/i.test(
   `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''}`,
 );
+const isTs09InScope = /TS-09|TS09|EmbeddingProviderAdapter|EmbeddingGeneration|generateAffectedEmbeddings/i.test(
+  JSON.stringify({
+    summary: handoff.summary,
+    explicitEntrypoints: handoff.explicitEntrypoints,
+    codingTargets: handoff.codingTargets,
+    taskExecutionPlan: handoff.taskExecutionPlan,
+  }),
+);
 const outOfScopeEntrypoints = [
   'tests/explicit/entries/runSevenWaveDeliveryGates.js',
-  'tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js',
 ];
+if (!isTs09InScope) {
+  outOfScopeEntrypoints.push('tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js');
+}
 const forbiddenTestcases = [
   'ExplicitAcceptanceTestcase-TS-08',
-  'ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter',
 ];
+if (!isTs09InScope) {
+  forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter');
+}
 const forbiddenImplementationPattern = isW3IndexLifecycleHandoff
-  ? /(?:embedding-provider-adapter|embeddingProviderAdapter|sevenWave|deliverySequence)/i
+  ? /(?:sevenWave|deliverySequence)/i
   : /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
 
-// GIVEN globally mounted TS-08/TS-09 entrypoints and the approved W2 coding handoff
+// GIVEN globally mounted delivery-control evidence and the approved coding handoff
 // WHEN authorization scope is inspected
 const codingTargetsText = JSON.stringify(handoff.codingTargets);
 const tasks = handoff.taskExecutionPlan.tasks;

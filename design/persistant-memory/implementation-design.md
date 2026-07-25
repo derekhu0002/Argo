@@ -92,3 +92,11 @@
 - Four W3 critical guards passed before handoff: production boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 35 total, 14 passed, 21 failed, 0 missing criteria. Runner-owned delivery status changed `grag-semantic-index` from absent to `not_delivered`, `grag-native-retrieval-service` from `delivered` to `not_delivered`, and `grag-embedding-qualification` from `delivered` to `not_delivered`; these are committed as the baseline for Coding/Repair to compare against rather than manually edited.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 corrected W3 TS-09 ImplementationDesign handoff
+
+- Regenerated `.argo/temp/ImplementationToCodingHandoff.json` from corrected intent commit `57a99e4f13a811343d55ac15a3f12e58749cee86`, adding `grag-embedding-provider-adapter` and `grag-embedding-generation` to the W3 implementation scope.
+- DT-05, DT-16, DT-16-SemanticIndex, and DT-17 are now recorded as scoped-passed evidence only. W3 remains blocked until `runEmbeddingProviderAdapterLifecycle.js` passes both `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter` and `ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration`.
+- Contracts and guards were corrected so TS-09 and `generateAffectedEmbeddings()` are authorized Coding targets for corrected W3 handoffs; TS-08 remains out of scope.
+- Direct entrypoint classification before handoff: `runIndependentSemanticSeeds.js`, `runMutationIndexLifecycle.js`, and `runStaleSemanticQueryRejection.js` passed; `runEmbeddingProviderAdapterLifecycle.js` failed with `TS09_NODE_ADAPTER_REQUIRED` because `generateAffectedEmbeddings()` does not expose outcome `runtime: "nodejs"`.
+- Corrected W3 critical guards passed: production boundary, coding-scope authorization, dependency direction, explicit entrypoint correctness, and implementation traceability. Handoff schema validation passed for `implementation-to-coding`.

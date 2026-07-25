@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T15:45:00+08:00",
+  "generatedAt": "2026-07-25T16:58:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W3 Index Lifecycle and Exact-Threshold Baseline: prove DT-05 threshold-all correctness before ANN performance comparison, make DT-16 all-mutation lifecycle/version evidence complete for the semantic index, and reject DT-17 unaligned pure semantic queries while preserving canonical reads.",
+  "summary": "Corrected W3 Index Lifecycle and Exact-Threshold Baseline: DT-05, DT-16, and DT-17 are scoped-passed evidence, but W3 remains blocked until TS-09 adapter generation/persistence passes through runEmbeddingProviderAdapterLifecycle.js and proves productionGraphRagRuntime.generateAffectedEmbeddings() exposes Node runtime, provider-adapter generation, parameterized persistence evidence, and non-Aligned partial failure behavior.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -14,69 +14,91 @@
       "entryPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
       "controlPoint": "Run threshold-all seed retrieval against many-peer relevant, unrelated, and ANN comparison fixtures across Element, ArchitectureRelationship, and View channels.",
       "observationPoint": "Observe every above-threshold peer returned per channel, zero unrelated forced hits, no fixed result limit, and ANN top-k marked performance-only rather than correctness baseline.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runIndependentSemanticSeeds.js",
-      "failureReason": "DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runIndependentSemanticSeeds.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
       "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
       "controlPoint": "Run the canonical mutation matrix for create, update, delete, topology-only, semantic-content, and View-membership changes.",
       "observationPoint": "Observe all nine mutation classes, version advancement, deleted-object absence, non-Aligned partial persistence, and affected-record lifecycle evidence.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
-      "failureReason": "DT16_MUTATION_CLASSES_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
       "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
       "controlPoint": "Inspect semantic-index records produced by the DT-16 mutation matrix for affected Element, ArchitectureRelationship, and View records.",
       "observationPoint": "Observe object identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence for every indexed record.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
-      "failureReason": "DT16_MUTATION_CLASSES_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
       "entryPath": "tests/explicit/entries/runStaleSemanticQueryRejection.js",
       "controlPoint": "Submit canonical-read controls and a pure semantic request while the semantic index is unaligned.",
       "observationPoint": "Observe full and explicit-anchor canonical reads remain available, pure semantic requests fail with SEMANTIC_INDEX_NOT_ALIGNED, and no automatic full-snapshot fallback occurs.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runStaleSemanticQueryRejection.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+      "entryPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "controlPoint": "Call productionGraphRagRuntime.generateAffectedEmbeddings() for canonical mutations changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure.",
+      "observationPoint": "Observe runtime='nodejs', neo4jGenAiPluginRequired=false, qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runStaleSemanticQueryRejection.js",
-      "failureReason": "DT17_ALIGNMENT_ERROR_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "failureReason": "TS09_NODE_ADAPTER_REQUIRED"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration",
+      "entryPath": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "controlPoint": "Call productionGraphRagRuntime.generateAffectedEmbeddings() with affected Element, ArchitectureRelationship, and View records after canonical mutation success.",
+      "observationPoint": "Observe affected-record extraction, batching/error isolation, runtime='nodejs', provider adapter evidence, complete persistence metadata, and non-Aligned partial failure behavior.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+      "failureReason": "TS09_NODE_ADAPTER_REQUIRED"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "W3 production Graph RAG boundary contract",
+      "name": "Corrected W3 production Graph RAG boundary contract",
       "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root, local Graph RAG, and test contracts for W3 threshold-all, lifecycle, and alignment responsibilities.",
-      "observationPoint": "Contracts expose selectThresholdAllSeeds(request), generateAffectedEmbeddings(input), evaluateSemanticAlignment(request), and W3 frozen entrypoint ownership.",
+      "controlPoint": "Inspect root, local Graph RAG, and test contracts for W3 threshold-all, lifecycle, alignment, and TS-09 adapter/generation responsibilities.",
+      "observationPoint": "Contracts expose generateAffectedEmbeddings(input), identify TS-09 as a blocking gate, and state DT scoped passes are not sufficient while TS-09 fails.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3 production dependency direction",
+      "name": "Corrected W3 coding scope authorization",
+      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Inspect codingTargets, tasks, completion signals, and frozen mounted evidence.",
+      "observationPoint": "TS-08 remains unauthorized while corrected W3 handoffs may authorize TS-09 adapter/generation work and generateAffectedEmbeddings implementation.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Corrected W3 production dependency direction",
       "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
       "controlPoint": "Inspect production Graph RAG JavaScript modules for outward test dependencies, Python/runtime sidecars, child_process ownership, and Neo4j plugin calls.",
-      "observationPoint": "Production code remains inward-facing; only the approved system metadata adapter may own system commands, and semantic/index delivery does not depend on tests or plugin embedding procedures.",
+      "observationPoint": "Production code remains inward-facing; semantic/index/adapter delivery does not depend on tests or plugin embedding procedures.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3 explicit entrypoint correctness",
+      "name": "Corrected W3 explicit entrypoint correctness",
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect DT-05, DT-16, DT-16-SemanticIndex, and DT-17 physical entrypoints plus the handoff frozen-file list.",
-      "observationPoint": "Entrypoints retain GIVEN/WHEN/THEN readability, Harness abstraction, and key DT-05/DT-16/DT-17 business failure categories.",
+      "controlPoint": "Inspect DT-05, DT-16, DT-17, and TS-09 physical entrypoints plus the handoff frozen-file list.",
+      "observationPoint": "Entrypoints retain GIVEN/WHEN/THEN readability, Harness abstraction, and key TS-09 runtime/plugin/channel/model/credential/partial-persistence categories.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3 implementation traceability",
+      "name": "Corrected W3 implementation traceability",
       "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
       "controlPoint": "Inspect intent anchors, root implements mappings, mounted testcase paths, and physical entrypoint files.",
-      "observationPoint": "grag-seed-retrieval, grag-semantic-index, grag-index-lifecycle, and grag-alignment-constraint remain mapped to their W3 entrypoints.",
+      "observationPoint": "grag-seed-retrieval, grag-semantic-index, grag-index-lifecycle, grag-alignment-constraint, grag-embedding-provider-adapter, and grag-embedding-generation remain mapped to their W3 entrypoints.",
       "expectedStatus": "passed"
     }
   ],
@@ -84,117 +106,76 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT05_THRESHOLD_ALL_EVIDENCE_MISSING / DT05_ANN_TOPK_USED_AS_CORRECTNESS_BASELINE",
-      "nextAction": "Expose threshold-all seed selection evidence per object channel and treat ANN top-k only as performance comparison."
+      "failureSignal": "TS09_NODE_ADAPTER_REQUIRED",
+      "nextAction": "Make generateAffectedEmbeddings() return outcome-level runtime='nodejs', neo4jGenAiPluginRequired=false, provider-adapter generation evidence, persistence evidence, and non-Aligned partial failure behavior."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
-      "path": ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
-      "failureSignal": "DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING",
-      "nextAction": "Return independent Element, ArchitectureRelationship, and View seed channels with all peers at or above their approved thresholds."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT16_MUTATION_CLASSES_MISSING / DT16_INDEX_VERSION_NOT_ADVANCED",
-      "nextAction": "Implement all-mutation affected-record lifecycle sequencing and expose complete version advancement evidence."
+      "failureSignal": "TS09_AFFECTED_CHANNELS_INCOMPLETE / TS09_PARTIAL_PERSISTENCE_MUST_NOT_ALIGN",
+      "nextAction": "Expose affected Element, ArchitectureRelationship, and View generation results through the runtime without relying on DT-16 scoped lifecycle evidence alone."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
       "path": ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
-      "failureSignal": "DT16_SEMANTIC_INDEX_RECORDS_MISSING / DT16_INDEX_EVIDENCE_FIELD_MISSING",
-      "nextAction": "Persist complete semantic-index evidence fields for affected Element, ArchitectureRelationship, and View records after successful canonical mutation work."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT17_ALIGNMENT_ERROR_MISSING",
-      "nextAction": "Reject unaligned pure semantic queries with SEMANTIC_INDEX_NOT_ALIGNED while leaving no-argument and explicit canonical-anchor reads available."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT17_AUTOMATIC_FULL_FALLBACK_FORBIDDEN / DT17_STALE_SEMANTIC_QUERY_NOT_REJECTED",
-      "nextAction": "Expose semantic alignment evaluation before seed retrieval and report non-Aligned lifecycle states without serving stale semantic context or silently falling back."
+      "failureSignal": "TS09_MODEL_EVIDENCE_INCOMPLETE / TS09_CYPHER_CREDENTIAL_EXPOSURE",
+      "nextAction": "Emit persisted records with the frozen TS-09 model/version/dimensions evidence shape and no providerCredential field."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement W3 in dependency order: first lifecycle state and affected-record evidence, then threshold-all seed correctness, then unaligned query rejection. Do not modify frozen explicit entrypoints or critical guards. Completion requires DT-05, DT-16, DT-16-SemanticIndex, DT-17, and the four W3 critical guards to pass, with no new delivered-to-not_delivered regression beyond runner-owned baseline updates.",
+    "executionStrategy": "Corrected W3 Coding/Repair scope: preserve passing DT-05, DT-16, DT-16-SemanticIndex, and DT-17 as scoped evidence, then implement TS-09 adapter/generation proof. W3 acceptance requires both TS-09 testcases and the DT scoped evidence to pass, with the corrected W3 critical guards green and zero delivered-to-not_delivered regression.",
     "tasks": [
       {
-        "taskId": "W3-C1",
-        "title": "Implement lifecycle evidence baseline",
-        "objective": "Make every canonical mutation class advance affected-record semantic-index version evidence or leave the index non-Aligned.",
+        "taskId": "W3-C1-TS09-runtime-evidence",
+        "title": "Expose TS-09 runtime evidence",
+        "objective": "Make generateAffectedEmbeddings() prove the Node adapter generation path at the outcome boundary.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-16",
-          "ExplicitAcceptanceTestcase-DT-16-SemanticIndex"
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+        ],
+        "steps": [
+          "Return outcome.runtime as nodejs.",
+          "Return outcome.neo4jGenAiPluginRequired as false.",
+          "Expose provider-adapter generation evidence from generateAffectedEmbeddings().",
+          "Preserve no Python or Neo4j GenAI Plugin dependency."
+        ],
+        "completionSignal": "runEmbeddingProviderAdapterLifecycle.js no longer fails TS09_NODE_ADAPTER_REQUIRED or TS09_GENAI_PLUGIN_DEPENDENCY_PROHIBITED."
+      },
+      {
+        "taskId": "W3-C2-TS09-persistence-evidence",
+        "title": "Expose TS-09 persistence evidence",
+        "objective": "Make affected-record persistence prove complete metadata and non-Aligned partial failure behavior.",
+        "dependsOn": [
+          "W3-C1-TS09-runtime-evidence"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration"
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
           ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
         ],
         "steps": [
-          "Define the nine mutation classes observed by the frozen entrypoint.",
-          "Extract only affected Element, ArchitectureRelationship, and View records after successful canonical mutation work.",
-          "Persist object identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence.",
-          "Set Aligned only after complete persistence; partial or failed persistence reports Updating, Stale, or Failed."
+          "Persist Element, ArchitectureRelationship, and View records through the injected vectorPersistenceBoundary.",
+          "Ensure each persisted record exposes model, version, and dimensions for the frozen TS-09 entrypoint.",
+          "Keep provider credentials out of persisted records and Cypher-bound evidence.",
+          "Report Stale or Failed rather than Aligned after incomplete persistence."
         ],
-        "completionSignal": "runMutationIndexLifecycle.js passes for both DT-16 and DT-16-SemanticIndex and no semantic-index record lacks version/model evidence."
+        "completionSignal": "runEmbeddingProviderAdapterLifecycle.js passes TS09_AFFECTED_CHANNELS_INCOMPLETE, TS09_MODEL_EVIDENCE_INCOMPLETE, TS09_CYPHER_CREDENTIAL_EXPOSURE, and TS09_PARTIAL_PERSISTENCE_MUST_NOT_ALIGN checks."
       },
       {
-        "taskId": "W3-C2",
-        "title": "Implement threshold-all seeds",
-        "objective": "Make threshold-all the Phase 1 correctness baseline before ANN comparison.",
+        "taskId": "W3-C3-preserve-dt-scope",
+        "title": "Preserve DT scoped evidence",
+        "objective": "Keep DT-05, DT-16, DT-16-SemanticIndex, and DT-17 green while implementing TS-09.",
         "dependsOn": [
-          "W3-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-05"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/graph-rag/neo4jNativeRetrieval.js"
-        ],
-        "steps": [
-          "Return independent seed channels for Element, ArchitectureRelationship, and View.",
-          "Return every peer whose score is at or above the channel threshold.",
-          "Report zero forced hits for unrelated queries.",
-          "Report ANN top-k only under performance comparison evidence and never as correctness evidence."
-        ],
-        "completionSignal": "runIndependentSemanticSeeds.js includes all above-threshold peer IDs, no fixed result limit, zero unrelated forced hits, and annComparison.correctnessRole equals performance-only."
-      },
-      {
-        "taskId": "W3-C3",
-        "title": "Implement alignment rejection",
-        "objective": "Reject unaligned pure semantic queries while preserving canonical read paths.",
-        "dependsOn": [
-          "W3-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-17"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
-        ],
-        "steps": [
-          "Evaluate semantic-index alignment before invoking seed retrieval for pure semantic requests.",
-          "Return SEMANTIC_INDEX_NOT_ALIGNED for Updating, Stale, Failed, partial, or unknown states.",
-          "Set fullSnapshotFallback to false for rejected pure semantic requests.",
-          "Preserve no-argument full snapshot reads and explicit canonical-anchor reads."
-        ],
-        "completionSignal": "runStaleSemanticQueryRejection.js passes with SEMANTIC_INDEX_NOT_ALIGNED, no automatic fallback, and both canonical-read controls passing."
-      },
-      {
-        "taskId": "W3-C4",
-        "title": "Verify W3 completion",
-        "objective": "Prove W3 acceptance and guardrail completion against the pre-coding baseline.",
-        "dependsOn": [
-          "W3-C2",
-          "W3-C3"
+          "W3-C2-TS09-persistence-evidence"
         ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-DT-05",
@@ -204,17 +185,42 @@
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
-          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
         ],
         "steps": [
-          "Run the four frozen W3 explicit entrypoints.",
-          "Run the four W3 critical non-explicit guards.",
-          "Run the full architecture test runner and compare deliveryStatus changes to the pre-coding baseline.",
+          "Re-run runIndependentSemanticSeeds.js.",
+          "Re-run runMutationIndexLifecycle.js.",
+          "Re-run runStaleSemanticQueryRejection.js.",
+          "Do not modify frozen explicit entrypoints or critical guards."
+        ],
+        "completionSignal": "DT-05, DT-16, DT-16-SemanticIndex, and DT-17 remain passed while TS-09 is repaired."
+      },
+      {
+        "taskId": "W3-C4-verify-corrected-w3",
+        "title": "Verify corrected W3 handoff",
+        "objective": "Prove corrected W3 acceptance evidence and runner baseline after TS-09 repair.",
+        "dependsOn": [
+          "W3-C3-preserve-dt-scope"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-05",
+          "ExplicitAcceptanceTestcase-DT-16",
+          "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+          "ExplicitAcceptanceTestcase-DT-17",
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+          "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
+        ],
+        "steps": [
+          "Run all corrected W3 explicit entrypoints.",
+          "Run the corrected W3 critical guards.",
+          "Run the full architecture runner and compare deliveryStatus against this corrected pre-coding baseline.",
           "Commit only authorized Coding targets and runner-owned baseline updates."
         ],
-        "completionSignal": "DT-05, DT-16, DT-16-SemanticIndex, DT-17, and the four W3 critical guards pass with zero new delivered-to-not_delivered regression."
+        "completionSignal": "DT scoped entries plus both TS-09 testcases pass; corrected W3 guards pass; no delivered-to-not_delivered regression occurs; W3 is no longer blocked by TS-09."
       }
     ]
   },
@@ -228,6 +234,7 @@
     "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "tests/explicit/entries/runMutationIndexLifecycle.js",
     "tests/explicit/entries/runStaleSemanticQueryRejection.js",
+    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
     "tests/explicit/entries/runProductionGraphRagRuntime.js",
     "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
     "tests/explicit/entries/runEmbeddingQualificationGate.js",
@@ -235,12 +242,11 @@
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runCanonicalProjectionAuthority.js",
     "tests/explicit/entries/runSevenWaveDeliveryGates.js",
-    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
     "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
     "tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js",
     "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
@@ -250,8 +256,8 @@
     ".gitignore"
   ],
   "openGaps": [
-    "No intent graph mutation is required; W3 testcase boundaries and release gates are already present in the validated intent handoff.",
-    "DT-05 and DT-04 share the physical entrypoint mounted by the intent graph. DT-05 assertions are explicit in that frozen file, and any future split should be proposed upstream rather than edited directly here.",
-    "Runner-owned deliveryStatus and test-failure-record updates remain governed by the full architecture runner and are not manually fabricated."
+    "Corrected IntentDesign makes TS-09 a blocking W3 gate. DT-05, DT-16, and DT-17 scoped passes are preserved but not sufficient for W3 acceptance.",
+    "TS-09 currently fails with TS09_NODE_ADAPTER_REQUIRED because generateAffectedEmbeddings() outcome runtime is undefined.",
+    "TS-08 remains out of scope for this corrected W3 handoff."
   ]
 }
