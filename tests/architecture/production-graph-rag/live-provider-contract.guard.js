@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graph = readJson('design/KG/SystemArchitecture.json');
+const failureRecords = readJson('design/KG/test-failure-records.json');
 const handoff = readJson('.argo/temp/ImplementationToCodingHandoff.json');
 const rootContract = read('OVERALL_ARCHITECTURE.md');
 const localContract = read('.argo/scripts/graph-rag/ARCHITECTURE.md');
@@ -53,6 +54,11 @@ assert(
     && testContract.toLowerCase().includes('never substitutes'),
   'LIVE_PROVIDER_CONTRACT_GUARD: fake evidence substitution remains possible',
 );
+assert(!localContract.includes('executeFailureScenario'), 'LIVE_PROVIDER_CONTRACT_GUARD: scenario test API remains');
+assert(
+  rootContract.includes('Harness observes the actual request target/body/count and raw response'),
+  'LIVE_PROVIDER_CONTRACT_GUARD: transport-owned HTTP evidence is missing',
+);
 
 // THEN committed .env guidance contains only approved non-sensitive embedding configuration
 for (const name of requiredEnvironmentNames) {
@@ -81,6 +87,38 @@ for (const [testcaseName, entryPath] of mountedEntries) {
     `LIVE_PROVIDER_CONTRACT_GUARD: handoff omits ${testcaseName}`,
   );
   assert(handoff.frozenFiles.includes(entryPath), `LIVE_PROVIDER_CONTRACT_GUARD: ${entryPath} is not frozen`);
+}
+
+// THEN the runner-owned pre-coding baseline is explicit and cannot be misclassified by Coding
+assert.deepStrictEqual(
+  {
+    total: handoff.preCodingBaseline.total,
+    passed: handoff.preCodingBaseline.passed,
+    failed: handoff.preCodingBaseline.failed,
+    missingAcceptanceCriteria: handoff.preCodingBaseline.missingAcceptanceCriteria,
+  },
+  { total: 34, passed: 14, failed: 20, missingAcceptanceCriteria: 0 },
+  'LIVE_PROVIDER_CONTRACT_GUARD: pre-coding runner counts drifted',
+);
+assert.deepStrictEqual(
+  handoff.preCodingBaseline.deliveryChanges,
+  [{
+    intentElementId: 'grag-embedding-qualification',
+    from: 'delivered',
+    to: 'not_delivered',
+    classification: 'Expected pre-coding baseline change caused by the newly mounted live acceptance; not a Coding regression.',
+  }],
+  'LIVE_PROVIDER_CONTRACT_GUARD: expected delivery transition drifted',
+);
+assert.deepStrictEqual(
+  handoff.preCodingBaseline.otherDeliveryStatusChanges,
+  [],
+  'LIVE_PROVIDER_CONTRACT_GUARD: unapproved baseline delivery changes were added',
+);
+for (const [testcaseName, category] of Object.entries(handoff.preCodingBaseline.liveExpectedFailures)) {
+  const record = failureRecords.find(candidate => candidate.testcasename === testcaseName);
+  assert(record, `LIVE_PROVIDER_CONTRACT_GUARD: runner record missing ${testcaseName}`);
+  assert.strictEqual(record.failureError, category, `LIVE_PROVIDER_CONTRACT_GUARD: stale runner failure ${testcaseName}`);
 }
 
 function read(relativePath) {

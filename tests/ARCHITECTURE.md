@@ -15,8 +15,11 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `credential-source-policy.guard.js` self-tests the TS-07 source policy with prohibited bypass fixtures and one safe fixture so scanner regressions cannot silently weaken the boundary.
 - TS-01-Native uses a Harness-owned query probe to prove exact request propagation, exactly one native-boundary call, and unchanged propagation of an unpredictable runtime-generated full result.
 - `tests/harness/liveEmbeddingProviderHarness.js` hides live-network opt-in, process-only secret access, controlled Neo4j setup/cleanup, write counting, safe error categories, and artifact scanning.
-- TS-06-Provider-E2E requires a real HTTPS call with explicit approved model/dimensions, a finite 1024-value vector, qualified controlled-Neo4j evidence, and zero writes for every invalid/failure case.
-- TS-07-Provider-Secret-Isolation scans captured logs, request evidence, Cypher text/parameters, graph evidence, failure records, snapshots, and test artifacts against the process-injected secret without printing it.
+- TS-06-Provider-E2E uses a Harness-owned transport wrapper to observe one real HTTPS request, exact target/body, dynamic input, and raw response. The same public gate receives all invalid/error injections; no production scenario branch or self-reported live boolean is accepted.
+- Controlled Neo4j evidence must match the transport vector and approved provider/model/qualification/dimensions plus dynamic canonical/content/index identities and versions; cleanup must leave zero records.
+- TS-07-Provider-Secret-Isolation uses a generated canary—not the real provider credential—to scan captured error messages, stdout, stderr, logs, Cypher text/parameters, graph evidence, latest failure records, snapshots, and recursively generated test artifacts.
+- Explicit opt-in with `QWEN_KEY` absent is a frozen executable scenario that must fail with `QWEN_KEY_REQUIRED` before production loading, network, or Neo4j.
+- The process-only loader guard rejects dotenv, `.env`, and configuration-object sources for `QWEN_KEY` by source-fixture analysis without reading a secret value.
 - Default/offline CI must fail both live entrypoints with explicit opt-in categories. Deterministic fakes protect negative paths but never substitutes for live provider evidence.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.

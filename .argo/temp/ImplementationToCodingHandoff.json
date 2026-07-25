@@ -1,7 +1,29 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T08:00:00+08:00",
+  "generatedAt": "2026-07-25T09:20:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "preCodingBaseline": {
+    "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
+    "total": 34,
+    "passed": 14,
+    "failed": 20,
+    "missingAcceptanceCriteria": 0,
+    "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+    "liveExpectedFailures": {
+      "ExplicitAcceptanceTestcase-TS-06-Provider-E2E": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED",
+      "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
+    },
+    "deliveryChanges": [
+      {
+        "intentElementId": "grag-embedding-qualification",
+        "from": "delivered",
+        "to": "not_delivered",
+        "classification": "Expected pre-coding baseline change caused by the newly mounted live acceptance; not a Coding regression."
+      }
+    ],
+    "otherDeliveryStatusChanges": [],
+    "comparisonRule": "Coding compares its post-run delivery changes against this 34/14/20 baseline. The recorded embedding-qualification transition is accepted baseline state and must not be reported as a Coding regression; any new delivered-to-not_delivered transition is a regression."
+  },
   "summary": "Preserve the uncommitted, passing C1-C6 Coding implementation as a checkpoint, then extend the approved Node.js boundary with an explicit opt-in live Alibaba Cloud Model Studio embedding request and controlled Neo4j evidence gate. The approved profile is provider alibaba-cloud-model-studio-openai-compatible-cn-beijing, Beijing compatible-mode endpoint, model qwen3.7-text-embedding, qualification-2026-07-25, and dimensions 1024. QWEN_KEY remains process-only and every invalid, failed, or leaking path blocks index writes.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
@@ -36,8 +58,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
       "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-      "controlPoint": "Explicitly opt in to a real Node.js provider request using the approved identity and dimensions, then pass success and failure matrices through a controlled Neo4j index boundary.",
-      "observationPoint": "Observe explicit request fields, a finite 1024-value vector, qualification evidence, one controlled success write, and zero writes for provider error, unapproved or omitted identity, non-finite vectors, and dimension mismatch.",
+      "controlPoint": "Use a frozen Harness-owned transport wrapper for one opted-in real request, then inject every invalid/error case through the same public qualification/index gate and controlled Neo4j boundary.",
+      "observationPoint": "Independently observe request count, exact origin/path/body and dynamic input, correlate the raw finite 1024-value response with gate output and full persisted metadata, verify one success write, zero failure writes, and zero records after cleanup.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
       "failureReason": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
@@ -53,8 +75,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
       "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Run the opted-in real-provider flow with QWEN_KEY supplied only by the process, then inspect every observable artifact and missing-secret behavior.",
-      "observationPoint": "Observe pre-network blocking without the secret and zero secret copies in logs, errors, Cypher text/parameters, graph evidence, failure records, snapshots, and test artifacts.",
+      "controlPoint": "Run the opted-in flow with process-only QWEN_KEY presence, execute a no-secret preflight child scenario, and inject a generated canary through provider-error redaction paths without reading the real credential.",
+      "observationPoint": "Observe QWEN_KEY_REQUIRED before production/network/Neo4j when absent, and zero canary or secret-bearing fields in error messages, stdout, stderr, logs, Cypher, graph evidence, latest failure records, snapshots, and recursive artifacts.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
       "failureReason": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
@@ -146,24 +168,24 @@
       "name": "Approved live provider contract",
       "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect contracts, mounted testcases, handoff entries, .env.example, and .gitignore for the exact approved provider profile and controlled Neo4j boundary.",
-      "observationPoint": "Provider/model/version/endpoint/dimensions remain explicit, .env is non-sensitive and ignored, and both live entries are frozen.",
+      "controlPoint": "Inspect contracts, mounted testcases, handoff baseline, .env.example, and .gitignore for the exact profile, transport-owned proof, controlled Neo4j metadata, and 34/14/20 baseline.",
+      "observationPoint": "Profile and baseline remain explicit, production cannot self-report a live boolean, .env is non-sensitive and ignored, and both live entries are frozen.",
       "expectedStatus": "passed"
     },
     {
       "name": "Live network opt-in and no-fake substitution",
       "path": "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect Harness control flow and live entrypoint assertions before any production boundary, secret, network, or Neo4j access.",
-      "observationPoint": "Default execution fails with explicit opt-in categories and fake/default outcomes cannot be reported as live evidence.",
+      "controlPoint": "Inspect Harness control flow and execute default plus opted-in/no-QWEN child scenarios before any production boundary, network, or Neo4j access.",
+      "observationPoint": "Default failures remain explicit, missing secret reports only QWEN_KEY_REQUIRED, and frozen transport evidence prevents fake/default or boolean-label live claims.",
       "expectedStatus": "passed"
     },
     {
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Run synthetic canary fixtures through artifact scanning and inspect safe entrypoint error handling and configured artifact channels.",
-      "observationPoint": "Direct, nested, and binary leaks are detected while errors expose only stable categories and .env.example has no secret slot.",
+      "controlPoint": "Run canary fixtures through error/stdout/stderr/log/failure/snapshot/recursive scanners and self-test process-only loader source policy.",
+      "observationPoint": "Leaks and file-based QWEN_KEY loaders are detected without reading a real secret; errors expose only stable categories and .env.example has no secret slot.",
       "expectedStatus": "passed"
     }
   ],
@@ -218,7 +240,7 @@
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
       "failureSignal": "LIVE_PROVIDER_E2E_BOUNDARY_MISSING / LIVE_PROVIDER_INDEX_WRITE_PROHIBITED",
-      "nextAction": "Sequence exact qualification, provider response validation, and the injected controlled Neo4j evidence boundary so every invalid or failed case produces zero writes."
+      "nextAction": "Expose one injected-transport executeApprovedEmbedding gate for success and all invalid/error inputs; persist complete approved metadata only after response validation and leave zero records after cleanup."
     }
   ],
   "taskExecutionPlan": {
@@ -407,6 +429,8 @@
           "Load only ARGO_EMBEDDING_BASE_URL, ARGO_EMBEDDING_MODEL, ARGO_EMBEDDING_PROVIDER, ARGO_EMBEDDING_MODEL_VERSION, and ARGO_EMBEDDING_DIMENSIONS from local non-sensitive .env.",
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
           "Require ARGO_LIVE_PROVIDER_E2E=1 before reading QWEN_KEY; obtain QWEN_KEY only from process injection and never return it in configuration evidence.",
+          "Do not use dotenv or any .env/configuration-object path to populate QWEN_KEY; pass the frozen process-only source-fixture checks.",
+          "With explicit opt-in and QWEN_KEY absent, fail with QWEN_KEY_REQUIRED before loading the live gate, constructing transport, or opening Neo4j.",
           "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
         ],
         "completionSignal": "Configuration rejects missing, implicit, or mismatched profile fields; default execution touches no secret/network state; .env.example and .gitignore guards pass."
@@ -427,13 +451,15 @@
           ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
         ],
         "steps": [
-          "Send a Node.js HTTPS request to the approved endpoint with explicit input, model qwen3.7-text-embedding, and dimensions 1024.",
+          "Export createLiveEmbeddingIndexGate(dependencies) returning only executeApprovedEmbedding(input); do not add scenario-labelled production test branches.",
+          "Use the Harness-injected transport for the Node.js HTTPS request so the frozen test owns call counting, origin/path/body observation, dynamic input, and raw response capture.",
           "Keep authorization headers and provider response errors out of returned evidence, logs, and thrown error messages.",
           "Accept only a finite numeric vector of exactly 1024 values after exact qualification.",
-          "Invoke the injected controlled Neo4j write boundary exactly once on success.",
-          "For provider error, unapproved identity, missing model, missing dimensions, non-finite vector, or dimension mismatch, reject before the write boundary."
+          "Persist provider/model/qualification/dimensions, the exact observed vector, and canonical/content/index identities and versions through the controlled Neo4j boundary exactly once.",
+          "Inject unapproved identity, wrong or missing model/version/dimensions, provider error, non-finite vector, and dimension mismatch through the same executeApprovedEmbedding gate; reject every case before any write.",
+          "Delete controlled evidence and prove zero records remain after success and failure cleanup."
         ],
-        "completionSignal": "The opted-in live entry proves a real HTTP call, explicit request evidence, a finite 1024-value vector, one controlled Neo4j evidence write, and zero writes for the complete failure matrix."
+        "completionSignal": "The frozen transport independently proves one real request and exact response propagation; persisted provider/model/qualification/dimensions/vector and canonical/content/index metadata match; cleanup reaches zero; the same public gate yields zero writes for the complete failure matrix."
       },
       {
         "taskId": "W2-C10",
@@ -455,10 +481,11 @@
           "Run the original six scoped explicit entrypoints and seven original critical guards before live execution.",
           "Run all ten frozen critical guards in default/offline mode.",
           "In controlled local or protected CI only, inject QWEN_KEY and controlled Neo4j process configuration, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
-          "Inspect logs, safe errors, request evidence, Cypher text/parameters, graph evidence, failure records, snapshots, and test artifacts for zero secret copies.",
-          "Run the full architecture runner and confirm no baseline delivered regression; commit only authorized Coding target paths."
+          "Inject a generated canary into provider-error redaction paths and scan error messages, captured stdout/stderr, logs, Cypher text/parameters, graph evidence, latest failure records, snapshots, and recursively generated artifacts without reading the real QWEN_KEY value.",
+          "Compare the full runner against preCodingBaseline 34/14/20: the recorded grag-embedding-qualification delivered-to-not_delivered transition is accepted baseline, while any additional delivered regression fails completion.",
+          "Commit only authorized Coding target paths."
         ],
-        "completionSignal": "8/8 scoped explicit entrypoints pass including real live evidence; 10/10 frozen critical guards pass; failure matrix writes remain zero; secret leak count is zero; 0 delivered-to-not_delivered regression."
+        "completionSignal": "8/8 scoped explicit entrypoints pass including transport-owned real evidence; 10/10 frozen critical guards pass; missing-secret preflight and failure matrix writes remain zero; canary leak count is zero across all channels; no new delivered-to-not_delivered transition occurs beyond the accepted pre-coding baseline."
       }
     ]
   },

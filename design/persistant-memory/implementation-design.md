@@ -60,3 +60,12 @@
 - C1-C6 remain uncommitted Coding-owned worktree state. W2-C7 checkpoints them unchanged before W2-C8 configuration, W2-C9 provider/index gate, and W2-C10 protected live verification.
 - TS-09 remains outside intent and Coding scope. No intent graph change or trace proposal is required.
 - Full pre-coding runner baseline: 34 total, 14 passed, 20 failed. Both live entrypoints honestly fail with their explicit opt-in categories. The newly mounted live TS-06 evidence changed runner-owned `grag-embedding-qualification` from delivered to not_delivered; this is the expected new acceptance baseline, not a Coding regression. No other delivery status changed.
+
+## 2026-07-25 live E2E evidence hardening
+
+- Replaced implementation-reported `liveProviderCall` evidence with a frozen Harness-owned transport wrapper. It records actual request count, origin/path, method, explicit model/dimensions, dynamic input, protected-header presence, and the raw response vector; gate output and persisted vector must match that observation.
+- Removed the production `executeFailureScenario` contract. Success and every invalid/error injection now use `createLiveEmbeddingIndexGate(dependencies).executeApprovedEmbedding(input)`.
+- Controlled Neo4j evidence now includes approved provider/model/qualification/dimensions, complete vector, and dynamic canonical/content/index identities and versions. Both success and failure cleanup must prove zero remaining records.
+- The frozen opt-in guard executes both live entries with explicit opt-in and no `QWEN_KEY`, requiring the safe `QWEN_KEY_REQUIRED` category before production loading, transport, or Neo4j.
+- The frozen secret guard self-tests source rejection for dotenv, `.env`, and configuration-object `QWEN_KEY` loading without reading a secret value. Redaction uses an ephemeral canary and covers errors, stdout, stderr, logs, latest failure records, snapshots, and recursive artifacts.
+- `preCodingBaseline` is explicit in the handoff: 34 total / 14 passed / 20 failed, with only `grag-embedding-qualification` delivered-to-not_delivered accepted as the mounted-live pre-coding transition.

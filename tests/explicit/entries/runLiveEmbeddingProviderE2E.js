@@ -1,6 +1,6 @@
 const assert = require('node:assert');
 const {
-  FAILURE_SCENARIOS,
+  FAILURE_CASES,
   runLiveEmbeddingProviderE2E,
   safeCategory,
 } = require('../../harness/liveEmbeddingProviderHarness.js');
@@ -11,15 +11,31 @@ async function main() {
   const observation = await runLiveEmbeddingProviderE2E();
   const { success } = observation;
 
-  // THEN the real provider request carries the approved identity and explicit dimensions
-  assert.strictEqual(success.liveProviderCall, true, 'TS06_PROVIDER_E2E_REAL_HTTP_REQUIRED');
+  // THEN the frozen Harness independently observes one real request to the approved target
+  assert.strictEqual(
+    observation.transportObservation.callCount,
+    1,
+    'TS06_PROVIDER_E2E_REAL_HTTP_CALL_COUNT',
+  );
+  const observedRequest = observation.transportObservation.requests[0];
   assert.deepStrictEqual(
-    success.requestEvidence,
     {
-      baseUrl: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
+      origin: observedRequest.origin,
+      path: observedRequest.path,
+      method: observedRequest.method,
+      model: observedRequest.model,
+      dimensions: observedRequest.dimensions,
+      input: observedRequest.input,
+      protectedHeaderPresent: observedRequest.protectedHeaderPresent,
+    },
+    {
+      origin: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com',
+      path: '/compatible-mode/v1/embeddings',
+      method: 'POST',
       model: 'qwen3.7-text-embedding',
       dimensions: 1024,
-      inputCount: 1,
+      input: observation.input,
+      protectedHeaderPresent: true,
     },
     'TS06_PROVIDER_E2E_EXPLICIT_REQUEST_REQUIRED',
   );
@@ -36,25 +52,50 @@ async function main() {
     success.vector.every(value => typeof value === 'number' && Number.isFinite(value)),
     'TS06_PROVIDER_E2E_NON_FINITE_VECTOR',
   );
+  assert.deepStrictEqual(
+    success.vector,
+    observation.transportObservation.responses[0].vector,
+    'TS06_PROVIDER_E2E_TRANSPORT_RESPONSE_NOT_PROPAGATED',
+  );
   assert.strictEqual(observation.writesBefore, 0, 'TS06_PROVIDER_E2E_DIRTY_TEST_INSTANCE');
   assert.strictEqual(observation.writesAfter, 1, 'TS06_PROVIDER_E2E_SUCCESS_WRITE_REQUIRED');
   assert.strictEqual(observation.graphEvidence.length, 1, 'TS06_PROVIDER_E2E_NEO4J_EVIDENCE_REQUIRED');
-  assert.strictEqual(
-    observation.graphEvidence[0].vectorLength,
-    1024,
-    'TS06_PROVIDER_E2E_PERSISTED_DIMENSIONS_MISMATCH',
+  assert.deepStrictEqual(
+    observation.graphEvidence[0],
+    {
+      runId: observation.graphEvidence[0].runId,
+      provider: observation.approvedProfile.provider,
+      model: observation.approvedProfile.model,
+      qualificationVersion: observation.approvedProfile.version,
+      dimensions: 1024,
+      ...observation.identities,
+      vector: observation.transportObservation.responses[0].vector,
+    },
+    'TS06_PROVIDER_E2E_PERSISTED_METADATA_MISMATCH',
   );
+  assert.strictEqual(observation.writesAfterCleanup, 0, 'TS06_PROVIDER_E2E_CLEANUP_INCOMPLETE');
 
   // THEN provider errors and every invalid qualification/vector case produce zero index writes
   assert.deepStrictEqual(
-    observation.failureObservations.map(item => item.scenario),
-    [...FAILURE_SCENARIOS],
+    observation.failureObservations.map(item => item.name),
+    FAILURE_CASES.map(item => item.name),
     'TS06_PROVIDER_E2E_FAILURE_MATRIX_INCOMPLETE',
   );
   for (const failure of observation.failureObservations) {
-    assert.strictEqual(failure.status, 'blocked', `TS06_PROVIDER_E2E_FAILURE_NOT_BLOCKED:${failure.scenario}`);
-    assert.strictEqual(failure.before, 0, `TS06_PROVIDER_E2E_PREEXISTING_WRITE:${failure.scenario}`);
-    assert.strictEqual(failure.after, 0, `TS06_PROVIDER_E2E_ZERO_WRITE_VIOLATION:${failure.scenario}`);
+    assert.strictEqual(failure.status, 'blocked', `TS06_PROVIDER_E2E_FAILURE_NOT_BLOCKED:${failure.name}`);
+    assert.strictEqual(
+      failure.providerCalls,
+      failure.expectedProviderCalls,
+      `TS06_PROVIDER_E2E_PROVIDER_CALL_BOUNDARY:${failure.name}`,
+    );
+    assert.strictEqual(failure.before, 0, `TS06_PROVIDER_E2E_PREEXISTING_WRITE:${failure.name}`);
+    assert.strictEqual(failure.after, 0, `TS06_PROVIDER_E2E_ZERO_WRITE_VIOLATION:${failure.name}`);
+    assert.strictEqual(
+      failure.remainingAfterCleanup,
+      0,
+      `TS06_PROVIDER_E2E_FAILURE_CLEANUP_INCOMPLETE:${failure.name}`,
+    );
+    assert.deepStrictEqual(failure.redactionLeaks, [], `TS06_PROVIDER_E2E_ERROR_LEAK:${failure.name}`);
   }
 }
 

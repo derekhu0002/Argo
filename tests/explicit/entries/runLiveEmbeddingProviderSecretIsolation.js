@@ -9,14 +9,18 @@ async function main() {
   // WHEN the real-provider and controlled-Neo4j flow completes and observable artifacts are inspected
   const observation = await runLiveProviderSecretIsolation();
 
-  // THEN the secret is absent from request evidence, logs, Cypher/graph evidence, failures, snapshots, and artifacts
+  // THEN no secret-bearing field is exposed and the synthetic canary is absent from all observable channels
   assert.deepStrictEqual(
-    observation.leaks,
+    observation.forbiddenSecretFields,
     [],
-    `TS07_PROVIDER_SECRET_LEAK:${observation.leaks.join(',')}`,
+    `TS07_PROVIDER_SECRET_FIELD_EXPOSED:${observation.forbiddenSecretFields.join(',')}`,
   );
+  assert.deepStrictEqual(observation.redaction.leaks, [], 'TS07_PROVIDER_REDACTION_CANARY_LEAK');
+  assert.strictEqual(observation.redaction.providerCalls, 1, 'TS07_PROVIDER_REDACTION_TRANSPORT_COUNT');
+  assert.strictEqual(observation.redaction.writes, 0, 'TS07_PROVIDER_REDACTION_ZERO_WRITE');
   for (const requiredArtifact of [
-    'requestEvidence',
+    'requestObservation',
+    'responseObservation',
     'qualificationEvidence',
     'graphEvidence',
     'cypherTextAndParameters',
@@ -30,12 +34,24 @@ async function main() {
       `TS07_PROVIDER_SECRET_ARTIFACT_NOT_INSPECTED:${requiredArtifact}`,
     );
   }
+  for (const redactionChannel of [
+    'errorMessages',
+    'stdout',
+    'stderr',
+    'logs',
+    'latestFailureRecords',
+  ]) {
+    assert(
+      observation.redaction.inspectedArtifactNames.includes(redactionChannel),
+      `TS07_PROVIDER_REDACTION_CHANNEL_NOT_INSPECTED:${redactionChannel}`,
+    );
+  }
 
   // THEN the live path still proves a real provider call and controlled index evidence
   assert.strictEqual(
-    observation.observation.success.liveProviderCall,
-    true,
-    'TS07_PROVIDER_SECRET_TEST_CANNOT_USE_FAKE_AS_LIVE_EVIDENCE',
+    observation.observation.transportObservation.callCount,
+    1,
+    'TS07_PROVIDER_SECRET_TRANSPORT_OBSERVATION_REQUIRED',
   );
   assert.strictEqual(
     observation.observation.writesAfter,

@@ -27,12 +27,13 @@ The four inward boundaries are independently callable and independently testable
 - `querySemantic(request)` for production semantic queries.
 - `evaluateIndexDelivery(request)` for the embedding qualification and credential release gate.
 
-`liveEmbeddingIndexGate.js` provides:
+`createLiveEmbeddingIndexGate(dependencies)` returns one public gate:
 
-- `executeApprovedEmbedding(input)` for the real opt-in path.
-- `executeFailureScenario(input)` for deterministic proof that provider errors, unapproved identity, omitted model/dimensions, non-finite vectors, and dimension mismatch produce zero writes.
+- `executeApprovedEmbedding(input)` for both the real opt-in path and all injected invalid/error cases. There is no production scenario-label shortcut.
 - Every rejected live-provider scenario produces zero index writes.
-- Request evidence containing only the explicit base URL, model, dimensions, and input cardinality; authorization headers and secret values are never returned.
+- Only a finite numeric vector with exactly 1024 values can reach the write boundary.
+- A frozen Harness-owned transport wrapper independently observes request count, origin/path, method, dynamic input, explicit model/dimensions, protected-header presence, and the raw response vector. Production output and persisted vector evidence must match that observed response exactly.
+- Persisted evidence includes provider/model/qualification identity, dimensions, complete vector, canonical identity/version, content identity/version, and index identity/version. Cleanup is complete only when the Harness observes zero remaining test records.
 
 Dependencies are explicit: `configuration`, `canonicalGraph`, `neo4jRetrievalBoundary`, and `embeddingQualification`. Tests may inject fakes at these interfaces; production code must not import tests.
 

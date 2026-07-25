@@ -15,6 +15,8 @@
 11. Live embedding delivery uses explicit opt-in Node.js HTTPS from `alibaba-cloud-model-studio-openai-compatible-cn-beijing` at `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification version `qualification-2026-07-25`, and explicitly supplied dimensions `1024`. Offline fakes cannot count as live evidence.
 12. `QWEN_KEY` is process-injected only. It never appears in `.env`, `.env.example`, logs, error text, Cypher text or parameters, graph state, failure records, snapshots, or test artifacts.
 13. Live provider evidence becomes index-write eligible only after exact qualification and a finite 1024-value response. Provider errors, unapproved identity, omitted model or dimensions, non-finite values, and dimension mismatch produce zero writes to the controlled Neo4j test instance.
+14. Live HTTP proof is owned by the frozen test transport, not by a production boolean or evidence label. The Harness observes the actual request target/body/count and raw response, then correlates them with gate output and persisted evidence.
+15. File-based configuration may load only the approved non-sensitive `ARGO_EMBEDDING_*` allowlist. Any dotenv, `.env`, or configuration-object path capable of supplying `QWEN_KEY` is prohibited; missing process injection blocks before production loading, network access, or Neo4j.
 
 ## Stable architecture elements
 
