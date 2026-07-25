@@ -147,13 +147,13 @@ async function runLiveProviderSecretIsolation() {
 }
 
 async function runRedactionCanaryProbe(createGate) {
-  const canary = `redaction-canary-${crypto.randomUUID()}`;
-  const transport = createFailureTransport('provider-error', canary);
+  const failureCanary = `redaction-failure-canary-${crypto.randomUUID()}`;
+  const transport = createFailureTransport('provider-error', failureCanary);
   const indexBoundary = createInMemoryZeroWriteBoundary();
   const logger = createCapturingLogger();
   const captured = await captureProcessOutput(async () => {
     const gate = createGate({
-      environment: approvedSyntheticEnvironment(canary),
+      environment: approvedSyntheticEnvironment(`synthetic-process-key-${crypto.randomUUID()}`),
       transport,
       indexBoundary,
       logger,
@@ -172,12 +172,84 @@ async function runRedactionCanaryProbe(createGate) {
     { name: 'latestFailureRecords', value: readOptional('design/KG/test-failure-records.json') },
     ...readPersistentArtifactsRecursively(),
   ];
+  const syntheticSuccess = await runSyntheticSuccessCanaryProbe(createGate);
   return {
-    category: captured.result.category,
+    failure: {
+      category: captured.result.category,
+      providerCalls: transport.observation().callCount,
+      writes: indexBoundary.writeCount(),
+      leaks: findSecretLeaks(failureCanary, artifacts),
+    },
+    syntheticSuccess,
+    inspectedArtifactNames: [
+      ...artifacts.map(artifact => artifact.name),
+      'cypherTextAndParameters',
+      'graphEvidence',
+    ],
+  };
+}
+
+async function runSyntheticSuccessCanaryProbe(createGate) {
+  const canary = `redaction-success-canary-${crypto.randomUUID()}`;
+  const vector = Array.from({ length: 1024 }, (_, index) => index / 2048);
+  const transport = createSyntheticSuccessTransport(vector);
+  const indexBoundary = createRecordingInMemoryIndexBoundary();
+  const gate = createGate({
+    environment: approvedSyntheticEnvironment(`synthetic-process-key-${crypto.randomUUID()}`),
+    transport,
+    indexBoundary,
+    logger: createCapturingLogger(),
+  });
+  await gate.executeApprovedEmbedding({
+    input: `Argo synthetic success ${crypto.randomUUID()}`,
+    qualification: approvedProviderProfile(),
+    ...dynamicEvidenceIdentities(),
+    canonicalIdentity: canary,
+  });
+  const recordedChannels = [
+    { name: 'cypherTextAndParameters', value: indexBoundary.observedCypher() },
+    { name: 'graphEvidence', value: indexBoundary.readEvidence() },
+  ];
+  const detectedLeakChannels = findSecretLeaks(canary, recordedChannels);
+  const persistedBeforeCleanup = indexBoundary.persistedCount();
+  await indexBoundary.cleanup();
+  const postCleanupArtifacts = [
+    { name: 'cypherTextAndParameters', value: indexBoundary.observedCypher() },
+    { name: 'graphEvidence', value: indexBoundary.readEvidence() },
+    ...readPersistentArtifactsRecursively(),
+  ];
+  return {
     providerCalls: transport.observation().callCount,
-    writes: indexBoundary.writeCount(),
-    inspectedArtifactNames: artifacts.map(artifact => artifact.name),
-    leaks: findSecretLeaks(canary, artifacts),
+    detectedLeakChannels,
+    persistedBeforeCleanup,
+    persistedAfterCleanup: indexBoundary.persistedCount(),
+    postCleanupLeaks: findSecretLeaks(canary, postCleanupArtifacts),
+    generatedArtifactLeaks: findSecretLeaks(canary, readPersistentArtifactsRecursively()),
+  };
+}
+
+async function runRecordingBoundaryCanarySelfTest() {
+  const canary = `recording-boundary-canary-${crypto.randomUUID()}`;
+  const indexBoundary = createRecordingInMemoryIndexBoundary();
+  await indexBoundary.writeEvidence({
+    displayLabel: canary,
+    nested: { neutralValue: canary },
+  });
+  const detectedLeakChannels = findSecretLeaks(canary, [
+    { name: 'cypherTextAndParameters', value: indexBoundary.observedCypher() },
+    { name: 'graphEvidence', value: indexBoundary.readEvidence() },
+  ]);
+  const persistedBeforeCleanup = indexBoundary.persistedCount();
+  await indexBoundary.cleanup();
+  return {
+    detectedLeakChannels,
+    persistedBeforeCleanup,
+    persistedAfterCleanup: indexBoundary.persistedCount(),
+    postCleanupLeaks: findSecretLeaks(canary, [
+      { name: 'cypherTextAndParameters', value: indexBoundary.observedCypher() },
+      { name: 'graphEvidence', value: indexBoundary.readEvidence() },
+      ...readPersistentArtifactsRecursively(),
+    ]),
   };
 }
 
@@ -235,6 +307,19 @@ function createFailureTransport(mode, canary = 'synthetic-provider-error') {
       const vector = Array.from({ length }, (_, index) => (
         mode === 'non-finite-vector' && index === 11 ? Number.NaN : index / 1024
       ));
+      return fakeJsonResponse({ data: [{ embedding: vector }] });
+    },
+    observation() {
+      return { callCount };
+    },
+  };
+}
+
+function createSyntheticSuccessTransport(vector) {
+  let callCount = 0;
+  return {
+    async request() {
+      callCount += 1;
       return fakeJsonResponse({ data: [{ embedding: vector }] });
     },
     observation() {
@@ -378,6 +463,34 @@ function createInMemoryZeroWriteBoundary() {
     },
     writeCount() {
       return writes;
+    },
+  };
+}
+
+function createRecordingInMemoryIndexBoundary() {
+  const graphEvidence = [];
+  const cypherTextAndParameters = [];
+  return {
+    async writeEvidence(evidence) {
+      const capturedEvidence = structuredClone(evidence);
+      graphEvidence.push(capturedEvidence);
+      cypherTextAndParameters.push({
+        cypher: 'CREATE (e:ArgoLiveEmbeddingEvidence) SET e = $evidence',
+        parameters: { evidence: capturedEvidence },
+      });
+    },
+    observedCypher() {
+      return structuredClone(cypherTextAndParameters);
+    },
+    readEvidence() {
+      return structuredClone(graphEvidence);
+    },
+    persistedCount() {
+      return graphEvidence.length;
+    },
+    async cleanup() {
+      graphEvidence.length = 0;
+      cypherTextAndParameters.length = 0;
     },
   };
 }
@@ -562,6 +675,7 @@ module.exports = {
   findSecretLeaks,
   runLiveEmbeddingProviderE2E,
   runLiveProviderSecretIsolation,
+  runRecordingBoundaryCanarySelfTest,
   runRedactionCanaryProbe,
   safeCategory,
 };

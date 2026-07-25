@@ -53,8 +53,10 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Credentials are values, never module-level defaults; provider credentials must never be interpolated into or transported through Cypher.
 - Cypher credential protection follows query and parameter variables structurally into execution calls; keyword-distance windows are not acceptable enforcement.
 - Local `.env` loading accepts only `ARGO_EMBEDDING_BASE_URL`, `ARGO_EMBEDDING_MODEL`, `ARGO_EMBEDDING_PROVIDER`, `ARGO_EMBEDDING_MODEL_VERSION`, and `ARGO_EMBEDDING_DIMENSIONS`. It rejects unknown/implicit provider identity and never loads `QWEN_KEY` from a file.
+- Loader verification follows value provenance through parsed dotenv/JSON/YAML/config objects, aliases, fallbacks, destructuring, and indirect assignments. Only the five non-sensitive fields may originate in file configuration; the secret source must be the direct expression `process.env.QWEN_KEY`.
 - The approved live profile is provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`, endpoint `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification `qualification-2026-07-25`, dimensions `1024`.
 - Live network access requires explicit opt-in through `ARGO_LIVE_PROVIDER_E2E=1` and is restricted to controlled local or protected CI execution. Default/offline CI remains deterministic but never substitutes fake evidence for a live pass.
+- Redaction verification includes a synthetic-success recording boundary that captures full Cypher text/parameter and graph-evidence values, detects canaries in neutral fields, and clears all in-memory persistence before inspecting generated artifacts.
 - The controlled Neo4j test boundary uses process-injected `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, `ARGO_NEO4J_PASSWORD`, and optional `ARGO_NEO4J_DATABASE`; no Neo4j credential is written to `.env.example` or persisted evidence.
 
 ## Owned tests
