@@ -29,11 +29,10 @@ const issuedTraces = new WeakSet();
 const invalidTraces = new WeakSet();
 const prohibitedTraces = new WeakSet();
 
-async function resolveApprovedLiveConfiguration(options = {}) {
-  if (options.adapters && options.adapters.source) throw safeError('SOURCE_ADAPTER_UNTRUSTED');
+async function resolveApprovedLiveConfiguration(options) {
+  requireProductionOptions(options);
   const repositoryRoot = requireRoot(options.repositoryRoot);
-  const environment = options.environment === undefined ? process.env : options.environment;
-  if (!environment || environment.ARGO_LIVE_PROVIDER_E2E !== '1') {
+  if (process.env.ARGO_LIVE_PROVIDER_E2E !== '1') {
     throw safeError('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED');
   }
   return resolveTrusted({
@@ -43,7 +42,7 @@ async function resolveApprovedLiveConfiguration(options = {}) {
       systemMetadata: createSystemMetadataCommandAdapter({ repositoryRoot }),
     },
     source: createTrustedSource({
-      behavior: productionSourceBehavior(repositoryRoot, environment),
+      behavior: productionSourceBehavior(repositoryRoot),
     }),
   });
 }
@@ -342,10 +341,10 @@ function parseAcl(output) {
   return result;
 }
 
-function productionSourceBehavior(repositoryRoot, environment) {
+function productionSourceBehavior(repositoryRoot) {
   return Object.freeze({
     expectedFilePath: path.join(repositoryRoot, '.argo', '.env'),
-    readProcessKey: key => environment[key],
+    readProcessKey: key => process.env[key],
     readFileEntries: filePath => parseEnv(fs.readFileSync(filePath, 'utf8')),
   });
 }
@@ -365,6 +364,18 @@ function parseEnv(text) {
 function requireRoot(value) {
   if (typeof value !== 'string' || value.trim() === '') throw safeError('LIVE_PROVIDER_CONFIGURATION_REQUIRED');
   return path.resolve(value);
+}
+
+function requireProductionOptions(options) {
+  if (
+    !options
+    || typeof options !== 'object'
+    || Array.isArray(options)
+    || Reflect.ownKeys(options).length !== 1
+    || Reflect.ownKeys(options)[0] !== 'repositoryRoot'
+  ) {
+    throw safeError('SOURCE_ADAPTER_UNTRUSTED');
+  }
 }
 
 function present(value) {

@@ -36,17 +36,35 @@ function withSystemMetadataCommandTestComposition(options = {}, callback) {
     forbiddenValues: Array.isArray(options.forbiddenValues) ? [...options.forbiddenValues] : [],
   });
   let result;
+  let then;
+  let asyncRevocationOwner = false;
   try {
     result = callback(composition.adapter);
-  } catch (error) {
-    composition.revoke();
-    throw error;
+    if (
+      result !== null
+      && (typeof result === 'object' || typeof result === 'function')
+    ) {
+      then = result.then;
+    }
+    if (typeof then === 'function') {
+      asyncRevocationOwner = true;
+      return assimilateThenable(result, then, composition.revoke);
+    }
+    return undefined;
+  } finally {
+    if (!asyncRevocationOwner) composition.revoke();
   }
-  if (result && typeof result.then === 'function') {
-    return Promise.resolve(result).then(() => undefined).finally(composition.revoke);
+}
+
+async function assimilateThenable(value, then, revoke) {
+  try {
+    await new Promise((resolve, reject) => {
+      then.call(value, resolve, reject);
+    });
+    return undefined;
+  } finally {
+    revoke();
   }
-  composition.revoke();
-  return undefined;
 }
 
 function createAdapter({
