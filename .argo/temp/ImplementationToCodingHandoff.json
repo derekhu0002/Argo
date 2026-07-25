@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T12:22:00+08:00",
+  "generatedAt": "2026-07-25T12:45:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -184,8 +184,8 @@
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Use module-owned withApprovedLiveConfigurationTestComposition to wrap raw fixture operation behaviors and privately issue immutable value/trace envelopes; direct resolver calls inject untrusted/cloned/self-issued adapters; trusted composition issues exact-schema mismatch traces.",
-      "observationPoint": "Reject untrusted adapter identities with SOURCE_ADAPTER_UNTRUSTED and key/path mismatch, missing/extra fields, or wrong field types with SOURCE_TRACE_INVALID; preserve complete normalization, provenance, ACL, auth-channel, zero-side-effect, and redaction evidence.",
+      "controlPoint": "Use module-owned test composition for provenance fixtures and stable artifact serialization for accepted/blocked outcomes, including rawError undefined/null, primitives, Error, AggregateError, objects, buffers, and cycles.",
+      "observationPoint": "Accepted source fixtures continue when rawError is undefined; undefined/null channels remain empty; every value-bearing canary channel remains detectable; all provenance trust, ACL, 11-channel auth, zero-side-effect, and redaction assertions remain intact.",
       "expectedStatus": "passed"
     }
   ],
@@ -536,7 +536,7 @@
     "Live network and real credentials remain unavailable to default CI. Both live entrypoints stay failed until controlled execution supplies both secrets through approved direct process or preflighted .argo/.env sources.",
     "Human-reported metadata-only preflight now passes after ACL tightening to Administrator/Administrators/SYSTEM. No value was read or recorded; .argo/.env remains ignored, untracked, absent from HEAD, and excluded from every commit.",
     "Before Coding implements liveEmbeddingProviderConfig.js, direct execution of the frozen source matrix honestly fails with LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING. Critical design guards verify the matrix is wired to that future production export and execute exact fixture outcomes once it exists.",
-    "This revision changes frozen Harness, explicit-entry, and critical-guard contracts after the prior approval. Coding may resume C8-C10 only after explicit human re-approval of this handoff.",
+    "This revision fixes the frozen Harness artifact-serialization contract and updates its critical guard after Coding stopped on accepted rawError: undefined. Coding may resume C8-C10 only after explicit human re-approval of this handoff.",
     "ExplicitAcceptanceTestcase-TS-08 remains mounted and frozen out-of-scope evidence. The TS-09 physical path remains frozen for backward protection but no TS-09 element, testcase, relationship, Coding target, task, or completion authorization is included.",
     "The original six scoped entrypoints and seven critical guards remain a mandatory C1-C6 checkpoint. Expanded completion adds two live entrypoints and three critical guards without changing runner-owned global delivery semantics."
   ]

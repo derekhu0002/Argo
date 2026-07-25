@@ -7,6 +7,7 @@ const {
   APPROVED_SOURCE_FIXTURES,
   findSecretLeaks,
   runApprovedSourceFixtureMatrix,
+  runArtifactSerializationContractSelfTest,
   runAuthenticationLeakDetectorSelfTest,
   runNeo4jAuthenticationCanaryProbe,
   runStructuredSourceAdapterContractSelfTest,
@@ -47,6 +48,27 @@ assert.deepStrictEqual(
   ]),
   [],
   'LIVE_PROVIDER_SECRET_GUARD: safe artifacts were rejected',
+);
+const artifactSerializationSelfTest = runArtifactSerializationContractSelfTest(syntheticSecret);
+assert.deepStrictEqual(
+  artifactSerializationSelfTest.stableKinds,
+  ['undefined', 'null', 'number', 'boolean', 'bigint', 'symbol', 'error', 'aggregateError', 'object'],
+  'LIVE_PROVIDER_SECRET_GUARD: artifact serialization does not return stable strings',
+);
+assert.deepStrictEqual(
+  artifactSerializationSelfTest.emptyChannelLeaks,
+  [],
+  'LIVE_PROVIDER_SECRET_GUARD: undefined/null channels are not safely empty',
+);
+assert.deepStrictEqual(
+  artifactSerializationSelfTest.detectedCanaryChannels,
+  ['string', 'symbol', 'error', 'aggregateError', 'object', 'buffer', 'circular'],
+  'LIVE_PROVIDER_SECRET_GUARD: artifact serialization masked a canary channel',
+);
+assert.strictEqual(
+  artifactSerializationSelfTest.acceptedFixtureContinued,
+  true,
+  'LIVE_PROVIDER_SECRET_GUARD: accepted fixture rawError undefined interrupted source scanning',
 );
 assert.deepStrictEqual(
   runAuthenticationLeakDetectorSelfTest(syntheticSecret),

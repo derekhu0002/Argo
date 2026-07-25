@@ -494,20 +494,12 @@ async function runApprovedSourceFixture(configurationBoundary, fixture) {
       }
     });
     const outcome = captured.result;
-    const leaks = [
-      ...findSecretLeaks(qwen, [
-        { name: 'configurationError', value: outcome.rawError },
-        { name: 'stdout', value: captured.stdout },
-        { name: 'stderr', value: captured.stderr },
-        ...readPersistentArtifactsRecursively(),
-      ]),
-      ...findSecretLeaks(neo4jPassword, [
-        { name: 'configurationError', value: outcome.rawError },
-        { name: 'stdout', value: captured.stdout },
-        { name: 'stderr', value: captured.stderr },
-        ...readPersistentArtifactsRecursively(),
-      ]),
-    ];
+    const leaks = findSourceOutcomeLeaks({
+      outcome,
+      captured,
+      qwen,
+      neo4jPassword,
+    });
     const observation = {
       name: fixture.name,
       status: outcome.status,
@@ -989,6 +981,48 @@ function runAuthenticationLeakDetectorSelfTest(canary) {
   ]).includes(name));
 }
 
+function runArtifactSerializationContractSelfTest(canary) {
+  const stableValues = [
+    ['undefined', undefined],
+    ['null', null],
+    ['number', 42],
+    ['boolean', true],
+    ['bigint', 42n],
+    ['symbol', Symbol('stable')],
+    ['error', new Error('stable')],
+    ['aggregateError', new AggregateError([new Error('stable')], 'aggregate')],
+    ['object', { stable: true }],
+  ];
+  const circular = { value: canary };
+  circular.self = circular;
+  const canaryChannels = [
+    { name: 'string', value: canary },
+    { name: 'symbol', value: Symbol(canary) },
+    { name: 'error', value: new Error('outer', { cause: new Error(canary) }) },
+    { name: 'aggregateError', value: new AggregateError([new Error(canary)], 'aggregate') },
+    { name: 'object', value: { neutral: canary } },
+    { name: 'buffer', value: Buffer.from(canary) },
+    { name: 'circular', value: circular },
+  ];
+  return {
+    stableKinds: stableValues
+      .filter(([, value]) => typeof serializeArtifact(value) === 'string')
+      .map(([kind]) => kind),
+    emptyChannelLeaks: findSecretLeaks(canary, [
+      { name: 'undefined', value: undefined },
+      { name: 'null', value: null },
+    ]),
+    detectedCanaryChannels: findSecretLeaks(canary, canaryChannels),
+    acceptedFixtureContinued: findSourceOutcomeLeaks({
+      outcome: { status: 'accepted', rawError: undefined },
+      captured: { stdout: '', stderr: '' },
+      qwen: 'accepted-qwen-canary',
+      neo4jPassword: 'accepted-neo4j-canary',
+      artifacts: [],
+    }).length === 0,
+  };
+}
+
 function loadApprovedNeo4jBoundaryFactory() {
   if (!fs.existsSync(liveNeo4jBoundaryPath)) {
     throw safeError('LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING');
@@ -1205,6 +1239,25 @@ function findSecretLeaks(secret, artifacts) {
     .map(artifact => artifact.name);
 }
 
+function findSourceOutcomeLeaks({
+  outcome,
+  captured,
+  qwen,
+  neo4jPassword,
+  artifacts = readPersistentArtifactsRecursively(),
+}) {
+  const channels = [
+    { name: 'configurationError', value: outcome.rawError },
+    { name: 'stdout', value: captured.stdout },
+    { name: 'stderr', value: captured.stderr },
+    ...artifacts,
+  ];
+  return [
+    ...findSecretLeaks(qwen, channels),
+    ...findSecretLeaks(neo4jPassword, channels),
+  ];
+}
+
 function findForbiddenSecretFields(artifacts) {
   const forbidden = /(?:authorization|api[_-]?key|credential|secret|token)/i;
   const findings = [];
@@ -1227,15 +1280,26 @@ function inspectKeys(value, location, forbidden, findings) {
 }
 
 function serializeArtifact(value) {
+  if (value === undefined || value === null) {
+    return '';
+  }
   if (typeof value === 'string') {
     return value;
   }
-  return JSON.stringify(toSerializableArtifact(value, new WeakSet()));
+  if (Buffer.isBuffer(value)) {
+    return value.toString('utf8');
+  }
+  if (typeof value !== 'object') {
+    return String(value);
+  }
+  const serialized = JSON.stringify(toSerializableArtifact(value, new WeakSet()));
+  return typeof serialized === 'string' ? serialized : '';
 }
 
 function toSerializableArtifact(value, seen) {
   if (Buffer.isBuffer(value)) return value.toString('utf8');
-  if (value === null || value === undefined || typeof value !== 'object') return value;
+  if (value === null || value === undefined) return '';
+  if (typeof value !== 'object') return String(value);
   if (seen.has(value)) return '[circular]';
   seen.add(value);
   if (value instanceof Error) {
@@ -1245,6 +1309,10 @@ function toSerializableArtifact(value, seen) {
       stack: value.stack || '',
       cause: toSerializableArtifact(value.cause, seen),
       errors: toSerializableArtifact(value.errors, seen),
+      properties: Object.fromEntries(Object.entries(value).map(([key, child]) => [
+        key,
+        toSerializableArtifact(child, seen),
+      ])),
     };
   }
   if (Array.isArray(value)) return value.map(item => toSerializableArtifact(item, seen));
@@ -1303,6 +1371,7 @@ module.exports = {
   runLiveProviderSecretIsolation,
   runNeo4jAuthenticationCanaryProbe,
   runApprovedSourceFixtureMatrix,
+  runArtifactSerializationContractSelfTest,
   runAuthenticationLeakDetectorSelfTest,
   runStructuredSourceAdapterContractSelfTest,
   runRecordingBoundaryCanarySelfTest,
