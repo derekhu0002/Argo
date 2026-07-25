@@ -12,6 +12,12 @@ async function main() {
     anchors: ['grag-view-closure'],
     viewClosureFixture: {
       targetViewId: 'grag-integrity-explainability',
+      overlappingViewIds: [
+        'grag-quality-capacity',
+        'grag-vertical-chain-b',
+      ],
+      independentlyMatchedViewIds: [],
+      explicitlyRequestedViewIds: [],
       requiresRelationships: true,
       parentViewpointRequired: true,
       overlappingViewsMustNotCascade: true,
@@ -23,6 +29,13 @@ async function main() {
 
   // THEN the target View is complete and overlapping Views do not cascade
   assertCompleteViewClosure(result, {
+    targetViewId: 'grag-integrity-explainability',
+    overlappingViewIds: [
+      'grag-quality-capacity',
+      'grag-vertical-chain-b',
+    ],
+    independentlyMatchedViewIds: [],
+    explicitlyRequestedViewIds: [],
     requiresRelationships: true,
     parentViewpointRequired: true,
   });

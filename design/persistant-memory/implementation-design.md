@@ -154,3 +154,9 @@
 - DT-13 now requires a non-empty endpointClosure relationship set, source/target ids, endpoint object id matching, and same-version evidence tied to the governing result version.
 - DT-14 now requires exact included element ids to match member object ids, exact included relationship ids to match relationship objects, non-empty in-View relationship fixtures, complete endpoints, and parent viewpoint evidence when expected.
 - DT-15 now carries explicit duplicate-path fixtures and asserts ordered first-reason selection, supplementary non-overwrite, policy id, policy parameters/anchors, canonical/content/index versions, and alignment state.
+
+## 2026-07-26 W6 DT-14 non-cascade repair
+
+- Repaired the remaining DT-14 loophole after human review: a false `overlappingViewCascade` flag is no longer sufficient evidence.
+- `runCompleteViewClosure.js` now names target View `grag-integrity-explainability` and overlapping Views `grag-quality-capacity` and `grag-vertical-chain-b`, with no independently matched or explicitly requested overlaps in this fixture.
+- `assertCompleteViewClosure()` now requires target View presence and fails `DT14_OVERLAPPING_VIEW_RETURNED` if either overlapping View id appears without explicit allowance.

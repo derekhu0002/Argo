@@ -47,9 +47,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runCompleteViewClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCompleteViewClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:284:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:25:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:284:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:31:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:284:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:25:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:284:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:31:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-15",
@@ -60,9 +60,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runFirstInclusionProvenance.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runFirstInclusionProvenance.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:330:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:51:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:349:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:51:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:330:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:51:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:349:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:51:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-18",

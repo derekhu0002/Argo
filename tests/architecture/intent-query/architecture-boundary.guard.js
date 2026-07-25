@@ -40,7 +40,8 @@ assert(
 );
 assert(
   graphRagContract.includes('W6 structural result completion')
-    && graphRagContract.includes('overlapping-View cascade')
+    && graphRagContract.includes('explicitly targeted View')
+    && graphRagContract.includes('exclude named overlapping Views')
     && graphRagContract.includes('policy/index/version evidence'),
   'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W6 structural result semantics',
 );

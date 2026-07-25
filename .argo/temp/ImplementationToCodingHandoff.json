@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T00:12:00+08:00",
+  "generatedAt": "2026-07-26T00:24:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "W6 structural closure and explainable results handoff. Coding/Repair must preserve W4 seed retrieval and W5 purpose-policy selection while adding coherent-result canonical-version evidence, same-version relationship endpoint closure, complete non-cascading View closure, and single first-inclusion provenance with policy/index/version evidence.",
   "implementationContracts": [
@@ -31,8 +31,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
       "entryPath": "tests/explicit/entries/runCompleteViewClosure.js",
-      "controlPoint": "Run a matched View query where the selected View shares members with overlapping Views and requires in-View relationships plus a parent viewpoint.",
-      "observationPoint": "The selected View includes complete metadata, viewpoint binding, parent viewpoint, exact included element ids matching member objects, exact relationship ids matching relationship objects, complete relationship endpoints, and no overlapping-View cascade.",
+      "controlPoint": "Run a matched View query naming target View grag-integrity-explainability and overlapping Views grag-quality-capacity and grag-vertical-chain-b, requiring in-View relationships plus a parent viewpoint.",
+      "observationPoint": "The target View is present; overlapping Views are absent unless independently matched or explicitly requested; selected Views include complete metadata, viewpoint binding, parent viewpoint, exact included element ids matching member objects, exact relationship ids matching relationship objects, and complete relationship endpoints.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runCompleteViewClosure.js",
       "failureReason": "DT14_VIEW_CLOSURE_MISSING"
@@ -99,8 +99,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT14_VIEW_CLOSURE_MISSING / DT14_MEMBER_OBJECT_SET_INCOMPLETE / DT14_RELATIONSHIP_OBJECT_SET_INCOMPLETE / DT14_PARENT_VIEWPOINT_MISSING",
-      "nextAction": "Add complete selected-View closure with metadata, parent viewpoint, exact member and relationship object sets, endpoint-complete in-View relationships, and explicit non-cascade evidence for overlapping Views."
+      "failureSignal": "DT14_VIEW_CLOSURE_MISSING / DT14_TARGET_VIEW_NOT_RETURNED / DT14_OVERLAPPING_VIEW_RETURNED / DT14_MEMBER_OBJECT_SET_INCOMPLETE / DT14_RELATIONSHIP_OBJECT_SET_INCOMPLETE / DT14_PARENT_VIEWPOINT_MISSING",
+      "nextAction": "Add complete selected-View closure that returns the target View by id, excludes named overlapping Views unless independently matched or explicitly requested, and includes metadata, parent viewpoint, exact member and relationship object sets, and endpoint-complete in-View relationships."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
@@ -165,9 +165,10 @@
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Build viewClosure only for Views independently matched or explicitly requested by the W5/W6 query.",
+          "Build viewClosure only for the target View grag-integrity-explainability and any Views independently matched or explicitly requested by the W5/W6 query.",
+          "Reject grag-quality-capacity and grag-vertical-chain-b when they appear only through shared membership overlap.",
           "Return View metadata, viewpoint binding or description, required parent viewpoint, exact member ids/objects, exact relationship ids/objects, and endpoint objects.",
-          "Record overlappingViewCascade as false when shared members do not select additional Views.",
+          "Record overlappingViewCascade as false only after the returned View ids prove no unrequested overlap cascade.",
           "Run node tests/explicit/entries/runCompleteViewClosure.js until it passes."
         ],
         "completionSignal": "runCompleteViewClosure.js exits 0 and overlapping Views are not returned by membership alone."

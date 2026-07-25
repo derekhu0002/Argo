@@ -284,6 +284,25 @@ function assertCompleteViewClosure(result, expectation = {}) {
   assert(viewClosure && typeof viewClosure === 'object', 'DT14_VIEW_CLOSURE_MISSING');
   assert(Array.isArray(viewClosure.views) && viewClosure.views.length > 0, 'DT14_TARGET_VIEW_MISSING');
   assert.strictEqual(viewClosure.overlappingViewCascade, false, 'DT14_OVERLAPPING_VIEW_CASCADE');
+  const returnedViewIds = viewClosure.views.map(view => view && view.view_id).filter(Boolean);
+  if (expectation.targetViewId) {
+    assert(
+      returnedViewIds.includes(expectation.targetViewId),
+      `DT14_TARGET_VIEW_NOT_RETURNED: ${expectation.targetViewId}`,
+    );
+  } else {
+    assert(false, 'DT14_TARGET_VIEW_ID_MISSING');
+  }
+  const allowedOverlaps = new Set([
+    ...(expectation.independentlyMatchedViewIds || []),
+    ...(expectation.explicitlyRequestedViewIds || []),
+  ]);
+  for (const overlappingViewId of expectation.overlappingViewIds || []) {
+    assert(
+      !returnedViewIds.includes(overlappingViewId) || allowedOverlaps.has(overlappingViewId),
+      `DT14_OVERLAPPING_VIEW_RETURNED: ${overlappingViewId}`,
+    );
+  }
   for (const view of viewClosure.views) {
     assert(view.view_id && view.view_name, 'DT14_VIEW_METADATA_MISSING');
     assert(view.viewpointBinding || view.description, 'DT14_VIEWPOINT_BINDING_MISSING');

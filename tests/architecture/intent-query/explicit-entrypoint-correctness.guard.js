@@ -76,6 +76,8 @@ const requiredObservations = new Map([
   ['tests/explicit/entries/runCompleteViewClosure.js', [
     'assertCompleteViewClosure',
     'viewClosureFixture',
+    'targetViewId',
+    'overlappingViewIds',
   ]],
   ['tests/explicit/entries/runFirstInclusionProvenance.js', [
     'assertFirstInclusionProvenance',
@@ -160,6 +162,9 @@ for (const harnessOwnedAssertion of [
   'DT13_RELATIONSHIPS_EMPTY',
   'DT13_SOURCE_ID_MISMATCH',
   'DT14_VIEW_CLOSURE_MISSING',
+  'DT14_TARGET_VIEW_ID_MISSING',
+  'DT14_TARGET_VIEW_NOT_RETURNED',
+  'DT14_OVERLAPPING_VIEW_RETURNED',
   'DT14_MEMBER_OBJECT_SET_INCOMPLETE',
   'DT14_PARENT_VIEWPOINT_MISSING',
   'DT15_PROVENANCE_EVIDENCE_MISSING',
