@@ -2,11 +2,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const neo4j = require('neo4j-driver');
+const {
+  resolveExternalProductionConfig,
+} = require('./graph-rag/externalProductionConfig.js');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
-const DEFAULT_NEO4J_URI = 'neo4j://127.0.0.1:7687';
-const DEFAULT_NEO4J_USERNAME = 'neo4j';
-const DEFAULT_NEO4J_PASSWORD = '1357924680';
 const SYNC_STATE_RELATIVE_PATH = '.argo/temp/neo4j-system-architecture-sync-state.json';
 
 function getRepoRoot() {
@@ -37,12 +37,28 @@ function getDefaultNeo4jDatabaseName() {
 }
 
 function getNeo4jConfig(overrides = {}) {
+  const external = resolveExternalProductionConfig({
+    neo4jUri: selectExternalValue(overrides.uri, process.env.ARGO_NEO4J_URI),
+    neo4jUsername: selectExternalValue(overrides.username, process.env.ARGO_NEO4J_USERNAME),
+    neo4jPassword: selectExternalValue(overrides.password, process.env.ARGO_NEO4J_PASSWORD),
+    embeddingCredential: selectExternalValue(
+      overrides.embeddingCredential,
+      process.env.ARGO_EMBEDDING_CREDENTIAL,
+    ),
+  }, { operation: 'start' });
   return {
-    uri: overrides.uri || process.env.ARGO_NEO4J_URI || DEFAULT_NEO4J_URI,
-    username: overrides.username || process.env.ARGO_NEO4J_USERNAME || DEFAULT_NEO4J_USERNAME,
-    password: overrides.password || process.env.ARGO_NEO4J_PASSWORD || DEFAULT_NEO4J_PASSWORD,
+    uri: external.neo4jUri,
+    username: external.neo4jUsername,
+    password: external.neo4jPassword,
     database: overrides.database || process.env.ARGO_NEO4J_DATABASE || getDefaultNeo4jDatabaseName(),
   };
+}
+
+function selectExternalValue(overrideValue, environmentValue) {
+  if (overrideValue !== undefined) {
+    return overrideValue;
+  }
+  return environmentValue;
 }
 
 function createDriver(config = {}) {

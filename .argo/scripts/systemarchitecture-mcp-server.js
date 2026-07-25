@@ -98,6 +98,9 @@ const {
 } = require('./graph-semantics.js');
 const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js');
 const {
+  createProductionGraphRagRuntime,
+} = require('./graph-rag/productionGraphRagRuntime.js');
+const {
   DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
   recoverNeo4jSyncIfNeeded,
   syncArchitectureToNeo4j,
@@ -1474,7 +1477,7 @@ async function callTool(name, args = {}, dependencies = undefined) {
         }, context));
       }
 
-      const semanticRetrievalBoundary = dependencies && dependencies.semanticRetrievalBoundary;
+      const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies);
       if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
         return getSystemArchitectureResult(queryError(
           'SEMANTIC_RETRIEVAL_UNAVAILABLE',
@@ -1571,6 +1574,31 @@ async function callTool(name, args = {}, dependencies = undefined) {
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+function resolveSemanticRetrievalBoundary(dependencies) {
+  if (!dependencies) {
+    return undefined;
+  }
+  if (
+    dependencies.semanticRetrievalBoundary
+    && typeof dependencies.semanticRetrievalBoundary.retrieve === 'function'
+  ) {
+    return dependencies.semanticRetrievalBoundary;
+  }
+
+  const runtime = dependencies.productionGraphRagRuntime
+    || (dependencies.productionGraphRagDependencies
+      ? createProductionGraphRagRuntime(dependencies.productionGraphRagDependencies)
+      : undefined);
+  if (!runtime || typeof runtime.querySemantic !== 'function') {
+    return undefined;
+  }
+  return {
+    retrieve(request) {
+      return runtime.querySemantic(request);
+    },
+  };
 }
 
 function attachContextWarnings(payload, context) {
