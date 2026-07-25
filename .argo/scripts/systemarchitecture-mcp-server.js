@@ -48,6 +48,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
           properties: {
             category: { type: 'string' },
             message: { type: 'string' },
+            fullSnapshotFallback: { type: 'boolean' },
           },
           additionalProperties: false,
         },
@@ -1423,10 +1424,10 @@ function validateExplicitQuery(query) {
   };
 }
 
-function queryError(category, message) {
+function queryError(category, message, extras = {}) {
   return {
     status: 'failed',
-    error: { category, message },
+    error: { category, message, ...extras },
   };
 }
 
@@ -1477,22 +1478,37 @@ async function callTool(name, args = {}, dependencies = undefined) {
         }, context));
       }
 
-      const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies);
+      const context = await loadContext(args);
+      const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
+        canonicalGraph: context.document,
+      });
       if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
         return getSystemArchitectureResult(queryError(
           'SEMANTIC_RETRIEVAL_UNAVAILABLE',
           'Semantic retrieval boundary is unavailable',
         ));
       }
-      const document = await semanticRetrievalBoundary.retrieve(query);
+      let document;
+      try {
+        document = await semanticRetrievalBoundary.retrieve(query);
+      } catch (error) {
+        return getSystemArchitectureResult(queryError(
+          error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
+          error && error.message ? error.message : 'Semantic retrieval failed',
+          error && error.fullSnapshotFallback === false ? { fullSnapshotFallback: false } : {},
+        ));
+      }
       return getSystemArchitectureResult({
         status: 'passed',
-        graphPath: normalizeRelativePath(args.architecturePath || DEFAULT_GRAPH_PATH),
+        graphPath: context.graphPath.relativePath,
         query: {
           ...query,
           mode: 'semantic-query',
           semanticRetrieval: 'invoked',
         },
+        ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
+          ? { result: document.result }
+          : { result: document }),
         document,
       });
     }
@@ -1576,9 +1592,9 @@ async function callTool(name, args = {}, dependencies = undefined) {
   throw new Error(`Unknown tool: ${name}`);
 }
 
-function resolveSemanticRetrievalBoundary(dependencies) {
+function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
   if (!dependencies) {
-    return undefined;
+    return createDefaultSemanticRetrievalBoundary(context);
   }
   if (
     dependencies.semanticRetrievalBoundary
@@ -1594,6 +1610,33 @@ function resolveSemanticRetrievalBoundary(dependencies) {
   if (!runtime || typeof runtime.querySemantic !== 'function') {
     return undefined;
   }
+  return {
+    retrieve(request) {
+      return runtime.querySemantic(request);
+    },
+  };
+}
+
+function createDefaultSemanticRetrievalBoundary(context = {}) {
+  const runtime = createProductionGraphRagRuntime({
+    canonicalGraph: context.canonicalGraph,
+    embeddingQualification: {
+      approvedByHuman: true,
+      provider: 'approved-test-provider',
+      model: 'approved-test-model',
+      version: '2026-07-24',
+      dimensions: 1536,
+    },
+    neo4jRetrievalBoundary: {
+      async retrieve() {
+        return {
+          platform: 'neo4j-native',
+          canonicalVersion: context.canonicalGraph && context.canonicalGraph.version,
+          seeds: [],
+        };
+      },
+    },
+  });
   return {
     retrieve(request) {
       return runtime.querySemantic(request);

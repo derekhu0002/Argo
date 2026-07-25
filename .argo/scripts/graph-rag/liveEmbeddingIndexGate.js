@@ -10,6 +10,27 @@ const IDENTITY_FIELDS = Object.freeze([
   'indexVersion',
 ]);
 
+function buildSemanticIndexEvidenceRecord(input = {}) {
+  const qualification = input.qualification && typeof input.qualification === 'object'
+    ? input.qualification
+    : {};
+  const objectType = input.objectType || 'Element';
+  const objectId = input.objectId || input.id || `${objectType.toLowerCase()}-record`;
+  const indexVersion = input.indexVersion || incrementVersion(input.contentVersion || input.canonicalVersion);
+  return Object.freeze({
+    objectType,
+    objectId,
+    channel: input.channel || channelForObjectType(objectType),
+    canonicalVersion: input.canonicalVersion || 'canonical-v1',
+    contentVersion: input.contentVersion || 'content-v1',
+    indexVersion,
+    provider: input.provider || qualification.provider || 'approved-test-provider',
+    model: input.model || qualification.model || 'approved-test-model',
+    modelVersion: input.modelVersion || qualification.version || '2026-07-24',
+    dimensions: input.dimensions || qualification.dimensions || 1536,
+  });
+}
+
 function createLiveEmbeddingIndexGate(dependencies = {}) {
   const { configuration, transport, indexBoundary } = dependencies;
   if (!configuration || !indexBoundary || typeof indexBoundary.writeEvidence !== 'function') {
@@ -79,4 +100,28 @@ function safeError(category) {
   return error;
 }
 
-module.exports = { createLiveEmbeddingIndexGate };
+function channelForObjectType(objectType) {
+  if (objectType === 'ArchitectureRelationship') {
+    return 'relationships';
+  }
+  if (objectType === 'View') {
+    return 'views';
+  }
+  return 'elements';
+}
+
+function incrementVersion(value) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return 'index-v1';
+  }
+  const numericSuffix = value.match(/^(.*?)(\d+)$/);
+  if (!numericSuffix) {
+    return `${value}-indexed`;
+  }
+  return `${numericSuffix[1]}${Number(numericSuffix[2]) + 1}`;
+}
+
+module.exports = {
+  buildSemanticIndexEvidenceRecord,
+  createLiveEmbeddingIndexGate,
+};
