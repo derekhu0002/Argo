@@ -142,7 +142,7 @@ The W7 Phase 1 Business Acceptance handoff owns these mounted explicit entrypoin
 - `tests/architecture/production-graph-rag/live-provider-opt-in.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 - `tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js` — `ExplicitEntrypointCorrectnessGuard`
 
-The coding-scope authorization guard freezes mounted TS-08 evidence while prohibiting seven-wave delivery targets from the handoff's authorized Coding scope. Corrected W3 handoffs may authorize TS-09 adapter/generation work through `codingTargets` and `taskExecutionPlan`.
+The coding-scope authorization guard freezes mounted TS-08 evidence and prohibits seven-wave delivery targets unless the current approved handoff explicitly includes TS-08. The W7 handoff includes `ExplicitAcceptanceTestcase-TS-08`, `tests/explicit/entries/runSevenWaveDeliveryGates.js`, and `evaluateDeliverySequence(request)`, authorizing only the delivery sequence gate described there. Corrected W3 handoffs may authorize TS-09 adapter/generation work through `codingTargets` and `taskExecutionPlan`.
 
 For the W3 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, and `implementation-traceability.guard.js` are the critical non-explicit guards. They protect the W3 stable boundary, dependency direction, frozen entrypoint assertions, and mappings to `grag-seed-retrieval`, `grag-semantic-index`, `grag-index-lifecycle`, `grag-alignment-constraint`, `grag-embedding-provider-adapter`, and `grag-embedding-generation`.
 
