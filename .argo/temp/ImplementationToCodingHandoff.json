@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T11:05:00+08:00",
+  "generatedAt": "2026-07-25T11:28:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -184,8 +184,8 @@
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Invoke production resolveApprovedLiveConfiguration for every temporary source/path/git/file/reparse/ACL fixture, then run provider and recording-Neo4j canary probes.",
-      "observationPoint": "Observe exact attribution/categories and zero fetch/driver/create/write effects; parse principal-bound ACL semantics; prove DB password reaches only neo4j.auth.basic and never recorded Cypher.",
+      "controlPoint": "Inject a complete nine-key approved configuration through structured process/file source adapters for every temporary path/git/file/reparse/ACL fixture, invoke production resolveApprovedLiveConfiguration, then invoke production createApprovedNeo4jBoundary with a recording adapter.",
+      "observationPoint": "Compare exact normalized configuration and per-key trace-derived attribution; observe unique rejection categories and zero side effects; prove ACL deny precedence and DB password use only in neo4j.auth.basic with zero auth-failure queries.",
       "expectedStatus": "passed"
     }
   ],
@@ -236,6 +236,11 @@
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
       "failureSignal": "LIVE_PROVIDER_REQUEST_FAILED / LIVE_PROVIDER_RESPONSE_INVALID",
       "nextAction": "Perform the explicitly opted-in real HTTPS request with explicit model and dimensions, returning sanitized request evidence and a finite 1024-value vector without exposing authorization data."
+    },
+    {
+      "path": ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
+      "failureSignal": "LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING / LIVE_PROVIDER_OPERATION_FAILED",
+      "nextAction": "Export createApprovedNeo4jBoundary({ configuration, neo4j, logger }); authenticate only through neo4j.auth.basic, verify connectivity before queries, and expose the controlled index evidence boundary."
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
@@ -413,7 +418,7 @@
       {
         "taskId": "W2-C8",
         "title": "Load the approved live provider profile",
-        "objective": "Resolve only the approved non-sensitive provider profile and process-injected provider secret after explicit live opt-in.",
+        "objective": "Resolve the complete approved live configuration from explicit process/file sources after opt-in, with trace-derived provenance and no defaults.",
         "dependsOn": [
           "W2-C7"
         ],
@@ -428,7 +433,9 @@
         "steps": [
           "Load approved non-sensitive profile and Neo4j URL/username only from direct process variables or exact repository-relative .argo/.env.",
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
-          "Implement the public resolveApprovedLiveConfiguration({ repositoryRoot, environment, argv, provenance, adapters }) boundary used directly by every frozen temporary fixture; do not add a test-only resolver.",
+          "Implement the public resolveApprovedLiveConfiguration({ repositoryRoot, adapters }) boundary used directly by every frozen temporary fixture; do not add a test-only resolver.",
+          "Require the structured source adapter to record source kind, path, key, read operation, and alias chain; derive provenance from that trace and reject caller-supplied provenance verdicts.",
+          "Normalize only when all five ARGO_EMBEDDING_* fields, ARGO_NEO4J_DATABASE_URL/USERNAME, and both secrets are explicitly present. Return exact normalized values and per-key source attribution; never fill defaults.",
           "Require ARGO_LIVE_PROVIDER_E2E=1, then preflight exact path, git ignored/untracked state, regular/non-reparse status, Windows ACL, duplicates, unknown secret keys, and both required secret sources before transport or Neo4j construction.",
           "Resolve QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD only from direct process variables or exact .argo/.env; process wins, equal duplicates pass, differing duplicates fail closed.",
           "Parse icacls ACEs by principal, allow/deny and inheritance; require effective read for the actual identity, reject broad allow and unverifiable output, and accept broad deny-only when current identity has effective read.",
@@ -450,12 +457,14 @@
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
+          ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
           ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
         ],
         "steps": [
           "Export createLiveEmbeddingIndexGate(dependencies) returning only executeApprovedEmbedding(input); do not add scenario-labelled production test branches.",
           "Use the Harness-injected transport for the Node.js HTTPS request so the frozen test owns call counting, origin/path/body observation, dynamic input, and raw response capture.",
           "Keep authorization headers and provider response errors out of returned evidence, logs, and thrown error messages.",
+          "Export createApprovedNeo4jBoundary({ configuration, neo4j, logger }); use only neo4j.auth.basic for database authentication, verify connectivity before query execution, and expose controlled count/write/read/cleanup methods.",
           "Accept only a finite numeric vector of exactly 1024 values after exact qualification.",
           "Persist provider/model/qualification/dimensions, the exact observed vector, and canonical/content/index identities and versions through the controlled Neo4j boundary exactly once.",
           "Inject unapproved identity, wrong or missing model/version/dimensions, provider error, non-finite vector, and dimension mismatch through the same executeApprovedEmbedding gate; reject every case before any write.",
@@ -484,7 +493,7 @@
           "Run all ten frozen critical guards in default/offline mode.",
           "In controlled local or protected CI only, use approved process/.argo/.env sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
           "Inject separate QWEN and Neo4j-password canaries through the real configuration boundary, provider error, and recording Neo4j auth failure; scan complete Cypher/graph values and all artifacts, then prove zero persistence.",
-          "Use a recording Neo4j adapter to assert the password is passed only to neo4j.auth.basic, authentication failure executes zero queries, and Cypher text/parameters contain no password.",
+          "Inject a recording Neo4j adapter through createApprovedNeo4jBoundary—not a Harness-private boundary—to assert the password is passed only to neo4j.auth.basic, authentication failure executes zero queries, and Cypher text/parameters contain no password.",
           "Compare the full runner against preCodingBaseline 34/14/20: the recorded grag-embedding-qualification delivered-to-not_delivered transition is accepted baseline, while any additional delivered regression fails completion.",
           "Commit only authorized Coding target paths."
         ],

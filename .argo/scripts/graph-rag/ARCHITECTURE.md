@@ -22,7 +22,9 @@ The four inward boundaries are independently callable and independently testable
 - `enforceCanonicalProjectionAuthority(input)` rejects or replaces stale/conflicting projection evidence without requiring runtime composition.
 - `createNeo4jNativeRetrieval(dependencies)` returns a `retrieve(request)` boundary that forwards each request exactly once and returns the injected query boundary's complete dynamic result unchanged.
 
-`resolveApprovedLiveConfiguration({ repositoryRoot, environment, argv, provenance, adapters })` is the single public configuration/preflight boundary. Frozen fixtures call this exact function with temporary files and injected filesystem, git, ACL, and forbidden-side-effect adapters. Accepted results expose sanitized source attribution (`process` or `file`) for each secret; rejected results expose only stable categories.
+`resolveApprovedLiveConfiguration({ repositoryRoot, adapters })` is the single public configuration/preflight boundary. Frozen fixtures call this exact function with temporary files and injected filesystem, git, ACL, structured-source, and forbidden-side-effect adapters. The source adapter records source kind/path/key/read operation/alias chain; callers cannot submit a provenance verdict. Accepted results expose the complete normalized approved configuration plus sanitized per-key source attribution; rejected results expose only stable categories.
+
+`createApprovedNeo4jBoundary({ configuration, neo4j, logger })` is the production connection/composition boundary. It alone passes username/password to `neo4j.auth.basic`, opens the driver, verifies connectivity before queries, and returns the controlled count/write/read/cleanup boundary used by the live index gate.
 
 `createProductionGraphRagRuntime(dependencies)` returns:
 
@@ -59,6 +61,7 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - The only secret keys are `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD`. Direct process values take precedence; matching process/file duplicates are accepted from process, differing duplicates fail closed, and missing/blank/duplicate/unknown-secret values are rejected.
 - Preflight requires exact canonical path, ignored/untracked evidence, regular non-reparse file state, and a Windows ACL result proving current-identity read access without `Everyone`, `BUILTIN\Users`, or `Authenticated Users` read access. Unverifiable ACL state blocks.
 - ACL evaluation parses individual `icacls` ACE lines, binds allow/deny and inherited flags to their principals, applies deny precedence, and requires an effective read grant for the actual execution identity. Broad-principal deny-only ACEs do not create access; broad allow ACEs are unsafe.
+- Frozen accepted source fixtures supply all five `ARGO_EMBEDDING_*` keys, `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and both secret keys from process-only, file-only, or matching dual sources. Every rejected fixture starts from that complete profile and mutates only its named rejection dimension; no implicit default may satisfy normalization.
 - Loader provenance rejects root/alternate/tracked files, CLI, literal/default/fallback, alias, destructured, generated, or indirect secret sources.
 - The approved live profile is provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`, endpoint `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification `qualification-2026-07-25`, dimensions `1024`.
 - Live network access requires explicit opt-in through `ARGO_LIVE_PROVIDER_E2E=1` and is restricted to controlled local or protected CI execution. Default/offline CI remains deterministic but never substitutes fake evidence for a live pass.

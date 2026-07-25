@@ -92,20 +92,26 @@ assert.strictEqual(recordingSelfTest.persistedBeforeCleanup, 1, 'LIVE_PROVIDER_S
 assert.strictEqual(recordingSelfTest.persistedAfterCleanup, 0, 'LIVE_PROVIDER_SECRET_GUARD: recording boundary cleanup failed');
 assert.deepStrictEqual(recordingSelfTest.postCleanupLeaks, [], 'LIVE_PROVIDER_SECRET_GUARD: canary survived cleanup');
 assert.strictEqual(typeof runNeo4jAuthenticationCanaryProbe, 'function');
-const authSelfTest = JSON.parse(childProcess.execFileSync(
-  process.execPath,
-  [
-    '-e',
-    `require(${JSON.stringify(harnessModulePath)}).runNeo4jAuthenticationCanaryProbe()`
-      + '.then(value => process.stdout.write(JSON.stringify(value)))'
-      + '.catch(error => { console.error(error); process.exit(1); });',
-  ],
-  { cwd: repoRoot, encoding: 'utf8' },
-));
-assert.deepStrictEqual(authSelfTest.authCalls, [{ usernameMatches: true, passwordMatches: true }]);
-assert.deepStrictEqual(authSelfTest.cypherLeaks, []);
-assert.deepStrictEqual(authSelfTest.authenticationFailureLeaks, []);
-assert.strictEqual(authSelfTest.failureQueries, 0);
+const neo4jBoundaryPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingNeo4jBoundary.js');
+const authExecution = childProcess.spawnSync(process.execPath, [
+  '-e',
+  `require(${JSON.stringify(harnessModulePath)}).runNeo4jAuthenticationCanaryProbe()`
+    + '.then(value => process.stdout.write(JSON.stringify(value)))'
+    + '.catch(error => { process.stderr.write(error.category || "AUTH_PROBE_FAILED"); process.exit(1); });',
+], { cwd: repoRoot, encoding: 'utf8' });
+if (fs.existsSync(neo4jBoundaryPath)) {
+  assert.strictEqual(authExecution.status, 0, 'LIVE_PROVIDER_SECRET_GUARD: production Neo4j auth probe failed');
+  const authSelfTest = JSON.parse(authExecution.stdout);
+  assert.deepStrictEqual(authSelfTest.authCalls, [{ usernameMatches: true, passwordMatches: true }]);
+  assert.strictEqual(authSelfTest.driverCalls, 1);
+  assert.strictEqual(authSelfTest.failureDriverCalls, 1);
+  assert.deepStrictEqual(authSelfTest.cypherLeaks, []);
+  assert.deepStrictEqual(authSelfTest.authenticationFailureLeaks, []);
+  assert.strictEqual(authSelfTest.failureQueries, 0);
+} else {
+  assert.strictEqual(authExecution.status, 1, 'LIVE_PROVIDER_SECRET_GUARD: missing production Neo4j boundary fabricated pass');
+  assert.strictEqual(authExecution.stderr, 'LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING');
+}
 for (const requiredArtifact of [
   'design/KG/SystemArchitecture.json',
   'design/KG/test-failure-records.json',
@@ -138,10 +144,16 @@ for (const requiredFixture of [
   'matching-dual',
   'qwen-conflict',
   'database-password-conflict',
-  'acl-current-allow',
-  'acl-current-deny',
+  'acl-current-explicit-allow',
+  'acl-current-explicit-allow-deny',
+  'acl-current-inherited-allow',
+  'acl-current-inherited-deny',
+  'acl-current-explicit-allow-inherited-deny',
+  'acl-current-explicit-deny-inherited-allow',
+  'acl-broad-explicit-allow',
   'acl-broad-inherited-allow',
   'acl-broad-deny-only',
+  'acl-broad-allow-deny',
   'acl-unverifiable',
   'tracked-file',
   'reparse-file',
@@ -175,7 +187,8 @@ if (fs.existsSync(configPath)) {
     assert.strictEqual(observation.category, observation.expectedCategory, `LIVE_PROVIDER_SECRET_GUARD: fixture category ${observation.name}`);
     if (observation.expectedAttribution) {
       assert.deepStrictEqual(observation.attribution, observation.expectedAttribution, `LIVE_PROVIDER_SECRET_GUARD: attribution ${observation.name}`);
-      assert.strictEqual(observation.selectedValuesMatch, true, `LIVE_PROVIDER_SECRET_GUARD: selected value ${observation.name}`);
+      assert.strictEqual(observation.normalizedConfigMatches, true, `LIVE_PROVIDER_SECRET_GUARD: normalized config ${observation.name}`);
+      assert.strictEqual(observation.sourceTraceComplete, true, `LIVE_PROVIDER_SECRET_GUARD: source trace ${observation.name}`);
     }
     assert.deepStrictEqual(observation.effects, { fetch: 0, driver: 0, create: 0, write: 0 }, `LIVE_PROVIDER_SECRET_GUARD: side effect ${observation.name}`);
     assert.deepStrictEqual(observation.leaks, [], `LIVE_PROVIDER_SECRET_GUARD: source canary leaked ${observation.name}`);

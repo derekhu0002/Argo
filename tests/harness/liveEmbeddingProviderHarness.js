@@ -6,6 +6,7 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..');
 const liveGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingIndexGate.js');
 const liveConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
+const liveNeo4jBoundaryPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingNeo4jBoundary.js');
 const LIVE_OPT_IN = 'ARGO_LIVE_PROVIDER_E2E';
 const APPROVED_PROFILE = Object.freeze({
   approvedByHuman: true,
@@ -28,13 +29,13 @@ const FAILURE_CASES = Object.freeze([
   { name: 'dimension-mismatch', qualification: {}, transport: 'dimension-mismatch', expectedCalls: 1 },
 ]);
 const APPROVED_SOURCE_FIXTURES = Object.freeze([
-  { name: 'process-only', expectedStatus: 'accepted', expectedAttribution: { QWEN_KEY: 'process', ARGO_NEO4J_DATABASE_PASSWORD: 'process' } },
-  { name: 'file-only', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' } },
-  { name: 'matching-dual', expectedStatus: 'accepted', file: true, process: true, expectedAttribution: { QWEN_KEY: 'process', ARGO_NEO4J_DATABASE_PASSWORD: 'process' } },
+  { name: 'process-only', expectedStatus: 'accepted', process: true, expectedSource: 'process' },
+  { name: 'file-only', expectedStatus: 'accepted', file: true, expectedSource: 'file' },
+  { name: 'matching-dual', expectedStatus: 'accepted', file: true, process: true, expectedSource: 'process' },
   { name: 'qwen-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'QWEN_KEY' },
   { name: 'database-password-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
-  { name: 'missing-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', omitKey: 'QWEN_KEY' },
-  { name: 'blank-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', blankKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
+  { name: 'missing-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', process: true, omitKey: 'QWEN_KEY' },
+  { name: 'blank-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', process: true, blankKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
   { name: 'duplicate-key', expectedCategory: 'SECRET_FILE_DUPLICATE_KEY', file: true, duplicateKey: 'QWEN_KEY' },
   { name: 'unknown-secret', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'OTHER_API_TOKEN' },
   { name: 'root-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: '.env' },
@@ -42,16 +43,22 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
   { name: 'tracked-file', expectedCategory: 'SECRET_FILE_TRACKED', file: true, tracked: true },
   { name: 'not-ignored', expectedCategory: 'SECRET_FILE_NOT_IGNORED', file: true, ignored: false },
   { name: 'reparse-file', expectedCategory: 'SECRET_FILE_REPARSE_PROHIBITED', file: true, reparse: true },
-  { name: 'acl-current-allow', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' }, aclCase: 'current-allow' },
-  { name: 'acl-current-deny', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-deny' },
+  { name: 'acl-current-explicit-allow', expectedStatus: 'accepted', file: true, expectedSource: 'file', aclCase: 'current-explicit-allow' },
+  { name: 'acl-current-explicit-allow-deny', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-explicit-allow-deny' },
+  { name: 'acl-current-inherited-allow', expectedStatus: 'accepted', file: true, expectedSource: 'file', aclCase: 'current-inherited-allow' },
+  { name: 'acl-current-inherited-deny', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-inherited-deny' },
+  { name: 'acl-current-explicit-allow-inherited-deny', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-explicit-allow-inherited-deny' },
+  { name: 'acl-current-explicit-deny-inherited-allow', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'current-explicit-deny-inherited-allow' },
+  { name: 'acl-broad-explicit-allow', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'broad-explicit-allow' },
   { name: 'acl-broad-inherited-allow', expectedCategory: 'SECRET_FILE_ACL_UNSAFE', file: true, aclCase: 'broad-inherited-allow' },
-  { name: 'acl-broad-deny-only', expectedStatus: 'accepted', file: true, expectedAttribution: { QWEN_KEY: 'file', ARGO_NEO4J_DATABASE_PASSWORD: 'file' }, aclCase: 'broad-deny-only' },
+  { name: 'acl-broad-deny-only', expectedStatus: 'accepted', file: true, expectedSource: 'file', aclCase: 'broad-deny-only' },
+  { name: 'acl-broad-allow-deny', expectedStatus: 'accepted', file: true, expectedSource: 'file', aclCase: 'broad-allow-deny' },
   { name: 'acl-unverifiable', expectedCategory: 'SECRET_FILE_ACL_UNVERIFIABLE', file: true, aclCase: 'unverifiable' },
-  { name: 'cli-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', argv: ['--QWEN_KEY=synthetic'] },
-  { name: 'literal-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'literal' },
-  { name: 'fallback-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'fallback' },
-  { name: 'alias-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'alias' },
-  { name: 'indirect-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'indirect' },
+  { name: 'cli-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'cli' },
+  { name: 'literal-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'literal' },
+  { name: 'fallback-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'fallback' },
+  { name: 'alias-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'alias' },
+  { name: 'indirect-source', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, accessMutation: 'indirect' },
 ]);
 
 async function runLiveEmbeddingProviderE2E() {
@@ -422,23 +429,27 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-approved-source-'));
   const qwen = `fixture-qwen-${crypto.randomUUID()}`;
   const neo4jPassword = `fixture-neo4j-${crypto.randomUUID()}`;
-  const processValues = {};
-  const fileEntries = [];
-  const useProcess = fixture.process || !fixture.file;
-  if (useProcess && fixture.omitKey !== 'QWEN_KEY') processValues.QWEN_KEY = fixture.blankKey === 'QWEN_KEY' ? ' ' : qwen;
-  if (useProcess && fixture.omitKey !== 'ARGO_NEO4J_DATABASE_PASSWORD') {
-    processValues.ARGO_NEO4J_DATABASE_PASSWORD = fixture.blankKey === 'ARGO_NEO4J_DATABASE_PASSWORD' ? ' ' : neo4jPassword;
-  }
+  const approvedValues = approvedFixtureEnvironment(qwen, neo4jPassword);
+  const processValues = fixture.process ? { ...approvedValues } : {};
+  const fileEntries = fixture.file ? Object.entries(approvedValues) : [];
+  mutateFixtureValues(processValues, fileEntries, fixture);
+  const relativePath = fixture.relativePath || '.argo/.env';
+  const filePath = path.join(temporaryRoot, ...relativePath.split('/'));
+  const sourceTrace = [];
+  const expectedAttribution = fixture.expectedSource
+    ? Object.fromEntries(Object.keys(approvedValues).map(key => [key, fixture.expectedSource]))
+    : undefined;
+  const sourceAdapter = createSourceFixtureAdapter(
+    fixture,
+    processValues,
+    fileEntries,
+    filePath,
+    sourceTrace,
+  );
   if (fixture.file) {
-    if (fixture.omitKey !== 'QWEN_KEY') fileEntries.push(['QWEN_KEY', fixture.conflictKey === 'QWEN_KEY' ? `${qwen}-different` : qwen]);
-    if (fixture.omitKey !== 'ARGO_NEO4J_DATABASE_PASSWORD') {
-      fileEntries.push(['ARGO_NEO4J_DATABASE_PASSWORD', fixture.conflictKey === 'ARGO_NEO4J_DATABASE_PASSWORD' ? `${neo4jPassword}-different` : neo4jPassword]);
-    }
     if (fixture.duplicateKey) fileEntries.push([fixture.duplicateKey, fixture.duplicateKey === 'QWEN_KEY' ? qwen : neo4jPassword]);
     if (fixture.unknownKey) fileEntries.push([fixture.unknownKey, 'synthetic']);
   }
-  const relativePath = fixture.relativePath || '.argo/.env';
-  const filePath = path.join(temporaryRoot, ...relativePath.split('/'));
   const effects = { fetch: 0, driver: 0, create: 0, write: 0 };
   try {
     if (fixture.file) {
@@ -451,13 +462,11 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
           status: 'accepted',
           value: await resolveConfiguration({
             repositoryRoot: temporaryRoot,
-            environment: processValues,
-            argv: fixture.argv || [],
-            provenance: fixture.provenance || 'direct',
             adapters: {
               filesystem: createFilesystemFixtureAdapter(fixture),
               git: createGitFixtureAdapter(fixture),
               acl: createAclFixtureAdapter(fixture),
+              source: sourceAdapter,
               forbiddenSideEffects: createForbiddenSideEffectAdapter(effects),
             },
           }),
@@ -486,18 +495,54 @@ async function runApprovedSourceFixture(resolveConfiguration, fixture) {
       status: outcome.status,
       category: outcome.category,
       attribution: outcome.value && outcome.value.attribution,
-      selectedValuesMatch: outcome.value
-        ? selectedFixtureValuesMatch(outcome.value, qwen, neo4jPassword)
+      normalizedConfigMatches: outcome.value
+        ? normalizedFixtureConfigurationMatches(outcome.value, approvedValues)
+        : undefined,
+      sourceTrace,
+      sourceTraceComplete: outcome.value
+        ? acceptedSourceTraceComplete(fixture, sourceTrace, Object.keys(approvedValues), filePath)
         : undefined,
       effects,
       leaks,
       expectedStatus: fixture.expectedStatus,
       expectedCategory: fixture.expectedCategory,
-      expectedAttribution: fixture.expectedAttribution,
+      expectedAttribution,
     };
     return observation;
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+}
+
+function approvedFixtureEnvironment(qwen, neo4jPassword) {
+  return {
+    ARGO_EMBEDDING_BASE_URL: APPROVED_PROFILE.baseUrl,
+    ARGO_EMBEDDING_MODEL: APPROVED_PROFILE.model,
+    ARGO_EMBEDDING_PROVIDER: APPROVED_PROFILE.provider,
+    ARGO_EMBEDDING_MODEL_VERSION: APPROVED_PROFILE.version,
+    ARGO_EMBEDDING_DIMENSIONS: String(APPROVED_PROFILE.dimensions),
+    ARGO_NEO4J_DATABASE_URL: 'neo4j://synthetic.invalid',
+    ARGO_NEO4J_DATABASE_USERNAME: 'synthetic-user',
+    ARGO_NEO4J_DATABASE_PASSWORD: neo4jPassword,
+    QWEN_KEY: qwen,
+  };
+}
+
+function mutateFixtureValues(processValues, fileEntries, fixture) {
+  const fileIndex = key => fileEntries.findIndex(([entryKey]) => entryKey === key);
+  if (fixture.omitKey) {
+    delete processValues[fixture.omitKey];
+    const index = fileIndex(fixture.omitKey);
+    if (index >= 0) fileEntries.splice(index, 1);
+  }
+  if (fixture.blankKey) {
+    if (Object.hasOwn(processValues, fixture.blankKey)) processValues[fixture.blankKey] = ' ';
+    const index = fileIndex(fixture.blankKey);
+    if (index >= 0) fileEntries[index][1] = ' ';
+  }
+  if (fixture.conflictKey) {
+    const index = fileIndex(fixture.conflictKey);
+    if (index >= 0) fileEntries[index][1] = `${fileEntries[index][1]}-different`;
   }
 }
 
@@ -524,8 +569,45 @@ function createFilesystemFixtureAdapter(fixture) {
         },
       });
     },
-    readFileSync: fs.readFileSync,
+    readFileSync() {
+      throw safeError('STRUCTURED_SOURCE_ADAPTER_REQUIRED');
+    },
     realpathSync: fs.realpathSync,
+  };
+}
+
+function createSourceFixtureAdapter(fixture, processValues, fileEntries, filePath, sourceTrace) {
+  function record(sourceKind, sourcePath, key, operation, aliasChain) {
+    sourceTrace.push({
+      sourceKind,
+      path: sourcePath,
+      key,
+      operation,
+      aliasChain,
+    });
+  }
+  return {
+    readProcessKey(key) {
+      const mutation = fixture.accessMutation && key === 'QWEN_KEY'
+        ? fixture.accessMutation
+        : 'direct';
+      const sourceKind = mutation === 'cli' || mutation === 'literal' ? mutation : 'process';
+      const operation = mutation === 'fallback' || mutation === 'indirect' ? mutation : 'read';
+      const aliasChain = mutation === 'alias'
+        ? ['QWEN_ALIAS', key]
+        : mutation === 'indirect'
+          ? ['configuration', 'credentials', key]
+          : [key];
+      record(sourceKind, sourceKind === 'process' ? null : mutation, key, operation, aliasChain);
+      return processValues[key];
+    },
+    readFileEntries(requestedPath) {
+      for (const [key] of fileEntries) {
+        record('file', requestedPath, key, 'read', [key]);
+      }
+      return fileEntries.map(([key, value]) => [key, value]);
+    },
+    expectedFilePath: filePath,
   };
 }
 
@@ -543,15 +625,21 @@ function createGitFixtureAdapter(fixture) {
 function createAclFixtureAdapter(fixture) {
   const identity = 'ARGO\\FixtureRunner';
   const matrix = {
-    'current-allow': { status: 0, identity, stdout: `${identity}:(R)` },
-    'current-deny': { status: 0, identity, stdout: `${identity}:(DENY)(R)` },
+    'current-explicit-allow': { status: 0, identity, stdout: `${identity}:(R)` },
+    'current-explicit-allow-deny': { status: 0, identity, stdout: `${identity}:(R)\n${identity}:(DENY)(R)` },
+    'current-inherited-allow': { status: 0, identity, stdout: `${identity}:(I)(RX)` },
+    'current-inherited-deny': { status: 0, identity, stdout: `${identity}:(I)(DENY)(R)` },
+    'current-explicit-allow-inherited-deny': { status: 0, identity, stdout: `${identity}:(R)\n${identity}:(I)(DENY)(R)` },
+    'current-explicit-deny-inherited-allow': { status: 0, identity, stdout: `${identity}:(DENY)(R)\n${identity}:(I)(RX)` },
+    'broad-explicit-allow': { status: 0, identity, stdout: `${identity}:(R)\nEveryone:(R)` },
     'broad-inherited-allow': { status: 0, identity, stdout: `${identity}:(F)\nBUILTIN\\Users:(I)(RX)` },
     'broad-deny-only': { status: 0, identity, stdout: `${identity}:(R)\nEveryone:(DENY)(R)` },
+    'broad-allow-deny': { status: 0, identity, stdout: `${identity}:(R)\nAuthenticated Users:(R)\nAuthenticated Users:(DENY)(R)` },
     unverifiable: { status: 1, identity, stdout: '' },
   };
   return {
     inspect() {
-      return matrix[fixture.aclCase || 'current-allow'];
+      return matrix[fixture.aclCase || 'current-explicit-allow'];
     },
   };
 }
@@ -565,10 +653,33 @@ function createForbiddenSideEffectAdapter(effects) {
   };
 }
 
-function selectedFixtureValuesMatch(result, qwen, neo4jPassword) {
+function normalizedFixtureConfigurationMatches(result, values) {
+  const expected = {
+    embeddingBaseUrl: values.ARGO_EMBEDDING_BASE_URL,
+    embeddingModel: values.ARGO_EMBEDDING_MODEL,
+    embeddingProvider: values.ARGO_EMBEDDING_PROVIDER,
+    embeddingModelVersion: values.ARGO_EMBEDDING_MODEL_VERSION,
+    embeddingDimensions: Number(values.ARGO_EMBEDDING_DIMENSIONS),
+    neo4jDatabaseUrl: values.ARGO_NEO4J_DATABASE_URL,
+    neo4jDatabaseUsername: values.ARGO_NEO4J_DATABASE_USERNAME,
+    neo4jDatabasePassword: values.ARGO_NEO4J_DATABASE_PASSWORD,
+    qwenKey: values.QWEN_KEY,
+  };
   return result.configuration
-    && result.configuration.qwenKey === qwen
-    && result.configuration.neo4jDatabasePassword === neo4jPassword;
+    && Object.keys(expected).length === Object.keys(result.configuration).length
+    && Object.entries(expected).every(([key, value]) => result.configuration[key] === value);
+}
+
+function acceptedSourceTraceComplete(fixture, trace, keys, filePath) {
+  const requiredSources = fixture.file && fixture.process ? ['process', 'file'] : [fixture.expectedSource];
+  return requiredSources.every(sourceKind => keys.every(key => trace.some(access => (
+    access.sourceKind === sourceKind
+      && access.path === (sourceKind === 'file' ? filePath : null)
+      && access.key === key
+      && access.operation === 'read'
+      && access.aliasChain.length === 1
+      && access.aliasChain[0] === key
+  ))));
 }
 
 function loadLiveGateFactory() {
@@ -645,6 +756,7 @@ async function createControlledNeo4jIndexBoundary(label, configuration, injected
 }
 
 async function runNeo4jAuthenticationCanaryProbe() {
+  const createApprovedNeo4jBoundary = loadApprovedNeo4jBoundaryFactory();
   const passwordCanary = `neo4j-auth-canary-${crypto.randomUUID()}`;
   const configuration = {
     neo4jDatabaseUrl: 'neo4j://synthetic.invalid',
@@ -652,15 +764,19 @@ async function runNeo4jAuthenticationCanaryProbe() {
     neo4jDatabasePassword: passwordCanary,
   };
   const successAdapter = createRecordingNeo4jAdapter();
-  const boundary = await createControlledNeo4jIndexBoundary('auth-success', configuration, successAdapter);
-  await boundary.countWrites();
-  await boundary.cleanup();
-  const failureAdapter = createRecordingNeo4jAdapter(passwordCanary);
-  const failure = await captureOutcome(() => createControlledNeo4jIndexBoundary(
-    'auth-failure',
+  const boundary = await createApprovedNeo4jBoundary({
     configuration,
-    failureAdapter,
-  ));
+    neo4j: successAdapter,
+    logger: createCapturingLogger(),
+  });
+  await boundary.countWrites(`auth-success-${crypto.randomUUID()}`);
+  await boundary.close();
+  const failureAdapter = createRecordingNeo4jAdapter(passwordCanary);
+  const failure = await captureOutcome(() => createApprovedNeo4jBoundary({
+    configuration,
+    neo4j: failureAdapter,
+    logger: createCapturingLogger(),
+  }));
   return {
     authCalls: successAdapter.observation().authCalls.map(call => ({
       usernameMatches: call.username === configuration.neo4jDatabaseUsername,
@@ -673,12 +789,27 @@ async function runNeo4jAuthenticationCanaryProbe() {
     authenticationFailureLeaks: findSecretLeaks(passwordCanary, [
       { name: 'authenticationFailure', value: failure },
     ]),
+    driverCalls: successAdapter.observation().driverCalls.length,
+    failureDriverCalls: failureAdapter.observation().driverCalls.length,
     failureQueries: failureAdapter.observation().queries.length,
   };
 }
 
+function loadApprovedNeo4jBoundaryFactory() {
+  if (!fs.existsSync(liveNeo4jBoundaryPath)) {
+    throw safeError('LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING');
+  }
+  delete require.cache[require.resolve(liveNeo4jBoundaryPath)];
+  const boundary = require(liveNeo4jBoundaryPath);
+  if (typeof boundary.createApprovedNeo4jBoundary !== 'function') {
+    throw safeError('LIVE_PROVIDER_NEO4J_BOUNDARY_API_MISSING');
+  }
+  return boundary.createApprovedNeo4jBoundary;
+}
+
 function createRecordingNeo4jAdapter(authenticationFailureCanary) {
   const authCalls = [];
+  const driverCalls = [];
   const queries = [];
   return {
     auth: {
@@ -687,7 +818,8 @@ function createRecordingNeo4jAdapter(authenticationFailureCanary) {
         return { type: 'basic-auth' };
       },
     },
-    driver() {
+    driver(uri, authentication) {
+      driverCalls.push({ uri, authentication });
       return {
         async verifyConnectivity() {
           if (authenticationFailureCanary) throw new Error(authenticationFailureCanary);
@@ -709,7 +841,7 @@ function createRecordingNeo4jAdapter(authenticationFailureCanary) {
       };
     },
     observation() {
-      return { authCalls: [...authCalls], queries: [...queries] };
+      return { authCalls: [...authCalls], driverCalls: [...driverCalls], queries: [...queries] };
     },
   };
 }

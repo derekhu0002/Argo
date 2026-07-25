@@ -28,9 +28,14 @@ async function main() {
         `TS07_PROVIDER_SOURCE_ATTRIBUTION:${fixture.name}`,
       );
       assert.strictEqual(
-        fixture.selectedValuesMatch,
+        fixture.normalizedConfigMatches,
         true,
-        `TS07_PROVIDER_SOURCE_SELECTION:${fixture.name}`,
+        `TS07_PROVIDER_NORMALIZED_CONFIGURATION:${fixture.name}`,
+      );
+      assert.strictEqual(
+        fixture.sourceTraceComplete,
+        true,
+        `TS07_PROVIDER_STRUCTURED_SOURCE_TRACE:${fixture.name}`,
       );
     }
     assert.deepStrictEqual(
@@ -88,6 +93,16 @@ async function main() {
     observation.redaction.neo4jAuthentication.cypherLeaks,
     [],
     'TS07_PROVIDER_NEO4J_PASSWORD_ENTERED_CYPHER',
+  );
+  assert.strictEqual(
+    observation.redaction.neo4jAuthentication.driverCalls,
+    1,
+    'TS07_PROVIDER_NEO4J_DRIVER_CALL_REQUIRED',
+  );
+  assert.strictEqual(
+    observation.redaction.neo4jAuthentication.failureDriverCalls,
+    1,
+    'TS07_PROVIDER_NEO4J_AUTH_FAILURE_DRIVER_CALL_REQUIRED',
   );
   assert.strictEqual(
     observation.redaction.neo4jAuthentication.authenticationFailure.category,
