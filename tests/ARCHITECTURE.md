@@ -34,6 +34,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - DT-16 and DT-16-SemanticIndex share the mutation lifecycle entrypoint. The entrypoint freezes the nine mutation classes, version advancement, deleted-object absence, non-Aligned partial persistence, and complete semantic-index evidence fields for Element, ArchitectureRelationship, and View records.
 - DT-17 freezes the unaligned-query boundary by requiring full canonical reads to remain available, pure semantic requests to fail with `SEMANTIC_INDEX_NOT_ALIGNED`, automatic full-snapshot fallback to be false, and explicit canonical-anchor reads to remain available.
 - TS-09 is a corrected W3 blocking gate. `runEmbeddingProviderAdapterLifecycle.js` freezes `generateAffectedEmbeddings()` outcome evidence for `runtime: "nodejs"`, no required Neo4j GenAI Plugin, affected Element/ArchitectureRelationship/View persistence, complete model/version evidence, no credential exposure, and non-Aligned partial persistence.
+- W3.1 uses `runApplyMutationEmbeddingVectorE2E.js` as the explicit live integration entrypoint. The entrypoint delegates all MCP mutation, live-provider, Neo4j vector, and semantic-query plumbing to `liveEmbeddingProviderHarness.js`; default/offline execution fails before side effects with `W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED`.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
 - DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
@@ -63,6 +64,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/runSevenWaveDeliveryGates.js`
 - `tests/explicit/entries/runLiveEmbeddingProviderE2E.js`
 - `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`
+- `tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js`
 
 The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as the TS-09 explicit entrypoint. In corrected W3 handoffs it is in-scope acceptance evidence and a Coding target while remaining read-only during Coding/Repair.
 
@@ -91,6 +93,10 @@ The W3 Index Lifecycle and Exact-Threshold Baseline handoff owns these mounted e
 - `tests/explicit/entries/runStaleSemanticQueryRejection.js` — `ExplicitAcceptanceTestcase-DT-17` unaligned pure semantic rejection with canonical-read continuity.
 - `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` — `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter` and `ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration` Node adapter generation/persistence proof. DT scoped passes do not complete W3 without this entrypoint passing.
 
+The W3.1 Mutation-Driven Live Vector Integration handoff owns this mounted explicit entrypoint as a Coding/Repair read-only file:
+
+- `tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js` — `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E` applySystemArchitectureMutation-to-real-Qwen-to-Neo4j-vector-query proof. Passing W3 and TS-09 evidence is prerequisite context but cannot satisfy this W3.1 live integration acceptance without the opt-in entrypoint passing.
+
 ### Critical non-explicit guardrails
 
 - `tests/architecture/intent-query/architecture-boundary.guard.js` — `ArchitectureBoundaryGuard`
@@ -111,5 +117,7 @@ The W3 Index Lifecycle and Exact-Threshold Baseline handoff owns these mounted e
 The coding-scope authorization guard freezes mounted TS-08 evidence while prohibiting seven-wave delivery targets from the handoff's authorized Coding scope. Corrected W3 handoffs may authorize TS-09 adapter/generation work through `codingTargets` and `taskExecutionPlan`.
 
 For the W3 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, and `implementation-traceability.guard.js` are the critical non-explicit guards. They protect the W3 stable boundary, dependency direction, frozen entrypoint assertions, and mappings to `grag-seed-retrieval`, `grag-semantic-index`, `grag-index-lifecycle`, `grag-alignment-constraint`, `grag-embedding-provider-adapter`, and `grag-embedding-generation`.
+
+For the W3.1 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, `implementation-traceability.guard.js`, `live-provider-contract.guard.js`, `live-provider-opt-in.guard.js`, and `live-provider-secret-isolation.guard.js` are critical non-explicit guards. They protect the W3.1 mutation-vector lifecycle boundary, dependency direction, explicit live opt-in, approved provider/secret contract, no-fake evidence rule, and mappings to `grag-wp-3-1`, `grag-index-lifecycle`, `grag-embedding-generation`, `grag-embedding-provider-adapter`, `grag-semantic-index`, `grag-alignment-constraint`, `grag-native-retrieval-service`, `grag-embedding-qualification`, and `grag-credential-boundary`.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.argo/.env.example`, and `.gitignore`, are frozen during Coding/Repair unless the current handoff explicitly excludes them from `frozenFiles`.

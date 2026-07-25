@@ -7,6 +7,9 @@ const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json')
 const isW3IndexLifecycleHandoff = /W3 Index Lifecycle|Exact-Threshold|DT-05|DT-16|DT-17/i.test(
   `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''}`,
 );
+const isW31MutationVectorHandoff = /W3\.1|Mutation-Driven Live Vector|MutationEmbeddingVector|runApplyMutationEmbeddingVectorE2E|createMutationEmbeddingVectorLifecycle/i.test(
+  `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''} ${JSON.stringify(handoff.explicitEntrypoints || [])}`,
+);
 const isTs09InScope = /TS-09|TS09|EmbeddingProviderAdapter|EmbeddingGeneration|generateAffectedEmbeddings/i.test(
   JSON.stringify({
     summary: handoff.summary,
@@ -27,7 +30,7 @@ const forbiddenTestcases = [
 if (!isTs09InScope) {
   forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter');
 }
-const forbiddenImplementationPattern = isW3IndexLifecycleHandoff
+const forbiddenImplementationPattern = isW3IndexLifecycleHandoff || isW31MutationVectorHandoff
   ? /(?:sevenWave|deliverySequence)/i
   : /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
 

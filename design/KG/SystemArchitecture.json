@@ -199,7 +199,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -232,7 +232,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -289,7 +289,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -430,7 +430,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -482,16 +482,16 @@
           "value": "approvedByHuman=true|2026-07-25|chat delivery request: threshold-all correctness before ANN comparison"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3.DT-05",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-05|runIndependentSemanticSeeds.js|exitCode=0|exact threshold-all baseline accepted for W3"
         },
         {
           "name": "scopeBoundary.W3-W4",
           "value": "DT-04 shares runIndependentSemanticSeeds.js and currently passes, but independent three-channel seed acceptance remains exclusively W4 scope and is not evidence that W4 is accepted."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -790,12 +790,12 @@
           "value": "approvedByHuman=true|2026-07-25|chat delivery request: all mutation version evidence baseline"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16-SemanticIndex|runMutationIndexLifecycle.js|exitCode=0|complete versioned vector/evidence baseline passed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -831,12 +831,12 @@
           "value": "approvedByHuman=true|2026-07-25|chat delivery request: every mutation advances version evidence"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16|runMutationIndexLifecycle.js|exitCode=0|all mutation lifecycle and alignment transitions passed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -876,12 +876,12 @@
           "value": "approvedByHuman=true|2026-07-25|chat delivery request: unaligned pure semantic queries are rejected"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-17|runStaleSemanticQueryRejection.js|exitCode=0|unaligned pure semantic rejection and canonical read continuity passed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -976,7 +976,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1127,7 +1127,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1199,7 +1199,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1407,12 +1407,12 @@
           "value": "W2 accepts technology selection and provider qualification; W3 now accepts adapter-driven generation, vector/evidence persistence, and alignment lifecycle."
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3",
           "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1448,12 +1448,12 @@
           "value": "approvedByHuman=true|2026-07-25|human-approved W3 gate"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W3",
           "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1511,6 +1511,10 @@
         {
           "name": "acceptanceApproval.W3-1",
           "value": "approvedByHuman=true|2026-07-25|user requested W3.1 integration task and intent-to-implementation handoff; runtime delivery still requires downstream live-runner evidence"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [

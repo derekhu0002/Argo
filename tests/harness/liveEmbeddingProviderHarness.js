@@ -7,7 +7,9 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const liveGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingIndexGate.js');
 const liveConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
 const liveNeo4jBoundaryPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingNeo4jBoundary.js');
+const mutationVectorLifecyclePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'mutationEmbeddingVectorLifecycle.js');
 const LIVE_OPT_IN = 'ARGO_LIVE_PROVIDER_E2E';
+const W31_LIVE_OPT_IN = 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E';
 const APPROVED_PROFILE = Object.freeze({
   approvedByHuman: true,
   provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
@@ -191,6 +193,32 @@ async function runLiveProviderSecretIsolation() {
     inspectedArtifactNames: observableArtifacts.map(artifact => artifact.name),
     forbiddenSecretFields: findForbiddenSecretFields(observableArtifacts),
   };
+}
+
+async function runApplyMutationEmbeddingVectorE2E() {
+  requireW31LiveOptIn();
+  const configuration = await resolveApprovedLiveConfiguration();
+  const mutation = await applyDisposableW31MutationFixture();
+  const createLifecycle = loadMutationVectorLifecycleFactory();
+  const lifecycle = createLifecycle({
+    configuration,
+    repositoryRoot: repoRoot,
+  });
+  if (!lifecycle || typeof lifecycle.execute !== 'function') {
+    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING');
+  }
+  return lifecycle.execute({
+    mutation,
+    touchedRecords: mutation.expectedTouchedRecords,
+    qualification: approvedProviderProfile(),
+    semanticQueryProbe: {
+      pureSemanticRequest: {
+        purpose: 'implementation-design',
+        intent: 'Find freshly mutated W3.1 vector evidence',
+        subject: 'grag-wp-3-1',
+      },
+    },
+  });
 }
 
 async function runRedactionCanaryProbe(createGate) {
@@ -409,6 +437,12 @@ function dynamicEvidenceIdentities() {
 function requireLiveOptIn(category) {
   if (process.env[LIVE_OPT_IN] !== '1') {
     throw safeError(category);
+  }
+}
+
+function requireW31LiveOptIn() {
+  if (process.env[W31_LIVE_OPT_IN] !== '1' || process.env[LIVE_OPT_IN] !== '1') {
+    throw safeError('W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED');
   }
 }
 
@@ -676,6 +710,66 @@ function createSourceFixtureBehavior(fixture, processValues, fileEntries, filePa
     );
   }
   return Object.freeze(behavior);
+}
+
+async function applyDisposableW31MutationFixture() {
+  const { callTool } = require('../../.argo/scripts/argo-mcp-server.js');
+  fs.mkdirSync(path.join(repoRoot, '.argo', 'temp'), { recursive: true });
+  const temporaryRoot = fs.mkdtempSync(path.join(repoRoot, '.argo', 'temp', 'w31-mutation-'));
+  const temporaryGraphPath = path.join(temporaryRoot, 'SystemArchitecture.json');
+  fs.copyFileSync(path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'), temporaryGraphPath);
+  const marker = `w31-live-vector-${crypto.randomUUID()}`;
+  const architecturePath = path.relative(repoRoot, temporaryGraphPath);
+  const expectedTouchedRecords = [
+    { objectType: 'Element', objectId: 'grag-wp-3-1', channel: 'elements' },
+    { objectType: 'ArchitectureRelationship', objectId: 'grag-rel-w31-index-lifecycle', channel: 'relationships' },
+    { objectType: 'View', objectId: 'grag-w31-integration-acceptance', channel: 'views' },
+  ];
+  const response = await callTool('applySystemArchitectureMutation', {
+    architecturePath,
+    mutations: [
+      {
+        type: 'updateElement',
+        id: 'grag-wp-3-1',
+        patch: {
+          description: `W3.1 live vector mutation fixture ${marker}`,
+        },
+      },
+      {
+        type: 'updateRelationship',
+        id: 'grag-rel-w31-index-lifecycle',
+        patch: {
+          description: `W3.1 vector lifecycle relationship fixture ${marker}`,
+        },
+      },
+      {
+        type: 'updateView',
+        id: 'grag-w31-integration-acceptance',
+        patch: {
+          description: `W3.1 vector queryability view fixture ${marker}`,
+        },
+      },
+    ],
+  });
+  return {
+    applied: Boolean(response && (response.status === 'passed' || response.status === 'success' || response.ok === true)),
+    architecturePath,
+    marker,
+    response,
+    expectedTouchedRecords,
+  };
+}
+
+function loadMutationVectorLifecycleFactory() {
+  if (!fs.existsSync(mutationVectorLifecyclePath)) {
+    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_BOUNDARY_MISSING');
+  }
+  delete require.cache[require.resolve(mutationVectorLifecyclePath)];
+  const boundary = require(mutationVectorLifecyclePath);
+  if (typeof boundary.createMutationEmbeddingVectorLifecycle !== 'function') {
+    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING');
+  }
+  return boundary.createMutationEmbeddingVectorLifecycle;
 }
 
 function runStructuredSourceAdapterContractSelfTest() {
@@ -1367,6 +1461,7 @@ module.exports = {
   approvedProviderProfile,
   findForbiddenSecretFields,
   findSecretLeaks,
+  runApplyMutationEmbeddingVectorE2E,
   runLiveEmbeddingProviderE2E,
   runLiveProviderSecretIsolation,
   runNeo4jAuthenticationCanaryProbe,

@@ -7,9 +7,11 @@ const handoff = readJson('.argo/temp/ImplementationToCodingHandoff.json');
 const harnessPath = 'tests/harness/liveEmbeddingProviderHarness.js';
 const liveEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderE2E.js';
 const secretEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js';
+const w31EntryPath = 'tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js';
 const harness = read(harnessPath);
 const liveEntry = read(liveEntryPath);
 const secretEntry = read(secretEntryPath);
+const w31Entry = read(w31EntryPath);
 
 // GIVEN default/offline execution
 // WHEN the Harness is inspected
@@ -27,6 +29,11 @@ assert(neo4jOpen > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: Neo4j opens
 assert(
   harness.includes("process.env[LIVE_OPT_IN] !== '1'"),
   'LIVE_PROVIDER_OPT_IN_GUARD: opt-in must be exact and explicit',
+);
+assert(
+  harness.includes("process.env[W31_LIVE_OPT_IN] !== '1'")
+    && harness.includes('W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED'),
+  'LIVE_PROVIDER_OPT_IN_GUARD: W3.1 mutation-vector opt-in must be exact and explicit',
 );
 
 // THEN fake/default outcomes cannot satisfy live evidence
@@ -47,11 +54,20 @@ assert(
   secretEntry.includes('TS07_PROVIDER_SECRET_TRANSPORT_OBSERVATION_REQUIRED'),
   'LIVE_PROVIDER_OPT_IN_GUARD: secret entry can accept fake live evidence',
 );
-for (const source of [harness, liveEntry, secretEntry]) {
+for (const source of [harness, liveEntry, secretEntry, w31Entry]) {
   assert(!/\bskip(?:ped)?\b/i.test(source), 'LIVE_PROVIDER_OPT_IN_GUARD: live evidence may be skipped');
   assert(!source.includes("status: 'passed'"), 'LIVE_PROVIDER_OPT_IN_GUARD: offline path fabricates pass status');
   assert(!source.includes('liveProviderCall'), 'LIVE_PROVIDER_OPT_IN_GUARD: production boolean can claim live evidence');
   assert(!source.includes('executeFailureScenario'), 'LIVE_PROVIDER_OPT_IN_GUARD: scenario-labelled production branch remains');
+}
+for (const requiredAssertion of [
+  'W31_OFFLINE_FAKE_EVIDENCE_PROHIBITED',
+  'W31_REAL_QWEN_ADAPTER_CALL_REQUIRED',
+  'W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE',
+  'W31_FAILURE_MUST_NOT_ALIGN',
+  'W31_UNALIGNED_QUERY_NOT_REJECTED',
+]) {
+  assert(w31Entry.includes(requiredAssertion), `LIVE_PROVIDER_OPT_IN_GUARD: W3.1 entry omits ${requiredAssertion}`);
 }
 for (const requiredObservation of [
   'createObservedHttpTransport',
@@ -72,6 +88,11 @@ for (const [testcaseName, failureReason, entryPath] of [
     'ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation',
     'LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED',
     secretEntryPath,
+  ],
+  [
+    'ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E',
+    'W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED',
+    w31EntryPath,
   ],
 ]) {
   const entry = handoff.explicitEntrypoints.find(candidate => candidate.testcaseName === testcaseName);

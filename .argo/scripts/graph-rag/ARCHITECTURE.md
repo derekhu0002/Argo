@@ -16,6 +16,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - W3 index lifecycle extracts only records affected by successful canonical mutations, advances canonical/content/index version evidence for Element, ArchitectureRelationship, and View records, and leaves partial or failed persistence non-Aligned.
 - W3 alignment gating rejects pure semantic queries for Updating, Stale, Failed, partial, or unknown index state while preserving no-argument full snapshots and explicit canonical-anchor reads.
 - W3 TS-09 is a blocking gate: `productionGraphRagRuntime.generateAffectedEmbeddings()` must expose `runtime: "nodejs"`, `neo4jGenAiPluginRequired: false`, provider-adapter invocation, parameterized persistence evidence, complete Element/ArchitectureRelationship/View metadata, and non-Aligned partial failure behavior before W3 can be accepted.
+- W3.1 mutation-vector integration starts only after `applySystemArchitectureMutation` succeeds. It extracts the touched Element, ArchitectureRelationship, and View records from that mutation result or equivalent committed canonical diff, invokes the real approved Qwen adapter under explicit live opt-in, persists complete vector/version/provider evidence into Neo4j, verifies vector-query retrieval of the changed records, then marks Aligned only after that queryability proof.
 
 ## Public interface
 
@@ -48,6 +49,15 @@ The four inward boundaries are independently callable and independently testable
 - A frozen Harness-owned transport wrapper independently observes request count, origin/path, method, dynamic input, explicit model/dimensions, protected-header presence, and the raw response vector. Production output and persisted vector evidence must match that observed response exactly.
 - Persisted evidence includes provider/model/qualification identity, dimensions, complete vector, canonical identity/version, content identity/version, and index identity/version. Cleanup is complete only when the Harness observes zero remaining test records.
 - Secret/file/path/git/reparse/ACL/conflict preflight completes before transport construction, Neo4j connection, or gate execution.
+
+`createMutationEmbeddingVectorLifecycle(dependencies)` in `mutationEmbeddingVectorLifecycle.js` is the W3.1 production lifecycle boundary. It returns `execute(input)` and must:
+
+- Accept the applied mutation observation from `applySystemArchitectureMutation`, not an independently fabricated record list.
+- Preserve `design/KG/SystemArchitecture.json` or the supplied `architecturePath` as canonical authority; Neo4j remains a vector projection and cannot overwrite canonical JSON semantics.
+- Extract exactly touched Element, ArchitectureRelationship, and View records, including object identity, channel, canonical version, content version, and next index version.
+- Reuse the approved live configuration, Qwen profile, provider client, and Neo4j boundary; it must not introduce alternate secret sources, offline substitutes, Python sidecars, external Graph RAG frameworks, or Neo4j GenAI Plugin requirements.
+- Query Neo4j vector evidence after persistence and return the changed record ids from that query before reporting `alignmentState: "Aligned"`.
+- Return Stale or Failed and keep pure semantic queries rejected when provider generation, vector persistence, vector-query verification, or partial-record completion fails.
 
 Dependencies are explicit: `configuration`, `canonicalGraph`, `neo4jRetrievalBoundary`, and `embeddingQualification`. Tests may inject fakes at these interfaces; production code must not import tests.
 
@@ -86,10 +96,11 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Threshold-all seed selection depends on aligned semantic-index records and channel thresholds; ANN calls, if present, are benchmark-only and cannot remove above-threshold peers or force unrelated hits.
 - Index lifecycle depends on canonical mutation evidence, qualified embedding generation, and vector persistence. It must not mark Aligned until every affected record has complete identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence. Outcome-level TS-09 evidence must identify the Node adapter path and cannot be inferred from DT-05/DT-16/DT-17 scoped passes alone.
 - Alignment gating depends inward on lifecycle state and canonical version evidence before invoking semantic retrieval. Complete canonical reads remain available without semantic fallback.
+- W3.1 depends on the MCP mutation boundary and the existing live provider/Neo4j boundaries through explicit interfaces. The mutation-vector lifecycle may consume mutation observations and approved live configuration, but it must not import MCP server internals from query/runtime code or mutate canonical JSON outside `applySystemArchitectureMutation`.
 
 ## Owned tests
 
-Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08 while permitting corrected W3 handoffs to authorize TS-09 adapter/generation work.
+Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protected by the frozen guards in `tests/architecture/production-graph-rag/`, including the coding-scope authorization guard that excludes TS-08 while permitting corrected W3 handoffs to authorize TS-09 adapter/generation work and W3.1 handoffs to authorize mutation-vector lifecycle work.
 
 ## Completion attribution
 
@@ -99,3 +110,4 @@ Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protec
 - A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.
 - C1-C6 remain a protected checkpoint. The expanded live-provider slice completes only when all eight scoped explicit entrypoints and ten frozen critical guards pass, the live result proves a real HTTP call and controlled Neo4j evidence, and failure/redaction matrices pass with zero baseline delivered regression.
 - W3 index lifecycle and exact-threshold baseline completion requires DT-05, DT-16, DT-16-SemanticIndex, DT-17, TS-09-EmbeddingProviderAdapter, and TS-09-EmbeddingGeneration to pass together with the W3 critical guards. DT scoped passes are necessary evidence but not sufficient for W3 acceptance while TS-09 fails.
+- W3.1 completion requires `runApplyMutationEmbeddingVectorE2E.js` to pass under both `ARGO_LIVE_PROVIDER_E2E=1` and `ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1` with approved Qwen/Neo4j secret sources and controlled Neo4j vector cleanup evidence. Default/offline failure with `W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED` is expected pre-coding evidence, not live acceptance.

@@ -193,5 +193,18 @@
     "failureError": "AssertionError [ERR_ASSERTION]: TS08_GATE_CATEGORY_MISSING\n+ actual - expected\n\n+ undefined\n- 'DELIVERY_PREREQUISITES_INCOMPLETE'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:13:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'DELIVERY_PREREQUISITES_INCOMPLETE',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
     "stderr": "AssertionError [ERR_ASSERTION]: TS08_GATE_CATEGORY_MISSING\n+ actual - expected\n\n+ undefined\n- 'DELIVERY_PREREQUISITES_INCOMPLETE'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:13:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'DELIVERY_PREREQUISITES_INCOMPLETE',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+    "testdescription": "Acceptor control point: execute applySystemArchitectureMutation for cases that touch an Element, an ArchitectureRelationship, and a View, then run the production mutation-driven embedding lifecycle with explicit live opt-in against the real approved Qwen adapter and a controlled Neo4j vector index. Observation point: affected records are exactly the touched records; the adapter uses the approved qwen3.7-text-embedding profile and 1024 dimensions without leaking secrets; Neo4j persists vector rows with canonical/content/index/model version evidence; a vector query can retrieve the changed records after complete success; the lifecycle marks Aligned only after the queryable-vector check passes; provider or persistence failures mark Stale or Failed and pure semantic queries are rejected until alignment is restored.",
+    "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "relatedIntentElementId": "grag-wp-3-1",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "exitCode": 1,
+    "failureError": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED",
+    "stdout": "",
+    "stderr": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED"
   }
 ]
