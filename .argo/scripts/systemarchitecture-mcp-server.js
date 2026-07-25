@@ -91,6 +91,17 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
 const SCHEMA_PATH_CANDIDATES = [
   '.argo/schema/SystemArchitecture.schema.json',
 ];
+const W31_LIVE_OPT_IN = 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E';
+const LIVE_PROVIDER_OPT_IN = 'ARGO_LIVE_PROVIDER_E2E';
+const W31_APPROVED_PROFILE = Object.freeze({
+  approvedByHuman: true,
+  provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
+  baseUrl: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
+  model: 'qwen3.7-text-embedding',
+  version: 'qualification-2026-07-25',
+  dimensions: 1024,
+  source: 'explicit-human-approval',
+});
 
 const {
   validateGraphSemantics,
@@ -101,6 +112,12 @@ const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js'
 const {
   createProductionGraphRagRuntime,
 } = require('./graph-rag/productionGraphRagRuntime.js');
+const {
+  resolveApprovedLiveConfiguration,
+} = require('./graph-rag/liveEmbeddingProviderConfig.js');
+const {
+  createMutationEmbeddingVectorLifecycle,
+} = require('./graph-rag/mutationEmbeddingVectorLifecycle.js');
 const {
   DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
   recoverNeo4jSyncIfNeeded,
@@ -1184,11 +1201,124 @@ async function buildMutationResult(context, mutations, write) {
     }
   }
 
+  await attachMutationEmbeddingLifecycle(context, result);
+
   return result;
 }
 
 function shouldSyncCanonicalGraphToNeo4j(relativeGraphPath) {
   return normalizeRelativePath(relativeGraphPath) === normalizeRelativePath(NEO4J_DEFAULT_GRAPH_PATH);
+}
+
+async function attachMutationEmbeddingLifecycle(context, result) {
+  if (!shouldRunMutationEmbeddingLifecycle(result)) {
+    return;
+  }
+  try {
+    const configuration = await resolveApprovedLiveConfiguration({
+      repositoryRoot: context.workspaceRoot,
+    });
+    const lifecycle = createMutationEmbeddingVectorLifecycle({
+      configuration,
+      repositoryRoot: context.workspaceRoot,
+    });
+    const embeddingLifecycle = await lifecycle.execute({
+      mutation: {
+        applied: true,
+        architecturePath: result.graphPath,
+        response: result,
+      },
+      qualification: W31_APPROVED_PROFILE,
+      semanticQueryProbe: {
+        pureSemanticRequest: {
+          purpose: 'implementation-design',
+          intent: 'Find freshly mutated W3.1 vector evidence',
+          subject: 'grag-wp-3-1',
+        },
+      },
+    });
+    result.embeddingLifecycle = embeddingLifecycle;
+    result.alignment = buildMutationAlignment(embeddingLifecycle);
+  } catch (error) {
+    result.embeddingLifecycle = buildMutationEmbeddingLifecycleFailure(error, result);
+    result.alignment = buildMutationAlignment(result.embeddingLifecycle);
+  }
+}
+
+function shouldRunMutationEmbeddingLifecycle(result) {
+  return result
+    && result.status === 'passed'
+    && result.written === true
+    && process.env[LIVE_PROVIDER_OPT_IN] === '1'
+    && process.env[W31_LIVE_OPT_IN] === '1'
+    && (
+      (Array.isArray(result.touchedElementIds) && result.touchedElementIds.length > 0)
+      || (Array.isArray(result.touchedRelationshipIds) && result.touchedRelationshipIds.length > 0)
+      || (Array.isArray(result.touchedViewIds) && result.touchedViewIds.length > 0)
+    );
+}
+
+function buildMutationAlignment(embeddingLifecycle) {
+  const state = embeddingLifecycle && embeddingLifecycle.alignmentState
+    ? embeddingLifecycle.alignmentState
+    : 'Failed';
+  return Object.freeze({
+    state,
+    pureSemanticQueryRejected: state !== 'Aligned',
+    category: state === 'Aligned' ? 'SEMANTIC_INDEX_ALIGNED' : 'SEMANTIC_INDEX_NOT_ALIGNED',
+    fullSnapshotFallback: false,
+  });
+}
+
+function buildMutationEmbeddingLifecycleFailure(error, result) {
+  const category = error && error.category ? error.category : 'W31_MUTATION_VECTOR_LIFECYCLE_FAILED';
+  return Object.freeze({
+    mutation: Object.freeze({
+      applied: true,
+      architecturePath: result.graphPath,
+    }),
+    touchedRecords: [],
+    provider: Object.freeze({
+      profile: Object.freeze({
+        provider: W31_APPROVED_PROFILE.provider,
+        model: W31_APPROVED_PROFILE.model,
+        version: W31_APPROVED_PROFILE.version,
+        dimensions: W31_APPROVED_PROFILE.dimensions,
+      }),
+      offlineEvidenceAccepted: false,
+      realRequestCount: 0,
+    }),
+    vectorEvidence: [],
+    vectorQuery: Object.freeze({
+      returnedTouchedRecordIds: [],
+    }),
+    alignmentState: 'Failed',
+    failureMatrix: Object.freeze([
+      Object.freeze({
+        name: 'automatic-mutation-lifecycle-failure',
+        alignmentState: 'Failed',
+        category,
+        pureSemanticQueryRejected: true,
+        semanticQueryRejection: Object.freeze({
+          request: null,
+          status: 'rejected',
+          alignmentState: 'Failed',
+          category: 'SEMANTIC_INDEX_NOT_ALIGNED',
+          fullSnapshotFallback: false,
+        }),
+        offlineEvidenceAccepted: false,
+      }),
+    ]),
+    pureSemanticQueryRejected: true,
+    semanticQueryRejection: Object.freeze({
+      request: null,
+      status: 'rejected',
+      alignmentState: 'Failed',
+      category: 'SEMANTIC_INDEX_NOT_ALIGNED',
+      fullSnapshotFallback: false,
+    }),
+    secretLeaks: [],
+  });
 }
 
 function buildFailureGuidance(errors) {
