@@ -63,6 +63,25 @@ async function createApprovedNeo4jBoundary({ configuration, neo4j, logger }) {
       );
       return result.records.map(record => normalizeNeo4jValue(record.get('evidence')));
     },
+    async queryVectorEvidence(runId, vector, canonicalIdentities) {
+      if (!Array.isArray(vector) || vector.length !== 1024 || !Array.isArray(canonicalIdentities)) {
+        throw safeError('LIVE_PROVIDER_OPERATION_FAILED');
+      }
+      await query(
+        'CREATE VECTOR INDEX argo_live_embedding_vector IF NOT EXISTS FOR (e:ArgoLiveEmbeddingEvidence) ON (e.vector) OPTIONS { indexConfig: { `vector.dimensions`: 1024, `vector.similarity_function`: "cosine" } }',
+        {},
+      );
+      const result = await query(
+        'CALL db.index.vector.queryNodes("argo_live_embedding_vector", $limit, $vector) YIELD node, score WHERE node.runId = $runId AND node.canonicalIdentity IN $canonicalIdentities RETURN node { .canonicalIdentity, .canonicalVersion, .contentVersion, .indexVersion, .provider, .model, .qualificationVersion, .dimensions, .vector } AS evidence, score',
+        {
+          runId,
+          vector,
+          canonicalIdentities,
+          limit: Math.max(1, canonicalIdentities.length * 4),
+        },
+      );
+      return result.records.map(record => normalizeNeo4jValue(record.get('evidence')));
+    },
     async cleanup(runId) {
       await query('MATCH (e:ArgoLiveEmbeddingEvidence { runId: $runId }) DELETE e', { runId });
       return this.countWrites(runId);

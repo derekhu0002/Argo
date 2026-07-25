@@ -995,11 +995,12 @@ function applyMutations(document, mutations) {
     }
 
     if (mutation.type === 'updateView') {
-      requireId(mutation.view_id, 'mutation.view_id');
+      const viewId = mutation.view_id || mutation.id;
+      requireId(viewId, 'mutation.view_id');
       requireObject(mutation.patch, 'mutation.patch');
-      const view = findView(nextDocument.views, mutation.view_id);
+      const view = findView(nextDocument.views, viewId);
       if (!view) {
-        throw new Error(`View '${mutation.view_id}' does not exist`);
+        throw new Error(`View '${viewId}' does not exist`);
       }
       Object.assign(view, clone(mutation.patch));
       touchedViewIds.add(view.view_id);
@@ -1433,6 +1434,7 @@ function queryError(category, message, extras = {}) {
 
 function toolResult(payload, structuredContent = undefined) {
   return {
+    ...payload,
     content: [
       {
         type: 'text',
