@@ -27,6 +27,8 @@ for (const ownership of [
   'selectThresholdAllSeeds(request)',
   'generateAffectedEmbeddings(input)',
   'evaluateSemanticAlignment(request)',
+  'evaluatePhase1QualityBenchmark(request)',
+  'evaluateDeliverySequence(request)',
   'createMutationEmbeddingVectorLifecycle(dependencies)',
   'W3.1 mutation-vector integration is an automatic effect of the `applySystemArchitectureMutation` write success path',
   'return `embeddingLifecycle` and `alignment` in the MCP mutation response',
@@ -38,6 +40,11 @@ for (const ownership of [
   'DT-17 freezes the unaligned-query boundary',
   'TS-09 is a corrected W3 blocking gate',
   'DT scoped passes are necessary evidence but not sufficient for W3 acceptance while TS-09 fails',
+  'W7 business acceptance begins only after W2-W6 acceptance evidence is present',
+  '100% key seed recall',
+  'zero forced hits',
+  'recorded precision',
+  'W7 Phase 1 business acceptance requires',
 ]) {
   assert(
     localContract.includes(ownership) || read('tests/ARCHITECTURE.md').includes(ownership),

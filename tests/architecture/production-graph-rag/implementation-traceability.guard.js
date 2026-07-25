@@ -21,6 +21,8 @@ const requiredMappings = new Map([
   ['grag-embedding-provider-adapter', ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js']],
   ['grag-embedding-generation', ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js']],
   ['grag-wp-3-1', ['tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js']],
+  ['grag-quality-gate', ['tests/explicit/entries/runRetrievalQualityBenchmark.js']],
+  ['grag-seven-wave-delivery', ['tests/explicit/entries/runSevenWaveDeliveryGates.js']],
 ]);
 const elements = new Map(graph.elements.map(element => [element.id, element]));
 

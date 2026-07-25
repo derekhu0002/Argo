@@ -160,3 +160,15 @@
 - Repaired the remaining DT-14 loophole after human review: a false `overlappingViewCascade` flag is no longer sufficient evidence.
 - `runCompleteViewClosure.js` now names target View `grag-integrity-explainability` and overlapping Views `grag-quality-capacity` and `grag-vertical-chain-b`, with no independently matched or explicitly requested overlaps in this fixture.
 - `assertCompleteViewClosure()` now requires target View presence and fails `DT14_OVERLAPPING_VIEW_RETURNED` if either overlapping View id appears without explicit allowance.
+
+## 2026-07-26 W7 Phase 1 business acceptance
+
+- Materialized the W7 ImplementationToCoding handoff from validated intent commit `fa71dc060d424508d283f3c58c8a2001ba38c223`, scoped to `grag-quality-gate` and `grag-seven-wave-delivery` with DT-00 retained as coherent-reading context.
+- Contracts now require W7 to evaluate the approved five-purpose business benchmark after W2-W6: key seed recall 100%, closure correctness 100%, unrelated queries zero forced hits, recorded precision, and no invented precision release threshold.
+- Tightened `runRetrievalQualityBenchmark.js` to require `evaluatePhase1QualityBenchmark(request)` evidence with benchmark id, per-purpose mandatory/recalled/missing seed observations, closure correctness, unrelated forced hits, per-purpose precision, and aggregate precision.
+- Tightened `runSevenWaveDeliveryGates.js` to require `evaluateDeliverySequence(request)` evidence that blocks incomplete W2-W6 prerequisites, blocks whole delivery when DT-18 is missing or failing, and allows delivery only after W2-W6 plus DT-18 pass.
+- Direct entrypoint classification before handoff: DT-18 fails with `DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING`; TS-08 fails with `TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING`.
+- W7 critical guards passed: production Graph RAG architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
+- Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 35 passed, 3 failed, 0 missing criteria. W7 DT-18 fails with `DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING`; TS-08 fails with `TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING`; DT-19 remains failed with `DT19_CAPACITY_EVIDENCE_MISSING` and is outside this W7 Phase 1 implementation scope.
+- `argo.validateStageHandoff(stage=implementation-to-coding)` passed for `.argo/temp/ImplementationToCodingHandoff.json`.
+- No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.

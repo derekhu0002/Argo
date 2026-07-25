@@ -45,6 +45,18 @@ assert(
     && graphRagContract.includes('policy/index/version evidence'),
   'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W6 structural result semantics',
 );
+assert(
+  rootContract.includes('W7 business acceptance')
+    && rootContract.includes('100% key seed recall')
+    && rootContract.includes('recorded precision'),
+  'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W7 business acceptance gate',
+);
+assert(
+  graphRagContract.includes('evaluatePhase1QualityBenchmark(request)')
+    && graphRagContract.includes('evaluateDeliverySequence(request)')
+    && graphRagContract.includes('W7 quality evidence depends on W4 seed recall'),
+  'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W7 quality and delivery gates',
+);
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

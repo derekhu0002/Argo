@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T00:24:00+08:00",
+  "generatedAt": "2026-07-26T00:45:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W6 structural closure and explainable results handoff. Coding/Repair must preserve W4 seed retrieval and W5 purpose-policy selection while adding coherent-result canonical-version evidence, same-version relationship endpoint closure, complete non-cascading View closure, and single first-inclusion provenance with policy/index/version evidence.",
+  "summary": "W7 Phase 1 business acceptance handoff. Coding/Repair must implement the approved five-purpose business benchmark and seven-wave delivery gate so whole delivery is allowed only after W2-W6 are accepted and DT-18 proves 100% key seed recall, 100% closure correctness, zero forced unrelated hits, and recorded precision.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -11,73 +11,55 @@
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
-      "entryPath": "tests/explicit/entries/runCoherentIntentReading.js",
-      "controlPoint": "Submit legacy and semantic-query tasks against the same canonical graph version.",
-      "observationPoint": "Legacy reading remains complete and semantic canonicalVersion equals the governing legacy graph version; missing version evidence fails DT00_CANONICAL_VERSION_MISSING and mismatched evidence fails DT00_CANONICAL_VERSION_MISMATCH.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
+      "entryPath": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+      "controlPoint": "Run the approved five-purpose business benchmark after W2-W6 acceptance evidence is available.",
+      "observationPoint": "Every purpose reports mandatory key seed ids, recalled key seed ids, no missing key seeds, expected closure correctness, zero forced hits for unrelated controls, recorded precision, aggregate recall 1, aggregate closure correctness 1, and no invented release precision threshold.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCoherentIntentReading.js",
-      "failureReason": "DT00_CANONICAL_VERSION_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runRetrievalQualityBenchmark.js",
+      "failureReason": "DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
-      "entryPath": "tests/explicit/entries/runRelationshipEndpointClosure.js",
-      "controlPoint": "Run a purpose-closed relationship range with endpoint closure fixtures requiring at least one returned relationship plus dangling and cross-version endpoint cases.",
-      "observationPoint": "At least one relationship object exposes source/target ids, matching source/target Element object identities, same-version evidence tied to the governing result version, and dangling/cross-version structural errors.",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
+      "entryPath": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+      "controlPoint": "Attempt W7 or whole delivery with incomplete W2-W6 evidence, with W2-W6 accepted but DT-18 missing or failing, and with a fully passing ordered control case.",
+      "observationPoint": "The delivery gate blocks incomplete prerequisites, blocks whole delivery until W7 DT-18 passes, and allows delivery only after W2-W6 plus W7 business benchmark evidence pass.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runRelationshipEndpointClosure.js",
-      "failureReason": "DT13_ENDPOINT_CLOSURE_MISSING"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
-      "entryPath": "tests/explicit/entries/runCompleteViewClosure.js",
-      "controlPoint": "Run a matched View query naming target View grag-integrity-explainability and overlapping Views grag-quality-capacity and grag-vertical-chain-b, requiring in-View relationships plus a parent viewpoint.",
-      "observationPoint": "The target View is present; overlapping Views are absent unless independently matched or explicitly requested; selected Views include complete metadata, viewpoint binding, parent viewpoint, exact included element ids matching member objects, exact relationship ids matching relationship objects, and complete relationship endpoints.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCompleteViewClosure.js",
-      "failureReason": "DT14_VIEW_CLOSURE_MISSING"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
-      "entryPath": "tests/explicit/entries/runFirstInclusionProvenance.js",
-      "controlPoint": "Run explicit duplicate-path fixtures across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
-      "observationPoint": "Every returned object has exactly one ordered firstInclusionReason, expected supplementary reasons never overwrite it, and policy id, policy parameters/anchors, canonical/content/index versions, and alignment state are complete.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runFirstInclusionProvenance.js",
-      "failureReason": "DT15_PROVENANCE_EVIDENCE_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
+      "failureReason": "TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING"
     }
   ],
   "criticalNonExplicitTests": [
     {
       "name": "ArchitectureBoundaryGuard",
-      "path": "tests/architecture/intent-query/architecture-boundary.guard.js",
+      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root, query-service, and Graph RAG contracts for W6 coherent-result boundary declarations.",
-      "observationPoint": "Contracts declare W6 canonical-version, endpoint, View, and provenance result-completion semantics.",
+      "controlPoint": "Inspect root and Graph RAG contracts for W7 quality benchmark and delivery sequence boundary declarations.",
+      "observationPoint": "Contracts declare evaluatePhase1QualityBenchmark, evaluateDeliverySequence, 100% recall, 100% closure correctness, zero forced hits, recorded precision, and prerequisite wave gating.",
       "expectedStatus": "passed"
     },
     {
       "name": "DependencyDirectionGuard",
-      "path": "tests/architecture/intent-query/dependency-direction.guard.js",
+      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
       "controlPoint": "Inspect production runtime modules for outward dependencies on tests.",
-      "observationPoint": "Production code does not import tests or frozen entrypoint assets.",
+      "observationPoint": "Production Graph RAG runtime code does not import tests or frozen entrypoint assets.",
       "expectedStatus": "passed"
     },
     {
       "name": "ExplicitEntrypointCorrectnessGuard",
-      "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
+      "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect frozen W6 entrypoints and Harness-owned assertions.",
-      "observationPoint": "Entrypoints keep GIVEN/WHEN/THEN readability, use the Harness abstraction, and include W6 failure categories.",
+      "controlPoint": "Inspect frozen W7 entrypoints and Harness-owned business benchmark assertions.",
+      "observationPoint": "Entrypoints keep GIVEN/WHEN/THEN readability, use the production Harness abstraction, and include DT-18 and TS-08 failure categories.",
       "expectedStatus": "passed"
     },
     {
       "name": "KeyImplementationTraceabilityGuard",
-      "path": "tests/architecture/intent-query/implementation-traceability.guard.js",
+      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted testcase paths.",
-      "observationPoint": "W6 implementation mappings reference grag-coherent-context, grag-endpoint-closure, grag-view-closure, and grag-provenance, and all mounted W6 entrypoints exist.",
+      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted W7 testcase paths.",
+      "observationPoint": "Implementation mappings reference grag-quality-gate and grag-seven-wave-delivery, and mounted DT-18/TS-08 entrypoints exist.",
       "expectedStatus": "passed"
     }
   ],
@@ -85,142 +67,83 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT00_CANONICAL_VERSION_MISSING / DT00_CANONICAL_VERSION_MISMATCH",
-      "nextAction": "Surface governing canonicalVersion evidence on semantic-query responses and ensure it equals the canonical version or Harness-defined fingerprint of the legacy graph used for the same read."
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING / DT18_KEY_SEED_RECALL_NOT_100_PERCENT / DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT / DT18_UNRELATED_FORCED_HITS / DT18_PRECISION_NOT_RECORDED",
+      "nextAction": "Add createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) that evaluates the approved five-purpose business benchmark and returns per-purpose and aggregate qualityEvidence with recall 1, closure correctness 1, unrelated forced hits 0, recorded precision, and no release precision threshold."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT13_ENDPOINT_CLOSURE_MISSING / DT13_RELATIONSHIPS_EMPTY / DT13_SOURCE_ID_MISMATCH / DT13_TARGET_ID_MISMATCH / DT13_RELATIONSHIP_VERSION_MISMATCH",
-      "nextAction": "Extend purpose-closed results with non-empty endpointClosure relationships, source/target ids, matching endpoint objects, same-version evidence tied to the governing result version, and dangling/cross-version structural error evidence."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT14_VIEW_CLOSURE_MISSING / DT14_TARGET_VIEW_NOT_RETURNED / DT14_OVERLAPPING_VIEW_RETURNED / DT14_MEMBER_OBJECT_SET_INCOMPLETE / DT14_RELATIONSHIP_OBJECT_SET_INCOMPLETE / DT14_PARENT_VIEWPOINT_MISSING",
-      "nextAction": "Add complete selected-View closure that returns the target View by id, excludes named overlapping Views unless independently matched or explicitly requested, and includes metadata, parent viewpoint, exact member and relationship object sets, and endpoint-complete in-View relationships."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT15_PROVENANCE_EVIDENCE_MISSING / DT15_ORDERED_FIRST_REASON_MISMATCH / DT15_POLICY_PARAMETERS_MISSING / DT15_POLICY_ANCHORS_MISSING",
-      "nextAction": "Add provenance objects satisfying the explicit duplicate-path fixture order, with one firstInclusionReason, non-overwriting supplementary reasons, policy id, policy parameters/anchors, canonical/content/index versions, and alignment evidence."
+      "failureSignal": "TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING / DELIVERY_PREREQUISITES_INCOMPLETE / W7_QUALITY_BENCHMARK_REQUIRED / TS08_ORDERED_DELIVERY_NOT_ALLOWED",
+      "nextAction": "Add createProductionGraphRagRuntime().evaluateDeliverySequence(request) that blocks missing W2-W6 prerequisites, blocks whole delivery when DT-18 is missing or failing, and allows delivery only after prerequisite and W7 benchmark evidence pass."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement W6 as structural result completion after W5 purpose-policy range selection. Preserve W4 seed retrieval, W5 policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, and runner-owned deliveryStatus semantics. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Implement W7 as business acceptance after W2-W6, without changing W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, DT-19 capacity governance, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
-        "taskId": "W6-C1",
-        "title": "Expose coherent-result canonical version",
-        "objective": "Make semantic-query results traceable to the same canonical graph version as the legacy full read.",
+        "taskId": "W7-C1",
+        "title": "Evaluate phase-one quality benchmark",
+        "objective": "Expose business evidence for the approved five-purpose benchmark.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression"
+          "ExplicitAcceptanceTestcase-DT-18"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js",
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Derive canonicalVersion from the canonical graph snapshot used by the query service, matching graph.version when present or the Harness-defined canonical fingerprint otherwise.",
-          "Preserve the no-argument legacy envelope and add equal version evidence only to semantic-query response metadata/result evidence.",
-          "Run node tests/explicit/entries/runCoherentIntentReading.js until it passes."
+          "Add evaluatePhase1QualityBenchmark(request) to createProductionGraphRagRuntime's returned public boundary.",
+          "Consume the Harness-provided benchmark purposes without inventing a precision release threshold or result cap.",
+          "Return qualityEvidence.benchmarkId, purposes, perPurpose observations, keySeedRecall 1, closureCorrectness 1, unrelatedForcedHits 0, aggregatePrecision, and undefined releasePrecisionThreshold.",
+          "Run node tests/explicit/entries/runRetrievalQualityBenchmark.js until it passes."
         ],
-        "completionSignal": "runCoherentIntentReading.js exits 0 and no-argument compatibility tests remain green."
+        "completionSignal": "runRetrievalQualityBenchmark.js exits 0 and DT-18 records 100% recall, 100% closure correctness, zero forced unrelated hits, and precision evidence."
       },
       {
-        "taskId": "W6-C2",
-        "title": "Complete relationship endpoints",
-        "objective": "Return each relationship with same-version source and target Elements or explicit structural errors.",
+        "taskId": "W7-C2",
+        "title": "Gate whole delivery sequence",
+        "objective": "Block W7 and whole delivery until prerequisites and DT-18 quality evidence pass.",
         "dependsOn": [
-          "W6-C1"
+          "W7-C1"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-13"
+          "ExplicitAcceptanceTestcase-TS-08"
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Build a non-empty endpointClosure from the W5 selected relationship range using canonical relationship source_id and target_id.",
-          "Attach source and target Element objects whose ids match those endpoint ids and whose canonicalVersion matches the governing result version.",
-          "Report missing, deleted, invalid, or cross-version endpoint references through structuralErrors rather than partial relationship output.",
-          "Run node tests/explicit/entries/runRelationshipEndpointClosure.js until it passes."
+          "Add evaluateDeliverySequence(request) to the production runtime public boundary.",
+          "For incomplete prerequisites, return blocked with category DELIVERY_PREREQUISITES_INCOMPLETE and exact missing waves from W2 through W6.",
+          "For whole-delivery attempts with missing or failed qualityBenchmark evidence, return blocked with category W7_QUALITY_BENCHMARK_REQUIRED.",
+          "For W2-W6 accepted plus passed DT-18 evidence, return status allowed and releaseAllowed true.",
+          "Run node tests/explicit/entries/runSevenWaveDeliveryGates.js until it passes."
         ],
-        "completionSignal": "runRelationshipEndpointClosure.js exits 0 with same-version endpoint objects and structural error evidence."
+        "completionSignal": "runSevenWaveDeliveryGates.js exits 0 with prerequisite blocking, W7-quality blocking, and ordered delivery allowance proven."
       },
       {
-        "taskId": "W6-C3",
-        "title": "Complete selected Views",
-        "objective": "Complete matched View objects without cascading into overlapping Views by shared membership.",
+        "taskId": "W7-C3",
+        "title": "Verify W7 release gate",
+        "objective": "Prove W7 without broadening into DT-19 or manual deliveryStatus edits.",
         "dependsOn": [
-          "W6-C2"
+          "W7-C1",
+          "W7-C2"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-14"
+          "ExplicitAcceptanceTestcase-DT-18",
+          "ExplicitAcceptanceTestcase-TS-08"
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Build viewClosure only for the target View grag-integrity-explainability and any Views independently matched or explicitly requested by the W5/W6 query.",
-          "Reject grag-quality-capacity and grag-vertical-chain-b when they appear only through shared membership overlap.",
-          "Return View metadata, viewpoint binding or description, required parent viewpoint, exact member ids/objects, exact relationship ids/objects, and endpoint objects.",
-          "Record overlappingViewCascade as false only after the returned View ids prove no unrequested overlap cascade.",
-          "Run node tests/explicit/entries/runCompleteViewClosure.js until it passes."
+          "Run the two W7 explicit entrypoints.",
+          "Run the four W7 critical guards.",
+          "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence.",
+          "Confirm DT-19 capacity evidence remains out of implementation scope unless a later approved handoff includes it."
         ],
-        "completionSignal": "runCompleteViewClosure.js exits 0 and overlapping Views are not returned by membership alone."
-      },
-      {
-        "taskId": "W6-C4",
-        "title": "Add first-inclusion provenance",
-        "objective": "Explain returned objects with exactly one ordered first reason plus non-overwriting supplementary evidence.",
-        "dependsOn": [
-          "W6-C2",
-          "W6-C3"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-15"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
-        ],
-        "steps": [
-          "Choose firstInclusionReason by the explicit duplicate-path discovery order: semantic seed, relationship endpoint closure, purpose-policy closure, then complete-View closure.",
-          "Append later matches only to supplementaryReasons and never overwrite firstInclusionReason.",
-          "Expose declared purpose, selected policy id, policy parameters and anchors, canonicalVersion, semantic contentVersion, indexVersion, and alignment state.",
-          "Run node tests/explicit/entries/runFirstInclusionProvenance.js until it passes."
-        ],
-        "completionSignal": "runFirstInclusionProvenance.js exits 0 with one first reason and complete policy/index/version evidence."
-      },
-      {
-        "taskId": "W6-C5",
-        "title": "Verify W6 slice",
-        "objective": "Prove W6 without broadening the handoff scope.",
-        "dependsOn": [
-          "W6-C1",
-          "W6-C2",
-          "W6-C3",
-          "W6-C4"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
-          "ExplicitAcceptanceTestcase-DT-13",
-          "ExplicitAcceptanceTestcase-DT-14",
-          "ExplicitAcceptanceTestcase-DT-15"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
-        ],
-        "steps": [
-          "Run the four W6 explicit entrypoints.",
-          "Run the four W6 critical guards.",
-          "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence."
-        ],
-        "completionSignal": "The four W6 explicit entrypoints and four critical guards pass with no out-of-scope regressions."
+        "completionSignal": "DT-18 and TS-08 pass with four W7 critical guards, no DT-19 implementation, and no hand-authored deliveryStatus changes."
       }
     ]
   },
@@ -231,10 +154,25 @@
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
     "tests/harness/intentArchitectureQueryHarness.js",
+    "tests/harness/productionGraphRagHarness.js",
+    "tests/harness/liveEmbeddingProviderHarness.js",
     "tests/explicit/entries/runGraphQueryCompatibility.js",
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runQueryPurposeValidation.js",
     "tests/explicit/entries/runGraphTidyFullSnapshot.js",
+    "tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
+    "tests/explicit/entries/runEmbeddingQualificationGate.js",
+    "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
+    "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "tests/explicit/entries/runIndependentSemanticSeeds.js",
+    "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "tests/explicit/entries/runPurposePolicyClosure.js",
     "tests/explicit/entries/runIntentDecisionClosure.js",
     "tests/explicit/entries/runImplementationDesignClosure.js",
@@ -244,10 +182,11 @@
     "tests/explicit/entries/runRelationshipEndpointClosure.js",
     "tests/explicit/entries/runCompleteViewClosure.js",
     "tests/explicit/entries/runFirstInclusionProvenance.js",
-    "tests/architecture/intent-query/architecture-boundary.guard.js",
-    "tests/architecture/intent-query/dependency-direction.guard.js",
-    "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/intent-query/implementation-traceability.guard.js"
+    "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+    "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+    "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/production-graph-rag/implementation-traceability.guard.js"
   ],
   "openGaps": []
 }

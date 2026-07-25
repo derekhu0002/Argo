@@ -49,7 +49,21 @@ const entryRequirements = new Map([
   ['tests/explicit/entries/runSevenWaveDeliveryGates.js', [
     'productionGraphRagHarness.js',
     'DELIVERY_PREREQUISITES_INCOMPLETE',
+    'W7_QUALITY_BENCHMARK_REQUIRED',
     'TS08_OUT_OF_ORDER_DELIVERY_NOT_BLOCKED',
+    'TS08_WHOLE_DELIVERY_WITHOUT_W7_QUALITY',
+    'TS08_ORDERED_DELIVERY_NOT_ALLOWED',
+  ]],
+  ['tests/explicit/entries/runRetrievalQualityBenchmark.js', [
+    'productionGraphRagHarness.js',
+    'phase1BusinessBenchmarkFixture',
+    'DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING',
+    'DT18_FIVE_PURPOSE_BENCHMARK_INCOMPLETE',
+    'DT18_KEY_SEED_RECALL_NOT_100_PERCENT',
+    'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT',
+    'DT18_UNRELATED_FORCED_HITS',
+    'DT18_PRECISION_NOT_RECORDED',
+    'DT18_INVENTED_PRECISION_THRESHOLD',
   ]],
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',

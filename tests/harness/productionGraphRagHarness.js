@@ -40,6 +40,27 @@ function canonicalGraphFixture() {
   };
 }
 
+function phase1BusinessBenchmarkFixture() {
+  const purposes = [
+    'intent-decision',
+    'implementation-design',
+    'coding-repair',
+    'audit',
+    'graph-tidy',
+  ];
+  return {
+    benchmarkId: 'w7-phase1-five-purpose-business-benchmark',
+    purposes: purposes.map((purpose, index) => ({
+      purpose,
+      mandatoryKeySeedIds: [`${purpose}-key-seed`],
+      expectedClosureIds: [`${purpose}-closure`],
+      unrelatedQueryId: `${purpose}-unrelated-control`,
+      minimumPrecisionEvidenceName: `precision.${purpose}`,
+      ordinal: index + 1,
+    })),
+  };
+}
+
 function createNativeRetrievalProbe() {
   const requests = [];
   const sentinel = crypto.randomUUID();
@@ -253,13 +274,46 @@ function inspectCredentialSourceText(source) {
 }
 
 async function evaluateSevenWaveDelivery(completedWaves) {
+  const request = Array.isArray(completedWaves)
+    ? { completedWaves }
+    : { ...(completedWaves || {}) };
   const runtime = createRuntime({
     configuration: externalProductionConfiguration(),
     embeddingQualification: approvedEmbeddingQualification(),
     canonicalGraph: canonicalGraphFixture(),
     neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
   });
-  return captureBusinessOutcome(() => runtime.evaluateDeliverySequence({ completedWaves }));
+  if (typeof runtime.evaluateDeliverySequence !== 'function') {
+    return blockedOutcome('TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluateDeliverySequence(request));
+}
+
+async function evaluatePhase1QualityBenchmark(request = {}) {
+  const runtime = createRuntime({
+    configuration: externalProductionConfiguration(),
+    embeddingQualification: approvedEmbeddingQualification(),
+    canonicalGraph: canonicalGraphFixture(),
+    neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
+    seedCorpus: request.seedCorpus,
+  });
+  if (typeof runtime.evaluatePhase1QualityBenchmark !== 'function') {
+    return blockedOutcome('DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluatePhase1QualityBenchmark({
+    benchmark: request.benchmark || phase1BusinessBenchmarkFixture(),
+    prerequisiteEvidence: request.prerequisiteEvidence || acceptedWaveEvidence(),
+  }));
+}
+
+function acceptedWaveEvidence() {
+  return {
+    W2: 'accepted',
+    W3: 'accepted',
+    W4: 'accepted',
+    W5: 'accepted',
+    W6: 'accepted',
+  };
 }
 
 async function runEmbeddingProviderLifecycle() {
@@ -438,6 +492,16 @@ async function captureBusinessOutcome(action) {
   }
 }
 
+function blockedOutcome(category, extra = {}) {
+  return {
+    status: 'blocked',
+    error: {
+      category,
+      ...extra,
+    },
+  };
+}
+
 module.exports = {
   alignedNativeRetrievalBoundary,
   approvedEmbeddingQualification,
@@ -448,10 +512,12 @@ module.exports = {
   createNativeRetrievalProbe,
   evaluateCredentialConfiguration,
   evaluateEmbeddingQualification,
+  evaluatePhase1QualityBenchmark,
   evaluateSevenWaveDelivery,
   externalProductionConfiguration,
   inspectCredentialSourceBoundary,
   inspectCredentialSourceText,
+  phase1BusinessBenchmarkFixture,
   queryWithConflictingProjection,
   runEmbeddingProviderLifecycle,
   runNativeRetrievalRequest,
