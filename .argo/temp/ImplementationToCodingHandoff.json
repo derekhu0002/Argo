@@ -147,11 +147,11 @@
         ],
         "steps": [
           "Run the two W7 explicit entrypoints.",
-          "Run the four W7 critical guards.",
+          "Run all 5 W7 critical guards.",
           "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence.",
           "Confirm DT-19 capacity evidence remains out of implementation scope unless a later approved handoff includes it."
         ],
-        "completionSignal": "DT-18 and TS-08 pass with four W7 critical guards, no DT-19 implementation, and no hand-authored deliveryStatus changes."
+        "completionSignal": "DT-18 and TS-08 pass with all 5 W7 critical guards, no DT-19 implementation, and no hand-authored deliveryStatus changes."
       }
     ]
   },

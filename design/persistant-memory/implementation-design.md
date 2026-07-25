@@ -168,7 +168,7 @@
 - Tightened `runRetrievalQualityBenchmark.js` to require `evaluatePhase1QualityBenchmark(request)` evidence with benchmark id, per-purpose mandatory/recalled/missing seed observations, closure correctness, unrelated forced hits, per-purpose precision, and aggregate precision.
 - Tightened `runSevenWaveDeliveryGates.js` to require `evaluateDeliverySequence(request)` evidence that blocks incomplete W2-W6 prerequisites, blocks whole delivery when DT-18 is missing or failing, and allows delivery only after W2-W6 plus DT-18 pass.
 - Direct entrypoint classification before handoff: DT-18 fails with `DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING`; TS-08 fails with `TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING`.
-- W7 critical guards passed: production Graph RAG architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
+- W7 critical guards passed: production Graph RAG architecture boundary, dependency direction, explicit entrypoint correctness, implementation traceability, and coding-scope authorization.
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 35 passed, 3 failed, 0 missing criteria. W7 DT-18 fails with `DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING`; TS-08 fails with `TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING`; DT-19 remains failed with `DT19_CAPACITY_EVIDENCE_MISSING` and is outside this W7 Phase 1 implementation scope.
 - `argo.validateStageHandoff(stage=implementation-to-coding)` passed for `.argo/temp/ImplementationToCodingHandoff.json`.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
