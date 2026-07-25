@@ -194,12 +194,12 @@
           "value": "{\"description\":\"Use the established no-argument reading contract without consumer migration.\",\"businessOutcome\":\"Existing downstream consumers remain operational while query mode is introduced.\",\"observableBoundary\":\"An unchanged no-argument consumer receives the same complete canonical graph result.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumerRole\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphQueryCompatibility.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -227,12 +227,12 @@
           "value": "{\"description\":\"Consume complete canonical intent context when no query arguments are supplied.\",\"businessOutcome\":\"Existing lifecycle work retains exhaustive intent visibility.\",\"observableBoundary\":\"The consumption process observes all canonical Elements, Relationships, and Views with no semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-01-ConsumptionProcess\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphQueryCompatibility.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -284,12 +284,12 @@
           "value": "{\"description\":\"Select full-snapshot mode when no query fields are supplied.\",\"businessOutcome\":\"Complete canonical reading remains a stable service capability.\",\"observableBoundary\":\"The response contains complete canonical Elements, Relationships, and Views without semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphQueryCompatibility.js; runCanonicalGraphFullSnapshot.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -337,7 +337,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -421,12 +421,12 @@
           "value": "{\"description\":\"Validate declared purpose and reject audit mode when subject is absent.\",\"businessOutcome\":\"Purpose policy selection is explicit and audit scope cannot be silently inferred.\",\"observableBoundary\":\"Implementation-design selects its declared policy; audit without subject returns a rejection.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runQueryPurposeValidation.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -654,12 +654,12 @@
           "value": "{\"description\":\"Use the complete canonical snapshot for graph-tidy and bypass semantic retrieval.\",\"businessOutcome\":\"Mutation preparation sees global identity, referential integrity, View membership, and invariants.\",\"observableBoundary\":\"A graph-tidy request returns the complete canonical snapshot with no Graph RAG filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-12\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphTidyFullSnapshot.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -751,11 +751,15 @@
       "id": "grag-semantic-index",
       "name": "Semantic Retrieval Index",
       "type": "Data Object",
-      "description": "Versioned Neo4j projection over independent Element, ArchitectureRelationship, and View channels. It exposes approved model identity/version/dimensions and content/canonical versions, never becomes authority, and keeps ANN benchmark-only for phase-1 correctness.",
+      "description": "Versioned Neo4j vector projection over independent Element, ArchitectureRelationship, and View channels. Every vector records object identity, channel, canonical/content/index versions, and approved model identity/version/dimensions; partial persistence is never Aligned.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-04,DT-16,DT-17|retrieval and version evidence"
+          "value": "DT-04,DT-16,DT-17|retrieval, generation, persistence, and version evidence"
+        },
+        {
+          "name": "persistenceContract",
+          "value": "Parameterized Cypher persists vector plus object identity/channel, canonical/content/index version, and model identity/version/dimensions; partial persistence is Stale or Failed."
         }
       ]
     },
@@ -763,11 +767,15 @@
       "id": "grag-index-lifecycle",
       "name": "All Mutation Index Lifecycle",
       "type": "Application Process",
-      "description": "DT-16 lifecycle advances index version for create, update, and delete of every Element, Relationship, and View; nested semantics and membership changes count as updates.",
+      "description": "After canonical mutation succeeds, DT-16 extracts only affected Element, ArchitectureRelationship, and View records, triggers adapter-driven batched generation with retry/rate-limit/error isolation, persists complete evidence, and marks Aligned only after complete success; otherwise Stale or Failed.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-16|accepted|all-mutations"
+          "value": "DT-16|accepted|all-mutations and affected-record incremental embedding generation"
+        },
+        {
+          "name": "embeddingGenerationDecision",
+          "value": "Node.js independent provider adapter calls the W2-qualified external service; parameterized Cypher persists vectors and metadata after canonical mutation success."
         },
         {
           "name": "deliveryStatus",
@@ -894,12 +902,12 @@
           "value": "{\"description\":\"Expose compatible snapshots and typed optional queries.\",\"businessOutcome\":\"Agent compatibility and decidable query semantics.\",\"observableBoundary\":\"One MCP tool supports both modes.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-00\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runTypedMcpQueryContract.js; exit code 0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -916,15 +924,23 @@
       "id": "grag-production-runtime",
       "name": "Node.js Graph RAG Production Runtime",
       "type": "System Software",
-      "description": "Existing Node.js MCP runtime and Neo4j JavaScript driver remain production mainline; Python frameworks are benchmark/reference only.",
+      "description": "Existing Node.js MCP runtime, independent Embedding Provider Adapter, and Neo4j JavaScript driver remain production mainline; no Python sidecar or Neo4j GenAI Plugin is required for production embedding generation.",
       "attributes": [
         {
           "name": "referenceCandidates",
           "value": "LangChain Neo4j; LlamaIndex PropertyGraphIndex; Neo4j GraphRAG Python"
         },
         {
+          "name": "embeddingGenerationDecision",
+          "value": "Primary path: Node.js independent provider adapter outside Neo4j. Neo4j GenAI Plugin is optional only for W2 qualification, one-time backfill, or benchmark comparison."
+        },
+        {
+          "name": "pluginApiBoundary",
+          "value": "If evaluated, current APIs are ai.text.embed()/ai.text.embedBatch(); deprecated genai.vector.encode* is prohibited."
+        },
+        {
           "name": "functionalPoint.TS-01",
-          "value": "{\"description\":\"Run production queries without required Python sidecar.\",\"businessOutcome\":\"Preserve established runtime.\",\"observableBoundary\":\"Node/Neo4j path has no mandatory Python.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01\"}"
+          "value": "{\"description\":\"Run production queries and generation without required Python or Neo4j GenAI Plugin.\",\"businessOutcome\":\"Preserve Node.js runtime and avoid plugin coupling.\",\"observableBoundary\":\"Production path has no mandatory Python or GenAI Plugin.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01\"}"
         },
         {
           "name": "requirementSource.production-runtime-qualification",
@@ -936,7 +952,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -969,7 +985,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -993,8 +1009,12 @@
           "value": "approved|provider=alibaba-cloud-model-studio-openai-compatible-cn-beijing; model=qwen3.7-text-embedding; qualificationVersion=qualification-2026-07-25; dimensions=1024; supplier alias drift explicitly acknowledged"
         },
         {
+          "name": "pluginQualificationBoundary",
+          "value": "Optional only: ai.text.embed()/ai.text.embedBatch() for qualification, one-time backfill, or benchmark; never deprecated genai.vector.encode* or production dependency."
+        },
+        {
           "name": "functionalPoint.TS-06",
-          "value": "{\"description\":\"Qualify and explicitly approve embedding choice.\",\"businessOutcome\":\"No implicit unsuitable model.\",\"observableBoundary\":\"Identity/version/dimensions and evidence exist or gate blocks.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06\"}"
+          "value": "{\"description\":\"Qualify and approve provider/model/version/dimensions and operating requirements.\",\"businessOutcome\":\"No implicit provider, model, or plugin dependency.\",\"observableBoundary\":\"Approved evidence exists or W2 remains blocked.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-06\"}"
         },
         {
           "name": "functionalPoint.TS-06-provider-e2e",
@@ -1009,20 +1029,20 @@
           "value": "Explicit opt-in only; network access is allowed only in controlled local execution or protected CI with secret injection. Default/offline CI uses frozen fakes and never substitutes for live E2E delivery evidence."
         },
         {
-          "name": "requirementSource.live-provider-e2e",
-          "value": "Human-approved 2026-07-25: the approved Alibaba Cloud Model Studio OpenAI-compatible profile requires a real Node-to-provider-to-qualification/index-gate-to-controlled-Neo4j E2E before delivery."
-        },
-        {
-          "name": "acceptanceApproval.TS-06-Provider-E2E",
-          "value": "approvedByHuman=true|2026-07-25|chat approval"
-        },
-        {
           "name": "requirementSource.production-runtime-qualification",
           "value": "Human-approved 2026-07-24: embedding identity, version, and dimensions require explicit approval; otherwise index delivery is blocked."
         },
         {
+          "name": "requirementSource.live-provider-e2e",
+          "value": "Human-approved 2026-07-25: the approved Alibaba Cloud Model Studio OpenAI-compatible profile requires a real Node-to-provider-to-qualification/index-gate-to-controlled-Neo4j E2E before delivery."
+        },
+        {
           "name": "acceptanceApproval.TS-06",
           "value": "approvedByHuman=true|2026-07-24|chat approval"
+        },
+        {
+          "name": "acceptanceApproval.TS-06-Provider-E2E",
+          "value": "approvedByHuman=true|2026-07-25|chat approval"
         },
         {
           "name": "deliveryStatus",
@@ -1134,11 +1154,11 @@
       "id": "grag-wp-2",
       "name": "W2 Native Technology and Embedding Qualification",
       "type": "Work Package",
-      "description": "Establish runtime, native retrieval, canonical authority, credentials, and embedding gate.",
+      "description": "Qualify provider/model/version/dimensions and operating requirements, optionally compare current Neo4j GenAI APIs, and establish Node.js production plus secure application credential boundaries without plugin dependency.",
       "attributes": [
         {
           "name": "affectedElements",
-          "value": "grag-production-runtime; grag-native-retrieval-service; grag-canonical-graph; grag-embedding-qualification; grag-credential-boundary"
+          "value": "grag-production-runtime; grag-native-retrieval-service; grag-canonical-graph; grag-embedding-qualification; grag-credential-boundary; grag-qualified-embedding-provider-service; grag-embedding-provider-adapter"
         }
       ]
     },
@@ -1146,11 +1166,11 @@
       "id": "grag-wp-3",
       "name": "W3 Index Lifecycle and Exact-Threshold Baseline",
       "type": "Work Package",
-      "description": "Deliver index consistency and exact threshold-all baseline; ANN benchmark-only.",
+      "description": "Implement adapter-driven affected-record generation, complete parameterized vector/evidence persistence, alignment lifecycle, and exact threshold-all correctness; ANN remains benchmark-only.",
       "attributes": [
         {
           "name": "affectedElements",
-          "value": "grag-semantic-index; grag-index-lifecycle; grag-seed-retrieval"
+          "value": "grag-semantic-index; grag-index-lifecycle; grag-seed-retrieval; grag-embedding-provider-adapter; grag-embedding-generation"
         }
       ]
     },
@@ -1226,6 +1246,51 @@
           "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js"
         }
       ]
+    },
+    {
+      "id": "grag-embedding-provider-adapter",
+      "name": "Independent Embedding Provider Adapter",
+      "type": "Application Component",
+      "description": "Node.js production component that invokes the W2-qualified embedding provider outside Neo4j and persists vectors/evidence into the Neo4j vector projection; no Python sidecar or Neo4j GenAI Plugin is required.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "accepted|Node.js independent provider adapter is production primary embedding-generation path"
+        },
+        {
+          "name": "scopeBoundary",
+          "value": "Neo4j GenAI Plugin is optional only for W2 qualification, one-time batch backfill, or benchmark comparison; if evaluated use ai.text.embed()/ai.text.embedBatch(), never deprecated genai.vector.encode*."
+        },
+        {
+          "name": "functionalPoint.TS-09-adapter-generation",
+          "value": "{\"description\":\"Generate embeddings through an independent qualified-provider adapter and persist complete vector evidence through parameterized Cypher.\",\"businessOutcome\":\"Production generation is decoupled from Neo4j plugin credentials and fails safely.\",\"observableBoundary\":\"Adapter invokes a qualified provider, persists vector plus identity/channel/version/model metadata, requires no plugin/Python, exposes no Cypher credentials, and leaves partial failures non-Aligned.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
+          "description": "Acceptor control point: complete a canonical mutation changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure. Observation point: verify qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
+          "type": "Acceptance Test",
+          "Input": "Successful and partially failing incremental embedding-generation cases after canonical mutation success.",
+          "acceptanceCriteria": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js"
+        }
+      ]
+    },
+    {
+      "id": "grag-embedding-generation",
+      "name": "Incremental Embedding Generation",
+      "type": "Application Function",
+      "description": "After canonical mutation succeeds, extracts only affected Element, ArchitectureRelationship, and View records; batches provider calls with retry, rate-limit handling, and error isolation; permits alignment only after complete persistence."
+    },
+    {
+      "id": "grag-qualified-embedding-provider-service",
+      "name": "Qualified Embedding Provider Service",
+      "type": "Application Service",
+      "description": "Provider-neutral service abstraction selected only after W2 human qualification of provider, model, version, dimensions, multilingual quality, privacy, and offline requirements."
     }
   ],
   "relationships": [
@@ -1902,6 +1967,83 @@
       "statement": "Node.js Graph RAG Production Runtime --(Realization)--> External Production Credential Boundary"
     },
     {
+      "id": "grag-rel-adapter-generation",
+      "name": "Adapter performs embedding generation",
+      "type": "Assignment",
+      "source_id": "grag-embedding-provider-adapter",
+      "target_id": "grag-embedding-generation",
+      "source_name": "Independent Embedding Provider Adapter",
+      "target_name": "Incremental Embedding Generation",
+      "description": "The adapter owns provider invocation, batching, retry, rate-limit handling, error isolation, and persistence orchestration.",
+      "statement": "Independent Embedding Provider Adapter --(Assignment)--> Incremental Embedding Generation"
+    },
+    {
+      "id": "grag-rel-provider-serves-adapter",
+      "name": "Qualified provider serves adapter",
+      "type": "Serving",
+      "source_id": "grag-qualified-embedding-provider-service",
+      "target_id": "grag-embedding-provider-adapter",
+      "source_name": "Qualified Embedding Provider Service",
+      "target_name": "Independent Embedding Provider Adapter",
+      "description": "The provider-neutral W2-qualified service supports the adapter without selecting a concrete provider.",
+      "statement": "Qualified Embedding Provider Service --(Serving)--> Independent Embedding Provider Adapter"
+    },
+    {
+      "id": "grag-rel-provider-qualification",
+      "name": "Qualified provider realizes embedding gate",
+      "type": "Realization",
+      "source_id": "grag-qualified-embedding-provider-service",
+      "target_id": "grag-embedding-qualification",
+      "source_name": "Qualified Embedding Provider Service",
+      "target_name": "Embedding Model Qualification Gate",
+      "description": "The provider abstraction realizes qualification only after explicit human approval of provider, model, version, dimensions, and operating evidence.",
+      "statement": "Qualified Embedding Provider Service --(Realization)--> Embedding Model Qualification Gate"
+    },
+    {
+      "id": "grag-rel-adapter-index",
+      "name": "Adapter persists semantic vectors",
+      "type": "Access",
+      "source_id": "grag-embedding-provider-adapter",
+      "target_id": "grag-semantic-index",
+      "source_name": "Independent Embedding Provider Adapter",
+      "target_name": "Semantic Retrieval Index",
+      "description": "The adapter writes vectors and identity, channel, canonical/content/index version, and model evidence through parameterized Cypher.",
+      "statement": "Independent Embedding Provider Adapter --(Access)--> Semantic Retrieval Index"
+    },
+    {
+      "id": "grag-rel-generation-canonical",
+      "name": "Generation reads affected canonical records",
+      "type": "Access",
+      "source_id": "grag-embedding-generation",
+      "target_id": "grag-canonical-graph",
+      "source_name": "Incremental Embedding Generation",
+      "target_name": "Canonical Intent Graph",
+      "description": "Generation reads only affected records after canonical mutation succeeds; canonical JSON remains authoritative.",
+      "statement": "Incremental Embedding Generation --(Access)--> Canonical Intent Graph"
+    },
+    {
+      "id": "grag-rel-lifecycle-generation",
+      "name": "Index lifecycle triggers generation",
+      "type": "Triggering",
+      "source_id": "grag-index-lifecycle",
+      "target_id": "grag-embedding-generation",
+      "source_name": "All Mutation Index Lifecycle",
+      "target_name": "Incremental Embedding Generation",
+      "description": "Successful canonical mutation triggers generation; incomplete provider or persistence work remains Stale or Failed.",
+      "statement": "All Mutation Index Lifecycle --(Triggering)--> Incremental Embedding Generation"
+    },
+    {
+      "id": "grag-rel-adapter-credentials",
+      "name": "Adapter realizes credential boundary",
+      "type": "Realization",
+      "source_id": "grag-embedding-provider-adapter",
+      "target_id": "grag-credential-boundary",
+      "source_name": "Independent Embedding Provider Adapter",
+      "target_name": "External Production Credential Boundary",
+      "description": "The adapter uses secure external credentials and never passes provider credentials through production Cypher embedding calls.",
+      "statement": "Independent Embedding Provider Adapter --(Realization)--> External Production Credential Boundary"
+    },
+    {
       "id": "grag-rel-native-canonical",
       "name": "Native retrieval reads canonical authority",
       "type": "Access",
@@ -2223,21 +2365,21 @@
       "view_name": "Graph RAG Technology Foundation Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Technology Usage Viewpoint; Concern: production runtime, canonical authority, and semantic retrieval dependencies; Purpose: designing and deciding; Scope: MCP query service through Node.js and Neo4j-native technology; Rationale: this view shows technology support without treating MCP or Neo4j projection as intent authority.",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: production runtime, canonical authority, independent embedding generation, native semantic retrieval, and Neo4j vector-projection dependencies; Purpose: designing and deciding; Scope: query service through Node.js adapter and Neo4j-native seed/index technology; Rationale: this view shows the production application-to-technology path while keeping canonical JSON authoritative and excluding Python or GenAI Plugin as required dependencies.",
       "included_elements": [
         "grag-query-service",
-        "grag-mcp-interface",
         "grag-production-runtime",
         "grag-native-retrieval-service",
         "grag-canonical-graph",
         "grag-semantic-index",
+        "grag-embedding-provider-adapter",
         "grag-seed-retrieval"
       ],
       "included_relationships": [
-        "grag-rel-mcp-interface-service",
         "grag-rel-runtime-native",
         "grag-rel-native-seeds",
-        "grag-rel-native-index"
+        "grag-rel-native-index",
+        "grag-rel-adapter-index"
       ]
     },
     {
@@ -2245,22 +2387,25 @@
       "view_name": "Graph RAG Technology Qualification Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Technology Usage Viewpoint; Concern: embedding, credential, and phase-1 correctness qualification before index delivery; Purpose: deciding and handoff preparation; Scope: runtime, native retrieval, embedding gate, credentials, index, seeds, and deferred capacity; Rationale: this view isolates production qualification dependencies.",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: provider/model qualification, secure credentials, production adapter coupling, and vector persistence before index delivery; Purpose: deciding and handoff preparation; Scope: runtime, native retrieval, open qualification gate, credentials, provider-neutral service, independent adapter, and semantic index; Rationale: this view separates the qualified production provider path from optional Neo4j GenAI Plugin qualification/backfill/benchmark use.",
       "included_elements": [
         "grag-production-runtime",
         "grag-native-retrieval-service",
         "grag-embedding-qualification",
         "grag-credential-boundary",
         "grag-semantic-index",
-        "grag-seed-retrieval",
-        "grag-capacity-residual"
+        "grag-embedding-provider-adapter",
+        "grag-qualified-embedding-provider-service"
       ],
       "included_relationships": [
         "grag-rel-runtime-native",
-        "grag-rel-native-seeds",
         "grag-rel-native-index",
         "grag-rel-embedding-native",
-        "grag-rel-credentials-runtime"
+        "grag-rel-credentials-runtime",
+        "grag-rel-provider-serves-adapter",
+        "grag-rel-provider-qualification",
+        "grag-rel-adapter-index",
+        "grag-rel-adapter-credentials"
       ]
     },
     {
@@ -2382,6 +2527,30 @@
         "grag-rel-embedding-native",
         "grag-rel-credentials-runtime",
         "grag-rel-native-canonical"
+      ]
+    },
+    {
+      "view_id": "grag-embedding-generation-usage",
+      "view_name": "Graph RAG Embedding Generation Usage",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: application-to-provider and vector-projection dependencies, batching scalability, secure credentials, runtime coupling, and partial-failure isolation; Purpose: designing and deciding; Scope: canonical mutation through affected-record extraction, independent provider invocation, and versioned Neo4j vector persistence; Rationale: this view isolates the production embedding-generation path that existing seven-element technology views cannot contain without losing their original runtime and qualification concerns.",
+      "included_elements": [
+        "grag-canonical-graph",
+        "grag-index-lifecycle",
+        "grag-embedding-generation",
+        "grag-embedding-provider-adapter",
+        "grag-qualified-embedding-provider-service",
+        "grag-semantic-index",
+        "grag-credential-boundary"
+      ],
+      "included_relationships": [
+        "grag-rel-adapter-generation",
+        "grag-rel-provider-serves-adapter",
+        "grag-rel-adapter-index",
+        "grag-rel-generation-canonical",
+        "grag-rel-lifecycle-generation",
+        "grag-rel-adapter-credentials"
       ]
     }
   ]
