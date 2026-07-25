@@ -1,13 +1,15 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T15:13:00+08:00",
+  "generatedAt": "2026-07-25T16:44:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Deliver W3 Index Lifecycle and Exact-Threshold Baseline: every canonical mutation advances versioned semantic-index evidence or leaves the index non-Aligned; unaligned pure semantic queries are rejected; DT-05 threshold-all correctness is the Phase 1 baseline and ANN top-k is benchmark-only performance comparison.",
+  "summary": "Corrected W3 Index Lifecycle and Exact-Threshold Baseline handoff: DT-05, DT-16, and DT-17 are scoped-passed evidence only. W3 is not accepted and must remain blocked until TS-09 adapter generation/persistence passes through runEmbeddingProviderAdapterLifecycle.js, proving productionGraphRagRuntime.generateAffectedEmbeddings() exposes Node runtime, no required Neo4j GenAI Plugin, provider-adapter generation, parameterized persistence evidence, and non-Aligned partial failure behavior.",
   "intentElementIds": [
     "grag-semantic-index",
     "grag-index-lifecycle",
     "grag-alignment-constraint",
-    "grag-seed-retrieval"
+    "grag-seed-retrieval",
+    "grag-embedding-provider-adapter",
+    "grag-embedding-generation"
   ],
   "relationshipIds": [
     "grag-rel-validation-seeds",
@@ -15,14 +17,21 @@
     "grag-rel-lifecycle-index",
     "grag-rel-lifecycle-validation",
     "grag-rel-alignment-service",
-    "grag-rel-lifecycle-generation"
+    "grag-rel-lifecycle-generation",
+    "grag-rel-adapter-generation",
+    "grag-rel-adapter-index",
+    "grag-rel-generation-canonical",
+    "grag-rel-provider-serves-adapter",
+    "grag-rel-adapter-credentials"
   ],
   "openQuestions": [],
   "notes": [
-    "Selected viewpoint frame: Application Usage Viewpoint for query/index availability, Implementation and Migration Viewpoint for W3 delivery sequencing, and Requirements Realization Viewpoint for the release-gate concern carried into index delivery.",
-    "Affected view binding: grag-index-consistency remains an Application Usage Viewpoint instance; its concern now explicitly includes exact threshold-all correctness before ANN comparison while preserving canonical reads when the semantic index is not Aligned.",
-    "Coverage proof: grag-seed-retrieval functionalPoint.DT-05-threshold-all-correctness -> ExplicitAcceptanceTestcase-DT-05; grag-semantic-index functionalPoint.DT-16-versioned-vector-baseline -> ExplicitAcceptanceTestcase-DT-16-SemanticIndex; grag-index-lifecycle functionalPoint.DT-16-all-mutation-version-advance -> ExplicitAcceptanceTestcase-DT-16; grag-alignment-constraint functionalPoint.DT-17-unaligned-semantic-rejection -> ExplicitAcceptanceTestcase-DT-17.",
-    "Human approval evidence: the 2026-07-25 chat delivery request approved the DT-05, DT-16, and DT-17 acceptance mapping and the same-element DT-16 semantic-index testcase boundary; schema-compliant acceptanceApproval.* attributes were recorded in SystemArchitecture.json because testcase and handoff schemas do not allow approvedByHuman fields.",
-    "Release gates: all mutation classes advance affected-record version evidence or remain non-Aligned; unaligned pure semantic queries are rejected; ANN top-k does not define Phase 1 correctness."
+    "Selected viewpoint frame: Implementation and Migration Viewpoint for W3 acceptance status and sequencing; Technology Usage Viewpoint for adapter/generation/vector-projection dependencies; Requirements Realization Viewpoint for TS-09 as a blocking release gate.",
+    "Affected view bindings: grag-index-consistency remains an Application Usage Viewpoint instance for query/index availability; grag-embedding-generation-usage remains a Technology Usage Viewpoint instance and now explicitly binds TS-09 adapter generation/persistence proof as a blocking W3 concern.",
+    "Corrected acceptance decision: W3 is not accepted while TS-09 is pending or failing. DT-05, DT-16, and DT-17 may remain scoped-passed evidence, but they do not complete W3 without TS-09.",
+    "Coverage proof: grag-seed-retrieval functionalPoint.DT-05-threshold-all-correctness -> ExplicitAcceptanceTestcase-DT-05; grag-semantic-index functionalPoint.DT-16-versioned-vector-baseline -> ExplicitAcceptanceTestcase-DT-16-SemanticIndex; grag-index-lifecycle functionalPoint.DT-16-all-mutation-version-advance -> ExplicitAcceptanceTestcase-DT-16; grag-alignment-constraint functionalPoint.DT-17-unaligned-semantic-rejection -> ExplicitAcceptanceTestcase-DT-17; grag-embedding-provider-adapter functionalPoint.TS-09-adapter-generation -> ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter; grag-embedding-generation functionalPoint.TS-09-affected-record-generation -> ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration.",
+    "TS-09 blocking evidence: runEmbeddingProviderAdapterLifecycle.js exits 1 with TS09_NODE_ADAPTER_REQUIRED because generateAffectedEmbeddings() does not expose required outcome-level runtime, neo4jGenAiPluginRequired, and adapter generation/persistence evidence.",
+    "Downstream ImplementationDesign must regenerate an implementation-to-coding handoff that treats tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js as in-scope blocking TS-09 work, not out-of-scope frozen evidence.",
+    "Human approval evidence: the 2026-07-25 feedback explicitly states TS-09 blocks W3 acceptance; schema-compliant acceptanceApproval.* attributes were recorded in SystemArchitecture.json because testcase and handoff schemas do not allow approvedByHuman fields."
   ]
 }

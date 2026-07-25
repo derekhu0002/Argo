@@ -1107,7 +1107,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1239,31 +1239,39 @@
       "id": "grag-wp-3",
       "name": "W3 Index Lifecycle and Exact-Threshold Baseline",
       "type": "Work Package",
-      "description": "W3 pending: deliver all-mutation lifecycle version advancement, complete parameterized vector/evidence persistence, alignment-state rejection for unaligned pure semantic queries, and exact threshold-all correctness before ANN is allowed as benchmark-only performance comparison.",
+      "description": "W3 not accepted until TS-09 passes: deliver all-mutation lifecycle version advancement, complete adapter-driven generation and parameterized vector/evidence persistence, alignment-state rejection for unaligned pure semantic queries, and exact threshold-all correctness before ANN is allowed as benchmark-only performance comparison. DT-05, DT-16, and DT-17 are scoped-passed evidence only and cannot complete W3 without TS-09 adapter generation/persistence evidence.",
       "attributes": [
         {
           "name": "affectedElements",
           "value": "grag-semantic-index; grag-index-lifecycle; grag-alignment-constraint; grag-seed-retrieval; grag-embedding-provider-adapter; grag-embedding-generation"
         },
         {
+          "name": "acceptanceDecision.W3",
+          "value": "not_accepted|2026-07-25|TS-09 is blocking; DT-05, DT-16, and DT-17 scoped checks may pass but do not complete W3 without adapter generation/persistence evidence"
+        },
+        {
           "name": "implementationGate.TS-09",
-          "value": "pending|runEmbeddingProviderAdapterLifecycle.js failed because productionGraphRagRuntime.generateAffectedEmbeddings() is absent and outcome.runtime is undefined; W3 owns this implementation and TS-09 remains unchanged as its first gate."
+          "value": "blocking|runEmbeddingProviderAdapterLifecycle.js fails with TS09_NODE_ADAPTER_REQUIRED because generateAffectedEmbeddings() does not expose required outcome-level runtime, neo4jGenAiPluginRequired, and adapter generation/persistence evidence"
+        },
+        {
+          "name": "releaseGate.TS-09",
+          "value": "runEmbeddingProviderAdapterLifecycle.js must pass before W3 acceptance; productionGraphRagRuntime.generateAffectedEmbeddings() must prove Node adapter generation and parameterized persistence path evidence"
         },
         {
           "name": "releaseGate.DT-05",
-          "value": "threshold-all correctness proof must pass before ANN top-k may be treated as performance comparison evidence"
+          "value": "threshold-all correctness proof may be accepted as scoped evidence, but ANN top-k remains performance-only and DT-05 does not complete W3 while TS-09 is pending"
         },
         {
           "name": "releaseGate.DT-16",
-          "value": "every canonical mutation class must advance affected-record version evidence or leave the index non-Aligned"
+          "value": "all canonical mutation classes must advance affected-record version evidence or leave the index non-Aligned; DT-16 scoped pass does not complete W3 while TS-09 is pending"
         },
         {
           "name": "releaseGate.DT-17",
-          "value": "unaligned pure semantic queries are rejected; complete and explicit-anchor canonical reads remain available"
+          "value": "unaligned pure semantic queries are rejected and canonical reads remain available; DT-17 scoped pass does not complete W3 while TS-09 is pending"
         },
         {
           "name": "scopeBoundary.W2-W3",
-          "value": "W2 qualification acceptance does not imply adapter generation/persistence/alignment delivery; do not mark W3 delivered until TS-09 and remaining W3 acceptance pass."
+          "value": "W2 qualification acceptance does not imply adapter generation/persistence/alignment delivery; do not mark W3 accepted until TS-09 and remaining W3 acceptance pass."
         }
       ]
     },
@@ -1344,7 +1352,7 @@
       "id": "grag-embedding-provider-adapter",
       "name": "Independent Embedding Provider Adapter",
       "type": "Application Component",
-      "description": "Node.js production component that invokes the W2-qualified embedding provider outside Neo4j and persists vectors/evidence into the Neo4j vector projection; no Python sidecar or Neo4j GenAI Plugin is required.",
+      "description": "Node.js production component that invokes the W2-qualified embedding provider outside Neo4j and persists vectors/evidence into the Neo4j vector projection; no Python sidecar or Neo4j GenAI Plugin is required. W3 acceptance is blocked until this adapter's TS-09 testcase proves runtime identity and generation/persistence evidence through productionGraphRagRuntime.generateAffectedEmbeddings().",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -1356,11 +1364,19 @@
         },
         {
           "name": "functionalPoint.TS-09-adapter-generation",
-          "value": "{\"description\":\"Generate embeddings through an independent qualified-provider adapter and persist complete vector evidence through parameterized Cypher.\",\"businessOutcome\":\"Production generation is decoupled from Neo4j plugin credentials and fails safely.\",\"observableBoundary\":\"Adapter invokes a qualified provider, persists vector plus identity/channel/version/model metadata, requires no plugin/Python, exposes no Cypher credentials, and leaves partial failures non-Aligned.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter\"}"
+          "value": "{\"description\":\"Generate embeddings through an independent qualified-provider adapter and persist complete vector evidence through parameterized Cypher.\",\"businessOutcome\":\"Production generation is decoupled from Neo4j plugin credentials and fails safely while proving Node runtime ownership.\",\"observableBoundary\":\"Adapter invocation through generateAffectedEmbeddings() exposes runtime='nodejs', neo4jGenAiPluginRequired=false, qualified-provider generation evidence, parameterized vector/evidence persistence, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter\"}"
+        },
+        {
+          "name": "blockingEvidence.TS-09",
+          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js exits 1|TS09_NODE_ADAPTER_REQUIRED|actual runtime undefined; generateAffectedEmbeddings() lacks required outcome-level runtime/plugin and adapter generation/persistence evidence"
+        },
+        {
+          "name": "acceptanceApproval.TS-09",
+          "value": "approvedByHuman=true|2026-07-25|human feedback: TS-09 blocks W3 acceptance until runEmbeddingProviderAdapterLifecycle.js passes"
         },
         {
           "name": "scopeBoundary.W2-W3",
-          "value": "W2 accepts adapter technology selection and qualified-provider boundary; TS-09 adapter-driven affected-record generation, vector/evidence persistence, and alignment lifecycle remain an unchanged W3 implementation gate."
+          "value": "W2 accepts adapter technology selection and qualified-provider boundary; TS-09 adapter-driven affected-record generation, vector/evidence persistence, and alignment lifecycle remain a blocking W3 implementation gate."
         },
         {
           "name": "deliveryStatus",
@@ -1370,7 +1386,7 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter",
-          "description": "Acceptor control point: complete a canonical mutation changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure. Observation point: verify qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
+          "description": "Acceptor control point: call productionGraphRagRuntime.generateAffectedEmbeddings() for canonical mutations changing Element, ArchitectureRelationship, and View records, then introduce partial provider or persistence failure. Observation point: verify runtime='nodejs', neo4jGenAiPluginRequired=false, qualified-provider invocation, parameterized vector/evidence persistence, no required Neo4j GenAI Plugin, no embedded credentials, and Stale/Failed rather than Aligned after incomplete persistence.",
           "type": "Acceptance Test",
           "Input": "Successful and partially failing incremental embedding-generation cases after canonical mutation success.",
           "acceptanceCriteria": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js"
@@ -1381,7 +1397,34 @@
       "id": "grag-embedding-generation",
       "name": "Incremental Embedding Generation",
       "type": "Application Function",
-      "description": "After canonical mutation succeeds, extracts only affected Element, ArchitectureRelationship, and View records; batches provider calls with retry, rate-limit handling, and error isolation; permits alignment only after complete persistence."
+      "description": "After canonical mutation succeeds, extracts only affected Element, ArchitectureRelationship, and View records; batches provider calls with retry, rate-limit handling, and error isolation; exposes W3 TS-09 generation/persistence outcome evidence; permits alignment only after complete persistence.",
+      "attributes": [
+        {
+          "name": "decisionTrace.TS-09",
+          "value": "accepted|affected-record generation and persistence path is a blocking W3 gate"
+        },
+        {
+          "name": "functionalPoint.TS-09-affected-record-generation",
+          "value": "{\"description\":\"Generate embeddings for only affected canonical records and expose complete generation/persistence outcome evidence.\",\"businessOutcome\":\"W3 cannot be accepted until mutation-driven generation proves the Node adapter path, persistence metadata, and non-Aligned failure behavior.\",\"observableBoundary\":\"For Element, ArchitectureRelationship, and View mutation cases, generateAffectedEmbeddings() reports affected records, batching/retry or failure isolation, runtime='nodejs', provider adapter evidence, persistence evidence, and non-Aligned partial failures.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration\"}"
+        },
+        {
+          "name": "blockingEvidence.TS-09",
+          "value": "2026-07-25|runEmbeddingProviderAdapterLifecycle.js exits 1|TS09_NODE_ADAPTER_REQUIRED|generation outcome does not prove runtime or adapter persistence path"
+        },
+        {
+          "name": "acceptanceApproval.TS-09-EmbeddingGeneration",
+          "value": "approvedByHuman=true|2026-07-25|human feedback: TS-09 generation/persistence path blocks W3 acceptance"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration",
+          "description": "Acceptor control point: call productionGraphRagRuntime.generateAffectedEmbeddings() with affected Element, ArchitectureRelationship, and View records after canonical mutation success. Observation point: verify affected-record extraction, batching/error isolation, runtime='nodejs', provider adapter evidence, complete persistence metadata, and non-Aligned partial failure behavior.",
+          "type": "Acceptance Test",
+          "Input": "Affected-record generation cases for Element, ArchitectureRelationship, and View mutation classes, including partial provider or persistence failure.",
+          "acceptanceCriteria": "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js"
+        }
+      ]
     },
     {
       "id": "grag-qualified-embedding-provider-service",
@@ -2114,7 +2157,7 @@
       "target_id": "grag-semantic-index",
       "source_name": "Independent Embedding Provider Adapter",
       "target_name": "Semantic Retrieval Index",
-      "description": "The adapter writes vectors and identity, channel, canonical/content/index version, and model evidence through parameterized Cypher.",
+      "description": "The adapter writes vectors and identity, channel, canonical/content/index version, model evidence, and outcome-level generation/persistence evidence through parameterized Cypher; this path is a blocking TS-09 W3 gate.",
       "statement": "Independent Embedding Provider Adapter --(Access)--> Semantic Retrieval Index"
     },
     {
@@ -2136,7 +2179,7 @@
       "target_id": "grag-embedding-generation",
       "source_name": "All Mutation Index Lifecycle",
       "target_name": "Incremental Embedding Generation",
-      "description": "Successful canonical mutation triggers generation; incomplete provider or persistence work remains Stale or Failed.",
+      "description": "Successful canonical mutation triggers affected-record generation; W3 acceptance remains blocked until TS-09 proves generateAffectedEmbeddings() exposes Node runtime, adapter generation, persistence evidence, and non-Aligned partial failure behavior.",
       "statement": "All Mutation Index Lifecycle --(Triggering)--> Incremental Embedding Generation"
     },
     {
@@ -2641,7 +2684,7 @@
       "view_name": "Graph RAG Embedding Generation Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Technology Usage Viewpoint; Concern: application-to-provider and vector-projection dependencies, batching scalability, secure credentials, runtime coupling, and partial-failure isolation; Purpose: designing and deciding; Scope: canonical mutation through affected-record extraction, independent provider invocation, and versioned Neo4j vector persistence; Rationale: this view isolates the production embedding-generation path that existing seven-element technology views cannot contain without losing their original runtime and qualification concerns.",
+      "description": "Viewpoint: Technology Usage Viewpoint; Concern: application-to-provider and vector-projection dependencies, batching scalability, secure credentials, runtime coupling, TS-09 adapter generation/persistence proof, and partial-failure isolation; Purpose: designing, deciding, and handoff preparation; Scope: canonical mutation through affected-record extraction, independent provider invocation, productionGraphRagRuntime.generateAffectedEmbeddings() outcome evidence, and versioned Neo4j vector persistence; Rationale: this view isolates the production embedding-generation path and now makes TS-09 an explicit blocking W3 gate so DT-05, DT-16, and DT-17 scoped evidence cannot be mistaken for full W3 acceptance.",
       "included_elements": [
         "grag-canonical-graph",
         "grag-index-lifecycle",

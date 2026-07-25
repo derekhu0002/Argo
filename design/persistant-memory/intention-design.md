@@ -195,3 +195,29 @@
 - `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
 - `argo.validateSystemArchitecture`: passed.
 - Open business questions: none. Runtime pass/fail evidence for the W3 entrypoints remains downstream Implementation Design/Coding work.
+
+## 2026-07-25 — TS-09 Blocks Full W3 Acceptance
+
+- Selected viewpoints: Implementation and Migration Viewpoint for W3 acceptance state and delivery sequencing, Technology Usage Viewpoint for adapter/generation/vector-projection dependencies, and Requirements Realization Viewpoint for TS-09 as a blocking release gate.
+- Stakeholder concern: requirements owners, ICT architects, implementation designers, and acceptors need DT-05/DT-16/DT-17 scoped passes preserved without allowing full W3 acceptance while adapter-driven generation and persistence remain unproven.
+- Modeling purpose: audit repair and intent-to-implementation handoff correction.
+- Human feedback: TS-09 is a blocker; `productionGraphRagRuntime.generateAffectedEmbeddings()` does not prove Node adapter generation/persistence because the observable outcome lacks required `runtime`, `neo4jGenAiPluginRequired`, and adapter generation/persistence evidence.
+- Corrected decision: W3 is `not_accepted` until `runEmbeddingProviderAdapterLifecycle.js` passes. DT-05, DT-16, and DT-17 may remain scoped-passed evidence only.
+- Delivery-status guardrail: Intent Design did not manually set acceptance by editing runner-owned `deliveryStatus`. Existing runner-owned values remain runner-controlled.
+
+### Corrected coverage matrix
+
+- `grag-seed-retrieval` — `functionalPoint.DT-05-threshold-all-correctness` -> `ExplicitAcceptanceTestcase-DT-05`.
+- `grag-semantic-index` — `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`.
+- `grag-index-lifecycle` — `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`.
+- `grag-alignment-constraint` — `functionalPoint.DT-17-unaligned-semantic-rejection` -> `ExplicitAcceptanceTestcase-DT-17`.
+- `grag-embedding-provider-adapter` — `functionalPoint.TS-09-adapter-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter`.
+- `grag-embedding-generation` — `functionalPoint.TS-09-affected-record-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration`.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for TS-09 W3 correction.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for the corrected six-element W3 handoff.
+- Open business questions: none. ImplementationDesign must regenerate a TS-09-inclusive implementation handoff before Coding/Repair proceeds.
