@@ -498,6 +498,14 @@
           "value": "grag-seed-retrieval handoff scope is relevance discovery only: Element, Relationship, and View semantic seeds plus independent threshold gates. Purpose closure, traversal expansion, neighborhood closure, and downstream graph completion remain outside W4 seed retrieval."
         },
         {
+          "name": "deliveryEvidence.W4",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-04 and ExplicitAcceptanceTestcase-DT-05|runIndependentSemanticSeeds.js|architecture-boundary, dependency-direction, explicit-entrypoint-correctness, implementation-traceability, and coding-scope-authorization guards plus implementation-to-coding handoff validation|all exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W4",
+          "value": "accepted|2026-07-25|all qualifying per-channel Element, ArchitectureRelationship, and View seeds, valid zero results, and ANN performance-only boundary passed; no closure or global cross-channel ranking accepted"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }

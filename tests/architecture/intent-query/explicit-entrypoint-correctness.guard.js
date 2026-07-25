@@ -8,6 +8,11 @@ const entryPaths = [
   'tests/explicit/entries/runCanonicalGraphFullSnapshot.js',
   'tests/explicit/entries/runQueryPurposeValidation.js',
   'tests/explicit/entries/runGraphTidyFullSnapshot.js',
+  'tests/explicit/entries/runPurposePolicyClosure.js',
+  'tests/explicit/entries/runIntentDecisionClosure.js',
+  'tests/explicit/entries/runImplementationDesignClosure.js',
+  'tests/explicit/entries/runCodingRepairClosure.js',
+  'tests/explicit/entries/runAuditProofClosure.js',
 ];
 const requiredObservations = new Map([
   ['tests/explicit/entries/runGraphQueryCompatibility.js', [
@@ -33,6 +38,28 @@ const requiredObservations = new Map([
     'createSemanticRetrievalProbe',
     'DT12_SEMANTIC_PROBE_NOT_WIRED',
     'DT12_SEMANTIC_PATH_INVOKED',
+  ]],
+  ['tests/explicit/entries/runPurposePolicyClosure.js', [
+    'readForPurposeClosure',
+    'assertParameterizedClosurePolicy',
+    'DT06_FREE_GENERATED_CYPHER_DECIDED_MANDATORY_CLOSURE',
+    'DT07_CALLER_IDENTITY_POLICY_FORBIDDEN',
+    'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT',
+  ]],
+  ['tests/explicit/entries/runIntentDecisionClosure.js', [
+    'assertIntentDecisionClosure',
+    'DT08_IMPLEMENTATION_SCOPE_IMPORTED',
+  ]],
+  ['tests/explicit/entries/runImplementationDesignClosure.js', [
+    'assertImplementationDesignClosure',
+    'DT09_REPAIR_SCOPE_IMPORTED',
+  ]],
+  ['tests/explicit/entries/runCodingRepairClosure.js', [
+    'assertCodingRepairClosure',
+  ]],
+  ['tests/explicit/entries/runAuditProofClosure.js', [
+    'assertAuditProofClosure',
+    'DT11_MISSING_SUBJECT_NOT_REJECTED',
   ]],
 ]);
 
@@ -100,3 +127,21 @@ assert(
   handoff.frozenFiles.includes('tests/harness/intentArchitectureQueryHarness.js'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: the intent-query Harness must be frozen for Coding/Repair',
 );
+for (const harnessOwnedAssertion of [
+  'DT08_INTENT_CONCERN_UNACCOUNTED',
+  'DT09_DEPENDENCY_CHAINS_MISSING',
+  'DT10_INTENT_AUTHORITY_MISSING',
+  'DT10_UNRELATED_CAPABILITY_INCLUDED',
+  'DT11_AUDIT_VIOLATIONS_MISSING',
+]) {
+  assert(
+    harnessSource.includes(harnessOwnedAssertion),
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness omits ${harnessOwnedAssertion}`,
+  );
+}
+for (const entryPath of entryPaths) {
+  assert(
+    handoff.frozenFiles.includes(entryPath),
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${entryPath} must be frozen for Coding/Repair`,
+  );
+}

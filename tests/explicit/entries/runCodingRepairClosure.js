@@ -1,20 +1,27 @@
 const assert = require('node:assert');
-const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
+const {
+  assertCodingRepairClosure,
+  readForPurposeClosure,
+} = require('../../harness/intentArchitectureQueryHarness.js');
 
 async function main() {
   // GIVEN conflicting code evidence and an unrelated textually similar capability
-  const result = await readForPurpose({
+  const result = await readForPurposeClosure({
     purpose: 'coding-repair',
     intent: 'Repair code that conflicts with authoritative intent',
+    anchors: ['grag-repair-policy'],
+    conflictingCodeEvidence: true,
+    unrelatedSimilarCapability: 'grag-implementation-policy',
   });
 
   // WHEN coding-repair closure is observed
   const repair = result.result && result.result.repairContext;
 
   // THEN intent is authoritative and safety evidence excludes unrelated capabilities
-  assert.strictEqual(repair && repair.authority, 'intent', 'DT10_INTENT_AUTHORITY_MISSING');
-  assert(Array.isArray(repair && repair.guardrails), 'DT10_REPAIR_GUARDRAILS_MISSING');
-  assert.strictEqual(repair && repair.includesUnrelatedSimilarCapability, false, 'DT10_UNRELATED_CAPABILITY_INCLUDED');
+  assertCodingRepairClosure(result);
+  assert(Array.isArray(repair.acceptanceSemantics) && repair.acceptanceSemantics.length > 0, 'DT10_ACCEPTANCE_SEMANTICS_MISSING');
+  assert(Array.isArray(repair.atRiskOutcomes), 'DT10_AT_RISK_OUTCOMES_MISSING');
+  assert.strictEqual(repair.includesImplementationPlanningScope, false, 'DT10_IMPLEMENTATION_PLANNING_IMPORTED');
 }
 
 main().catch(error => {

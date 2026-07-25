@@ -14,81 +14,81 @@
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-06",
-    "testdescription": "Acceptor perspective control point: query for a seed with a textually dissimilar but graph-mandatory dependency. Observation point: inspect inclusion classification.",
+    "testdescription": "Acceptor perspective control point: run the same seed against a fixture containing a textually dissimilar mandatory dependency, a textually similar non-mandatory neighbor, and an attempted free-generated Cypher decision path. Observation point: inspect inclusion classification, policy id, bound parameters, ArchiMate relationship direction, explicit exclusions, and proof that generated Cypher did not decide mandatory closure.",
     "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js",
     "relatedIntentElementId": "grag-purpose-closure",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runPurposePolicyClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runPurposePolicyClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:30:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:30:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-07",
-    "testdescription": "Acceptor perspective control point: two different Agents submit the same declared purpose and anchors. Observation point: compare selected policy and resulting graph scope.",
+    "testdescription": "Acceptor perspective control point: submit equivalent declared purpose and anchors from different Agent identities, then submit the same anchors under each of the five approved purpose categories. Observation point: compare selected policy ids, parameter contracts, closure ranges, exclusions, and rationale per category.",
     "acceptanceCriteria": "tests/explicit/entries/runPurposePolicyClosure.js",
     "relatedIntentElementId": "grag-purpose-closure",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runPurposePolicyClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runPurposePolicyClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:30:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT06_PURPOSE_CLOSURE_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runPurposePolicyClosure.js:30:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-08",
-    "testdescription": "Acceptor perspective control point: submit a capability-change decision task. Observation point: inspect motivation, decision object, business behavior, acceptance, and absence declarations.",
+    "testdescription": "Acceptor perspective control point: submit a capability-change intent-decision task whose required motivation or acceptance lineage is textually dissimilar to the query, while a similar implementation-only node is nearby. Observation point: inspect returned Why/What, business behavior, mounted acceptance lineage, directly relevant realization-state evidence, absence declarations, and exclusions from other purpose categories.",
     "acceptanceCriteria": "tests/explicit/entries/runIntentDecisionClosure.js",
     "relatedIntentElementId": "grag-intent-decision-policy",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runIntentDecisionClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runIntentDecisionClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT08_INTENT_CONCERN_UNACCOUNTED: why\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIntentDecisionClosure.js:16:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT08_INTENT_DECISION_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertIntentDecisionClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:125:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIntentDecisionClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT08_INTENT_CONCERN_UNACCOUNTED: why\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIntentDecisionClosure.js:16:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT08_INTENT_DECISION_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertIntentDecisionClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:125:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIntentDecisionClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-09",
-    "testdescription": "Acceptor perspective control point: select a target with multi-level upstream and downstream chains. Observation point: inspect every returned chain boundary.",
+    "testdescription": "Acceptor perspective control point: select an implementation-design target with multi-level upstream prerequisites, bounded downstream dependents, and a similar but out-of-bound capability. Observation point: inspect every returned chain boundary, delivered-stop decision, guardrail, acceptance semantic, and exclusion rationale.",
     "acceptanceCriteria": "tests/explicit/entries/runImplementationDesignClosure.js",
     "relatedIntentElementId": "grag-implementation-policy",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runImplementationDesignClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runImplementationDesignClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT09_DEPENDENCY_CHAINS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runImplementationDesignClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT09_IMPLEMENTATION_DESIGN_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertImplementationDesignClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:144:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runImplementationDesignClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT09_DEPENDENCY_CHAINS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runImplementationDesignClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT09_IMPLEMENTATION_DESIGN_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertImplementationDesignClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:144:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runImplementationDesignClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-10",
-    "testdescription": "Acceptor perspective control point: submit a defect where code conflicts with intent and a textually similar unrelated capability exists. Observation point: inspect authoritative behavior and closure scope.",
+    "testdescription": "Acceptor perspective control point: submit a coding-repair defect where code conflicts with approved intent, with a textually similar unrelated capability nearby. Observation point: inspect authoritative intended behavior, causal prerequisites, at-risk outcomes, governing constraints/principles, acceptance semantics, and explicit exclusion of adjacent scope.",
     "acceptanceCriteria": "tests/explicit/entries/runCodingRepairClosure.js",
     "relatedIntentElementId": "grag-repair-policy",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runCodingRepairClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCodingRepairClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT10_INTENT_AUTHORITY_MISSING\n+ actual - expected\n\n+ undefined\n- 'intent'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCodingRepairClosure.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'intent',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT10_CODING_REPAIR_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertCodingRepairClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:162:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCodingRepairClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT10_INTENT_AUTHORITY_MISSING\n+ actual - expected\n\n+ undefined\n- 'intent'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCodingRepairClosure.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'intent',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT10_CODING_REPAIR_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertCodingRepairClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:162:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCodingRepairClosure.js:21:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-11",
-    "testdescription": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject. Observation point: inspect proof-scope completeness and exception handling.",
+    "testdescription": "Acceptor perspective control point: place a low-similarity violation inside an explicitly declared audit subject and provide a high-similarity candidate outside it. Observation point: inspect subject, obligation, evidence, exception completeness, low-similarity inclusion, out-of-subject exclusion, and rejection of audit requests without subject.",
     "acceptanceCriteria": "tests/explicit/entries/runAuditProofClosure.js",
     "relatedIntentElementId": "grag-audit-policy",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runAuditProofClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runAuditProofClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT11_AUDIT_VIOLATIONS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runAuditProofClosure.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT11_AUDIT_PROOF_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertAuditProofClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:178:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runAuditProofClosure.js:26:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT11_AUDIT_VIOLATIONS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runAuditProofClosure.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT11_AUDIT_PROOF_POLICY_MISSING\n    at assertParameterizedClosurePolicy (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:100:3)\n    at assertAuditProofClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:178:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runAuditProofClosure.js:26:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-13",

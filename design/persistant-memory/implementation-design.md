@@ -126,3 +126,13 @@
 - Direct W4 entrypoint execution passed. Critical production Graph RAG guards passed for architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 37 total, 24 passed, 13 failed or missing, 0 missing acceptance criteria. DT-04 and DT-05 are passed; remaining failures belong to DT-00, DT-06 through DT-11, DT-13 through DT-15, DT-18, DT-05-R2-DT-19, and TS-08, which are outside this W4 seed-retrieval scope.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 W5 deterministic five-purpose closure
+
+- Materialized the W5 ImplementationToCoding handoff from the validated `IntentToImplementationHandoff.json`, scoped to `grag-purpose-closure`, `grag-intent-decision-policy`, `grag-implementation-policy`, `grag-repair-policy`, `grag-audit-policy`, and `grag-graph-tidy-policy`.
+- Contracts now require mandatory closure decisions to use named parameterized Cypher policies, bound parameters, and ArchiMate relationship source/target semantics. Free-generated Cypher, Agent identity, text similarity, arbitrary traversal depth, and connected-component expansion cannot decide mandatory closure.
+- Tightened DT-06 through DT-11 entrypoints with Harness-owned assertions for closurePolicy evidence, purpose-category boundaries, category-specific observations, and out-of-category exclusions. DT-12 remains the graph-tidy full-snapshot bypass and already passes.
+- Direct W5 entrypoint execution classified DT-06 through DT-11 as expected failures: `DT06_PURPOSE_CLOSURE_POLICY_MISSING`, `DT08_INTENT_DECISION_POLICY_MISSING`, `DT09_IMPLEMENTATION_DESIGN_POLICY_MISSING`, `DT10_CODING_REPAIR_POLICY_MISSING`, and `DT11_AUDIT_PROOF_POLICY_MISSING`; DT-07 is blocked by the shared DT-06 policy-missing signal until policy evidence exists.
+- W5 critical intent-query guards passed after handoff materialization: architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
+- Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 37 total, 24 passed, 13 failed or missing, 0 missing acceptance criteria. W5 DT-06 through DT-11 fail with policy-missing signals, DT-12 passes, and failure records are in `design/KG/test-failure-records.json`.
+- No intent mismatch was found, so no new `ImplementationToIntentTraceProposal.json` is required.

@@ -21,14 +21,15 @@
 17. W3 index delivery is not complete until threshold-all seed correctness passes before ANN comparison, every successful canonical mutation advances affected-record index evidence or leaves the index non-Aligned, unaligned pure semantic queries are rejected while canonical reads remain available, and TS-09 proves the Node adapter generation/persistence path through `generateAffectedEmbeddings()`.
 18. W3.1 live mutation-vector delivery is not complete until one successful `applySystemArchitectureMutation` write call automatically invokes the embedding lifecycle from its actual `touchedElementIds`, `touchedRelationshipIds`, and `touchedViewIds`, returns `embeddingLifecycle` and `alignment` in the MCP mutation response, the real approved Qwen adapter generates finite 1024-dimensional vectors, Neo4j vector-index evidence is queryable for those touched records, and Aligned is set only after that queryability check passes. Harness-created lifecycle execution, expected-touched-record substitution, and offline/fake evidence are never accepted as live W3.1 delivery evidence.
 19. W4 seed retrieval delivery is scoped only to relevance-discovery seeds: Element, ArchitectureRelationship, and View are separately observable channels, each channel owns an independent threshold gate, every candidate meeting that channel gate is returned, zero-result outcomes are valid, and graph closure, traversal expansion, neighborhood closure, downstream graph completion, and global cross-channel ranking remain outside Coding scope.
+20. W5 deterministic purpose closure begins after W4 seeds and is complete only when mandatory closure decisions use named parameterized Cypher policies with bound parameters plus ArchiMate relationship source/target semantics. Free-generated Cypher, Agent identity, text similarity, arbitrary traversal depth, and connected-component expansion cannot decide mandatory closure. The five purpose categories are independent: intent-decision, implementation-design, coding-repair, audit, and graph-tidy.
 
 ## Stable architecture elements
 
 | Stable element | Path | Responsibility | Public boundary |
 | --- | --- | --- | --- |
 | Unified MCP Gateway | `.argo/scripts/argo-mcp-server.js` | Expose one governed tool surface and delegate intent-query work inward. | `callTool(name, args)` and MCP stdio tools |
-| Intent Architecture Query Boundary | `.argo/scripts/systemarchitecture-mcp-server.js` | Preserve no-argument reads, validate explicit query purpose, and dispatch full-snapshot or semantic-query behavior. | `getSystemArchitecture` |
-| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, canonical-authority enforcement, W4 independent semantic seed release, exact threshold-all seed selection, all-mutation index lifecycle evidence, alignment gating, the explicitly opted-in approved-provider evidence gate, and the W3.1 automatic mutation-triggered live-vector lifecycle without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)`, `selectThresholdAllSeeds(request)`, `generateAffectedEmbeddings(input)`, `executeApprovedEmbedding(input)`, and `createMutationEmbeddingVectorLifecycle(dependencies)` consumed by `applySystemArchitectureMutation` |
+| Intent Architecture Query Boundary | `.argo/scripts/systemarchitecture-mcp-server.js` | Preserve no-argument reads, validate explicit query purpose, dispatch full-snapshot or semantic-query behavior, and route declared W5 purpose categories without using caller identity as scope. | `getSystemArchitecture` |
+| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, canonical-authority enforcement, W4 independent semantic seed release, W5 deterministic purpose-policy closure, exact threshold-all seed selection, all-mutation index lifecycle evidence, alignment gating, the explicitly opted-in approved-provider evidence gate, and the W3.1 automatic mutation-triggered live-vector lifecycle without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)`, `selectThresholdAllSeeds(request)`, `closePurposePolicyScope(request)`, `generateAffectedEmbeddings(input)`, `executeApprovedEmbedding(input)`, and `createMutationEmbeddingVectorLifecycle(dependencies)` consumed by `applySystemArchitectureMutation` |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails. | Frozen Node.js entry scripts |
 
@@ -55,5 +56,11 @@
 | Production Graph RAG Boundary / embedding provider adapter | `grag-embedding-provider-adapter` | direct |
 | Production Graph RAG Boundary / affected-record generation | `grag-embedding-generation` | direct |
 | Production Graph RAG Boundary / W3.1 mutation-vector lifecycle | `grag-wp-3-1` | direct |
+| Production Graph RAG Boundary / purpose-policy closure | `grag-purpose-closure` | direct |
+| Production Graph RAG Boundary / intent-decision category | `grag-intent-decision-policy` | direct |
+| Production Graph RAG Boundary / implementation-design category | `grag-implementation-policy` | direct |
+| Production Graph RAG Boundary / coding-repair category | `grag-repair-policy` | direct |
+| Production Graph RAG Boundary / audit-proof category | `grag-audit-policy` | direct |
+| Intent Architecture Query Boundary / graph-tidy full-snapshot category | `grag-graph-tidy-policy` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.

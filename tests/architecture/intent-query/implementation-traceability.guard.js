@@ -13,12 +13,23 @@ const requiredIntentIds = [
   'grag-graph-tidy-policy',
   'grag-consumer-role',
   'grag-consumption-process',
+  'grag-purpose-closure',
+  'grag-intent-decision-policy',
+  'grag-implementation-policy',
+  'grag-repair-policy',
+  'grag-audit-policy',
 ];
 const requiredEntrypoints = new Set([
   'tests/explicit/entries/runGraphQueryCompatibility.js',
   'tests/explicit/entries/runCanonicalGraphFullSnapshot.js',
+  'tests/explicit/entries/runCanonicalProjectionAuthority.js',
   'tests/explicit/entries/runQueryPurposeValidation.js',
   'tests/explicit/entries/runGraphTidyFullSnapshot.js',
+  'tests/explicit/entries/runPurposePolicyClosure.js',
+  'tests/explicit/entries/runIntentDecisionClosure.js',
+  'tests/explicit/entries/runImplementationDesignClosure.js',
+  'tests/explicit/entries/runCodingRepairClosure.js',
+  'tests/explicit/entries/runAuditProofClosure.js',
 ]);
 
 // GIVEN the seven intent anchors, root contract, and mounted testcases
