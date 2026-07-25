@@ -199,7 +199,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -232,7 +232,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -289,7 +289,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -430,7 +430,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -499,7 +499,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -802,6 +802,14 @@
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16-SemanticIndex|runMutationIndexLifecycle.js|exitCode=0|complete versioned vector/evidence baseline passed"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|Neo4j rows persisted canonical/content/index/provider/model/version evidence and vector query returned every touched record|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|live persisted and queryable vector evidence passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -843,8 +851,16 @@
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16|runMutationIndexLifecycle.js|exitCode=0|all mutation lifecycle and alignment transitions passed"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|one applySystemArchitectureMutation call automatically invoked lifecycle from actual touched IDs and returned embeddingLifecycle/alignment|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|automatic mutation-triggered lifecycle integration passed"
+        },
+        {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -886,6 +902,14 @@
         {
           "name": "deliveryEvidence.W3",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-17|runStaleSemanticQueryRejection.js|exitCode=0|unaligned pure semantic rejection and canonical read continuity passed"
+        },
+        {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|queryable success produced Aligned; provider/persistence/query failures produced Stale or Failed and rejected pure semantic query|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|live alignment and fail-closed matrix passed"
         },
         {
           "name": "deliveryStatus",
@@ -984,7 +1008,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1069,6 +1093,14 @@
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-01-Native|runNeo4jNativeRetrievalPlatform.js|exitCode=0"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|Neo4j vector query returned every mutation-touched Element, ArchitectureRelationship, and View record|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|live native vector persistence and queryability passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -1135,7 +1167,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1207,7 +1239,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1419,8 +1451,16 @@
           "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|approved qwen3.7-text-embedding adapter produced finite 1024-dimensional vectors and secret leak check passed|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|live approved-provider adapter integration passed"
+        },
+        {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1460,8 +1500,16 @@
           "value": "ExplicitAcceptanceTestcase-TS-09-EmbeddingGeneration|runEmbeddingProviderAdapterLifecycle.js|exitCode=0"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|actual touched records generated finite approved qwen3.7-text-embedding 1024-dimensional vectors|exitCode=0"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|live mutation-driven generation passed"
+        },
+        {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1494,7 +1542,7 @@
       "id": "grag-wp-3-1",
       "name": "W3.1 Mutation-Driven Live Vector Integration",
       "type": "Work Package",
-      "description": "W3.1 corrected integration task: after applySystemArchitectureMutation successfully writes canonical JSON and structural Neo4j projection, that same mutation write success path must automatically invoke the embedding lifecycle using the actual touchedElementIds, touchedRelationshipIds, and touchedViewIds from the mutation result/response. The MCP mutation response must return embeddingLifecycle and alignment state. Historical evidence where a test Harness manually creates and executes mutationEmbeddingVectorLifecycle after mutation is insufficient and does not accept W3.1.",
+      "description": "W3.1 accepted: one applySystemArchitectureMutation write call automatically invokes the embedding lifecycle from actual touched Element, ArchitectureRelationship, and View IDs, returns embeddingLifecycle and alignment, persists and queries real approved Qwen vectors, and fails closed for provider, persistence, or query faults.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -1521,8 +1569,16 @@
           "value": "approvedByHuman=true|2026-07-25|human corrected W3.1 acceptance: prior manual post-mutation lifecycle evidence is insufficient; accepted boundary requires single mutation tool call with automatic embeddingLifecycle and alignment response based on actual touched ids"
         },
         {
+          "name": "deliveryEvidence.W3.1",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|runApplyMutationEmbeddingVectorE2E.js|both live opt-ins|exitCode=0|single mutation call, automatic lifecycle, real 1024-dimensional Qwen vectors, persisted/queryable evidence, fail-closed matrix, and secret isolation passed"
+        },
+        {
+          "name": "waveAcceptance.W3.1",
+          "value": "accepted|2026-07-25|W3.1 case passed; full runner 24/37 and remaining failures are DT-00, W4-W7, and TS-08"
+        },
+        {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
