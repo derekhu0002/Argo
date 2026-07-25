@@ -18,6 +18,7 @@
 14. Live HTTP proof is owned by the frozen test transport, not by a production boolean or evidence label. The Harness observes the actual request target/body/count and raw response, then correlates them with gate output and persisted evidence.
 15. Before reading `.argo/.env`, configuration must prove the exact path is ignored, untracked, regular, non-reparse, and protected by verifiable Windows ACLs without broad-principal read access. Root/alternate/tracked files, CLI/literal/default/fallback sources, duplicate keys, unknown secret keys, and unsafe or unverifiable state block before fetch, Neo4j connection, or writes.
 16. Neither approved secret may enter logs, errors, Cypher, graph state, failure records, snapshots, or artifacts. `QWEN_KEY` never enters Neo4j; `ARGO_NEO4J_DATABASE_PASSWORD` is consumed only by the driver authentication layer.
+17. W3 index delivery is not complete until threshold-all seed correctness passes before ANN comparison, every successful canonical mutation advances affected-record index evidence or leaves the index non-Aligned, and unaligned pure semantic queries are rejected while canonical reads remain available.
 
 ## Stable architecture elements
 
@@ -25,7 +26,7 @@
 | --- | --- | --- | --- |
 | Unified MCP Gateway | `.argo/scripts/argo-mcp-server.js` | Expose one governed tool surface and delegate intent-query work inward. | `callTool(name, args)` and MCP stdio tools |
 | Intent Architecture Query Boundary | `.argo/scripts/systemarchitecture-mcp-server.js` | Preserve no-argument reads, validate explicit query purpose, and dispatch full-snapshot or semantic-query behavior. | `getSystemArchitecture` |
-| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, canonical-authority enforcement, and the explicitly opted-in approved-provider evidence gate without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)` and `executeApprovedEmbedding(input)` |
+| Production Graph RAG Boundary | `.argo/scripts/graph-rag/` | Compose external configuration, embedding qualification, Neo4j-native retrieval, canonical-authority enforcement, exact threshold-all seed selection, all-mutation index lifecycle evidence, alignment gating, and the explicitly opted-in approved-provider evidence gate without optional runtime coupling. | `createProductionGraphRagRuntime(dependencies)`, `generateAffectedEmbeddings(input)`, and `executeApprovedEmbedding(input)` |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails. | Frozen Node.js entry scripts |
 
@@ -45,5 +46,9 @@
 | Production Graph RAG Boundary / embedding release gate | `grag-embedding-qualification` | direct |
 | Production Graph RAG Boundary / external configuration | `grag-credential-boundary` | direct |
 | Production Graph RAG Boundary / projection authority policy | `grag-canonical-graph` | direct |
+| Production Graph RAG Boundary / exact threshold-all seeds | `grag-seed-retrieval` | direct |
+| Production Graph RAG Boundary / semantic index evidence | `grag-semantic-index` | direct |
+| Production Graph RAG Boundary / all-mutation lifecycle | `grag-index-lifecycle` | direct |
+| Intent Architecture Query Boundary / alignment rejection | `grag-alignment-constraint` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.

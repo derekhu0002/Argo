@@ -4,6 +4,9 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+const isW3IndexLifecycleHandoff = /W3 Index Lifecycle|Exact-Threshold|DT-05|DT-16|DT-17/i.test(
+  `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''}`,
+);
 const outOfScopeEntrypoints = [
   'tests/explicit/entries/runSevenWaveDeliveryGates.js',
   'tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js',
@@ -12,7 +15,9 @@ const forbiddenTestcases = [
   'ExplicitAcceptanceTestcase-TS-08',
   'ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter',
 ];
-const forbiddenImplementationPattern = /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
+const forbiddenImplementationPattern = isW3IndexLifecycleHandoff
+  ? /(?:embedding-provider-adapter|embeddingProviderAdapter|sevenWave|deliverySequence)/i
+  : /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
 
 // GIVEN globally mounted TS-08/TS-09 entrypoints and the approved W2 coding handoff
 // WHEN authorization scope is inspected

@@ -12,6 +12,9 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `liveEmbeddingProviderConfig.js` preflights the unique `.argo/.env`, resolves the approved process/file source policy for both secrets, and returns only sanitized configuration evidence.
 - `liveEmbeddingProviderClient.js` performs one explicitly opted-in HTTPS embedding request against the approved Beijing OpenAI-compatible endpoint; it is not a general generation or lifecycle component.
 - `liveEmbeddingIndexGate.js` sequences exact qualification, real-provider vector validation, and one controlled Neo4j evidence write. Invalid or failed paths never invoke the write boundary.
+- W3 seed selection proves exact threshold-all correctness before ANN comparison: every qualifying Element, ArchitectureRelationship, and View peer at or above its channel threshold is returned, unrelated queries have zero forced hits, and ANN top-k is recorded only as performance evidence.
+- W3 index lifecycle extracts only records affected by successful canonical mutations, advances canonical/content/index version evidence for Element, ArchitectureRelationship, and View records, and leaves partial or failed persistence non-Aligned.
+- W3 alignment gating rejects pure semantic queries for Updating, Stale, Failed, partial, or unknown index state while preserving no-argument full snapshots and explicit canonical-anchor reads.
 
 ## Public interface
 
@@ -32,6 +35,9 @@ The four inward boundaries are independently callable and independently testable
 
 - `querySemantic(request)` for production semantic queries.
 - `evaluateIndexDelivery(request)` for the embedding qualification and credential release gate.
+- `selectThresholdAllSeeds(request)` for exact per-channel threshold-all correctness. It must not collapse channels into one global rank or use ANN top-k as the correctness source.
+- `generateAffectedEmbeddings(input)` for all-mutation affected-record extraction, provider generation, vector/evidence persistence, lifecycle state transitions, and non-Aligned partial failure reporting.
+- `evaluateSemanticAlignment(request)` for pure semantic query availability; unaligned states return a stable rejection before seed retrieval.
 
 `createLiveEmbeddingIndexGate(dependencies)` returns one public gate:
 
@@ -76,6 +82,9 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - A recording Neo4j adapter verifies the password is passed once to `neo4j.auth.basic`, authentication failure reaches no query, and recorded Cypher text/parameters contain no password canary.
 - Authentication redaction captures the raw exception—including message, stack, nested causes, and aggregate errors—before safe classification, then scans it together with the sanitized error, every injected logger event, stdout/stderr, auth/driver/query recordings, graph and persistence observations, and recursive artifacts. The probe leaves zero records and never persists its canary.
 - `.argo/.env.example` is the only committed example and contains empty placeholders/instructions; `.argo/.env` remains ignored and untracked.
+- Threshold-all seed selection depends on aligned semantic-index records and channel thresholds; ANN calls, if present, are benchmark-only and cannot remove above-threshold peers or force unrelated hits.
+- Index lifecycle depends on canonical mutation evidence, qualified embedding generation, and vector persistence. It must not mark Aligned until every affected record has complete identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence.
+- Alignment gating depends inward on lifecycle state and canonical version evidence before invoking semantic retrieval. Complete canonical reads remain available without semantic fallback.
 
 ## Owned tests
 
@@ -88,3 +97,4 @@ Explicit entrypoints are owned by `tests/ARCHITECTURE.md`. This module is protec
 - Global `grag-credential-boundary.deliveryStatus` remains runner-owned and may remain `not_delivered`; scoped attribution uses committed mounted TS-07 evidence, runner failure records, and the handoff scope rather than uncommitted intent relationships.
 - A deferred global status does not authorize TS-09 work, relationship changes, frozen-test edits, or manual delivery-status changes.
 - C1-C6 remain a protected checkpoint. The expanded live-provider slice completes only when all eight scoped explicit entrypoints and ten frozen critical guards pass, the live result proves a real HTTP call and controlled Neo4j evidence, and failure/redaction matrices pass with zero baseline delivered regression.
+- W3 index lifecycle and exact-threshold baseline completion requires DT-05, DT-16, DT-16-SemanticIndex, and DT-17 to pass together with the W3 critical guards. TS-09 adapter evidence may support generation/persistence, but ANN top-k and live-provider evidence alone cannot claim Phase 1 correctness.

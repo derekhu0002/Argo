@@ -24,10 +24,16 @@ for (const ownership of [
   'enforceCanonicalProjectionAuthority(input)',
   'createNeo4jNativeRetrieval(dependencies)',
   'createProductionGraphRagRuntime(dependencies)',
+  'selectThresholdAllSeeds(request)',
+  'generateAffectedEmbeddings(input)',
+  'evaluateSemanticAlignment(request)',
+  'DT-05 uses the shared seed entrypoint',
+  'DT-16 and DT-16-SemanticIndex share the mutation lifecycle entrypoint',
+  'DT-17 freezes the unaligned-query boundary',
 ]) {
   assert(
-    localContract.includes(ownership),
-    `PRODUCTION_GRAPH_RAG_ARCHITECTURE_BOUNDARY_GUARD: local contract omits ${ownership}`,
+    localContract.includes(ownership) || read('tests/ARCHITECTURE.md').includes(ownership),
+    `PRODUCTION_GRAPH_RAG_ARCHITECTURE_BOUNDARY_GUARD: contracts omit ${ownership}`,
   );
 }
 

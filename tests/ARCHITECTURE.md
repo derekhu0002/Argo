@@ -30,6 +30,9 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - A recording Neo4j adapter is injected through production `createApprovedNeo4jBoundary()`—never a Harness-private index boundary—to prove the database password reaches only `neo4j.auth.basic`; authentication failure produces no query and all recorded Cypher text/parameters remain canary-free.
 - The auth probe preserves raw exceptions before classification and recursively scans message/stack/causes plus sanitized errors, all injected logger events, stdout/stderr, auth/driver/query calls, graph/persistence state, and recursive artifacts. Artifact serialization always returns a string for undefined, null, primitives, Error, AggregateError, objects, buffers, and cycles; undefined/null are empty while canaries in every value-bearing form remain detectable. A frozen accepted-fixture regression proves `rawError: undefined` cannot interrupt the source matrix. The 11-channel auth self-test remains mandatory, and the real probe must report zero leaks and zero persistence.
 - Default/offline CI must fail both live entrypoints with explicit opt-in categories. Deterministic fakes protect negative paths but never substitutes for live provider evidence.
+- DT-05 uses the shared seed entrypoint but includes explicit threshold-all assertions: all above-threshold peers are returned per channel, unrelated queries force no hits, fixed result limits are prohibited, and ANN top-k is performance-only evidence.
+- DT-16 and DT-16-SemanticIndex share the mutation lifecycle entrypoint. The entrypoint freezes the nine mutation classes, version advancement, deleted-object absence, non-Aligned partial persistence, and complete semantic-index evidence fields for Element, ArchitectureRelationship, and View records.
+- DT-17 freezes the unaligned-query boundary by requiring full canonical reads to remain available, pure semantic requests to fail with `SEMANTIC_INDEX_NOT_ALIGNED`, automatic full-snapshot fallback to be false, and explicit canonical-anchor reads to remain available.
 - DT-01 observes the complete legacy public envelope and absence of query metadata.
 - DT-03 preserves all five legal purposes and covers missing/invalid purpose, missing/blank intent, and missing/blank audit subject with stable categories.
 - DT-03 proves missing-purpose and audit-without-subject validation precedes retrieval by sharing one test-owned rejection probe whose invocation count remains zero.
@@ -80,6 +83,12 @@ remain outside the compatible-query Coding targets:
 - `tests/explicit/entries/runRetrievalQualityBenchmark.js`
 - `tests/explicit/entries/runCapacityEvidence.js`
 
+The W3 Index Lifecycle and Exact-Threshold Baseline handoff owns these mounted explicit entrypoints as Coding/Repair read-only files:
+
+- `tests/explicit/entries/runIndependentSemanticSeeds.js` — `ExplicitAcceptanceTestcase-DT-05` threshold-all correctness before ANN comparison; the same physical script continues to protect DT-04 channel independence.
+- `tests/explicit/entries/runMutationIndexLifecycle.js` — `ExplicitAcceptanceTestcase-DT-16` and `ExplicitAcceptanceTestcase-DT-16-SemanticIndex` all-mutation lifecycle plus complete semantic-index evidence.
+- `tests/explicit/entries/runStaleSemanticQueryRejection.js` — `ExplicitAcceptanceTestcase-DT-17` unaligned pure semantic rejection with canonical-read continuity.
+
 ### Critical non-explicit guardrails
 
 - `tests/architecture/intent-query/architecture-boundary.guard.js` — `ArchitectureBoundaryGuard`
@@ -99,4 +108,6 @@ remain outside the compatible-query Coding targets:
 
 The coding-scope authorization guard freezes mounted TS-08 and recorded TS-09 evidence while prohibiting their testcase names, adapter/lifecycle targets, steps, and completion conditions from the handoff's authorized Coding scope. The scoped-delivery attribution guard uses only committed mounted TS-07 evidence, handoff scope, runner failure records, and runner-owned delivery status.
 
-All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.argo/.env.example`, and `.gitignore`, are frozen during Coding/Repair.
+For the W3 handoff, `architecture-boundary.guard.js`, `dependency-direction.guard.js`, `explicit-entrypoint-correctness.guard.js`, and `implementation-traceability.guard.js` are the critical non-explicit guards. They protect the W3 stable boundary, dependency direction, frozen entrypoint assertions, and mappings to `grag-seed-retrieval`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-alignment-constraint`.
+
+All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.argo/.env.example`, and `.gitignore`, are frozen during Coding/Repair unless the current handoff explicitly excludes them from `frozenFiles`.

@@ -56,6 +56,26 @@ const entryRequirements = new Map([
     'TS09_NODE_ADAPTER_REQUIRED',
     'TS09_PARTIAL_PERSISTENCE_MUST_NOT_ALIGN',
   ]],
+  ['tests/explicit/entries/runIndependentSemanticSeeds.js', [
+    'intentArchitectureQueryHarness.js',
+    'DT05_THRESHOLD_ALL_EVIDENCE_MISSING',
+    'DT05_FIXED_RESULT_LIMIT_FORBIDDEN',
+    'DT05_ANN_TOPK_USED_AS_CORRECTNESS_BASELINE',
+  ]],
+  ['tests/explicit/entries/runMutationIndexLifecycle.js', [
+    'intentArchitectureQueryHarness.js',
+    'DT16_MUTATION_CLASSES_MISSING',
+    'DT16_INDEX_VERSION_NOT_ADVANCED',
+    'DT16_SEMANTIC_INDEX_RECORDS_MISSING',
+    'DT16_PARTIAL_PERSISTENCE_MUST_NOT_ALIGN',
+  ]],
+  ['tests/explicit/entries/runStaleSemanticQueryRejection.js', [
+    'intentArchitectureQueryHarness.js',
+    'DT17_STALE_SEMANTIC_QUERY_NOT_REJECTED',
+    'DT17_ALIGNMENT_ERROR_MISSING',
+    'DT17_AUTOMATIC_FULL_FALLBACK_FORBIDDEN',
+    'DT17_FULL_CANONICAL_READ_BLOCKED_BY_ALIGNMENT',
+  ]],
 ]);
 
 // GIVEN every W2 and Canonical Authority explicit entrypoint

@@ -14,6 +14,10 @@ const requiredMappings = new Map([
     'tests/explicit/entries/runCanonicalGraphFullSnapshot.js',
     'tests/explicit/entries/runCanonicalProjectionAuthority.js',
   ]],
+  ['grag-seed-retrieval', ['tests/explicit/entries/runIndependentSemanticSeeds.js']],
+  ['grag-semantic-index', ['tests/explicit/entries/runMutationIndexLifecycle.js']],
+  ['grag-index-lifecycle', ['tests/explicit/entries/runMutationIndexLifecycle.js']],
+  ['grag-alignment-constraint', ['tests/explicit/entries/runStaleSemanticQueryRejection.js']],
 ]);
 const elements = new Map(graph.elements.map(element => [element.id, element]));
 

@@ -1,30 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T13:48:00+08:00",
+  "generatedAt": "2026-07-25T15:45:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "preCodingBaseline": {
-    "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
-    "total": 34,
-    "passed": 14,
-    "failed": 20,
-    "missingAcceptanceCriteria": 0,
-    "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
-    "liveExpectedFailures": {
-      "ExplicitAcceptanceTestcase-TS-06-Provider-E2E": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED",
-      "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
-    },
-    "deliveryChanges": [
-      {
-        "intentElementId": "grag-embedding-qualification",
-        "from": "delivered",
-        "to": "not_delivered",
-        "classification": "Expected pre-coding baseline change caused by the newly mounted live acceptance; not a Coding regression."
-      }
-    ],
-    "otherDeliveryStatusChanges": [],
-    "comparisonRule": "Coding compares its post-run delivery changes against this 34/14/20 baseline. The recorded embedding-qualification transition is accepted baseline state and must not be reported as a Coding regression; any new delivered-to-not_delivered transition is a regression."
-  },
-  "summary": "Preserve the passing C1-C6 checkpoint and implement the approved live provider gate only after resolving QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD from direct process variables or the unique preflighted .argo/.env. Process wins, differing duplicates fail closed, and every unsafe path/git/file/reparse/ACL/provenance state blocks before fetch, Neo4j connection, or writes.",
+  "summary": "W3 Index Lifecycle and Exact-Threshold Baseline: prove DT-05 threshold-all correctness before ANN performance comparison, make DT-16 all-mutation lifecycle/version evidence complete for the semantic index, and reject DT-17 unaligned pure semantic queries while preserving canonical reads.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -32,160 +10,73 @@
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
-      "entryPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
-      "controlPoint": "Submit a production semantic query with explicit embedding qualification and externally supplied credentials.",
-      "observationPoint": "Observe Node.js runtime, Neo4j-native retrieval, and absence of required Python or Neo4j GenAI Plugin dependencies.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runProductionGraphRagRuntime.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-01-Native",
-      "entryPath": "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
-      "controlPoint": "Call the Neo4j-native retrieval public boundary with a semantic request and an injected counting query probe.",
-      "observationPoint": "Observe exact request propagation, exactly one probe invocation, and unchanged propagation of a runtime-generated unpredictable sentinel and complete native result.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-06",
-      "entryPath": "tests/explicit/entries/runEmbeddingQualificationGate.js",
-      "controlPoint": "Call qualification with non-boolean approval values, undefined/blank identity fields, invalid dimension types/ranges, and implicit defaults.",
-      "observationPoint": "Observe exact-boolean approval, trimmed non-empty provider/model/version, positive-integer dimensions, and no implicit default acceptance.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runEmbeddingQualificationGate.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-      "controlPoint": "Use a frozen Harness-owned transport wrapper for one opted-in real request, then inject every invalid/error case through the same public qualification/index gate and controlled Neo4j boundary.",
-      "observationPoint": "Independently observe request count, exact origin/path/body and dynamic input, correlate the raw finite 1024-value response with gate output and full persisted metadata, verify one success write, zero failure writes, and zero records after cleanup.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
+      "entryPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "controlPoint": "Run threshold-all seed retrieval against many-peer relevant, unrelated, and ANN comparison fixtures across Element, ArchitectureRelationship, and View channels.",
+      "observationPoint": "Observe every above-threshold peer returned per channel, zero unrelated forced hits, no fixed result limit, and ANN top-k marked performance-only rather than correctness baseline.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-      "failureReason": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
+      "initialExecutionCommand": "node tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "failureReason": "DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
-      "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-      "controlPoint": "Call external configuration with each field missing, attempt credential-free startup/query, then run structured source/Cypher policy checks and bypass self-tests.",
-      "observationPoint": "Observe exact missing fields, blocked startup/query, detection of direct literals and fallback expressions, and taint-aware variableized Cypher credential rejection.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Preflight both approved secrets across process-only, file-only, matching/conflicting dual-source and unsafe-file matrices before running live and generated-canary probes.",
-      "observationPoint": "Observe stable pre-side-effect rejection for unsafe sources/path/git/file/reparse/ACL state and zero leakage of either secret across errors, authentication, Cypher, graph, failure records, snapshots, and recursive artifacts.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
+      "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
+      "controlPoint": "Run the canonical mutation matrix for create, update, delete, topology-only, semantic-content, and View-membership changes.",
+      "observationPoint": "Observe all nine mutation classes, version advancement, deleted-object absence, non-Aligned partial persistence, and affected-record lifecycle evidence.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "failureReason": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
+      "failureReason": "DT16_MUTATION_CLASSES_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
-      "entryPath": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
-      "controlPoint": "Request the canonical graph through the no-argument full-read boundary.",
-      "observationPoint": "Observe exact complete Element, Relationship, View, and membership identity.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority",
-      "entryPath": "tests/explicit/entries/runCanonicalProjectionAuthority.js",
-      "controlPoint": "Submit a semantic query against a stale, conflicting Neo4j projection.",
-      "observationPoint": "Observe canonical state winning or CANONICAL_PROJECTION_CONFLICT; projection-only intent is never returned.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCanonicalProjectionAuthority.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
-      "entryPath": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
-      "controlPoint": "Attempt W7 delivery with only W1 complete.",
-      "observationPoint": "Observe DELIVERY_PREREQUISITES_INCOMPLETE and the exact missing W2-W6 sequence.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+      "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
+      "controlPoint": "Inspect semantic-index records produced by the DT-16 mutation matrix for affected Element, ArchitectureRelationship, and View records.",
+      "observationPoint": "Observe object identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence for every indexed record.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
-      "failureReason": "TS08_GATE_CATEGORY_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
+      "failureReason": "DT16_MUTATION_CLASSES_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
+      "entryPath": "tests/explicit/entries/runStaleSemanticQueryRejection.js",
+      "controlPoint": "Submit canonical-read controls and a pure semantic request while the semantic index is unaligned.",
+      "observationPoint": "Observe full and explicit-anchor canonical reads remain available, pure semantic requests fail with SEMANTIC_INDEX_NOT_ALIGNED, and no automatic full-snapshot fallback occurs.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runStaleSemanticQueryRejection.js",
+      "failureReason": "DT17_ALIGNMENT_ERROR_MISSING"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "Production Graph RAG stable boundary",
+      "name": "W3 production Graph RAG boundary contract",
       "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root and local contracts for one production composition boundary.",
-      "observationPoint": "Runtime, credentials, qualification, native retrieval, and canonical authority ownership remain explicit.",
+      "controlPoint": "Inspect root, local Graph RAG, and test contracts for W3 threshold-all, lifecycle, and alignment responsibilities.",
+      "observationPoint": "Contracts expose selectThresholdAllSeeds(request), generateAffectedEmbeddings(input), evaluateSemanticAlignment(request), and W3 frozen entrypoint ownership.",
       "expectedStatus": "passed"
     },
     {
-      "name": "Production dependency direction",
+      "name": "W3 production dependency direction",
       "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Call production systemMetadataCommandAdapter test composition, inspect the complete adapter reflection surface, capture it across callback boundaries, and exercise normal/throw/async/nested/repeated lifecycles.",
-      "observationPoint": "Composition returns undefined; no executor/backdoor surface exists; adapters revoke in finally and post-scope calls fail TEST_SYSTEM_METADATA_ADAPTER_REVOKED without executor increments; command bypass policy remains unchanged.",
+      "controlPoint": "Inspect production Graph RAG JavaScript modules for outward test dependencies, Python/runtime sidecars, child_process ownership, and Neo4j plugin calls.",
+      "observationPoint": "Production code remains inward-facing; only the approved system metadata adapter may own system commands, and semantic/index delivery does not depend on tests or plugin embedding procedures.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W2 explicit entrypoint correctness",
+      "name": "W3 explicit entrypoint correctness",
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect every W2 and Canonical Authority entrypoint plus the handoff freeze list.",
-      "observationPoint": "GIVEN/WHEN/THEN, Harness abstraction, key blocking categories, and frozen paths remain present.",
+      "controlPoint": "Inspect DT-05, DT-16, DT-16-SemanticIndex, and DT-17 physical entrypoints plus the handoff frozen-file list.",
+      "observationPoint": "Entrypoints retain GIVEN/WHEN/THEN readability, Harness abstraction, and key DT-05/DT-16/DT-17 business failure categories.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W2 implementation traceability",
+      "name": "W3 implementation traceability",
       "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect intent anchors, contract mappings, mounted acceptance paths, and physical files.",
-      "observationPoint": "TS-01, TS-01-Native, TS-06, TS-07, and both canonical entrypoints remain traceable.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "W2 coding scope authorization",
-      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect codingTargets, task testcase references, target paths, steps, completion conditions, and frozen mounted evidence.",
-      "observationPoint": "TS-08/TS-09 remain frozen and globally runnable but adapter/lifecycle implementation is not authorized by this handoff.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Credential source policy self-test",
-      "path": "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Run direct-literal, logical fallback, nullish fallback, ternary, and variableized Cypher query/parameter fixtures through the structured source policy.",
-      "observationPoint": "Every bypass fixture is detected while a safe external-config and non-secret parameterized query fixture passes.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Scoped delivery attribution",
-      "path": "tests/architecture/production-graph-rag/scoped-delivery-attribution.guard.js",
-      "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect committed mounted TS-07 evidence, handoff scope, latest runner failure records, and runner-owned credential delivery status.",
-      "observationPoint": "TS-07 completes this approved slice without claiming global credential delivery or authorizing TS-09 implementation.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Approved live provider contract",
-      "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect contracts, mounted testcases, handoff baseline, .argo/.env.example, and .gitignore for the exact profile, source policy, controlled Neo4j metadata, and 34/14/20 baseline.",
-      "observationPoint": "Profile and baseline remain explicit, .argo/.env stays ignored/untracked while its example is empty and committable, and both live entries are frozen.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Live network opt-in and no-fake substitution",
-      "path": "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect Harness ordering and frozen source/file/ACL fixtures before any production transport, Neo4j connection, or gate execution.",
-      "observationPoint": "Default failures remain explicit, all unsafe preflight states block, and frozen transport evidence prevents fake/default or boolean-label live claims.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Live provider secret artifact isolation",
-      "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Use module-owned test composition for provenance fixtures and stable artifact serialization for accepted/blocked outcomes, including rawError undefined/null, primitives, Error, AggregateError, objects, buffers, and cycles.",
-      "observationPoint": "Accepted source fixtures continue when rawError is undefined; undefined/null channels remain empty; every value-bearing canary channel remains detectable; all provenance trust, ACL, 11-channel auth, zero-side-effect, and redaction assertions remain intact.",
+      "controlPoint": "Inspect intent anchors, root implements mappings, mounted testcase paths, and physical entrypoint files.",
+      "observationPoint": "grag-seed-retrieval, grag-semantic-index, grag-index-lifecycle, and grag-alignment-constraint remain mapped to their W3 entrypoints.",
       "expectedStatus": "passed"
     }
   ],
@@ -193,335 +84,150 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "path": ".argo/scripts/graph-rag/externalProductionConfig.js",
-      "failureSignal": "EXTERNAL_CREDENTIALS_REQUIRED",
-      "nextAction": "Require externally supplied Neo4j URI, username, password, and embedding credential; remove hardcoded production fallbacks, including defaults in neo4j-system-architecture-store.js."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/embeddingQualificationGate.js",
-      "failureSignal": "EMBEDDING_QUALIFICATION_REQUIRED / EMBEDDING_CONFIGURATION_REQUIRED / IMPLICIT_EMBEDDING_DEFAULT_PROHIBITED",
-      "nextAction": "Implement a pure release gate requiring explicit human approval and complete provider, model, version, and dimensions."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/canonicalProjectionAuthority.js",
-      "failureSignal": "TS02_CANONICAL_AUTHORITY_VIOLATED",
-      "nextAction": "Reject stale/conflicting projection evidence or return canonical state; never return projection-only intent."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
-      "failureSignal": "TS01_NATIVE_RETRIEVAL_REQUIRED",
-      "nextAction": "Implement Neo4j JavaScript-driver seed retrieval with canonical identity/version evidence and no plugin/Python dependency."
-    },
-    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "PRODUCTION_GRAPH_RAG_RUNTIME_MISSING",
-      "nextAction": "Export createProductionGraphRagRuntime(dependencies) and compose qualification, credential, native retrieval, and authority boundaries."
+      "failureSignal": "DT05_THRESHOLD_ALL_EVIDENCE_MISSING / DT05_ANN_TOPK_USED_AS_CORRECTNESS_BASELINE",
+      "nextAction": "Expose threshold-all seed selection evidence per object channel and treat ANN top-k only as performance comparison."
     },
     {
-      "path": ".argo/scripts/neo4j-system-architecture-store.js",
-      "failureSignal": "TS07 hardcoded Neo4j password and URI defaults",
-      "nextAction": "Remove production credential defaults and consume the external configuration boundary without changing canonical graph authority."
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
+      "path": ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
+      "failureSignal": "DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING",
+      "nextAction": "Return independent Element, ArchitectureRelationship, and View seed channels with all peers at or above their approved thresholds."
     },
     {
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "Production semantic query does not reach the contracted Graph RAG runtime",
-      "nextAction": "Delegate semantic retrieval through the production boundary while preserving no-argument and graph-tidy compatibility."
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "DT16_MUTATION_CLASSES_MISSING / DT16_INDEX_VERSION_NOT_ADVANCED",
+      "nextAction": "Implement all-mutation affected-record lifecycle sequencing and expose complete version advancement evidence."
     },
     {
-      "path": ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js",
-      "failureSignal": "SYSTEM_METADATA_COMMAND_PROHIBITED",
-      "nextAction": "Own child_process/private policy and provide a callback-scoped test composition that returns undefined, exposes only a frozen four-capability adapter during scope, revokes in finally for sync/async outcomes, and never shares capability identity."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-      "failureSignal": "LIVE_PROVIDER_CONFIGURATION_REQUIRED / SECRET_SOURCE_CONFLICT / SECRET_FILE_ACL_UNSAFE",
-      "nextAction": "Create the production source adapter internally; expose only a module-owned test composition callback that privately registers adapter/capability identity; validate exact trace schema and request correlation before consuming values."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
-      "failureSignal": "LIVE_PROVIDER_REQUEST_FAILED / LIVE_PROVIDER_RESPONSE_INVALID",
-      "nextAction": "Perform the explicitly opted-in real HTTPS request with explicit model and dimensions, returning sanitized request evidence and a finite 1024-value vector without exposing authorization data."
-    },
-    {
-      "path": ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
-      "failureSignal": "LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING / LIVE_PROVIDER_OPERATION_FAILED",
-      "nextAction": "Export createApprovedNeo4jBoundary({ configuration, neo4j, logger }); authenticate only through neo4j.auth.basic, verify connectivity before queries, and expose the controlled index evidence boundary."
-    },
-    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
       "path": ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
-      "failureSignal": "LIVE_PROVIDER_E2E_BOUNDARY_MISSING / LIVE_PROVIDER_INDEX_WRITE_PROHIBITED",
-      "nextAction": "Expose one injected-transport executeApprovedEmbedding gate for success and all invalid/error inputs; persist complete approved metadata only after response validation and leave zero records after cleanup."
+      "failureSignal": "DT16_SEMANTIC_INDEX_RECORDS_MISSING / DT16_INDEX_EVIDENCE_FIELD_MISSING",
+      "nextAction": "Persist complete semantic-index evidence fields for affected Element, ArchitectureRelationship, and View records after successful canonical mutation work."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "DT17_ALIGNMENT_ERROR_MISSING",
+      "nextAction": "Reject unaligned pure semantic queries with SEMANTIC_INDEX_NOT_ALIGNED while leaving no-argument and explicit canonical-anchor reads available."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-17",
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "DT17_AUTOMATIC_FULL_FALLBACK_FORBIDDEN / DT17_STALE_SEMANTIC_QUERY_NOT_REJECTED",
+      "nextAction": "Expose semantic alignment evaluation before seed retrieval and report non-Aligned lifecycle states without serving stale semantic context or silently falling back."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Preserve the existing uncommitted C1-C6 implementation and its scoped completion attribution, then checkpoint it through W2-C7 only after the original six explicit entrypoints and seven critical guards remain green. Then implement W2-C8 configuration, W2-C9 live provider/index boundaries, and W2-C10 protected live verification. Expanded completion requires eight scoped explicit entrypoints, ten frozen critical guards, real opted-in provider and controlled-Neo4j evidence, zero secret leakage, and zero baseline delivered regression.",
+    "executionStrategy": "Implement W3 in dependency order: first lifecycle state and affected-record evidence, then threshold-all seed correctness, then unaligned query rejection. Do not modify frozen explicit entrypoints or critical guards. Completion requires DT-05, DT-16, DT-16-SemanticIndex, DT-17, and the four W3 critical guards to pass, with no new delivered-to-not_delivered regression beyond runner-owned baseline updates.",
     "tasks": [
       {
-        "taskId": "W2-C1",
-        "title": "Enforce external configuration",
-        "objective": "Make missing Neo4j or embedding credentials a typed blocking condition with no hardcoded fallback.",
+        "taskId": "W3-C1",
+        "title": "Implement lifecycle evidence baseline",
+        "objective": "Make every canonical mutation class advance affected-record semantic-index version evidence or leave the index non-Aligned.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-07"
+          "ExplicitAcceptanceTestcase-DT-16",
+          "ExplicitAcceptanceTestcase-DT-16-SemanticIndex"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/externalProductionConfig.js",
-          ".argo/scripts/neo4j-system-architecture-store.js"
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
         ],
         "steps": [
-          "Export resolveExternalProductionConfig(configuration, context).",
-          "Reject each missing Neo4j URI, username, password, and embedding credential independently with EXTERNAL_CREDENTIALS_REQUIRED and error.field.",
-          "Block both credential-free startup and semantic-query operations.",
-          "Remove direct URI, username, password, and provider credential literals plus logical, nullish, and ternary fallback behavior.",
-          "Use the structured source policy to reject credential-tainted query and parameter variables at Cypher execution calls.",
-          "Keep provider credentials out of Cypher parameters and query text."
+          "Define the nine mutation classes observed by the frozen entrypoint.",
+          "Extract only affected Element, ArchitectureRelationship, and View records after successful canonical mutation work.",
+          "Persist object identity, channel, canonical/content/index version, provider, model, model version, and dimensions evidence.",
+          "Set Aligned only after complete persistence; partial or failed persistence reports Updating, Stale, or Failed."
         ],
-        "completionSignal": "runExternalCredentialBoundary.js passes all isolated fields, start/query blocking, structured source/Cypher scans, and credential-source-policy.guard.js passes all bypass and safe fixtures without production runtime composition."
+        "completionSignal": "runMutationIndexLifecycle.js passes for both DT-16 and DT-16-SemanticIndex and no semantic-index record lacks version/model evidence."
       },
       {
-        "taskId": "W2-C2",
-        "title": "Implement embedding qualification gate",
-        "objective": "Block index delivery unless provider, model, version, and dimensions are explicitly human-approved.",
-        "dependsOn": [],
+        "taskId": "W3-C2",
+        "title": "Implement threshold-all seeds",
+        "objective": "Make threshold-all the Phase 1 correctness baseline before ANN comparison.",
+        "dependsOn": [
+          "W3-C1"
+        ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-06"
+          "ExplicitAcceptanceTestcase-DT-05"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/embeddingQualificationGate.js"
-        ],
-        "steps": [
-          "Export evaluateEmbeddingQualification(qualification).",
-          "Require approvedByHuman === true; reject undefined, strings, numbers, objects, arrays, and every other non-boolean value.",
-          "Reject undefined and whitespace-only provider, model identity, and version independently with error.field.",
-          "Require dimensions to satisfy Number.isInteger(dimensions) && dimensions > 0 without coercion.",
-          "Reject any implicit-default source before index delivery."
-        ],
-        "completionSignal": "runEmbeddingQualificationGate.js passes exact-boolean approval, undefined/blank identity, invalid dimension type/range, and implicit-default matrices without production runtime composition or selecting a model."
-      },
-      {
-        "taskId": "W2-C3",
-        "title": "Enforce canonical projection authority",
-        "objective": "Ensure Neo4j retrieval evidence cannot redefine approved canonical intent.",
-        "dependsOn": [],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
-          "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/canonicalProjectionAuthority.js"
-        ],
-        "steps": [
-          "Export enforceCanonicalProjectionAuthority(input).",
-          "Compare projection canonical version and identities with injected canonical state.",
-          "Reject conflicts with CANONICAL_PROJECTION_CONFLICT or replace them with canonical state.",
-          "Preserve the existing no-argument complete snapshot."
-        ],
-        "completionSignal": "runCanonicalProjectionAuthority.js independently passes without production runtime composition, runCanonicalGraphFullSnapshot.js remains green, and projection-only identities are never observable."
-      },
-      {
-        "taskId": "W2-C4",
-        "title": "Build Neo4j-native retrieval",
-        "objective": "Provide production seed retrieval through the Neo4j JavaScript driver with canonical evidence.",
-        "dependsOn": [],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01-Native"
-        ],
-        "targetPaths": [
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
           ".argo/scripts/graph-rag/neo4jNativeRetrieval.js"
         ],
         "steps": [
-          "Export createNeo4jNativeRetrieval(dependencies) with retrieve(request).",
-          "Forward the complete request exactly once to the injected query boundary.",
-          "Return the injected boundary's runtime-generated sentinel and complete result unchanged; fixed evidence labels are insufficient.",
-          "Use only externally configured neo4j-driver connectivity in production composition.",
-          "Return platform, canonical version, object type, and canonical identity for each seed.",
-          "Avoid Python, external Graph RAG frameworks, and Neo4j embedding plugin procedures."
+          "Return independent seed channels for Element, ArchitectureRelationship, and View.",
+          "Return every peer whose score is at or above the channel threshold.",
+          "Report zero forced hits for unrelated queries.",
+          "Report ANN top-k only under performance comparison evidence and never as correctness evidence."
         ],
-        "completionSignal": "runNeo4jNativeRetrievalPlatform.js independently proves one call, exact request propagation, and deep equality with an unpredictable runtime-generated full result without production runtime composition."
+        "completionSignal": "runIndependentSemanticSeeds.js includes all above-threshold peer IDs, no fixed result limit, zero unrelated forced hits, and annComparison.correctnessRole equals performance-only."
       },
       {
-        "taskId": "W2-C5",
-        "title": "Compose production runtime",
-        "objective": "Expose the stable Node.js production boundary and sequence all release gates before retrieval or index delivery.",
+        "taskId": "W3-C3",
+        "title": "Implement alignment rejection",
+        "objective": "Reject unaligned pure semantic queries while preserving canonical read paths.",
         "dependsOn": [
-          "W2-C1",
-          "W2-C2",
-          "W2-C3",
-          "W2-C4"
+          "W3-C1"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01",
-          "ExplicitAcceptanceTestcase-TS-01-Native",
-          "ExplicitAcceptanceTestcase-TS-06",
-          "ExplicitAcceptanceTestcase-TS-07",
-          "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority"
+          "ExplicitAcceptanceTestcase-DT-17"
         ],
         "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js",
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Export createProductionGraphRagRuntime(dependencies).",
-          "Expose querySemantic(request) and evaluateIndexDelivery(request).",
-          "Evaluate credentials and embedding qualification before native retrieval or index delivery.",
-          "Apply canonical authority before returning semantic results."
+          "Evaluate semantic-index alignment before invoking seed retrieval for pure semantic requests.",
+          "Return SEMANTIC_INDEX_NOT_ALIGNED for Updating, Stale, Failed, partial, or unknown states.",
+          "Set fullSnapshotFallback to false for rejected pure semantic requests.",
+          "Preserve no-argument full snapshot reads and explicit canonical-anchor reads."
         ],
-        "completionSignal": "All five new explicit entrypoints pass through the business-readable Harness."
+        "completionSignal": "runStaleSemanticQueryRejection.js passes with SEMANTIC_INDEX_NOT_ALIGNED, no automatic fallback, and both canonical-read controls passing."
       },
       {
-        "taskId": "W2-C6",
-        "title": "Integrate MCP semantic queries",
-        "objective": "Route production semantic requests through the new runtime without breaking compatible full reads or graph-tidy.",
+        "taskId": "W3-C4",
+        "title": "Verify W3 completion",
+        "objective": "Prove W3 acceptance and guardrail completion against the pre-coding baseline.",
         "dependsOn": [
-          "W2-C5"
+          "W3-C2",
+          "W3-C3"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01",
-          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph"
+          "ExplicitAcceptanceTestcase-DT-05",
+          "ExplicitAcceptanceTestcase-DT-16",
+          "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+          "ExplicitAcceptanceTestcase-DT-17"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "Delegate only semantic-query production behavior to the new runtime.",
-          "Preserve no-argument full snapshots and graph-tidy bypass behavior.",
-          "Run every authorized frozen explicit entrypoint and all seven production Graph RAG critical guards."
-        ],
-        "completionSignal": "The six approved scoped entrypoints pass, existing compatibility tests do not regress, and no baseline delivered element regresses."
-      },
-      {
-        "taskId": "W2-C7",
-        "title": "Checkpoint verified C1-C6 implementation",
-        "objective": "Preserve and commit the already implemented authorized production Graph RAG slice before extending it with live-provider behavior.",
-        "dependsOn": [
-          "W2-C6"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01",
-          "ExplicitAcceptanceTestcase-TS-01-Native",
-          "ExplicitAcceptanceTestcase-TS-06",
-          "ExplicitAcceptanceTestcase-TS-07",
-          "ExplicitAcceptanceTestcase-DT-02-CanonicalGraph",
-          "ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/externalProductionConfig.js",
-          ".argo/scripts/graph-rag/embeddingQualificationGate.js",
-          ".argo/scripts/graph-rag/canonicalProjectionAuthority.js",
-          ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/neo4j-system-architecture-store.js",
+          ".argo/scripts/graph-rag/neo4jNativeRetrieval.js",
+          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Re-run the six approved scoped explicit entrypoints and seven frozen critical guards without editing them.",
-          "Run the frozen scoped delivery attribution critical guard.",
-          "Run the full architecture runner and confirm no baseline delivered regression.",
-          "Commit only the authorized Coding target paths; leave design artifacts and unrelated worktree state untouched."
+          "Run the four frozen W3 explicit entrypoints.",
+          "Run the four W3 critical non-explicit guards.",
+          "Run the full architecture test runner and compare deliveryStatus changes to the pre-coding baseline.",
+          "Commit only authorized Coding targets and runner-owned baseline updates."
         ],
-        "completionSignal": "6/6 scoped explicit entrypoints pass; 7/7 critical guards pass; 0 delivered-to-not_delivered regression; TS-07 provides scoped credential evidence while global grag-credential-boundary remains runner-owned; existing authorized C1-C6 files are committed without modifying frozen assets."
-      },
-      {
-        "taskId": "W2-C8",
-        "title": "Load the approved live provider profile",
-        "objective": "Resolve the complete approved live configuration from explicit process/file sources after opt-in, with trace-derived provenance and no defaults.",
-        "dependsOn": [
-          "W2-C7"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js",
-          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-          ".argo/scripts/graph-rag/embeddingQualificationGate.js"
-        ],
-        "steps": [
-          "Load approved non-sensitive profile and Neo4j URL/username only from direct process variables or exact repository-relative .argo/.env.",
-          "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
-          "Implement resolveApprovedLiveConfiguration({ repositoryRoot }) with its sole production source adapter created internally; reject every caller-supplied source adapter, cloned adapter, or self-issued isIssuedTrace claim as SOURCE_ADAPTER_UNTRUSTED.",
-          "Implement createSystemMetadataCommandAdapter({ repositoryRoot }) as the sole child_process owner. Close over the exact canonical .argo/.env path and approved executor; expose only zero-argument isSecretFileIgnored(), isSecretFileTracked(), readCurrentIdentity(), and readSecretFileAcl() capabilities.",
-          "Place one private invocation validator immediately before the private executor so every production and test-composed request traverses it. Reject extra factory properties and every capability argument before request construction or execution.",
-          "Implement withSystemMetadataCommandTestComposition({ repositoryRoot, executeMetadataCommand, mutateInvocation, forbiddenValues }, callback) only as a module-owned callback root. It may mutate an internally built request before the same production validator, but returns only the adapter to the callback and never exposes validator, executor, request builder, or policy-bypass capability.",
-          "Return undefined regardless of callback return value. Build a frozen null-prototype adapter with exactly four non-writable/non-configurable frozen own capability functions, no symbols or extra own/prototype properties, and no reflected executor/adapter/capability backdoor.",
-          "Allocate unique adapter and function identities for every nested or repeated composition. Revoke in finally after sync return/throw and after async fulfillment/rejection; every escaped post-scope capability call fails TEST_SYSTEM_METADATA_ADAPTER_REVOKED before validation/execution and leaves executor count unchanged.",
-          "Use spawnSync with shell false and structural argv for exactly git check-ignore --quiet -- .argo/.env, git ls-files --error-unmatch -- .argo/.env, whoami, and icacls of the closure-bound exact canonical .argo/.env path. Reject command concatenation, dynamic argv, flag/path/executable/environment/stdin variation as SYSTEM_METADATA_COMMAND_PROHIBITED.",
-          "Provide only a sanitized PATH/PATHEXT/SystemRoot/WINDIR environment assembled before secret resolution. Never place configuration or secret values in executable, argv, stdin, environment increments, stdout evidence, stderr, or logs; parse stdout only into ignored/tracked booleans, current identity, and ACL metadata.",
-          "Implement withApprovedLiveConfigurationTestComposition({ sourceBehavior, adapters, observeTrace }, callback) as the only frozen-test composition root. It wraps raw operation methods, privately registers adapter/capability identity, and passes only a resolver closure to the callback.",
-          "Issue frozen { value, trace } process reads and frozen { key, value, trace } file records inside that composition. Fixtures provide operation methods, never traces, trust verdicts, or provenance categories.",
-          "Validate exact five-field sourceKind/path/key/operation/aliasChain schema with no extra fields, field types, frozen trace/chain, private issued identity, requested key/path equality, and source/path/operation correlation before consuming any value.",
-          "Reject trusted key/path mismatch, missing field, extra field, and wrong-type traces as SOURCE_TRACE_INVALID. Only direct process and exact .argo/.env one-hop reads are approved; identical CLI/literal/fallback/alias/indirect values remain prohibited.",
-          "Normalize only when all five ARGO_EMBEDDING_* fields, ARGO_NEO4J_DATABASE_URL/USERNAME, and both secrets are explicitly present. Return exact normalized values and per-key source attribution; never fill defaults.",
-          "Require ARGO_LIVE_PROVIDER_E2E=1, then preflight exact path, git ignored/untracked state, regular/non-reparse status, Windows ACL, duplicates, unknown secret keys, and both required secret sources before transport or Neo4j construction.",
-          "Resolve QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD only from direct process variables or exact .argo/.env; process wins, equal duplicates pass, differing duplicates fail closed.",
-          "Parse icacls ACEs by principal, allow/deny and inheritance; require effective read for the actual identity, reject broad allow and unverifiable output, and accept broad deny-only when current identity has effective read.",
-          "Reject missing/blank, root/alternate/tracked files, CLI/literal/default/fallback/alias/indirect sources, and legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases.",
-          "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
-        ],
-        "completionSignal": "Approved configuration and four safe metadata templates pass; composition result/reflection tests expose no executor/backdoor; normal/throw/async/nested/repeated lifecycle probes prove revocation and unique identities; prior command mutations still fail SYSTEM_METADATA_COMMAND_PROHIBITED with zero executor calls."
-      },
-      {
-        "taskId": "W2-C9",
-        "title": "Implement the approved live provider index gate",
-        "objective": "Obtain one real embedding and persist controlled evidence only after exact qualification and finite 1024-dimension validation.",
-        "dependsOn": [
-          "W2-C8"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
-          ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
-          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
-        ],
-        "steps": [
-          "Export createLiveEmbeddingIndexGate(dependencies) returning only executeApprovedEmbedding(input); do not add scenario-labelled production test branches.",
-          "Use the Harness-injected transport for the Node.js HTTPS request so the frozen test owns call counting, origin/path/body observation, dynamic input, and raw response capture.",
-          "Keep authorization headers and provider response errors out of returned evidence, logs, and thrown error messages.",
-          "Export createApprovedNeo4jBoundary({ configuration, neo4j, logger }); use only neo4j.auth.basic for database authentication, verify connectivity before query execution, and expose controlled count/write/read/cleanup methods.",
-          "Accept only a finite numeric vector of exactly 1024 values after exact qualification.",
-          "Persist provider/model/qualification/dimensions, the exact observed vector, and canonical/content/index identities and versions through the controlled Neo4j boundary exactly once.",
-          "Inject unapproved identity, wrong or missing model/version/dimensions, provider error, non-finite vector, and dimension mismatch through the same executeApprovedEmbedding gate; reject every case before any write.",
-          "Delete controlled evidence and prove zero records remain after success and failure cleanup."
-        ],
-        "completionSignal": "The frozen transport independently proves one real request and exact response propagation; persisted provider/model/qualification/dimensions/vector and canonical/content/index metadata match; cleanup reaches zero; the same public gate yields zero writes for the complete failure matrix."
-      },
-      {
-        "taskId": "W2-C10",
-        "title": "Verify live evidence and secret isolation",
-        "objective": "Complete protected live verification without allowing offline evidence, secret disclosure, or regression of the existing scoped slice.",
-        "dependsOn": [
-          "W2-C9"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-          ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
-          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js"
-        ],
-        "steps": [
-          "Run the original six scoped explicit entrypoints and seven original critical guards before live execution.",
-          "Run all ten frozen critical guards in default/offline mode.",
-          "In controlled local or protected CI only, use approved process/.argo/.env sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
-          "Inject separate QWEN and Neo4j-password canaries through the real configuration boundary, provider error, and recording Neo4j auth failure; scan complete Cypher/graph values and all artifacts, then prove zero persistence.",
-          "Inject a recording Neo4j adapter through createApprovedNeo4jBoundary—not a Harness-private boundary—to assert the password is passed only to neo4j.auth.basic, authentication failure executes zero queries, and Cypher text/parameters contain no password.",
-          "Capture the raw authentication exception before safeCategory/captureOutcome sanitization, recursively including message, stack, causes, and aggregate errors; scan it together with sanitized errors, every logger event, stdout/stderr, auth/driver/query calls, graph/persistence observations, and recursive artifacts.",
-          "Run the frozen per-channel leak-detector self-test, then require the real auth probe to leave zero canary leaks, queries after failed authentication, graph evidence, and persisted records.",
-          "Compare the full runner against preCodingBaseline 34/14/20: the recorded grag-embedding-qualification delivered-to-not_delivered transition is accepted baseline, while any additional delivered regression fails completion.",
-          "Commit only authorized Coding target paths."
-        ],
-        "completionSignal": "8/8 scoped explicit entrypoints pass including transport-owned real evidence; 10/10 frozen critical guards pass; missing-secret preflight and failure matrix writes remain zero; canary leak count is zero across all channels; no new delivered-to-not_delivered transition occurs beyond the accepted pre-coding baseline."
+        "completionSignal": "DT-05, DT-16, DT-16-SemanticIndex, DT-17, and the four W3 critical guards pass with zero new delivered-to-not_delivered regression."
       }
     ]
   },
   "frozenFiles": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    "tests/harness/intentArchitectureQueryHarness.js",
     "tests/harness/productionGraphRagHarness.js",
     "tests/harness/liveEmbeddingProviderHarness.js",
+    "tests/explicit/entries/runIndependentSemanticSeeds.js",
+    "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "tests/explicit/entries/runProductionGraphRagRuntime.js",
     "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
     "tests/explicit/entries/runEmbeddingQualificationGate.js",
@@ -530,8 +236,6 @@
     "tests/explicit/entries/runCanonicalProjectionAuthority.js",
     "tests/explicit/entries/runSevenWaveDeliveryGates.js",
     "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
@@ -546,11 +250,8 @@
     ".gitignore"
   ],
   "openGaps": [
-    "Live network and real credentials remain unavailable to default CI. Both live entrypoints stay failed until controlled execution supplies both secrets through approved direct process or preflighted .argo/.env sources.",
-    "Human-reported metadata-only preflight now passes after ACL tightening to Administrator/Administrators/SYSTEM. No value was read or recorded; .argo/.env remains ignored, untracked, absent from HEAD, and excluded from every commit.",
-    "Before Coding implements liveEmbeddingProviderConfig.js, direct execution of the frozen source matrix honestly fails with LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING. Critical design guards verify the matrix is wired to that future production export and execute exact fixture outcomes once it exists.",
-    "This revision closes test-executor capability escape: the callback-scoped adapter has an exact reflected surface, the composition returns undefined, and finally-based revocation covers normal, throw, async, nested, and repeated lifecycles. Coding may resume C8-C10 only after explicit human re-approval.",
-    "ExplicitAcceptanceTestcase-TS-08 remains mounted and frozen out-of-scope evidence. The TS-09 physical path remains frozen for backward protection but no TS-09 element, testcase, relationship, Coding target, task, or completion authorization is included.",
-    "The original six scoped entrypoints and seven critical guards remain a mandatory C1-C6 checkpoint. Expanded completion adds two live entrypoints and three critical guards without changing runner-owned global delivery semantics."
+    "No intent graph mutation is required; W3 testcase boundaries and release gates are already present in the validated intent handoff.",
+    "DT-05 and DT-04 share the physical entrypoint mounted by the intent graph. DT-05 assertions are explicit in that frozen file, and any future split should be proposed upstream rather than edited directly here.",
+    "Runner-owned deliveryStatus and test-failure-record updates remain governed by the full architecture runner and are not manually fabricated."
   ]
 }

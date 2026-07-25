@@ -336,12 +336,12 @@
           "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W2",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority|runCanonicalProjectionAuthority.js|exitCode=0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -780,6 +780,10 @@
         {
           "name": "acceptanceApproval.DT-16-SemanticIndex",
           "value": "approvedByHuman=true|2026-07-25|chat delivery request: all mutation version evidence baseline"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -996,12 +1000,12 @@
           "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W2",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-01|runProductionGraphRagRuntime.js|exitCode=0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1033,12 +1037,12 @@
           "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W2",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-01-Native|runNeo4jNativeRetrievalPlatform.js|exitCode=0"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1098,12 +1102,12 @@
           "value": "approvedByHuman=true|2026-07-25|chat approval"
         },
         {
-          "name": "deliveryStatus",
-          "value": "delivered"
-        },
-        {
           "name": "deliveryEvidence.W2",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-06=runEmbeddingQualificationGate.js:exitCode=0|ExplicitAcceptanceTestcase-TS-06-Provider-E2E=runLiveEmbeddingProviderE2E.js:exitCode=0|ARGO_LIVE_PROVIDER_E2E=1|real approved Alibaba/Qwen request and controlled Neo4j evidence/cleanup passed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1170,12 +1174,12 @@
           "value": "approvedByHuman=true|2026-07-25|chat approval allow_secret_file"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "deliveryEvidence.W2",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-07=runExternalCredentialBoundary.js:exitCode=0|ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation=runLiveEmbeddingProviderSecretIsolation.js:exitCode=0|explicit live opt-in|source policy, no-leak evidence, controlled Neo4j auth/write/cleanup passed"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1355,12 +1359,12 @@
           "value": "{\"description\":\"Generate embeddings through an independent qualified-provider adapter and persist complete vector evidence through parameterized Cypher.\",\"businessOutcome\":\"Production generation is decoupled from Neo4j plugin credentials and fails safely.\",\"observableBoundary\":\"Adapter invokes a qualified provider, persists vector plus identity/channel/version/model metadata, requires no plugin/Python, exposes no Cypher credentials, and leaves partial failures non-Aligned.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter\"}"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "scopeBoundary.W2-W3",
           "value": "W2 accepts adapter technology selection and qualified-provider boundary; TS-09 adapter-driven affected-record generation, vector/evidence persistence, and alignment lifecycle remain an unchanged W3 implementation gate."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [

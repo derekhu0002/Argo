@@ -21,22 +21,22 @@
     "resolvedScriptPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runIndependentSemanticSeeds.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:17:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:17:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-05",
-    "testdescription": "Acceptor perspective control point: run a query with more qualifying peers than a typical fixed K and an unrelated query. Observation point: inspect qualifying peer completeness and empty-result behavior.",
+    "testdescription": "Acceptor perspective control point: run threshold-all seed retrieval against a many-peer relevant fixture, an unrelated fixture, and an ANN top-k comparison fixture. Observation point: inspect that all above-threshold peers are present, unrelated queries have no forced hits, and ANN top-k is reported only as performance comparison rather than correctness evidence.",
     "acceptanceCriteria": "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "relatedIntentElementId": "grag-seed-retrieval",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runIndependentSemanticSeeds.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:17:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT04_ELEMENT_SEED_CHANNEL_MISSING; DT05_THRESHOLD_ALL_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runIndependentSemanticSeeds.js:17:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-06",
@@ -156,30 +156,43 @@
     "stderr": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_OBJECTS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
+    "testcasename": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+    "testdescription": "Acceptor perspective control point: execute the DT-16 mutation matrix and inspect semantic-index records for each affected Element, ArchitectureRelationship, and View. Observation point: verify complete identity, channel, canonical/content/index version, approved model evidence, and non-Aligned state for partial persistence.",
+    "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "relatedIntentElementId": "grag-semantic-index",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:18:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:18:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+  },
+  {
     "testcasename": "ExplicitAcceptanceTestcase-DT-16",
-    "testdescription": "Acceptor perspective control point: create, update, and delete each object category, including topology-only changes. Observation point: compare aligned-query results and version movement.",
+    "testdescription": "Acceptor perspective control point: create, update, and delete each object category, including topology-only, semantic-content, and View-membership changes. Observation point: compare affected-record extraction, lifecycle state transitions, aligned-query disposition, and version movement.",
     "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js",
     "relatedIntentElementId": "grag-index-lifecycle",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:18:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT16_MUTATION_CLASSES_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:18:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-17",
-    "testdescription": "Acceptor perspective control point: change graph semantics and force index failure. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions.",
+    "testdescription": "Acceptor perspective control point: change graph semantics and force Updating, Stale, Failed, partial, and unknown semantic-index states. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions; semantic requests are rejected rather than warned or silently full-snapshot fallbacked.",
     "acceptanceCriteria": "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "relatedIntentElementId": "grag-alignment-constraint",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:25:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:15:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT17_ALIGNMENT_ERROR_MISSING\n+ actual - expected\n\n+ 'SEMANTIC_RETRIEVAL_UNAVAILABLE'\n- 'SEMANTIC_INDEX_NOT_ALIGNED'\n            ^\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runStaleSemanticQueryRejection.js:25:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'SEMANTIC_RETRIEVAL_UNAVAILABLE',\n  expected: 'SEMANTIC_INDEX_NOT_ALIGNED',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-18",
