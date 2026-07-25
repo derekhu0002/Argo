@@ -447,11 +447,11 @@
       "id": "grag-seed-retrieval",
       "name": "Independent Semantic Seed Retrieval",
       "type": "Application Function",
-      "description": "Independently evaluates Element, ArchitectureRelationship, and View with per-channel exact thresholds. Phase 1 correctness is proven by threshold-all behavior before any ANN comparison: every qualifying seed at or above the approved threshold is returned, unrelated queries may return zero results, raw cross-channel scores are not globally ranked, and ANN top-k is performance evidence only.",
+      "description": "Delivers only relevance-discovery semantic seeds for three independent channels: Element, ArchitectureRelationship, and View. Each channel evaluates its own threshold gate and returns every candidate meeting that channel threshold, including valid zero-result outcomes. This stage does not perform graph closure, traversal expansion, neighborhood closure, downstream graph completion, or global cross-channel ranking; ANN top-k remains performance evidence only.",
       "attributes": [
         {
           "name": "decisionTrace.DT-04",
-          "value": "accepted|independent-three retrieval channels"
+          "value": "accepted|independent three-channel semantic seed discovery for Element, ArchitectureRelationship, and View"
         },
         {
           "name": "decisionTrace.DT-04-R1",
@@ -459,11 +459,11 @@
         },
         {
           "name": "decisionTrace.DT-04-R2",
-          "value": "rejected|relationship and View seeds must remain directly discoverable"
+          "value": "rejected|Relationship and View seeds must remain directly discoverable, not inferred from Element-only retrieval or graph closure"
         },
         {
           "name": "decisionTrace.DT-05",
-          "value": "accepted|threshold-all per object type; zero results permitted; ANN top-k benchmark cannot define Phase 1 correctness"
+          "value": "accepted|Element, Relationship, and View thresholds are independent; return all candidates meeting their channel gate; zero results are valid; ANN top-k benchmark cannot define correctness"
         },
         {
           "name": "decisionTrace.DT-05-R1",
@@ -474,20 +474,28 @@
           "value": "open|caps deferred to DT-19 after precision and cardinality evidence"
         },
         {
+          "name": "functionalPoint.DT-04-three-channel-seed-discovery",
+          "value": "{\"description\":\"Discover relevance seeds independently for Element, ArchitectureRelationship, and View channels.\",\"businessOutcome\":\"Acceptance can decide relevant starting seeds per canonical object category without relying on graph closure or Element-only retrieval.\",\"observableBoundary\":\"A semantic retrieval result exposes separate Element, Relationship, and View seed channels; each channel is directly discoverable, independently attributed, and contains no traversal expansion, neighborhood closure, or downstream graph-completion output.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-04\"}"
+        },
+        {
           "name": "functionalPoint.DT-05-threshold-all-correctness",
-          "value": "{\"description\":\"Prove threshold-all seed correctness before permitting ANN as a performance comparison.\",\"businessOutcome\":\"Phase 1 correctness is defined by complete qualifying seed recall and valid zero-result behavior, not by fixed top-k output.\",\"observableBoundary\":\"For each independent channel, every seed at or above the approved threshold is returned, unrelated queries return no forced hits, and ANN top-k output is recorded only as comparative performance evidence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-05\"}"
+          "value": "{\"description\":\"Apply independent threshold gates per seed channel and return all qualifying candidates.\",\"businessOutcome\":\"Phase 1 correctness is defined by complete qualifying seed recall and valid zero-result behavior for each channel, not by fixed top-k output or graph closure.\",\"observableBoundary\":\"For Element, Relationship, and View channels separately, every candidate at or above that channel threshold is returned, candidates below threshold are not released by that gate, unrelated queries may return zero results, and ANN top-k output is recorded only as comparative performance evidence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-05\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-04",
+          "value": "approvedByHuman=true|2026-07-25|user requirement: three-channel semantic seeds for grag-seed-retrieval; only relevance discovery; no graph closure in this stage"
         },
         {
           "name": "acceptanceApproval.DT-05",
-          "value": "approvedByHuman=true|2026-07-25|chat delivery request: threshold-all correctness before ANN comparison"
+          "value": "approvedByHuman=true|2026-07-25|user requirement: independent Element, Relationship, and View thresholds; return all qualifying candidates; zero results allowed"
         },
         {
           "name": "deliveryEvidence.W3.DT-05",
           "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-05|runIndependentSemanticSeeds.js|exitCode=0|exact threshold-all baseline accepted for W3"
         },
         {
-          "name": "scopeBoundary.W3-W4",
-          "value": "DT-04 shares runIndependentSemanticSeeds.js and currently passes, but independent three-channel seed acceptance remains exclusively W4 scope and is not evidence that W4 is accepted."
+          "name": "scopeBoundary.W4",
+          "value": "grag-seed-retrieval handoff scope is relevance discovery only: Element, Relationship, and View semantic seeds plus independent threshold gates. Purpose closure, traversal expansion, neighborhood closure, and downstream graph completion remain outside W4 seed retrieval."
         },
         {
           "name": "deliveryStatus",

@@ -284,3 +284,38 @@
 - `argo.validateSystemArchitecture`: passed.
 - Runner-owned `deliveryStatus` was preserved as runner data and not fabricated by Intent Design.
 - Open business questions: none. Downstream ImplementationDesign must regenerate the implementation-to-coding handoff before Coding/Repair proceeds.
+
+## 2026-07-25 — W4 Three-Channel Semantic Seed Handoff
+
+- Selected viewpoint: Application Usage Viewpoint.
+- Stakeholder concern: application architects, requirements owners, implementation designers, and acceptors need `grag-seed-retrieval` to expose relevance-discovery seeds independently for Element, Relationship, and View before any closure application behavior runs.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected View rationale: no View membership changed. `grag-seed-closure-usage` remains the contextual Application Usage chain for later seed-to-closure flow; this handoff intentionally scopes only `grag-seed-retrieval`. `grag-delivery-impact-retrieval` remains delivery sequencing context and does not broaden this W4 seed handoff to W5/W6 behavior.
+- Human approval evidence: the 2026-07-25 user requirement explicitly requested `grag-seed-retrieval`, DT-04 and DT-05 acceptance mapping, independent Element/Relationship/View gates, all passing candidates returned, valid zero results, and no graph closure mixed into this stage. The handoff schema does not permit an `approvedByHuman` field, so approval is recorded in handoff notes and as schema-compliant `acceptanceApproval.DT-04` and `acceptanceApproval.DT-05` attributes on `grag-seed-retrieval`.
+
+### Coverage matrix
+
+- `grag-seed-retrieval` — `functionalPoint.DT-04-three-channel-seed-discovery` -> `ExplicitAcceptanceTestcase-DT-04`.
+- `grag-seed-retrieval` — `functionalPoint.DT-05-threshold-all-correctness` -> `ExplicitAcceptanceTestcase-DT-05`.
+
+### Dependency-scope decisions
+
+- Handoff scope is exactly one implementation target: `grag-seed-retrieval`.
+- Context relationships are `grag-rel-w31-w4` as upstream delivery gate, `grag-rel-validation-seeds` as the validated-query trigger into seed retrieval, and `grag-rel-w4-seed-retrieval` as W4 realization of the seed retrieval function.
+- `grag-rel-seeds-closure` and downstream closure elements are intentionally excluded from the handoff because closure, traversal expansion, neighborhood closure, and graph completion begin after relevance seed discovery.
+- Existing runner-owned `deliveryStatus` was preserved and not fabricated by Intent Design.
+
+### Acceptance boundaries
+
+- DT-04 requires separate Element, Relationship, and View seed channels. Relationship and View seeds must be directly discoverable and independently attributed, not inferred from Element-only retrieval or graph closure.
+- DT-05 requires independent thresholds per channel. Every candidate at or above its channel threshold is returned; candidates below threshold are not released by that gate; unrelated queries may return zero results; ANN top-k is performance comparison only.
+
+### Validation and open risks
+
+- `argo.getIntentElementContext`: read `grag-seed-retrieval` dependency context with implementation-design profile before handoff scoping.
+- `argo.previewSystemArchitectureMutation`: passed for one `grag-seed-retrieval` element update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 58 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied with no View mutation required; B1-B3 satisfied because no ExplicitAcceptanceTestcase was added or modified and both mounted testcase mappings are same-element; C1-C2 scoped to the single focus element with delivered upstream context and explicit exclusion of closure; D1-D8 satisfied through exact element mapping, same-element coverage, graph attributes, and schema-compliant global approval notes; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires the Intent Design stage commit.
+- Open business questions and adequacy blockers: none.
