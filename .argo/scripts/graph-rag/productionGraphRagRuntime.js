@@ -264,6 +264,11 @@ const PREREQUISITE_DELIVERY_WAVES = Object.freeze(['W2', 'W3', 'W4', 'W5', 'W6']
 
 function evaluatePhase1QualityBenchmark(request = {}) {
   const benchmark = normalizePhase1Benchmark(request.benchmark);
+  const benchmarkValidation = validatePhase1Benchmark(benchmark);
+  if (benchmarkValidation) {
+    return blockedQualityBenchmark(benchmarkValidation);
+  }
+
   const perPurpose = benchmark.purposes.map(evaluateBenchmarkPurpose);
   const totalMandatorySeeds = perPurpose.reduce((total, purpose) => total + purpose.mandatoryKeySeedIds.length, 0);
   const totalRecalledSeeds = perPurpose.reduce((total, purpose) => total + purpose.recalledKeySeedIds.length, 0);
@@ -288,6 +293,30 @@ function evaluatePhase1QualityBenchmark(request = {}) {
   });
 }
 
+function validatePhase1Benchmark(benchmark) {
+  if (benchmark.purposes.length === 0) {
+    return 'DT18_BENCHMARK_EMPTY';
+  }
+  if (
+    benchmark.purposes.length !== PURPOSE_CATEGORIES.length
+    || PURPOSE_CATEGORIES.some(category => !benchmark.purposes.some(purpose => purpose.purpose === category))
+  ) {
+    return 'DT18_BENCHMARK_INCOMPLETE';
+  }
+  for (const purpose of benchmark.purposes) {
+    if (purpose.recalledKeySeedIds.length === 0) {
+      return 'DT18_ACTUAL_RECALL_EVIDENCE_MISSING';
+    }
+    if (purpose.observedClosureIds.length === 0) {
+      return 'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING';
+    }
+    if (!isPrecisionInRange(purpose.precision)) {
+      return 'DT18_PRECISION_OUT_OF_RANGE';
+    }
+  }
+  return undefined;
+}
+
 function normalizePhase1Benchmark(benchmark) {
   const suppliedPurposes = benchmark && Array.isArray(benchmark.purposes)
     ? benchmark.purposes
@@ -303,25 +332,18 @@ function normalizePhase1Benchmark(benchmark) {
       recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
       observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
       unrelatedForcedHits: normalizeNonNegativeInteger(purpose.unrelatedForcedHits),
-      precision: normalizePrecision(purpose.precision),
+      precision: purpose.precision,
     }))),
   });
 }
 
 function evaluateBenchmarkPurpose(expectation) {
-  const recalledKeySeedIds = expectation.recalledKeySeedIds.length > 0
-    ? expectation.recalledKeySeedIds
-    : expectation.mandatoryKeySeedIds;
-  const observedClosureIds = expectation.observedClosureIds.length > 0
-    ? expectation.observedClosureIds
-    : expectation.expectedClosureIds;
+  const recalledKeySeedIds = expectation.recalledKeySeedIds;
+  const observedClosureIds = expectation.observedClosureIds;
   const missingKeySeedIds = expectation.mandatoryKeySeedIds
     .filter(seedId => !recalledKeySeedIds.includes(seedId));
   const closureCorrect = expectation.expectedClosureIds
     .every(closureId => observedClosureIds.includes(closureId));
-  const precision = typeof expectation.precision === 'number'
-    ? expectation.precision
-    : ratio(recalledKeySeedIds.length, Math.max(recalledKeySeedIds.length, expectation.mandatoryKeySeedIds.length));
 
   return Object.freeze({
     purpose: expectation.purpose,
@@ -330,7 +352,7 @@ function evaluateBenchmarkPurpose(expectation) {
     missingKeySeedIds: Object.freeze(missingKeySeedIds),
     closureCorrect,
     unrelatedForcedHits: expectation.unrelatedForcedHits,
-    precision,
+    precision: expectation.precision,
   });
 }
 
@@ -359,8 +381,14 @@ function hasPassingW7QualityBenchmark(qualityBenchmark) {
   return qualityBenchmark.keySeedRecall === 1
     && qualityBenchmark.closureCorrectness === 1
     && qualityBenchmark.unrelatedForcedHits === 0
-    && typeof qualityBenchmark.aggregatePrecision === 'number'
-    && Number.isFinite(qualityBenchmark.aggregatePrecision);
+    && isPrecisionInRange(qualityBenchmark.aggregatePrecision);
+}
+
+function blockedQualityBenchmark(category) {
+  return Object.freeze({
+    status: 'blocked',
+    error: Object.freeze({ category }),
+  });
 }
 
 function blockedDelivery(category, extra = {}) {
@@ -381,10 +409,8 @@ function normalizeNonNegativeInteger(value) {
   return Number.isInteger(value) && value > 0 ? value : 0;
 }
 
-function normalizePrecision(value) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
-    ? value
-    : undefined;
+function isPrecisionInRange(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
 function ratio(numerator, denominator) {
