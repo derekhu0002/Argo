@@ -1,23 +1,22 @@
 const assert = require('node:assert');
-const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
+const {
+  assertRelationshipEndpointClosure,
+  readForPurposeClosure,
+} = require('../../harness/intentArchitectureQueryHarness.js');
 
 async function main() {
   // GIVEN a relationship seed whose endpoints are not semantic matches
-  const result = await readForPurpose({
+  const result = await readForPurposeClosure({
     purpose: 'implementation-design',
     intent: 'Inspect a relationship and its required endpoints',
+    anchors: ['grag-purpose-closure'],
   });
 
   // WHEN endpoint closure is observed
-  const closure = result.result && result.result.endpointClosure;
+  assert(result && result.result, 'DT13_RELATIONSHIP_SEED_MISSING');
 
-  // THEN the relationship and both endpoints are present with endpoint provenance
-  assert(closure && closure.relationship, 'DT13_RELATIONSHIP_SEED_MISSING');
-  assert(Array.isArray(closure && closure.endpoints) && closure.endpoints.length === 2, 'DT13_ENDPOINTS_INCOMPLETE');
-  assert(
-    closure.endpoints.every(endpoint => endpoint.firstInclusionReason === 'endpoint-closure'),
-    'DT13_ENDPOINT_PROVENANCE_MISSING',
-  );
+  // THEN every returned relationship has same-version endpoints or explicit structural errors
+  assertRelationshipEndpointClosure(result);
 }
 
 main().catch(error => {

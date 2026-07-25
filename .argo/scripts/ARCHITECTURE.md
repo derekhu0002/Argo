@@ -7,6 +7,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `.argo/scripts/argo-mcp-server.js` owns transport-neutral tool registration and delegates `getSystemArchitecture` without interpreting query policy.
 - `.argo/scripts/systemarchitecture-mcp-server.js` owns the deep query module: request validation, mode selection, canonical full reads, and later semantic-query dispatch.
 - `design/KG/SystemArchitecture.json` remains the canonical read source; no query mode may rewrite it.
+- W6 semantic-query responses must expose the governing canonical graph version in query/result evidence; missing canonical-version evidence blocks coherent-result delivery even when the no-argument canonical read still succeeds.
 
 ## Interface boundary
 
@@ -19,6 +20,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - optional deterministic anchors may be added without changing no-argument behavior.
 
 All five purpose values remain legal contract inputs. `intent-decision`, `implementation-design`, `coding-repair`, and valid `audit` requests invoke the semantic retrieval boundary; `graph-tidy` never invokes it and reports `mode: "full-snapshot"` plus `semanticRetrieval: "bypassed"`.
+
+For W6, semantic query results must remain traceable to the canonical graph version used by the same no-argument legacy read. Endpoint, View, and provenance completion are delegated inward to the Graph RAG boundary, but the query service must surface their evidence without silently dropping `canonicalVersion`, policy, index, or alignment fields.
 
 Validation occurs before retrieval and returns these stable categories:
 

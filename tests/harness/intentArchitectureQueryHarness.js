@@ -10,8 +10,8 @@ async function readAsUnchangedConsumer() {
   return invokeGetSystemArchitecture({});
 }
 
-async function readForPurpose({ purpose, intent, subject }, probe) {
-  const query = { purpose, intent };
+async function readForPurpose({ purpose, intent, subject, ...rest }, probe) {
+  const query = { purpose, intent, ...rest };
   if (subject !== undefined) {
     query.subject = subject;
   }
@@ -190,6 +190,86 @@ function assertAuditProofClosure(result) {
   assert.strictEqual(audit && audit.missingEvidenceTreatedAsPass, false, 'DT11_MISSING_EVIDENCE_FALSE_PASS');
 }
 
+function assertCoherentW6VersionEvidence(legacyResult, semanticResult) {
+  assert(observeReturnedGraph(legacyResult), 'DT00_LEGACY_GRAPH_MISSING: legacy reading must return canonical data');
+  assert.strictEqual(
+    semanticResult.query && semanticResult.query.purpose,
+    'implementation-design',
+    'DT00_QUERY_PURPOSE_MISSING: semantic evidence must preserve explicit purpose',
+  );
+  assert(
+    semanticResult.query && semanticResult.query.canonicalVersion,
+    'DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version',
+  );
+}
+
+function assertRelationshipEndpointClosure(result) {
+  const endpointClosure = result && result.result && result.result.endpointClosure;
+  assert(endpointClosure && typeof endpointClosure === 'object', 'DT13_ENDPOINT_CLOSURE_MISSING');
+  assert(Array.isArray(endpointClosure.relationships), 'DT13_RELATIONSHIP_OBJECTS_MISSING');
+  assert(Array.isArray(endpointClosure.structuralErrors), 'DT13_STRUCTURAL_ERROR_CHANNEL_MISSING');
+  for (const relationship of endpointClosure.relationships) {
+    assert(relationship && relationship.id, 'DT13_RELATIONSHIP_ID_MISSING');
+    assert(relationship.source && relationship.target, 'DT13_ENDPOINTS_INCOMPLETE');
+    assert.strictEqual(
+      relationship.canonicalVersion,
+      relationship.source.canonicalVersion,
+      'DT13_SOURCE_VERSION_MISMATCH',
+    );
+    assert.strictEqual(
+      relationship.canonicalVersion,
+      relationship.target.canonicalVersion,
+      'DT13_TARGET_VERSION_MISMATCH',
+    );
+  }
+  for (const category of ['dangling-endpoint', 'cross-version-endpoint']) {
+    assert(
+      endpointClosure.structuralErrors.some(error => error && error.category === category),
+      `DT13_STRUCTURAL_ERROR_MISSING: ${category}`,
+    );
+  }
+}
+
+function assertCompleteViewClosure(result) {
+  const viewClosure = result && result.result && result.result.viewClosure;
+  assert(viewClosure && typeof viewClosure === 'object', 'DT14_VIEW_CLOSURE_MISSING');
+  assert(Array.isArray(viewClosure.views) && viewClosure.views.length > 0, 'DT14_TARGET_VIEW_MISSING');
+  assert.strictEqual(viewClosure.overlappingViewCascade, false, 'DT14_OVERLAPPING_VIEW_CASCADE');
+  for (const view of viewClosure.views) {
+    assert(view.view_id && view.view_name, 'DT14_VIEW_METADATA_MISSING');
+    assert(view.viewpointBinding || view.description, 'DT14_VIEWPOINT_BINDING_MISSING');
+    assert(Array.isArray(view.included_elements), 'DT14_VIEW_MEMBER_IDS_MISSING');
+    assert(Array.isArray(view.included_relationships), 'DT14_VIEW_RELATIONSHIP_IDS_MISSING');
+    assert(Array.isArray(view.memberElements), 'DT14_VIEW_MEMBER_OBJECTS_MISSING');
+    assert(Array.isArray(view.memberRelationships), 'DT14_VIEW_RELATIONSHIP_OBJECTS_MISSING');
+    assert(
+      view.memberRelationships.every(relationship => relationship.source && relationship.target),
+      'DT14_VIEW_RELATIONSHIP_ENDPOINTS_MISSING',
+    );
+  }
+}
+
+function assertFirstInclusionProvenance(result) {
+  const provenance = result && result.result && result.result.provenance;
+  assert(provenance && typeof provenance === 'object', 'DT15_PROVENANCE_EVIDENCE_MISSING');
+  assert(Array.isArray(provenance.objects) && provenance.objects.length > 0, 'DT15_PROVENANCE_OBJECTS_MISSING');
+  for (const object of provenance.objects) {
+    assert(object.firstInclusionReason, 'DT15_FIRST_INCLUSION_REASON_MISSING');
+    assert(!Array.isArray(object.firstInclusionReason), 'DT15_MULTIPLE_FIRST_INCLUSION_REASONS');
+    assert(Array.isArray(object.supplementaryReasons), 'DT15_SUPPLEMENTARY_REASONS_MISSING');
+    assert(
+      !object.supplementaryReasons.includes(object.firstInclusionReason),
+      'DT15_SUPPLEMENTARY_REASON_OVERWROTE_FIRST',
+    );
+  }
+  assert(provenance.purpose, 'DT15_PURPOSE_EVIDENCE_MISSING');
+  assert(provenance.policy && provenance.policy.policyId, 'DT15_POLICY_EVIDENCE_MISSING');
+  assert(provenance.canonicalVersion, 'DT15_CANONICAL_VERSION_EVIDENCE_MISSING');
+  assert(provenance.semanticIndex && provenance.semanticIndex.contentVersion, 'DT15_CONTENT_VERSION_EVIDENCE_MISSING');
+  assert(provenance.semanticIndex && provenance.semanticIndex.indexVersion, 'DT15_INDEX_VERSION_EVIDENCE_MISSING');
+  assert(provenance.alignment && provenance.alignment.state, 'DT15_ALIGNMENT_EVIDENCE_MISSING');
+}
+
 function assertUniqueCanonicalIdentities(graph, failureCategory) {
   assertUnique((graph.elements || []).map(element => element.id), `${failureCategory}: duplicate Element identity`);
   assertUnique((graph.relationships || []).map(relationship => relationship.id), `${failureCategory}: duplicate Relationship identity`);
@@ -214,12 +294,16 @@ module.exports = {
   assertCompleteCanonicalSnapshot,
   assertAuditProofClosure,
   assertCodingRepairClosure,
+  assertCoherentW6VersionEvidence,
+  assertCompleteViewClosure,
+  assertFirstInclusionProvenance,
   assertImplementationDesignClosure,
   assertIntentDecisionClosure,
   assertLegacyEnvelopeExternallyEquivalent,
   assertNoQueryModeMetadata,
   assertParameterizedClosurePolicy,
   assertPurposeCategoryBoundary,
+  assertRelationshipEndpointClosure,
   assertSemanticRetrievalCalls,
   assertUniqueCanonicalIdentities,
   createSemanticRetrievalProbe,

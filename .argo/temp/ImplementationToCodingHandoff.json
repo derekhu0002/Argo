@@ -1,108 +1,83 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T22:34:00+08:00",
+  "generatedAt": "2026-07-25T23:58:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W5 deterministic five-purpose closure: materialized Implementation Design contracts and frozen acceptance for DT-06 through DT-12. Coding/Repair must implement parameterized, repository-owned closure policies with ArchiMate relationship-direction semantics so W4 semantic seeds become reproducible purpose-scoped graph ranges; free-generated Cypher, Agent identity, text similarity, arbitrary traversal depth, and connected-component expansion are forbidden for mandatory closure decisions.",
+  "summary": "W6 structural closure and explainable results handoff. Coding/Repair must preserve W4 seed retrieval and W5 purpose-policy selection while adding coherent-result canonical-version evidence, same-version relationship endpoint closure, complete non-cascading View closure, and single first-inclusion provenance with policy/index/version evidence.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-06",
-      "entryPath": "tests/explicit/entries/runPurposePolicyClosure.js",
-      "controlPoint": "Submit approved W4 seed anchors under implementation-design purpose with a graph-mandatory but textually dissimilar dependency and a forbidden generated-Cypher decision path.",
-      "observationPoint": "Observe named policy id, parameterizedCypher=true, boundParameters, ArchiMate relationship semantics, mandatory low-similarity inclusion, generated-Cypher exclusion, and caller-identity-independent scope.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
+      "entryPath": "tests/explicit/entries/runCoherentIntentReading.js",
+      "controlPoint": "Submit legacy and semantic-query tasks against the same canonical graph version.",
+      "observationPoint": "Legacy reading remains complete and semantic evidence exposes the governing canonicalVersion for coherent-result traceability.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runPurposePolicyClosure.js",
-      "failureReason": "Expected pre-coding failure: DT06_PURPOSE_CLOSURE_POLICY_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runCoherentIntentReading.js",
+      "failureReason": "DT00_CANONICAL_VERSION_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-07",
-      "entryPath": "tests/explicit/entries/runPurposePolicyClosure.js",
-      "controlPoint": "Submit equivalent anchors from different caller identities and then submit the same anchors under intent-decision, implementation-design, coding-repair, audit, and graph-tidy purposes.",
-      "observationPoint": "Observe identical scope for equivalent declared purpose regardless of caller identity and distinct policy ids, parameter contracts, included ranges, exclusions, and rationale for all five categories.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
+      "entryPath": "tests/explicit/entries/runRelationshipEndpointClosure.js",
+      "controlPoint": "Run a purpose-closed relationship range whose endpoints are not semantic matches and include invalid endpoint fixtures.",
+      "observationPoint": "Every returned relationship has source and target Element objects from the same canonical version, with dangling and cross-version endpoint errors surfaced structurally.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runPurposePolicyClosure.js",
-      "failureReason": "Expected pre-coding failure: DT06_PURPOSE_CLOSURE_POLICY_MISSING blocks DT-07 dispatch observations until the shared W5 policy evidence exists"
+      "initialExecutionCommand": "node tests/explicit/entries/runRelationshipEndpointClosure.js",
+      "failureReason": "DT13_ENDPOINT_CLOSURE_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-08",
-      "entryPath": "tests/explicit/entries/runIntentDecisionClosure.js",
-      "controlPoint": "Submit a capability-change intent-decision request with mandatory dissimilar lineage and a similar implementation-only neighbor.",
-      "observationPoint": "Observe intent-decision policy evidence, Why, What, business behavior, Acceptance, realization-state or absence evidence, and exclusion of implementation, repair, audit, and graph-tidy scope.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
+      "entryPath": "tests/explicit/entries/runCompleteViewClosure.js",
+      "controlPoint": "Run a matched View query where the selected View shares members with overlapping Views.",
+      "observationPoint": "The selected View includes complete metadata, viewpoint binding, member ids/objects, relationship ids/objects, endpoints, and no overlapping-View cascade.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runIntentDecisionClosure.js",
-      "failureReason": "Expected pre-coding failure: DT08_INTENT_DECISION_POLICY_MISSING"
+      "initialExecutionCommand": "node tests/explicit/entries/runCompleteViewClosure.js",
+      "failureReason": "DT14_VIEW_CLOSURE_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-09",
-      "entryPath": "tests/explicit/entries/runImplementationDesignClosure.js",
-      "controlPoint": "Submit an implementation-design target with approved multi-level upstream prerequisites, bounded downstream dependents, and out-of-bound similar context.",
-      "observationPoint": "Observe implementation-design policy evidence, dependency chains that terminate at declared boundaries, delivered-stop decisions, guardrails, acceptance semantics, and exclusion of repair and graph-tidy scope.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
+      "entryPath": "tests/explicit/entries/runFirstInclusionProvenance.js",
+      "controlPoint": "Run duplicate-discovery fixtures across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
+      "observationPoint": "Every returned object has exactly one ordered firstInclusionReason, supplementary reasons never overwrite it, and purpose/policy/canonical/content/index/alignment evidence is complete.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runImplementationDesignClosure.js",
-      "failureReason": "Expected pre-coding failure: DT09_IMPLEMENTATION_DESIGN_POLICY_MISSING"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-10",
-      "entryPath": "tests/explicit/entries/runCodingRepairClosure.js",
-      "controlPoint": "Submit a coding-repair defect where implementation evidence conflicts with approved intent and a textually similar unrelated capability is nearby.",
-      "observationPoint": "Observe coding-repair policy evidence, intent authority, guardrails, at-risk outcomes, complete acceptance semantics, and exclusion of unrelated similar capabilities and implementation-planning scope.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCodingRepairClosure.js",
-      "failureReason": "Expected pre-coding failure: DT10_CODING_REPAIR_POLICY_MISSING"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-11",
-      "entryPath": "tests/explicit/entries/runAuditProofClosure.js",
-      "controlPoint": "Submit an audit request with an explicit subject containing a low-similarity violation and an outside high-similarity candidate; also submit an audit request without subject.",
-      "observationPoint": "Observe audit policy evidence, subject-scoped obligations, violations, evidence exceptions, missing-evidence false-pass prevention, out-of-subject exclusion, and AUDIT_SUBJECT_REQUIRED for missing subject.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAuditProofClosure.js",
-      "failureReason": "Expected pre-coding failure: DT11_AUDIT_PROOF_POLICY_MISSING"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
-      "entryPath": "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-      "controlPoint": "Run a semantic positive-control query with a Harness-owned retrieval probe, then run graph-tidy mutation preparation against the complete canonical graph.",
-      "observationPoint": "Observe unchanged semantic probe count, query.mode full-snapshot, semanticRetrieval bypassed, and returned graph equality with complete canonical Elements, Relationships, Views, and memberships.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "node tests/explicit/entries/runGraphTidyFullSnapshot.js"
+      "initialExecutionCommand": "node tests/explicit/entries/runFirstInclusionProvenance.js",
+      "failureReason": "DT15_PROVENANCE_EVIDENCE_MISSING"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "W5 intent-query boundary contract",
+      "name": "ArchitectureBoundaryGuard",
       "path": "tests/architecture/intent-query/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect gateway delegation, getSystemArchitecture ownership, and root/local W5 contract declarations.",
-      "observationPoint": "The repository declares W5 deterministic purpose closure, closePurposePolicyScope(request), named parameterized Cypher policies, generated-Cypher prohibition, and five independent category boundaries.",
+      "controlPoint": "Inspect root, query-service, and Graph RAG contracts for W6 coherent-result boundary declarations.",
+      "observationPoint": "Contracts declare W6 canonical-version, endpoint, View, and provenance result-completion semantics.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W5 dependency direction",
+      "name": "DependencyDirectionGuard",
       "path": "tests/architecture/intent-query/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Inspect gateway, intent-query, and production Graph RAG runtime dependencies.",
-      "observationPoint": "Production modules do not depend outward on tests while the W5 Harness and entrypoints depend inward through public boundaries.",
+      "controlPoint": "Inspect production runtime modules for outward dependencies on tests.",
+      "observationPoint": "Production code does not import tests or frozen entrypoint assets.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W5 explicit entrypoint correctness",
+      "name": "ExplicitEntrypointCorrectnessGuard",
       "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect W5 explicit entrypoint source and handoff frozen-file list.",
-      "observationPoint": "Each DT-06 through DT-12 entrypoint keeps GIVEN/WHEN/THEN readability, uses the intent-query Harness, contains key W5 assertions, and is frozen for Coding/Repair.",
+      "controlPoint": "Inspect frozen W6 entrypoints and Harness-owned assertions.",
+      "observationPoint": "Entrypoints keep GIVEN/WHEN/THEN readability, use the Harness abstraction, and include W6 failure categories.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W5 implementation traceability",
+      "name": "KeyImplementationTraceabilityGuard",
       "path": "tests/architecture/intent-query/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect intent anchors, root implements mappings, mounted testcase paths, and physical entrypoint files.",
-      "observationPoint": "The root contract maps grag-purpose-closure, grag-intent-decision-policy, grag-implementation-policy, grag-repair-policy, grag-audit-policy, and grag-graph-tidy-policy to implementation boundaries and every mounted W5 entrypoint exists.",
+      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted testcase paths.",
+      "observationPoint": "W6 implementation mappings reference grag-coherent-context, grag-endpoint-closure, grag-view-closure, and grag-provenance, and all mounted W6 entrypoints exist.",
       "expectedStatus": "passed"
     }
   ],
@@ -110,174 +85,168 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-06",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT06_PURPOSE_CLOSURE_POLICY_MISSING / DT06_TEXTUALLY_DISSIMILAR_DEPENDENCY_MISSING / DT06_FREE_GENERATED_CYPHER_DECIDED_MANDATORY_CLOSURE",
-      "nextAction": "Expose a deterministic purpose-closure boundary that returns policy evidence, bound parameters, ArchiMate semantics, mandatory low-similarity inclusion, and generated-Cypher exclusion."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-07",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT07_CALLER_IDENTITY_POLICY_FORBIDDEN / DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT",
-      "nextAction": "Route declared purpose and anchors to exactly one approved category without using Agent identity, and surface distinct category policy ids, parameter contracts, included ranges, exclusions, and rationale."
+      "failureSignal": "DT00_CANONICAL_VERSION_MISSING",
+      "nextAction": "Surface governing canonicalVersion evidence on semantic-query responses without changing the no-argument full-snapshot envelope."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-08",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT08_INTENT_DECISION_POLICY_MISSING / DT08_INTENT_CONCERN_UNACCOUNTED / DT08_IMPLEMENTATION_SCOPE_IMPORTED",
-      "nextAction": "Implement intent-decision closure with Why, What, business behavior, Acceptance lineage, realization-state or absence evidence, and explicit exclusion of other purpose categories."
+      "failureSignal": "DT13_ENDPOINT_CLOSURE_MISSING",
+      "nextAction": "Extend purpose-closed results with endpointClosure relationships, same-version source/target objects, and dangling/cross-version structural error evidence."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-09",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT09_IMPLEMENTATION_DESIGN_POLICY_MISSING / DT09_DEPENDENCY_CHAINS_MISSING / DT09_UNBOUNDED_IMPLEMENTATION_CHAIN",
-      "nextAction": "Implement implementation-design closure with upstream prerequisites, bounded downstream dependents, delivered-stop decisions, guardrails, acceptance semantics, and out-of-category exclusions."
+      "failureSignal": "DT14_VIEW_CLOSURE_MISSING",
+      "nextAction": "Add complete selected-View closure with metadata, members, relationships, endpoints, and explicit non-cascade evidence for overlapping Views."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-10",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT10_CODING_REPAIR_POLICY_MISSING / DT10_INTENT_AUTHORITY_MISSING / DT10_UNRELATED_CAPABILITY_INCLUDED",
-      "nextAction": "Implement coding-repair closure with intent authority, causal prerequisites, at-risk outcomes, guardrails, acceptance semantics, and adjacent-similar-capability exclusion."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-11",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT11_AUDIT_PROOF_POLICY_MISSING / DT11_AUDIT_VIOLATIONS_MISSING / DT11_MISSING_SUBJECT_NOT_REJECTED",
-      "nextAction": "Implement audit-proof closure from explicit subject only, with subject obligations, low-similarity in-subject violations, evidence exceptions, missing-evidence false-pass prevention, and missing-subject rejection."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-12",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT12_SEMANTIC_PATH_INVOKED / DT12_GRAPH_TIDY_MODE_FAILURE / DT12_GRAPH_TIDY_SNAPSHOT_INCOMPLETE",
-      "nextAction": "Preserve graph-tidy full-snapshot bypass behavior while implementing the other W5 purpose categories."
+      "failureSignal": "DT15_PROVENANCE_EVIDENCE_MISSING",
+      "nextAction": "Add provenance objects with one ordered firstInclusionReason, non-overwriting supplementary reasons, policy evidence, canonical/content/index versions, and alignment evidence."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement W5 one category at a time behind the existing getSystemArchitecture query boundary. Preserve W4 seed retrieval and DT-12 graph-tidy full-snapshot bypass. Mandatory closure must be decided only by named parameterized Cypher policies, bound parameters, and ArchiMate relationship semantics; generated Cypher may be diagnostic only and must never decide mandatory inclusion.",
+    "executionStrategy": "Implement W6 as structural result completion after W5 purpose-policy range selection. Preserve W4 seed retrieval, W5 policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, and runner-owned deliveryStatus semantics. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
-        "taskId": "W5-C1-purpose-policy-boundary",
-        "title": "Create deterministic closure boundary",
-        "objective": "Expose closePurposePolicyScope(request) or equivalent inward boundary through the production Graph RAG runtime without changing frozen tests.",
-        "dependsOn": [],
+        "taskId": "W6-C1",
+        "title": "Expose coherent-result canonical version",
+        "objective": "Make semantic-query results traceable to the same canonical graph version as the legacy full read.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-06",
-          "ExplicitAcceptanceTestcase-DT-07"
+          "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          ".argo/scripts/systemarchitecture-mcp-server.js",
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Add a named W5 closure boundary consumed by getSystemArchitecture semantic-query purposes.",
-          "Return closurePolicy evidence with category, policyId, parameterizedCypher=true, boundParameters, ArchiMate relationship semantics, freeGeneratedCypherUsedForMandatoryClosure=false, and callerIdentitySelectsScope=false.",
-          "Return boundary evidence with category-specific included range and explicit out-of-category exclusions.",
-          "Do not broaden DT-04/DT-05 seed retrieval or DT-12 graph-tidy behavior while adding closure."
+          "Derive canonicalVersion from the canonical graph snapshot used by the query service.",
+          "Preserve the no-argument legacy envelope and add version evidence only to semantic-query response metadata/result evidence.",
+          "Run node tests/explicit/entries/runCoherentIntentReading.js until it passes."
         ],
-        "completionSignal": "runPurposePolicyClosure.js reaches the DT-06 and DT-07 assertions without policy-missing, caller-identity, or category-independence failures."
+        "completionSignal": "runCoherentIntentReading.js exits 0 and no-argument compatibility tests remain green."
       },
       {
-        "taskId": "W5-C2-category-closures",
-        "title": "Implement purpose category closures",
-        "objective": "Materialize independent intent-decision, implementation-design, coding-repair, and audit proof result shapes from canonical graph semantics.",
+        "taskId": "W6-C2",
+        "title": "Complete relationship endpoints",
+        "objective": "Return each relationship with same-version source and target Elements or explicit structural errors.",
         "dependsOn": [
-          "W5-C1-purpose-policy-boundary"
+          "W6-C1"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-08",
-          "ExplicitAcceptanceTestcase-DT-09",
-          "ExplicitAcceptanceTestcase-DT-10",
-          "ExplicitAcceptanceTestcase-DT-11"
+          "ExplicitAcceptanceTestcase-DT-13"
         ],
         "targetPaths": [
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Implement intent-decision closure with Why/What/business behavior/Acceptance and absence evidence.",
-          "Implement implementation-design closure with upstream prerequisites, downstream impact within boundary, guardrails, delivered-stop decisions, and acceptance semantics.",
-          "Implement coding-repair closure with intent authority, causal prerequisites, at-risk outcomes, guardrails, and unrelated-capability exclusion.",
-          "Implement audit-proof closure from explicit subject only, with obligations, violations, evidence exceptions, and missing-evidence false-pass prevention."
+          "Build endpointClosure from the W5 selected relationship range using canonical relationship source_id and target_id.",
+          "Attach source and target Element objects with matching canonicalVersion evidence.",
+          "Report missing, deleted, invalid, or cross-version endpoint references through structuralErrors rather than partial relationship output.",
+          "Run node tests/explicit/entries/runRelationshipEndpointClosure.js until it passes."
         ],
-        "completionSignal": "runIntentDecisionClosure.js, runImplementationDesignClosure.js, runCodingRepairClosure.js, and runAuditProofClosure.js pass without importing out-of-category scope."
+        "completionSignal": "runRelationshipEndpointClosure.js exits 0 with same-version endpoint objects and structural error evidence."
       },
       {
-        "taskId": "W5-C3-preserve-graph-tidy-bypass",
-        "title": "Preserve graph-tidy bypass",
-        "objective": "Keep DT-12 as the fifth independent category that bypasses semantic retrieval and closure filtering.",
+        "taskId": "W6-C3",
+        "title": "Complete selected Views",
+        "objective": "Complete matched View objects without cascading into overlapping Views by shared membership.",
         "dependsOn": [
-          "W5-C1-purpose-policy-boundary"
+          "W6-C2"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-12"
+          "ExplicitAcceptanceTestcase-DT-14"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Keep graph-tidy query.mode as full-snapshot.",
-          "Keep graph-tidy semanticRetrieval as bypassed.",
-          "Ensure graph-tidy returns complete canonical Elements, Relationships, Views, and memberships.",
-          "Do not route graph-tidy through W5 semantic closure policies."
+          "Build viewClosure only for Views independently matched or explicitly requested by the W5/W6 query.",
+          "Return View metadata, viewpoint binding or description, parent viewpoint when present, member ids/objects, relationship ids/objects, and endpoint objects.",
+          "Record overlappingViewCascade as false when shared members do not select additional Views.",
+          "Run node tests/explicit/entries/runCompleteViewClosure.js until it passes."
         ],
-        "completionSignal": "runGraphTidyFullSnapshot.js remains passed after W5 closure implementation."
+        "completionSignal": "runCompleteViewClosure.js exits 0 and overlapping Views are not returned by membership alone."
       },
       {
-        "taskId": "W5-C4-verify-handoff-baseline",
-        "title": "Verify W5 baseline",
-        "objective": "Confirm all W5 explicit entrypoints and critical guards pass, then compare full architecture tests against the committed pre-coding baseline.",
+        "taskId": "W6-C4",
+        "title": "Add first-inclusion provenance",
+        "objective": "Explain returned objects with exactly one ordered first reason plus non-overwriting supplementary evidence.",
         "dependsOn": [
-          "W5-C2-category-closures",
-          "W5-C3-preserve-graph-tidy-bypass"
+          "W6-C2",
+          "W6-C3"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-06",
-          "ExplicitAcceptanceTestcase-DT-07",
-          "ExplicitAcceptanceTestcase-DT-08",
-          "ExplicitAcceptanceTestcase-DT-09",
-          "ExplicitAcceptanceTestcase-DT-10",
-          "ExplicitAcceptanceTestcase-DT-11",
-          "ExplicitAcceptanceTestcase-DT-12"
+          "ExplicitAcceptanceTestcase-DT-15"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Run the six W5 explicit entrypoint scripts.",
-          "Run the four W5 critical intent-query guards.",
-          "Run full argo.runArchitectureTests and compare against design/KG/test-failure-records.json.",
-          "Do not edit frozen entrypoints, Harness assertions, contracts, .argo/.env, or unrelated delivery evidence."
+          "Choose firstInclusionReason by ordered discovery across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
+          "Append later matches only to supplementaryReasons and never overwrite firstInclusionReason.",
+          "Expose declared purpose, selected policy id, policy parameters or anchors, canonicalVersion, semantic contentVersion, indexVersion, and alignment state.",
+          "Run node tests/explicit/entries/runFirstInclusionProvenance.js until it passes."
         ],
-        "completionSignal": "DT-06 through DT-12 pass, W5 critical guards pass, full architecture tests show no unrelated delivered regression, and no secret-bearing file is staged."
+        "completionSignal": "runFirstInclusionProvenance.js exits 0 with one first reason and complete policy/index/version evidence."
+      },
+      {
+        "taskId": "W6-C5",
+        "title": "Verify W6 slice",
+        "objective": "Prove W6 without broadening the handoff scope.",
+        "dependsOn": [
+          "W6-C1",
+          "W6-C2",
+          "W6-C3",
+          "W6-C4"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
+          "ExplicitAcceptanceTestcase-DT-13",
+          "ExplicitAcceptanceTestcase-DT-14",
+          "ExplicitAcceptanceTestcase-DT-15"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js",
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+        ],
+        "steps": [
+          "Run the four W6 explicit entrypoints.",
+          "Run the four W6 critical guards.",
+          "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence."
+        ],
+        "completionSignal": "The four W6 explicit entrypoints and four critical guards pass with no out-of-scope regressions."
       }
     ]
   },
   "frozenFiles": [
+    ".argo/temp/IntentToImplementationHandoff.json",
     "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
     "tests/harness/intentArchitectureQueryHarness.js",
     "tests/explicit/entries/runGraphQueryCompatibility.js",
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runQueryPurposeValidation.js",
-    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
+    "tests/explicit/entries/runGraphTidyFullSnapshot.js",
     "tests/explicit/entries/runPurposePolicyClosure.js",
     "tests/explicit/entries/runIntentDecisionClosure.js",
     "tests/explicit/entries/runImplementationDesignClosure.js",
     "tests/explicit/entries/runCodingRepairClosure.js",
     "tests/explicit/entries/runAuditProofClosure.js",
-    "tests/explicit/entries/runGraphTidyFullSnapshot.js",
+    "tests/explicit/entries/runCoherentIntentReading.js",
+    "tests/explicit/entries/runRelationshipEndpointClosure.js",
+    "tests/explicit/entries/runCompleteViewClosure.js",
+    "tests/explicit/entries/runFirstInclusionProvenance.js",
     "tests/architecture/intent-query/architecture-boundary.guard.js",
     "tests/architecture/intent-query/dependency-direction.guard.js",
     "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/intent-query/implementation-traceability.guard.js",
-    ".argo/.env.example",
-    ".gitignore"
+    "tests/architecture/intent-query/implementation-traceability.guard.js"
   ],
-  "openGaps": [
-    "No intent mismatch was found; no ImplementationToIntentTraceProposal is required.",
-    "The W5 production closure boundary is not implemented yet. DT-06 through DT-11 are expected pre-coding failures with policy-missing signals.",
-    "DT-12 graph-tidy full-snapshot bypass already passes and must be preserved while implementing W5 closure categories.",
-    "Pre-coding runner baseline refreshed through argo.runArchitectureTests: 37 total, 24 passed, 13 failed or missing, 0 missing acceptance criteria. W5 DT-06 through DT-11 fail with policy-missing signals, and DT-12 passes."
-  ]
+  "openGaps": []
 }

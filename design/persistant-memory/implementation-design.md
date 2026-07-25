@@ -136,3 +136,13 @@
 - W5 critical intent-query guards passed after handoff materialization: architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 37 total, 24 passed, 13 failed or missing, 0 missing acceptance criteria. W5 DT-06 through DT-11 fail with policy-missing signals, DT-12 passes, and failure records are in `design/KG/test-failure-records.json`.
 - No intent mismatch was found, so no new `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 W6 structural closure and explainable results
+
+- Materialized the W6 ImplementationToCoding handoff from the validated and approved `IntentToImplementationHandoff.json`, scoped to `grag-coherent-context`, `grag-endpoint-closure`, `grag-view-closure`, and `grag-provenance`.
+- Contracts now require W6 as structural result completion after W5 purpose-policy range selection: semantic responses expose governing canonical version evidence, relationships include same-version endpoint Elements or structural errors, matched Views are complete and non-cascading, and every returned object has one ordered first-inclusion reason plus policy/index/version evidence.
+- Tightened DT-00-W6, DT-13, DT-14, and DT-15 entrypoints with Harness-owned assertions and preserved GIVEN/WHEN/THEN readability. Direct execution classified expected failures as `DT00_CANONICAL_VERSION_MISSING`, `DT13_ENDPOINT_CLOSURE_MISSING`, `DT14_VIEW_CLOSURE_MISSING`, and `DT15_PROVENANCE_EVIDENCE_MISSING`.
+- W6 critical intent-query guards passed after handoff materialization: architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability. The shared guard also freezes earlier W1/W5 intent-query entrypoints because it protects the broader intent-query acceptance boundary.
+- Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 30 passed, 8 failed or missing, 0 missing acceptance criteria. W6 fails with `DT00_CANONICAL_VERSION_MISSING`, `DT13_ENDPOINT_CLOSURE_MISSING`, `DT14_VIEW_CLOSURE_MISSING`, and `DT15_PROVENANCE_EVIDENCE_MISSING`; out-of-scope DT-18, DT-19, and TS-08 remain failed. Runner-owned delivery status changed `grag-coherent-context` from absent to `not_delivered`.
+- Coding/Repair is authorized to update `.argo/scripts/systemarchitecture-mcp-server.js` and `.argo/scripts/graph-rag/productionGraphRagRuntime.js` only as needed to satisfy W6. W4 seed retrieval, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, and deliveryStatus remain out of scope.
+- No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.

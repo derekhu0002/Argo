@@ -1,22 +1,22 @@
 const assert = require('node:assert');
-const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
+const {
+  assertCompleteViewClosure,
+  readForPurposeClosure,
+} = require('../../harness/intentArchitectureQueryHarness.js');
 
 async function main() {
   // GIVEN a target View that overlaps unrelated Views
-  const result = await readForPurpose({
+  const result = await readForPurposeClosure({
     purpose: 'implementation-design',
     intent: 'Read one complete target View',
+    anchors: ['grag-view-closure'],
   });
 
   // WHEN complete-View closure is observed
-  const views = result.result && result.result.views;
+  assert(result && result.result, 'DT14_TARGET_VIEW_MISSING');
 
-  // THEN the target is complete and every returned relationship has both endpoints
-  assert(Array.isArray(views) && views.length > 0, 'DT14_TARGET_VIEW_MISSING');
-  assert(
-    views.every(view => view.complete === true && (view.relationships || []).every(rel => rel.source && rel.target)),
-    'DT14_VIEW_OR_ENDPOINT_CLOSURE_INCOMPLETE',
-  );
+  // THEN the target View is complete and overlapping Views do not cascade
+  assertCompleteViewClosure(result);
 }
 
 main().catch(error => {

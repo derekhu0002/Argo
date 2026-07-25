@@ -386,6 +386,10 @@
         {
           "name": "acceptanceApproval.DT-00-W6",
           "value": "approvedByHuman=true|2026-07-25|review repair required DT-00 or equivalent coherent-result regression gate because current DT-00 fails on missing canonical-version evidence"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -864,10 +868,6 @@
           "value": "DT-13|accepted|complete same-version relationship endpoints and dangling-reference errors"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "functionalPoint.DT-13-endpoint-closure",
           "value": "{\"description\":\"Close every returned relationship over its canonical source and target endpoints with same-version proof and dangling-endpoint error handling.\",\"businessOutcome\":\"Consumers can understand every returned relationship without chasing missing endpoints, accepting cross-version joins, or inferring dangling references.\",\"observableBoundary\":\"For every ArchitectureRelationship in a semantic or purpose-closed result, the response includes the relationship object plus both source and target Element objects from the same canonical graph version. The relationship and both endpoints expose matching canonicalVersion evidence. Endpoints are included even when they were not semantic seeds or direct purpose-policy matches. Missing, deleted, invalid, or cross-version endpoint references are surfaced as named structural errors and are not hidden behind partial relationship output.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-13\"}"
         },
@@ -878,6 +878,10 @@
         {
           "name": "scopeBoundary.W6",
           "value": "Endpoint closure is structural completion after W5 purpose range selection. It adds required same-version source/target Elements for returned relationships and reports invalid endpoints; it does not add unrelated neighboring relationships, extra Views, or similarity-driven expansion."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -901,10 +905,6 @@
           "value": "DT-14|accepted|complete View metadata/members; no overlapping-View cascade"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "functionalPoint.DT-14-complete-view-closure",
           "value": "{\"description\":\"Return every matched View as a complete, non-cascading View object with metadata, members, relationships, and endpoints.\",\"businessOutcome\":\"Consumers can inspect a matched View as a coherent architecture projection without accidentally importing overlapping Views or losing metadata, members, internal relationships, or endpoints.\",\"observableBoundary\":\"When a View is selected by seed or purpose policy, the response includes that View's identifier, name, viewpoint binding/description metadata, parent viewpoint where present, included element ids, included relationship ids, member Element objects, member ArchitectureRelationship objects, and both endpoint Elements for each included relationship. Shared members do not pull in other Views unless those Views independently satisfy the query selection; no overlapping View cascade occurs by membership alone.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-14\"}"
         },
@@ -915,6 +915,10 @@
         {
           "name": "scopeBoundary.W6",
           "value": "View closure completes only the selected View objects. It does not expand to all Views sharing a member, all diagrams under the same viewpoint, or any View that is merely reachable through a shared Element or Relationship."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -938,10 +942,6 @@
           "value": "DT-15|accepted|single ordered first reason with policy/index/version evidence"
         },
         {
-          "name": "deliveryStatus",
-          "value": "not_delivered"
-        },
-        {
           "name": "functionalPoint.DT-15-first-inclusion-provenance",
           "value": "{\"description\":\"Assign exactly one stable first-inclusion reason to every returned object and retain complete policy/index/version evidence.\",\"businessOutcome\":\"Consumers can trace why each Element, ArchitectureRelationship, or View first entered the result, distinguish the decisive reason from later supporting evidence, and audit the policy and version basis for the response.\",\"observableBoundary\":\"Every returned object has one and only one firstInclusionReason chosen by ordered selection from semantic-seed, relationship-endpoint-closure, purpose-policy-closure, and complete-View-closure paths. Later matches may be recorded only as supplementary reasons and cannot overwrite the first reason. Provenance records declared purpose, selected policy id, policy parameters or anchor ids where applicable, canonical graph version, semantic index/content version evidence, and alignment/index-state evidence used to produce the result.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-15\"}"
         },
@@ -952,6 +952,10 @@
         {
           "name": "scopeBoundary.W6",
           "value": "Provenance explains inclusion ordering for returned objects and carries policy/index/version evidence. It does not authorize unbounded context expansion, multiple competing first reasons, or replacing canonical version evidence with narrative rationale."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [

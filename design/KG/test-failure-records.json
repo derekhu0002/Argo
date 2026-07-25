@@ -8,48 +8,61 @@
     "resolvedScriptPath": "tests/explicit/entries/runCoherentIntentReading.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCoherentIntentReading.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:25:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at assertCoherentW6VersionEvidence (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:200:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:25:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at assertCoherentW6VersionEvidence (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:200:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
+    "testdescription": "Acceptor perspective control point: submit legacy and semantic-query tasks against the same canonical graph version while the known DT-00 failure fixture omits semantic canonical-version evidence. Observation point: legacy completeness, semantic relevance, closure coherence, and version evidence are comparable; every semantic result identifies the governing canonical version; missing canonicalVersion evidence fails with DT00_CANONICAL_VERSION_MISSING and blocks W6 coherent-result delivery.",
+    "acceptanceCriteria": "tests/explicit/entries/runCoherentIntentReading.js",
+    "relatedIntentElementId": "grag-coherent-context",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runCoherentIntentReading.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCoherentIntentReading.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at assertCoherentW6VersionEvidence (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:200:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version\n    at assertCoherentW6VersionEvidence (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:200:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCoherentIntentReading.js:22:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-13",
-    "testdescription": "Acceptor perspective control point: trigger a relationship seed whose endpoint text is not a semantic match. Observation point: inspect relationship, endpoint presence, and inclusion reason.",
+    "testdescription": "Acceptor perspective control point: trigger a relationship seed whose endpoint text is not a semantic match, then trigger fixtures with missing/deleted endpoint references and cross-version endpoint evidence. Observation point: every returned relationship includes both source and target Element objects from the same canonical graph version; endpoint-included objects identify relationship-endpoint closure as their first or supplementary reason according to provenance ordering; invalid, missing, deleted, or cross-version endpoint references produce explicit structural errors rather than partial relationship output.",
     "acceptanceCriteria": "tests/explicit/entries/runRelationshipEndpointClosure.js",
     "relatedIntentElementId": "grag-endpoint-closure",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runRelationshipEndpointClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runRelationshipEndpointClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT13_RELATIONSHIP_SEED_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRelationshipEndpointClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT13_ENDPOINT_CLOSURE_MISSING\n    at assertRelationshipEndpointClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:208:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRelationshipEndpointClosure.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT13_RELATIONSHIP_SEED_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRelationshipEndpointClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT13_ENDPOINT_CLOSURE_MISSING\n    at assertRelationshipEndpointClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:208:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRelationshipEndpointClosure.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-14",
-    "testdescription": "Acceptor perspective control point: query a View that shares members with other Views. Observation point: inspect target completeness and joined View set.",
+    "testdescription": "Acceptor perspective control point: query a View that shares members with overlapping Views and contains in-View relationships whose endpoint text is not a semantic match. Observation point: the matched View includes complete metadata, viewpoint binding, parent viewpoint when present, included element ids, included relationship ids, member Elements, member ArchitectureRelationships, and both endpoints for each relationship; overlapping Views sharing members are not returned unless independently matched or explicitly requested.",
     "acceptanceCriteria": "tests/explicit/entries/runCompleteViewClosure.js",
     "relatedIntentElementId": "grag-view-closure",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runCompleteViewClosure.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCompleteViewClosure.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT14_TARGET_VIEW_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:235:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT14_TARGET_VIEW_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT14_VIEW_CLOSURE_MISSING\n    at assertCompleteViewClosure (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:235:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCompleteViewClosure.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-15",
-    "testdescription": "Acceptor perspective control point: run an approved query exercising all four first-inclusion paths. Observation point: inspect object-level provenance and query evidence.",
+    "testdescription": "Acceptor perspective control point: run approved fixtures where the same object is discoverable through semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure in different orders. Observation point: every returned object has exactly one ordered firstInclusionReason; later matching paths are recorded only as supplementary reasons and never overwrite the first reason; the response includes declared purpose, selected policy id, policy parameters or anchors, canonical graph version, semantic index/content version evidence, and alignment/index-state evidence.",
     "acceptanceCriteria": "tests/explicit/entries/runFirstInclusionProvenance.js",
     "relatedIntentElementId": "grag-provenance",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runFirstInclusionProvenance.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runFirstInclusionProvenance.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_OBJECTS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:254:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_OBJECTS_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:15:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT15_PROVENANCE_EVIDENCE_MISSING\n    at assertFirstInclusionProvenance (D:\\Projects\\Argo\\tests\\harness\\intentArchitectureQueryHarness.js:254:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runFirstInclusionProvenance.js:19:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-18",

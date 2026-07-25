@@ -26,11 +26,23 @@ assert(
   'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W5 purpose-closure boundary',
 );
 assert(
+  rootContract.includes('W6 structural closure')
+    && rootContract.includes('same-version endpoint Elements')
+    && rootContract.includes('first-inclusion reason'),
+  'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W6 coherent-result boundary',
+);
+assert(
   graphRagContract.includes('named parameterized Cypher policies')
     && graphRagContract.includes('Free-generated Cypher')
     && graphRagContract.includes('DT-06 through DT-12')
     && graphRagContract.includes('graph-tidy complete-snapshot bypass'),
   'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W5 deterministic closure semantics',
+);
+assert(
+  graphRagContract.includes('W6 structural result completion')
+    && graphRagContract.includes('overlapping-View cascade')
+    && graphRagContract.includes('policy/index/version evidence'),
+  'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W6 structural result semantics',
 );
 
 function read(relativePath) {

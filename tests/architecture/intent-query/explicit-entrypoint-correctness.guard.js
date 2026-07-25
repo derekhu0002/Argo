@@ -13,6 +13,10 @@ const entryPaths = [
   'tests/explicit/entries/runImplementationDesignClosure.js',
   'tests/explicit/entries/runCodingRepairClosure.js',
   'tests/explicit/entries/runAuditProofClosure.js',
+  'tests/explicit/entries/runCoherentIntentReading.js',
+  'tests/explicit/entries/runRelationshipEndpointClosure.js',
+  'tests/explicit/entries/runCompleteViewClosure.js',
+  'tests/explicit/entries/runFirstInclusionProvenance.js',
 ];
 const requiredObservations = new Map([
   ['tests/explicit/entries/runGraphQueryCompatibility.js', [
@@ -60,6 +64,18 @@ const requiredObservations = new Map([
   ['tests/explicit/entries/runAuditProofClosure.js', [
     'assertAuditProofClosure',
     'DT11_MISSING_SUBJECT_NOT_REJECTED',
+  ]],
+  ['tests/explicit/entries/runCoherentIntentReading.js', [
+    'assertCoherentW6VersionEvidence',
+  ]],
+  ['tests/explicit/entries/runRelationshipEndpointClosure.js', [
+    'assertRelationshipEndpointClosure',
+  ]],
+  ['tests/explicit/entries/runCompleteViewClosure.js', [
+    'assertCompleteViewClosure',
+  ]],
+  ['tests/explicit/entries/runFirstInclusionProvenance.js', [
+    'assertFirstInclusionProvenance',
   ]],
 ]);
 
@@ -133,6 +149,10 @@ for (const harnessOwnedAssertion of [
   'DT10_INTENT_AUTHORITY_MISSING',
   'DT10_UNRELATED_CAPABILITY_INCLUDED',
   'DT11_AUDIT_VIOLATIONS_MISSING',
+  'DT00_CANONICAL_VERSION_MISSING',
+  'DT13_ENDPOINT_CLOSURE_MISSING',
+  'DT14_VIEW_CLOSURE_MISSING',
+  'DT15_PROVENANCE_EVIDENCE_MISSING',
 ]) {
   assert(
     harnessSource.includes(harnessOwnedAssertion),
