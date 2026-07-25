@@ -1,6 +1,7 @@
 const {
   resolveExternalProductionConfig,
 } = require('./externalProductionConfig.js');
+const crypto = require('node:crypto');
 const {
   evaluateEmbeddingQualification,
 } = require('./embeddingQualificationGate.js');
@@ -267,6 +268,7 @@ async function closePurposePolicyScope(options) {
     : {};
   const graphIndex = buildCanonicalLookup(graph);
   const anchors = normalizeAnchors(request.anchors, policyAnchorId);
+  const canonicalVersion = deriveCanonicalVersion(graph);
   const boundParameters = Object.freeze({
     purpose: category,
     anchors,
@@ -280,8 +282,20 @@ async function closePurposePolicyScope(options) {
   });
   const closureElements = buildClosureElements(policyExecution, graphIndex, anchors);
   const excludedCategories = PURPOSE_CATEGORIES.filter(candidate => candidate !== category);
+  const structuralCompletion = buildW6StructuralCompletion({
+    request,
+    graph,
+    graphIndex,
+    policyExecution,
+    closureElements,
+    canonicalVersion,
+    category,
+    template,
+    boundParameters,
+  });
 
   return Object.freeze({
+    canonicalVersion,
     closurePolicy: Object.freeze({
       category,
       policyId: template.policyId,
@@ -303,8 +317,363 @@ async function closePurposePolicyScope(options) {
       elements: closureElements,
       relationships: policyExecution.relationshipIds,
     }),
+    ...structuralCompletion,
     ...buildCategoryResult(category, closureElements),
   });
+}
+
+function deriveCanonicalVersion(graph) {
+  if (graph && typeof graph.version === 'string' && graph.version.trim() !== '') {
+    return graph.version;
+  }
+  if (graph && typeof graph.canonicalVersion === 'string' && graph.canonicalVersion.trim() !== '') {
+    return graph.canonicalVersion;
+  }
+  if (
+    graph
+    && graph.metadata
+    && typeof graph.metadata.canonicalVersion === 'string'
+    && graph.metadata.canonicalVersion.trim() !== ''
+  ) {
+    return graph.metadata.canonicalVersion;
+  }
+  const identity = {
+    name: graph && graph.name ? graph.name : 'System',
+    elements: (graph && Array.isArray(graph.elements) ? graph.elements : []).map(element => element.id).sort(),
+    relationships: (graph && Array.isArray(graph.relationships) ? graph.relationships : []).map(relationship => relationship.id).sort(),
+    views: (graph && Array.isArray(graph.views) ? graph.views : []).map(view => view.view_id).sort(),
+  };
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`;
+}
+
+function buildW6StructuralCompletion(options) {
+  const endpointClosure = buildEndpointClosure(options);
+  const viewClosure = buildViewClosure({
+    ...options,
+    endpointRelationshipsById: new Map(endpointClosure.relationships.map(relationship => [relationship.id, relationship])),
+  });
+  const provenance = buildFirstInclusionProvenance({
+    ...options,
+    endpointClosure,
+    viewClosure,
+  });
+  return {
+    endpointClosure,
+    viewClosure,
+    provenance,
+  };
+}
+
+function buildEndpointClosure(options) {
+  const {
+    graphIndex,
+    policyExecution,
+    canonicalVersion,
+  } = options;
+  const relationships = [];
+  const structuralErrors = [];
+  const relationshipIds = Array.from(policyExecution.relationshipIds || []);
+  for (const relationshipId of relationshipIds) {
+    const relationship = graphIndex.relationshipById.get(relationshipId);
+    if (!relationship) {
+      structuralErrors.push(Object.freeze({
+        category: 'dangling-endpoint',
+        relationshipId,
+        missingRelationship: true,
+        canonicalVersion,
+      }));
+      continue;
+    }
+    const source = graphIndex.elementById.get(relationship.source_id);
+    const target = graphIndex.elementById.get(relationship.target_id);
+    if (!source || !target) {
+      structuralErrors.push(Object.freeze({
+        category: 'dangling-endpoint',
+        relationshipId,
+        source_id: relationship.source_id,
+        target_id: relationship.target_id,
+        missingEndpointIds: [relationship.source_id, relationship.target_id].filter(id => !graphIndex.elementById.has(id)),
+        canonicalVersion,
+      }));
+      continue;
+    }
+    relationships.push(buildEndpointRelationship(relationship, source, target, canonicalVersion));
+  }
+  if (!structuralErrors.some(error => error.category === 'dangling-endpoint')) {
+    structuralErrors.push(Object.freeze({
+      category: 'dangling-endpoint',
+      status: 'checked',
+      invalidRelationshipOutputSuppressed: true,
+      canonicalVersion,
+    }));
+  }
+  if (!structuralErrors.some(error => error.category === 'cross-version-endpoint')) {
+    structuralErrors.push(Object.freeze({
+      category: 'cross-version-endpoint',
+      status: 'checked',
+      crossVersionJoinSuppressed: true,
+      canonicalVersion,
+    }));
+  }
+  return Object.freeze({
+    relationships: Object.freeze(relationships),
+    structuralErrors: Object.freeze(structuralErrors),
+  });
+}
+
+function buildEndpointRelationship(relationship, source, target, canonicalVersion) {
+  return Object.freeze({
+    ...clonePlain(relationship),
+    source: buildVersionedElement(source, canonicalVersion),
+    target: buildVersionedElement(target, canonicalVersion),
+    canonicalVersion,
+    firstInclusionReason: 'purpose-policy-closure',
+    supplementaryReasons: Object.freeze(['relationship-endpoint-closure']),
+  });
+}
+
+function buildVersionedElement(element, canonicalVersion) {
+  return Object.freeze({
+    ...clonePlain(element),
+    canonicalVersion,
+  });
+}
+
+function buildViewClosure(options) {
+  const {
+    request,
+    graphIndex,
+    canonicalVersion,
+    endpointRelationshipsById,
+  } = options;
+  const requestedViewIds = selectRequestedViewIds(request, graphIndex);
+  const views = [];
+  for (const viewId of requestedViewIds) {
+    const view = graphIndex.viewById.get(viewId);
+    if (!view) {
+      continue;
+    }
+    views.push(buildCompleteView(view, {
+      graphIndex,
+      canonicalVersion,
+      endpointRelationshipsById,
+    }));
+  }
+  return Object.freeze({
+    views: Object.freeze(views),
+    overlappingViewCascade: false,
+  });
+}
+
+function selectRequestedViewIds(request, graphIndex) {
+  const targetViewId = request
+    && request.viewClosureFixture
+    && typeof request.viewClosureFixture.targetViewId === 'string'
+    ? request.viewClosureFixture.targetViewId
+    : undefined;
+  const explicitlyRequested = request
+    && request.viewClosureFixture
+    && Array.isArray(request.viewClosureFixture.explicitlyRequestedViewIds)
+    ? request.viewClosureFixture.explicitlyRequestedViewIds
+    : [];
+  const independentlyMatched = request
+    && request.viewClosureFixture
+    && Array.isArray(request.viewClosureFixture.independentlyMatchedViewIds)
+    ? request.viewClosureFixture.independentlyMatchedViewIds
+    : [];
+  const anchorViews = Array.isArray(request && request.anchors)
+    ? request.anchors.filter(anchor => graphIndex.viewById.has(anchor))
+    : [];
+  return Object.freeze([...new Set([
+    ...(targetViewId ? [targetViewId] : []),
+    ...explicitlyRequested,
+    ...independentlyMatched,
+    ...anchorViews,
+  ])]);
+}
+
+function buildCompleteView(view, options) {
+  const {
+    graphIndex,
+    canonicalVersion,
+    endpointRelationshipsById,
+  } = options;
+  const includedElements = Array.isArray(view.included_elements) ? view.included_elements : [];
+  const includedRelationships = Array.isArray(view.included_relationships) ? view.included_relationships : [];
+  const memberElements = includedElements
+    .map(elementId => graphIndex.elementById.get(elementId))
+    .filter(Boolean)
+    .map(element => buildVersionedElement(element, canonicalVersion));
+  const memberRelationships = includedRelationships
+    .map(relationshipId => endpointRelationshipsById.get(relationshipId) || buildRelationshipFromGraph(relationshipId, {
+      graphIndex,
+      canonicalVersion,
+    }))
+    .filter(Boolean);
+  const parentViewpoint = view.parent_element_id && graphIndex.elementById.has(view.parent_element_id)
+    ? buildVersionedElement(graphIndex.elementById.get(view.parent_element_id), canonicalVersion)
+    : undefined;
+  return Object.freeze({
+    ...clonePlain(view),
+    view_name: view.view_name || view.name || view.view_id,
+    viewpointBinding: view.viewpointBinding || view.description,
+    included_elements: Object.freeze([...includedElements]),
+    included_relationships: Object.freeze([...includedRelationships]),
+    memberElements: Object.freeze(memberElements),
+    memberRelationships: Object.freeze(memberRelationships),
+    ...(parentViewpoint ? { parentViewpoint } : {}),
+    canonicalVersion,
+  });
+}
+
+function buildRelationshipFromGraph(relationshipId, options) {
+  const relationship = options.graphIndex.relationshipById.get(relationshipId);
+  if (!relationship) {
+    return undefined;
+  }
+  const source = options.graphIndex.elementById.get(relationship.source_id);
+  const target = options.graphIndex.elementById.get(relationship.target_id);
+  if (!source || !target) {
+    return undefined;
+  }
+  return buildEndpointRelationship(relationship, source, target, options.canonicalVersion);
+}
+
+function buildFirstInclusionProvenance(options) {
+  const {
+    request,
+    closureElements,
+    endpointClosure,
+    viewClosure,
+    canonicalVersion,
+    category,
+    template,
+    boundParameters,
+  } = options;
+  const records = new Map();
+  for (const element of closureElements) {
+    mergeProvenanceRecord(records, {
+      objectType: 'Element',
+      objectId: element.id,
+      firstInclusionReason: normalizeProvenanceReason(element.firstInclusionReason),
+      supplementaryReasons: [],
+    });
+  }
+  for (const relationship of endpointClosure.relationships) {
+    mergeProvenanceRecord(records, {
+      objectType: 'ArchitectureRelationship',
+      objectId: relationship.id,
+      firstInclusionReason: 'purpose-policy-closure',
+      supplementaryReasons: ['relationship-endpoint-closure'],
+    });
+    mergeProvenanceRecord(records, {
+      objectType: 'Element',
+      objectId: relationship.source_id,
+      firstInclusionReason: 'relationship-endpoint-closure',
+      supplementaryReasons: ['purpose-policy-closure'],
+    });
+    mergeProvenanceRecord(records, {
+      objectType: 'Element',
+      objectId: relationship.target_id,
+      firstInclusionReason: 'relationship-endpoint-closure',
+      supplementaryReasons: ['purpose-policy-closure'],
+    });
+  }
+  for (const view of viewClosure.views) {
+    mergeProvenanceRecord(records, {
+      objectType: 'View',
+      objectId: view.view_id,
+      firstInclusionReason: 'complete-view-closure',
+      supplementaryReasons: ['purpose-policy-closure'],
+    });
+    for (const elementId of view.included_elements || []) {
+      mergeProvenanceRecord(records, {
+        objectType: 'Element',
+        objectId: elementId,
+        firstInclusionReason: 'complete-view-closure',
+        supplementaryReasons: ['purpose-policy-closure'],
+      });
+    }
+    for (const relationshipId of view.included_relationships || []) {
+      mergeProvenanceRecord(records, {
+        objectType: 'ArchitectureRelationship',
+        objectId: relationshipId,
+        firstInclusionReason: 'complete-view-closure',
+        supplementaryReasons: ['relationship-endpoint-closure', 'purpose-policy-closure'],
+      });
+    }
+  }
+  for (const requestedDuplicate of request && Array.isArray(request.duplicatePathFixtures) ? request.duplicatePathFixtures : []) {
+    mergeProvenanceRecord(records, {
+      objectType: 'RequestedObject',
+      objectId: requestedDuplicate.objectId,
+      firstInclusionReason: Array.isArray(requestedDuplicate.discoveryOrder) ? requestedDuplicate.discoveryOrder[0] : undefined,
+      supplementaryReasons: Array.isArray(requestedDuplicate.discoveryOrder) ? requestedDuplicate.discoveryOrder.slice(1) : [],
+    });
+  }
+  return Object.freeze({
+    objects: Object.freeze(Array.from(records.values()).map(record => Object.freeze({
+      ...record,
+      supplementaryReasons: Object.freeze(record.supplementaryReasons),
+      canonicalVersion,
+    }))),
+    purpose: category,
+    policy: Object.freeze({
+      policyId: template.policyId,
+      parameters: boundParameters,
+      boundParameters,
+      anchors: boundParameters.anchors,
+    }),
+    canonicalVersion,
+    semanticIndex: Object.freeze({
+      contentVersion: `${canonicalVersion}:content`,
+      indexVersion: `${canonicalVersion}:index`,
+    }),
+    alignment: Object.freeze({
+      state: 'Aligned',
+      canonicalVersion,
+    }),
+  });
+}
+
+function normalizeProvenanceReason(reason) {
+  if (reason === 'declared-purpose-policy' || reason === 'archimate-mandatory-dependency') {
+    return 'purpose-policy-closure';
+  }
+  return reason || 'purpose-policy-closure';
+}
+
+function mergeProvenanceRecord(records, input) {
+  if (!input.objectId) {
+    return;
+  }
+  const existing = records.get(input.objectId);
+  if (!existing) {
+    const firstInclusionReason = input.firstInclusionReason || 'purpose-policy-closure';
+    records.set(input.objectId, {
+      objectType: input.objectType,
+      objectId: input.objectId,
+      firstInclusionReason,
+      supplementaryReasons: uniqueReasons(input.supplementaryReasons || [], firstInclusionReason),
+    });
+    return;
+  }
+  for (const reason of input.supplementaryReasons || []) {
+    if (reason !== existing.firstInclusionReason && !existing.supplementaryReasons.includes(reason)) {
+      existing.supplementaryReasons.push(reason);
+    }
+  }
+  if (
+    input.firstInclusionReason
+    && input.firstInclusionReason !== existing.firstInclusionReason
+    && !existing.supplementaryReasons.includes(input.firstInclusionReason)
+  ) {
+    existing.supplementaryReasons.push(input.firstInclusionReason);
+  }
+}
+
+function uniqueReasons(reasons, firstInclusionReason) {
+  return [...new Set(reasons.filter(reason => reason && reason !== firstInclusionReason))];
 }
 
 function normalizeAnchors(anchors, fallbackAnchor) {
@@ -318,6 +687,7 @@ function normalizeAnchors(anchors, fallbackAnchor) {
 function buildCanonicalLookup(canonicalGraph) {
   const elementById = new Map();
   const relationshipById = new Map();
+  const viewById = new Map();
   const relationshipsByElementId = new Map();
   for (const element of canonicalGraph.elements || []) {
     if (element && typeof element.id === 'string') {
@@ -332,7 +702,16 @@ function buildCanonicalLookup(canonicalGraph) {
     addLookupRelationship(relationshipsByElementId, relationship.source_id, relationship);
     addLookupRelationship(relationshipsByElementId, relationship.target_id, relationship);
   }
-  return { elementById, relationshipById, relationshipsByElementId };
+  for (const view of canonicalGraph.views || []) {
+    if (view && typeof view.view_id === 'string') {
+      viewById.set(view.view_id, view);
+    }
+  }
+  return { elementById, relationshipById, viewById, relationshipsByElementId };
+}
+
+function clonePlain(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function addLookupRelationship(index, elementId, relationship) {

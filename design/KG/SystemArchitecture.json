@@ -154,7 +154,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -389,7 +389,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -881,7 +881,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -918,7 +918,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -955,7 +955,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
