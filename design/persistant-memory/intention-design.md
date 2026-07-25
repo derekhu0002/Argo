@@ -363,3 +363,42 @@
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json` after removing a stale W4 JSON object that had remained after file overwrite.
 - Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound views; B1-B3 satisfied with same-element mounted DT-06 through DT-12 testcases and schema-compliant approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W4 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
 - Open business questions and adequacy blockers: none.
+
+## 2026-07-25 — W6 Structural Closure And Explainable Results
+
+- Selected viewpoint: Application Usage Viewpoint.
+- Stakeholder concern: application architects, implementation designers, coding repair owners, auditors, and consuming Agents need Graph RAG results whose relationships, Views, and object-level inclusion reasons can be understood and traced without implicit graph chasing.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-integrity-explainability` remains an Application Usage Viewpoint instance because it shows how query-service application behavior turns the W5-selected range into consumer-readable context through endpoint closure, complete non-cascading View closure, single first-inclusion provenance, and coherent outcome evidence. The view explicitly excludes W7 quality scoring and capacity decisions.
+- Human approval evidence: the orchestrating W6 request explicitly required structural closure and explainable results, named `grag-endpoint-closure`, `grag-view-closure`, `grag-provenance`, and `grag-coherent-context`, mapped acceptance to DT-13, DT-14, and DT-15, requested a handoff, and requested the IntentDesign stage commit. The schema does not permit `approvedByHuman` fields on handoff JSON, so approval is recorded in handoff notes and schema-compliant `acceptanceApproval.*` element attributes.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved. Intent Design did not create, change, remove, or infer `deliveryStatus`.
+
+### Coverage matrix
+
+- `grag-endpoint-closure` — `functionalPoint.DT-13-endpoint-closure` -> `ExplicitAcceptanceTestcase-DT-13`.
+- `grag-view-closure` — `functionalPoint.DT-14-complete-view-closure` -> `ExplicitAcceptanceTestcase-DT-14`.
+- `grag-provenance` — `functionalPoint.DT-15-first-inclusion-provenance` -> `ExplicitAcceptanceTestcase-DT-15`.
+- `grag-coherent-context` is the observable outcome realized by the three same-element acceptance boundaries above; it is not listed as a separate implementation target because its DT-13/14/15 evidence is mounted on the exact implementation functions.
+
+### Acceptance boundaries
+
+- DT-13 requires every returned ArchitectureRelationship to include both canonical endpoint Elements from the same graph version, even when endpoints are not semantic matches or purpose-policy matches. Missing, deleted, or invalid endpoint references must be reported as structural errors rather than hidden behind partial relationship output.
+- DT-14 requires every matched View to return complete metadata, included element ids, included relationship ids, member Elements, member ArchitectureRelationships, and endpoints for those relationships. Shared members must not cascade to overlapping Views unless those Views independently satisfy the query selection.
+- DT-15 requires exactly one stable `firstInclusionReason` for every returned object, ordered across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure. Later matches may be supplementary only and must not overwrite the first reason.
+
+### Dependency-scope decisions
+
+- Handoff scope is the three implementation functions: `grag-endpoint-closure`, `grag-view-closure`, and `grag-provenance`.
+- Context relationships are `grag-rel-purpose-endpoints`, `grag-rel-endpoints-views`, `grag-rel-views-provenance`, `grag-rel-provenance-coherent`, and `grag-rel-w6-coherent-context`.
+- W6 starts after delivered W5 purpose closure. `grag-purpose-closure` carries runner-owned `deliveryStatus=delivered` and `deliveryEvidence.W5`; W6 elements remain `not_delivered` until downstream implementation passes their mounted DT-13, DT-14, and DT-15 entrypoints.
+- W4 seed discovery, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, DT-18/DT-19 evidence, and capacity governance remain outside this handoff.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for five W6 element updates, three relationship updates, one new provenance-to-coherent association, and one Application Usage View update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read `grag-endpoint-closure` dependency context with implementation-design profile after mutation.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-13 through DT-15 testcases and schema-compliant approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W5 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
+- Open business questions and adequacy blockers: none.

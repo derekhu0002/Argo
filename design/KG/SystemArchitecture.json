@@ -365,11 +365,19 @@
       "id": "grag-coherent-context",
       "name": "Coherent Versioned Intent Context",
       "type": "Outcome",
-      "description": "Externally observable result: downstream Agents receive context that is complete for the selected mode and purpose, structurally coherent, explainable, and version-consistent.",
+      "description": "Externally observable W6 outcome: downstream Agents receive context that is complete for the selected mode and purpose, structurally coherent across relationship endpoints and matched Views, explainable through single first-inclusion provenance, and version-consistent with the canonical graph/index evidence.",
       "attributes": [
         {
           "name": "decisionTrace",
           "value": "DT-00,DT-13,DT-14,DT-15,DT-17,DT-18|observable outcome"
+        },
+        {
+          "name": "outcomeMapping.W6",
+          "value": "grag-endpoint-closure + grag-view-closure + grag-provenance realize coherent context: relationship endpoints complete, matched Views complete and non-cascading, every object has exactly one first-inclusion reason, and all returned objects carry consistent canonical version evidence."
+        },
+        {
+          "name": "acceptanceProjection.W6",
+          "value": "DT-13 mounts on grag-endpoint-closure; DT-14 mounts on grag-view-closure; DT-15 mounts on grag-provenance. grag-coherent-context is the observed outcome realized by those functions, not a separate implementation target in this handoff."
         }
       ]
     },
@@ -570,6 +578,14 @@
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved deterministic five-purpose closure using parameterized Cypher and ArchiMate semantics"
         },
         {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-06 and ExplicitAcceptanceTestcase-DT-07|runPurposePolicyClosure.js|exitCode=0|named parameterized policies, bound parameters, ArchiMate direction semantics, and identity/similarity independence passed"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|deterministic purpose dispatch and mandatory closure passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -614,6 +630,14 @@
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-08 intent-decision closure boundary"
         },
         {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-08|runIntentDecisionClosure.js|exitCode=0|independent intent-decision closure passed"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|intent-decision purpose category passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -649,6 +673,14 @@
         {
           "name": "acceptanceApproval.DT-09",
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-09 implementation-design closure boundary"
+        },
+        {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-09|runImplementationDesignClosure.js|exitCode=0|independent implementation-design closure passed"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|implementation-design purpose category passed"
         },
         {
           "name": "deliveryStatus",
@@ -688,6 +720,14 @@
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-10 coding-repair closure boundary"
         },
         {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-10|runCodingRepairClosure.js|exitCode=0|independent coding-repair closure passed"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|coding-repair purpose category passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -723,6 +763,14 @@
         {
           "name": "acceptanceApproval.DT-11",
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request approved DT-11 audit-proof closure boundary"
+        },
+        {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-11|runAuditProofClosure.js|exitCode=0|independent explicit-subject audit proof closure passed"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|audit purpose category passed"
         },
         {
           "name": "deliveryStatus",
@@ -766,6 +814,14 @@
           "value": "approvedByHuman=true|2026-07-25|orchestrating W5 request reaffirmed DT-12 as fifth independent graph-tidy purpose category"
         },
         {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-12|runGraphTidyFullSnapshot.js|exitCode=0|complete canonical full-snapshot bypass preserved"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|graph-tidy independent full-snapshot purpose category passed"
+        },
+        {
           "name": "deliveryStatus",
           "value": "delivered"
         }
@@ -784,7 +840,7 @@
       "id": "grag-endpoint-closure",
       "name": "Relationship Endpoint Closure",
       "type": "Application Function",
-      "description": "DT-13 structural closure: every returned Relationship is accompanied by both endpoint Elements, with invalid canonical references reported rather than hidden.",
+      "description": "DT-13 structural endpoint closure: after W5 purpose closure selects a result range, every returned ArchitectureRelationship is accompanied by both canonical endpoint Elements from the same graph version. Endpoint Elements are included even when their text is not a semantic match, and invalid or missing canonical references are reported as structural errors rather than hidden or silently dropped.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -793,6 +849,18 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "functionalPoint.DT-13-endpoint-closure",
+          "value": "{\"description\":\"Close every returned relationship over its canonical source and target endpoints.\",\"businessOutcome\":\"Consumers can understand every returned relationship without chasing missing endpoints or inferring dangling references.\",\"observableBoundary\":\"For every ArchitectureRelationship in a semantic or purpose-closed result, the response includes the relationship object plus both source and target Element objects from the same canonical graph version. Endpoints are included even when they were not semantic seeds or direct purpose-policy matches; missing, deleted, or invalid endpoint references are surfaced as structural errors and are not hidden behind partial relationship output.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-13\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-13",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W6 request approved grag-endpoint-closure and DT-13 acceptance mapping: relation endpoints complete"
+        },
+        {
+          "name": "scopeBoundary.W6",
+          "value": "Endpoint closure is structural completion after W5 purpose range selection. It adds required source/target Elements for returned relationships, not unrelated neighboring relationships, extra Views, or similarity-driven expansion."
         }
       ],
       "testcases": [
@@ -809,7 +877,7 @@
       "id": "grag-view-closure",
       "name": "Complete View Closure",
       "type": "Application Function",
-      "description": "DT-14 structural closure: every matched View returns complete metadata, members, relationships, and endpoints without implicit cascade to overlapping Views.",
+      "description": "DT-14 structural View closure: every matched View returns complete View metadata, explicit members, in-View relationships, and relationship endpoints for that View only. Shared members do not cause implicit cascade into overlapping Views unless those other Views were independently matched or explicitly requested.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -818,6 +886,18 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "functionalPoint.DT-14-complete-view-closure",
+          "value": "{\"description\":\"Return every matched View as a complete, non-cascading View object.\",\"businessOutcome\":\"Consumers can inspect a matched View as a coherent architecture projection without accidentally importing overlapping Views or losing internal relationships/endpoints.\",\"observableBoundary\":\"When a View is selected by seed or purpose policy, the response includes that View's metadata, included element ids, included relationship ids, member Element objects, member ArchitectureRelationship objects, and both endpoints for each included relationship. Shared members do not pull in other Views unless those Views independently satisfy the query selection; no overlapping View cascade occurs by membership alone.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-14\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-14",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W6 request approved grag-view-closure and DT-14 acceptance mapping: matched View complete and non-cascading"
+        },
+        {
+          "name": "scopeBoundary.W6",
+          "value": "View closure completes only the selected View objects. It does not expand to all Views sharing a member, all diagrams under the same viewpoint, or any View that is merely reachable through a shared Element or Relationship."
         }
       ],
       "testcases": [
@@ -834,7 +914,7 @@
       "id": "grag-provenance",
       "name": "First Inclusion Provenance",
       "type": "Application Function",
-      "description": "DT-15 explainability: every returned object records exactly one ordered first-inclusion reason and may record supplementary reasons, together with purpose and version evidence.",
+      "description": "DT-15 explainability: each returned object records exactly one ordered first-inclusion reason selected from semantic seed, relationship endpoint closure, purpose-policy closure, or complete-View closure, plus optional supplementary reasons and purpose/version evidence. Repeated discovery of the same object must never overwrite the first reason.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -843,6 +923,18 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "functionalPoint.DT-15-first-inclusion-provenance",
+          "value": "{\"description\":\"Assign exactly one stable first-inclusion reason to every returned object.\",\"businessOutcome\":\"Consumers can trace why each Element, ArchitectureRelationship, or View first entered the result and distinguish the decisive reason from later supporting evidence.\",\"observableBoundary\":\"Every returned object has one and only one firstInclusionReason chosen by ordered selection from semantic-seed, relationship-endpoint-closure, purpose-policy-closure, and complete-View-closure paths. Later matches may be recorded only as supplementary reasons and cannot overwrite the first reason. Provenance also records declared purpose, selected policy where applicable, canonical graph version, and index/version evidence used to produce the result.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-15\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-15",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W6 request approved grag-provenance and DT-15 acceptance mapping: one first-inclusion reason per object"
+        },
+        {
+          "name": "scopeBoundary.W6",
+          "value": "Provenance explains inclusion ordering for returned objects. It does not authorize unbounded context expansion, multiple competing first reasons, or replacing canonical version evidence with narrative rationale."
         }
       ],
       "testcases": [
@@ -1447,7 +1539,7 @@
       "id": "grag-wp-5",
       "name": "W5 Deterministic Five-Purpose Closures",
       "type": "Work Package",
-      "description": "W5 delivers deterministic five-purpose graph closures: semantic seeds are converted into reproducible graph ranges through named parameterized Cypher policies and ArchiMate relationship semantics; the five independent categories are intent-decision, implementation-design, coding-repair, audit, and graph-tidy. Free-generated Cypher is forbidden for mandatory closure decisions.",
+      "description": "W5 accepted: five independent purpose categories convert semantic seeds into reproducible graph ranges through repository-owned named parameterized Cypher policies, bound parameters, and ArchiMate direction semantics. Free-generated Cypher, caller identity, and textual similarity cannot decide mandatory inclusion; graph-tidy preserves complete canonical full-snapshot bypass.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -1464,6 +1556,14 @@
         {
           "name": "acceptanceMapping.W5",
           "value": "DT-06 and DT-07 mount on grag-purpose-closure; DT-08 on grag-intent-decision-policy; DT-09 on grag-implementation-policy; DT-10 on grag-repair-policy; DT-11 on grag-audit-policy; DT-12 on grag-graph-tidy-policy."
+        },
+        {
+          "name": "deliveryEvidence.W5",
+          "value": "2026-07-25|DT-06 through DT-12 explicit entrypoints, four intent-query guards, and implementation-to-coding handoff validation|all exitCode=0|full runner 30/37 with both live opt-ins"
+        },
+        {
+          "name": "waveAcceptance.W5",
+          "value": "accepted|2026-07-25|deterministic five-purpose closure passed; remaining failures are DT-00, W6 DT-13/14/15, W7 DT-18/19, and TS-08"
         }
       ]
     },
@@ -1471,11 +1571,27 @@
       "id": "grag-wp-6",
       "name": "W6 Integrity Provenance and Coherent Result",
       "type": "Work Package",
-      "description": "Deliver endpoint/View integrity, provenance, and coherent result.",
+      "description": "W6 delivers structural closure and explainable coherent Graph RAG results: relationships return both endpoints, matched Views return complete non-cascading contents, every returned object has exactly one first-inclusion reason, and the combined result realizes a coherent versioned intent context for consumers.",
       "attributes": [
         {
           "name": "affectedElements",
           "value": "grag-endpoint-closure; grag-view-closure; grag-provenance; grag-coherent-context"
+        },
+        {
+          "name": "acceptanceMapping.W6",
+          "value": "DT-13 -> grag-endpoint-closure; DT-14 -> grag-view-closure; DT-15 -> grag-provenance; grag-coherent-context is the realized outcome of the three same-element acceptance boundaries."
+        },
+        {
+          "name": "releaseGate.W6",
+          "value": "Relations both endpoints complete; matched Views complete and non-cascading; every returned object has exactly one stable first-inclusion reason plus optional supplementary reasons; all result objects remain tied to the same canonical graph/version evidence."
+        },
+        {
+          "name": "scopeBoundary.W6",
+          "value": "W6 starts after W5 purpose closure and completes/explains the selected result range. It does not change W4 seed discovery, W5 policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, or capacity governance."
+        },
+        {
+          "name": "acceptanceApproval.W6",
+          "value": "approvedByHuman=true|2026-07-25|orchestrating W6 request approved structural closure and explainable result scope with DT-13, DT-14, and DT-15 mapping"
         }
       ]
     },
@@ -1973,12 +2089,16 @@
       "target_id": "grag-endpoint-closure",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Relationship Endpoint Closure",
-      "description": "After purpose expansion, every included relationship triggers inclusion of both canonical endpoints.",
+      "description": "After W5 purpose expansion selects relationships for a result range, endpoint closure must add both canonical endpoint Elements for every returned relationship without using semantic similarity as the endpoint inclusion decision.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Relationship Endpoint Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-06,DT-13"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Purpose closure triggers endpoint completion; endpoint completion does not broaden or reselect the W5 purpose range."
         }
       ]
     },
@@ -1990,12 +2110,16 @@
       "target_id": "grag-view-closure",
       "source_name": "Relationship Endpoint Closure",
       "target_name": "Complete View Closure",
-      "description": "Structural relationship coherence is preserved while matched Views expand to complete membership without cascading to overlapping Views.",
+      "description": "Relationship endpoint coherence is preserved before matched Views are completed; complete View closure fills the selected View's members, relationships, and endpoints without cascading to overlapping Views.",
       "statement": "Relationship Endpoint Closure --(Triggering)--> Complete View Closure",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-13,DT-14"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Endpoint closure is an upstream structural prerequisite for coherent View closure; View membership overlap alone does not trigger additional View selection."
         }
       ]
     },
@@ -2007,12 +2131,16 @@
       "target_id": "grag-provenance",
       "source_name": "Complete View Closure",
       "target_name": "First Inclusion Provenance",
-      "description": "Completed closure is classified by ordered first-inclusion reason with supplementary reasons and version evidence.",
+      "description": "Completed endpoint and View closure output is classified by ordered first-inclusion provenance with supplementary reasons and canonical version evidence.",
       "statement": "Complete View Closure --(Triggering)--> First Inclusion Provenance",
       "attributes": [
         {
           "name": "decisionTrace",
           "description": "DT-14,DT-15"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Closure supplies completed objects to provenance; provenance explains inclusion order and does not decide additional mandatory scope."
         }
       ]
     },
@@ -2498,6 +2626,27 @@
       "target_name": "All Mutation Index Lifecycle",
       "description": "W3.1 realizes the integration path from applySystemArchitectureMutation through affected-record embedding, vector persistence, vector-query verification, and alignment-state enforcement.",
       "statement": "W3.1 Mutation-Driven Live Vector Integration --(Realization)--> All Mutation Index Lifecycle"
+    },
+    {
+      "id": "grag-rel-provenance-coherent",
+      "name": "Provenance realizes coherent result explainability",
+      "type": "Association",
+      "source_id": "grag-provenance",
+      "target_id": "grag-coherent-context",
+      "source_name": "First Inclusion Provenance",
+      "target_name": "Coherent Versioned Intent Context",
+      "description": "Directional business semantics: single-reason object provenance, endpoint closure, complete View closure, and version evidence make the returned context understandable and traceable for consumers.",
+      "statement": "First Inclusion Provenance --(Association)--> Coherent Versioned Intent Context",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-13,DT-14,DT-15"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Provenance evidence supports the coherent-context outcome; the outcome does not add new closure rules beyond DT-13, DT-14, and DT-15."
+        }
+      ]
     }
   ],
   "views": [
@@ -2681,7 +2830,7 @@
       "view_name": "Graph RAG Integrity and Explainability",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: every returned relationship and View is coherent and every object has explainable inclusion provenance; Purpose: deciding and handoff preparation; Scope: structural closure, provenance evidence, canonical authority, and coherent outcome; Rationale: this view explains how application behavior preserves graph meaning for Agent consumers.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: every returned relationship and matched View is structurally coherent, and every returned object has explainable inclusion provenance that consumers can trace; Purpose: deciding and handoff preparation; Scope: W6 endpoint closure, complete non-cascading View closure, single first-inclusion provenance, canonical authority, and coherent outcome; Rationale: this view instantiates the Application Usage Viewpoint because it shows how the query service's application behavior turns W5 selected ranges into consumer-readable context without adding W7 quality scoring or capacity decisions.",
       "included_elements": [
         "grag-query-service",
         "grag-coherent-context",
@@ -2694,7 +2843,8 @@
         "grag-rel-service-outcome",
         "grag-rel-endpoints-views",
         "grag-rel-views-provenance",
-        "grag-rel-provenance-quality"
+        "grag-rel-provenance-quality",
+        "grag-rel-provenance-coherent"
       ]
     },
     {

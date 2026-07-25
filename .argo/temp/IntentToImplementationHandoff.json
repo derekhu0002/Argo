@@ -1,38 +1,31 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T21:52:00+08:00",
+  "generatedAt": "2026-07-25T23:22:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W5 deterministic five-purpose closure handoff. Implement parameterized, repository-owned Cypher templates plus ArchiMate relationship-direction semantics so semantic seeds become reproducible graph ranges. Free-generated Cypher, Agent identity, text similarity, arbitrary depth, and connected-component expansion must not decide mandatory closure.",
+  "summary": "W6 structural closure and explainable result handoff. Implement endpoint closure, complete non-cascading View closure, and single first-inclusion provenance so Graph RAG responses are coherent, traceable, and understandable by downstream consumers.",
   "intentElementIds": [
-    "grag-purpose-closure",
-    "grag-intent-decision-policy",
-    "grag-implementation-policy",
-    "grag-repair-policy",
-    "grag-audit-policy",
-    "grag-graph-tidy-policy"
+    "grag-endpoint-closure",
+    "grag-view-closure",
+    "grag-provenance"
   ],
   "relationshipIds": [
-    "grag-rel-seeds-closure",
-    "grag-rel-purpose-intent",
-    "grag-rel-purpose-implementation",
-    "grag-rel-purpose-repair",
-    "grag-rel-purpose-audit",
-    "grag-rel-purpose-tidy",
-    "grag-rel-w5-purpose-closure"
+    "grag-rel-purpose-endpoints",
+    "grag-rel-endpoints-views",
+    "grag-rel-views-provenance",
+    "grag-rel-provenance-coherent",
+    "grag-rel-w6-coherent-context"
   ],
   "openQuestions": [],
   "notes": [
-    "Selected viewpoint: Application Usage Viewpoint. Concern: each lifecycle task receives an independently reviewable closure boundary. Purpose: deciding and handoff preparation. Affected views remain bound through the required Viewpoint description pattern.",
-    "Global approval evidence: the orchestrating W5 request explicitly asked to update intent architecture for deterministic five-purpose closure boundaries, acceptance mapping DT-06 through DT-12, and handoff production. Handoff approvedByHuman=true is recorded here as schema-compliant notes because the handoff schema does not permit an approvedByHuman field.",
-    "Coverage matrix: grag-purpose-closure functionalPoint.DT-06-deterministic-mandatory-closure -> ExplicitAcceptanceTestcase-DT-06; functionalPoint.DT-07-purpose-category-dispatch -> ExplicitAcceptanceTestcase-DT-07.",
-    "Coverage matrix: grag-intent-decision-policy functionalPoint.DT-08-intent-decision-boundary -> ExplicitAcceptanceTestcase-DT-08.",
-    "Coverage matrix: grag-implementation-policy functionalPoint.DT-09-implementation-design-boundary -> ExplicitAcceptanceTestcase-DT-09.",
-    "Coverage matrix: grag-repair-policy functionalPoint.DT-10-coding-repair-boundary -> ExplicitAcceptanceTestcase-DT-10.",
-    "Coverage matrix: grag-audit-policy functionalPoint.DT-11-audit-proof-boundary -> ExplicitAcceptanceTestcase-DT-11.",
-    "Coverage matrix: grag-graph-tidy-policy functionalPoint.DT-12-full-snapshot-bypass -> ExplicitAcceptanceTestcase-DT-12.",
-    "Dependency context: W5 starts after delivered W4 seed retrieval. grag-seed-retrieval carries deliveryStatus=delivered and deliveryEvidence.W4 for ExplicitAcceptanceTestcase-DT-04 and ExplicitAcceptanceTestcase-DT-05; W5 elements remain not_delivered until downstream implementation passes their mounted DT-06 through DT-12 entrypoints.",
-    "Scope boundary: W5 owns deterministic purpose dispatch and five independent category boundaries: intent-decision, implementation-design, coding-repair, audit, and graph-tidy. W6 endpoint closure, complete View closure, provenance, and coherent result remain downstream integrity scope and are not implementation targets of this handoff.",
-    "Release gate: all mandatory closure decisions must use named parameterized Cypher templates with bound parameters and ArchiMate relationship semantics. Free-generated Cypher may be diagnostic only and is forbidden for deciding mandatory closure.",
-    "Downstream implementation should preserve same-element entrypoints already mounted in the intent graph: runPurposePolicyClosure.js, runIntentDecisionClosure.js, runImplementationDesignClosure.js, runCodingRepairClosure.js, runAuditProofClosure.js, and runGraphTidyFullSnapshot.js."
+    "Selected viewpoint: Application Usage Viewpoint. Concern: returned Graph RAG content must be structurally complete and explainable to consuming Agents. Purpose: designing, deciding, and intent-to-implementation handoff preparation. The touched view grag-integrity-explainability remains an Application Usage Viewpoint instance because it shows how query-service application behavior turns a W5-selected range into coherent consumer-readable context.",
+    "Global approval evidence: the orchestrating W6 request explicitly approved structural closure and explainable result scope, named concepts grag-endpoint-closure, grag-view-closure, grag-provenance, and grag-coherent-context, required DT-13/DT-14/DT-15 mapping, requested handoff production, and requested an IntentDesign stage commit. The handoff schema does not permit an approvedByHuman field, so approval is recorded in schema-compliant notes and acceptanceApproval.* graph attributes.",
+    "Coverage matrix: grag-endpoint-closure functionalPoint.DT-13-endpoint-closure -> ExplicitAcceptanceTestcase-DT-13. Control point: trigger a relationship seed whose endpoint text is not a semantic match. Observation point: relationship output includes both canonical endpoint Elements from the same graph version, and invalid/missing endpoints are reported rather than hidden.",
+    "Coverage matrix: grag-view-closure functionalPoint.DT-14-complete-view-closure -> ExplicitAcceptanceTestcase-DT-14. Control point: query a View that shares members with other Views. Observation point: the matched View returns complete metadata, members, in-View relationships, and endpoints without cascading to overlapping Views by shared membership alone.",
+    "Coverage matrix: grag-provenance functionalPoint.DT-15-first-inclusion-provenance -> ExplicitAcceptanceTestcase-DT-15. Control point: run an approved query exercising semantic-seed, relationship-endpoint, purpose-policy, and complete-View inclusion paths. Observation point: every returned object has exactly one stable firstInclusionReason; later matches are supplementary only and cannot overwrite it.",
+    "Outcome mapping: grag-coherent-context is the W6 observable outcome realized by endpoint closure, complete View closure, and provenance. It is intentionally not listed as an implementation target because its DT-13/DT-14/DT-15 acceptance evidence is mounted on the three exact implementation functions.",
+    "Dependency context: W6 starts after W5 purpose closure. grag-purpose-closure carries deliveryStatus=delivered and W5 delivery evidence; W6 elements remain not_delivered until downstream implementation passes their mounted DT-13, DT-14, and DT-15 entrypoints. No deliveryStatus attribute was created, changed, or inferred by Intent Design.",
+    "Release gate: relations must include both endpoints; matched Views must be complete and non-cascading; each returned object must have exactly one first-inclusion reason plus optional supplementary reasons; all returned objects must remain tied to consistent canonical graph/version evidence.",
+    "Scope boundary: W6 completes and explains the W5-selected result range. It does not change W4 seed discovery, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, DT-18/DT-19 evidence, or capacity governance.",
+    "Downstream implementation should preserve same-element entrypoints already mounted in the intent graph: tests/explicit/entries/runRelationshipEndpointClosure.js, tests/explicit/entries/runCompleteViewClosure.js, and tests/explicit/entries/runFirstInclusionProvenance.js."
   ]
 }
