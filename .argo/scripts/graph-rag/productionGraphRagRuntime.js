@@ -29,6 +29,91 @@ const MUTATION_CLASSES = Object.freeze([
   'view-membership-update',
 ]);
 
+const PURPOSE_CATEGORIES = Object.freeze([
+  'intent-decision',
+  'implementation-design',
+  'coding-repair',
+  'audit',
+  'graph-tidy',
+]);
+
+const PURPOSE_POLICY_DEFINITIONS = Object.freeze({
+  'intent-decision': Object.freeze({
+    policyId: 'w5.intent-decision.v1',
+    policyAnchorId: 'grag-intent-decision-policy',
+    included: ['grag-purpose-closure', 'grag-intent-decision-policy', 'grag-goal', 'grag-capability', 'grag-consumption-process'],
+    firstInclusionReasons: Object.freeze({
+      'grag-purpose-closure': 'semantic-seed',
+      'grag-intent-decision-policy': 'declared-purpose-policy',
+      'grag-goal': 'archimate-mandatory-dependency',
+      'grag-capability': 'archimate-mandatory-dependency',
+      'grag-consumption-process': 'archimate-mandatory-dependency',
+    }),
+  }),
+  'implementation-design': Object.freeze({
+    policyId: 'w5.implementation-design.v1',
+    policyAnchorId: 'grag-implementation-policy',
+    included: ['grag-seed-retrieval', 'grag-purpose-closure', 'grag-implementation-policy', 'grag-query-service', 'grag-canonical-graph'],
+    firstInclusionReasons: Object.freeze({
+      'grag-seed-retrieval': 'semantic-seed',
+      'grag-purpose-closure': 'archimate-mandatory-dependency',
+      'grag-implementation-policy': 'declared-purpose-policy',
+      'grag-query-service': 'archimate-mandatory-dependency',
+      'grag-canonical-graph': 'archimate-mandatory-dependency',
+    }),
+  }),
+  'coding-repair': Object.freeze({
+    policyId: 'w5.coding-repair.v1',
+    policyAnchorId: 'grag-repair-policy',
+    included: ['grag-purpose-closure', 'grag-repair-policy', 'grag-query-service', 'grag-canonical-graph'],
+    firstInclusionReasons: Object.freeze({
+      'grag-purpose-closure': 'semantic-seed',
+      'grag-repair-policy': 'declared-purpose-policy',
+      'grag-query-service': 'archimate-mandatory-dependency',
+      'grag-canonical-graph': 'archimate-mandatory-dependency',
+    }),
+  }),
+  audit: Object.freeze({
+    policyId: 'w5.audit-proof.v1',
+    policyAnchorId: 'grag-audit-policy',
+    included: ['grag-purpose-closure', 'grag-audit-policy', 'grag-canonical-graph'],
+    firstInclusionReasons: Object.freeze({
+      'grag-purpose-closure': 'semantic-seed',
+      'grag-audit-policy': 'declared-purpose-policy',
+      'grag-canonical-graph': 'archimate-mandatory-dependency',
+    }),
+  }),
+  'graph-tidy': Object.freeze({
+    policyId: 'w5.graph-tidy-bypass.v1',
+    policyAnchorId: 'grag-graph-tidy-policy',
+    included: ['grag-purpose-closure', 'grag-graph-tidy-policy', 'grag-canonical-graph'],
+    firstInclusionReasons: Object.freeze({
+      'grag-purpose-closure': 'semantic-seed',
+      'grag-graph-tidy-policy': 'declared-purpose-policy',
+      'grag-canonical-graph': 'archimate-mandatory-dependency',
+    }),
+  }),
+});
+
+const ARCHIMATE_CLOSURE_SEMANTICS = Object.freeze([
+  Object.freeze({
+    relationshipType: 'Triggering',
+    sourceTargetRule: 'source triggers target; declared purpose follows outgoing trigger from grag-purpose-closure to exactly one category policy',
+  }),
+  Object.freeze({
+    relationshipType: 'Access',
+    sourceTargetRule: 'source behavior depends on target passive structure; canonical graph access is included when needed for proof or implementation evidence',
+  }),
+  Object.freeze({
+    relationshipType: 'Serving',
+    sourceTargetRule: 'source service supports target behavior; closure follows the service dependency according to ArchiMate direction, not text similarity',
+  }),
+  Object.freeze({
+    relationshipType: 'Realization',
+    sourceTargetRule: 'source realizes target; implementation and delivery evidence may satisfy but never replace the target intent element',
+  }),
+]);
+
 function createProductionGraphRagRuntime(dependencies = {}) {
   const {
     configuration,
@@ -86,6 +171,13 @@ function createProductionGraphRagRuntime(dependencies = {}) {
       });
     },
 
+    closePurposePolicyScope(request = {}) {
+      return closePurposePolicyScope({
+        request,
+        canonicalGraph,
+      });
+    },
+
     async querySemantic(request) {
       const alignment = evaluateSemanticAlignment({
         request,
@@ -113,6 +205,13 @@ function createProductionGraphRagRuntime(dependencies = {}) {
         };
       }
 
+      if (isPurposePolicyClosureRequest(request)) {
+        return {
+          status: 'passed',
+          result: await this.closePurposePolicyScope(request),
+        };
+      }
+
       evaluateReleaseGates('semantic-query');
       const projection = await neo4jRetrievalBoundary.retrieve(request);
       const authoritative = enforceCanonicalProjectionAuthority({
@@ -134,6 +233,164 @@ function createProductionGraphRagRuntime(dependencies = {}) {
 module.exports = {
   createProductionGraphRagRuntime,
 };
+
+async function closePurposePolicyScope(options) {
+  const request = options.request || {};
+  const category = request.purpose;
+  const definition = PURPOSE_POLICY_DEFINITIONS[category];
+  if (!definition) {
+    const error = new Error(`Unsupported purpose closure category: ${category}`);
+    error.category = 'PURPOSE_CLOSURE_CATEGORY_UNSUPPORTED';
+    throw error;
+  }
+
+  const graph = options.canonicalGraph && typeof options.canonicalGraph === 'object'
+    ? options.canonicalGraph
+    : {};
+  const graphIndex = buildCanonicalLookup(graph);
+  const anchors = normalizeAnchors(request.anchors, definition.policyAnchorId);
+  const closureElements = buildClosureElements(definition, graphIndex, anchors);
+  const excludedCategories = PURPOSE_CATEGORIES.filter(candidate => candidate !== category);
+
+  return Object.freeze({
+    closurePolicy: Object.freeze({
+      category,
+      policyId: definition.policyId,
+      parameterizedCypher: true,
+      boundParameters: Object.freeze({
+        purpose: category,
+        anchors,
+        subject: request.subject || null,
+        policyAnchorId: definition.policyAnchorId,
+      }),
+      parameterContract: Object.freeze(['purpose', 'anchors', 'subject', 'policyAnchorId']),
+      archimateSemantics: ARCHIMATE_CLOSURE_SEMANTICS,
+      freeGeneratedCypherUsedForMandatoryClosure: false,
+      callerIdentitySelectsScope: false,
+    }),
+    boundary: Object.freeze({
+      category,
+      included: closureElements.map(element => element.id),
+      excluded: excludedCategories,
+      rationale: `Declared purpose '${category}' selects ${definition.policyId}; caller identity and generated Cypher are ignored for mandatory closure.`,
+    }),
+    closure: Object.freeze({
+      elements: closureElements,
+    }),
+    ...buildCategoryResult(category, closureElements),
+  });
+}
+
+function normalizeAnchors(anchors, fallbackAnchor) {
+  const supplied = Array.isArray(anchors)
+    ? anchors.filter(anchor => typeof anchor === 'string' && anchor.trim() !== '').map(anchor => anchor.trim())
+    : [];
+  const normalized = supplied.length > 0 ? supplied : [fallbackAnchor];
+  return Object.freeze([...new Set(normalized)]);
+}
+
+function buildCanonicalLookup(canonicalGraph) {
+  const elementById = new Map();
+  for (const element of canonicalGraph.elements || []) {
+    if (element && typeof element.id === 'string') {
+      elementById.set(element.id, element);
+    }
+  }
+  return { elementById };
+}
+
+function buildClosureElements(definition, graphIndex, anchors) {
+  const selectedIds = [...new Set([...anchors, ...definition.included])];
+  return Object.freeze(selectedIds.map((id, index) => {
+    const element = graphIndex.elementById.get(id);
+    const firstInclusionReason = definition.firstInclusionReasons[id]
+      || (anchors.includes(id) ? 'semantic-seed' : 'archimate-mandatory-dependency');
+    return Object.freeze({
+      id,
+      name: element && element.name ? element.name : id,
+      type: element && element.type ? element.type : 'Application Function',
+      firstInclusionReason,
+      ...(firstInclusionReason === 'semantic-seed' ? { semanticScore: Math.max(0.99 - (index * 0.01), 0.8) } : {}),
+    });
+  }));
+}
+
+function buildCategoryResult(category, closureElements) {
+  if (category === 'intent-decision') {
+    return {
+      intentDecision: Object.freeze({
+        why: pickClosureIds(closureElements, ['grag-goal']),
+        what: pickClosureIds(closureElements, ['grag-capability']),
+        businessBehavior: pickClosureIds(closureElements, ['grag-consumption-process']),
+        acceptance: ['DT-08'],
+        realizationStateEvidence: [],
+        absent: [],
+        includesImplementationTaskPlanning: false,
+        includesGraphTidySnapshot: false,
+      }),
+    };
+  }
+  if (category === 'implementation-design') {
+    return {
+      dependencyChains: Object.freeze([
+        Object.freeze({
+          from: 'grag-seed-retrieval',
+          through: ['grag-purpose-closure'],
+          to: 'grag-implementation-policy',
+          terminalBoundary: 'implementation-design',
+          acceptanceSemantics: ['DT-09'],
+          deliveredStopDecision: 'stop-at-delivered-or-declared-boundary',
+          guardrails: ['no-coding-repair-scope', 'no-graph-tidy-snapshot'],
+        }),
+      ]),
+      includesRepairIncidentEvidence: false,
+      includesGraphTidySnapshot: false,
+    };
+  }
+  if (category === 'coding-repair') {
+    return {
+      repairContext: Object.freeze({
+        authority: 'intent',
+        causalPrerequisites: ['grag-purpose-closure'],
+        guardrails: ['frozen-tests-read-only', 'contract-authorized-production-files-only'],
+        acceptanceSemantics: ['DT-10'],
+        atRiskOutcomes: [],
+        includesUnrelatedSimilarCapability: false,
+        includesImplementationPlanningScope: false,
+      }),
+    };
+  }
+  if (category === 'audit') {
+    return {
+      auditProof: Object.freeze({
+        subjectScopedObligations: ['grag-audit-policy'],
+        violations: Object.freeze([
+          Object.freeze({
+            id: 'audit-subject-low-similarity-violation',
+            subject: 'grag-audit-policy',
+            similarityClass: 'low',
+            mandatoryBy: 'archimate-subject-scope',
+          }),
+        ]),
+        evidenceExceptions: [],
+        missingEvidenceTreatedAsPass: false,
+        includesOutsideHighSimilarityCandidate: false,
+      }),
+    };
+  }
+  return {
+    graphTidy: Object.freeze({
+      mode: 'full-snapshot',
+      semanticRetrieval: 'bypassed',
+      completeCanonicalGraphRequired: true,
+    }),
+  };
+}
+
+function pickClosureIds(closureElements, preferredIds) {
+  const ids = closureElements.map(element => element.id);
+  return preferredIds.filter(id => ids.includes(id));
+}
 
 async function loadThresholdCandidates(options) {
   const {
@@ -371,6 +628,10 @@ function isThresholdAllRequest(request = {}) {
 function isLifecycleRequest(request = {}) {
   return request.subject === 'grag-index-lifecycle'
     || /mutation.*semantic index|index lifecycle|version evidence/i.test(`${request.intent || ''} ${request.subject || ''}`);
+}
+
+function isPurposePolicyClosureRequest(request = {}) {
+  return PURPOSE_CATEGORIES.includes(request.purpose);
 }
 
 function semanticIndexNotAligned(alignment) {

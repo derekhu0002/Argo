@@ -1554,6 +1554,10 @@ function validateExplicitQuery(query) {
   };
 }
 
+function isPurposeClosureProbe(query) {
+  return Array.isArray(query && query.anchors) && query.anchors.length > 0;
+}
+
 function queryError(category, message, extras = {}) {
   return {
     status: 'failed',
@@ -1595,7 +1599,7 @@ async function callTool(name, args = {}, dependencies = undefined) {
       }
 
       const query = validation.query;
-      if (query.purpose === 'graph-tidy') {
+      if (query.purpose === 'graph-tidy' && !isPurposeClosureProbe(query)) {
         const context = await loadContext(args);
         return getSystemArchitectureResult(attachContextWarnings({
           status: 'passed',
