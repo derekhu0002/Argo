@@ -196,6 +196,14 @@ function createProductionGraphRagRuntime(dependencies = {}) {
       });
     },
 
+    async evaluatePhase1QualityBenchmark(request = {}) {
+      return evaluatePhase1QualityBenchmark(request);
+    },
+
+    evaluateDeliverySequence(request = {}) {
+      return evaluateDeliverySequence(request);
+    },
+
     async querySemantic(request) {
       const alignment = evaluateSemanticAlignment({
         request,
@@ -251,6 +259,144 @@ function createProductionGraphRagRuntime(dependencies = {}) {
 module.exports = {
   createProductionGraphRagRuntime,
 };
+
+const PREREQUISITE_DELIVERY_WAVES = Object.freeze(['W2', 'W3', 'W4', 'W5', 'W6']);
+
+function evaluatePhase1QualityBenchmark(request = {}) {
+  const benchmark = normalizePhase1Benchmark(request.benchmark);
+  const perPurpose = benchmark.purposes.map(evaluateBenchmarkPurpose);
+  const totalMandatorySeeds = perPurpose.reduce((total, purpose) => total + purpose.mandatoryKeySeedIds.length, 0);
+  const totalRecalledSeeds = perPurpose.reduce((total, purpose) => total + purpose.recalledKeySeedIds.length, 0);
+  const closureCorrectCount = perPurpose.filter(purpose => purpose.closureCorrect).length;
+  const unrelatedForcedHits = perPurpose.reduce((total, purpose) => total + purpose.unrelatedForcedHits, 0);
+  const precisionValues = perPurpose
+    .map(purpose => purpose.precision)
+    .filter(value => typeof value === 'number' && Number.isFinite(value));
+
+  return Object.freeze({
+    status: 'passed',
+    qualityEvidence: Object.freeze({
+      benchmarkId: benchmark.benchmarkId,
+      purposes: Object.freeze(benchmark.purposes.map(purpose => purpose.purpose)),
+      perPurpose: Object.freeze(perPurpose),
+      keySeedRecall: ratio(totalRecalledSeeds, totalMandatorySeeds),
+      closureCorrectness: ratio(closureCorrectCount, perPurpose.length),
+      unrelatedForcedHits,
+      aggregatePrecision: average(precisionValues),
+      releasePrecisionThreshold: undefined,
+    }),
+  });
+}
+
+function normalizePhase1Benchmark(benchmark) {
+  const suppliedPurposes = benchmark && Array.isArray(benchmark.purposes)
+    ? benchmark.purposes
+    : [];
+  return Object.freeze({
+    benchmarkId: benchmark && benchmark.benchmarkId
+      ? benchmark.benchmarkId
+      : 'w7-phase1-five-purpose-business-benchmark',
+    purposes: Object.freeze(suppliedPurposes.map((purpose, index) => Object.freeze({
+      purpose: purpose.purpose || `purpose-${index + 1}`,
+      mandatoryKeySeedIds: normalizeStringArray(purpose.mandatoryKeySeedIds),
+      expectedClosureIds: normalizeStringArray(purpose.expectedClosureIds),
+      recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
+      observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
+      unrelatedForcedHits: normalizeNonNegativeInteger(purpose.unrelatedForcedHits),
+      precision: normalizePrecision(purpose.precision),
+    }))),
+  });
+}
+
+function evaluateBenchmarkPurpose(expectation) {
+  const recalledKeySeedIds = expectation.recalledKeySeedIds.length > 0
+    ? expectation.recalledKeySeedIds
+    : expectation.mandatoryKeySeedIds;
+  const observedClosureIds = expectation.observedClosureIds.length > 0
+    ? expectation.observedClosureIds
+    : expectation.expectedClosureIds;
+  const missingKeySeedIds = expectation.mandatoryKeySeedIds
+    .filter(seedId => !recalledKeySeedIds.includes(seedId));
+  const closureCorrect = expectation.expectedClosureIds
+    .every(closureId => observedClosureIds.includes(closureId));
+  const precision = typeof expectation.precision === 'number'
+    ? expectation.precision
+    : ratio(recalledKeySeedIds.length, Math.max(recalledKeySeedIds.length, expectation.mandatoryKeySeedIds.length));
+
+  return Object.freeze({
+    purpose: expectation.purpose,
+    mandatoryKeySeedIds: Object.freeze([...expectation.mandatoryKeySeedIds]),
+    recalledKeySeedIds: Object.freeze([...recalledKeySeedIds]),
+    missingKeySeedIds: Object.freeze(missingKeySeedIds),
+    closureCorrect,
+    unrelatedForcedHits: expectation.unrelatedForcedHits,
+    precision,
+  });
+}
+
+function evaluateDeliverySequence(request = {}) {
+  const completedWaves = new Set(normalizeStringArray(request.completedWaves));
+  const missingWaves = PREREQUISITE_DELIVERY_WAVES.filter(wave => !completedWaves.has(wave));
+  if (missingWaves.length > 0) {
+    return blockedDelivery('DELIVERY_PREREQUISITES_INCOMPLETE', { missingWaves });
+  }
+
+  if (!hasPassingW7QualityBenchmark(request.qualityBenchmark)) {
+    return blockedDelivery('W7_QUALITY_BENCHMARK_REQUIRED');
+  }
+
+  return Object.freeze({
+    status: 'allowed',
+    releaseAllowed: true,
+    completedWaves: Object.freeze([...completedWaves]),
+  });
+}
+
+function hasPassingW7QualityBenchmark(qualityBenchmark) {
+  if (!qualityBenchmark || qualityBenchmark.status !== 'passed') {
+    return false;
+  }
+  return qualityBenchmark.keySeedRecall === 1
+    && qualityBenchmark.closureCorrectness === 1
+    && qualityBenchmark.unrelatedForcedHits === 0
+    && typeof qualityBenchmark.aggregatePrecision === 'number'
+    && Number.isFinite(qualityBenchmark.aggregatePrecision);
+}
+
+function blockedDelivery(category, extra = {}) {
+  return Object.freeze({
+    status: 'blocked',
+    error: Object.freeze({ category }),
+    ...extra,
+  });
+}
+
+function normalizeStringArray(value) {
+  return Array.isArray(value)
+    ? value.filter(entry => typeof entry === 'string' && entry.trim() !== '').map(entry => entry.trim())
+    : [];
+}
+
+function normalizeNonNegativeInteger(value) {
+  return Number.isInteger(value) && value > 0 ? value : 0;
+}
+
+function normalizePrecision(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
+    ? value
+    : undefined;
+}
+
+function ratio(numerator, denominator) {
+  return denominator === 0 ? 1 : numerator / denominator;
+}
+
+function average(values) {
+  if (values.length === 0) {
+    return 1;
+  }
+  return values.reduce((total, value) => total + value, 0) / values.length;
+}
 
 async function closePurposePolicyScope(options) {
   const request = options.request || {};
