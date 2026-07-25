@@ -62,8 +62,14 @@ const entryRequirements = new Map([
   ]],
   ['tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js', [
     'liveEmbeddingProviderHarness.js',
+    'W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED',
+    'W31_HARNESS_LIFECYCLE_CREATION_FORBIDDEN',
+    'W31_EXPECTED_TOUCHED_RECORDS_SUBSTITUTION_FORBIDDEN',
     'W31_APPLY_MUTATION_REQUIRED',
+    'W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED',
+    'W31_ALIGNMENT_RESPONSE_REQUIRED',
     'W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE',
+    'W31_ACTUAL_TOUCHED_IDS_NOT_USED',
     'W31_QWEN_MODEL_REQUIRED',
     'W31_QWEN_DIMENSIONS_REQUIRED',
     'W31_OFFLINE_FAKE_EVIDENCE_PROHIBITED',
@@ -131,6 +137,39 @@ assert(
   handoff.frozenFiles.includes('tests/harness/productionGraphRagHarness.js'),
   'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: production Harness must be frozen',
 );
+assert(
+  handoff.frozenFiles.includes('tests/harness/liveEmbeddingProviderHarness.js'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness must be frozen',
+);
+
+const liveHarness = read('tests/harness/liveEmbeddingProviderHarness.js');
+assert(
+  !liveHarness.includes('loadMutationVectorLifecycleFactory')
+    && !liveHarness.includes('createMutationEmbeddingVectorLifecycle')
+    && !liveHarness.includes('lifecycle.execute'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: Harness creates W3.1 lifecycle instead of observing mutation response',
+);
+assert(
+  !liveHarness.includes('expectedTouchedRecords:')
+    && !liveHarness.includes('expectedTouchedRecords,')
+    && !liveHarness.includes('mutation.expectedTouchedRecords'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: Harness substitutes expected touched records',
+);
+for (const responseContract of [
+  'embeddingLifecycle',
+  'alignment',
+  'touchedElementIds',
+  'touchedRelationshipIds',
+  'touchedViewIds',
+  'mutationToolCallCount: 1',
+  'lifecycleCreatedByHarness: false',
+  'expectedTouchedRecordsSubstituted: false',
+]) {
+  assert(
+    liveHarness.includes(responseContract),
+    `PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness omits ${responseContract}`,
+  );
+}
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

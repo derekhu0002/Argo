@@ -109,3 +109,11 @@
 - W3.1 critical guards passed: architecture boundary, dependency direction, explicit entrypoint correctness, implementation traceability, coding-scope authorization, live-provider contract, live opt-in/no-fake, and live secret isolation.
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 37 total, 21 passed, 16 failed or missing, 0 missing acceptance criteria. Runner-owned delivery status changed 12 elements to `not_delivered`, including new `grag-wp-3-1`; this is committed baseline evidence for Coding/Repair rather than a manual delivery-status edit.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 corrected W3.1 automatic mutation-triggered lifecycle
+
+- Corrected Implementation Design from intent commit `d29c63a228c8a491100a248a49a536880e6b82c8`, replacing the previous manual post-mutation lifecycle acceptance with a single-call mutation-write acceptance boundary.
+- The W3.1 explicit entrypoint now requires exactly one `applySystemArchitectureMutation` call, response fields `embeddingLifecycle` and `alignment`, actual `touchedElementIds`/`touchedRelationshipIds`/`touchedViewIds` as the lifecycle driver, and explicit rejection of Harness-created lifecycle execution or `expectedTouchedRecords` substitution.
+- Contracts and guards now protect the automatic mutation-triggered boundary while preserving live safety: explicit opt-in, approved Qwen `qwen3.7-text-embedding` at 1024 dimensions, approved `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD` sources, protected Neo4j vector evidence, no fake/offline evidence, and no credential leakage.
+- Coding/Repair is authorized to update `.argo/scripts/systemarchitecture-mcp-server.js`, `.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js`, `.argo/scripts/graph-rag/liveEmbeddingIndexGate.js`, `.argo/scripts/graph-rag/liveEmbeddingProviderClient.js`, `.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js`, and `.argo/scripts/graph-rag/productionGraphRagRuntime.js` only as needed to satisfy the corrected automatic response contract.
+- No intent mismatch was found beyond the corrected handoff; no `ImplementationToIntentTraceProposal.json` is required.

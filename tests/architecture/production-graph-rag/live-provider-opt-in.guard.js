@@ -61,6 +61,12 @@ for (const source of [harness, liveEntry, secretEntry, w31Entry]) {
   assert(!source.includes('executeFailureScenario'), 'LIVE_PROVIDER_OPT_IN_GUARD: scenario-labelled production branch remains');
 }
 for (const requiredAssertion of [
+  'W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED',
+  'W31_HARNESS_LIFECYCLE_CREATION_FORBIDDEN',
+  'W31_EXPECTED_TOUCHED_RECORDS_SUBSTITUTION_FORBIDDEN',
+  'W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED',
+  'W31_ALIGNMENT_RESPONSE_REQUIRED',
+  'W31_ACTUAL_TOUCHED_IDS_NOT_USED',
   'W31_OFFLINE_FAKE_EVIDENCE_PROHIBITED',
   'W31_REAL_QWEN_ADAPTER_CALL_REQUIRED',
   'W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE',
@@ -79,6 +85,31 @@ for (const requiredObservation of [
   'vectorFingerprint',
 ]) {
   assert(harness.includes(requiredObservation), `LIVE_PROVIDER_OPT_IN_GUARD: transport omits ${requiredObservation}`);
+}
+for (const prohibitedHarnessPattern of [
+  'loadMutationVectorLifecycleFactory',
+  'createMutationEmbeddingVectorLifecycle',
+  'lifecycle.execute',
+  'expectedTouchedRecords:',
+  'expectedTouchedRecords,',
+  'mutation.expectedTouchedRecords',
+]) {
+  assert(
+    !harness.includes(prohibitedHarnessPattern),
+    `LIVE_PROVIDER_OPT_IN_GUARD: Harness manually drives W3.1 lifecycle via ${prohibitedHarnessPattern}`,
+  );
+}
+for (const requiredMutationResponseEvidence of [
+  'embeddingLifecycle',
+  'alignment',
+  'touchedElementIds',
+  'touchedRelationshipIds',
+  'touchedViewIds',
+]) {
+  assert(
+    harness.includes(requiredMutationResponseEvidence),
+    `LIVE_PROVIDER_OPT_IN_GUARD: W3.1 Harness omits mutation response evidence ${requiredMutationResponseEvidence}`,
+  );
 }
 
 // THEN both default failure categories are recorded in the handoff and all assets are frozen

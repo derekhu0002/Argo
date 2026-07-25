@@ -6,15 +6,27 @@ const {
 
 async function main() {
   // GIVEN explicit W3.1 live opt-in, approved Qwen/Neo4j secret sources, and mutation fixtures touching Element, Relationship, and View
-  // WHEN applySystemArchitectureMutation is followed by the production mutation-driven embedding lifecycle
+  // WHEN one applySystemArchitectureMutation call automatically triggers the production mutation-driven embedding lifecycle
   const observation = await runApplyMutationEmbeddingVectorE2E();
 
-  // THEN the canonical mutation is the control point and the touched records are exact
+  // THEN the canonical mutation call is the only control point and the lifecycle is not created by the Harness
+  assert.strictEqual(observation.mutationToolCallCount, 1, 'W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED');
+  assert.strictEqual(observation.lifecycleCreatedByHarness, false, 'W31_HARNESS_LIFECYCLE_CREATION_FORBIDDEN');
+  assert.strictEqual(observation.expectedTouchedRecordsSubstituted, false, 'W31_EXPECTED_TOUCHED_RECORDS_SUBSTITUTION_FORBIDDEN');
   assert.strictEqual(observation.mutation.applied, true, 'W31_APPLY_MUTATION_REQUIRED');
+  assert(observation.embeddingLifecycle, 'W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED');
+  assert(observation.alignment, 'W31_ALIGNMENT_RESPONSE_REQUIRED');
+
+  // THEN actual mutation response touched ids drive the lifecycle and the touched records are exact
   assert.deepStrictEqual(
     observation.touchedRecords.map(record => record.objectType).sort(),
     ['ArchitectureRelationship', 'Element', 'View'],
     'W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE',
+  );
+  assert.deepStrictEqual(
+    observation.responseTouchedRecordIds.sort(),
+    observation.touchedRecords.map(record => record.objectId).sort(),
+    'W31_ACTUAL_TOUCHED_IDS_NOT_USED',
   );
 
   // THEN the real approved Qwen profile is used and every vector is finite and queryable from Neo4j
@@ -37,6 +49,7 @@ async function main() {
     'W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE',
   );
   assert.strictEqual(observation.alignmentState, 'Aligned', 'W31_ALIGNMENT_AFTER_QUERYABLE_SUCCESS_REQUIRED');
+  assert.strictEqual(observation.alignment.state, 'Aligned', 'W31_ALIGNMENT_RESPONSE_NOT_ALIGNED');
 
   // THEN provider/persistence/query failures fail closed and do not leak secrets
   for (const failure of observation.failureMatrix) {

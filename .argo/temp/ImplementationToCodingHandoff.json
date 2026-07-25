@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T17:52:00+08:00",
+  "generatedAt": "2026-07-25T18:42:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W3.1 Mutation-Driven Live Vector Integration: materialized contracts and frozen acceptance for applySystemArchitectureMutation -> real approved Qwen embedding -> Neo4j vector-index queryability. The schema-valid pre-coding baseline is runner-owned in design/KG/test-failure-records.json: 37 total, 21 passed, 16 failed or missing, and 0 missing acceptance criteria. Default/offline W3.1 execution fails with W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED until Coding/Repair runs with approved live opt-in and protected secrets.",
+  "summary": "Corrected W3.1 Automatic Mutation-Triggered Live Vector Integration: materialized contracts and frozen acceptance for one applySystemArchitectureMutation write call -> automatic embeddingLifecycle from actual touched ids -> real approved Qwen embedding -> Neo4j vector-index queryability -> alignment response. The schema-valid pre-coding baseline is runner-owned in design/KG/test-failure-records.json: 37 total, 21 passed, 16 failed or missing, and 0 missing acceptance criteria. Default/offline W3.1 execution fails with W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED until Coding/Repair runs with approved live opt-in and protected secrets.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -12,8 +12,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
       "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-      "controlPoint": "Execute applySystemArchitectureMutation for a disposable canonical graph fixture that touches grag-wp-3-1, grag-rel-w31-index-lifecycle, and grag-w31-integration-acceptance, then run the production W3.1 mutation-vector lifecycle under explicit live opt-in.",
-      "observationPoint": "Observe exact Element, ArchitectureRelationship, and View touched-record extraction; real approved qwen3.7-text-embedding generation at 1024 dimensions; Neo4j vector evidence with canonical/content/index/model versions; vector-query retrieval of changed records; Aligned only after queryability; Stale/Failed and pure semantic rejection on provider, persistence, or query failures; and zero secret leaks.",
+      "controlPoint": "Execute exactly one applySystemArchitectureMutation write call for a disposable canonical graph fixture that touches grag-wp-3-1, grag-rel-w31-index-lifecycle, and grag-w31-integration-acceptance; the Harness must not create or execute the lifecycle after mutation.",
+      "observationPoint": "Observe embeddingLifecycle and alignment in the MCP mutation response; actual touchedElementIds, touchedRelationshipIds, and touchedViewIds driving exact Element, ArchitectureRelationship, and View touched-record extraction; real approved qwen3.7-text-embedding generation at 1024 dimensions; Neo4j vector evidence with canonical/content/index/model versions; vector-query retrieval of changed records; Aligned only after queryability; Stale/Failed and pure semantic rejection on provider, persistence, or query failures; no expectedTouchedRecords substitution; and zero secret leaks.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
       "failureReason": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED"
@@ -43,7 +43,7 @@
       "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
       "controlPoint": "Inspect root, local Graph RAG, and test contracts for W3.1 mutation-vector lifecycle ownership.",
-      "observationPoint": "Contracts expose createMutationEmbeddingVectorLifecycle(dependencies), require applySystemArchitectureMutation as control point, and require live vector-query proof before Aligned.",
+      "observationPoint": "Contracts expose createMutationEmbeddingVectorLifecycle(dependencies), require applySystemArchitectureMutation write success to automatically invoke it from actual touched id arrays, and require embeddingLifecycle/alignment plus live vector-query proof before Aligned.",
       "expectedStatus": "passed"
     },
     {
@@ -67,7 +67,7 @@
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
       "controlPoint": "Inspect W3.1 physical entrypoint plus the handoff frozen-file list.",
-      "observationPoint": "The entrypoint retains GIVEN/WHEN/THEN readability, Harness abstraction, exact touched-record, real Qwen, Neo4j vector queryability, fail-closed, and no-secret-leak assertions.",
+      "observationPoint": "The entrypoint retains GIVEN/WHEN/THEN readability, Harness abstraction, exactly one mutation tool call, no Harness lifecycle creation, no expectedTouchedRecords substitution, embeddingLifecycle/alignment response assertions, exact touched-record, real Qwen, Neo4j vector queryability, fail-closed, and no-secret-leak assertions.",
       "expectedStatus": "passed"
     },
     {
@@ -83,7 +83,7 @@
       "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
       "kind": "ArchitectureBoundaryGuard",
       "controlPoint": "Inspect approved provider, secret, Neo4j, handoff, and runner-owned failure evidence contracts.",
-      "observationPoint": "Approved Qwen profile, 1024 dimensions, opt-in, controlled Neo4j, and W3.1 live expected failure evidence remain explicit and schema-valid.",
+      "observationPoint": "Approved Qwen profile, 1024 dimensions, opt-in, controlled Neo4j, automatic mutation-triggered embeddingLifecycle/alignment response, and W3.1 live expected failure evidence remain explicit and schema-valid.",
       "expectedStatus": "passed"
     },
     {
@@ -91,7 +91,7 @@
       "path": "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
       "controlPoint": "Inspect Harness ordering and W3.1 entrypoint assertions.",
-      "observationPoint": "W3.1 fails before secrets or side effects without both ARGO_LIVE_PROVIDER_E2E=1 and ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1, and fake/offline evidence cannot satisfy live acceptance.",
+      "observationPoint": "W3.1 fails before secrets or side effects without both ARGO_LIVE_PROVIDER_E2E=1 and ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1; fake/offline evidence, Harness-created lifecycle execution, and expected touched-record substitution cannot satisfy live acceptance.",
       "expectedStatus": "passed"
     },
     {
@@ -110,13 +110,13 @@
       "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
       "path": ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
       "failureSignal": "W31_MUTATION_EMBEDDING_LIFECYCLE_BOUNDARY_MISSING / W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING",
-      "nextAction": "Create the W3.1 production lifecycle boundary createMutationEmbeddingVectorLifecycle(dependencies).execute(input) that consumes the applied mutation observation, extracts touched Element/ArchitectureRelationship/View records, invokes approved live Qwen generation, persists vector evidence, verifies Neo4j vector queryability, and returns fail-closed alignment evidence."
+      "nextAction": "Expose the W3.1 production lifecycle boundary as an inward dependency that can be invoked by applySystemArchitectureMutation write success. It must consume actual mutation touched id arrays, extract touched Element/ArchitectureRelationship/View records, invoke approved live Qwen generation, persist vector evidence, verify Neo4j vector queryability, and return fail-closed embeddingLifecycle/alignment evidence."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE",
-      "nextAction": "Expose or propagate enough applySystemArchitectureMutation touched-record evidence for Element, ArchitectureRelationship, and View mutations without weakening canonical JSON authority or allowing Neo4j projection state to become authoritative."
+      "failureSignal": "W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED / W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED / W31_ALIGNMENT_RESPONSE_REQUIRED / W31_ACTUAL_TOUCHED_IDS_NOT_USED",
+      "nextAction": "Make applySystemArchitectureMutation automatically invoke the W3.1 lifecycle after successful writes using actual touchedElementIds, touchedRelationshipIds, and touchedViewIds, then return embeddingLifecycle and alignment in the MCP mutation response. Do not rely on Harness-created lifecycle execution or expectedTouchedRecords substitution."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
@@ -132,32 +132,34 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "W3.1 Coding/Repair scope: connect the canonical mutation write path to the existing live Qwen and Neo4j vector boundaries. Preserve canonical JSON authority, require explicit live opt-in and approved QWEN_KEY/ARGO_NEO4J_DATABASE_PASSWORD sources, reject fake/offline evidence as live acceptance, and keep pure semantic queries fail-closed until vector-query verification proves Aligned.",
+    "executionStrategy": "Corrected W3.1 Coding/Repair scope: make the canonical mutation write path automatically invoke the live Qwen and Neo4j vector lifecycle using the mutation response's actual touched ids, and return embeddingLifecycle plus alignment from applySystemArchitectureMutation. Preserve canonical JSON authority, require explicit live opt-in and approved QWEN_KEY/ARGO_NEO4J_DATABASE_PASSWORD sources, reject fake/offline and Harness-created lifecycle evidence as live acceptance, and keep pure semantic queries fail-closed until vector-query verification proves Aligned.",
     "tasks": [
       {
-        "taskId": "W31-C1-mutation-lifecycle-boundary",
-        "title": "Create W3.1 lifecycle boundary",
-        "objective": "Add the production createMutationEmbeddingVectorLifecycle(dependencies).execute(input) boundary without changing frozen tests.",
+        "taskId": "W31-C1-automatic-mutation-trigger",
+        "title": "Trigger lifecycle from mutation write",
+        "objective": "Make applySystemArchitectureMutation invoke the production W3.1 lifecycle automatically after a successful write and return embeddingLifecycle plus alignment.",
         "dependsOn": [],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"
         ],
         "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js",
           ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"
         ],
         "steps": [
-          "Accept applied mutation observations only from applySystemArchitectureMutation or equivalent committed canonical diff evidence.",
-          "Return the observation shape required by runApplyMutationEmbeddingVectorE2E.js.",
+          "Use only the actual touchedElementIds, touchedRelationshipIds, and touchedViewIds produced by applySystemArchitectureMutation.",
+          "Invoke createMutationEmbeddingVectorLifecycle(dependencies).execute(input) inside the mutation success path, not from the Harness.",
+          "Add embeddingLifecycle and alignment to the MCP mutation response while preserving canonical mutation validation and write semantics.",
           "Keep the boundary dependency-injected and free of tests, Python, external Graph RAG frameworks, and Neo4j GenAI Plugin requirements."
         ],
-        "completionSignal": "The W3.1 entrypoint no longer fails W31_MUTATION_EMBEDDING_LIFECYCLE_BOUNDARY_MISSING or W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING when live opt-in is present."
+        "completionSignal": "The W3.1 entrypoint satisfies W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED, W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED, W31_ALIGNMENT_RESPONSE_REQUIRED, and W31_ACTUAL_TOUCHED_IDS_NOT_USED under live opt-in."
       },
       {
         "taskId": "W31-C2-touched-record-extraction",
-        "title": "Extract mutation touched records",
-        "objective": "Connect applySystemArchitectureMutation results to exact Element, ArchitectureRelationship, and View touched-record extraction.",
+        "title": "Drive lifecycle from actual touched ids",
+        "objective": "Connect applySystemArchitectureMutation touched id arrays to exact Element, ArchitectureRelationship, and View touched-record extraction without Harness substitution.",
         "dependsOn": [
-          "W31-C1-mutation-lifecycle-boundary"
+          "W31-C1-automatic-mutation-trigger"
         ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"
@@ -167,11 +169,12 @@
           ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"
         ],
         "steps": [
-          "Extract touched records from the successful mutation result or committed canonical before/after diff.",
+          "Extract touched records from the successful mutation response's touched id arrays.",
           "Include object id, object type, channel, canonical version, content version, and next index version.",
-          "Keep canonical JSON as authority; do not infer semantics from Neo4j projection state."
+          "Keep canonical JSON as authority; do not infer semantics from Neo4j projection state.",
+          "Do not accept expectedTouchedRecords, fixture-provided touched records, or post-mutation lifecycle inputs as acceptance evidence."
         ],
-        "completionSignal": "runApplyMutationEmbeddingVectorE2E.js satisfies W31_APPLY_MUTATION_REQUIRED and W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE assertions under live opt-in."
+        "completionSignal": "runApplyMutationEmbeddingVectorE2E.js satisfies W31_APPLY_MUTATION_REQUIRED, W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE, W31_EXPECTED_TOUCHED_RECORDS_SUBSTITUTION_FORBIDDEN, and W31_HARNESS_LIFECYCLE_CREATION_FORBIDDEN under live opt-in."
       },
       {
         "taskId": "W31-C3-live-vector-persistence-query",
@@ -195,7 +198,8 @@
           "Require ARGO_LIVE_PROVIDER_E2E=1 and ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1 before live execution.",
           "Use only the approved provider profile and secret sources already frozen by TS-06/TS-07.",
           "Persist complete vector evidence for every touched record.",
-          "Run a Neo4j vector query that returns the changed record ids before reporting Aligned."
+          "Run a Neo4j vector query that returns the changed record ids before reporting Aligned.",
+          "Surface successful persistence/queryability through applySystemArchitectureMutation response fields embeddingLifecycle and alignment."
         ],
         "completionSignal": "The W3.1 entrypoint satisfies W31_QWEN_MODEL_REQUIRED, W31_QWEN_DIMENSIONS_REQUIRED, W31_REAL_QWEN_ADAPTER_CALL_REQUIRED, and W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE assertions."
       },
@@ -244,7 +248,7 @@
           "Run full argo.runArchitectureTests and preserve runner-owned design/KG/test-failure-records.json evidence.",
           "Do not commit .argo/.env or any secret-bearing artifact."
         ],
-        "completionSignal": "W3.1 explicit entrypoint passes live, critical guards pass, full runner records no W3.1 regression, and no secret-bearing file is committed."
+        "completionSignal": "W3.1 explicit entrypoint passes live through a single mutation call with automatic embeddingLifecycle/alignment response evidence, critical guards pass, full runner records no W3.1 regression, and no secret-bearing file is committed."
       }
     ]
   },
@@ -284,6 +288,7 @@
   "openGaps": [
     "Pre-coding baseline evidence is intentionally runner-owned in design/KG/test-failure-records.json because the handoff schema does not permit a preCodingBaseline object; latest full architecture run recorded 37 total, 21 passed, 16 failed or missing, and 0 missing acceptance criteria.",
     "Default/offline W3.1 execution fails with W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED and does not count as live acceptance.",
+    "Prior manual post-mutation lifecycle evidence is explicitly rejected; live W3.1 acceptance now requires one applySystemArchitectureMutation response containing embeddingLifecycle and alignment based on actual touched ids.",
     "Coding/Repair needs protected live execution with ARGO_LIVE_PROVIDER_E2E=1, ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1, approved QWEN_KEY, approved ARGO_NEO4J_DATABASE_PASSWORD, approved non-secret embedding/Neo4j fields, and disposable/protected Neo4j vector index access.",
     "No intent mismatch was found; no ImplementationToIntentTraceProposal is required."
   ]

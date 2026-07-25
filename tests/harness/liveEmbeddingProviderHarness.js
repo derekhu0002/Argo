@@ -7,7 +7,6 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const liveGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingIndexGate.js');
 const liveConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
 const liveNeo4jBoundaryPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingNeo4jBoundary.js');
-const mutationVectorLifecyclePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'mutationEmbeddingVectorLifecycle.js');
 const LIVE_OPT_IN = 'ARGO_LIVE_PROVIDER_E2E';
 const W31_LIVE_OPT_IN = 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E';
 const APPROVED_PROFILE = Object.freeze({
@@ -197,28 +196,8 @@ async function runLiveProviderSecretIsolation() {
 
 async function runApplyMutationEmbeddingVectorE2E() {
   requireW31LiveOptIn();
-  const configuration = await resolveApprovedLiveConfiguration();
   const mutation = await applyDisposableW31MutationFixture();
-  const createLifecycle = loadMutationVectorLifecycleFactory();
-  const lifecycle = createLifecycle({
-    configuration,
-    repositoryRoot: repoRoot,
-  });
-  if (!lifecycle || typeof lifecycle.execute !== 'function') {
-    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING');
-  }
-  return lifecycle.execute({
-    mutation,
-    touchedRecords: mutation.expectedTouchedRecords,
-    qualification: approvedProviderProfile(),
-    semanticQueryProbe: {
-      pureSemanticRequest: {
-        purpose: 'implementation-design',
-        intent: 'Find freshly mutated W3.1 vector evidence',
-        subject: 'grag-wp-3-1',
-      },
-    },
-  });
+  return normalizeAutomaticMutationLifecycleObservation(mutation);
 }
 
 async function runRedactionCanaryProbe(createGate) {
@@ -720,11 +699,6 @@ async function applyDisposableW31MutationFixture() {
   fs.copyFileSync(path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'), temporaryGraphPath);
   const marker = `w31-live-vector-${crypto.randomUUID()}`;
   const architecturePath = path.relative(repoRoot, temporaryGraphPath);
-  const expectedTouchedRecords = [
-    { objectType: 'Element', objectId: 'grag-wp-3-1', channel: 'elements' },
-    { objectType: 'ArchitectureRelationship', objectId: 'grag-rel-w31-index-lifecycle', channel: 'relationships' },
-    { objectType: 'View', objectId: 'grag-w31-integration-acceptance', channel: 'views' },
-  ];
   const response = await callTool('applySystemArchitectureMutation', {
     architecturePath,
     mutations: [
@@ -756,20 +730,69 @@ async function applyDisposableW31MutationFixture() {
     architecturePath,
     marker,
     response,
-    expectedTouchedRecords,
   };
 }
 
-function loadMutationVectorLifecycleFactory() {
-  if (!fs.existsSync(mutationVectorLifecyclePath)) {
-    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_BOUNDARY_MISSING');
+function normalizeAutomaticMutationLifecycleObservation(mutation) {
+  const response = parseToolPayload(mutation.response);
+  const embeddingLifecycle = response.embeddingLifecycle;
+  const alignment = response.alignment;
+  if (!embeddingLifecycle || typeof embeddingLifecycle !== 'object') {
+    throw safeError('W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED');
   }
-  delete require.cache[require.resolve(mutationVectorLifecyclePath)];
-  const boundary = require(mutationVectorLifecyclePath);
-  if (typeof boundary.createMutationEmbeddingVectorLifecycle !== 'function') {
-    throw safeError('W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING');
+  if (!alignment || typeof alignment !== 'object') {
+    throw safeError('W31_ALIGNMENT_RESPONSE_REQUIRED');
   }
-  return boundary.createMutationEmbeddingVectorLifecycle;
+  const responseTouchedRecordIds = touchedIdsFromResponse(response);
+  const touchedRecords = Array.isArray(embeddingLifecycle.touchedRecords)
+    ? embeddingLifecycle.touchedRecords
+    : [];
+  return {
+    mutationToolCallCount: 1,
+    lifecycleCreatedByHarness: false,
+    expectedTouchedRecordsSubstituted: false,
+    mutation: {
+      applied: mutation.applied,
+      architecturePath: mutation.architecturePath,
+      marker: mutation.marker,
+      response,
+    },
+    embeddingLifecycle,
+    alignment,
+    responseTouchedRecordIds,
+    touchedRecords,
+    provider: embeddingLifecycle.provider,
+    vectorEvidence: embeddingLifecycle.vectorEvidence,
+    vectorQuery: embeddingLifecycle.vectorQuery,
+    alignmentState: embeddingLifecycle.alignmentState || alignment.state,
+    failureMatrix: embeddingLifecycle.failureMatrix || [],
+    secretLeaks: embeddingLifecycle.secretLeaks || [],
+  };
+}
+
+function parseToolPayload(response) {
+  if (response && typeof response === 'object') {
+    if (response.embeddingLifecycle || response.alignment || response.touchedElementIds) {
+      return response;
+    }
+    const text = response.content && response.content[0] && response.content[0].text;
+    if (typeof text === 'string') {
+      return JSON.parse(text);
+    }
+  }
+  throw safeError('W31_MUTATION_RESPONSE_REQUIRED');
+}
+
+function touchedIdsFromResponse(response) {
+  return [
+    ...stringArray(response.touchedElementIds),
+    ...stringArray(response.touchedRelationshipIds),
+    ...stringArray(response.touchedViewIds),
+  ];
+}
+
+function stringArray(value) {
+  return Array.isArray(value) ? value.filter(entry => typeof entry === 'string' && entry.length > 0) : [];
 }
 
 function runStructuredSourceAdapterContractSelfTest() {

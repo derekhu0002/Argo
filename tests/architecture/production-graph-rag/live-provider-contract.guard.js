@@ -51,6 +51,9 @@ for (const requiredText of [
   'finite',
   'zero index writes',
   'QWEN_KEY',
+  'embeddingLifecycle',
+  'alignment',
+  'Harness-created lifecycle execution',
 ]) {
   assert(
     localContract.toLowerCase().includes(requiredText.toLowerCase()),
@@ -66,6 +69,11 @@ assert(!localContract.includes('executeFailureScenario'), 'LIVE_PROVIDER_CONTRAC
 assert(
   rootContract.includes('Harness observes the actual request target/body/count and raw response'),
   'LIVE_PROVIDER_CONTRACT_GUARD: transport-owned HTTP evidence is missing',
+);
+assert(
+  rootContract.includes('one successful `applySystemArchitectureMutation` write call automatically invokes the embedding lifecycle')
+    && rootContract.includes('expected-touched-record substitution'),
+  'LIVE_PROVIDER_CONTRACT_GUARD: automatic mutation-triggered W3.1 boundary is missing',
 );
 
 // THEN the canonical example contains approved empty placeholders only
