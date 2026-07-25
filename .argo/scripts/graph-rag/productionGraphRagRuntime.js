@@ -37,61 +37,78 @@ const PURPOSE_CATEGORIES = Object.freeze([
   'graph-tidy',
 ]);
 
-const PURPOSE_POLICY_DEFINITIONS = Object.freeze({
+const PURPOSE_POLICY_ANCHORS = Object.freeze({
+  'intent-decision': 'grag-intent-decision-policy',
+  'implementation-design': 'grag-implementation-policy',
+  'coding-repair': 'grag-repair-policy',
+  audit: 'grag-audit-policy',
+  'graph-tidy': 'grag-graph-tidy-policy',
+});
+
+const PURPOSE_POLICY_TEMPLATES = Object.freeze({
   'intent-decision': Object.freeze({
     policyId: 'w5.intent-decision.v1',
-    policyAnchorId: 'grag-intent-decision-policy',
-    included: ['grag-purpose-closure', 'grag-intent-decision-policy', 'grag-goal', 'grag-capability', 'grag-consumption-process'],
-    firstInclusionReasons: Object.freeze({
-      'grag-purpose-closure': 'semantic-seed',
-      'grag-intent-decision-policy': 'declared-purpose-policy',
-      'grag-goal': 'archimate-mandatory-dependency',
-      'grag-capability': 'archimate-mandatory-dependency',
-      'grag-consumption-process': 'archimate-mandatory-dependency',
-    }),
+    maxDepth: 2,
+    cypher: [
+      'UNWIND $anchors AS anchorId',
+      'MATCH (anchor {id: anchorId})',
+      'MATCH (purpose {id: "grag-purpose-closure"})-[:Triggering]->(policy {id: $policyAnchorId})',
+      'WHERE $purpose = "intent-decision"',
+      'WITH anchor, purpose, policy, $anchors AS anchors, $subject AS subject',
+      'MATCH path = (anchor)-[*1..2]-(purpose)-[:Triggering]->(policy)',
+      'RETURN path, anchors, subject',
+    ].join('\n'),
   }),
   'implementation-design': Object.freeze({
     policyId: 'w5.implementation-design.v1',
-    policyAnchorId: 'grag-implementation-policy',
-    included: ['grag-seed-retrieval', 'grag-purpose-closure', 'grag-implementation-policy', 'grag-query-service', 'grag-canonical-graph'],
-    firstInclusionReasons: Object.freeze({
-      'grag-seed-retrieval': 'semantic-seed',
-      'grag-purpose-closure': 'archimate-mandatory-dependency',
-      'grag-implementation-policy': 'declared-purpose-policy',
-      'grag-query-service': 'archimate-mandatory-dependency',
-      'grag-canonical-graph': 'archimate-mandatory-dependency',
-    }),
+    maxDepth: 2,
+    cypher: [
+      'UNWIND $anchors AS anchorId',
+      'MATCH (anchor {id: anchorId})',
+      'MATCH (purpose {id: "grag-purpose-closure"})-[:Triggering]->(policy {id: $policyAnchorId})',
+      'WHERE $purpose = "implementation-design"',
+      'WITH anchor, purpose, policy, $anchors AS anchors, $subject AS subject',
+      'MATCH path = (anchor)-[*1..2]-(purpose)-[:Triggering]->(policy)',
+      'RETURN path, anchors, subject',
+    ].join('\n'),
   }),
   'coding-repair': Object.freeze({
     policyId: 'w5.coding-repair.v1',
-    policyAnchorId: 'grag-repair-policy',
-    included: ['grag-purpose-closure', 'grag-repair-policy', 'grag-query-service', 'grag-canonical-graph'],
-    firstInclusionReasons: Object.freeze({
-      'grag-purpose-closure': 'semantic-seed',
-      'grag-repair-policy': 'declared-purpose-policy',
-      'grag-query-service': 'archimate-mandatory-dependency',
-      'grag-canonical-graph': 'archimate-mandatory-dependency',
-    }),
+    maxDepth: 2,
+    cypher: [
+      'UNWIND $anchors AS anchorId',
+      'MATCH (anchor {id: anchorId})',
+      'MATCH (purpose {id: "grag-purpose-closure"})-[:Triggering]->(policy {id: $policyAnchorId})',
+      'WHERE $purpose = "coding-repair"',
+      'WITH anchor, purpose, policy, $anchors AS anchors, $subject AS subject',
+      'MATCH path = (anchor)-[*1..2]-(purpose)-[:Triggering]->(policy)',
+      'RETURN path, anchors, subject',
+    ].join('\n'),
   }),
   audit: Object.freeze({
     policyId: 'w5.audit-proof.v1',
-    policyAnchorId: 'grag-audit-policy',
-    included: ['grag-purpose-closure', 'grag-audit-policy', 'grag-canonical-graph'],
-    firstInclusionReasons: Object.freeze({
-      'grag-purpose-closure': 'semantic-seed',
-      'grag-audit-policy': 'declared-purpose-policy',
-      'grag-canonical-graph': 'archimate-mandatory-dependency',
-    }),
+    maxDepth: 2,
+    cypher: [
+      'MATCH (subject {id: $subject})',
+      'MATCH (purpose {id: "grag-purpose-closure"})-[:Triggering]->(policy {id: $policyAnchorId})',
+      'WHERE $purpose = "audit" AND subject.id = $policyAnchorId',
+      'WITH subject, purpose, policy, $anchors AS anchors',
+      'MATCH path = (subject)-[*0..2]-(policy)',
+      'RETURN path, anchors',
+    ].join('\n'),
   }),
   'graph-tidy': Object.freeze({
     policyId: 'w5.graph-tidy-bypass.v1',
-    policyAnchorId: 'grag-graph-tidy-policy',
-    included: ['grag-purpose-closure', 'grag-graph-tidy-policy', 'grag-canonical-graph'],
-    firstInclusionReasons: Object.freeze({
-      'grag-purpose-closure': 'semantic-seed',
-      'grag-graph-tidy-policy': 'declared-purpose-policy',
-      'grag-canonical-graph': 'archimate-mandatory-dependency',
-    }),
+    maxDepth: 2,
+    cypher: [
+      'UNWIND $anchors AS anchorId',
+      'MATCH (anchor {id: anchorId})',
+      'MATCH (purpose {id: "grag-purpose-closure"})-[:Triggering]->(policy {id: $policyAnchorId})',
+      'WHERE $purpose = "graph-tidy"',
+      'WITH anchor, purpose, policy, $anchors AS anchors, $subject AS subject',
+      'MATCH path = (policy)-[:Access]->(:DataObject)',
+      'RETURN path, anchor, purpose, anchors, subject',
+    ].join('\n'),
   }),
 });
 
@@ -237,8 +254,9 @@ module.exports = {
 async function closePurposePolicyScope(options) {
   const request = options.request || {};
   const category = request.purpose;
-  const definition = PURPOSE_POLICY_DEFINITIONS[category];
-  if (!definition) {
+  const template = PURPOSE_POLICY_TEMPLATES[category];
+  const policyAnchorId = PURPOSE_POLICY_ANCHORS[category];
+  if (!template || !policyAnchorId) {
     const error = new Error(`Unsupported purpose closure category: ${category}`);
     error.category = 'PURPOSE_CLOSURE_CATEGORY_UNSUPPORTED';
     throw error;
@@ -248,21 +266,28 @@ async function closePurposePolicyScope(options) {
     ? options.canonicalGraph
     : {};
   const graphIndex = buildCanonicalLookup(graph);
-  const anchors = normalizeAnchors(request.anchors, definition.policyAnchorId);
-  const closureElements = buildClosureElements(definition, graphIndex, anchors);
+  const anchors = normalizeAnchors(request.anchors, policyAnchorId);
+  const boundParameters = Object.freeze({
+    purpose: category,
+    anchors,
+    subject: request.subject || null,
+    policyAnchorId,
+  });
+  const policyExecution = executePurposePolicyTemplate({
+    template,
+    boundParameters,
+    graphIndex,
+  });
+  const closureElements = buildClosureElements(policyExecution, graphIndex, anchors);
   const excludedCategories = PURPOSE_CATEGORIES.filter(candidate => candidate !== category);
 
   return Object.freeze({
     closurePolicy: Object.freeze({
       category,
-      policyId: definition.policyId,
+      policyId: template.policyId,
       parameterizedCypher: true,
-      boundParameters: Object.freeze({
-        purpose: category,
-        anchors,
-        subject: request.subject || null,
-        policyAnchorId: definition.policyAnchorId,
-      }),
+      queryTemplate: template.cypher,
+      boundParameters,
       parameterContract: Object.freeze(['purpose', 'anchors', 'subject', 'policyAnchorId']),
       archimateSemantics: ARCHIMATE_CLOSURE_SEMANTICS,
       freeGeneratedCypherUsedForMandatoryClosure: false,
@@ -272,10 +297,11 @@ async function closePurposePolicyScope(options) {
       category,
       included: closureElements.map(element => element.id),
       excluded: excludedCategories,
-      rationale: `Declared purpose '${category}' selects ${definition.policyId}; caller identity and generated Cypher are ignored for mandatory closure.`,
+      rationale: `Declared purpose '${category}' binds ${template.policyId}; inclusion is computed from canonical ArchiMate source/target traversal, not generated Cypher or caller identity.`,
     }),
     closure: Object.freeze({
       elements: closureElements,
+      relationships: policyExecution.relationshipIds,
     }),
     ...buildCategoryResult(category, closureElements),
   });
@@ -291,19 +317,202 @@ function normalizeAnchors(anchors, fallbackAnchor) {
 
 function buildCanonicalLookup(canonicalGraph) {
   const elementById = new Map();
+  const relationshipById = new Map();
+  const relationshipsByElementId = new Map();
   for (const element of canonicalGraph.elements || []) {
     if (element && typeof element.id === 'string') {
       elementById.set(element.id, element);
     }
   }
-  return { elementById };
+  for (const relationship of canonicalGraph.relationships || []) {
+    if (!relationship || typeof relationship.id !== 'string') {
+      continue;
+    }
+    relationshipById.set(relationship.id, relationship);
+    addLookupRelationship(relationshipsByElementId, relationship.source_id, relationship);
+    addLookupRelationship(relationshipsByElementId, relationship.target_id, relationship);
+  }
+  return { elementById, relationshipById, relationshipsByElementId };
 }
 
-function buildClosureElements(definition, graphIndex, anchors) {
-  const selectedIds = [...new Set([...anchors, ...definition.included])];
-  return Object.freeze(selectedIds.map((id, index) => {
+function addLookupRelationship(index, elementId, relationship) {
+  if (!elementId) {
+    return;
+  }
+  if (!index.has(elementId)) {
+    index.set(elementId, []);
+  }
+  index.get(elementId).push(relationship);
+}
+
+function executePurposePolicyTemplate(options) {
+  const { template, boundParameters, graphIndex } = options;
+  const policyAnchorId = boundParameters.policyAnchorId;
+  const includedElementIds = new Set();
+  const includedRelationshipIds = new Set();
+  const firstInclusionReasonById = new Map();
+  const queue = [];
+
+  for (const anchorId of boundParameters.anchors) {
+    includePolicyElement({
+      elementId: anchorId,
+      reason: 'semantic-seed',
+      includedElementIds,
+      firstInclusionReasonById,
+      queue,
+      depth: 0,
+    });
+  }
+  includePolicyElement({
+    elementId: policyAnchorId,
+    reason: 'declared-purpose-policy',
+    includedElementIds,
+    firstInclusionReasonById,
+    queue,
+    depth: 0,
+  });
+
+  const selector = findPurposeSelectorRelationship(graphIndex, policyAnchorId);
+  if (selector) {
+    includedRelationshipIds.add(selector.id);
+    includePolicyElement({
+      elementId: selector.source_id,
+      reason: 'archimate-mandatory-dependency',
+      includedElementIds,
+      firstInclusionReasonById,
+      queue,
+      depth: 0,
+    });
+    includePolicyElement({
+      elementId: selector.target_id,
+      reason: 'declared-purpose-policy',
+      includedElementIds,
+      firstInclusionReasonById,
+      queue,
+      depth: 0,
+    });
+  }
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    if (current.depth >= template.maxDepth) {
+      continue;
+    }
+    for (const edge of resolvePolicyTraversalEdges(current.elementId, {
+      graphIndex,
+      policyAnchorId,
+      purpose: boundParameters.purpose,
+    })) {
+      includedRelationshipIds.add(edge.relationship.id);
+      includePolicyElement({
+        elementId: edge.nextElementId,
+        reason: edge.reason,
+        includedElementIds,
+        firstInclusionReasonById,
+        queue,
+        depth: current.depth + 1,
+      });
+    }
+  }
+
+  return Object.freeze({
+    elementIds: Object.freeze(Array.from(includedElementIds)),
+    relationshipIds: Object.freeze(Array.from(includedRelationshipIds)),
+    firstInclusionReasonById,
+  });
+}
+
+function includePolicyElement(options) {
+  const {
+    elementId,
+    reason,
+    includedElementIds,
+    firstInclusionReasonById,
+    queue,
+    depth,
+  } = options;
+  if (!elementId) {
+    return;
+  }
+  const wasIncluded = includedElementIds.has(elementId);
+  includedElementIds.add(elementId);
+  if (!firstInclusionReasonById.has(elementId)) {
+    firstInclusionReasonById.set(elementId, reason);
+  }
+  if (!wasIncluded) {
+    queue.push({ elementId, depth });
+  }
+}
+
+function findPurposeSelectorRelationship(graphIndex, policyAnchorId) {
+  return (graphIndex.relationshipsByElementId.get('grag-purpose-closure') || []).find(relationship => (
+    relationship.type === 'Triggering'
+    && relationship.source_id === 'grag-purpose-closure'
+    && relationship.target_id === policyAnchorId
+  ));
+}
+
+function resolvePolicyTraversalEdges(elementId, options) {
+  const { graphIndex, policyAnchorId } = options;
+  const edges = [];
+  for (const relationship of graphIndex.relationshipsByElementId.get(elementId) || []) {
+    if (isOutOfCategoryPolicyRelationship(relationship, policyAnchorId)) {
+      continue;
+    }
+    const nextElementId = resolveDirectedPolicyNeighbor(elementId, relationship, policyAnchorId);
+    if (!nextElementId) {
+      continue;
+    }
+    edges.push({
+      relationship,
+      nextElementId,
+      reason: nextElementId === policyAnchorId ? 'declared-purpose-policy' : 'archimate-mandatory-dependency',
+    });
+  }
+  return edges;
+}
+
+function isOutOfCategoryPolicyRelationship(relationship, policyAnchorId) {
+  return relationship.type === 'Triggering'
+    && relationship.source_id === 'grag-purpose-closure'
+    && relationship.target_id !== policyAnchorId;
+}
+
+function resolveDirectedPolicyNeighbor(elementId, relationship, policyAnchorId) {
+  if (relationship.type === 'Triggering') {
+    if (relationship.source_id === elementId) {
+      return relationship.target_id;
+    }
+    if (relationship.target_id === elementId && relationship.source_id === 'grag-seed-retrieval') {
+      return relationship.source_id;
+    }
+    return undefined;
+  }
+  if (relationship.type === 'Access') {
+    return relationship.source_id === elementId ? relationship.target_id : undefined;
+  }
+  if (relationship.type === 'Serving') {
+    return relationship.target_id === elementId ? relationship.source_id : undefined;
+  }
+  if (relationship.type === 'Realization') {
+    return relationship.target_id === elementId ? relationship.source_id : undefined;
+  }
+  if (relationship.type === 'Association') {
+    return relationship.source_id === elementId ? relationship.target_id : relationship.source_id;
+  }
+  if (relationship.type === 'Assignment') {
+    return relationship.target_id === elementId ? relationship.source_id : undefined;
+  }
+  if (relationship.target_id === policyAnchorId && relationship.source_id === elementId) {
+    return policyAnchorId;
+  }
+  return undefined;
+}
+
+function buildClosureElements(policyExecution, graphIndex, anchors) {
+  return Object.freeze(policyExecution.elementIds.map((id, index) => {
     const element = graphIndex.elementById.get(id);
-    const firstInclusionReason = definition.firstInclusionReasons[id]
+    const firstInclusionReason = policyExecution.firstInclusionReasonById.get(id)
       || (anchors.includes(id) ? 'semantic-seed' : 'archimate-mandatory-dependency');
     return Object.freeze({
       id,
