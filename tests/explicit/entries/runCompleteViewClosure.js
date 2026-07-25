@@ -10,13 +10,22 @@ async function main() {
     purpose: 'implementation-design',
     intent: 'Read one complete target View',
     anchors: ['grag-view-closure'],
+    viewClosureFixture: {
+      targetViewId: 'grag-integrity-explainability',
+      requiresRelationships: true,
+      parentViewpointRequired: true,
+      overlappingViewsMustNotCascade: true,
+    },
   });
 
   // WHEN complete-View closure is observed
   assert(result && result.result, 'DT14_TARGET_VIEW_MISSING');
 
   // THEN the target View is complete and overlapping Views do not cascade
-  assertCompleteViewClosure(result);
+  assertCompleteViewClosure(result, {
+    requiresRelationships: true,
+    parentViewpointRequired: true,
+  });
 }
 
 main().catch(error => {

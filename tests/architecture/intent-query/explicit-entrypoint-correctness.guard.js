@@ -70,12 +70,17 @@ const requiredObservations = new Map([
   ]],
   ['tests/explicit/entries/runRelationshipEndpointClosure.js', [
     'assertRelationshipEndpointClosure',
+    'governingCanonicalVersionFromLegacyResult',
+    'endpointClosureFixture',
   ]],
   ['tests/explicit/entries/runCompleteViewClosure.js', [
     'assertCompleteViewClosure',
+    'viewClosureFixture',
   ]],
   ['tests/explicit/entries/runFirstInclusionProvenance.js', [
     'assertFirstInclusionProvenance',
+    'duplicatePathFixtures',
+    'expectedFirstInclusionReason',
   ]],
 ]);
 
@@ -150,9 +155,17 @@ for (const harnessOwnedAssertion of [
   'DT10_UNRELATED_CAPABILITY_INCLUDED',
   'DT11_AUDIT_VIOLATIONS_MISSING',
   'DT00_CANONICAL_VERSION_MISSING',
+  'DT00_CANONICAL_VERSION_MISMATCH',
   'DT13_ENDPOINT_CLOSURE_MISSING',
+  'DT13_RELATIONSHIPS_EMPTY',
+  'DT13_SOURCE_ID_MISMATCH',
   'DT14_VIEW_CLOSURE_MISSING',
+  'DT14_MEMBER_OBJECT_SET_INCOMPLETE',
+  'DT14_PARENT_VIEWPOINT_MISSING',
   'DT15_PROVENANCE_EVIDENCE_MISSING',
+  'DT15_ORDERED_FIRST_REASON_MISMATCH',
+  'DT15_POLICY_PARAMETERS_MISSING',
+  'DT15_POLICY_ANCHORS_MISSING',
 ]) {
   assert(
     harnessSource.includes(harnessOwnedAssertion),

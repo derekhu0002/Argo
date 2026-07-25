@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T23:58:00+08:00",
+  "generatedAt": "2026-07-26T00:12:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "W6 structural closure and explainable results handoff. Coding/Repair must preserve W4 seed retrieval and W5 purpose-policy selection while adding coherent-result canonical-version evidence, same-version relationship endpoint closure, complete non-cascading View closure, and single first-inclusion provenance with policy/index/version evidence.",
   "implementationContracts": [
@@ -14,7 +14,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
       "entryPath": "tests/explicit/entries/runCoherentIntentReading.js",
       "controlPoint": "Submit legacy and semantic-query tasks against the same canonical graph version.",
-      "observationPoint": "Legacy reading remains complete and semantic evidence exposes the governing canonicalVersion for coherent-result traceability.",
+      "observationPoint": "Legacy reading remains complete and semantic canonicalVersion equals the governing legacy graph version; missing version evidence fails DT00_CANONICAL_VERSION_MISSING and mismatched evidence fails DT00_CANONICAL_VERSION_MISMATCH.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runCoherentIntentReading.js",
       "failureReason": "DT00_CANONICAL_VERSION_MISSING"
@@ -22,8 +22,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
       "entryPath": "tests/explicit/entries/runRelationshipEndpointClosure.js",
-      "controlPoint": "Run a purpose-closed relationship range whose endpoints are not semantic matches and include invalid endpoint fixtures.",
-      "observationPoint": "Every returned relationship has source and target Element objects from the same canonical version, with dangling and cross-version endpoint errors surfaced structurally.",
+      "controlPoint": "Run a purpose-closed relationship range with endpoint closure fixtures requiring at least one returned relationship plus dangling and cross-version endpoint cases.",
+      "observationPoint": "At least one relationship object exposes source/target ids, matching source/target Element object identities, same-version evidence tied to the governing result version, and dangling/cross-version structural errors.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runRelationshipEndpointClosure.js",
       "failureReason": "DT13_ENDPOINT_CLOSURE_MISSING"
@@ -31,8 +31,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
       "entryPath": "tests/explicit/entries/runCompleteViewClosure.js",
-      "controlPoint": "Run a matched View query where the selected View shares members with overlapping Views.",
-      "observationPoint": "The selected View includes complete metadata, viewpoint binding, member ids/objects, relationship ids/objects, endpoints, and no overlapping-View cascade.",
+      "controlPoint": "Run a matched View query where the selected View shares members with overlapping Views and requires in-View relationships plus a parent viewpoint.",
+      "observationPoint": "The selected View includes complete metadata, viewpoint binding, parent viewpoint, exact included element ids matching member objects, exact relationship ids matching relationship objects, complete relationship endpoints, and no overlapping-View cascade.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runCompleteViewClosure.js",
       "failureReason": "DT14_VIEW_CLOSURE_MISSING"
@@ -40,8 +40,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
       "entryPath": "tests/explicit/entries/runFirstInclusionProvenance.js",
-      "controlPoint": "Run duplicate-discovery fixtures across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
-      "observationPoint": "Every returned object has exactly one ordered firstInclusionReason, supplementary reasons never overwrite it, and purpose/policy/canonical/content/index/alignment evidence is complete.",
+      "controlPoint": "Run explicit duplicate-path fixtures across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
+      "observationPoint": "Every returned object has exactly one ordered firstInclusionReason, expected supplementary reasons never overwrite it, and policy id, policy parameters/anchors, canonical/content/index versions, and alignment state are complete.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runFirstInclusionProvenance.js",
       "failureReason": "DT15_PROVENANCE_EVIDENCE_MISSING"
@@ -87,26 +87,26 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "DT00_CANONICAL_VERSION_MISSING",
-      "nextAction": "Surface governing canonicalVersion evidence on semantic-query responses without changing the no-argument full-snapshot envelope."
+      "failureSignal": "DT00_CANONICAL_VERSION_MISSING / DT00_CANONICAL_VERSION_MISMATCH",
+      "nextAction": "Surface governing canonicalVersion evidence on semantic-query responses and ensure it equals the canonical version or Harness-defined fingerprint of the legacy graph used for the same read."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-13",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT13_ENDPOINT_CLOSURE_MISSING",
-      "nextAction": "Extend purpose-closed results with endpointClosure relationships, same-version source/target objects, and dangling/cross-version structural error evidence."
+      "failureSignal": "DT13_ENDPOINT_CLOSURE_MISSING / DT13_RELATIONSHIPS_EMPTY / DT13_SOURCE_ID_MISMATCH / DT13_TARGET_ID_MISMATCH / DT13_RELATIONSHIP_VERSION_MISMATCH",
+      "nextAction": "Extend purpose-closed results with non-empty endpointClosure relationships, source/target ids, matching endpoint objects, same-version evidence tied to the governing result version, and dangling/cross-version structural error evidence."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-14",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT14_VIEW_CLOSURE_MISSING",
-      "nextAction": "Add complete selected-View closure with metadata, members, relationships, endpoints, and explicit non-cascade evidence for overlapping Views."
+      "failureSignal": "DT14_VIEW_CLOSURE_MISSING / DT14_MEMBER_OBJECT_SET_INCOMPLETE / DT14_RELATIONSHIP_OBJECT_SET_INCOMPLETE / DT14_PARENT_VIEWPOINT_MISSING",
+      "nextAction": "Add complete selected-View closure with metadata, parent viewpoint, exact member and relationship object sets, endpoint-complete in-View relationships, and explicit non-cascade evidence for overlapping Views."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-15",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT15_PROVENANCE_EVIDENCE_MISSING",
-      "nextAction": "Add provenance objects with one ordered firstInclusionReason, non-overwriting supplementary reasons, policy evidence, canonical/content/index versions, and alignment evidence."
+      "failureSignal": "DT15_PROVENANCE_EVIDENCE_MISSING / DT15_ORDERED_FIRST_REASON_MISMATCH / DT15_POLICY_PARAMETERS_MISSING / DT15_POLICY_ANCHORS_MISSING",
+      "nextAction": "Add provenance objects satisfying the explicit duplicate-path fixture order, with one firstInclusionReason, non-overwriting supplementary reasons, policy id, policy parameters/anchors, canonical/content/index versions, and alignment evidence."
     }
   ],
   "taskExecutionPlan": {
@@ -124,8 +124,8 @@
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Derive canonicalVersion from the canonical graph snapshot used by the query service.",
-          "Preserve the no-argument legacy envelope and add version evidence only to semantic-query response metadata/result evidence.",
+          "Derive canonicalVersion from the canonical graph snapshot used by the query service, matching graph.version when present or the Harness-defined canonical fingerprint otherwise.",
+          "Preserve the no-argument legacy envelope and add equal version evidence only to semantic-query response metadata/result evidence.",
           "Run node tests/explicit/entries/runCoherentIntentReading.js until it passes."
         ],
         "completionSignal": "runCoherentIntentReading.js exits 0 and no-argument compatibility tests remain green."
@@ -144,8 +144,8 @@
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Build endpointClosure from the W5 selected relationship range using canonical relationship source_id and target_id.",
-          "Attach source and target Element objects with matching canonicalVersion evidence.",
+          "Build a non-empty endpointClosure from the W5 selected relationship range using canonical relationship source_id and target_id.",
+          "Attach source and target Element objects whose ids match those endpoint ids and whose canonicalVersion matches the governing result version.",
           "Report missing, deleted, invalid, or cross-version endpoint references through structuralErrors rather than partial relationship output.",
           "Run node tests/explicit/entries/runRelationshipEndpointClosure.js until it passes."
         ],
@@ -166,7 +166,7 @@
         ],
         "steps": [
           "Build viewClosure only for Views independently matched or explicitly requested by the W5/W6 query.",
-          "Return View metadata, viewpoint binding or description, parent viewpoint when present, member ids/objects, relationship ids/objects, and endpoint objects.",
+          "Return View metadata, viewpoint binding or description, required parent viewpoint, exact member ids/objects, exact relationship ids/objects, and endpoint objects.",
           "Record overlappingViewCascade as false when shared members do not select additional Views.",
           "Run node tests/explicit/entries/runCompleteViewClosure.js until it passes."
         ],
@@ -187,9 +187,9 @@
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Choose firstInclusionReason by ordered discovery across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure.",
+          "Choose firstInclusionReason by the explicit duplicate-path discovery order: semantic seed, relationship endpoint closure, purpose-policy closure, then complete-View closure.",
           "Append later matches only to supplementaryReasons and never overwrite firstInclusionReason.",
-          "Expose declared purpose, selected policy id, policy parameters or anchors, canonicalVersion, semantic contentVersion, indexVersion, and alignment state.",
+          "Expose declared purpose, selected policy id, policy parameters and anchors, canonicalVersion, semantic contentVersion, indexVersion, and alignment state.",
           "Run node tests/explicit/entries/runFirstInclusionProvenance.js until it passes."
         ],
         "completionSignal": "runFirstInclusionProvenance.js exits 0 with one first reason and complete policy/index/version evidence."

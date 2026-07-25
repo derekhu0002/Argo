@@ -146,3 +146,11 @@
 - Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 30 passed, 8 failed or missing, 0 missing acceptance criteria. W6 fails with `DT00_CANONICAL_VERSION_MISSING`, `DT13_ENDPOINT_CLOSURE_MISSING`, `DT14_VIEW_CLOSURE_MISSING`, and `DT15_PROVENANCE_EVIDENCE_MISSING`; out-of-scope DT-18, DT-19, and TS-08 remain failed. Runner-owned delivery status changed `grag-coherent-context` from absent to `not_delivered`.
 - Coding/Repair is authorized to update `.argo/scripts/systemarchitecture-mcp-server.js` and `.argo/scripts/graph-rag/productionGraphRagRuntime.js` only as needed to satisfy W6. W4 seed retrieval, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, and deliveryStatus remain out of scope.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-26 W6 testcase design repair
+
+- Repaired the W6 Implementation Design artifacts after IntentDesign audit found weak assertions. No intent graph mutation was required; the defects were in Harness assertions, explicit fixture expectations, handoff text, and contract wording.
+- DT-00-W6 now compares semantic canonicalVersion to the governing legacy graph version, using graph version when present and a Harness-defined canonical fingerprint otherwise; mismatches fail `DT00_CANONICAL_VERSION_MISMATCH`.
+- DT-13 now requires a non-empty endpointClosure relationship set, source/target ids, endpoint object id matching, and same-version evidence tied to the governing result version.
+- DT-14 now requires exact included element ids to match member object ids, exact included relationship ids to match relationship objects, non-empty in-View relationship fixtures, complete endpoints, and parent viewpoint evidence when expected.
+- DT-15 now carries explicit duplicate-path fixtures and asserts ordered first-reason selection, supplementary non-overwrite, policy id, policy parameters/anchors, canonical/content/index versions, and alignment state.

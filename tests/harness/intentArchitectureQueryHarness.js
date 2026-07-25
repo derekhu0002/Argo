@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -44,6 +45,32 @@ function expectedLegacyEnvelope(canonicalSnapshot) {
 
 function observeReturnedGraph(result) {
   return result.document;
+}
+
+function governingCanonicalVersionFromLegacyResult(result) {
+  const graph = observeReturnedGraph(result);
+  assert(graph, 'DT00_LEGACY_GRAPH_MISSING: legacy reading must return canonical data');
+  return graph.version
+    || graph.canonicalVersion
+    || (graph.metadata && graph.metadata.canonicalVersion)
+    || canonicalGraphFingerprint(graph);
+}
+
+function canonicalGraphFingerprint(graph) {
+  const identity = {
+    name: graph.name || 'System',
+    elements: (graph.elements || []).map(element => element.id).sort(),
+    relationships: (graph.relationships || []).map(relationship => relationship.id).sort(),
+    views: (graph.views || []).map(view => view.view_id).sort(),
+  };
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`;
+}
+
+function extractSemanticCanonicalVersion(result) {
+  return (result.query && result.query.canonicalVersion)
+    || (result.result && result.result.canonicalVersion)
+    || (result.result && result.result.provenance && result.result.provenance.canonicalVersion)
+    || (result.document && result.document.canonicalVersion);
 }
 
 function createSemanticRetrievalProbe() {
@@ -191,34 +218,56 @@ function assertAuditProofClosure(result) {
 }
 
 function assertCoherentW6VersionEvidence(legacyResult, semanticResult) {
-  assert(observeReturnedGraph(legacyResult), 'DT00_LEGACY_GRAPH_MISSING: legacy reading must return canonical data');
+  const governingCanonicalVersion = governingCanonicalVersionFromLegacyResult(legacyResult);
   assert.strictEqual(
     semanticResult.query && semanticResult.query.purpose,
     'implementation-design',
     'DT00_QUERY_PURPOSE_MISSING: semantic evidence must preserve explicit purpose',
   );
+  const semanticCanonicalVersion = extractSemanticCanonicalVersion(semanticResult);
   assert(
-    semanticResult.query && semanticResult.query.canonicalVersion,
+    semanticCanonicalVersion,
     'DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version',
+  );
+  assert.strictEqual(
+    semanticCanonicalVersion,
+    governingCanonicalVersion,
+    'DT00_CANONICAL_VERSION_MISMATCH: semantic canonical version must match the governing legacy graph version',
   );
 }
 
-function assertRelationshipEndpointClosure(result) {
+function assertRelationshipEndpointClosure(result, expectation = {}) {
   const endpointClosure = result && result.result && result.result.endpointClosure;
   assert(endpointClosure && typeof endpointClosure === 'object', 'DT13_ENDPOINT_CLOSURE_MISSING');
   assert(Array.isArray(endpointClosure.relationships), 'DT13_RELATIONSHIP_OBJECTS_MISSING');
+  assert(endpointClosure.relationships.length > 0, 'DT13_RELATIONSHIPS_EMPTY');
   assert(Array.isArray(endpointClosure.structuralErrors), 'DT13_STRUCTURAL_ERROR_CHANNEL_MISSING');
+  const governingCanonicalVersion = expectation.governingCanonicalVersion
+    || extractSemanticCanonicalVersion(result)
+    || (result.result && result.result.canonicalVersion);
+  assert(governingCanonicalVersion, 'DT13_GOVERNING_VERSION_MISSING');
   for (const relationship of endpointClosure.relationships) {
     assert(relationship && relationship.id, 'DT13_RELATIONSHIP_ID_MISSING');
     assert(relationship.source && relationship.target, 'DT13_ENDPOINTS_INCOMPLETE');
+    const sourceId = relationship.source_id || relationship.sourceId;
+    const targetId = relationship.target_id || relationship.targetId;
+    assert(sourceId, 'DT13_SOURCE_ID_MISSING');
+    assert(targetId, 'DT13_TARGET_ID_MISSING');
+    assert.strictEqual(relationship.source.id, sourceId, 'DT13_SOURCE_ID_MISMATCH');
+    assert.strictEqual(relationship.target.id, targetId, 'DT13_TARGET_ID_MISMATCH');
     assert.strictEqual(
       relationship.canonicalVersion,
+      governingCanonicalVersion,
+      'DT13_RELATIONSHIP_VERSION_MISMATCH',
+    );
+    assert.strictEqual(
       relationship.source.canonicalVersion,
+      governingCanonicalVersion,
       'DT13_SOURCE_VERSION_MISMATCH',
     );
     assert.strictEqual(
-      relationship.canonicalVersion,
       relationship.target.canonicalVersion,
+      governingCanonicalVersion,
       'DT13_TARGET_VERSION_MISMATCH',
     );
   }
@@ -230,7 +279,7 @@ function assertRelationshipEndpointClosure(result) {
   }
 }
 
-function assertCompleteViewClosure(result) {
+function assertCompleteViewClosure(result, expectation = {}) {
   const viewClosure = result && result.result && result.result.viewClosure;
   assert(viewClosure && typeof viewClosure === 'object', 'DT14_VIEW_CLOSURE_MISSING');
   assert(Array.isArray(viewClosure.views) && viewClosure.views.length > 0, 'DT14_TARGET_VIEW_MISSING');
@@ -242,14 +291,41 @@ function assertCompleteViewClosure(result) {
     assert(Array.isArray(view.included_relationships), 'DT14_VIEW_RELATIONSHIP_IDS_MISSING');
     assert(Array.isArray(view.memberElements), 'DT14_VIEW_MEMBER_OBJECTS_MISSING');
     assert(Array.isArray(view.memberRelationships), 'DT14_VIEW_RELATIONSHIP_OBJECTS_MISSING');
+    assertSetEqual(
+      view.included_elements,
+      view.memberElements.map(member => member && member.id),
+      'DT14_MEMBER_OBJECT_SET_INCOMPLETE',
+    );
+    assertSetEqual(
+      view.included_relationships,
+      view.memberRelationships.map(relationship => relationship && relationship.id),
+      'DT14_RELATIONSHIP_OBJECT_SET_INCOMPLETE',
+    );
+    if (expectation.requiresRelationships !== false) {
+      assert(view.included_relationships.length > 0, 'DT14_IN_VIEW_RELATIONSHIPS_MISSING');
+      assert(view.memberRelationships.length > 0, 'DT14_VIEW_RELATIONSHIP_OBJECTS_EMPTY');
+    }
+    if (expectation.parentViewpointRequired !== false) {
+      assert(
+        (view.parentViewpoint && (view.parentViewpoint.id || view.parentViewpoint.name))
+          || (view.parent_element_id && view.parent_element_name),
+        'DT14_PARENT_VIEWPOINT_MISSING',
+      );
+    }
     assert(
-      view.memberRelationships.every(relationship => relationship.source && relationship.target),
+      view.memberRelationships.every(relationship => (
+        relationship
+        && relationship.source
+        && relationship.target
+        && relationship.source.id
+        && relationship.target.id
+      )),
       'DT14_VIEW_RELATIONSHIP_ENDPOINTS_MISSING',
     );
   }
 }
 
-function assertFirstInclusionProvenance(result) {
+function assertFirstInclusionProvenance(result, expectation = {}) {
   const provenance = result && result.result && result.result.provenance;
   assert(provenance && typeof provenance === 'object', 'DT15_PROVENANCE_EVIDENCE_MISSING');
   assert(Array.isArray(provenance.objects) && provenance.objects.length > 0, 'DT15_PROVENANCE_OBJECTS_MISSING');
@@ -264,10 +340,36 @@ function assertFirstInclusionProvenance(result) {
   }
   assert(provenance.purpose, 'DT15_PURPOSE_EVIDENCE_MISSING');
   assert(provenance.policy && provenance.policy.policyId, 'DT15_POLICY_EVIDENCE_MISSING');
+  assert(
+    provenance.policy && (
+      (provenance.policy.parameters && typeof provenance.policy.parameters === 'object')
+      || (provenance.policy.boundParameters && typeof provenance.policy.boundParameters === 'object')
+    ),
+    'DT15_POLICY_PARAMETERS_MISSING',
+  );
+  assert(
+    provenance.policy && Array.isArray(provenance.policy.anchors) && provenance.policy.anchors.length > 0,
+    'DT15_POLICY_ANCHORS_MISSING',
+  );
   assert(provenance.canonicalVersion, 'DT15_CANONICAL_VERSION_EVIDENCE_MISSING');
   assert(provenance.semanticIndex && provenance.semanticIndex.contentVersion, 'DT15_CONTENT_VERSION_EVIDENCE_MISSING');
   assert(provenance.semanticIndex && provenance.semanticIndex.indexVersion, 'DT15_INDEX_VERSION_EVIDENCE_MISSING');
   assert(provenance.alignment && provenance.alignment.state, 'DT15_ALIGNMENT_EVIDENCE_MISSING');
+  for (const duplicateFixture of expectation.duplicatePathFixtures || []) {
+    const object = provenance.objects.find(candidate => candidate && candidate.objectId === duplicateFixture.objectId);
+    assert(object, `DT15_DUPLICATE_PATH_FIXTURE_MISSING: ${duplicateFixture.objectId}`);
+    assert.strictEqual(
+      object.firstInclusionReason,
+      duplicateFixture.expectedFirstInclusionReason,
+      `DT15_ORDERED_FIRST_REASON_MISMATCH: ${duplicateFixture.objectId}`,
+    );
+    for (const laterReason of duplicateFixture.expectedSupplementaryReasons || []) {
+      assert(
+        object.supplementaryReasons.includes(laterReason),
+        `DT15_SUPPLEMENTARY_REASON_MISSING: ${duplicateFixture.objectId}:${laterReason}`,
+      );
+    }
+  }
 }
 
 function assertUniqueCanonicalIdentities(graph, failureCategory) {
@@ -290,6 +392,12 @@ function assertUnique(values, message) {
   assert.strictEqual(new Set(values).size, values.length, message);
 }
 
+function assertSetEqual(expectedValues, actualValues, message) {
+  const expected = [...new Set((expectedValues || []).filter(Boolean))].sort();
+  const actual = [...new Set((actualValues || []).filter(Boolean))].sort();
+  assert.deepStrictEqual(actual, expected, message);
+}
+
 module.exports = {
   assertCompleteCanonicalSnapshot,
   assertAuditProofClosure,
@@ -308,6 +416,8 @@ module.exports = {
   assertUniqueCanonicalIdentities,
   createSemanticRetrievalProbe,
   expectedLegacyEnvelope,
+  extractSemanticCanonicalVersion,
+  governingCanonicalVersionFromLegacyResult,
   observeReturnedGraph,
   readAsUnchangedConsumer,
   readCanonicalSnapshot,
