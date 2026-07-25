@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const liveGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingIndexGate.js');
+const liveConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
 const LIVE_OPT_IN = 'ARGO_LIVE_PROVIDER_E2E';
 const APPROVED_PROFILE = Object.freeze({
   approvedByHuman: true,
@@ -28,17 +29,17 @@ const FAILURE_CASES = Object.freeze([
 
 async function runLiveEmbeddingProviderE2E() {
   requireLiveOptIn('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED');
-  requireProcessSecretPresence();
+  const configuration = await resolveApprovedLiveConfiguration();
   const createGate = loadLiveGateFactory();
   const input = `Argo live embedding ${crypto.randomUUID()}`;
   const identities = dynamicEvidenceIdentities();
   const transport = createObservedHttpTransport(global.fetch);
-  const indexBoundary = await createControlledNeo4jIndexBoundary('success');
+  const indexBoundary = await createControlledNeo4jIndexBoundary('success', configuration);
   const logger = createCapturingLogger();
 
   try {
     const gate = createGate({
-      environment: process.env,
+      configuration,
       transport,
       indexBoundary,
       logger,
@@ -52,7 +53,7 @@ async function runLiveEmbeddingProviderE2E() {
     const writesAfter = await indexBoundary.countWrites();
     const graphEvidence = await indexBoundary.readEvidence();
     const transportObservation = transport.observation();
-    const failureObservations = await runFailureMatrix(createGate, identities);
+    const failureObservations = await runFailureMatrix(createGate, identities, configuration);
     const writesAfterCleanup = await indexBoundary.cleanup();
 
     return {
@@ -75,16 +76,16 @@ async function runLiveEmbeddingProviderE2E() {
   }
 }
 
-async function runFailureMatrix(createGate, identities) {
+async function runFailureMatrix(createGate, identities, configuration) {
   const observations = [];
   for (const testCase of FAILURE_CASES) {
-    const indexBoundary = await createControlledNeo4jIndexBoundary(testCase.name);
+    const indexBoundary = await createControlledNeo4jIndexBoundary(testCase.name, configuration);
     const logger = createCapturingLogger();
     const canary = `redaction-canary-${crypto.randomUUID()}`;
     const transport = createFailureTransport(testCase.transport, canary);
     try {
       const gate = createGate({
-        environment: process.env,
+        configuration,
         transport,
         indexBoundary,
         logger,
@@ -124,7 +125,6 @@ async function runFailureMatrix(createGate, identities) {
 
 async function runLiveProviderSecretIsolation() {
   requireLiveOptIn('LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED');
-  requireProcessSecretPresence();
   const observation = await runLiveEmbeddingProviderE2E();
   const createGate = loadLiveGateFactory();
   const redaction = await runRedactionCanaryProbe(createGate);
@@ -153,7 +153,7 @@ async function runRedactionCanaryProbe(createGate) {
   const logger = createCapturingLogger();
   const captured = await captureProcessOutput(async () => {
     const gate = createGate({
-      environment: approvedSyntheticEnvironment(`synthetic-process-key-${crypto.randomUUID()}`),
+      configuration: approvedSyntheticConfiguration(),
       transport,
       indexBoundary,
       logger,
@@ -173,6 +173,7 @@ async function runRedactionCanaryProbe(createGate) {
     ...readPersistentArtifactsRecursively(),
   ];
   const syntheticSuccess = await runSyntheticSuccessCanaryProbe(createGate);
+  const approvedSecretChannels = runApprovedSecretChannelSelfTest();
   return {
     failure: {
       category: captured.result.category,
@@ -181,6 +182,7 @@ async function runRedactionCanaryProbe(createGate) {
       leaks: findSecretLeaks(failureCanary, artifacts),
     },
     syntheticSuccess,
+    approvedSecretChannels,
     inspectedArtifactNames: [
       ...artifacts.map(artifact => artifact.name),
       'cypherTextAndParameters',
@@ -189,13 +191,39 @@ async function runRedactionCanaryProbe(createGate) {
   };
 }
 
+function runApprovedSecretChannelSelfTest() {
+  const results = {};
+  for (const [name, canary] of [
+    ['QWEN_KEY', `qwen-channel-${crypto.randomUUID()}`],
+    ['ARGO_NEO4J_DATABASE_PASSWORD', `neo4j-channel-${crypto.randomUUID()}`],
+  ]) {
+    const rawChannels = [
+      { name: 'processSource', value: { neutral: canary } },
+      { name: 'fileSource', value: { neutral: canary } },
+      { name: 'conflictError', value: new Error(canary) },
+      { name: 'aclError', value: new Error(canary) },
+      { name: 'connectionAuthenticationError', value: new Error(canary) },
+    ];
+    const sanitizedChannels = [
+      { name: 'conflictError', value: 'SECRET_SOURCE_CONFLICT' },
+      { name: 'aclError', value: 'SECRET_FILE_ACL_UNSAFE' },
+      { name: 'connectionAuthenticationError', value: 'NEO4J_AUTHENTICATION_FAILED' },
+    ];
+    results[name] = {
+      detectedRawChannels: findSecretLeaks(canary, rawChannels),
+      sanitizedLeaks: findSecretLeaks(canary, sanitizedChannels),
+    };
+  }
+  return results;
+}
+
 async function runSyntheticSuccessCanaryProbe(createGate) {
   const canary = `redaction-success-canary-${crypto.randomUUID()}`;
   const vector = Array.from({ length: 1024 }, (_, index) => index / 2048);
   const transport = createSyntheticSuccessTransport(vector);
   const indexBoundary = createRecordingInMemoryIndexBoundary();
   const gate = createGate({
-    environment: approvedSyntheticEnvironment(`synthetic-process-key-${crypto.randomUUID()}`),
+    configuration: approvedSyntheticConfiguration(),
     transport,
     indexBoundary,
     logger: createCapturingLogger(),
@@ -363,12 +391,19 @@ function requireLiveOptIn(category) {
   }
 }
 
-function requireProcessSecretPresence() {
-  if (!Object.prototype.hasOwnProperty.call(process.env, 'QWEN_KEY')
-    || typeof process.env.QWEN_KEY !== 'string'
-    || process.env.QWEN_KEY.length === 0) {
-    throw safeError('QWEN_KEY_REQUIRED');
+async function resolveApprovedLiveConfiguration() {
+  if (!fs.existsSync(liveConfigPath)) {
+    throw safeError('LIVE_PROVIDER_CONFIGURATION_BOUNDARY_MISSING');
   }
+  delete require.cache[require.resolve(liveConfigPath)];
+  const boundary = require(liveConfigPath);
+  if (typeof boundary.resolveApprovedLiveConfiguration !== 'function') {
+    throw safeError('LIVE_PROVIDER_CONFIGURATION_API_MISSING');
+  }
+  return boundary.resolveApprovedLiveConfiguration({
+    repositoryRoot: repoRoot,
+    environment: process.env,
+  });
 }
 
 function loadLiveGateFactory() {
@@ -383,12 +418,11 @@ function loadLiveGateFactory() {
   return boundary.createLiveEmbeddingIndexGate;
 }
 
-async function createControlledNeo4jIndexBoundary(label) {
+async function createControlledNeo4jIndexBoundary(label, configuration) {
   const neo4j = require('neo4j-driver');
-  const uri = requireExternalValue('ARGO_NEO4J_URI');
-  const username = requireExternalValue('ARGO_NEO4J_USERNAME');
-  const password = requireExternalValue('ARGO_NEO4J_PASSWORD');
-  const database = process.env.ARGO_NEO4J_DATABASE;
+  const uri = requireConfigurationValue(configuration, 'neo4jDatabaseUrl');
+  const username = requireConfigurationValue(configuration, 'neo4jDatabaseUsername');
+  const password = requireConfigurationValue(configuration, 'neo4jDatabasePassword');
   const runId = `argo-live-${label}-${crypto.randomUUID()}`;
   const driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
   const observedCypher = [];
@@ -397,7 +431,7 @@ async function createControlledNeo4jIndexBoundary(label) {
 
   async function query(cypher, parameters = {}) {
     observedCypher.push({ cypher, parameters });
-    const session = driver.session(database ? { database } : {});
+    const session = driver.session();
     try {
       return await session.run(cypher, parameters);
     } finally {
@@ -548,15 +582,17 @@ async function captureProcessOutput(action) {
   }
 }
 
-function approvedSyntheticEnvironment(canary) {
+function approvedSyntheticConfiguration() {
   return {
-    [LIVE_OPT_IN]: '1',
-    QWEN_KEY: canary,
-    ARGO_EMBEDDING_BASE_URL: APPROVED_PROFILE.baseUrl,
-    ARGO_EMBEDDING_MODEL: APPROVED_PROFILE.model,
-    ARGO_EMBEDDING_PROVIDER: APPROVED_PROFILE.provider,
-    ARGO_EMBEDDING_MODEL_VERSION: APPROVED_PROFILE.version,
-    ARGO_EMBEDDING_DIMENSIONS: String(APPROVED_PROFILE.dimensions),
+    embeddingBaseUrl: APPROVED_PROFILE.baseUrl,
+    embeddingModel: APPROVED_PROFILE.model,
+    embeddingProvider: APPROVED_PROFILE.provider,
+    embeddingModelVersion: APPROVED_PROFILE.version,
+    embeddingDimensions: APPROVED_PROFILE.dimensions,
+    qwenKey: `synthetic-qwen-${crypto.randomUUID()}`,
+    neo4jDatabaseUrl: 'neo4j://synthetic.invalid',
+    neo4jDatabaseUsername: 'synthetic-user',
+    neo4jDatabasePassword: `synthetic-neo4j-${crypto.randomUUID()}`,
   };
 }
 
@@ -643,8 +679,8 @@ function fingerprint(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
-function requireExternalValue(name) {
-  const value = process.env[name];
+function requireConfigurationValue(configuration, name) {
+  const value = configuration && configuration[name];
   if (typeof value !== 'string' || value.trim() === '') {
     const error = safeError('CONTROLLED_NEO4J_CONFIG_REQUIRED');
     error.field = name;

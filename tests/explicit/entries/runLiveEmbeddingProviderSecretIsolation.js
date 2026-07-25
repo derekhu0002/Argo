@@ -43,6 +43,18 @@ async function main() {
     [],
     'TS07_PROVIDER_REDACTION_GENERATED_ARTIFACT_LEAK',
   );
+  for (const secretName of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
+    assert.deepStrictEqual(
+      observation.redaction.approvedSecretChannels[secretName].detectedRawChannels,
+      ['processSource', 'fileSource', 'conflictError', 'aclError', 'connectionAuthenticationError'],
+      `TS07_PROVIDER_SECRET_CHANNEL_MATRIX_INCOMPLETE:${secretName}`,
+    );
+    assert.deepStrictEqual(
+      observation.redaction.approvedSecretChannels[secretName].sanitizedLeaks,
+      [],
+      `TS07_PROVIDER_SECRET_CHANNEL_REDACTION_FAILED:${secretName}`,
+    );
+  }
   for (const requiredArtifact of [
     'requestObservation',
     'responseObservation',

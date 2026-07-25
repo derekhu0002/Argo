@@ -1,5 +1,4 @@
 const assert = require('node:assert');
-const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -16,15 +15,15 @@ const secretEntry = read(secretEntryPath);
 // WHEN the Harness is inspected
 // THEN opt-in blocks before loading production boundaries, touching secret state, or opening Neo4j
 const optInCheck = harness.indexOf("requireLiveOptIn('LIVE_PROVIDER_E2E_OPT_IN_REQUIRED')");
-const secretPresenceCheck = harness.indexOf('requireProcessSecretPresence();');
+const secretPresenceCheck = harness.indexOf('const configuration = await resolveApprovedLiveConfiguration()');
 const boundaryLoad = harness.indexOf('const createGate = loadLiveGateFactory()');
+const transportCreation = harness.indexOf('const transport = createObservedHttpTransport(global.fetch)');
 const neo4jOpen = harness.indexOf("require('neo4j-driver')");
-const secretRead = harness.indexOf('process.env.QWEN_KEY');
 assert(optInCheck >= 0, 'LIVE_PROVIDER_OPT_IN_GUARD: live opt-in category is missing');
 assert(secretPresenceCheck > optInCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: secret preflight occurs before opt-in');
 assert(boundaryLoad > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: production boundary loads before secret preflight');
+assert(transportCreation > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: transport constructs before secret preflight');
 assert(neo4jOpen > secretPresenceCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: Neo4j opens before secret preflight');
-assert(secretRead > optInCheck, 'LIVE_PROVIDER_OPT_IN_GUARD: provider secret is touched before opt-in');
 assert(
   harness.includes("process.env[LIVE_OPT_IN] !== '1'"),
   'LIVE_PROVIDER_OPT_IN_GUARD: opt-in must be exact and explicit',
@@ -82,25 +81,16 @@ for (const [testcaseName, failureReason, entryPath] of [
 }
 assert(handoff.frozenFiles.includes(harnessPath), 'LIVE_PROVIDER_OPT_IN_GUARD: live Harness is not frozen');
 
-// GIVEN explicit opt-in with QWEN_KEY deliberately absent
-// WHEN either live entrypoint starts in a minimal child environment
-// THEN it fails before production loading, network transport, or Neo4j with a safe category
-for (const entryPath of [liveEntryPath, secretEntryPath]) {
-  const execution = childProcess.spawnSync(process.execPath, [entryPath], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    env: {
-      ARGO_LIVE_PROVIDER_E2E: '1',
-      SystemRoot: process.env.SystemRoot || '',
-    },
-  });
-  assert.strictEqual(execution.status, 1, `LIVE_PROVIDER_OPT_IN_GUARD: ${entryPath} missing-secret status`);
-  assert.strictEqual(execution.stdout, '', `LIVE_PROVIDER_OPT_IN_GUARD: ${entryPath} wrote stdout`);
-  assert.strictEqual(
-    execution.stderr.trim(),
-    'QWEN_KEY_REQUIRED',
-    `LIVE_PROVIDER_OPT_IN_GUARD: ${entryPath} unsafe missing-secret error`,
-  );
+const secretGuard = read('tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js');
+for (const requiredPreflight of [
+  'process-only',
+  'file-only',
+  'matching-dual',
+  'SECRET_SOURCE_CONFLICT',
+  'SECRET_FILE_ACL_UNVERIFIABLE',
+  'runTemporarySecretFilePreflight',
+]) {
+  assert(secretGuard.includes(requiredPreflight), `LIVE_PROVIDER_OPT_IN_GUARD: preflight omits ${requiredPreflight}`);
 }
 
 function read(relativePath) {

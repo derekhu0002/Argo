@@ -9,7 +9,7 @@ const handoff = readJson('.argo/temp/ImplementationToCodingHandoff.json');
 const rootContract = read('OVERALL_ARCHITECTURE.md');
 const localContract = read('.argo/scripts/graph-rag/ARCHITECTURE.md');
 const testContract = read('tests/ARCHITECTURE.md');
-const envExample = read('.env.example');
+const envExample = read('.argo/.env.example');
 const gitignore = read('.gitignore');
 const approvedProfile = [
   'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
@@ -24,6 +24,10 @@ const requiredEnvironmentNames = [
   'ARGO_EMBEDDING_PROVIDER',
   'ARGO_EMBEDDING_MODEL_VERSION',
   'ARGO_EMBEDDING_DIMENSIONS',
+  'ARGO_NEO4J_DATABASE_URL',
+  'ARGO_NEO4J_DATABASE_USERNAME',
+  'ARGO_NEO4J_DATABASE_PASSWORD',
+  'QWEN_KEY',
 ];
 const mountedEntries = new Map([
   ['ExplicitAcceptanceTestcase-TS-06-Provider-E2E', 'tests/explicit/entries/runLiveEmbeddingProviderE2E.js'],
@@ -60,14 +64,16 @@ assert(
   'LIVE_PROVIDER_CONTRACT_GUARD: transport-owned HTTP evidence is missing',
 );
 
-// THEN committed .env guidance contains only approved non-sensitive embedding configuration
+// THEN the canonical example contains approved empty placeholders only
 for (const name of requiredEnvironmentNames) {
-  assert(envExample.includes(`${name}=`), `LIVE_PROVIDER_CONTRACT_GUARD: .env.example omits ${name}`);
+  assert(
+    new RegExp(`^${name}=\\s*$`, 'm').test(envExample),
+    `LIVE_PROVIDER_CONTRACT_GUARD: .argo/.env.example placeholder drifted ${name}`,
+  );
 }
-assert(!envExample.includes('QWEN_KEY'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env.example exposes secret key slot');
 assert(gitignore.split(/\r?\n/).includes('.env'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env is not ignored');
 assert(gitignore.split(/\r?\n/).includes('.env.*'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env variants are not ignored');
-assert(gitignore.split(/\r?\n/).includes('!.env.example'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env.example is not committable');
+assert(gitignore.split(/\r?\n/).includes('!.argo/.env.example'), 'LIVE_PROVIDER_CONTRACT_GUARD: canonical example is not committable');
 
 // THEN both intent-mounted testcases map to frozen physical entries in the handoff
 for (const [testcaseName, entryPath] of mountedEntries) {

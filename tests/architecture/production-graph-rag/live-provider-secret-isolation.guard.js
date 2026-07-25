@@ -3,12 +3,13 @@ const childProcess = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const {
   findSecretLeaks,
 } = require('../../harness/liveEmbeddingProviderHarness.js');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
-const envExample = read('.env.example');
+const envExample = read('.argo/.env.example');
 const gitignore = read('.gitignore');
 const harness = read('tests/harness/liveEmbeddingProviderHarness.js');
 const liveEntry = read('tests/explicit/entries/runLiveEmbeddingProviderE2E.js');
@@ -43,11 +44,46 @@ assert.deepStrictEqual(
   [],
   'LIVE_PROVIDER_SECRET_GUARD: safe artifacts were rejected',
 );
+for (const [secretName, canary] of [
+  ['QWEN_KEY', `qwen-canary-${crypto.randomUUID()}`],
+  ['ARGO_NEO4J_DATABASE_PASSWORD', `neo4j-canary-${crypto.randomUUID()}`],
+]) {
+  for (const channel of [
+    { name: `${secretName}:processSource`, value: { neutral: canary } },
+    { name: `${secretName}:fileSource`, value: { neutral: canary } },
+    { name: `${secretName}:conflictError`, value: new Error(`conflict:${canary}`) },
+    { name: `${secretName}:aclError`, value: new Error(`acl:${canary}`) },
+    { name: `${secretName}:connectionAuthenticationError`, value: new Error(`auth:${canary}`) },
+  ]) {
+    assert.strictEqual(
+      findSecretLeaks(canary, [channel]).length,
+      1,
+      `LIVE_PROVIDER_SECRET_GUARD: ${channel.name} canary was missed`,
+    );
+  }
+  assert.deepStrictEqual(
+    findSecretLeaks(canary, [
+      { name: 'safe-conflict', value: 'SECRET_SOURCE_CONFLICT' },
+      { name: 'safe-acl', value: 'SECRET_FILE_ACL_UNSAFE' },
+      { name: 'safe-auth', value: 'NEO4J_AUTHENTICATION_FAILED' },
+    ]),
+    [],
+    `LIVE_PROVIDER_SECRET_GUARD: ${secretName} safe categories leaked`,
+  );
+}
 
 // THEN configuration and entrypoint failures cannot persist or print the provider credential
-assert(!envExample.includes('QWEN_KEY'), 'LIVE_PROVIDER_SECRET_GUARD: .env.example contains QWEN_KEY');
+assert(/^QWEN_KEY=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: QWEN_KEY placeholder is not empty');
+assert(
+  /^ARGO_NEO4J_DATABASE_PASSWORD=\s*$/m.test(envExample),
+  'LIVE_PROVIDER_SECRET_GUARD: Neo4j password placeholder is not empty',
+);
 assert(gitignore.split(/\r?\n/).includes('.env'), 'LIVE_PROVIDER_SECRET_GUARD: .env is not ignored');
-assert(harness.includes('process.env.QWEN_KEY'), 'LIVE_PROVIDER_SECRET_GUARD: process secret source is missing');
+assert(
+  gitignore.split(/\r?\n/).includes('!.argo/.env.example'),
+  'LIVE_PROVIDER_SECRET_GUARD: canonical example is not unignored',
+);
+assert(harness.includes('resolveApprovedLiveConfiguration'), 'LIVE_PROVIDER_SECRET_GUARD: approved source preflight is missing');
 assert(harness.includes('cypherTextAndParameters'), 'LIVE_PROVIDER_SECRET_GUARD: Cypher artifacts are not inspected');
 assert(harness.includes("{ name: 'logs'"), 'LIVE_PROVIDER_SECRET_GUARD: logs are not inspected');
 assert(harness.includes("{ name: 'errorMessages'"), 'LIVE_PROVIDER_SECRET_GUARD: error messages are not inspected');
@@ -103,151 +139,149 @@ assert(
   'LIVE_PROVIDER_SECRET_GUARD: secret isolation assertions are incomplete',
 );
 
-// GIVEN safe and bypass loader fixtures
-// WHEN source provenance is propagated through assignments and property reads
-// THEN only the five file-safe fields and a direct process.env.QWEN_KEY source are accepted
-const safeLoaderFixtures = [
-  {
-    name: 'dotenv-parse-allowlist-plus-direct-process-secret',
-    source: `
-      const parsed = dotenv.parse(readFileSync('.env'));
-      const baseUrl = parsed.ARGO_EMBEDDING_BASE_URL;
-      const model = parsed.ARGO_EMBEDDING_MODEL;
-      const provider = parsed.ARGO_EMBEDDING_PROVIDER;
-      const modelVersion = parsed.ARGO_EMBEDDING_MODEL_VERSION;
-      const dimensions = parsed.ARGO_EMBEDDING_DIMENSIONS;
-      const secret = process.env.QWEN_KEY;
-    `,
-  },
-  {
-    name: 'json-non-sensitive-allowlist-plus-direct-process-secret',
-    source: `
-      const parsed = JSON.parse(readFileSync('provider-config.json'));
-      const model = parsed.ARGO_EMBEDDING_MODEL;
-      const dimensions = parsed.ARGO_EMBEDDING_DIMENSIONS;
-      const secret = process.env.QWEN_KEY;
-    `,
-  },
-  {
-    name: 'direct-process-secret-only',
-    source: 'const secret = process.env.QWEN_KEY;',
-  },
+// GIVEN synthetic approved-source fixtures (never the real .argo/.env)
+// WHEN precedence, path, git, file, ACL, and provenance facts are evaluated
+// THEN only direct process or the unique safe file source is accepted
+const secretA = `qwen-${crypto.randomUUID()}`;
+const secretB = `neo4j-${crypto.randomUUID()}`;
+const safeFileState = {
+  path: '.argo/.env',
+  ignored: true,
+  tracked: false,
+  regular: true,
+  reparse: false,
+  acl: { verifiable: true, currentIdentityCanRead: true, broadReaders: [] },
+};
+const safeSourceFixtures = [
+  { name: 'process-only', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'file-only', fileState: safeFileState, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'matching-dual', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB }, fileState: safeFileState, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'mixed-approved-sources', process: { QWEN_KEY: secretA }, fileState: safeFileState, fileEntries: [['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'non-sensitive-file-allowlist', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB }, fileState: safeFileState, fileEntries: [['ARGO_EMBEDDING_MODEL', 'synthetic-model'], ['ARGO_NEO4J_DATABASE_URL', 'synthetic-url'], ['ARGO_NEO4J_DATABASE_USERNAME', 'synthetic-user']] },
 ];
-const bypassLoaderFixtures = [
-  { name: 'dotenv-config-may-populate-secret', source: "dotenv.config(); const secret = process.env.QWEN_KEY;" },
-  { name: 'dotenv-parsed-secret', source: "const parsed = dotenv.parse(readFileSync('.env')); const secret = parsed.QWEN_KEY;" },
-  { name: 'file-secret', source: "const envFile = readFileSync('.env'); const secret = envFile.QWEN_KEY;" },
-  { name: 'json-secret', source: "const parsed = JSON.parse(readFileSync('config.json')); const secret = parsed.QWEN_KEY;" },
-  { name: 'yaml-secret', source: "const parsed = yaml.parse(readFileSync('config.yaml')); const secret = parsed.QWEN_KEY;" },
-  { name: 'configuration-object-secret', source: 'const secret = configuration.QWEN_KEY;' },
-  { name: 'process-env-alias', source: 'const env = process.env; const secret = env.QWEN_KEY;' },
-  { name: 'fallback', source: "const secret = process.env.QWEN_KEY || configuration.QWEN_KEY;" },
-  { name: 'nullish-fallback', source: "const secret = process.env.QWEN_KEY ?? parsed.QWEN_KEY;" },
-  { name: 'ternary-fallback', source: "const secret = ready ? process.env.QWEN_KEY : parsed.QWEN_KEY;" },
-  { name: 'destructuring', source: 'const { QWEN_KEY } = process.env;' },
-  { name: 'renamed-destructuring', source: 'const { QWEN_KEY: secret } = process.env;' },
-  { name: 'indirect-secret-alias', source: 'const direct = process.env.QWEN_KEY; const secret = direct;' },
-  { name: 'computed-process-access', source: "const secret = process.env['QWEN_KEY'];" },
-  { name: 'non-allowlisted-file-field', source: "const parsed = dotenv.parse(readFileSync('.env')); const value = parsed.OTHER_FIELD;" },
+const rejectedSourceFixtures = [
+  { name: 'qwen-conflict', expected: 'SECRET_SOURCE_CONFLICT', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB }, fileState: safeFileState, fileEntries: [['QWEN_KEY', `${secretA}-different`]] },
+  { name: 'database-password-conflict', expected: 'SECRET_SOURCE_CONFLICT', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB }, fileState: safeFileState, fileEntries: [['ARGO_NEO4J_DATABASE_PASSWORD', `${secretB}-different`]] },
+  { name: 'missing-secret', expected: 'APPROVED_SECRET_REQUIRED', process: { QWEN_KEY: secretA } },
+  { name: 'blank-secret', expected: 'APPROVED_SECRET_REQUIRED', process: { QWEN_KEY: ' ', ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'duplicate-key', expected: 'SECRET_FILE_DUPLICATE_KEY', fileState: safeFileState, fileEntries: [['QWEN_KEY', secretA], ['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'unknown-secret', expected: 'SECRET_FILE_UNKNOWN_KEY', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB }, fileState: safeFileState, fileEntries: [['OTHER_API_TOKEN', 'synthetic']] },
+  { name: 'root-file', expected: 'SECRET_FILE_PATH_PROHIBITED', fileState: { ...safeFileState, path: '.env' }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'alternate-file', expected: 'SECRET_FILE_PATH_PROHIBITED', fileState: { ...safeFileState, path: 'config/.env' }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'tracked-file', expected: 'SECRET_FILE_TRACKED', fileState: { ...safeFileState, tracked: true }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'not-ignored', expected: 'SECRET_FILE_NOT_IGNORED', fileState: { ...safeFileState, ignored: false }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'non-regular-file', expected: 'SECRET_FILE_NOT_REGULAR', fileState: { ...safeFileState, regular: false }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'reparse-file', expected: 'SECRET_FILE_REPARSE_PROHIBITED', fileState: { ...safeFileState, reparse: true }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'acl-broad-reader', expected: 'SECRET_FILE_ACL_UNSAFE', fileState: { ...safeFileState, acl: { verifiable: true, currentIdentityCanRead: true, broadReaders: ['BUILTIN\\Users'] } }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'acl-unverifiable', expected: 'SECRET_FILE_ACL_UNVERIFIABLE', fileState: { ...safeFileState, acl: { verifiable: false } }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'acl-current-identity-denied', expected: 'SECRET_FILE_ACL_UNSAFE', fileState: { ...safeFileState, acl: { verifiable: true, currentIdentityCanRead: false, broadReaders: [] } }, fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]] },
+  { name: 'cli-source', expected: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'cli', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'literal-source', expected: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'literal', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'fallback-source', expected: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'fallback', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'alias-source', expected: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'alias', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
+  { name: 'indirect-source', expected: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', provenance: 'indirect', process: { QWEN_KEY: secretA, ARGO_NEO4J_DATABASE_PASSWORD: secretB } },
 ];
-for (const fixture of safeLoaderFixtures) {
-  assert.deepStrictEqual(
-    analyzeProcessOnlyLoader(fixture.source),
-    [],
-    `LIVE_PROVIDER_SECRET_GUARD: safe loader rejected ${fixture.name}`,
-  );
+for (const fixture of safeSourceFixtures) {
+  assert.strictEqual(resolveApprovedSourcesFixture(fixture).status, 'accepted', `LIVE_PROVIDER_SECRET_GUARD: safe source rejected ${fixture.name}`);
 }
-for (const fixture of bypassLoaderFixtures) {
-  assert(
-    analyzeProcessOnlyLoader(fixture.source).length > 0,
-    `LIVE_PROVIDER_SECRET_GUARD: loader bypass accepted ${fixture.name}`,
-  );
+for (const fixture of rejectedSourceFixtures) {
+  assert.strictEqual(resolveApprovedSourcesFixture(fixture).category, fixture.expected, `LIVE_PROVIDER_SECRET_GUARD: bypass accepted ${fixture.name}`);
 }
+runTemporarySecretFilePreflight();
+
 const loaderPath = '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js';
 if (fs.existsSync(path.join(repoRoot, ...loaderPath.split('/')))) {
   assert.deepStrictEqual(
-    analyzeProcessOnlyLoader(read(loaderPath)),
+    analyzeApprovedLoader(read(loaderPath)),
     [],
-    'LIVE_PROVIDER_SECRET_GUARD: live configuration loader can source QWEN_KEY from files',
+    'LIVE_PROVIDER_SECRET_GUARD: live configuration loader violates approved provenance',
   );
 }
 
-function analyzeProcessOnlyLoader(source) {
-  const allowlistedFileFields = new Set([
+function resolveApprovedSourcesFixture(fixture) {
+  if (fixture.provenance && !['direct-process', 'exact-file'].includes(fixture.provenance)) return { category: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' };
+  const entries = fixture.fileEntries || [];
+  if (entries.length) {
+    const state = fixture.fileState || {};
+    if (state.path !== '.argo/.env') return { category: 'SECRET_FILE_PATH_PROHIBITED' };
+    if (!state.ignored) return { category: 'SECRET_FILE_NOT_IGNORED' };
+    if (state.tracked) return { category: 'SECRET_FILE_TRACKED' };
+    if (!state.regular) return { category: 'SECRET_FILE_NOT_REGULAR' };
+    if (state.reparse) return { category: 'SECRET_FILE_REPARSE_PROHIBITED' };
+    if (!state.acl || !state.acl.verifiable) return { category: 'SECRET_FILE_ACL_UNVERIFIABLE' };
+    if (!state.acl.currentIdentityCanRead || (state.acl.broadReaders || []).length) return { category: 'SECRET_FILE_ACL_UNSAFE' };
+  }
+  const counts = new Map();
+  for (const [key] of entries) counts.set(key, (counts.get(key) || 0) + 1);
+  if ([...counts.values()].some(count => count > 1)) return { category: 'SECRET_FILE_DUPLICATE_KEY' };
+  const approvedKeys = new Set([
     'ARGO_EMBEDDING_BASE_URL',
     'ARGO_EMBEDDING_MODEL',
     'ARGO_EMBEDDING_PROVIDER',
     'ARGO_EMBEDDING_MODEL_VERSION',
     'ARGO_EMBEDDING_DIMENSIONS',
+    'ARGO_NEO4J_DATABASE_URL',
+    'ARGO_NEO4J_DATABASE_USERNAME',
+    'ARGO_NEO4J_DATABASE_PASSWORD',
+    'QWEN_KEY',
   ]);
-  const violations = new Set();
-  const declarations = parseDeclarations(source);
-  const externalConfigVariables = new Set();
-  const directSecretVariables = new Set();
-
-  if (/\bdotenv\s*\.\s*config\s*\(/.test(source)) {
-    violations.add('dotenv-config-mutates-process-env');
+  if (entries.some(([key]) => !approvedKeys.has(key) && /KEY|PASSWORD|SECRET|TOKEN/i.test(key))) return { category: 'SECRET_FILE_UNKNOWN_KEY' };
+  const file = new Map(entries);
+  const processValues = fixture.process || {};
+  for (const key of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
+    const processValue = processValues[key];
+    const fileValue = file.get(key);
+    if ((processValue !== undefined && String(processValue).trim() === '') || (fileValue !== undefined && String(fileValue).trim() === '')) return { category: 'APPROVED_SECRET_REQUIRED' };
+    if (processValue !== undefined && fileValue !== undefined && processValue !== fileValue) return { category: 'SECRET_SOURCE_CONFLICT' };
+    if (processValue === undefined && fileValue === undefined) return { category: 'APPROVED_SECRET_REQUIRED' };
   }
-  for (let pass = 0; pass < declarations.length + 1; pass += 1) {
-    for (const { name, expression } of declarations) {
-      if (isExternalConfigExpression(expression)
-        || externalConfigVariables.has(expression.trim())) {
-        externalConfigVariables.add(name);
-      }
-      if (normalize(expression) === 'process.env.QWEN_KEY') {
-        directSecretVariables.add(name);
-      }
-      if (directSecretVariables.has(expression.trim())) {
-        violations.add(`indirect-secret-alias:${name}`);
-      }
-    }
-  }
-
-  if (/\b(?:const|let|var)\s*\{[^}]*\bQWEN_KEY\b[^}]*\}\s*=\s*process\.env/.test(source)) {
-    violations.add('secret-destructuring');
-  }
-  for (const { name, expression } of declarations) {
-    if (expression.includes('QWEN_KEY')
-      && normalize(expression) !== 'process.env.QWEN_KEY') {
-      violations.add(`non-direct-secret-source:${name}`);
-    }
-  }
-
-  const propertyAccess = /\b(process\.env|[A-Za-z_$][\w$]*)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([^'"]+)['"]\s*\])/g;
-  let match;
-  while ((match = propertyAccess.exec(source)) !== null) {
-    const owner = match[1];
-    const property = match[2] || match[3];
-    const computed = Boolean(match[3]);
-    if (property === 'QWEN_KEY') {
-      if (owner !== 'process.env' || computed) {
-        violations.add(`indirect-secret-property:${owner}`);
-      }
-      continue;
-    }
-    if (externalConfigVariables.has(owner) && !allowlistedFileFields.has(property)) {
-      violations.add(`non-allowlisted-file-field:${property}`);
-    }
-  }
-  return [...violations].sort();
+  return { status: 'accepted' };
 }
 
-function parseDeclarations(source) {
-  const declarations = [];
-  const pattern = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([^;\n]+)/g;
-  let match;
-  while ((match = pattern.exec(source)) !== null) {
-    declarations.push({ name: match[1], expression: match[2].trim() });
+function runTemporarySecretFilePreflight() {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-secret-preflight-'));
+  try {
+    const argoDirectory = path.join(temporaryRoot, '.argo');
+    fs.mkdirSync(argoDirectory);
+    const filePath = path.join(argoDirectory, '.env');
+    fs.writeFileSync(filePath, `QWEN_KEY=${secretA}\nARGO_NEO4J_DATABASE_PASSWORD=${secretB}\n`, { flag: 'wx', mode: 0o600 });
+    const stat = fs.lstatSync(filePath);
+    assert(stat.isFile() && !stat.isSymbolicLink(), 'LIVE_PROVIDER_SECRET_GUARD: temporary fixture is not regular');
+    const acl = childProcess.spawnSync('icacls', [filePath], { encoding: 'utf8', windowsHide: true });
+    const aclFact = acl.status === 0
+      ? { verifiable: true, currentIdentityCanRead: true, broadReaders: extractBroadAclReaders(acl.stdout) }
+      : { verifiable: false };
+    const result = resolveApprovedSourcesFixture({
+      fileState: { ...safeFileState, acl: aclFact },
+      fileEntries: [['QWEN_KEY', secretA], ['ARGO_NEO4J_DATABASE_PASSWORD', secretB]],
+    });
+    assert(
+      ['accepted', 'SECRET_FILE_ACL_UNSAFE', 'SECRET_FILE_ACL_UNVERIFIABLE'].includes(result.status || result.category),
+      'LIVE_PROVIDER_SECRET_GUARD: Windows ACL preflight did not classify',
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
-  return declarations;
 }
 
-function isExternalConfigExpression(expression) {
-  return /\bdotenv\s*\.\s*parse\s*\(|\bJSON\s*\.\s*parse\s*\(|\bya?ml\s*\.\s*parse\s*\(|\breadFileSync\s*\(|\bloadConfig\s*\(|\brequire\s*\(\s*['"][^'"]*config/i.test(expression);
+function extractBroadAclReaders(output) {
+  return ['Everyone', 'BUILTIN\\Users', 'Authenticated Users'].filter(principal => (
+    output.includes(principal) && /\((?:R|RX|M|F)\)/.test(output)
+  ));
 }
 
-function normalize(expression) {
-  return expression.replace(/\s+/g, '');
+function analyzeApprovedLoader(source) {
+  const violations = [];
+  for (const forbidden of [/\bprocess\.argv\b/, /\|\|/, /\?\?/, /\?.*:/, /ARGO_NEO4J_URI/, /ARGO_NEO4J_USERNAME/, /ARGO_NEO4J_PASSWORD/]) {
+    if (forbidden.test(source)) violations.push(String(forbidden));
+  }
+  for (const key of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
+    if (!source.includes(`process.env.${key}`) || !source.includes(`parsed.${key}`)) violations.push(`missing-approved-source:${key}`);
+  }
+  for (const required of ['.argo', '.env', 'icacls', 'check-ignore', 'ls-files', 'lstatSync']) {
+    if (!source.includes(required)) violations.push(`missing-preflight:${required}`);
+  }
+  return violations;
 }
 
 function read(relativePath) {

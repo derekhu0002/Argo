@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T10:00:00+08:00",
+  "generatedAt": "2026-07-25T10:35:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -24,7 +24,7 @@
     "otherDeliveryStatusChanges": [],
     "comparisonRule": "Coding compares its post-run delivery changes against this 34/14/20 baseline. The recorded embedding-qualification transition is accepted baseline state and must not be reported as a Coding regression; any new delivered-to-not_delivered transition is a regression."
   },
-  "summary": "Preserve the uncommitted, passing C1-C6 Coding implementation as a checkpoint, then extend the approved Node.js boundary with an explicit opt-in live Alibaba Cloud Model Studio embedding request and controlled Neo4j evidence gate. The approved profile is provider alibaba-cloud-model-studio-openai-compatible-cn-beijing, Beijing compatible-mode endpoint, model qwen3.7-text-embedding, qualification-2026-07-25, and dimensions 1024. QWEN_KEY remains process-only and every invalid, failed, or leaking path blocks index writes.",
+  "summary": "Preserve the passing C1-C6 checkpoint and implement the approved live provider gate only after resolving QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD from direct process variables or the unique preflighted .argo/.env. Process wins, differing duplicates fail closed, and every unsafe path/git/file/reparse/ACL/provenance state blocks before fetch, Neo4j connection, or writes.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -75,8 +75,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
       "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Run the opted-in flow with process-only QWEN_KEY presence, execute a no-secret preflight, and inject generated canaries through provider-error and synthetic-success recording boundaries without reading the real credential.",
-      "observationPoint": "Observe QWEN_KEY_REQUIRED before side effects; detect canaries in neutral Cypher parameter and graph evidence values; then prove zero persistence/artifacts and zero leaks across errors, stdout/stderr, logs, latest failure records, snapshots, and recursive artifacts.",
+      "controlPoint": "Preflight both approved secrets across process-only, file-only, matching/conflicting dual-source and unsafe-file matrices before running live and generated-canary probes.",
+      "observationPoint": "Observe stable pre-side-effect rejection for unsafe sources/path/git/file/reparse/ACL state and zero leakage of either secret across errors, authentication, Cypher, graph, failure records, snapshots, and recursive artifacts.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
       "failureReason": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
@@ -168,24 +168,24 @@
       "name": "Approved live provider contract",
       "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect contracts, mounted testcases, handoff baseline, .env.example, and .gitignore for the exact profile, transport-owned proof, controlled Neo4j metadata, and 34/14/20 baseline.",
-      "observationPoint": "Profile and baseline remain explicit, production cannot self-report a live boolean, .env is non-sensitive and ignored, and both live entries are frozen.",
+      "controlPoint": "Inspect contracts, mounted testcases, handoff baseline, .argo/.env.example, and .gitignore for the exact profile, source policy, controlled Neo4j metadata, and 34/14/20 baseline.",
+      "observationPoint": "Profile and baseline remain explicit, .argo/.env stays ignored/untracked while its example is empty and committable, and both live entries are frozen.",
       "expectedStatus": "passed"
     },
     {
       "name": "Live network opt-in and no-fake substitution",
       "path": "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect Harness control flow and execute default plus opted-in/no-QWEN child scenarios before any production boundary, network, or Neo4j access.",
-      "observationPoint": "Default failures remain explicit, missing secret reports only QWEN_KEY_REQUIRED, and frozen transport evidence prevents fake/default or boolean-label live claims.",
+      "controlPoint": "Inspect Harness ordering and frozen source/file/ACL fixtures before any production transport, Neo4j connection, or gate execution.",
+      "observationPoint": "Default failures remain explicit, all unsafe preflight states block, and frozen transport evidence prevents fake/default or boolean-label live claims.",
       "expectedStatus": "passed"
     },
     {
       "name": "Live provider secret artifact isolation",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Run named safe/bypass provenance fixtures plus failure and synthetic-success canary probes with recording in-memory Cypher/index channels.",
-      "observationPoint": "Only five non-sensitive file fields and direct process.env.QWEN_KEY are accepted; neutral-value leaks are detected in full Cypher/graph channels, then cleanup leaves zero persistence/artifacts.",
+      "controlPoint": "Run approved dual-secret source/path/git/file/reparse/ACL fixtures plus failure and synthetic-success canary probes with recording in-memory Cypher/index channels.",
+      "observationPoint": "Only direct process or exact safe .argo/.env sources are accepted; both secret canaries are detected across source/conflict/ACL/auth channels and cleanup leaves zero persistence/artifacts.",
       "expectedStatus": "passed"
     }
   ],
@@ -229,8 +229,8 @@
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-      "failureSignal": "LIVE_PROVIDER_CONFIGURATION_REQUIRED / LIVE_PROVIDER_PROFILE_MISMATCH / QWEN_KEY_REQUIRED",
-      "nextAction": "Load only approved non-sensitive ARGO_EMBEDDING_* values from local .env, require exact approved profile values, and obtain QWEN_KEY only from process injection after explicit opt-in."
+      "failureSignal": "LIVE_PROVIDER_CONFIGURATION_REQUIRED / SECRET_SOURCE_CONFLICT / SECRET_FILE_ACL_UNSAFE",
+      "nextAction": "Resolve approved configuration only after exact .argo/.env path, ignored/untracked, regular/non-reparse, ACL, duplicate/unknown-key and process/file conflict preflight; return sanitized evidence only."
     },
     {
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
@@ -426,14 +426,14 @@
           ".argo/scripts/graph-rag/embeddingQualificationGate.js"
         ],
         "steps": [
-          "Load only ARGO_EMBEDDING_BASE_URL, ARGO_EMBEDDING_MODEL, ARGO_EMBEDDING_PROVIDER, ARGO_EMBEDDING_MODEL_VERSION, and ARGO_EMBEDDING_DIMENSIONS from local non-sensitive .env.",
+          "Load approved non-sensitive profile and Neo4j URL/username only from direct process variables or exact repository-relative .argo/.env.",
           "Require exact approved provider, Beijing endpoint, qwen3.7-text-embedding, qualification-2026-07-25, and integer dimensions 1024 with no implicit defaults or coercion.",
-          "Require ARGO_LIVE_PROVIDER_E2E=1 before reading QWEN_KEY; obtain QWEN_KEY only from process injection and never return it in configuration evidence.",
-          "Allow dotenv/JSON/YAML file parsing only for the five approved non-sensitive fields; source QWEN_KEY only from the direct expression process.env.QWEN_KEY and pass frozen provenance fixtures covering parsed results, files, config objects, aliases, fallbacks, destructuring, and indirect assignments.",
-          "With explicit opt-in and QWEN_KEY absent, fail with QWEN_KEY_REQUIRED before loading the live gate, constructing transport, or opening Neo4j.",
+          "Require ARGO_LIVE_PROVIDER_E2E=1, then preflight exact path, git ignored/untracked state, regular/non-reparse status, Windows ACL, duplicates, unknown secret keys, and both required secret sources before transport or Neo4j construction.",
+          "Resolve QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD only from direct process variables or exact .argo/.env; process wins, equal duplicates pass, differing duplicates fail closed.",
+          "Reject missing/blank, root/alternate/tracked files, broad or unverifiable ACLs, CLI/literal/default/fallback/alias/indirect sources, and legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases.",
           "Keep existing generic qualification rejection behavior and its frozen TS-06 matrix green."
         ],
-        "completionSignal": "Configuration rejects missing, implicit, or mismatched profile fields; default execution touches no secret/network state; .env.example and .gitignore guards pass."
+        "completionSignal": "All approved-source fixtures pass, all unsafe-source fixtures fail before side effects, actual Neo4j DATABASE_* names are used, and .argo/.env.example/.gitignore guards pass."
       },
       {
         "taskId": "W2-C9",
@@ -480,8 +480,8 @@
         "steps": [
           "Run the original six scoped explicit entrypoints and seven original critical guards before live execution.",
           "Run all ten frozen critical guards in default/offline mode.",
-          "In controlled local or protected CI only, inject QWEN_KEY and controlled Neo4j process configuration, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
-          "Inject generated canaries into provider-error and synthetic-success paths; record complete in-memory Cypher text/parameters and graph evidence, prove neutral-value detection, clear the recording boundary, then scan errors, stdout/stderr, logs, latest failure records, snapshots, and recursive artifacts without reading the real QWEN_KEY value.",
+          "In controlled local or protected CI only, use approved process/.argo/.env sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
+          "Inject separate QWEN and Neo4j-password canaries across process/file, conflict, ACL, provider, connection-authentication and synthetic-success paths; scan complete Cypher/graph values and all artifacts, then prove zero persistence.",
           "Compare the full runner against preCodingBaseline 34/14/20: the recorded grag-embedding-qualification delivered-to-not_delivered transition is accepted baseline, while any additional delivered regression fails completion.",
           "Commit only authorized Coding target paths."
         ],
@@ -512,11 +512,12 @@
     "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
     "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
     "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-    ".env.example",
+    ".argo/.env.example",
     ".gitignore"
   ],
   "openGaps": [
-    "Live network and real provider credentials are intentionally unavailable to default CI. Both live entrypoints must remain failed until explicitly run in controlled local or protected CI with process-injected QWEN_KEY and controlled Neo4j configuration.",
+    "Live network and real credentials remain unavailable to default CI. Both live entrypoints stay failed until controlled execution supplies both secrets through approved direct process or preflighted .argo/.env sources.",
+    "Current metadata-only preflight classifies the local ignored/untracked regular .argo/.env as ACL-unsafe because BUILTIN\\Users has broad read access. No value was read. Live execution must remain blocked until the human tightens ACLs; this file is never committed.",
     "ExplicitAcceptanceTestcase-TS-08 remains mounted and frozen out-of-scope evidence. The TS-09 physical path remains frozen for backward protection but no TS-09 element, testcase, relationship, Coding target, task, or completion authorization is included.",
     "The original six scoped entrypoints and seven critical guards remain a mandatory C1-C6 checkpoint. Expanded completion adds two live entrypoints and three critical guards without changing runner-owned global delivery semantics."
   ]

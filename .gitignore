@@ -11,4 +11,4 @@ __pycache__
 .argo/temp/
 .env
 .env.*
-!.env.example
+!.argo/.env.example

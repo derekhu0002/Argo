@@ -9,7 +9,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `embeddingQualificationGate.js` accepts only explicit human-approved provider, model identity, model version, and dimensions. It must reject missing approval, missing fields, and any inferred provider/model/version/dimensions.
 - `neo4jNativeRetrieval.js` owns Neo4j JavaScript-driver retrieval and returns projection identity/version evidence; it never becomes canonical authority.
 - `canonicalProjectionAuthority.js` compares projection evidence with the canonical graph and either selects canonical state or rejects stale/conflicting projection state.
-- `liveEmbeddingProviderConfig.js` loads only approved non-sensitive `.env` names, requires exact provider/model/version/dimensions, and obtains the provider secret only from process variable `QWEN_KEY`.
+- `liveEmbeddingProviderConfig.js` preflights the unique `.argo/.env`, resolves the approved process/file source policy for both secrets, and returns only sanitized configuration evidence.
 - `liveEmbeddingProviderClient.js` performs one explicitly opted-in HTTPS embedding request against the approved Beijing OpenAI-compatible endpoint; it is not a general generation or lifecycle component.
 - `liveEmbeddingIndexGate.js` sequences exact qualification, real-provider vector validation, and one controlled Neo4j evidence write. Invalid or failed paths never invoke the write boundary.
 
@@ -34,6 +34,7 @@ The four inward boundaries are independently callable and independently testable
 - Only a finite numeric vector with exactly 1024 values can reach the write boundary.
 - A frozen Harness-owned transport wrapper independently observes request count, origin/path, method, dynamic input, explicit model/dimensions, protected-header presence, and the raw response vector. Production output and persisted vector evidence must match that observed response exactly.
 - Persisted evidence includes provider/model/qualification identity, dimensions, complete vector, canonical identity/version, content identity/version, and index identity/version. Cleanup is complete only when the Harness observes zero remaining test records.
+- Secret/file/path/git/reparse/ACL/conflict preflight completes before transport construction, Neo4j connection, or gate execution.
 
 Dependencies are explicit: `configuration`, `canonicalGraph`, `neo4jRetrievalBoundary`, and `embeddingQualification`. Tests may inject fakes at these interfaces; production code must not import tests.
 
@@ -52,12 +53,15 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Authority policy reads `design/KG/SystemArchitecture.json` through an injected canonical graph boundary and treats Neo4j as a projection only.
 - Credentials are values, never module-level defaults; provider credentials must never be interpolated into or transported through Cypher.
 - Cypher credential protection follows query and parameter variables structurally into execution calls; keyword-distance windows are not acceptable enforcement.
-- Local `.env` loading accepts only `ARGO_EMBEDDING_BASE_URL`, `ARGO_EMBEDDING_MODEL`, `ARGO_EMBEDDING_PROVIDER`, `ARGO_EMBEDDING_MODEL_VERSION`, and `ARGO_EMBEDDING_DIMENSIONS`. It rejects unknown/implicit provider identity and never loads `QWEN_KEY` from a file.
-- Loader verification follows value provenance through parsed dotenv/JSON/YAML/config objects, aliases, fallbacks, destructuring, and indirect assignments. Only the five non-sensitive fields may originate in file configuration; the secret source must be the direct expression `process.env.QWEN_KEY`.
+- The only file source is repository-relative `.argo/.env`; it may provide the five approved non-sensitive `ARGO_EMBEDDING_*` fields, `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, `ARGO_NEO4J_DATABASE_PASSWORD`, and `QWEN_KEY`.
+- The only secret keys are `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD`. Direct process values take precedence; matching process/file duplicates are accepted from process, differing duplicates fail closed, and missing/blank/duplicate/unknown-secret values are rejected.
+- Preflight requires exact canonical path, ignored/untracked evidence, regular non-reparse file state, and a Windows ACL result proving current-identity read access without `Everyone`, `BUILTIN\Users`, or `Authenticated Users` read access. Unverifiable ACL state blocks.
+- Loader provenance rejects root/alternate/tracked files, CLI, literal/default/fallback, alias, destructured, generated, or indirect secret sources.
 - The approved live profile is provider `alibaba-cloud-model-studio-openai-compatible-cn-beijing`, endpoint `https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`, model `qwen3.7-text-embedding`, qualification `qualification-2026-07-25`, dimensions `1024`.
 - Live network access requires explicit opt-in through `ARGO_LIVE_PROVIDER_E2E=1` and is restricted to controlled local or protected CI execution. Default/offline CI remains deterministic but never substitutes fake evidence for a live pass.
 - Redaction verification includes a synthetic-success recording boundary that captures full Cypher text/parameter and graph-evidence values, detects canaries in neutral fields, and clears all in-memory persistence before inspecting generated artifacts.
-- The controlled Neo4j test boundary uses process-injected `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, `ARGO_NEO4J_PASSWORD`, and optional `ARGO_NEO4J_DATABASE`; no Neo4j credential is written to `.env.example` or persisted evidence.
+- The controlled Neo4j test boundary uses `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`; the password flows only to `neo4j.auth.basic`, never to Cypher or evidence.
+- `.argo/.env.example` is the only committed example and contains empty placeholders/instructions; `.argo/.env` remains ignored and untracked.
 
 ## Owned tests
 
