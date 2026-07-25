@@ -338,6 +338,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority|runCanonicalProjectionAuthority.js|exitCode=0"
         }
       ],
       "testcases": [
@@ -443,7 +447,7 @@
       "id": "grag-seed-retrieval",
       "name": "Independent Semantic Seed Retrieval",
       "type": "Application Function",
-      "description": "Independently evaluates Element, ArchitectureRelationship, and View with per-channel exact thresholds. Phase 1 is threshold-all with 100% critical seed recall; raw cross-channel scores are not globally ranked and ANN top-k cannot define correctness.",
+      "description": "Independently evaluates Element, ArchitectureRelationship, and View with per-channel exact thresholds. Phase 1 correctness is proven by threshold-all behavior before any ANN comparison: every qualifying seed at or above the approved threshold is returned, unrelated queries may return zero results, raw cross-channel scores are not globally ranked, and ANN top-k is performance evidence only.",
       "attributes": [
         {
           "name": "decisionTrace.DT-04",
@@ -459,7 +463,7 @@
         },
         {
           "name": "decisionTrace.DT-05",
-          "value": "accepted|threshold-all per object type; zero results permitted"
+          "value": "accepted|threshold-all per object type; zero results permitted; ANN top-k benchmark cannot define Phase 1 correctness"
         },
         {
           "name": "decisionTrace.DT-05-R1",
@@ -468,6 +472,14 @@
         {
           "name": "decisionTrace.DT-05-R2",
           "value": "open|caps deferred to DT-19 after precision and cardinality evidence"
+        },
+        {
+          "name": "functionalPoint.DT-05-threshold-all-correctness",
+          "value": "{\"description\":\"Prove threshold-all seed correctness before permitting ANN as a performance comparison.\",\"businessOutcome\":\"Phase 1 correctness is defined by complete qualifying seed recall and valid zero-result behavior, not by fixed top-k output.\",\"observableBoundary\":\"For each independent channel, every seed at or above the approved threshold is returned, unrelated queries return no forced hits, and ANN top-k output is recorded only as comparative performance evidence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-05\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-05",
+          "value": "approvedByHuman=true|2026-07-25|chat delivery request: threshold-all correctness before ANN comparison"
         },
         {
           "name": "deliveryStatus",
@@ -484,9 +496,9 @@
         },
         {
           "name": "ExplicitAcceptanceTestcase-DT-05",
-          "description": "Acceptor perspective control point: run a query with more qualifying peers than a typical fixed K and an unrelated query. Observation point: inspect qualifying peer completeness and empty-result behavior.",
+          "description": "Acceptor perspective control point: run threshold-all seed retrieval against a many-peer relevant fixture, an unrelated fixture, and an ANN top-k comparison fixture. Observation point: inspect that all above-threshold peers are present, unrelated queries have no forced hits, and ANN top-k is reported only as performance comparison rather than correctness evidence.",
           "type": "Acceptance Test",
-          "Input": "One many-peer relevant query and one approved unrelated query.",
+          "Input": "Approved many-peer relevant, unrelated, and ANN comparison queries across the independent seed channels.",
           "acceptanceCriteria": "tests/explicit/entries/runIndependentSemanticSeeds.js"
         }
       ]
@@ -751,7 +763,7 @@
       "id": "grag-semantic-index",
       "name": "Semantic Retrieval Index",
       "type": "Data Object",
-      "description": "Versioned Neo4j vector projection over independent Element, ArchitectureRelationship, and View channels. Every vector records object identity, channel, canonical/content/index versions, and approved model identity/version/dimensions; partial persistence is never Aligned.",
+      "description": "Versioned Neo4j vector projection over independent Element, ArchitectureRelationship, and View channels. Every vector records object identity, channel, canonical/content/index versions, and approved model identity/version/dimensions; every successful mutation advances complete version evidence, and partial persistence is never Aligned.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -760,6 +772,23 @@
         {
           "name": "persistenceContract",
           "value": "Parameterized Cypher persists vector plus object identity/channel, canonical/content/index version, and model identity/version/dimensions; partial persistence is Stale or Failed."
+        },
+        {
+          "name": "functionalPoint.DT-16-versioned-vector-baseline",
+          "value": "{\"description\":\"Persist a complete versioned vector/evidence baseline for every affected canonical record after mutation.\",\"businessOutcome\":\"Semantic retrieval can prove which canonical version, content version, index version, channel, and approved model produced each vector.\",\"observableBoundary\":\"Create, update, delete, topology-only, semantic-content, and View-membership mutations advance recorded index evidence for affected Element, ArchitectureRelationship, and View records; incomplete persistence is not Aligned.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-16-SemanticIndex\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-16-SemanticIndex",
+          "value": "approvedByHuman=true|2026-07-25|chat delivery request: all mutation version evidence baseline"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+          "description": "Acceptor perspective control point: execute the DT-16 mutation matrix and inspect semantic-index records for each affected Element, ArchitectureRelationship, and View. Observation point: verify complete identity, channel, canonical/content/index version, approved model evidence, and non-Aligned state for partial persistence.",
+          "type": "Acceptance Test",
+          "Input": "DT-16 create, update, delete, topology-only, semantic-content, and View-membership mutation cases across indexed object categories.",
+          "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
         }
       ]
     },
@@ -767,15 +796,23 @@
       "id": "grag-index-lifecycle",
       "name": "All Mutation Index Lifecycle",
       "type": "Application Process",
-      "description": "After canonical mutation succeeds, DT-16 extracts only affected Element, ArchitectureRelationship, and View records, triggers adapter-driven batched generation with retry/rate-limit/error isolation, persists complete evidence, and marks Aligned only after complete success; otherwise Stale or Failed.",
+      "description": "After every successful canonical mutation, DT-16 extracts only affected Element, ArchitectureRelationship, and View records, triggers adapter-driven batched generation with retry/rate-limit/error isolation, persists complete version evidence, advances the index lifecycle version, and marks Aligned only after complete success; otherwise the index remains Updating, Stale, or Failed.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-16|accepted|all-mutations and affected-record incremental embedding generation"
+          "value": "DT-16|accepted|all-mutations advance lifecycle version through affected-record incremental embedding generation"
         },
         {
           "name": "embeddingGenerationDecision",
           "value": "Node.js independent provider adapter calls the W2-qualified external service; parameterized Cypher persists vectors and metadata after canonical mutation success."
+        },
+        {
+          "name": "functionalPoint.DT-16-all-mutation-version-advance",
+          "value": "{\"description\":\"Advance lifecycle version evidence for every canonical mutation class before semantic queries can rely on the index.\",\"businessOutcome\":\"No canonical mutation can leave an apparently current semantic index without complete affected-record generation and persistence evidence.\",\"observableBoundary\":\"Create, update, delete, topology-only, nested semantic, and View-membership mutations move the lifecycle through Updating to Aligned only on complete success; failed or partial work is Stale or Failed.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-16\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-16",
+          "value": "approvedByHuman=true|2026-07-25|chat delivery request: every mutation advances version evidence"
         },
         {
           "name": "deliveryStatus",
@@ -785,7 +822,7 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-16",
-          "description": "Acceptor perspective control point: create, update, and delete each object category, including topology-only changes. Observation point: compare aligned-query results and version movement.",
+          "description": "Acceptor perspective control point: create, update, and delete each object category, including topology-only, semantic-content, and View-membership changes. Observation point: compare affected-record extraction, lifecycle state transitions, aligned-query disposition, and version movement.",
           "type": "Acceptance Test",
           "Input": "Nine mutation classes across Element, Relationship, and View plus nested semantic and membership updates.",
           "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
@@ -796,11 +833,11 @@
       "id": "grag-alignment-constraint",
       "name": "Reject Stale Semantic Queries",
       "type": "Constraint",
-      "description": "DT-17 constraint: pure semantic queries are accepted only while index and canonical graph are Aligned; complete and explicit-anchor canonical reads remain available during Updating or Stale/failed states.",
+      "description": "DT-17 constraint: pure semantic queries are accepted only while the semantic index and canonical graph are Aligned for the relevant versions; Updating, Stale, Failed, partial, or unknown alignment rejects pure semantic queries, while complete and explicit-anchor canonical reads remain available.",
       "attributes": [
         {
           "name": "decisionTrace.DT-17",
-          "value": "accepted|reject-semantic unless Aligned"
+          "value": "accepted|reject pure semantic unless index and canonical graph are Aligned"
         },
         {
           "name": "decisionTrace.DT-17-R1",
@@ -811,6 +848,14 @@
           "value": "rejected|semantic failure does not silently fall back to full snapshot"
         },
         {
+          "name": "functionalPoint.DT-17-unaligned-semantic-rejection",
+          "value": "{\"description\":\"Reject unaligned pure semantic queries while preserving canonical read paths.\",\"businessOutcome\":\"Agents never receive stale semantic context as if it were current intent.\",\"observableBoundary\":\"After canonical change, Updating, Stale, Failed, partial, or unknown index state rejects pure semantic requests; no-argument full reads and explicit-anchor canonical reads remain available without semantic fallback.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-17\"}"
+        },
+        {
+          "name": "acceptanceApproval.DT-17",
+          "value": "approvedByHuman=true|2026-07-25|chat delivery request: unaligned pure semantic queries are rejected"
+        },
+        {
           "name": "deliveryStatus",
           "value": "not_delivered"
         }
@@ -818,9 +863,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-17",
-          "description": "Acceptor perspective control point: change graph semantics and force index failure. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions.",
+          "description": "Acceptor perspective control point: change graph semantics and force Updating, Stale, Failed, partial, and unknown semantic-index states. Observation point: compare pure semantic, full-snapshot, and explicit-anchor request dispositions and versions; semantic requests are rejected rather than warned or silently full-snapshot fallbacked.",
           "type": "Acceptance Test",
-          "Input": "Canonical graph change followed by Updating or failed semantic index state.",
+          "Input": "Canonical graph change followed by each unaligned semantic index state and canonical-read control cases.",
           "acceptanceCriteria": "tests/explicit/entries/runStaleSemanticQueryRejection.js"
         }
       ]
@@ -953,6 +998,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-01|runProductionGraphRagRuntime.js|exitCode=0"
         }
       ],
       "testcases": [
@@ -986,6 +1035,10 @@
         {
           "name": "deliveryStatus",
           "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-01-Native|runNeo4jNativeRetrievalPlatform.js|exitCode=0"
         }
       ],
       "testcases": [
@@ -1046,7 +1099,11 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-06=runEmbeddingQualificationGate.js:exitCode=0|ExplicitAcceptanceTestcase-TS-06-Provider-E2E=runLiveEmbeddingProviderE2E.js:exitCode=0|ARGO_LIVE_PROVIDER_E2E=1|real approved Alibaba/Qwen request and controlled Neo4j evidence/cleanup passed"
         }
       ],
       "testcases": [
@@ -1115,6 +1172,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-07=runExternalCredentialBoundary.js:exitCode=0|ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation=runLiveEmbeddingProviderSecretIsolation.js:exitCode=0|explicit live opt-in|source policy, no-leak evidence, controlled Neo4j auth/write/cleanup passed"
         }
       ],
       "testcases": [
@@ -1154,11 +1215,19 @@
       "id": "grag-wp-2",
       "name": "W2 Native Technology and Embedding Qualification",
       "type": "Work Package",
-      "description": "Qualify provider/model/version/dimensions and operating requirements, optionally compare current Neo4j GenAI APIs, and establish Node.js production plus secure application credential boundaries without plugin dependency.",
+      "description": "W2 accepted: production runtime, native retrieval, canonical authority, approved Alibaba/Qwen qualification, live opt-in provider evidence, and secure credential isolation passed. Adapter lifecycle implementation remains W3.",
       "attributes": [
         {
           "name": "affectedElements",
           "value": "grag-production-runtime; grag-native-retrieval-service; grag-canonical-graph; grag-embedding-qualification; grag-credential-boundary; grag-qualified-embedding-provider-service; grag-embedding-provider-adapter"
+        },
+        {
+          "name": "waveAcceptance.W2",
+          "value": "accepted|2026-07-25|all W2-specific gates passed; full runner 16/34 reflects unfinished W3-W7 and does not invalidate W2"
+        },
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "ExplicitAcceptanceTestcase-TS-01=runProductionGraphRagRuntime.js; ExplicitAcceptanceTestcase-TS-01-Native=runNeo4jNativeRetrievalPlatform.js; ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority=runCanonicalProjectionAuthority.js; ExplicitAcceptanceTestcase-TS-06=runEmbeddingQualificationGate.js; ExplicitAcceptanceTestcase-TS-06-Provider-E2E=runLiveEmbeddingProviderE2E.js with ARGO_LIVE_PROVIDER_E2E=1 and real approved Alibaba/Qwen plus controlled Neo4j evidence/cleanup; ExplicitAcceptanceTestcase-TS-07=runExternalCredentialBoundary.js; ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation=runLiveEmbeddingProviderSecretIsolation.js with explicit live opt-in and source/no-leak/auth/write/cleanup evidence; all exitCode=0"
         }
       ]
     },
@@ -1166,11 +1235,31 @@
       "id": "grag-wp-3",
       "name": "W3 Index Lifecycle and Exact-Threshold Baseline",
       "type": "Work Package",
-      "description": "Implement adapter-driven affected-record generation, complete parameterized vector/evidence persistence, alignment lifecycle, and exact threshold-all correctness; ANN remains benchmark-only.",
+      "description": "W3 pending: deliver all-mutation lifecycle version advancement, complete parameterized vector/evidence persistence, alignment-state rejection for unaligned pure semantic queries, and exact threshold-all correctness before ANN is allowed as benchmark-only performance comparison.",
       "attributes": [
         {
           "name": "affectedElements",
-          "value": "grag-semantic-index; grag-index-lifecycle; grag-seed-retrieval; grag-embedding-provider-adapter; grag-embedding-generation"
+          "value": "grag-semantic-index; grag-index-lifecycle; grag-alignment-constraint; grag-seed-retrieval; grag-embedding-provider-adapter; grag-embedding-generation"
+        },
+        {
+          "name": "implementationGate.TS-09",
+          "value": "pending|runEmbeddingProviderAdapterLifecycle.js failed because productionGraphRagRuntime.generateAffectedEmbeddings() is absent and outcome.runtime is undefined; W3 owns this implementation and TS-09 remains unchanged as its first gate."
+        },
+        {
+          "name": "releaseGate.DT-05",
+          "value": "threshold-all correctness proof must pass before ANN top-k may be treated as performance comparison evidence"
+        },
+        {
+          "name": "releaseGate.DT-16",
+          "value": "every canonical mutation class must advance affected-record version evidence or leave the index non-Aligned"
+        },
+        {
+          "name": "releaseGate.DT-17",
+          "value": "unaligned pure semantic queries are rejected; complete and explicit-anchor canonical reads remain available"
+        },
+        {
+          "name": "scopeBoundary.W2-W3",
+          "value": "W2 qualification acceptance does not imply adapter generation/persistence/alignment delivery; do not mark W3 delivered until TS-09 and remaining W3 acceptance pass."
         }
       ]
     },
@@ -1268,6 +1357,10 @@
         {
           "name": "deliveryStatus",
           "value": "not_delivered"
+        },
+        {
+          "name": "scopeBoundary.W2-W3",
+          "value": "W2 accepts adapter technology selection and qualified-provider boundary; TS-09 adapter-driven affected-record generation, vector/evidence persistence, and alignment lifecycle remain an unchanged W3 implementation gate."
         }
       ],
       "testcases": [
@@ -1290,7 +1383,17 @@
       "id": "grag-qualified-embedding-provider-service",
       "name": "Qualified Embedding Provider Service",
       "type": "Application Service",
-      "description": "Provider-neutral service abstraction selected only after W2 human qualification of provider, model, version, dimensions, multilingual quality, privacy, and offline requirements."
+      "description": "Provider-neutral service abstraction selected only after W2 human qualification of provider, model, version, dimensions, multilingual quality, privacy, and offline requirements.",
+      "attributes": [
+        {
+          "name": "deliveryEvidence.W2",
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-TS-06-Provider-E2E|runLiveEmbeddingProviderE2E.js|ARGO_LIVE_PROVIDER_E2E=1|real approved Alibaba/Qwen request and controlled Neo4j evidence/cleanup passed"
+        },
+        {
+          "name": "qualificationBoundary",
+          "value": "W2 proves provider identity, model, dimensions, live invocation, and qualification/index-gate behavior; it does not implement W3 affected-record generation or persistence lifecycle."
+        }
+      ]
     }
   ],
   "relationships": [
@@ -1618,7 +1721,7 @@
       "target_id": "grag-semantic-index",
       "source_name": "All Mutation Index Lifecycle",
       "target_name": "Semantic Retrieval Index",
-      "description": "Create, update, and delete events across all graph object categories update the semantic index and its version state.",
+      "description": "Every successful canonical mutation class updates affected semantic-index records and advances complete version evidence; partial or failed persistence keeps the index non-Aligned.",
       "statement": "All Mutation Index Lifecycle --(Access)--> Semantic Retrieval Index",
       "attributes": [
         {
@@ -1635,7 +1738,7 @@
       "target_id": "grag-mode-validation",
       "source_name": "All Mutation Index Lifecycle",
       "target_name": "Query Mode and Purpose Validation",
-      "description": "Aligned, Updating, or Stale/failed version state determines whether pure semantic validation may proceed.",
+      "description": "Aligned, Updating, Stale, Failed, partial, or unknown version state determines whether pure semantic validation may proceed; only Aligned permits pure semantic retrieval.",
       "statement": "All Mutation Index Lifecycle --(Triggering)--> Query Mode and Purpose Validation",
       "attributes": [
         {
@@ -2257,7 +2360,7 @@
       "view_name": "Graph RAG Index Consistency",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic retrieval never contradicts the canonical graph version; Purpose: deciding and handoff preparation; Scope: all-mutation index lifecycle, alignment states, stale-query rejection, and canonical read continuity; Rationale: this view models the application and data dependencies governing semantic-query availability.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic retrieval never contradicts the canonical graph version and Phase 1 correctness is proven by exact threshold-all behavior before ANN comparison; Purpose: deciding and handoff preparation; Scope: all-mutation index lifecycle, semantic-index version evidence, threshold-all seed correctness, alignment states, stale-query rejection, and canonical read continuity; Rationale: this view models the application and data dependencies governing semantic-query availability while making ANN top-k benchmark-only and preserving canonical reads when the index is not Aligned.",
       "included_elements": [
         "grag-query-service",
         "grag-canonical-graph",

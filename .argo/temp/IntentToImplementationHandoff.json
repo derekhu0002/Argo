@@ -1,43 +1,28 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T01:35:00Z",
+  "generatedAt": "2026-07-25T15:13:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "approvedByHuman": true,
-  "summary": "Preserve the Node.js and Neo4j production mainline, TS-06 Provider E2E qualification, and canonical authority while replacing the process-only secret rule with an approved-source boundary. QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may be loaded only from direct process environment variables or the unique ignored/untracked repository-relative .argo/.env used for controlled local or protected CI execution. Process environment has precedence; differing duplicate values, unsafe file state, unapproved paths, missing or blank values, and every implicit/default fallback fail closed before provider, database, or index side effects. Zero-leakage and zero-persistence requirements remain mandatory.",
+  "summary": "Deliver W3 Index Lifecycle and Exact-Threshold Baseline: every canonical mutation advances versioned semantic-index evidence or leaves the index non-Aligned; unaligned pure semantic queries are rejected; DT-05 threshold-all correctness is the Phase 1 baseline and ANN top-k is benchmark-only performance comparison.",
   "intentElementIds": [
-    "grag-production-runtime",
-    "grag-native-retrieval-service",
-    "grag-embedding-qualification",
-    "grag-credential-boundary",
-    "grag-canonical-graph"
+    "grag-semantic-index",
+    "grag-index-lifecycle",
+    "grag-alignment-constraint",
+    "grag-seed-retrieval"
   ],
   "relationshipIds": [
-    "grag-rel-runtime-native",
-    "grag-rel-native-canonical",
-    "grag-rel-embedding-native",
-    "grag-rel-credentials-runtime"
+    "grag-rel-validation-seeds",
+    "grag-rel-lifecycle-canonical",
+    "grag-rel-lifecycle-index",
+    "grag-rel-lifecycle-validation",
+    "grag-rel-alignment-service",
+    "grag-rel-lifecycle-generation"
   ],
   "openQuestions": [],
   "notes": [
-    "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime, credential isolation, explicit provider qualification, real-provider evidence, and canonical authority are mandatory release requirements before index delivery; Purpose: designing, deciding, and handoff preparation.",
-    "Affected View: grag-native-embedding-release-requirements remains a Requirements Realization Viewpoint instance because it traces the strengthened qualification Requirement and credential Constraint to the existing runtime and native retrieval realizers; its membership and relationships are unchanged.",
-    "Global human approval: on 2026-07-25 the human explicitly approved provider alibaba-cloud-model-studio-openai-compatible-cn-beijing, model qwen3.7-text-embedding, qualification-2026-07-25 with supplier-alias drift acknowledged, dimensions 1024, the Beijing compatible-mode endpoint, the revised allow_secret_file boundary, the modified TS-07-Provider-Secret-Isolation acceptance boundary, and this updated intent-to-implementation handoff.",
-    "Coverage: grag-production-runtime functionalPoint.TS-01 -> ExplicitAcceptanceTestcase-TS-01.",
-    "Coverage: grag-native-retrieval-service functionalPoint.TS-01-native -> ExplicitAcceptanceTestcase-TS-01-Native.",
-    "Coverage: grag-embedding-qualification functionalPoint.TS-06 -> ExplicitAcceptanceTestcase-TS-06; functionalPoint.TS-06-provider-e2e -> ExplicitAcceptanceTestcase-TS-06-Provider-E2E.",
-    "Coverage: grag-credential-boundary functionalPoint.TS-07 -> ExplicitAcceptanceTestcase-TS-07; functionalPoint.TS-07-provider-secret-isolation -> ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation.",
-    "Coverage: grag-canonical-graph functionalPoint.DT-02-authoritative-complete-snapshot -> ExplicitAcceptanceTestcase-DT-02-CanonicalGraph; functionalPoint.TS-02-canonical-authority -> ExplicitAcceptanceTestcase-TS-02-CanonicalAuthority.",
-    "Live boundary: Node runtime -> real provider -> qualification/index gate -> controlled Neo4j test instance. Network execution is explicit opt-in and restricted to controlled local or protected CI; default/offline CI fakes are required for deterministic checks but never substitute for live delivery evidence.",
-    "Failure boundary: omitted explicit model/dimensions, unapproved identity, provider error, non-finite response, or response length other than 1024 must produce zero index writes.",
-    "Approved secret-source boundary: only QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD are approved secret keys. Each may originate only from a direct process environment variable or exact repository-relative .argo/.env. Process environment is higher precedence; if both sources define a key and values differ, startup fails closed. Matching duplicates may use the process value. No literal, generated, logical, nullish, ternary, command-line, alternate-file, root-.env, or other fallback source is authorized.",
-    "Secret-file boundary: .argo/.env is only for controlled local or protected CI execution and must remain ignored and untracked. Before parsing secrets, downstream design must require the canonical exact path, regular-file status, no reparse/symlink indirection, git-ignore and git-untracked evidence, no duplicate keys, and a Windows-executable ACL check that rejects broad-principal read access such as Everyone, BUILTIN\\Users, or Authenticated Users while requiring the current execution identity to read. Unsafe or unverifiable state fails closed with a stable non-secret category before network, database, or index initialization.",
-    "Zero-leakage boundary: neither approved secret may enter git, stdout/stderr, error messages, logs, Cypher text or parameters, graph evidence, runner failure records, snapshots, or generated artifacts. QWEN_KEY never enters Cypher. ARGO_NEO4J_DATABASE_PASSWORD is consumed only by the Neo4j driver authentication connection layer and never as a query parameter. Cleanup must prove zero secret-bearing persistence and zero generated secret artifacts.",
-    "Configuration-name contract: provider profile keys remain ARGO_EMBEDDING_BASE_URL, ARGO_EMBEDDING_DIMENSIONS, ARGO_EMBEDDING_MODEL, ARGO_EMBEDDING_MODEL_VERSION, and ARGO_EMBEDDING_PROVIDER. Controlled Neo4j keys are ARGO_NEO4J_DATABASE_URL, ARGO_NEO4J_DATABASE_USERNAME, and ARGO_NEO4J_DATABASE_PASSWORD. ARGO_NEO4J_DATABASE_PASSWORD and QWEN_KEY follow the approved secret-source boundary; no ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, ARGO_NEO4J_PASSWORD alias or implicit fallback is authorized unless separately approved.",
-    "Example-file boundary: committed .env.example or .argo/.env.example may list approved key names with empty placeholders and non-secret instructions, but never actual secret values. Intent Design did not read, migrate, copy, or create any secret value or .argo/.env file.",
-    "Implementation Design must revise loader provenance fixtures and guards to accept direct process and exact .argo/.env sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD; reject alternate/tracked/root files, command-line and literal/default/fallback sources, aliases that obscure source, missing/blank values, duplicate conflicts, path traversal, reparse indirection, broad Windows ACLs, and unknown secret keys; preserve generated-canary redaction, complete value-channel scanning, and zero-persistence cleanup without reading real secret values.",
-    "Live execution prerequisites: controlled local or protected CI execution, explicit ARGO_LIVE_PROVIDER_E2E=1 opt-in, approved provider profile, exact Neo4j URL/username/password key contract, an approved secret source for both required secrets, passing source/path/ignore/tracking/ACL/conflict preflight, and a disposable controlled Neo4j instance. Default/offline checks cannot substitute for live evidence.",
-    "The new physical entrypoints tests/explicit/entries/runLiveEmbeddingProviderE2E.js and tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js are downstream delivery targets. Their absence at Intent Design time is not acceptance evidence and does not authorize fabricated pass status.",
-    "TS-09, embedding-provider-adapter lifecycle delivery, and incremental index lifecycle remain outside this handoff; no TS-09 element, testcase, relationship, or task authorization is included.",
-    "No deliveryStatus value was changed by Intent Design; values remain runner-owned and any currently displayed status predates execution of the new physical entrypoints."
+    "Selected viewpoint frame: Application Usage Viewpoint for query/index availability, Implementation and Migration Viewpoint for W3 delivery sequencing, and Requirements Realization Viewpoint for the release-gate concern carried into index delivery.",
+    "Affected view binding: grag-index-consistency remains an Application Usage Viewpoint instance; its concern now explicitly includes exact threshold-all correctness before ANN comparison while preserving canonical reads when the semantic index is not Aligned.",
+    "Coverage proof: grag-seed-retrieval functionalPoint.DT-05-threshold-all-correctness -> ExplicitAcceptanceTestcase-DT-05; grag-semantic-index functionalPoint.DT-16-versioned-vector-baseline -> ExplicitAcceptanceTestcase-DT-16-SemanticIndex; grag-index-lifecycle functionalPoint.DT-16-all-mutation-version-advance -> ExplicitAcceptanceTestcase-DT-16; grag-alignment-constraint functionalPoint.DT-17-unaligned-semantic-rejection -> ExplicitAcceptanceTestcase-DT-17.",
+    "Human approval evidence: the 2026-07-25 chat delivery request approved the DT-05, DT-16, and DT-17 acceptance mapping and the same-element DT-16 semantic-index testcase boundary; schema-compliant acceptanceApproval.* attributes were recorded in SystemArchitecture.json because testcase and handoff schemas do not allow approvedByHuman fields.",
+    "Release gates: all mutation classes advance affected-record version evidence or remain non-Aligned; unaligned pure semantic queries are rejected; ANN top-k does not define Phase 1 correctness."
   ]
 }

@@ -165,3 +165,33 @@
 - `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
 - `argo.validateSystemArchitecture`: passed.
 - Acceptance adequacy blockers: none. Runtime verification remains downstream work and must not read real secret values in design tests.
+
+## 2026-07-25 — W3 Index Lifecycle And Exact Threshold Baseline
+
+- Selected viewpoints: Application Usage Viewpoint for query/index availability behavior, Implementation and Migration Viewpoint for W3 delivery sequencing, and Requirements Realization Viewpoint as the release-gate framing carried from native embedding qualification into index delivery.
+- Stakeholder concern: requirements owners, ICT architects, implementation designers, and acceptors need W3 to prove all-mutation lifecycle version advancement, exact threshold-all seed correctness, unaligned semantic-query rejection, and ANN top-k as benchmark-only evidence before Phase 1 correctness is claimed.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- View binding: `grag-index-consistency` remains an Application Usage Viewpoint instance because it shows the application/data dependency that governs whether semantic retrieval is available; its description now binds exact threshold-all correctness before ANN comparison into the same index-consistency concern.
+- Human approval evidence: this chat delivery request approved DT-05, DT-16, and DT-17 acceptance mapping, including the same-element DT-16 semantic-index testcase boundary needed for coverage. Because the schema does not permit an `approvedByHuman` field on testcases or handoff JSON, approval is recorded as schema-compliant `acceptanceApproval.*` element attributes and handoff notes.
+- Delivery-status guardrail: no `deliveryStatus` attribute was invented or manually changed beyond preserving existing values in MCP patches.
+
+### Coverage matrix
+
+- `grag-seed-retrieval` — `functionalPoint.DT-05-threshold-all-correctness` -> `ExplicitAcceptanceTestcase-DT-05`.
+- `grag-semantic-index` — `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`.
+- `grag-index-lifecycle` — `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`.
+- `grag-alignment-constraint` — `functionalPoint.DT-17-unaligned-semantic-rejection` -> `ExplicitAcceptanceTestcase-DT-17`.
+
+### Dependency-scope decisions
+
+- Handoff scope is the four requested implementation elements: `grag-semantic-index`, `grag-index-lifecycle`, `grag-alignment-constraint`, and `grag-seed-retrieval`.
+- Relationships in scope are `grag-rel-lifecycle-index`, `grag-rel-lifecycle-validation`, and the existing validation/seed and alignment service relationships needed to express that only Aligned semantic retrieval may proceed.
+- `grag-wp-3` was updated as delivery-scope context, not as an implementation target in the handoff element list.
+- Existing embedding adapter and generation elements remain downstream implementation context through `grag-embedding-generation-usage`, but the user-requested handoff scope stays at the four named domain elements.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed after correcting `updateView` mutation shape from `id` to `view_id`.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 46 elements, 56 relationships, and 26 views.
+- `argo.validateSystemArchitecture`: passed.
+- Open business questions: none. Runtime pass/fail evidence for the W3 entrypoints remains downstream Implementation Design/Coding work.
