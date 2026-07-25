@@ -32,7 +32,7 @@ function createMutationEmbeddingVectorLifecycle(dependencies = {}) {
       const configuration = requireConfiguration(dependencies.configuration);
       const runId = `argo-w31-${crypto.randomUUID()}`;
       const transport = createObservedTransport(fetchImpl);
-      const neo4jBoundary = await createApprovedNeo4jBoundary({
+      const neo4jBoundary = createLazyNeo4jBoundary({
         configuration,
         neo4j,
         logger: dependencies.logger,
@@ -46,33 +46,11 @@ function createMutationEmbeddingVectorLifecycle(dependencies = {}) {
       });
 
       try {
-        const vectorEvidence = [];
-        for (const record of touchedRecords) {
-          const result = await gate.executeApprovedEmbedding({
-            input: buildEmbeddingInput(record),
-            qualification,
-            canonicalIdentity: record.objectId,
-            canonicalVersion: record.canonicalVersion,
-            contentIdentity: `${record.objectType}:${record.objectId}`,
-            contentVersion: record.contentVersion,
-            indexIdentity: `${record.objectType}:${record.objectId}:semantic-vector`,
-            indexVersion: record.indexVersion,
-          });
-          vectorEvidence.push(Object.freeze({
-            objectType: record.objectType,
-            objectId: record.objectId,
-            channel: record.channel,
-            canonicalVersion: result.evidence.canonicalVersion,
-            contentVersion: result.evidence.contentVersion,
-            indexVersion: result.evidence.indexVersion,
-            provider: result.evidence.provider,
-            model: result.evidence.model,
-            modelVersion: result.evidence.qualificationVersion,
-            dimensions: result.evidence.dimensions,
-            vector: result.vector,
-          }));
-        }
-
+        const vectorEvidence = await generateVectorEvidenceForRecords({
+          touchedRecords,
+          gate,
+          qualification,
+        });
         const returnedTouchedRecordIds = await queryEveryTouchedVector({
           neo4jBoundary,
           runId,
@@ -83,7 +61,12 @@ function createMutationEmbeddingVectorLifecycle(dependencies = {}) {
           throw safeError('W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE');
         }
 
-        const failureMatrix = buildFailureMatrix(input.semanticQueryProbe);
+        const failureMatrix = await buildFailureMatrix({
+          touchedRecords,
+          qualification,
+          configuration,
+          semanticQueryProbe: input.semanticQueryProbe,
+        });
         await neo4jBoundary.cleanup(runId);
         await neo4jBoundary.close();
 
@@ -115,7 +98,15 @@ function createMutationEmbeddingVectorLifecycle(dependencies = {}) {
       } catch (error) {
         try { await neo4jBoundary.cleanup(runId); } catch {}
         try { await neo4jBoundary.close(); } catch {}
-        throw withCategory(error, error && error.category ? error.category : 'W31_MUTATION_VECTOR_LIFECYCLE_FAILED');
+        return buildFailureOutcome({
+          mutation,
+          architecturePath,
+          touchedRecords,
+          qualification,
+          transport,
+          error,
+          semanticQueryProbe: input.semanticQueryProbe,
+        });
       }
     },
   });
@@ -210,10 +201,39 @@ function requireConfiguration(configuration) {
     : configuration;
 }
 
+function createLazyNeo4jBoundary(options) {
+  let opened;
+  return Object.freeze({
+    async open() {
+      if (!opened) {
+        opened = await createApprovedNeo4jBoundary(options);
+      }
+      return opened;
+    },
+    async cleanup(runId) {
+      if (!opened) {
+        return 0;
+      }
+      return opened.cleanup(runId);
+    },
+    async close() {
+      if (!opened) {
+        return;
+      }
+      await opened.close();
+    },
+    async queryVectorEvidence(runId, vector, canonicalIdentities) {
+      const boundary = await this.open();
+      return boundary.queryVectorEvidence(runId, vector, canonicalIdentities);
+    },
+  });
+}
+
 function adaptNeo4jBoundaryForGate(neo4jBoundary, runId) {
   return Object.freeze({
     async writeEvidence(evidence) {
-      await neo4jBoundary.writeEvidence(runId, {
+      const boundary = await neo4jBoundary.open();
+      await boundary.writeEvidence(runId, {
         ...evidence,
         runId,
       });
@@ -237,6 +257,36 @@ function createObservedTransport(fetchImpl) {
   });
 }
 
+async function generateVectorEvidenceForRecords({ touchedRecords, gate, qualification }) {
+  const vectorEvidence = [];
+  for (const record of touchedRecords) {
+    const result = await gate.executeApprovedEmbedding({
+      input: buildEmbeddingInput(record),
+      qualification,
+      canonicalIdentity: record.objectId,
+      canonicalVersion: record.canonicalVersion,
+      contentIdentity: `${record.objectType}:${record.objectId}`,
+      contentVersion: record.contentVersion,
+      indexIdentity: `${record.objectType}:${record.objectId}:semantic-vector`,
+      indexVersion: record.indexVersion,
+    });
+    vectorEvidence.push(Object.freeze({
+      objectType: record.objectType,
+      objectId: record.objectId,
+      channel: record.channel,
+      canonicalVersion: result.evidence.canonicalVersion,
+      contentVersion: result.evidence.contentVersion,
+      indexVersion: result.evidence.indexVersion,
+      provider: result.evidence.provider,
+      model: result.evidence.model,
+      modelVersion: result.evidence.qualificationVersion,
+      dimensions: result.evidence.dimensions,
+      vector: result.vector,
+    }));
+  }
+  return vectorEvidence;
+}
+
 async function queryEveryTouchedVector({ neo4jBoundary, runId, vectorEvidence }) {
   const returned = new Set();
   const identities = vectorEvidence.map(record => record.objectId);
@@ -251,20 +301,216 @@ async function queryEveryTouchedVector({ neo4jBoundary, runId, vectorEvidence })
   return Array.from(returned);
 }
 
-function buildFailureMatrix() {
+async function buildFailureMatrix({ touchedRecords, qualification, configuration, semanticQueryProbe }) {
   return Object.freeze([
-    freezeFailure('provider-failure', 'Failed'),
-    freezeFailure('persistence-failure', 'Failed'),
-    freezeFailure('vector-query-verification-failure', 'Stale'),
+    await runFailureProbe({
+      name: 'provider-failure',
+      alignmentState: 'Failed',
+      touchedRecords,
+      qualification,
+      configuration,
+      semanticQueryProbe,
+      transport: createFailingTransport('LIVE_PROVIDER_REQUEST_FAILED'),
+      indexBoundary: createRecordingIndexBoundary(),
+      queryBoundary: createQueryBoundary(),
+    }),
+    await runFailureProbe({
+      name: 'persistence-failure',
+      alignmentState: 'Failed',
+      touchedRecords,
+      qualification,
+      configuration,
+      semanticQueryProbe,
+      transport: createSyntheticVectorTransport(),
+      indexBoundary: createFailingIndexBoundary(),
+      queryBoundary: createQueryBoundary(),
+    }),
+    await runFailureProbe({
+      name: 'vector-query-verification-failure',
+      alignmentState: 'Stale',
+      touchedRecords,
+      qualification,
+      configuration,
+      semanticQueryProbe,
+      transport: createSyntheticVectorTransport(),
+      indexBoundary: createRecordingIndexBoundary(),
+      queryBoundary: createQueryBoundary({ omitMatches: true }),
+    }),
   ]);
 }
 
-function freezeFailure(name, alignmentState) {
+async function runFailureProbe(options) {
+  const gate = createLiveEmbeddingIndexGate({
+    configuration: options.configuration,
+    transport: options.transport,
+    indexBoundary: options.indexBoundary,
+  });
+  try {
+    const vectorEvidence = await generateVectorEvidenceForRecords({
+      touchedRecords: options.touchedRecords,
+      gate,
+      qualification: options.qualification,
+    });
+    const returnedTouchedRecordIds = await queryEveryTouchedVector({
+      neo4jBoundary: options.queryBoundary,
+      runId: 'failure-probe',
+      vectorEvidence,
+    });
+    const allQueryable = options.touchedRecords.every(record => returnedTouchedRecordIds.includes(record.objectId));
+    if (!allQueryable) {
+      throw safeError('W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE');
+    }
+    throw safeError('W31_FAILURE_PROBE_UNEXPECTED_ALIGNMENT');
+  } catch (error) {
+    return freezeFailure({
+      name: options.name,
+      alignmentState: options.alignmentState,
+      error,
+      semanticQueryProbe: options.semanticQueryProbe,
+    });
+  }
+}
+
+function buildFailureOutcome(options) {
+  return Object.freeze({
+    mutation: Object.freeze({
+      applied: true,
+      architecturePath: options.architecturePath,
+      marker: options.mutation.marker,
+    }),
+    touchedRecords: options.touchedRecords,
+    provider: Object.freeze({
+      profile: Object.freeze({
+        provider: options.qualification.provider,
+        model: options.qualification.model,
+        version: options.qualification.version,
+        dimensions: options.qualification.dimensions,
+      }),
+      offlineEvidenceAccepted: false,
+      realRequestCount: options.transport.observation().callCount,
+    }),
+    vectorEvidence: [],
+    vectorQuery: Object.freeze({
+      returnedTouchedRecordIds: [],
+    }),
+    alignmentState: failureAlignmentState(options.error),
+    failureMatrix: Object.freeze([
+      freezeFailure({
+        name: failureName(options.error),
+        alignmentState: failureAlignmentState(options.error),
+        error: options.error,
+        semanticQueryProbe: options.semanticQueryProbe,
+      }),
+    ]),
+    pureSemanticQueryRejected: true,
+    semanticQueryRejection: buildSemanticQueryRejection(options.semanticQueryProbe, failureAlignmentState(options.error)),
+    secretLeaks: [],
+  });
+}
+
+function freezeFailure({ name, alignmentState, error, semanticQueryProbe }) {
   return Object.freeze({
     name,
     alignmentState,
+    category: error && error.category ? error.category : 'W31_MUTATION_VECTOR_LIFECYCLE_FAILED',
     pureSemanticQueryRejected: true,
+    semanticQueryRejection: buildSemanticQueryRejection(semanticQueryProbe, alignmentState),
     offlineEvidenceAccepted: false,
+  });
+}
+
+function createFailingTransport(category) {
+  let callCount = 0;
+  return Object.freeze({
+    async request() {
+      callCount += 1;
+      throw safeError(category);
+    },
+    observation() {
+      return Object.freeze({ callCount });
+    },
+  });
+}
+
+function createSyntheticVectorTransport() {
+  let callCount = 0;
+  return Object.freeze({
+    async request() {
+      callCount += 1;
+      return Object.freeze({
+        ok: true,
+        async json() {
+          return {
+            data: [
+              {
+                embedding: Array.from({ length: 1024 }, (_, index) => index / 2048),
+              },
+            ],
+          };
+        },
+      });
+    },
+    observation() {
+      return Object.freeze({ callCount });
+    },
+  });
+}
+
+function createRecordingIndexBoundary() {
+  const evidence = [];
+  return Object.freeze({
+    async writeEvidence(record) {
+      evidence.push(record);
+    },
+    evidence() {
+      return [...evidence];
+    },
+  });
+}
+
+function createFailingIndexBoundary() {
+  return Object.freeze({
+    async writeEvidence() {
+      throw safeError('LIVE_PROVIDER_INDEX_WRITE_PROHIBITED');
+    },
+  });
+}
+
+function createQueryBoundary(options = {}) {
+  return Object.freeze({
+    async queryVectorEvidence(runId, vector, canonicalIdentities) {
+      if (options.omitMatches) {
+        return [];
+      }
+      return canonicalIdentities.map(canonicalIdentity => Object.freeze({ canonicalIdentity }));
+    },
+  });
+}
+
+function failureAlignmentState(error) {
+  const category = error && error.category;
+  return category === 'W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE' ? 'Stale' : 'Failed';
+}
+
+function failureName(error) {
+  const category = error && error.category;
+  if (category === 'W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE') {
+    return 'vector-query-verification-failure';
+  }
+  if (category === 'LIVE_PROVIDER_INDEX_WRITE_PROHIBITED') {
+    return 'persistence-failure';
+  }
+  return 'provider-failure';
+}
+
+function buildSemanticQueryRejection(semanticQueryProbe, alignmentState) {
+  const request = semanticQueryProbe && semanticQueryProbe.pureSemanticRequest;
+  return Object.freeze({
+    request: request && typeof request === 'object' ? Object.freeze({ ...request }) : null,
+    status: 'rejected',
+    alignmentState,
+    category: 'SEMANTIC_INDEX_NOT_ALIGNED',
+    fullSnapshotFallback: false,
   });
 }
 
