@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T18:42:00+08:00",
+  "generatedAt": "2026-07-25T20:41:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected W3.1 Automatic Mutation-Triggered Live Vector Integration: materialized contracts and frozen acceptance for one applySystemArchitectureMutation write call -> automatic embeddingLifecycle from actual touched ids -> real approved Qwen embedding -> Neo4j vector-index queryability -> alignment response. The schema-valid pre-coding baseline is runner-owned in design/KG/test-failure-records.json: 37 total, 21 passed, 16 failed or missing, and 0 missing acceptance criteria. Default/offline W3.1 execution fails with W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED until Coding/Repair runs with approved live opt-in and protected secrets.",
+  "summary": "W4 Independent Semantic Seed Retrieval: materialized Implementation Design contracts and frozen acceptance for grag-seed-retrieval only. DT-04 and DT-05 are scoped to observable Element, Relationship, and View semantic seed channels, independent per-channel threshold gates, every qualifying candidate returned, valid zero-result outcomes, ANN performance-only evidence, and no graph closure, traversal expansion, neighborhood closure, or downstream graph-completion behavior.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -10,96 +10,55 @@
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-      "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-      "controlPoint": "Execute exactly one applySystemArchitectureMutation write call for a disposable canonical graph fixture that touches grag-wp-3-1, grag-rel-w31-index-lifecycle, and grag-w31-integration-acceptance; the Harness must not create or execute the lifecycle after mutation.",
-      "observationPoint": "Observe embeddingLifecycle and alignment in the MCP mutation response; actual touchedElementIds, touchedRelationshipIds, and touchedViewIds driving exact Element, ArchitectureRelationship, and View touched-record extraction; real approved qwen3.7-text-embedding generation at 1024 dimensions; Neo4j vector evidence with canonical/content/index/model versions; vector-query retrieval of changed records; Aligned only after queryability; Stale/Failed and pure semantic rejection on provider, persistence, or query failures; no expectedTouchedRecords substitution; and zero secret leaks.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-      "failureReason": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED"
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-04",
+      "entryPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "controlPoint": "Submit an approved implementation-design semantic query whose purpose is W4 independent Element, Relationship, and View seed discovery before any closure stage.",
+      "observationPoint": "Observe separate seedsByType.elements, seedsByType.relationships, and seedsByType.views arrays; each channel must be directly discoverable and independently attributed, with no closure, traversalExpansion, or neighborhoodClosure output.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "failureReason": null
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-      "controlPoint": "Run the existing W2 live-provider entrypoint as the approved Qwen profile prerequisite for W3.1.",
-      "observationPoint": "Default/offline execution fails before secrets, transport, or Neo4j; protected live execution proves the real request and controlled Neo4j evidence.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-      "failureReason": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Run the existing W2 live secret-isolation entrypoint as the approved secret-source prerequisite for W3.1.",
-      "observationPoint": "Default/offline execution fails before secrets; protected live execution proves approved QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD sources, no credential leaks, and Neo4j auth-only password flow.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "failureReason": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
+      "entryPath": "tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "controlPoint": "Run threshold-all semantic seed retrieval across Element, Relationship, and View channels with many-peer, unrelated, and ANN comparison evidence.",
+      "observationPoint": "Each channel exposes its own numeric threshold, returnedSeedIds exactly match qualifyingPeerIds, unrelatedForcedHitCount is zero, fixedResultLimit is absent, and annComparison.correctnessRole is performance-only.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runIndependentSemanticSeeds.js",
+      "failureReason": null
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "W3.1 production Graph RAG boundary contract",
+      "name": "W4 production Graph RAG boundary contract",
       "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root, local Graph RAG, and test contracts for W3.1 mutation-vector lifecycle ownership.",
-      "observationPoint": "Contracts expose createMutationEmbeddingVectorLifecycle(dependencies), require applySystemArchitectureMutation write success to automatically invoke it from actual touched id arrays, and require embeddingLifecycle/alignment plus live vector-query proof before Aligned.",
+      "controlPoint": "Inspect root, local Graph RAG, and test contracts for production Graph RAG ownership.",
+      "observationPoint": "The Production Graph RAG boundary owns selectThresholdAllSeeds(request), and the W4 contract excludes graph closure, traversal expansion, neighborhood closure, downstream graph completion, and global cross-channel ranking from this handoff.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3.1 coding scope authorization",
-      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect codingTargets, task plan, and frozen mounted evidence.",
-      "observationPoint": "TS-08 and seven-wave delivery remain unauthorized while W3.1 mutation-vector lifecycle work is explicitly authorized.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "W3.1 production dependency direction",
+      "name": "W4 production dependency direction",
       "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Inspect production Graph RAG JavaScript modules for outward test dependencies, Python/runtime sidecars, child_process ownership, and Neo4j plugin calls.",
-      "observationPoint": "W3.1 implementation remains Node.js, inward-facing, test-independent, and free of Python, external Graph RAG frameworks, and Neo4j GenAI Plugin requirements.",
+      "controlPoint": "Inspect production Graph RAG JavaScript modules for outward test dependencies, sidecars, child_process ownership, and Neo4j plugin calls.",
+      "observationPoint": "Seed retrieval remains Node.js, inward-facing, test-independent, and free of Python, external Graph RAG frameworks, and Neo4j GenAI Plugin requirements.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3.1 explicit entrypoint correctness",
+      "name": "W4 explicit entrypoint correctness",
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect W3.1 physical entrypoint plus the handoff frozen-file list.",
-      "observationPoint": "The entrypoint retains GIVEN/WHEN/THEN readability, Harness abstraction, exactly one mutation tool call, no Harness lifecycle creation, no expectedTouchedRecords substitution, embeddingLifecycle/alignment response assertions, exact touched-record, real Qwen, Neo4j vector queryability, fail-closed, and no-secret-leak assertions.",
+      "controlPoint": "Inspect the physical DT-04/DT-05 entrypoint plus the handoff frozen-file list.",
+      "observationPoint": "The entrypoint retains GIVEN/WHEN/THEN readability, Harness abstraction, separate channel assertions, independent threshold assertions, all-qualifying-candidate assertions, no fixed limit, ANN performance-only evidence, and no closure-shaped output.",
       "expectedStatus": "passed"
     },
     {
-      "name": "W3.1 implementation traceability",
+      "name": "W4 implementation traceability",
       "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
       "controlPoint": "Inspect intent anchors, root implements mappings, mounted testcase paths, and physical entrypoint files.",
-      "observationPoint": "grag-wp-3-1 is mapped to the Production Graph RAG boundary and mounts runApplyMutationEmbeddingVectorE2E.js.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "W3.1 live provider contract",
-      "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect approved provider, secret, Neo4j, handoff, and runner-owned failure evidence contracts.",
-      "observationPoint": "Approved Qwen profile, 1024 dimensions, opt-in, controlled Neo4j, automatic mutation-triggered embeddingLifecycle/alignment response, and W3.1 live expected failure evidence remain explicit and schema-valid.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "W3.1 live opt-in and no-fake guard",
-      "path": "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect Harness ordering and W3.1 entrypoint assertions.",
-      "observationPoint": "W3.1 fails before secrets or side effects without both ARGO_LIVE_PROVIDER_E2E=1 and ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1; fake/offline evidence, Harness-created lifecycle execution, and expected touched-record substitution cannot satisfy live acceptance.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "W3.1 live secret isolation",
-      "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect live Harness artifact scanning, approved source fixtures, and Neo4j authentication probes.",
-      "observationPoint": "QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD remain restricted to approved sources and never leak through errors, logs, Cypher, graph evidence, failure records, snapshots, or artifacts.",
+      "observationPoint": "grag-seed-retrieval is mapped to the Production Graph RAG boundary and mounts runIndependentSemanticSeeds.js for DT-04 and DT-05.",
       "expectedStatus": "passed"
     }
   ],
@@ -107,148 +66,82 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-      "path": ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
-      "failureSignal": "W31_MUTATION_EMBEDDING_LIFECYCLE_BOUNDARY_MISSING / W31_MUTATION_EMBEDDING_LIFECYCLE_API_MISSING",
-      "nextAction": "Expose the W3.1 production lifecycle boundary as an inward dependency that can be invoked by applySystemArchitectureMutation write success. It must consume actual mutation touched id arrays, extract touched Element/ArchitectureRelationship/View records, invoke approved live Qwen generation, persist vector evidence, verify Neo4j vector queryability, and return fail-closed embeddingLifecycle/alignment evidence."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED / W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED / W31_ALIGNMENT_RESPONSE_REQUIRED / W31_ACTUAL_TOUCHED_IDS_NOT_USED",
-      "nextAction": "Make applySystemArchitectureMutation automatically invoke the W3.1 lifecycle after successful writes using actual touchedElementIds, touchedRelationshipIds, and touchedViewIds, then return embeddingLifecycle and alignment in the MCP mutation response. Do not rely on Harness-created lifecycle execution or expectedTouchedRecords substitution."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-      "path": ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
-      "failureSignal": "W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE / W31_ALIGNMENT_AFTER_QUERYABLE_SUCCESS_REQUIRED",
-      "nextAction": "Extend the vector persistence/query boundary as needed so W3.1 can write versioned vector evidence and verify Neo4j vector-query retrieval before Aligned."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-04",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "W31_UNALIGNED_QUERY_NOT_REJECTED",
-      "nextAction": "Preserve fail-closed semantic query gating for Stale, Failed, partial, unknown, or query-verification-failed mutation-vector states while keeping canonical reads available."
+      "failureSignal": "DT04_ELEMENT_SEED_CHANNEL_MISSING / DT04_RELATIONSHIP_SEED_CHANNEL_MISSING / DT04_VIEW_SEED_CHANNEL_MISSING / DT04_GRAPH_CLOSURE_OUTPUT_FORBIDDEN",
+      "nextAction": "Preserve or repair selectThresholdAllSeeds(request) so it returns directly observable Element, Relationship, and View seed channels without closure-shaped output."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-05",
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "DT05_THRESHOLD_ALL_EVIDENCE_MISSING / DT05_CHANNEL_GATE_DID_NOT_RETURN_EVERY_QUALIFYING_PEER / DT05_UNRELATED_QUERY_FORCED_HIT / DT05_ANN_TOPK_USED_AS_CORRECTNESS_BASELINE",
+      "nextAction": "Preserve or repair independent channel threshold gates so every qualifying seed is returned, unrelated queries force zero hits, zero results remain valid, and ANN top-k is performance evidence only."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Corrected W3.1 Coding/Repair scope: make the canonical mutation write path automatically invoke the live Qwen and Neo4j vector lifecycle using the mutation response's actual touched ids, and return embeddingLifecycle plus alignment from applySystemArchitectureMutation. Preserve canonical JSON authority, require explicit live opt-in and approved QWEN_KEY/ARGO_NEO4J_DATABASE_PASSWORD sources, reject fake/offline and Harness-created lifecycle evidence as live acceptance, and keep pure semantic queries fail-closed until vector-query verification proves Aligned.",
+    "executionStrategy": "W4 Coding/Repair scope is limited to grag-seed-retrieval. Preserve the already passing seed-selection boundary or repair regressions only inside productionGraphRagRuntime.js. Do not add graph closure, traversal expansion, neighborhood closure, downstream graph completion, global cross-channel ranking, or unrelated delivery work.",
     "tasks": [
       {
-        "taskId": "W31-C1-automatic-mutation-trigger",
-        "title": "Trigger lifecycle from mutation write",
-        "objective": "Make applySystemArchitectureMutation invoke the production W3.1 lifecycle automatically after a successful write and return embeddingLifecycle plus alignment.",
+        "taskId": "W4-C1-preserve-independent-channels",
+        "title": "Preserve independent seed channels",
+        "objective": "Keep Element, Relationship, and View semantic seed channels separately observable and directly attributed.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"
+          "ExplicitAcceptanceTestcase-DT-04"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"
-        ],
-        "steps": [
-          "Use only the actual touchedElementIds, touchedRelationshipIds, and touchedViewIds produced by applySystemArchitectureMutation.",
-          "Invoke createMutationEmbeddingVectorLifecycle(dependencies).execute(input) inside the mutation success path, not from the Harness.",
-          "Add embeddingLifecycle and alignment to the MCP mutation response while preserving canonical mutation validation and write semantics.",
-          "Keep the boundary dependency-injected and free of tests, Python, external Graph RAG frameworks, and Neo4j GenAI Plugin requirements."
-        ],
-        "completionSignal": "The W3.1 entrypoint satisfies W31_SINGLE_MUTATION_TOOL_CALL_REQUIRED, W31_EMBEDDING_LIFECYCLE_RESPONSE_REQUIRED, W31_ALIGNMENT_RESPONSE_REQUIRED, and W31_ACTUAL_TOUCHED_IDS_NOT_USED under live opt-in."
-      },
-      {
-        "taskId": "W31-C2-touched-record-extraction",
-        "title": "Drive lifecycle from actual touched ids",
-        "objective": "Connect applySystemArchitectureMutation touched id arrays to exact Element, ArchitectureRelationship, and View touched-record extraction without Harness substitution.",
-        "dependsOn": [
-          "W31-C1-automatic-mutation-trigger"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"
-        ],
-        "steps": [
-          "Extract touched records from the successful mutation response's touched id arrays.",
-          "Include object id, object type, channel, canonical version, content version, and next index version.",
-          "Keep canonical JSON as authority; do not infer semantics from Neo4j projection state.",
-          "Do not accept expectedTouchedRecords, fixture-provided touched records, or post-mutation lifecycle inputs as acceptance evidence."
-        ],
-        "completionSignal": "runApplyMutationEmbeddingVectorE2E.js satisfies W31_APPLY_MUTATION_REQUIRED, W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE, W31_EXPECTED_TOUCHED_RECORDS_SUBSTITUTION_FORBIDDEN, and W31_HARNESS_LIFECYCLE_CREATION_FORBIDDEN under live opt-in."
-      },
-      {
-        "taskId": "W31-C3-live-vector-persistence-query",
-        "title": "Persist queryable live vectors",
-        "objective": "Use the approved Qwen adapter and controlled Neo4j vector boundary to persist and query changed records.",
-        "dependsOn": [
-          "W31-C2-touched-record-extraction"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-          "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
-          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
-          ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
-          ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js"
-        ],
-        "steps": [
-          "Require ARGO_LIVE_PROVIDER_E2E=1 and ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1 before live execution.",
-          "Use only the approved provider profile and secret sources already frozen by TS-06/TS-07.",
-          "Persist complete vector evidence for every touched record.",
-          "Run a Neo4j vector query that returns the changed record ids before reporting Aligned.",
-          "Surface successful persistence/queryability through applySystemArchitectureMutation response fields embeddingLifecycle and alignment."
-        ],
-        "completionSignal": "The W3.1 entrypoint satisfies W31_QWEN_MODEL_REQUIRED, W31_QWEN_DIMENSIONS_REQUIRED, W31_REAL_QWEN_ADAPTER_CALL_REQUIRED, and W31_NEO4J_VECTOR_QUERY_NOT_QUERYABLE assertions."
-      },
-      {
-        "taskId": "W31-C4-fail-closed-alignment",
-        "title": "Enforce fail-closed alignment",
-        "objective": "Prevent semantic query delivery whenever W3.1 provider, persistence, vector-query, or partial-record work is not complete.",
-        "dependsOn": [
-          "W31-C3-live-vector-persistence-query"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Represent provider failure, persistence failure, query verification failure, and partial completion as Stale or Failed.",
-          "Reject pure semantic requests for all non-Aligned W3.1 states with no automatic full-snapshot fallback.",
-          "Preserve complete no-argument and explicit canonical-anchor reads."
+          "Run node tests/explicit/entries/runIndependentSemanticSeeds.js before changing code.",
+          "If DT-04 regresses, repair only selectThresholdAllSeeds(request) and its local helpers.",
+          "Ensure Relationship and View seeds are direct channel outputs, not inferred from Element-only retrieval.",
+          "Keep closure, traversal expansion, neighborhood closure, and downstream completion out of this task."
         ],
-        "completionSignal": "The W3.1 entrypoint satisfies W31_ALIGNMENT_AFTER_QUERYABLE_SUCCESS_REQUIRED, W31_FAILURE_MUST_NOT_ALIGN, and W31_UNALIGNED_QUERY_NOT_REJECTED assertions."
+        "completionSignal": "runIndependentSemanticSeeds.js continues to satisfy DT04_ELEMENT_SEED_CHANNEL_MISSING, DT04_RELATIONSHIP_SEED_CHANNEL_MISSING, DT04_VIEW_SEED_CHANNEL_MISSING, and the no-closure assertions."
       },
       {
-        "taskId": "W31-C5-protected-live-verification",
-        "title": "Verify protected live acceptance",
-        "objective": "Run W3.1 acceptance and guardrails with approved live opt-in and refresh runner-owned baseline evidence.",
+        "taskId": "W4-C2-preserve-threshold-all-gates",
+        "title": "Preserve threshold-all gates",
+        "objective": "Keep independent channel thresholds and return every candidate meeting each channel gate.",
         "dependsOn": [
-          "W31-C4-fail-closed-alignment"
+          "W4-C1-preserve-independent-channels"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-          "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+          "ExplicitAcceptanceTestcase-DT-05"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/graph-rag/liveEmbeddingIndexGate.js",
           ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
-          "Run the W3.1 explicit entrypoint with approved secrets in controlled local or protected CI.",
-          "Run W3.1 critical guards.",
-          "Run full argo.runArchitectureTests and preserve runner-owned design/KG/test-failure-records.json evidence.",
-          "Do not commit .argo/.env or any secret-bearing artifact."
+          "Keep each channel threshold independently represented in thresholdAll.",
+          "Return every qualifyingPeerId in returnedSeedIds for the same channel.",
+          "Preserve valid zero-result behavior by keeping unrelatedForcedHitCount at zero.",
+          "Keep ANN comparison marked as performance-only evidence and never as the correctness baseline."
         ],
-        "completionSignal": "W3.1 explicit entrypoint passes live through a single mutation call with automatic embeddingLifecycle/alignment response evidence, critical guards pass, full runner records no W3.1 regression, and no secret-bearing file is committed."
+        "completionSignal": "runIndependentSemanticSeeds.js continues to satisfy DT05_THRESHOLD_ALL_EVIDENCE_MISSING, DT05_CHANNEL_GATE_DID_NOT_RETURN_EVERY_QUALIFYING_PEER, DT05_UNRELATED_QUERY_FORCED_HIT, and DT05_ANN_TOPK_USED_AS_CORRECTNESS_BASELINE assertions."
+      },
+      {
+        "taskId": "W4-C3-verify-handoff-baseline",
+        "title": "Verify W4 baseline",
+        "objective": "Confirm the W4 entrypoint and production Graph RAG critical guards remain green before coding is considered complete.",
+        "dependsOn": [
+          "W4-C2-preserve-threshold-all-gates"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-DT-04",
+          "ExplicitAcceptanceTestcase-DT-05"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+        ],
+        "steps": [
+          "Run node tests/explicit/entries/runIndependentSemanticSeeds.js.",
+          "Run the four W4 critical production Graph RAG guards listed in criticalNonExplicitTests.",
+          "Run full argo.runArchitectureTests and compare against the committed pre-coding baseline.",
+          "Do not commit .argo/.env, secrets, closure behavior, or unrelated delivery changes."
+        ],
+        "completionSignal": "DT-04 and DT-05 stay passed, W4 critical guards pass, full architecture tests show no W4 regression, and no secret-bearing file is staged."
       }
     ]
   },
@@ -259,10 +152,7 @@
     "tests/harness/intentArchitectureQueryHarness.js",
     "tests/harness/productionGraphRagHarness.js",
     "tests/harness/liveEmbeddingProviderHarness.js",
-    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "tests/explicit/entries/runProductionGraphRagRuntime.js",
     "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
     "tests/explicit/entries/runEmbeddingQualificationGate.js",
@@ -270,26 +160,28 @@
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runCanonicalProjectionAuthority.js",
     "tests/explicit/entries/runSevenWaveDeliveryGates.js",
-    "tests/explicit/entries/runIndependentSemanticSeeds.js",
+    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
     "tests/explicit/entries/runMutationIndexLifecycle.js",
     "tests/explicit/entries/runStaleSemanticQueryRejection.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
-    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+    "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
     "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
     "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
     "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-    "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
     ".argo/.env.example",
     ".gitignore"
   ],
   "openGaps": [
-    "Pre-coding baseline evidence is intentionally runner-owned in design/KG/test-failure-records.json because the handoff schema does not permit a preCodingBaseline object; latest full architecture run recorded 37 total, 21 passed, 16 failed or missing, and 0 missing acceptance criteria.",
-    "Default/offline W3.1 execution fails with W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED and does not count as live acceptance.",
-    "Prior manual post-mutation lifecycle evidence is explicitly rejected; live W3.1 acceptance now requires one applySystemArchitectureMutation response containing embeddingLifecycle and alignment based on actual touched ids.",
-    "Coding/Repair needs protected live execution with ARGO_LIVE_PROVIDER_E2E=1, ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1, approved QWEN_KEY, approved ARGO_NEO4J_DATABASE_PASSWORD, approved non-secret embedding/Neo4j fields, and disposable/protected Neo4j vector index access.",
-    "No intent mismatch was found; no ImplementationToIntentTraceProposal is required."
+    "No intent mismatch was found; no ImplementationToIntentTraceProposal is required.",
+    "The W4 explicit entrypoint already passes before Coding/Repair. Coding scope is preserve-or-repair only for grag-seed-retrieval regressions in productionGraphRagRuntime.js.",
+    "Closure behavior is intentionally absent from this handoff. Purpose closure, traversal expansion, neighborhood closure, and downstream graph-completion behavior remain later-stage work.",
+    "Pre-coding runner baseline is runner-owned in design/KG/test-failure-records.json and must be refreshed immediately before the Implementation Design commit."
   ]
 }

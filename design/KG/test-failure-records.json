@@ -156,32 +156,6 @@
     "stderr": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
-    "testcasename": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
-    "testdescription": "Acceptor control point: explicitly opt in to a Node.js live request using the human-approved provider identity, model identity, qualification version, endpoint, and dimensions, then exercise success, provider-error, unapproved, omitted-explicit-configuration, and dimension-mismatch paths through the index-delivery gate with a controlled Neo4j test instance. Observation point: the real provider receives explicit model and dimensions, returns a finite numeric vector of exactly 1024 values, successful evidence may reach the controlled index boundary, every invalid or failed case produces zero index writes, and offline/default CI results are never treated as live E2E evidence.",
-    "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "relatedIntentElementId": "grag-embedding-qualification",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "exitCode": 1,
-    "failureError": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED",
-    "stdout": "",
-    "stderr": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-    "testdescription": "Acceptor control point: execute the opted-in live provider and controlled-Neo4j flow using generated canaries through each approved secret source—direct process environment and the unique repository-relative .argo/.env—then exercise process/file agreement, process precedence, conflicting duplicates, missing/blank values, alternate or tracked files, reparse/path indirection, broad Windows ACLs, command-line/default/fallback sources, and inspect all observable channels. Observation point: only QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may be loaded from an approved source; mismatches and every unsafe or unapproved source fail closed before provider, database, or index side effects; ARGO_NEO4J_DATABASE_PASSWORD is used only by the database authentication connection layer and neither secret enters stdout/stderr, errors, logs, Cypher text/parameters, graph evidence, failure records, snapshots, or artifacts; cleanup leaves zero persistence and zero generated secret artifacts.",
-    "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "relatedIntentElementId": "grag-credential-boundary",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "exitCode": 1,
-    "failureError": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED",
-    "stdout": "",
-    "stderr": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
-  },
-  {
     "testcasename": "ExplicitAcceptanceTestcase-TS-08",
     "testdescription": "Control: attempt downstream work before prerequisites. Observe: gate blocks it and W7 cannot pass before W2-W6.",
     "acceptanceCriteria": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
@@ -193,18 +167,5 @@
     "failureError": "AssertionError [ERR_ASSERTION]: TS08_GATE_CATEGORY_MISSING\n+ actual - expected\n\n+ undefined\n- 'DELIVERY_PREREQUISITES_INCOMPLETE'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:13:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'DELIVERY_PREREQUISITES_INCOMPLETE',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
     "stderr": "AssertionError [ERR_ASSERTION]: TS08_GATE_CATEGORY_MISSING\n+ actual - expected\n\n+ undefined\n- 'DELIVERY_PREREQUISITES_INCOMPLETE'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runSevenWaveDeliveryGates.js:13:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: 'DELIVERY_PREREQUISITES_INCOMPLETE',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-    "testdescription": "Acceptor control point: with explicit live opt-in, execute exactly one applySystemArchitectureMutation write call for cases that touch an Element, an ArchitectureRelationship, and a View. The Harness must not manually create or execute mutationEmbeddingVectorLifecycle after mutation and must not supply preset expectedTouchedRecords. Observation point: the MCP mutation response exposes actual touchedElementIds, touchedRelationshipIds, touchedViewIds, embeddingLifecycle, and alignment; the automatic lifecycle uses the approved qwen3.7-text-embedding profile and 1024 dimensions without leaking secrets; Neo4j persists vector rows with canonical/content/index/model version evidence; a vector query retrieves all changed records after complete success; alignment is Aligned only after the queryable-vector check passes; provider or persistence failures mark Stale or Failed and pure semantic queries are rejected until alignment is restored.",
-    "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-    "relatedIntentElementId": "grag-wp-3-1",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-    "exitCode": 1,
-    "failureError": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED",
-    "stdout": "",
-    "stderr": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED"
   }
 ]

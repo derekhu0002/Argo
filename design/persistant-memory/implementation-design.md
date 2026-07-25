@@ -117,3 +117,12 @@
 - Contracts and guards now protect the automatic mutation-triggered boundary while preserving live safety: explicit opt-in, approved Qwen `qwen3.7-text-embedding` at 1024 dimensions, approved `QWEN_KEY` and `ARGO_NEO4J_DATABASE_PASSWORD` sources, protected Neo4j vector evidence, no fake/offline evidence, and no credential leakage.
 - Coding/Repair is authorized to update `.argo/scripts/systemarchitecture-mcp-server.js`, `.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js`, `.argo/scripts/graph-rag/liveEmbeddingIndexGate.js`, `.argo/scripts/graph-rag/liveEmbeddingProviderClient.js`, `.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js`, and `.argo/scripts/graph-rag/productionGraphRagRuntime.js` only as needed to satisfy the corrected automatic response contract.
 - No intent mismatch was found beyond the corrected handoff; no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-25 W4 independent semantic seed retrieval
+
+- Materialized the W4 ImplementationToCoding handoff from the validated `IntentToImplementationHandoff.json`, scoped only to `grag-seed-retrieval`, `ExplicitAcceptanceTestcase-DT-04`, and `ExplicitAcceptanceTestcase-DT-05`.
+- Contracts now state that W4 owns only relevance-discovery seeds: separate Element, ArchitectureRelationship, and View channels; independent channel thresholds; every qualifying candidate returned; zero-result outcomes valid; ANN performance-only; no graph closure, traversal expansion, neighborhood closure, downstream graph completion, or global cross-channel ranking.
+- Tightened `runIndependentSemanticSeeds.js` with no-closure assertions, independent threshold assertions, and exact returned-versus-qualifying peer equality while preserving Harness abstraction and GIVEN/WHEN/THEN readability.
+- Direct W4 entrypoint execution passed. Critical production Graph RAG guards passed for architecture boundary, dependency direction, explicit entrypoint correctness, and implementation traceability.
+- Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 37 total, 24 passed, 13 failed or missing, 0 missing acceptance criteria. DT-04 and DT-05 are passed; remaining failures belong to DT-00, DT-06 through DT-11, DT-13 through DT-15, DT-18, DT-05-R2-DT-19, and TS-08, which are outside this W4 seed-retrieval scope.
+- No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
