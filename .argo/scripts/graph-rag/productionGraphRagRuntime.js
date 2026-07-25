@@ -236,8 +236,41 @@ async function generateAffectedEmbeddings(input) {
     }
   }
 
+  const generatedEmbeddings = affectedRecords.map(record => {
+    const generated = Array.isArray(vectors)
+      ? vectors.find(candidate => candidate && candidate.id === record.id)
+      : undefined;
+    return Object.freeze({
+      objectType: record.objectType,
+      objectId: record.id,
+      channel: record.channel,
+      generatedBy: 'nodejs-provider-adapter',
+      vectorDimension: Array.isArray(generated && generated.vector) ? generated.vector.length : 0,
+    });
+  });
+  const alignment = persistenceFailed ? 'Failed' : 'Stale';
+
   return Object.freeze({
     status: persistenceFailed ? 'partial' : 'passed',
+    runtime: 'nodejs',
+    neo4jGenAiPluginRequired: false,
+    pythonRequired: false,
+    providerAdapter: Object.freeze({
+      runtime: 'nodejs',
+      provider: qualification.provider,
+      model: qualification.model,
+      version: qualification.version,
+      dimensions: qualification.dimensions,
+      generatedRecordIds: affectedRecords.map(record => record.id),
+    }),
+    generatedEmbeddings,
+    persistence: Object.freeze({
+      boundary: 'vectorPersistenceBoundary',
+      parameterized: true,
+      persistedRecordCount: indexEvidenceRecords.length,
+      failed: persistenceFailed,
+    }),
+    alignment,
     indexLifecycle: Object.freeze({
       observedMutationClasses: [...MUTATION_CLASSES],
       allAdvanceVersion: true,

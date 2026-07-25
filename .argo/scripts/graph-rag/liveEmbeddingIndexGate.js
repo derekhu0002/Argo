@@ -26,8 +26,10 @@ function buildSemanticIndexEvidenceRecord(input = {}) {
     indexVersion,
     provider: input.provider || qualification.provider || 'approved-test-provider',
     model: input.model || qualification.model || 'approved-test-model',
+    version: input.version || input.modelVersion || qualification.version || '2026-07-24',
     modelVersion: input.modelVersion || qualification.version || '2026-07-24',
     dimensions: input.dimensions || qualification.dimensions || 1536,
+    ...(Array.isArray(input.vector) ? { vector: [...input.vector] } : {}),
   });
 }
 
