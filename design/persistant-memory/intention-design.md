@@ -254,3 +254,33 @@
 - `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 58 relationships, and 27 views.
 - `argo.validateSystemArchitecture`: passed.
 - Open business questions: none at intent level. Live Qwen/Neo4j runner credentials and controlled execution environment are downstream prerequisites, not delivery evidence in this stage.
+
+## 2026-07-25 — W3.1 Automatic Mutation-Triggered Correction
+
+- Selected viewpoint: Implementation and Migration Viewpoint.
+- Stakeholder concern: requirements owners, ICT architects, implementation designers, runtime owners, and acceptors need W3.1 acceptance to prove the actual mutation write success path automatically invokes embedding, not merely that a test Harness can run embedding after mutation.
+- Modeling purpose: audit repair, deciding, and intent-to-implementation handoff preparation.
+- Corrected decision: prior live/manual evidence is insufficient and W3.1 remains not accepted until a single `applySystemArchitectureMutation` write call automatically triggers the embedding lifecycle and returns `embeddingLifecycle` plus `alignment` in the MCP response.
+- Affected view binding: `grag-w31-integration-acceptance` remains an Implementation and Migration Viewpoint instance; its concern and scope now explicitly require actual touched-id extraction from the mutation response, automatic `embeddingLifecycle` invocation, response-level alignment semantics, and rejection of Harness-added lifecycle execution.
+
+### Corrected acceptance boundary
+
+- The E2E must call only one Mutation tool: `applySystemArchitectureMutation`.
+- The mutation write success path must automatically invoke the embedding lifecycle.
+- The lifecycle must use actual `touchedElementIds`, `touchedRelationshipIds`, and `touchedViewIds` from the mutation result/response.
+- The MCP mutation response must expose `embeddingLifecycle` and `alignment`.
+- The Harness must not manually create or execute `mutationEmbeddingVectorLifecycle` after mutation and must not supply preset `expectedTouchedRecords`.
+- Historical manual post-mutation Qwen/Neo4j evidence is preserved only as insufficient historical evidence, not W3.1 acceptance.
+
+### Coverage matrix
+
+- `grag-wp-3-1` — corrected `functionalPoint.W3-1-live-mutation-vector-e2e` -> corrected `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E`.
+- Existing same-element upstream coverage remains unchanged for `grag-index-lifecycle`, `grag-embedding-generation`, `grag-embedding-provider-adapter`, `grag-semantic-index`, `grag-alignment-constraint`, `grag-native-retrieval-service`, `grag-embedding-qualification`, and `grag-credential-boundary`.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for `grag-wp-3-1` and `grag-w31-integration-acceptance` correction.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 58 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- Runner-owned `deliveryStatus` was preserved as runner data and not fabricated by Intent Design.
+- Open business questions: none. Downstream ImplementationDesign must regenerate the implementation-to-coding handoff before Coding/Repair proceeds.
