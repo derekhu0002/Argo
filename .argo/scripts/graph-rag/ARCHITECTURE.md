@@ -68,6 +68,7 @@ Successful query evidence identifies `nodejs` as runtime, `neo4j-native` as retr
 - Redaction verification includes a synthetic-success recording boundary that captures full Cypher text/parameter and graph-evidence values, detects canaries in neutral fields, and clears all in-memory persistence before inspecting generated artifacts.
 - The controlled Neo4j test boundary uses `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`; the password flows only to `neo4j.auth.basic`, never to Cypher or evidence.
 - A recording Neo4j adapter verifies the password is passed once to `neo4j.auth.basic`, authentication failure reaches no query, and recorded Cypher text/parameters contain no password canary.
+- Authentication redaction captures the raw exception—including message, stack, nested causes, and aggregate errors—before safe classification, then scans it together with the sanitized error, every injected logger event, stdout/stderr, auth/driver/query recordings, graph and persistence observations, and recursive artifacts. The probe leaves zero records and never persists its canary.
 - `.argo/.env.example` is the only committed example and contains empty placeholders/instructions; `.argo/.env` remains ignored and untracked.
 
 ## Owned tests

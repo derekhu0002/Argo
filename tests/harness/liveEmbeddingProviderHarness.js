@@ -763,36 +763,104 @@ async function runNeo4jAuthenticationCanaryProbe() {
     neo4jDatabaseUsername: 'synthetic-user',
     neo4jDatabasePassword: passwordCanary,
   };
-  const successAdapter = createRecordingNeo4jAdapter();
-  const boundary = await createApprovedNeo4jBoundary({
-    configuration,
-    neo4j: successAdapter,
-    logger: createCapturingLogger(),
+  const runId = `auth-success-${crypto.randomUUID()}`;
+  const successLogger = createCapturingLogger();
+  const successAdapter = createRecordingNeo4jAdapter({ expectedPassword: passwordCanary });
+  const successCaptured = await captureProcessOutput(async () => {
+    const boundary = await createApprovedNeo4jBoundary({
+      configuration,
+      neo4j: successAdapter,
+      logger: successLogger,
+    });
+    const writesBefore = await boundary.countWrites(runId);
+    const graphEvidence = await boundary.readEvidence(runId);
+    const writesAfterCleanup = await boundary.cleanup(runId);
+    await boundary.close();
+    return { writesBefore, graphEvidence, writesAfterCleanup };
   });
-  await boundary.countWrites(`auth-success-${crypto.randomUUID()}`);
-  await boundary.close();
-  const failureAdapter = createRecordingNeo4jAdapter(passwordCanary);
-  const failure = await captureOutcome(() => createApprovedNeo4jBoundary({
-    configuration,
-    neo4j: failureAdapter,
-    logger: createCapturingLogger(),
-  }));
+  const failureLogger = createCapturingLogger();
+  const failureAdapter = createRecordingNeo4jAdapter({
+    expectedPassword: passwordCanary,
+    failAuthentication: true,
+  });
+  const failureCaptured = await captureProcessOutput(() => captureRawOutcome(
+    () => createApprovedNeo4jBoundary({
+      configuration,
+      neo4j: failureAdapter,
+      logger: failureLogger,
+    }),
+  ));
+  const successObservation = successAdapter.observation();
+  const failureObservation = failureAdapter.observation();
+  const unifiedChannels = [
+    { name: 'rawError', value: [failureCaptured.result.rawError, failureObservation.rawExceptions] },
+    { name: 'sanitizedError', value: failureCaptured.result.sanitized },
+    { name: 'successLogger', value: successLogger.observations() },
+    { name: 'failureLogger', value: failureLogger.observations() },
+    { name: 'successStdout', value: successCaptured.stdout },
+    { name: 'successStderr', value: successCaptured.stderr },
+    { name: 'failureStdout', value: failureCaptured.stdout },
+    { name: 'failureStderr', value: failureCaptured.stderr },
+    { name: 'authCalls', value: [successObservation.authCalls, failureObservation.authCalls] },
+    { name: 'driverCalls', value: [successObservation.driverCalls, failureObservation.driverCalls] },
+    { name: 'cypherTextAndParameters', value: [successObservation.queries, failureObservation.queries] },
+    { name: 'graphEvidence', value: successCaptured.result.graphEvidence },
+    { name: 'persistence', value: {
+      writesBefore: successCaptured.result.writesBefore,
+      writesAfterCleanup: successCaptured.result.writesAfterCleanup,
+    } },
+    { name: 'artifacts', value: readPersistentArtifactsRecursively() },
+  ];
   return {
-    authCalls: successAdapter.observation().authCalls.map(call => ({
-      usernameMatches: call.username === configuration.neo4jDatabaseUsername,
-      passwordMatches: call.password === passwordCanary,
-    })),
-    cypherLeaks: findSecretLeaks(passwordCanary, [
-      { name: 'cypherTextAndParameters', value: successAdapter.observation().queries },
-    ]),
-    authenticationFailure: failure,
-    authenticationFailureLeaks: findSecretLeaks(passwordCanary, [
-      { name: 'authenticationFailure', value: failure },
-    ]),
-    driverCalls: successAdapter.observation().driverCalls.length,
-    failureDriverCalls: failureAdapter.observation().driverCalls.length,
-    failureQueries: failureAdapter.observation().queries.length,
+    authCalls: successObservation.authCalls,
+    authenticationFailure: failureCaptured.result.sanitized,
+    driverCalls: successObservation.driverCalls.length,
+    failureDriverCalls: failureObservation.driverCalls.length,
+    failureQueries: failureObservation.queries.length,
+    writesBefore: successCaptured.result.writesBefore,
+    graphEvidenceCount: successCaptured.result.graphEvidence.length,
+    writesAfterCleanup: successCaptured.result.writesAfterCleanup,
+    inspectedChannelNames: unifiedChannels.map(channel => channel.name),
+    leaks: findSecretLeaks(passwordCanary, unifiedChannels),
+    leakDetectorChannels: runAuthenticationLeakDetectorSelfTest(passwordCanary),
   };
+}
+
+async function captureRawOutcome(action) {
+  try {
+    await action();
+    return { rawError: undefined, sanitized: { status: 'unexpected-success' } };
+  } catch (rawError) {
+    const category = safeCategory(rawError);
+    return {
+      rawError,
+      sanitized: { status: 'blocked', category, message: category },
+    };
+  }
+}
+
+function runAuthenticationLeakDetectorSelfTest(canary) {
+  const channelNames = [
+    'rawError',
+    'sanitizedError',
+    'logger',
+    'stdout',
+    'stderr',
+    'authCalls',
+    'driverCalls',
+    'cypherTextAndParameters',
+    'graphEvidence',
+    'persistence',
+    'artifacts',
+  ];
+  return channelNames.filter(name => findSecretLeaks(canary, [
+    {
+      name,
+      value: name === 'rawError'
+        ? new Error('outer-auth-failure', { cause: new Error(canary) })
+        : { neutral: canary },
+    },
+  ]).includes(name));
 }
 
 function loadApprovedNeo4jBoundaryFactory() {
@@ -807,14 +875,18 @@ function loadApprovedNeo4jBoundaryFactory() {
   return boundary.createApprovedNeo4jBoundary;
 }
 
-function createRecordingNeo4jAdapter(authenticationFailureCanary) {
+function createRecordingNeo4jAdapter({ expectedPassword, failAuthentication = false }) {
   const authCalls = [];
   const driverCalls = [];
   const queries = [];
+  const rawExceptions = [];
   return {
     auth: {
       basic(username, password) {
-        authCalls.push({ username, password });
+        authCalls.push({
+          usernamePresent: typeof username === 'string' && username.length > 0,
+          passwordMatches: password === expectedPassword,
+        });
         return { type: 'basic-auth' };
       },
     },
@@ -822,7 +894,11 @@ function createRecordingNeo4jAdapter(authenticationFailureCanary) {
       driverCalls.push({ uri, authentication });
       return {
         async verifyConnectivity() {
-          if (authenticationFailureCanary) throw new Error(authenticationFailureCanary);
+          if (failAuthentication) {
+            const error = new Error('NEO4J_AUTHENTICATION_FAILED');
+            rawExceptions.push(error);
+            throw error;
+          }
         },
         session() {
           return {
@@ -841,7 +917,12 @@ function createRecordingNeo4jAdapter(authenticationFailureCanary) {
       };
     },
     observation() {
-      return { authCalls: [...authCalls], driverCalls: [...driverCalls], queries: [...queries] };
+      return {
+        authCalls: [...authCalls],
+        driverCalls: [...driverCalls],
+        queries: [...queries],
+        rawExceptions: [...rawExceptions],
+      };
     },
   };
 }
@@ -1020,16 +1101,31 @@ function inspectKeys(value, location, forbidden, findings) {
 }
 
 function serializeArtifact(value) {
-  if (Buffer.isBuffer(value)) {
-    return value.toString('utf8');
-  }
-  if (value instanceof Error) {
-    return `${value.name}\n${value.message}\n${value.stack || ''}`;
-  }
   if (typeof value === 'string') {
     return value;
   }
-  return JSON.stringify(value);
+  return JSON.stringify(toSerializableArtifact(value, new WeakSet()));
+}
+
+function toSerializableArtifact(value, seen) {
+  if (Buffer.isBuffer(value)) return value.toString('utf8');
+  if (value === null || value === undefined || typeof value !== 'object') return value;
+  if (seen.has(value)) return '[circular]';
+  seen.add(value);
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message,
+      stack: value.stack || '',
+      cause: toSerializableArtifact(value.cause, seen),
+      errors: toSerializableArtifact(value.errors, seen),
+    };
+  }
+  if (Array.isArray(value)) return value.map(item => toSerializableArtifact(item, seen));
+  return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+    key,
+    toSerializableArtifact(child, seen),
+  ]));
 }
 
 function hasProtectedHeader(headers) {
@@ -1081,6 +1177,7 @@ module.exports = {
   runLiveProviderSecretIsolation,
   runNeo4jAuthenticationCanaryProbe,
   runApprovedSourceFixtureMatrix,
+  runAuthenticationLeakDetectorSelfTest,
   runRecordingBoundaryCanarySelfTest,
   runRedactionCanaryProbe,
   safeCategory,

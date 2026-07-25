@@ -86,13 +86,8 @@ async function main() {
   );
   assert.deepStrictEqual(
     observation.redaction.neo4jAuthentication.authCalls,
-    [{ usernameMatches: true, passwordMatches: true }],
+    [{ usernamePresent: true, passwordMatches: true }],
     'TS07_PROVIDER_NEO4J_AUTH_ARGUMENTS_REQUIRED',
-  );
-  assert.deepStrictEqual(
-    observation.redaction.neo4jAuthentication.cypherLeaks,
-    [],
-    'TS07_PROVIDER_NEO4J_PASSWORD_ENTERED_CYPHER',
   );
   assert.strictEqual(
     observation.redaction.neo4jAuthentication.driverCalls,
@@ -109,15 +104,57 @@ async function main() {
     'LIVE_PROVIDER_OPERATION_FAILED',
     'TS07_PROVIDER_NEO4J_AUTH_FAILURE_CATEGORY',
   );
-  assert.deepStrictEqual(
-    observation.redaction.neo4jAuthentication.authenticationFailureLeaks,
-    [],
-    'TS07_PROVIDER_NEO4J_AUTH_FAILURE_LEAK',
-  );
   assert.strictEqual(
     observation.redaction.neo4jAuthentication.failureQueries,
     0,
     'TS07_PROVIDER_NEO4J_AUTH_FAILURE_REACHED_QUERY',
+  );
+  assert.strictEqual(observation.redaction.neo4jAuthentication.writesBefore, 0, 'TS07_PROVIDER_NEO4J_AUTH_INITIAL_PERSISTENCE');
+  assert.strictEqual(observation.redaction.neo4jAuthentication.graphEvidenceCount, 0, 'TS07_PROVIDER_NEO4J_AUTH_GRAPH_PERSISTENCE');
+  assert.strictEqual(observation.redaction.neo4jAuthentication.writesAfterCleanup, 0, 'TS07_PROVIDER_NEO4J_AUTH_CLEANUP_PERSISTENCE');
+  assert.deepStrictEqual(
+    observation.redaction.neo4jAuthentication.leaks,
+    [],
+    'TS07_PROVIDER_NEO4J_AUTH_UNIFIED_CHANNEL_LEAK',
+  );
+  const authChannels = [
+    'rawError',
+    'sanitizedError',
+    'successLogger',
+    'failureLogger',
+    'successStdout',
+    'successStderr',
+    'failureStdout',
+    'failureStderr',
+    'authCalls',
+    'driverCalls',
+    'cypherTextAndParameters',
+    'graphEvidence',
+    'persistence',
+    'artifacts',
+  ];
+  for (const channel of authChannels) {
+    assert(
+      observation.redaction.neo4jAuthentication.inspectedChannelNames.includes(channel),
+      `TS07_PROVIDER_NEO4J_AUTH_CHANNEL_NOT_INSPECTED:${channel}`,
+    );
+  }
+  assert.deepStrictEqual(
+    observation.redaction.neo4jAuthentication.leakDetectorChannels,
+    [
+      'rawError',
+      'sanitizedError',
+      'logger',
+      'stdout',
+      'stderr',
+      'authCalls',
+      'driverCalls',
+      'cypherTextAndParameters',
+      'graphEvidence',
+      'persistence',
+      'artifacts',
+    ],
+    'TS07_PROVIDER_NEO4J_AUTH_LEAK_DETECTOR_INCOMPLETE',
   );
   for (const requiredArtifact of [
     'requestObservation',

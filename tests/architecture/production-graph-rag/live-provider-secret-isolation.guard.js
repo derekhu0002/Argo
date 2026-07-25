@@ -7,6 +7,7 @@ const {
   APPROVED_SOURCE_FIXTURES,
   findSecretLeaks,
   runApprovedSourceFixtureMatrix,
+  runAuthenticationLeakDetectorSelfTest,
   runNeo4jAuthenticationCanaryProbe,
 } = require('../../harness/liveEmbeddingProviderHarness.js');
 
@@ -45,6 +46,23 @@ assert.deepStrictEqual(
   ]),
   [],
   'LIVE_PROVIDER_SECRET_GUARD: safe artifacts were rejected',
+);
+assert.deepStrictEqual(
+  runAuthenticationLeakDetectorSelfTest(syntheticSecret),
+  [
+    'rawError',
+    'sanitizedError',
+    'logger',
+    'stdout',
+    'stderr',
+    'authCalls',
+    'driverCalls',
+    'cypherTextAndParameters',
+    'graphEvidence',
+    'persistence',
+    'artifacts',
+  ],
+  'LIVE_PROVIDER_SECRET_GUARD: auth channel leak detector is incomplete',
 );
 // THEN configuration and entrypoint failures cannot persist or print the provider credential
 assert(/^QWEN_KEY=\s*$/m.test(envExample), 'LIVE_PROVIDER_SECRET_GUARD: QWEN_KEY placeholder is not empty');
@@ -102,12 +120,33 @@ const authExecution = childProcess.spawnSync(process.execPath, [
 if (fs.existsSync(neo4jBoundaryPath)) {
   assert.strictEqual(authExecution.status, 0, 'LIVE_PROVIDER_SECRET_GUARD: production Neo4j auth probe failed');
   const authSelfTest = JSON.parse(authExecution.stdout);
-  assert.deepStrictEqual(authSelfTest.authCalls, [{ usernameMatches: true, passwordMatches: true }]);
+  assert.deepStrictEqual(authSelfTest.authCalls, [{ usernamePresent: true, passwordMatches: true }]);
   assert.strictEqual(authSelfTest.driverCalls, 1);
   assert.strictEqual(authSelfTest.failureDriverCalls, 1);
-  assert.deepStrictEqual(authSelfTest.cypherLeaks, []);
-  assert.deepStrictEqual(authSelfTest.authenticationFailureLeaks, []);
   assert.strictEqual(authSelfTest.failureQueries, 0);
+  assert.strictEqual(authSelfTest.writesBefore, 0);
+  assert.strictEqual(authSelfTest.graphEvidenceCount, 0);
+  assert.strictEqual(authSelfTest.writesAfterCleanup, 0);
+  assert.deepStrictEqual(authSelfTest.leaks, []);
+  for (const channel of [
+    'rawError',
+    'sanitizedError',
+    'successLogger',
+    'failureLogger',
+    'successStdout',
+    'successStderr',
+    'failureStdout',
+    'failureStderr',
+    'authCalls',
+    'driverCalls',
+    'cypherTextAndParameters',
+    'graphEvidence',
+    'persistence',
+    'artifacts',
+  ]) {
+    assert(authSelfTest.inspectedChannelNames.includes(channel), `LIVE_PROVIDER_SECRET_GUARD: auth channel omitted ${channel}`);
+  }
+  assert.strictEqual(authSelfTest.leakDetectorChannels.length, 11);
 } else {
   assert.strictEqual(authExecution.status, 1, 'LIVE_PROVIDER_SECRET_GUARD: missing production Neo4j boundary fabricated pass');
   assert.strictEqual(authExecution.stderr, 'LIVE_PROVIDER_NEO4J_BOUNDARY_MISSING');

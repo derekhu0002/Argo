@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-25T11:28:00+08:00",
+  "generatedAt": "2026-07-25T11:42:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "preCodingBaseline": {
     "runnerCommand": "argo.runArchitectureTests(design/KG/SystemArchitecture.json)",
@@ -185,7 +185,7 @@
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
       "controlPoint": "Inject a complete nine-key approved configuration through structured process/file source adapters for every temporary path/git/file/reparse/ACL fixture, invoke production resolveApprovedLiveConfiguration, then invoke production createApprovedNeo4jBoundary with a recording adapter.",
-      "observationPoint": "Compare exact normalized configuration and per-key trace-derived attribution; observe unique rejection categories and zero side effects; prove ACL deny precedence and DB password use only in neo4j.auth.basic with zero auth-failure queries.",
+      "observationPoint": "Compare exact normalized configuration and per-key trace-derived attribution; prove ACL deny precedence; capture raw auth exceptions before classification and scan raw/sanitized errors, logger, stdout/stderr, auth/driver/query, graph/persistence, and artifacts with zero leaks, queries after auth failure, or persistence.",
       "expectedStatus": "passed"
     }
   ],
@@ -494,6 +494,8 @@
           "In controlled local or protected CI only, use approved process/.argo/.env sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, set ARGO_LIVE_PROVIDER_E2E=1, and run both live entrypoints.",
           "Inject separate QWEN and Neo4j-password canaries through the real configuration boundary, provider error, and recording Neo4j auth failure; scan complete Cypher/graph values and all artifacts, then prove zero persistence.",
           "Inject a recording Neo4j adapter through createApprovedNeo4jBoundary—not a Harness-private boundary—to assert the password is passed only to neo4j.auth.basic, authentication failure executes zero queries, and Cypher text/parameters contain no password.",
+          "Capture the raw authentication exception before safeCategory/captureOutcome sanitization, recursively including message, stack, causes, and aggregate errors; scan it together with sanitized errors, every logger event, stdout/stderr, auth/driver/query calls, graph/persistence observations, and recursive artifacts.",
+          "Run the frozen per-channel leak-detector self-test, then require the real auth probe to leave zero canary leaks, queries after failed authentication, graph evidence, and persisted records.",
           "Compare the full runner against preCodingBaseline 34/14/20: the recorded grag-embedding-qualification delivered-to-not_delivered transition is accepted baseline, while any additional delivered regression fails completion.",
           "Commit only authorized Coding target paths."
         ],
