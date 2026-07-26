@@ -47,6 +47,8 @@ for (const ownership of [
   'non-empty mandatory key seed',
   'non-empty expected closure',
   'unrelated forced-hit evidence',
+  'mandatory-seed hits',
+  'positive unrelated forced hit',
   'actual recalled key seed ids',
   'actual observed closure ids',
   'precision outside `[0, 1]`',

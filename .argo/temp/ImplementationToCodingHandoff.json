@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T12:41:00+08:00",
+  "generatedAt": "2026-07-26T13:08:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W7 Phase 1 business acceptance repair handoff. Coding/Repair is authorized only to repair DT-18 production runtime evidence-completeness loopholes where missing mandatory seed fixtures, missing expected closure fixtures, or missing/negative unrelated forced-hit evidence can fabricate perfect quality evidence. Whole delivery remains allowed only after W2-W6 are accepted and DT-18 proves non-empty mandatory key seed fixtures, 100% key seed recall from actual observations, non-empty expected closure fixtures, 100% closure correctness from actual observations, explicitly recorded zero forced unrelated hits, and recorded precision inside [0,1].",
+  "summary": "W7 Phase 1 business acceptance repair handoff. Coding/Repair is authorized only to repair DT-18 production runtime quality-decision loopholes where wrong same-count recalled ids, closure misses, or positive unrelated forced hits can still return passed quality evidence. Whole delivery remains allowed only after W2-W6 are accepted and DT-18 proves 100% key seed recall by mandatory-seed intersection, 100% closure correctness, explicitly recorded zero forced unrelated hits, and recorded precision inside [0,1].",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -13,11 +13,11 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
       "entryPath": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
-      "controlPoint": "Run the approved five-purpose business benchmark after W2-W6 acceptance evidence is available, then run negative benchmark counterexamples for missing fixtures, missing observations, missing/negative unrelated-hit evidence, empty/incomplete content, and out-of-range precision.",
-      "observationPoint": "Every purpose reports non-empty mandatory key seed ids, actual recalled key seed ids, no missing key seeds, non-empty expected closure ids, expected closure correctness from actual observed closure ids, explicitly recorded zero forced hits for unrelated controls, recorded precision inside [0,1], aggregate recall 1, aggregate closure correctness 1, and no invented release precision threshold. Missing mandatory seed fixtures, missing expected closure fixtures, missing actual recall observations, missing actual closure observations, missing or negative unrelated forced-hit evidence, empty benchmarks, incomplete benchmarks, and precision outside [0,1] must block instead of synthesizing perfect evidence.",
+      "controlPoint": "Run the approved five-purpose business benchmark after W2-W6 acceptance evidence is available, then run negative benchmark counterexamples for missing fixtures, missing observations, wrong same-count recalled ids, closure misses, positive unrelated hits, missing/negative unrelated-hit evidence, empty/incomplete content, and out-of-range precision.",
+      "observationPoint": "Every purpose reports non-empty mandatory key seed ids, actual recalled key seed ids, no missing key seeds, non-empty expected closure ids, expected closure correctness from actual observed closure ids, explicitly recorded zero forced hits for unrelated controls, recorded precision inside [0,1], aggregate recall 1 by mandatory-seed intersection, aggregate closure correctness 1, and no invented release precision threshold. Missing mandatory seed fixtures, missing expected closure fixtures, missing actual recall observations, wrong same-count recalled ids, non-empty missing key seed evidence, missing actual closure observations, closure correctness below 1, missing or negative unrelated forced-hit evidence, positive unrelated forced hits, empty benchmarks, incomplete benchmarks, and precision outside [0,1] must block instead of synthesizing perfect evidence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runRetrievalQualityBenchmark.js",
-      "failureReason": "DT18_MANDATORY_KEY_SEEDS_MISSING"
+      "failureReason": "DT18_KEY_SEED_RECALL_NOT_100_PERCENT"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
@@ -67,7 +67,7 @@
       "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
       "kind": "ArchitectureBoundaryGuard",
       "controlPoint": "Inspect W7 coding targets, task plan, frozen files, and top-level authorization fields.",
-      "observationPoint": "The handoff authorizes only DT-18 and TS-08 delivery-sequence scope, keeps DT-19 capacity evidence out of Coding scope, and preserves runner-owned deliveryStatus authority.",
+      "observationPoint": "The handoff authorizes only DT-18 quality-decision repair scope, keeps TS-08 as a frozen regression check, keeps DT-19 capacity evidence out of Coding scope, and preserves runner-owned deliveryStatus authority.",
       "expectedStatus": "passed"
     }
   ],
@@ -77,17 +77,17 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT18_MANDATORY_KEY_SEEDS_MISSING / DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING / DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING / DT18_UNRELATED_FORCED_HITS_NEGATIVE",
-      "nextAction": "Repair only createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) so every purpose requires non-empty mandatoryKeySeedIds, non-empty expectedClosureIds, and explicit non-negative integer unrelatedForcedHits evidence. Missing or negative unrelatedForcedHits must not be normalized into passing zero evidence; explicit 0 remains valid."
+      "failureSignal": "DT18_KEY_SEED_RECALL_NOT_100_PERCENT / DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT / DT18_UNRELATED_FORCED_HITS",
+      "nextAction": "Repair only createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) so quality failures block: key seed recall must use mandatory-seed intersection rather than arbitrary recalled-id count, missingKeySeedIds must block even when recalled count matches, closureCorrectness below 1 must block, and unrelatedForcedHits greater than 0 must block."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the W7 DT-18 production runtime evidence-completeness loopholes after W2-W6: missing mandatory seed fixtures, missing expected closure fixtures, and missing or negative unrelated forced-hit evidence must not fabricate perfect quality evidence. Do not change TS-08 delivery sequence behavior except as a regression check, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, DT-19 capacity governance, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Repair only the W7 DT-18 production runtime quality-decision loopholes after W2-W6: wrong same-count recalled ids, non-empty missingKeySeedIds, closure correctness below 1, and positive unrelated forced hits must not return passed quality evidence. Preserve all existing DT-18 completeness and precision boundaries. Do not change TS-08 delivery sequence behavior except as a regression check, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, DT-19 capacity governance, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
         "taskId": "W7-C1",
         "title": "Evaluate phase-one quality benchmark",
-        "objective": "Make DT-18 quality evidence honest for the approved five-purpose benchmark.",
+        "objective": "Make DT-18 quality decisions honest for the approved five-purpose benchmark.",
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-DT-18"
         ],
@@ -101,10 +101,13 @@
           "Reject missing actual recalledKeySeedIds and missing actual observedClosureIds instead of falling back to mandatoryKeySeedIds or expectedClosureIds.",
           "Reject missing or negative unrelatedForcedHits evidence; explicit 0 remains valid as recorded zero forced hits.",
           "Reject empty benchmarks, incomplete five-purpose benchmark content, and per-purpose precision outside [0,1].",
+          "Compute key seed recall from actual mandatory-seed hits/intersection, not arbitrary recalled-id count.",
+          "Block non-empty missingKeySeedIds even when recalled-id count matches mandatory seed count.",
+          "Block closure correctness below 1 and unrelatedForcedHits greater than 0.",
           "Return qualityEvidence.benchmarkId, purposes, perPurpose observations, keySeedRecall 1, closureCorrectness 1, unrelatedForcedHits 0, aggregatePrecision, and undefined releasePrecisionThreshold.",
           "Run node tests/explicit/entries/runRetrievalQualityBenchmark.js until it passes."
         ],
-        "completionSignal": "runRetrievalQualityBenchmark.js exits 0 and DT-18 records non-empty mandatory fixtures, 100% recall, non-empty expected closure fixtures, 100% closure correctness, explicitly recorded zero forced unrelated hits, in-range precision evidence, and blocking failures for missing fixtures, fabricated/missing observations, missing/negative unrelated-hit evidence, empty/incomplete benchmarks, and out-of-range precision."
+        "completionSignal": "runRetrievalQualityBenchmark.js exits 0 and DT-18 records non-empty mandatory fixtures, 100% recall by mandatory-seed intersection, non-empty expected closure fixtures, 100% closure correctness, explicitly recorded zero forced unrelated hits, in-range precision evidence, and blocking failures for wrong same-count recall ids, missing key seeds, closure misses, positive unrelated hits, missing fixtures, fabricated/missing observations, missing/negative unrelated-hit evidence, empty/incomplete benchmarks, and out-of-range precision."
       },
       {
         "taskId": "W7-C3",

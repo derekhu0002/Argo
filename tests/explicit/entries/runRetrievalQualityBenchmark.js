@@ -115,6 +115,30 @@ async function main() {
     mutatePurpose(benchmark, 1, { unrelatedForcedHits: -1 }),
     'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
   );
+
+  // GIVEN recalled ids have the same count as mandatory seeds but are the wrong ids
+  // WHEN W7 business quality evidence is evaluated
+  // THEN recall must be based on mandatory-seed intersection, not arbitrary recalled-id count
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { recalledKeySeedIds: ['wrong-seed-with-matching-count'] }),
+    'DT18_KEY_SEED_RECALL_NOT_100_PERCENT',
+  );
+
+  // GIVEN closure observations are complete in shape but omit the expected closure id
+  // WHEN W7 business quality evidence is evaluated
+  // THEN closure correctness below 100% blocks the benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { observedClosureIds: ['wrong-closure-with-matching-count'] }),
+    'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT',
+  );
+
+  // GIVEN unrelated query evidence records forced hits
+  // WHEN W7 business quality evidence is evaluated
+  // THEN any forced unrelated hit blocks the benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 2, { unrelatedForcedHits: 1 }),
+    'DT18_UNRELATED_FORCED_HITS',
+  );
 }
 
 function assertRecordedPrecision(value, failureCategory) {

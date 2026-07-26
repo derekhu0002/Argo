@@ -74,6 +74,9 @@ const entryRequirements = new Map([
     'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING',
     'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING',
     'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
+    'wrong-seed-with-matching-count',
+    'wrong-closure-with-matching-count',
+    'unrelatedForcedHits: 1',
   ]],
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',
