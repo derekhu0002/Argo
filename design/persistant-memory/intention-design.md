@@ -270,6 +270,55 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - Downstream ImplementationDesign should extend existing physical entrypoints where feasible: `tests/explicit/entries/runProductionGraphRagRuntime.js`, `tests/explicit/entries/runExternalCredentialBoundary.js`, and `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`.
 - Open business questions and adequacy blockers: none.
 
+## 2026-07-26 — WP-P2 Default Vector Retrieval and Readiness Handoff
+
+- Persistent stage/session ID: `intent-semprod-wp-p2-20260726T2330+08`.
+- Scope: only `semprod-wp-default-retrieval` (WP-P2). WP-P1 is an accepted delivered prerequisite. WP-P3, its operator CLI/documentation/release journey, and SP-05 remain unstarted and excluded.
+- Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint.
+- Stakeholder concern: requirements owners, delivery owners, ICT architects, runtime operators, and acceptors need the shipped default MCP semantic path to use qualified external-credential embedding and persistent Neo4j Vector Index retrieval, and to fail closed unless all three semantic channels are canonically aligned, without weakening full-snapshot compatibility.
+- Modeling purpose: designing, deciding, auditing, and handoff preparation.
+- View binding: `semprod-requirements-realization` is updated as a Requirements Realization Viewpoint instance for SP-03/SP-04. New layered views `semprod-wp2-default-retrieval-readiness` and `semprod-wp2-vector-seed-closure` are Implementation and Migration Viewpoint instances for WP-P2 public-boundary sequencing and lower retrieval-pipeline dependencies; each remains at or below seven elements.
+- Human approval evidence: the parent authorization explicitly required mounting and formalizing `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval` and `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`, and required the seven-element WP-P2 intent-to-implementation handoff with no unresolved adequacy blocker. Per-testcase approval is recorded in `acceptanceApproval.SP-03` and `acceptanceApproval.SP-04`; global handoff approval is recorded in the schema-compliant handoff notes because the repository handoff schema rejects an `approvedByHuman` property.
+
+### Intent mutation and acceptance boundaries
+
+- Added `functionalPoint.SP-03-default-vector-retrieval` and mounted `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval` under `semprod-default-vector-retrieval`, anchored to `tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js`.
+- SP-03 controls the shipped default uninjected MCP path and observes qualified query embedding, persistent Neo4j Vector Index retrieval, independent Element/ArchitectureRelationship/View threshold-all channels, valid zero results, deterministic purpose/ArchiMate closure, endpoint/View/provenance completion, canonical authority/version checks, graph-tidy bypass, external credentials, and prohibition of synthetic empty seeds or silent snapshot fallback.
+- Added `functionalPoint.SP-04-fail-closed-readiness` and mounted `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness` under `semprod-readiness-requirement`, anchored to `tests/explicit/entries/runProductionSemanticReadinessGate.js`.
+- SP-04 controls structural-only SemanticIndexPending, partial, stale, failed, unknown/mismatched, aligned, no-argument, and graph-tidy scenarios. Every non-aligned pure semantic request must reject before retrieval with actionable state/version/channel evidence and `fullSnapshotFallback:false`; only complete three-channel canonical/content/index alignment enables semantic retrieval.
+- Added `semprod-rel-wp2-default`, `semprod-rel-default-query-service`, `semprod-rel-default-seeds`, and `semprod-rel-default-readiness` so WP-P2 realization and the default MCP-to-seed/readiness directions are graph-traversable. Existing `grag-rel-mcp-interface-service`, `grag-rel-native-seeds`, `grag-rel-seeds-closure`, `grag-rel-native-index`, and `semprod-rel-default-index` preserve the remaining pipeline semantics.
+- `semprod-operator-journey-process.testcases` remains empty. `futureAcceptanceBoundary.SP-05` and `futureMountOwner.SP-05` remain unchanged, including the uncreated suggested `tests/explicit/entries/runNewProjectSemanticOperatorJourney.js`; WP-P3 was not started.
+- No `deliveryStatus` attribute was manually created, changed, removed, or inferred.
+
+### Dependency-subgraph coverage matrix
+
+- `semprod-default-vector-retrieval` (focus/new implementation): `functionalPoint.SP-03-default-vector-retrieval` -> mounted and human-approved `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- `semprod-readiness-requirement` (focus/new implementation): `functionalPoint.SP-04-fail-closed-readiness` -> mounted and human-approved `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`.
+- `grag-query-service` (delivered reused boundary): `functionalPoint.DT-01-compatible-reading-boundary` -> `ExplicitAcceptanceTestcase-DT-01`; `functionalPoint.DT-02-no-argument-full-snapshot` -> `ExplicitAcceptanceTestcase-DT-02`; recorded W1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-mcp-interface` (delivered reused boundary): `functionalPoint.TS-00` -> `ExplicitAcceptanceTestcase-TS-00`; recorded W1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-native-retrieval-service` (delivered reused boundary): `functionalPoint.TS-01-native` -> `ExplicitAcceptanceTestcase-TS-01-Native`; recorded W2/W3.1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-seed-retrieval` (delivered reused boundary): `functionalPoint.DT-04-three-channel-seed-discovery` -> `ExplicitAcceptanceTestcase-DT-04`; `functionalPoint.DT-05-threshold-all-correctness` -> `ExplicitAcceptanceTestcase-DT-05`; recorded W4 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-purpose-closure` (delivered reused boundary): `functionalPoint.DT-06-deterministic-mandatory-closure` -> `ExplicitAcceptanceTestcase-DT-06`; `functionalPoint.DT-07-purpose-category-dispatch` -> `ExplicitAcceptanceTestcase-DT-07`; recorded W5 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-semantic-index` is the delivered upstream data boundary: `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`; recorded W3/W3.1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- Evidence-backed exclusion: `semprod-wp-persistence-backfill` is sequencing context, not a WP-P2 implementation target. Parent evidence accepts WP-P1 at 40/40 and its five owned boundaries are runner-delivered; this handoff neither reopens nor modifies WP-P1 production persistence/backfill.
+- Evidence-backed exclusion: downstream endpoint/View/provenance elements are reused through the already delivered purpose/structural closure contracts and are observable inside SP-03, but no new implementation scope is assigned outside the seven authorized intent elements.
+- Evidence-backed exclusion: `semprod-wp-operator-release` and `semprod-operator-journey-process` are WP-P3 downstream scope; SP-05 stays unmounted.
+
+### Mutation, validation, and replacement rationale
+
+- First preview failed without writing because the view patch used unsupported `element_ids`/`relationship_ids`, relationship endpoints were missing from affected views, and a proposed ten-element view exceeded the seven-element limit. The corrected layered mutation used schema-approved `included_elements`/`included_relationships`, split delivery concerns across two bounded views, and passed.
+- Successful `argo.previewSystemArchitectureMutation`: 2 element updates, 2 new views, 4 new relationships, and 1 view update; counts `61 elements / 79 relationships / 31 views` -> `61 / 83 / 33`; `written=false`; errors empty.
+- `argo.applySystemArchitectureMutation` passed and wrote the same mutation; counts changed to `61 / 83 / 33`; errors empty.
+- Canonical graph validation passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Post-write structural Neo4j synchronization failed exactly `neo4jUri is required for start`. This is environment evidence, not a production composition verdict. No structural-sync success is claimed or fabricated, and fail-closed behavior was not weakened.
+- The mutation response separately reported an automatic embedding lifecycle `alignmentState=Aligned` for its touched records and a failure matrix with pure semantic rejection plus `fullSnapshotFallback:false`; this does not substitute for the failed full structural Neo4j synchronization or for future SP-03/SP-04 implementation acceptance.
+- Replacement rationale: `.argo/temp/IntentToImplementationHandoff.json` previously held the accepted WP-P1 five-element handoff. WP-P2 is the explicitly authorized next sequential package after WP-P1 delivery, so the temp slot is intentionally superseded with the seven-element WP-P2 handoff while preserving the WP-P1 governance record here and in its accepted commits. The replacement does not revise or invalidate WP-P1.
+- `.argo/temp/IntentToImplementationHandoff.json` now contains exactly the seven authorized WP-P2 intent elements, eleven relevant relationship ids, the full coverage proof, explicit WP-P1 replacement rationale, global approval note, and `openQuestions: []`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Final `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Checklist self-audit: A1-A5 satisfied by authoritative MCP persistence, complete functional points/relationships, and three viewpoint-bound views; B1-B3 satisfied by same-element mounted SP-03/SP-04 cases and explicit approval attributes; C1-C2 satisfied by the seven-element matrix, delivered reused boundaries, delivered semantic-index prerequisite, and evidence-backed WP-P1/WP-P3 exclusions; D1-D8 satisfied with requirement sources, complete observability, per-case approval, schema-compliant global approval, and no open questions; E1-E3 satisfied by the complete validated handoff and approval note; F1 is this record and F2 is completed by the following stage commit.
+- Open business questions and adequacy blockers: none.
+
 ## 2026-07-24 — Compatible Contract And Query Entry Boundary
 
 - Selected viewpoint: Application Usage Viewpoint.

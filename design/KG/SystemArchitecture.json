@@ -2126,26 +2126,38 @@
         },
         {
           "name": "correctnessBoundary",
-          "value": "No fixed top-k defines correctness; performance mechanics cannot omit qualifying candidates."
+          "value": "No fixed top-k defines correctness; each Element, ArchitectureRelationship, and View channel independently returns every qualifying candidate, and zero results are valid."
         },
         {
           "name": "rejectedBranches",
-          "value": "Approved-test production default; empty-seed stub; Element-only retrieval; global channel rank; forced hits."
+          "value": "Approved-test production default; empty-seed stub; Element-only retrieval; global channel rank; forced hits; snapshot fallback for semantic queries; test/default production credentials."
         },
         {
           "name": "codingTargets",
           "value": "systemarchitecture-mcp-server.js createDefaultSemanticRetrievalBoundary; productionGraphRagRuntime.js; production Neo4j vector adapter."
         },
         {
-          "name": "futureAcceptanceBoundary.SP-03",
-          "value": "Deferred and not mounted. Proposed control point: invoke MCP semantic query through the default dependency path, without injecting a test retrieval boundary, against an aligned index. Proposed observation point: Neo4j Vector Index serves all three independently thresholded channels with complete qualifying or zero results, deterministic closure follows, and canonical checks hold. Proposed input: aligned production-like vector index with above/below-threshold and zero-result fixtures; external credentials. Suggested future entrypoint: tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js; not created or executed."
+          "name": "functionalPoint.SP-03-default-vector-retrieval",
+          "value": "{\"description\":\"Route the default uninjected MCP semantic-query path through qualified query embedding and persistent Neo4j Vector Index retrieval, then deterministic purpose/ArchiMate and structural completion.\",\"businessOutcome\":\"Production Agents receive complete, canonical, purpose-coherent semantic context without test-only injection, synthetic empty seeds, or correctness truncation.\",\"observableBoundary\":\"With complete three-channel canonical/content/index alignment and external credentials, the default MCP path embeds the query with the approved profile; independently retrieves every qualifying Element, ArchitectureRelationship, and View candidate or a valid zero result per channel; treats fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure, relationship endpoint completion, selected View completion, ordered provenance, and canonical authority/version checks; graph-tidy remains a full-snapshot bypass.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval\"}"
         },
         {
-          "name": "futureMountOwner.SP-03",
-          "value": "WP-P2 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; this WP-P1 correction does not approve, deliver, or physicalize it."
+          "name": "requirementSource.WP-P2",
+          "value": "Human-authorized 2026-07-26 work package semprod-wp-default-retrieval: replace the synthetic/empty production default path with qualified external-credential embedding plus persistent Neo4j Vector Index retrieval; preserve threshold-all correctness, canonical authority, deterministic closure, no-argument compatibility, and graph-tidy bypass."
+        },
+        {
+          "name": "acceptanceApproval.SP-03",
+          "value": "approvedByHuman=true|2026-07-26|parent authorization explicitly required mounting and formalizing ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval for WP-P2 with the complete stated boundary"
         }
       ],
-      "testcases": []
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+          "description": "Control point: invoke a typed semantic query through the shipped default uninjected MCP path against a complete aligned persistent production-like Neo4j vector projection using only approved external credentials, with independent above-threshold, below-threshold, zero-result, closure, endpoint, View, provenance, graph-tidy, and canonical-version fixtures. Observation point: the path performs qualified query embedding and real Neo4j Vector Index retrieval for Element, ArchitectureRelationship, and View independently; returns every qualifying candidate or a valid zero result per channel; uses fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure plus endpoint/View/provenance completion; enforces canonical authority/version alignment; preserves graph-tidy full-snapshot bypass; and does not use a test-injected retrieval boundary, synthetic empty seeds, test/default credentials, or silent snapshot fallback.",
+          "type": "Acceptance Test",
+          "Input": "Aligned persistent Element, ArchitectureRelationship, and View vector records with qualified and non-qualifying peers, unrelated zero-result queries, deterministic purpose/ArchiMate closure fixtures, endpoint/View/provenance fixtures, canonical version evidence, graph-tidy control, and approved externally supplied Neo4j/provider credentials.",
+          "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js"
+        }
+      ]
     },
     {
       "id": "semprod-readiness-requirement",
@@ -2159,26 +2171,38 @@
         },
         {
           "name": "compatibilityBoundary",
-          "value": "No-argument getSystemArchitecture full snapshot remains exact; rejection applies only to semantic mode."
+          "value": "No-argument getSystemArchitecture full snapshot remains exact; graph-tidy remains a full-snapshot bypass; readiness rejection applies only to pure semantic mode."
         },
         {
           "name": "rejectedBranches",
-          "value": "Warning-only stale query; silent snapshot fallback; structural-sync-equals-ready; partial channel alignment."
+          "value": "Warning-only stale query; silent snapshot fallback; structural-sync-equals-ready; partial channel alignment; failed-state semantic delivery; fullSnapshotFallback:true."
         },
         {
           "name": "codingTargets",
           "value": "systemarchitecture-mcp-server.js query dispatch; productionGraphRagRuntime alignment; persistent alignment/version store."
         },
         {
-          "name": "futureAcceptanceBoundary.SP-04",
-          "value": "Deferred and not mounted. Proposed control point: exercise structural-only pending, partial, stale, failed, and aligned states through default MCP query. Proposed observation point: non-aligned semantic requests reject actionably without snapshot fallback, no-argument snapshots remain compatible, and only complete version/channel alignment enables semantic retrieval. Proposed input: fresh structural-only plus partial/stale/failed/aligned, no-argument, and canonical-read controls. Suggested future entrypoint: tests/explicit/entries/runProductionSemanticReadinessGate.js plus existing compatibility entries; not created or executed."
+          "name": "functionalPoint.SP-04-fail-closed-readiness",
+          "value": "{\"description\":\"Gate pure semantic retrieval on complete three-channel canonical/content/index readiness while preserving established full-snapshot modes.\",\"businessOutcome\":\"Agents never consume partial, stale, failed, or structurally-only semantic context and receive actionable evidence for remediation without losing compatible canonical reads.\",\"observableBoundary\":\"Structural-only projection reports SemanticIndexPending; partial, stale, failed, unknown, or version/channel-mismatched states reject pure semantic queries before retrieval with actionable state/version/channel evidence and fullSnapshotFallback:false; only complete Element, ArchitectureRelationship, and View canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests still return exact full canonical snapshots.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness\"}"
         },
         {
-          "name": "futureMountOwner.SP-04",
-          "value": "WP-P2 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness; this WP-P1 correction does not approve, deliver, or physicalize it."
+          "name": "requirementSource.WP-P2",
+          "value": "Human-authorized 2026-07-26 work package semprod-wp-default-retrieval: fail closed for structural-only pending, partial, stale, failed, unknown, or mismatched semantic index states; never silently fall back; preserve no-argument full snapshots and graph-tidy bypass."
+        },
+        {
+          "name": "acceptanceApproval.SP-04",
+          "value": "approvedByHuman=true|2026-07-26|parent authorization explicitly required mounting and formalizing ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness for WP-P2 with pending, partial, stale, failed, aligned, and no-argument scenarios"
         }
       ],
-      "testcases": []
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+          "description": "Control point: invoke the shipped default MCP boundary in structural-only SemanticIndexPending, partial-channel, stale-version, failed, unknown/mismatched, and complete aligned states, then invoke no-argument and graph-tidy controls. Observation point: every non-aligned pure semantic request rejects before retrieval with actionable state, canonical/content/index version, and missing-channel evidence plus fullSnapshotFallback:false; no silent snapshot fallback occurs; only complete Element, ArchitectureRelationship, and View canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests retain exact full canonical snapshots.",
+          "type": "Acceptance Test",
+          "Input": "Default-MCP scenarios for structural-only SemanticIndexPending, partial channel completion, stale canonical/content/index versions, failed and unknown/mismatched state, complete three-channel alignment, no-argument compatibility, and graph-tidy full-snapshot bypass.",
+          "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js"
+        }
+      ]
     },
     {
       "id": "semprod-operator-journey-process",
@@ -3357,6 +3381,50 @@
       "target_name": "All Mutation Index Lifecycle",
       "description": "Non-triggering association semantics: explicit production backfill and the existing index lifecycle coordinate bounded generation/persistence and shared alignment evidence for enumerated canonical records without automatic activation, fake canonical mutation, or delivery precedence; alignment remains withheld until Element, ArchitectureRelationship, and View channels all complete.",
       "statement": "Full Semantic Index Backfill Control --(Association)--> All Mutation Index Lifecycle"
+    },
+    {
+      "id": "semprod-rel-wp2-default",
+      "name": "WP-P2 realizes production default retrieval",
+      "type": "Realization",
+      "source_id": "semprod-wp-default-retrieval",
+      "target_id": "semprod-default-vector-retrieval",
+      "source_name": "WP-P2 Default Vector Retrieval and Readiness",
+      "target_name": "Default MCP Neo4j Vector Retrieval",
+      "description": "Directional semantics: WP-P2 delivers the default uninjected production semantic path through qualified embedding, persistent Neo4j Vector Index retrieval, threshold-all three-channel seeds, deterministic closure, structural completion, and canonical checks; it does not claim delivery evidence.",
+      "statement": "WP-P2 Default Vector Retrieval and Readiness --(Realization)--> Default MCP Neo4j Vector Retrieval"
+    },
+    {
+      "id": "semprod-rel-default-query-service",
+      "name": "Default retrieval realizes semantic query mode",
+      "type": "Realization",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "grag-query-service",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "Intent Architecture Query Service",
+      "description": "Directional semantics: the default retrieval function realizes the typed query service's semantic mode while the service's no-argument full-snapshot behavior remains independently compatible.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> Intent Architecture Query Service"
+    },
+    {
+      "id": "semprod-rel-default-seeds",
+      "name": "Default retrieval triggers independent semantic seeds",
+      "type": "Triggering",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "grag-seed-retrieval",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "Independent Semantic Seed Retrieval",
+      "description": "Directional semantics: after readiness and qualified query embedding, the default path triggers independent Element, ArchitectureRelationship, and View threshold-all seed discovery; it does not collapse channels, force hits, or make top-k a correctness limit.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Triggering)--> Independent Semantic Seed Retrieval"
+    },
+    {
+      "id": "semprod-rel-default-readiness",
+      "name": "Default retrieval realizes fail-closed readiness",
+      "type": "Realization",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "semprod-readiness-requirement",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "Fail-Closed Semantic Index Readiness",
+      "description": "Directional semantics: the default semantic path realizes readiness by rejecting pending, partial, stale, failed, unknown, or mismatched index states before retrieval with actionable evidence and fullSnapshotFallback:false, while preserving full-snapshot modes.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> Fail-Closed Semantic Index Readiness"
     }
   ],
   "views": [
@@ -3886,7 +3954,7 @@
       "view_name": "Production Semantic Index Requirements Realization",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: a newly initialized project must progress from canonical structural projection to a complete, durable, aligned semantic index without weakening canonical authority, compatible full reads, or the existing live-E2E test-only cleanup boundary; Purpose: designing, deciding, auditing, and handoff preparation; Scope: WP-P1 production backfill and separate persistence path as the current handoff focus, with default retrieval/readiness retained only as later WP-P2 context; Rationale: this view traces SP-01/SP-02 production requirements to full-backfill behavior and the semantic-index realization while preserving canonical JSON authority and treating Neo4j only as projection/index.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, and acceptors need WP-P2 default semantic retrieval and fail-closed readiness to be realized by the shipped MCP, qualified embedding, persistent Neo4j vector, deterministic closure, structural completion, and canonical-authority boundaries without weakening full-snapshot compatibility; Purpose: designing, deciding, auditing, and handoff preparation; Scope: current WP-P2 SP-03/SP-04 requirement realization over the accepted WP-P1 durable aligned semantic-index substrate, with WP-P3 operator release excluded; Rationale: this view traces the mounted production retrieval/readiness acceptance boundaries to the exact application, data, and requirement elements that realize them while preserving canonical JSON authority.",
       "included_elements": [
         "grag-semantic-index",
         "semprod-goal",
@@ -3901,7 +3969,8 @@
         "semprod-rel-backfill-persistence",
         "semprod-rel-index-persistence",
         "semprod-rel-default-index",
-        "semprod-rel-readiness-goal"
+        "semprod-rel-readiness-goal",
+        "semprod-rel-default-readiness"
       ]
     },
     {
@@ -3975,6 +4044,54 @@
         "semprod-rel-wp1-backfill",
         "semprod-rel-adapter-backfill",
         "semprod-rel-backfill-lifecycle"
+      ]
+    },
+    {
+      "view_id": "semprod-wp2-default-retrieval-readiness",
+      "view_name": "WP-P2 Default Retrieval and Readiness Boundary",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need the WP-P2 default MCP and readiness boundary to replace synthetic/empty retrieval while preserving accepted WP-P1 and excluding WP-P3; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P2 work package, accepted WP-P1 predecessor, semantic index, default retrieval, readiness, query service, and MCP interface; Rationale: this bounded view binds WP-P2 sequencing and realization to the public default semantic query boundary and fail-closed availability without authorizing operator CLI, documentation, release journey, or SP-05 work.",
+      "included_elements": [
+        "semprod-wp-persistence-backfill",
+        "semprod-wp-default-retrieval",
+        "grag-semantic-index",
+        "semprod-default-vector-retrieval",
+        "semprod-readiness-requirement",
+        "grag-query-service",
+        "grag-mcp-interface"
+      ],
+      "included_relationships": [
+        "semprod-rel-wp1-wp2",
+        "semprod-rel-wp2-default",
+        "semprod-rel-wp2-readiness",
+        "semprod-rel-default-index",
+        "semprod-rel-default-query-service",
+        "grag-rel-mcp-interface-service",
+        "semprod-rel-default-readiness"
+      ]
+    },
+    {
+      "view_id": "semprod-wp2-vector-seed-closure",
+      "view_name": "WP-P2 Vector Seed and Closure Pipeline",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners and acceptors need the production retrieval pipeline dependencies to match WP-P2 scope from durable aligned vectors through independent threshold-all seeds to deterministic closure; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P2 work package, default retrieval, delivered semantic index/native retrieval/seed retrieval/purpose closure boundaries; Rationale: this layered companion view isolates the lower retrieval pipeline so each view remains cognitively bounded, and shows that existing delivered native, seed, and closure elements are reused rather than redesigned; WP-P3 remains excluded.",
+      "included_elements": [
+        "semprod-wp-default-retrieval",
+        "grag-semantic-index",
+        "semprod-default-vector-retrieval",
+        "grag-native-retrieval-service",
+        "grag-seed-retrieval",
+        "grag-purpose-closure"
+      ],
+      "included_relationships": [
+        "semprod-rel-wp2-default",
+        "semprod-rel-default-index",
+        "semprod-rel-default-seeds",
+        "grag-rel-native-index",
+        "grag-rel-native-seeds",
+        "grag-rel-seeds-closure"
       ]
     }
   ]
