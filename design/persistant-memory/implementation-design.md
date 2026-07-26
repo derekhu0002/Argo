@@ -364,3 +364,10 @@
 - Executable wiring counterexamples prove that comments-only text, imported-but-unused identifiers, a missing factory invocation, a missing named tool invocation, and an extra dependency port all fail. The missing production operator still leaves the explicit SP-05 entrypoint RED without making the pre-coding guard fail.
 - Replaced narrow provider-default regex matching with AST expression policy over assignments, aliases, object properties, logical `||`, nullish `??`, ternary defaults, and factory arguments for provider/model/credential values. A positive fixture preserves direct approved external configuration plumbing, avoiding rejection of legitimate boundary delegation.
 - Corrected WP-P3-C3 to name and require all six frozen WP-P3 guards rather than the stale four-guard count.
+
+## 2026-07-27 WP-P3 binding and default-flow correction
+
+- Wiring evidence now creates an in-memory TypeScript Program and resolves every call through the TypeChecker. Accepted factories must resolve to their exact CommonJS BindingElement; initialization/structural callbacks must resolve to exact top-level bindings; configuration must resolve to the imported approved resolver; and backfill/readiness/query callbacks must directly return the unshadowed top-level `callTool` with exact literal tool mapping.
+- Added executable correct-import-plus-shadowed-factory, shadowed-operator-factory, and shadowed-`callTool` counterexamples. Identifier text without binding identity no longer counts.
+- Safety taint now treats every literal/default as a possible source regardless of spelling and propagates through generic variable/assignment alias chains. Destructuring initializers and parameter initializers are default sources; sensitive forms fail directly, while generic forms fail when they later reach provider/model/credential assignments, objects, or factory arguments.
+- Approved externally supplied values remain legal only through direct member access, aliasing, or destructuring without any literal/default initializer.

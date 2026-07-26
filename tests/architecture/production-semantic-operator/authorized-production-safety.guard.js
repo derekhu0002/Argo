@@ -51,9 +51,10 @@ const safeExternalPlumbing = `
 const provider = options.provider;
 const modelAlias = approvedConfiguration.model;
 const credential = approvedConfiguration.embeddingCredential;
+const { provider: suppliedProvider, model: suppliedModel } = approvedConfiguration;
 const configuration = {
-  provider,
-  model: modelAlias,
+  provider: suppliedProvider,
+  model: suppliedModel,
   credential,
 };
 createProviderClient({
@@ -81,6 +82,13 @@ const unsafeFixtures = [
   ['model-factory-argument', 'createProviderClient({ model: "qwen-default" });'],
   ['credential-factory-argument', 'createProviderClient({ credential: "embedded-secret" });'],
   ['positional-provider-default', 'createProvider(options.provider || "qwen-default");'],
+  ['generic-alias-literal', 'const fallback = "generic"; const provider = fallback;'],
+  ['generic-alias-chain', 'const first = "generic"; const second = first; const model = second;'],
+  ['destructuring-default', 'const { provider = "generic" } = options;'],
+  ['destructuring-alias-default', 'const { value: fallback = "generic" } = options; const credential = fallback;'],
+  ['parameter-default', 'function build(provider = "generic") { return provider; }'],
+  ['parameter-alias-default', 'function build(fallback = "generic") { const model = fallback; return model; }'],
+  ['assignment-alias-default', 'let fallback = "generic"; let provider; provider = fallback;'],
   ['database-uri', 'const endpoint = "neo4j://embedded.example:7687";'],
   ['duplicate-internals', 'session.run("MATCH (n) RETURN n")'],
 ];
@@ -104,6 +112,22 @@ function assertNoUnsafeSource(label, source) {
     }
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
       assertSafeBinding(node.name.text, node.initializer, taintedAliases, label);
+    }
+    if (ts.isBindingElement(node) && node.initializer) {
+      for (const name of bindingNames(node.name)) {
+        assert(
+          !isSensitiveName(name),
+          `WP_P3_AUTHORIZED_SAFETY_GUARD: ${label} defaults sensitive destructured binding ${name}`,
+        );
+      }
+    }
+    if (ts.isParameter(node) && node.initializer) {
+      for (const name of bindingNames(node.name)) {
+        assert(
+          !isSensitiveName(name),
+          `WP_P3_AUTHORIZED_SAFETY_GUARD: ${label} defaults sensitive parameter ${name}`,
+        );
+      }
     }
     if (
       ts.isBinaryExpression(node)
@@ -152,17 +176,73 @@ function collectTaintedAliases(ast) {
   while (changed) {
     changed = false;
     walk(ast, node => {
-      if (!ts.isVariableDeclaration(node) || !ts.isIdentifier(node.name) || !node.initializer) return;
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+        changed = taintIfDefaulted(node.name.text, node.initializer, tainted) || changed;
+      }
+      if (ts.isBindingElement(node) && node.initializer) {
+        for (const name of bindingNames(node.name)) {
+          if (!tainted.has(name)) {
+            tainted.add(name);
+            changed = true;
+          }
+        }
+      }
+      if (ts.isParameter(node) && node.initializer) {
+        for (const name of bindingNames(node.name)) {
+          if (!tainted.has(name)) {
+            tainted.add(name);
+            changed = true;
+          }
+        }
+      }
       if (
-        isUnsafeExpression(node.initializer, isSensitiveName(node.name.text), tainted)
-        && !tainted.has(node.name.text)
+        ts.isBinaryExpression(node)
+        && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        && ts.isIdentifier(node.left)
       ) {
-        tainted.add(node.name.text);
-        changed = true;
+        changed = taintIfDefaulted(node.left.text, node.right, tainted) || changed;
       }
     });
   }
   return tainted;
+}
+
+function taintIfDefaulted(name, expression, tainted) {
+  if (!isDefaultSourceExpression(expression, tainted) || tainted.has(name)) return false;
+  tainted.add(name);
+  return true;
+}
+
+function isDefaultSourceExpression(node, tainted) {
+  if (!node) return false;
+  if (ts.isParenthesizedExpression(node)) return isDefaultSourceExpression(node.expression, tainted);
+  if (
+    ts.isStringLiteral(node)
+    || ts.isNoSubstitutionTemplateLiteral(node)
+    || ts.isNumericLiteral(node)
+    || node.kind === ts.SyntaxKind.TrueKeyword
+    || node.kind === ts.SyntaxKind.FalseKeyword
+    || node.kind === ts.SyntaxKind.NullKeyword
+  ) return true;
+  if (ts.isIdentifier(node)) return tainted.has(node.text);
+  if (
+    ts.isBinaryExpression(node)
+    && (
+      node.operatorToken.kind === ts.SyntaxKind.BarBarToken
+      || node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+    )
+  ) return true;
+  if (ts.isConditionalExpression(node)) return true;
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.properties.some(property => (
+      ts.isPropertyAssignment(property)
+      && isDefaultSourceExpression(property.initializer, tainted)
+    ));
+  }
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.some(element => isDefaultSourceExpression(element, tainted));
+  }
+  return false;
 }
 
 function isUnsafeExpression(node, sensitiveContext, taintedAliases) {
@@ -267,6 +347,16 @@ function expressionName(node) {
 function propertyName(property) {
   const name = property.name;
   return name && (ts.isIdentifier(name) || ts.isStringLiteral(name)) ? name.text : '';
+}
+
+function bindingNames(name) {
+  if (ts.isIdentifier(name)) return [name.text];
+  if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+    return name.elements.flatMap(element => (
+      ts.isBindingElement(element) ? bindingNames(element.name) : []
+    ));
+  }
+  return [];
 }
 
 function parse(source, label) {

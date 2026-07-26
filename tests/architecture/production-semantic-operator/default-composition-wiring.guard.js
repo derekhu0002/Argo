@@ -53,6 +53,9 @@ const { createProductionSemanticOperatorJourney } = require('./graph-rag/semanti
 const { createProductionGraphRagRuntime } = require('./graph-rag/productionGraphRagRuntime.js');
 const { createDefaultSemanticRetrieval } = require('./graph-rag/defaultSemanticRetrieval.js');
 const { resolveApprovedLiveConfiguration } = require('./graph-rag/liveEmbeddingProviderConfig.js');
+function initializeWorkspace(request) { return request; }
+function syncCanonicalStructuralProjection(request) { return request; }
+function callTool(name, request, dependencies) { return { name, request, dependencies }; }
 function createDefaultProductionSemanticOperatorJourney() {
   const runtime = createProductionGraphRagRuntime({});
   const retrieval = createDefaultSemanticRetrieval({});
@@ -104,6 +107,27 @@ const bypassFixtures = [
       'unsafeProviderOverride: request => request,\n    querySystemArchitecture: request => callTool',
     ),
   },
+  {
+    name: 'shadowed-factory-binding',
+    source: safeFixture.replace(
+      '  const runtime = createProductionGraphRagRuntime({});',
+      '  const createProductionGraphRagRuntime = () => ({ fake: true });\n  const runtime = createProductionGraphRagRuntime({});',
+    ),
+  },
+  {
+    name: 'shadowed-operator-factory-binding',
+    source: safeFixture.replace(
+      '  const runtime = createProductionGraphRagRuntime({});',
+      '  const createProductionSemanticOperatorJourney = dependencies => dependencies;\n  const runtime = createProductionGraphRagRuntime({});',
+    ),
+  },
+  {
+    name: 'shadowed-call-tool-binding',
+    source: safeFixture.replace(
+      '  const runtime = createProductionGraphRagRuntime({});',
+      '  const callTool = () => ({ fake: true });\n  const runtime = createProductionGraphRagRuntime({});',
+    ),
+  },
 ];
 
 for (const fixture of bypassFixtures) {
@@ -115,7 +139,7 @@ for (const fixture of bypassFixtures) {
 }
 
 function assertDefaultComposition(source, label) {
-  const ast = parse(source, label);
+  const { ast, checker } = parseWithBindings(source, label);
   const imports = collectRequireImports(ast);
   const factoryLocals = new Map();
   for (const [exportedName, expectedModule] of requiredFactoryImports) {
@@ -127,10 +151,11 @@ function assertDefaultComposition(source, label) {
       imported,
       `WP_P3_DEFAULT_WIRING_GUARD: ${label} lacks structural import ${exportedName} from ${expectedModule}`,
     );
-    factoryLocals.set(exportedName, imported.localName);
+    factoryLocals.set(exportedName, imported);
   }
 
-  const operatorCalls = findCalls(ast, factoryLocals.get('createProductionSemanticOperatorJourney'));
+  const operatorImport = factoryLocals.get('createProductionSemanticOperatorJourney');
+  const operatorCalls = findBoundCalls(ast, operatorImport.localName, operatorImport.declaration, checker);
   assert.strictEqual(
     operatorCalls.length,
     1,
@@ -167,17 +192,56 @@ function assertDefaultComposition(source, label) {
     'createDefaultSemanticRetrieval',
     'resolveApprovedLiveConfiguration',
   ]) {
+    const imported = factoryLocals.get(factory);
     assert(
-      findCalls(compositionRoot, factoryLocals.get(factory)).length > 0,
+      findBoundCalls(compositionRoot, imported.localName, imported.declaration, checker).length > 0,
       `WP_P3_DEFAULT_WIRING_GUARD: ${label} does not invoke ${factory}`,
     );
   }
-  const callToolCalls = findCalls(compositionRoot, 'callTool');
-  for (const toolName of requiredToolCalls) {
+  const topLevelBindings = new Map([
+    ['initializeWorkspace', requireTopLevelBinding(ast, 'initializeWorkspace', label)],
+    ['syncCanonicalStructuralProjection', requireTopLevelBinding(ast, 'syncCanonicalStructuralProjection', label)],
+    ['callTool', requireTopLevelBinding(ast, 'callTool', label)],
+  ]);
+  const callbackMappings = new Map([
+    ['initializeWorkspace', {
+      binding: topLevelBindings.get('initializeWorkspace'),
+    }],
+    ['syncCanonicalStructuralProjection', {
+      binding: topLevelBindings.get('syncCanonicalStructuralProjection'),
+    }],
+    ['resolveApprovedConfiguration', {
+      binding: factoryLocals.get('resolveApprovedLiveConfiguration').declaration,
+    }],
+    ['runSemanticBackfill', {
+      binding: topLevelBindings.get('callTool'),
+      toolName: 'backfillSystemArchitectureSemanticProjection',
+    }],
+    ['readSemanticReadiness', {
+      binding: topLevelBindings.get('callTool'),
+      toolName: 'verifySystemArchitectureSemanticReadiness',
+    }],
+    ['querySystemArchitecture', {
+      binding: topLevelBindings.get('callTool'),
+      toolName: 'getSystemArchitecture',
+    }],
+  ]);
+  for (const property of dependencies.properties) {
+    const port = propertyName(property);
+    const mapping = callbackMappings.get(port);
+    const call = callbackReturnCall(property.initializer, label, port);
     assert(
-      callToolCalls.some(call => literalValue(call.arguments[0]) === toolName),
-      `WP_P3_DEFAULT_WIRING_GUARD: ${label} does not invoke tool ${toolName}`,
+      ts.isIdentifier(call.expression)
+        && resolvesTo(call.expression, mapping.binding, checker),
+      `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} resolves to a shadowed or incorrect binding`,
     );
+    if (mapping.toolName) {
+      assert.strictEqual(
+        literalValue(call.arguments[0]),
+        mapping.toolName,
+        `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} invokes the wrong tool`,
+      );
+    }
   }
 }
 
@@ -195,22 +259,65 @@ function collectRequireImports(ast) {
         exportedName: element.propertyName ? element.propertyName.text : element.name.text,
         localName: element.name.text,
         modulePath,
+        declaration: element,
       });
     }
   });
   return imports;
 }
 
-function findCalls(root, localName) {
+function findBoundCalls(root, localName, declaration, checker) {
   const calls = [];
   walk(root, node => {
     if (
       ts.isCallExpression(node)
       && ts.isIdentifier(node.expression)
       && node.expression.text === localName
+      && resolvesTo(node.expression, declaration, checker)
     ) calls.push(node);
   });
   return calls;
+}
+
+function resolvesTo(identifier, declaration, checker) {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  return Boolean(symbol && symbol.declarations && symbol.declarations.includes(declaration));
+}
+
+function requireTopLevelBinding(ast, name, label) {
+  for (const statement of ast.statements) {
+    if (
+      ts.isFunctionDeclaration(statement)
+      && statement.name
+      && statement.name.text === name
+    ) return statement;
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.name.text === name) return declaration;
+      }
+    }
+  }
+  assert.fail(`WP_P3_DEFAULT_WIRING_GUARD: ${label} lacks top-level binding ${name}`);
+}
+
+function callbackReturnCall(callback, label, port) {
+  if (ts.isArrowFunction(callback) && ts.isCallExpression(callback.body)) return callback.body;
+  if (callback.body && ts.isBlock(callback.body)) {
+    const returns = callback.body.statements.filter(statement => (
+      ts.isReturnStatement(statement) && statement.expression
+    ));
+    assert.strictEqual(
+      returns.length,
+      1,
+      `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} must have one return call`,
+    );
+    assert(
+      ts.isCallExpression(returns[0].expression),
+      `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} must return a direct call`,
+    );
+    return returns[0].expression;
+  }
+  assert.fail(`WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} must return a direct call`);
 }
 
 function nearestFunction(node) {
@@ -241,9 +348,10 @@ function literalValue(node) {
   return node && ts.isStringLiteral(node) ? node.text : undefined;
 }
 
-function parse(source, label) {
+function parseWithBindings(source, label) {
+  const fileName = path.resolve(repoRoot, '.argo', 'guard-fixtures', label);
   const ast = ts.createSourceFile(
-    label,
+    fileName,
     source,
     ts.ScriptTarget.Latest,
     true,
@@ -254,7 +362,36 @@ function parse(source, label) {
     0,
     `WP_P3_DEFAULT_WIRING_GUARD: ${label} is not parseable JavaScript`,
   );
-  return ast;
+  const options = {
+    allowJs: true,
+    checkJs: false,
+    module: ts.ModuleKind.CommonJS,
+    noLib: true,
+    noResolve: true,
+    target: ts.ScriptTarget.Latest,
+  };
+  const canonical = value => path.resolve(value).toLowerCase();
+  const host = {
+    fileExists: requested => canonical(requested) === canonical(fileName),
+    getCanonicalFileName: requested => requested.toLowerCase(),
+    getCurrentDirectory: () => repoRoot,
+    getDefaultLibFileName: () => 'lib.d.ts',
+    getDirectories: () => [],
+    getNewLine: () => '\n',
+    getSourceFile: requested => (
+      canonical(requested) === canonical(fileName) ? ast : undefined
+    ),
+    readFile: requested => (
+      canonical(requested) === canonical(fileName) ? source : undefined
+    ),
+    useCaseSensitiveFileNames: () => false,
+    writeFile() {},
+  };
+  const program = ts.createProgram([fileName], options, host);
+  return {
+    ast: program.getSourceFile(fileName),
+    checker: program.getTypeChecker(),
+  };
 }
 
 function walk(node, visitor) {

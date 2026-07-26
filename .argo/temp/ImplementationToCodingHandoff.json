@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T03:25:00+08:00",
+  "generatedAt": "2026-07-27T03:40:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "Corrected WP-P3 Operator Journey and Production Release implementation handoff, scoped only to semprod-wp-operator-release and consuming protected-topology correction b41bdbd3. Compose accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness public boundaries into argo init -> canonical structural projection -> SemanticIndexPending -> explicit or approved opted-in semantic backfill -> explicit readiness verification -> semantic query. The two successful fixtures are deep-equal except for automatic-backfill opt-in; interruption/resume is separate. Approved configuration validation precedes explicit or automatic backfill, provider, and database activity. Rejected opt-ins preserve the exact post-rejection full-snapshot envelope, produce zero semantic/canonical effects, and expose complete production-redacted error payloads with no forbidden canaries. Exact default production factory/tool wiring and authorized-source safety are frozen by two additional guards. Canonical JSON authority, graph-tidy, accepted WP-P1/WP-P2 internals and delivery, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
@@ -61,16 +61,16 @@
       "name": "WP-P3 Default Production Composition Wiring",
       "path": "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "TypeScript-AST inspection of CommonJS imports, factory and tool invocations, and the default operator dependency object, plus executable comments/unused/missing-call/extra-port bypass fixtures.",
-      "observationPoint": "Default production wiring structurally imports and invokes the exact accepted factories and tools, invokes createProductionSemanticOperatorJourney exactly once with one object literal exposing exactly the six authorized function ports, and rejects comments, unused identifiers, missing factory/tool calls, or extra ports.",
+      "controlPoint": "TypeScript Program/TypeChecker binding resolution over CommonJS imports, factory/tool invocations, exact callback returns, and the six-port dependency object, plus comments/unused/missing-call/extra-port/shadowed-binding bypass fixtures.",
+      "observationPoint": "Every accepted factory call resolves to its exact imported BindingElement; each callback directly returns the exact top-level or imported binding assigned to that port; named tool callbacks resolve to the unshadowed top-level callTool and exact literal tool. Locally shadowed/redeclared fake factories, operator factory, or callTool fail.",
       "expectedStatus": "passed"
     },
     {
       "name": "WP-P3 Authorized Production Source Safety",
       "path": "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "AST inspection of new operator/adapter code and the default composition function, plus approved-external positive control and assignment/logical/nullish/ternary/alias/object/factory-argument negative fixtures.",
-      "observationPoint": "Direct approved external provider/model/credential plumbing remains legal. Embedded values, provider/model/credential defaults through assignments, aliases, object properties, logical/nullish/ternary expressions, or factory arguments fail, as do embedded database URIs and duplicated accepted internals.",
+      "controlPoint": "AST fixed-point default-flow analysis over variable/assignment aliases, destructuring and parameter initializers, objects and factory arguments, plus approved-external positive control and exact generic-literal/default negative fixtures.",
+      "observationPoint": "Direct approved external provider/model/credential plumbing with no literal/default remains legal. Any literal or default, regardless of text, flowing through generic alias chains, destructuring initializers, parameter initializers, assignments, object properties, or factory arguments into a sensitive binding fails.",
       "expectedStatus": "passed"
     }
   ],
@@ -252,6 +252,7 @@
     "IntentDesign correction b41bdbd3c9c249f7bfcb6b45daeaa3a53511fee3 passed canonical validation and changed semprod-rel-journey-credentials plus semprod-rel-journey-readiness from backward-propagating Realizations to non-directional Associations. SP-05 therefore observes but cannot reopen or control delivery of protected WP-P1/WP-P2 policy boundaries.",
     "Independent audit defects are corrected in the frozen design: exact configuration-before-effects ordering in both successes; fixture equality except opt-in; separate recovery; complete observable error capture before canary assertions; exact default factory/tool wiring; executable authorized-source safety; and exact post-rejection snapshot/zero-effect assertions.",
     "Second guard audit correction replaces lexical source matching with TypeScript AST inspection. Default wiring now proves exact CommonJS imports, real factory/tool calls, one exact six-function dependency object, and executable comments/unused/missing-call/extra-port rejection. Source safety now permits direct approved external plumbing while rejecting provider/model/credential defaults through assignments, aliases, object properties, logical/nullish/ternary expressions, and factory arguments.",
+    "Clean Architecture re-audit correction adds TypeChecker symbol resolution and exact callback-return mapping so imported names cannot be satisfied by locally shadowed factories or callTool. Safety uses fixed-point default-source taint so generic literals and defaults in aliases, destructuring, parameters, assignments, objects, and factory arguments cannot flow into provider/model/credential bindings.",
     "Direct frozen RED remains intentional and exact: node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js exits 1 with SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING: create production semanticOperatorJourney.js after syntax-valid loading. This is missing WP-P3 production composition, not a test-environment or live-Neo4j failure.",
     "Corrected full pre-coding runner baseline is 43 total / 42 passed / 1 failed / 0 missing acceptanceCriteria. SP-05 is the sole expected RED; all prior entries including SP-01 through SP-04 pass. Runner-owned topology recovery changed grag-credential-boundary and semprod-readiness-requirement from not_delivered back to delivered; semprod-operator-journey-process alone remains not_delivered. The complete status snapshot is 36 delivered / 1 not_delivered attributes. Failure records remain at design/KG/test-failure-records.json; no deliveryStatus was manually edited.",
     "The tracked WP-P2 ImplementationToCodingHandoff.json is superseded only because the repository has one temporary coding-handoff slot and WP-P3 is the explicitly authorized successor to accepted WP-P2 commit 56cfad2. WP-P2 implementation, tests, contracts, and 42/42 acceptance evidence remain frozen regression controls.",
