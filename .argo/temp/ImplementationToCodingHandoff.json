@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T07:49:00+08:00",
+  "generatedAt": "2026-07-27T07:58:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
@@ -53,8 +53,8 @@
       "name": "WP-P3 Explicit Entrypoint Correctness",
       "path": "tests/architecture/production-semantic-operator/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Frozen SP-05 entrypoint phases, business-readable Harness, command matrix, raw operation ledger, redaction canaries, and key assertions.",
-      "observationPoint": "The entry retains GIVEN/WHEN/THEN and hides process/database plumbing. The Harness freezes success configuration parity, opt-in-only variance, pending/zero-auto-start, explicit commands, configuration-before-auto-start, progress/checkpoint/failure/resume, readiness-before-query, no fallback, exact snapshots, canonical byte authority, the three rejected source controls, zero side effects, and secret/unsafe-source redaction.",
+      "controlPoint": "Frozen SP-05 entrypoint phases, business-readable Harness, command matrix, raw operation ledger, redaction canaries, and structurally bound key assertions including the live verified-read counter.",
+      "observationPoint": "The entry retains GIVEN/WHEN/THEN and hides process/database plumbing. TypeChecker binding requires the live assert.strictEqual inside assertVerifiedSoleAuthorization to count exactly two semantic-readiness-read events; wrong-count, dead-decoy, and wrong-counter fixtures fail. The Harness also freezes success parity, consent/configuration ordering, lifecycle evidence, exact snapshots, zero rejected effects, and redaction.",
       "expectedStatus": "passed"
     },
     {

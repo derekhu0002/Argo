@@ -26,6 +26,42 @@ assert.throws(
   'WP_P3_ENTRYPOINT_GUARD: primary Harness missing-store fixture passed',
 );
 assertExactVerifiedReadCount(harness, harnessPath);
+assert.throws(
+  () => assertExactVerifiedReadCount(
+    replaceVerifiedReadAssertion(
+      harness,
+      verifiedReadAssertion('semantic-readiness-read', 1),
+    ),
+    'wrong-read-count.fixture.js',
+  ),
+  /WP_P3_ENTRYPOINT_GUARD/,
+  'WP_P3_ENTRYPOINT_GUARD: wrong readiness read count fixture passed',
+);
+assert.throws(
+  () => assertExactVerifiedReadCount(
+    `${replaceVerifiedReadAssertion(
+      harness,
+      verifiedReadAssertion('semantic-readiness-read', 1),
+    )}
+function deadVerifiedReadCountDecoy(result) {
+${verifiedReadAssertion('semantic-readiness-read', 2)}
+}`,
+    'dead-read-count-decoy.fixture.js',
+  ),
+  /WP_P3_ENTRYPOINT_GUARD/,
+  'WP_P3_ENTRYPOINT_GUARD: dead readiness count decoy fixture passed',
+);
+assert.throws(
+  () => assertExactVerifiedReadCount(
+    replaceVerifiedReadAssertion(
+      harness,
+      verifiedReadAssertion('semantic-query-attempt', 2),
+    ),
+    'wrong-read-counter.fixture.js',
+  ),
+  /WP_P3_ENTRYPOINT_GUARD/,
+  'WP_P3_ENTRYPOINT_GUARD: wrong readiness counter fixture passed',
+);
 
 // GIVEN the one approved SP-05 physical entrypoint and its business-readable Harness
 // WHEN phases, public wishes, assertions, and frozen ownership are inspected
@@ -231,22 +267,171 @@ function assertPrimaryHarnessDurableComposition(source, label) {
 }
 
 function assertExactVerifiedReadCount(source, label) {
-  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-  let assertion;
-  walk(ast, node => {
-    if (
-      ts.isCallExpression(node)
-      && node.arguments.length === 3
-      && ts.isStringLiteral(node.arguments[2])
-      && node.arguments[2].text === 'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED'
-    ) assertion = node;
-  });
+  const { ast, checker } = parseWithBindings(source, label);
+  const assertionFunction = ast.statements.find(statement => (
+    ts.isFunctionDeclaration(statement)
+    && statement.name
+    && statement.name.text === 'assertVerifiedSoleAuthorization'
+  ));
+  const assertBinding = topLevelVariableDeclaration(ast, 'assert');
   assert(
-    assertion
-      && ts.isNumericLiteral(assertion.arguments[1])
-      && assertion.arguments[1].text === '2',
-    `WP_P3_ENTRYPOINT_GUARD: ${label} must require verify plus query WP-P2 reads`,
+    assertionFunction
+      && assertionFunction.body
+      && assertionFunction.parameters.length === 1
+      && ts.isIdentifier(assertionFunction.parameters[0].name),
+    `WP_P3_ENTRYPOINT_GUARD: ${label} verified authorization assertion missing`,
   );
+  assert(
+    assertBinding
+      && assertBinding.initializer
+      && ts.isCallExpression(assertBinding.initializer)
+      && ts.isIdentifier(assertBinding.initializer.expression)
+      && assertBinding.initializer.expression.text === 'require'
+      && assertBinding.initializer.arguments.length === 1
+      && ts.isStringLiteral(assertBinding.initializer.arguments[0])
+      && assertBinding.initializer.arguments[0].text === 'node:assert',
+    `WP_P3_ENTRYPOINT_GUARD: ${label} node:assert binding missing`,
+  );
+  const resultBinding = assertionFunction.parameters[0];
+  const matchingCalls = executableCalls(assertionFunction).filter(call => (
+    ts.isPropertyAccessExpression(call.expression)
+    && call.expression.name.text === 'strictEqual'
+    && ts.isIdentifier(call.expression.expression)
+    && resolvesTo(call.expression.expression, assertBinding, checker)
+    && call.arguments.length === 3
+    && ts.isStringLiteral(call.arguments[2])
+    && call.arguments[2].text === 'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED'
+  ));
+  assert(
+    matchingCalls.length === 1
+      && isExactReadinessReadCounter(matchingCalls[0].arguments[0], resultBinding, checker)
+      && ts.isNumericLiteral(matchingCalls[0].arguments[1])
+      && matchingCalls[0].arguments[1].text === '2',
+    `WP_P3_ENTRYPOINT_GUARD: ${label} must bind live assert.strictEqual to two semantic-readiness-read events`,
+  );
+}
+
+function isExactReadinessReadCounter(expression, resultBinding, checker) {
+  if (
+    !ts.isPropertyAccessExpression(expression)
+    || expression.name.text !== 'length'
+    || !ts.isCallExpression(expression.expression)
+  ) return false;
+  const filterCall = expression.expression;
+  if (
+    !ts.isPropertyAccessExpression(filterCall.expression)
+    || filterCall.expression.name.text !== 'filter'
+    || filterCall.arguments.length !== 1
+    || !ts.isArrowFunction(filterCall.arguments[0])
+  ) return false;
+  const eventsAccess = filterCall.expression.expression;
+  if (
+    !ts.isPropertyAccessExpression(eventsAccess)
+    || eventsAccess.name.text !== 'events'
+    || !ts.isPropertyAccessExpression(eventsAccess.expression)
+    || eventsAccess.expression.name.text !== 'observations'
+    || !ts.isIdentifier(eventsAccess.expression.expression)
+    || !resolvesTo(eventsAccess.expression.expression, resultBinding, checker)
+  ) return false;
+  const predicate = filterCall.arguments[0];
+  if (
+    predicate.parameters.length !== 1
+    || !ts.isIdentifier(predicate.parameters[0].name)
+    || !ts.isBinaryExpression(predicate.body)
+    || predicate.body.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+    || !ts.isPropertyAccessExpression(predicate.body.left)
+    || predicate.body.left.name.text !== 'kind'
+    || !ts.isIdentifier(predicate.body.left.expression)
+    || !resolvesTo(predicate.body.left.expression, predicate.parameters[0], checker)
+    || !ts.isStringLiteral(predicate.body.right)
+    || predicate.body.right.text !== 'semantic-readiness-read'
+  ) return false;
+  return true;
+}
+
+function replaceVerifiedReadAssertion(source, replacement) {
+  const pattern = /  assert\.strictEqual\(\r?\n    result\.observations\.events\.filter\(event => event\.kind === 'semantic-readiness-read'\)\.length,\r?\n    2,\r?\n    'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED',\r?\n  \);/;
+  const replaced = source.replace(pattern, replacement);
+  assert.notStrictEqual(
+    replaced,
+    source,
+    'WP_P3_ENTRYPOINT_GUARD: verified read assertion fixture replacement failed',
+  );
+  return replaced;
+}
+
+function verifiedReadAssertion(counter, count) {
+  return `  assert.strictEqual(
+    result.observations.events.filter(event => event.kind === '${counter}').length,
+    ${count},
+    'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED',
+  );`;
+}
+
+function parseWithBindings(source, label) {
+  const fileName = path.resolve(repoRoot, `.argo/temp/${label.replace(/[^a-z0-9_.-]/gi, '_')}`);
+  const host = ts.createCompilerHost({
+    allowJs: true,
+    checkJs: false,
+    noEmit: true,
+    target: ts.ScriptTarget.Latest,
+  });
+  host.getSourceFile = requested => (
+    path.resolve(requested) === fileName
+      ? ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS)
+      : undefined
+  );
+  host.fileExists = requested => path.resolve(requested) === fileName;
+  host.readFile = requested => (path.resolve(requested) === fileName ? source : undefined);
+  const program = ts.createProgram([fileName], {
+    allowJs: true,
+    checkJs: false,
+    noEmit: true,
+    target: ts.ScriptTarget.Latest,
+  }, host);
+  const ast = program.getSourceFile(fileName);
+  assert(ast, `WP_P3_ENTRYPOINT_GUARD: ${label} parse failed`);
+  assert.strictEqual(
+    ast.parseDiagnostics.length,
+    0,
+    `WP_P3_ENTRYPOINT_GUARD: ${label} is not parseable JavaScript`,
+  );
+  return { ast, checker: program.getTypeChecker() };
+}
+
+function topLevelVariableDeclaration(ast, name) {
+  for (const statement of ast.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (ts.isIdentifier(declaration.name) && declaration.name.text === name) return declaration;
+    }
+  }
+  return undefined;
+}
+
+function executableCalls(root) {
+  const calls = [];
+  function inspect(node) {
+    if (node !== root && isFunctionLike(node)) return;
+    if (ts.isCallExpression(node)) calls.push(node);
+    ts.forEachChild(node, inspect);
+  }
+  inspect(root);
+  return calls;
+}
+
+function isFunctionLike(node) {
+  return ts.isFunctionDeclaration(node)
+    || ts.isFunctionExpression(node)
+    || ts.isArrowFunction(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isGetAccessorDeclaration(node)
+    || ts.isSetAccessorDeclaration(node);
+}
+
+function resolvesTo(identifier, declaration, checker) {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  return Boolean(symbol && (symbol.declarations || []).includes(declaration));
 }
 
 function walk(node, visit) {
