@@ -56,6 +56,8 @@ function phase1BusinessBenchmarkFixture() {
       recalledKeySeedIds: [`${purpose}-key-seed`],
       expectedClosureIds: [`${purpose}-closure`],
       observedClosureIds: [`${purpose}-closure`],
+      observedResultIds: [`${purpose}-phase1-result`],
+      resultCardinality: 1,
       unrelatedQueryId: `${purpose}-unrelated-control`,
       unrelatedForcedHits: 0,
       minimumPrecisionEvidenceName: `precision.${purpose}`,

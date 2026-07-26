@@ -2,7 +2,7 @@
   "stage": "implementation-to-coding",
   "generatedAt": "2026-07-26T14:11:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected DT-19/W7 capacity evidence RED handoff. Coding/Repair is authorized only to repair the real DT-18-to-DT-19 evidence chain for grag-capacity-residual: evaluatePhase1QualityBenchmark(request) must preserve actual result ids or result cardinality with measured precision by purpose, and evaluateCapacityEvidence(request) must consume that real qualityEvidence without Harness defaults while keeping caps, budgets, pagination, truncation, continuation, top-k, token-budget, result-limit, and capacity-policy decisions absent and deferred to later human governance.",
+  "summary": "Corrected DT-19/W7 capacity evidence RED handoff. Coding/Repair is authorized only to repair the real DT-18-to-DT-19 evidence chain for grag-capacity-residual: evaluatePhase1QualityBenchmark(request) must preserve explicit observedResultIds or equivalent real result ids with measured precision by purpose, must not fall back to closure ids, must block missing result evidence and cardinality mismatch, and evaluateCapacityEvidence(request) must consume that real qualityEvidence without Harness defaults while keeping caps, budgets, pagination, truncation, continuation, top-k, token-budget, result-limit, and capacity-policy decisions absent and deferred to later human governance.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -14,10 +14,10 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
       "entryPath": "tests/explicit/entries/runCapacityEvidence.js",
       "controlPoint": "Run the W7 DT-18 phase-1 quality benchmark, then pass the real qualityOutcome.qualityEvidence into the DT-19 capacity evidence request for the declared purposes.",
-      "observationPoint": "capacityEvidence.byPurpose contains exactly one record for each declared purpose, every record has integer non-negative resultCardinality derived from actual result ids/cardinality and measuredPrecision inside [0,1], missing quality evidence blocks with DT19_QUALITY_EVIDENCE_REQUIRED, and the capacity evidence object exposes no cap, budget, pagination, truncation, continuation, topK, tokenBudget, resultLimit, or capacityPolicyDecision field.",
+      "observationPoint": "capacityEvidence.byPurpose contains exactly one record for each declared purpose, every record has integer non-negative resultCardinality derived from explicit observedResultIds/result ids and measuredPrecision inside [0,1], missing quality evidence blocks with DT19_QUALITY_EVIDENCE_REQUIRED, missing result evidence blocks with DT18_RESULT_EVIDENCE_REQUIRED instead of closure fallback, cardinality mismatch blocks with DT18_RESULT_CARDINALITY_MISMATCH, and the capacity evidence object exposes no cap, budget, pagination, truncation, continuation, topK, tokenBudget, resultLimit, or capacityPolicyDecision field.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runCapacityEvidence.js",
-      "failureReason": "DT19_RESULT_CARDINALITY_NOT_RECORDED: intent-decision"
+      "failureReason": "DT18_MISSING_RESULT_EVIDENCE_ACCEPTED"
     }
   ],
   "criticalNonExplicitTests": [
@@ -42,7 +42,7 @@
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
       "controlPoint": "Inspect the frozen DT-19 explicit entrypoint and Harness-owned assertion vocabulary.",
-      "observationPoint": "runCapacityEvidence.js uses the production Harness abstraction, keeps GIVEN/WHEN/THEN readability, chains real DT-18 quality evidence into DT-19, and freezes missing-boundary, missing-quality-evidence, incomplete-purpose, cardinality, precision, and forbidden-policy failure categories.",
+      "observationPoint": "runCapacityEvidence.js uses the production Harness abstraction, keeps GIVEN/WHEN/THEN readability, chains real DT-18 quality evidence into DT-19, and freezes missing-boundary, missing-quality-evidence, missing-result-evidence, cardinality-mismatch, incomplete-purpose, precision, and forbidden-policy failure categories.",
       "expectedStatus": "passed"
     },
     {
@@ -68,12 +68,12 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT19_RESULT_CARDINALITY_NOT_RECORDED / DT19_QUALITY_EVIDENCE_REQUIRED / DT19_CAPACITY_EVIDENCE_MISSING / DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE / DT19_MEASURED_PRECISION_NOT_RECORDED / DT19_CAPACITY_POLICY_DECISION_FORBIDDEN",
-      "nextAction": "Repair createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) and evaluateCapacityEvidence(request) only as needed so real DT-18 quality evidence preserves per-purpose result ids or resultCardinality and measured precision, DT-19 consumes that evidence without defaults, missing quality evidence blocks clearly, and no capacity policy behavior is introduced."
+      "failureSignal": "DT18_MISSING_RESULT_EVIDENCE_ACCEPTED / DT18_RESULT_EVIDENCE_REQUIRED / DT18_RESULT_CARDINALITY_MISMATCH / DT19_RESULT_CARDINALITY_NOT_RECORDED / DT19_QUALITY_EVIDENCE_REQUIRED / DT19_CAPACITY_EVIDENCE_MISSING / DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE / DT19_MEASURED_PRECISION_NOT_RECORDED / DT19_CAPACITY_POLICY_DECISION_FORBIDDEN",
+      "nextAction": "Repair createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) and evaluateCapacityEvidence(request) only as needed so real DT-18 quality evidence preserves explicit observedResultIds or equivalent real result ids with measured precision, rejects closure fallback, rejects cardinality mismatch when resultCardinality is supplied, DT-19 consumes that evidence without defaults, missing quality/result evidence blocks clearly, and no capacity policy behavior is introduced."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the DT-19 capacity evidence chain on createProductionGraphRagRuntime(dependencies). The implementation must preserve actual per-purpose result ids or resultCardinality in evaluatePhase1QualityBenchmark(request), expose that evidence through qualityEvidence, have evaluateCapacityEvidence(request) consume the real qualityEvidence without defaults, return capacityEvidence.byPurpose with resultCardinality and measuredPrecision for every declared purpose, and keep all capacity controls and policy decisions absent. Missing qualityEvidence must block with DT19_QUALITY_EVIDENCE_REQUIRED. Do not change TS-08 delivery sequence behavior, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Repair only the DT-19 capacity evidence chain on createProductionGraphRagRuntime(dependencies). The implementation must preserve explicit observedResultIds or equivalent real per-purpose result ids in evaluatePhase1QualityBenchmark(request), never synthesize result ids from observedClosureIds or closure fallback, validate supplied resultCardinality against result ID count, expose that evidence through qualityEvidence, have evaluateCapacityEvidence(request) consume the real qualityEvidence without defaults, return capacityEvidence.byPurpose with resultCardinality and measuredPrecision for every declared purpose, and keep all capacity controls and policy decisions absent. Missing qualityEvidence must block with DT19_QUALITY_EVIDENCE_REQUIRED; missing result evidence must block with DT18_RESULT_EVIDENCE_REQUIRED; cardinality mismatch must block with DT18_RESULT_CARDINALITY_MISMATCH. Do not change TS-08 delivery sequence behavior, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
         "taskId": "DT19-C1",
@@ -87,7 +87,10 @@
         ],
         "steps": [
           "Keep evaluateCapacityEvidence(request) on createProductionGraphRagRuntime's returned public boundary.",
-          "Make evaluatePhase1QualityBenchmark(request) preserve actual per-purpose result ids or resultCardinality along with measured precision in qualityEvidence.",
+          "Make evaluatePhase1QualityBenchmark(request) preserve explicit observedResultIds or equivalent real per-purpose result ids along with measured precision in qualityEvidence.",
+          "Do not fall back from missing result ids to observedClosureIds or expected closure evidence.",
+          "Reject missing real result evidence with DT18_RESULT_EVIDENCE_REQUIRED.",
+          "Reject resultCardinality values that do not match the observed result ID count with DT18_RESULT_CARDINALITY_MISMATCH.",
           "Use request.purposes as the declared purpose list and require real qualityEvidence for every declared purpose.",
           "Use request.qualityEvidence per-purpose records to derive observed resultCardinality and measuredPrecision without inventing defaults that hide missing evidence.",
           "Block missing request.qualityEvidence with DT19_QUALITY_EVIDENCE_REQUIRED.",
@@ -95,7 +98,7 @@
           "Do not return or infer cap, budget, pagination, truncation, continuation, topK, tokenBudget, resultLimit, or capacityPolicyDecision.",
           "Run node tests/explicit/entries/runCapacityEvidence.js until it passes."
         ],
-        "completionSignal": "runCapacityEvidence.js exits 0 and DT-19 records cardinality plus precision from the real DT-18 output for every declared purpose, missing quality evidence blocks clearly, and all capacity-control and capacity-policy fields remain undefined."
+        "completionSignal": "runCapacityEvidence.js exits 0 and DT-19 records cardinality plus precision from explicit real DT-18 result IDs for every declared purpose, closure fallback is rejected, missing quality/result evidence and cardinality mismatch block clearly, and all capacity-control and capacity-policy fields remain undefined."
       },
       {
         "taskId": "DT19-C2",
@@ -114,9 +117,9 @@
           "Run node tests/explicit/entries/runCapacityEvidence.js.",
           "Run all 5 production Graph RAG critical guards listed in criticalNonExplicitTests.",
           "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence.",
-          "Confirm DT-18 still passes while exposing result ids/cardinality for DT-19, TS-08 remains unchanged context, and no hand-authored deliveryStatus changes were made."
+          "Confirm DT-18 still passes while exposing explicit observedResultIds/result ids for DT-19, TS-08 remains unchanged context, and no hand-authored deliveryStatus changes were made."
         ],
-        "completionSignal": "DT-19 passes with all 5 critical guards, real DT-18 output supplies capacity evidence inputs, no capacity-policy implementation exists, no test/Harness/contract edits occur during Coding, and no hand-authored deliveryStatus changes are made."
+        "completionSignal": "DT-19 passes with all 5 critical guards, real DT-18 output supplies explicit result ID capacity evidence inputs without closure fallback, no capacity-policy implementation exists, no test/Harness/contract edits occur during Coding, and no hand-authored deliveryStatus changes are made."
       }
     ]
   },

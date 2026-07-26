@@ -76,6 +76,45 @@ async function main() {
     'DT19_QUALITY_EVIDENCE_REQUIRED',
     failureCategory(missingQualityEvidence, 'DT19_QUALITY_EVIDENCE_REQUIRED'),
   );
+
+  // THEN DT-18 must not fabricate result IDs from closure evidence
+  const missingResultIdsBenchmark = cloneBenchmark(benchmark);
+  delete missingResultIdsBenchmark.purposes[0].observedResultIds;
+  delete missingResultIdsBenchmark.purposes[0].resultIds;
+  const missingResultIds = await evaluatePhase1QualityBenchmark({
+    benchmark: missingResultIdsBenchmark,
+  });
+  assert.strictEqual(
+    missingResultIds.status,
+    'blocked',
+    'DT18_MISSING_RESULT_EVIDENCE_ACCEPTED',
+  );
+  assert.strictEqual(
+    missingResultIds.error && missingResultIds.error.category,
+    'DT18_RESULT_EVIDENCE_REQUIRED',
+    failureCategory(missingResultIds, 'DT18_RESULT_EVIDENCE_REQUIRED'),
+  );
+
+  // THEN explicit cardinality must match the observed result ID count
+  const mismatchedCardinalityBenchmark = cloneBenchmark(benchmark);
+  mismatchedCardinalityBenchmark.purposes[0].resultCardinality = 999;
+  const mismatchedCardinality = await evaluatePhase1QualityBenchmark({
+    benchmark: mismatchedCardinalityBenchmark,
+  });
+  assert.strictEqual(
+    mismatchedCardinality.status,
+    'blocked',
+    'DT18_RESULT_CARDINALITY_MISMATCH_ACCEPTED',
+  );
+  assert.strictEqual(
+    mismatchedCardinality.error && mismatchedCardinality.error.category,
+    'DT18_RESULT_CARDINALITY_MISMATCH',
+    failureCategory(mismatchedCardinality, 'DT18_RESULT_CARDINALITY_MISMATCH'),
+  );
+}
+
+function cloneBenchmark(benchmark) {
+  return JSON.parse(JSON.stringify(benchmark));
 }
 
 function failureCategory(outcome, fallback) {
