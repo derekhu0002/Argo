@@ -120,8 +120,10 @@ assert.deepStrictEqual(rawContract.defaultProductionRouting, {
 });
 assert.deepStrictEqual(rawContract.productionQueryCredentialContract, {
   useCase: 'production-semantic-query',
-  requiredOptIns: [],
+  actualUninjectedMcp: true,
+  requiredResolverOptions: ['repositoryRoot', 'useCase'],
   prohibitedOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+  eventProducer: 'production-code',
   requiredBoundaryOrder: [
     'credential-source-resolution',
     'semantic-readiness-read',
@@ -189,11 +191,10 @@ for (const rawProperty of [
   'SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE',
   'SP03_LEGACY_CONTROL_WORDS_DID_NOT_REACH_CREDENTIAL_GATE',
   'SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING',
-  'SP03_PRODUCTION_QUERY_E2E_OPT_IN_PROHIBITED',
-  'SP03_PRODUCTION_QUERY_MUTATION_OPT_IN_PROHIBITED',
-  'SP03_PRODUCTION_QUERY_READINESS_NOT_REACHED',
-  'SP03_PRODUCTION_QUERY_PROVIDER_NOT_REACHED',
-  'SP03_PRODUCTION_QUERY_NEO4J_VECTOR_NOT_REACHED',
+  'SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED',
+  'SP03_PRODUCTION_QUERY_NON_DIRECT_SOURCE_OPERATION',
+  'SP03_PRODUCTION_QUERY_PROHIBITED_SOURCE_PATH',
+  'SP03_PRODUCTION_QUERY_BOUNDARY_ORDER_MISMATCH',
   'SP04_ANCHORED_GRAPH_TIDY_NOT_FULL_SNAPSHOT',
   'SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS',
   'SP03_ZERO_RESULT_QUERY_SEQUENCE_COUNT',
@@ -247,6 +248,23 @@ assert(
 assert(
   !compatibilityHarness.includes("callTool('getSystemArchitecture', args, testDependencies)"),
   'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: wrapper progressToken position cannot carry deterministic test dependencies',
+);
+const productionCredentialStart = harness.indexOf('async function runProductionQueryCredentialResolution()');
+const productionCredentialEnd = harness.indexOf('function createInstrumentedProviderFetch', productionCredentialStart);
+assert(
+  productionCredentialStart >= 0 && productionCredentialEnd > productionCredentialStart,
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: actual production credential scenario is missing',
+);
+const productionCredentialScenario = harness.slice(productionCredentialStart, productionCredentialEnd);
+assert(
+  productionCredentialScenario.includes("callTool('getSystemArchitecture'")
+    && productionCredentialScenario.includes('liveConfiguration.resolveApprovedLiveConfiguration = options =>'),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: credential RED must invoke actual uninjected MCP orchestration with raw source instrumentation',
+);
+assert(
+  !productionCredentialScenario.includes('observations.neo4jDriver.execute')
+    && !productionCredentialScenario.includes('observations.transport.request'),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness must not manually manufacture readiness/provider/vector progression',
 );
 assert(handoff.frozenFiles.includes(harnessPath), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness is not frozen');
 

@@ -148,8 +148,10 @@ const RAW_EVIDENCE_CONTRACT = deepFreeze({
   },
   productionQueryCredentialContract: {
     useCase: 'production-semantic-query',
-    requiredOptIns: [],
+    actualUninjectedMcp: true,
+    requiredResolverOptions: ['repositoryRoot', 'useCase'],
     prohibitedOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+    eventProducer: 'production-code',
     requiredBoundaryOrder: [
       'credential-source-resolution',
       'semantic-readiness-read',
@@ -366,47 +368,109 @@ async function runProductionQueryCredentialResolution() {
   const {
     withApprovedLiveConfigurationTestComposition,
   } = require(liveConfigurationPath);
-  let configurationEvidence;
+  const liveConfiguration = require(liveConfigurationPath);
+  const defaultModulePath = require.resolve(defaultRetrievalPath);
+  const systemModulePath = require.resolve(systemArchitectureMcpPath);
+  const neo4jModulePath = require.resolve('neo4j-driver');
+  require(neo4jModulePath);
+  const previousDefaultModule = require.cache[defaultModulePath];
+  const previousSystemModule = require.cache[systemModulePath];
+  const previousNeo4jExports = require.cache[neo4jModulePath].exports;
+  const previousResolver = liveConfiguration.resolveApprovedLiveConfiguration;
+  const previousFetch = global.fetch;
+  const resolverOptions = [];
+  const productionEvents = [];
+  let result;
   let error;
   try {
-    configurationEvidence = await withApprovedLiveConfigurationTestComposition({
+    await withApprovedLiveConfigurationTestComposition({
       sourceBehavior: observations.sourceBehavior,
       adapters: observations.sourceAdapters,
-    }, resolver => resolver({
-      repositoryRoot: repoRoot,
-      useCase: 'production-semantic-query',
-    }));
-    await observations.neo4jDriver.execute({
-      kind: 'semantic-readiness-read',
-      cypher: 'RETURN $projection AS readiness',
-      parameters: { projection: 'production-semantic-query' },
-    });
-    await observations.transport.request(configurationEvidence.embeddingBaseUrl, {
-      method: 'POST',
-    });
-    await observations.neo4jDriver.execute({
-      kind: 'semantic-vector-window-query',
-      channel: 'Element',
-      cypher: VECTOR_QUERY_CYPHER,
-      parameters: {
-        channel: 'Element',
-        indexName: VECTOR_INDEX_NAMES.Element,
-        offset: 0,
-        windowSize: 2,
-        topK: 2,
-        vector: Object.freeze(Array.from({ length: 1024 }, () => 0.25)),
-      },
+    }, async trustedResolver => {
+      liveConfiguration.resolveApprovedLiveConfiguration = options => {
+        resolverOptions.push(Object.freeze({ ...(options || {}) }));
+        return trustedResolver(options);
+      };
+      require.cache[neo4jModulePath].exports = createInstrumentedNeo4jModule(productionEvents);
+      global.fetch = createInstrumentedProviderFetch(productionEvents);
+      delete require.cache[defaultModulePath];
+      delete require.cache[systemModulePath];
+      const { callTool } = require(systemArchitectureMcpPath);
+      result = await callTool('getSystemArchitecture', {
+        query: {
+          purpose: 'implementation-design',
+          intent: 'Resolve valid external production query credentials and retrieve semantic context',
+        },
+      });
     });
   } catch (caught) {
     error = caught;
+  } finally {
+    liveConfiguration.resolveApprovedLiveConfiguration = previousResolver;
+    global.fetch = previousFetch;
+    require.cache[neo4jModulePath].exports = previousNeo4jExports;
+    if (previousDefaultModule) require.cache[defaultModulePath] = previousDefaultModule;
+    else delete require.cache[defaultModulePath];
+    if (previousSystemModule) require.cache[systemModulePath] = previousSystemModule;
+    else delete require.cache[systemModulePath];
   }
   return Object.freeze({
-    configurationEvidence,
+    result,
     error,
-    operationLedger: observations.operationLedger(),
-    readinessReads: observations.readinessReads(),
-    providerRequests: observations.providerRequests(),
-    vectorQueries: observations.vectorQueries(),
+    resolverOptions: Object.freeze([...resolverOptions]),
+    sourceLedger: observations.operationLedger(),
+    productionEvents: Object.freeze([...productionEvents]),
+  });
+}
+
+function createInstrumentedProviderFetch(productionEvents) {
+  const vector = Object.freeze(Array.from({ length: 1024 }, (_, index) => (
+    Number(((index + 1) / 2048).toFixed(8))
+  )));
+  return async function instrumentedProviderFetch() {
+    productionEvents.push(Object.freeze({ kind: 'provider-request' }));
+    return {
+      ok: true,
+      async json() {
+        return { data: [{ embedding: vector }] };
+      },
+    };
+  };
+}
+
+function createInstrumentedNeo4jModule(productionEvents) {
+  let operationCount = 0;
+  return Object.freeze({
+    auth: Object.freeze({
+      basic(username, password) {
+        return Object.freeze({ username, password });
+      },
+    }),
+    driver() {
+      return Object.freeze({
+        session() {
+          return Object.freeze({
+            async run() {
+              operationCount += 1;
+              if (operationCount === 1) {
+                productionEvents.push(Object.freeze({ kind: 'semantic-readiness-read' }));
+                return {
+                  records: [Object.freeze({
+                    get(key) {
+                      return key === 'readiness' ? alignedReadiness() : undefined;
+                    },
+                  })],
+                };
+              }
+              productionEvents.push(Object.freeze({ kind: 'semantic-vector-window-query' }));
+              return { records: [] };
+            },
+            async close() {},
+          });
+        },
+        async close() {},
+      });
+    },
   });
 }
 
@@ -739,40 +803,41 @@ function assertDefaultVectorRetrieval(observation) {
 }
 
 function assertProductionQueryCredentialResolution(observation) {
+  assert.deepStrictEqual(
+    observation.resolverOptions,
+    [{ repositoryRoot: repoRoot, useCase: 'production-semantic-query' }],
+    'SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED',
+  );
   assert(
     !observation.error,
     `SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: ${
       observation.error && (observation.error.category || observation.error.message)
     }`,
   );
-  assert(observation.configurationEvidence, 'SP03_PRODUCTION_QUERY_CONFIGURATION_EVIDENCE_MISSING');
-  assert.strictEqual(
-    Object.prototype.hasOwnProperty.call(
-      observation.configurationEvidence.attribution || {},
-      'ARGO_LIVE_PROVIDER_E2E',
-    ),
-    false,
-    'SP03_PRODUCTION_QUERY_E2E_OPT_IN_PROHIBITED',
+  assert.strictEqual(observation.result && observation.result.status, 'passed', 'SP03_PRODUCTION_QUERY_RESULT_FAILED');
+  const sourceReads = observation.sourceLedger.filter(event => event.kind === 'credential-source-resolution');
+  assert(sourceReads.length > 0, 'SP03_PRODUCTION_QUERY_SOURCE_READS_MISSING');
+  assert(
+    sourceReads.every(event => event.operation === 'direct'),
+    'SP03_PRODUCTION_QUERY_NON_DIRECT_SOURCE_OPERATION',
   );
-  assert.strictEqual(
-    Object.prototype.hasOwnProperty.call(
-      observation.configurationEvidence.attribution || {},
-      'ARGO_W31_LIVE_MUTATION_VECTOR_E2E',
-    ),
-    false,
-    'SP03_PRODUCTION_QUERY_MUTATION_OPT_IN_PROHIBITED',
-  );
-  assert.strictEqual(observation.readinessReads.length, 1, 'SP03_PRODUCTION_QUERY_READINESS_NOT_REACHED');
-  assert.strictEqual(observation.providerRequests.length, 1, 'SP03_PRODUCTION_QUERY_PROVIDER_NOT_REACHED');
-  assert.strictEqual(observation.vectorQueries.length, 1, 'SP03_PRODUCTION_QUERY_NEO4J_VECTOR_NOT_REACHED');
-  assert.deepStrictEqual(
-    observation.operationLedger.map(event => event.kind).filter((kind, index, all) => (
-      kind !== 'credential-source-resolution' || index === all.lastIndexOf(kind)
+  assert(
+    !sourceReads.some(event => (
+      event.source === 'test-default'
+      || event.operation === 'fallback'
+      || event.key === 'ARGO_NEO4J_URI'
+      || event.key === 'ARGO_NEO4J_USERNAME'
+      || event.key === 'ARGO_NEO4J_PASSWORD'
     )),
+    'SP03_PRODUCTION_QUERY_PROHIBITED_SOURCE_PATH',
+  );
+  assert.deepStrictEqual(
+    observation.productionEvents.map(event => event.kind),
     [
-      'credential-source-resolution',
       'semantic-readiness-read',
       'provider-request',
+      'semantic-vector-window-query',
+      'semantic-vector-window-query',
       'semantic-vector-window-query',
     ],
     'SP03_PRODUCTION_QUERY_BOUNDARY_ORDER_MISMATCH',

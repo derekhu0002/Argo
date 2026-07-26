@@ -8,12 +8,22 @@ const allowedTargets = new Set([
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
-  '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ]);
 
 // GIVEN the approved WP-P2 implementation dependency direction
 // WHEN Coding targets and present production sources are inspected
 // THEN changes stay inside the MCP composition and Graph RAG inward boundary
+const authorizedTargetPaths = (handoff.codingTargets || []).map(target => target.path).sort();
+assert.deepStrictEqual(
+  authorizedTargetPaths,
+  [...allowedTargets].sort(),
+  'WP_P2_DEPENDENCY_DIRECTION_GUARD: Coding targets must equal the exact three-file authorization',
+);
+assert.deepStrictEqual(
+  authorizedTargetPaths.filter(target => (handoff.frozenFiles || []).includes(target)),
+  [],
+  'WP_P2_DEPENDENCY_DIRECTION_GUARD: authorized production targets overlap frozenFiles',
+);
 for (const target of handoff.codingTargets || []) {
   assert(
     target.path && allowedTargets.has(target.path),

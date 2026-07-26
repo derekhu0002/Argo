@@ -8,9 +8,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: LIVE_PROVIDER_E2E_OPT_IN_REQUIRED\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:742:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED\n+ actual - expected\n\n  [\n    {\n      repositoryRoot: 'D:\\\\Projects\\\\Argo',\n+     requiredOptIns: []\n-     useCase: 'production-semantic-query'\n    }\n  ]\n\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:806:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: LIVE_PROVIDER_E2E_OPT_IN_REQUIRED\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:742:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED\n+ actual - expected\n\n  [\n    {\n      repositoryRoot: 'D:\\\\Projects\\\\Argo',\n+     requiredOptIns: []\n-     useCase: 'production-semantic-query'\n    }\n  ]\n\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:806:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
@@ -21,8 +21,8 @@
     "resolvedScriptPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runProductionSemanticReadinessGate.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:783:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:848:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:783:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:848:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)"
   }
 ]
