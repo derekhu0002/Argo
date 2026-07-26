@@ -50,11 +50,12 @@ for (const productionTarget of productionCompositionPaths) {
     `WP_P1_DEPENDENCY_DIRECTION_GUARD: handoff neither targets nor freezes ${productionTarget}`,
   );
 }
-assert.deepStrictEqual(
-  [...new Set(targetPaths)].sort(),
-  ['.argo/scripts/systemarchitecture-mcp-server.js'],
-  'WP_P1_DEPENDENCY_DIRECTION_GUARD: final-audit repair authorizes production paths beyond the MCP gateway',
-);
+for (const protectedPersistenceTarget of productionCompositionPaths.slice(0, -1)) {
+  assert(
+    !targetPaths.includes(protectedPersistenceTarget),
+    `WP_P1_DEPENDENCY_DIRECTION_GUARD: handoff reauthorizes accepted WP-P1 boundary ${protectedPersistenceTarget}`,
+  );
+}
 for (const frozenProductionPath of productionCompositionPaths.slice(0, -1)) {
   assert(
     handoff.frozenFiles.includes(frozenProductionPath),

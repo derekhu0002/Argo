@@ -34,42 +34,24 @@ for (const [intentId, entryPath] of requiredMappings) {
   assert(local.includes(entryPath), `WP_P1_TRACEABILITY_GUARD: local contract does not own ${entryPath}`);
 }
 
-const handoffEvidence = JSON.stringify(handoff);
 for (const baselineEvidence of [
-  '40 total / 38 passed / 2 expected RED',
-  '21 runner-owned delivery transitions',
-  '40 total / 39 passed / 1 expected RED',
-  '2 runner-owned delivery transitions',
-  'SP01_DEFAULT_MCP_PRODUCTION_COMPOSITION_MISSING',
-  'productionGraphRagRuntime.runSemanticBackfill is required',
-  '4e01094b56429991b32b0826968da0bea9f93b0e',
-  'grag-consumer-role',
-  'grag-consumption-process',
-  'grag-query-service',
-  'grag-mode-validation',
-  'grag-seed-retrieval',
-  'grag-purpose-closure',
-  'grag-intent-decision-policy',
-  'grag-implementation-policy',
-  'grag-repair-policy',
-  'grag-audit-policy',
-  'grag-graph-tidy-policy',
-  'grag-endpoint-closure',
-  'grag-view-closure',
-  'grag-provenance',
-  'grag-index-lifecycle',
-  'grag-mcp-interface',
-  'grag-credential-boundary',
-  'grag-embedding-provider-adapter',
-  'grag-embedding-generation',
-  'semprod-backfill-control',
-  'semprod-persistent-projection-requirement',
+  'tests/explicit/entries/runProductionSemanticBackfill.js',
+  'tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js',
 ]) {
   assert(
-    handoffEvidence.includes(baselineEvidence),
-    `WP_P1_TRACEABILITY_GUARD: handoff baseline omits ${baselineEvidence}`,
+    handoff.frozenFiles.includes(baselineEvidence),
+    `WP_P1_TRACEABILITY_GUARD: current handoff does not freeze ${baselineEvidence}`,
   );
 }
+assert.strictEqual(
+  handoff.expectedFailureRecordsPath,
+  'design/KG/test-failure-records.json',
+  'WP_P1_TRACEABILITY_GUARD: current handoff changed the runner failure-record authority',
+);
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

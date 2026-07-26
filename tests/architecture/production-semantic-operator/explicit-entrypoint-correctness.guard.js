@@ -5,8 +5,11 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const entryPath = 'tests/explicit/entries/runNewProjectSemanticOperatorJourney.js';
 const harnessPath = 'tests/harness/productionSemanticOperatorJourneyHarness.js';
+const adapterHarnessPath = 'tests/harness/productionSemanticOperatorAdapterLifecycleHarness.js';
+const processFixturePath = 'tests/fixtures/productionSemanticOperatorCliProcess.js';
 const entry = read(entryPath);
 const harness = read(harnessPath);
+const adapterHarness = read(adapterHarnessPath);
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 
 // GIVEN the one approved SP-05 physical entrypoint and its business-readable Harness
@@ -20,8 +23,25 @@ for (const required of [
   'runNewProjectSemanticOperatorJourney',
   'assertNewProjectSemanticOperatorJourney',
   'assertRejectedAutomaticBackfillControls',
+  'runProductionSemanticOperatorAdapterLifecycle',
+  'assertProductionSemanticOperatorAdapterLifecycle',
 ]) {
   assert(entry.includes(required), `WP_P3_ENTRYPOINT_GUARD: entry omits ${required}`);
+}
+
+for (const required of [
+  'spawnSync',
+  'SP05_CLI_CROSS_PROCESS_QUERY_NOT_AUTHORIZED',
+  'SP05_PACKAGE_BACKFILL_FORGES_EXPLICIT_CONSENT',
+  'SEMANTIC_QUERY_BYPASSES_OPERATOR',
+  'WIRE_HANDLER_NOT_EXPOSED',
+  'SP05_CLI_STALE_ATTESTATION',
+  'semantic-readiness-attestation.json',
+]) {
+  assert(
+    adapterHarness.includes(required),
+    `WP_P3_ENTRYPOINT_GUARD: adapter Harness omits ${required}`,
+  );
 }
 for (const prohibited of ['child_process', 'neo4j-driver', 'process.env', 'Cypher']) {
   assert(!entry.includes(prohibited), `WP_P3_ENTRYPOINT_GUARD: entry exposes ${prohibited} plumbing`);
@@ -77,7 +97,13 @@ for (const required of [
   assert(harness.includes(required), `WP_P3_ENTRYPOINT_GUARD: Harness omits ${required}`);
 }
 
-for (const frozen of [entryPath, harnessPath, __filenameRelative()]) {
+for (const frozen of [
+  entryPath,
+  harnessPath,
+  adapterHarnessPath,
+  processFixturePath,
+  __filenameRelative(),
+]) {
   assert(
     handoff.frozenFiles.includes(frozen),
     `WP_P3_ENTRYPOINT_GUARD: Coding handoff does not freeze ${frozen}`,

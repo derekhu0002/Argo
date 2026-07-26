@@ -6,10 +6,18 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const allowedTargets = new Set([
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
+  '.argo/scripts/graph-rag/semanticReadinessAttestationStore.js',
+  '.argo/scripts/graph-rag/semanticOperatorError.js',
+  '.argo/scripts/semanticOperatorJourneyCli.js',
+  '.argo/scripts/systemarchitecture-mcp-server.js',
+  '.argo/scripts/argo-mcp-server.js',
+  'package.json',
 ]);
 const inspectedProductionPaths = [
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/semanticReadinessAttestationStore.js',
+  '.argo/scripts/graph-rag/semanticOperatorError.js',
   '.argo/scripts/semanticOperatorJourneyCli.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/argo-mcp-server.js',
@@ -53,13 +61,13 @@ for (const relativePath of inspectedProductionPaths) {
 const local = read('.argo/scripts/graph-rag/ARCHITECTURE.md');
 for (const required of [
   'semanticOperatorJourney.js',
-  'depends inward on the existing workspace initialization',
-  'structural projection',
-  'external configuration',
-  'semantic backfill',
-  'persistent readiness',
-  'semantic query',
-  'must not reimplement',
+  'six function ports',
+  'readinessAttestationStore',
+  'semanticReadinessAttestationStore.js',
+  'semanticOperatorError.js',
+  'System Architecture MCP',
+  'graph-tidy',
+  'requires the user-provided',
 ]) {
   assert(
     local.toLowerCase().includes(required.toLowerCase()),

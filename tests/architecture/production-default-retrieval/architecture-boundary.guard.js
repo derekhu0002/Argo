@@ -68,7 +68,17 @@ const authorization = JSON.stringify({
   taskExecutionPlan: handoff.taskExecutionPlan,
   openGaps: handoff.openGaps,
 });
-assert(!/runNewProjectSemanticOperatorJourney|ExplicitAcceptanceTestcase-SP-05/i.test(authorization), 'WP_P2_ARCHITECTURE_BOUNDARY_GUARD: WP-P3 entered Coding authorization');
+for (const protectedBoundary of [
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
+  '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
+]) {
+  assert(
+    !handoff.codingTargets.some(target => target.path === protectedBoundary)
+      && handoff.frozenFiles.includes(protectedBoundary),
+    `WP_P2_ARCHITECTURE_BOUNDARY_GUARD: accepted WP-P2 boundary changed authorization ${protectedBoundary}`,
+  );
+}
 assert(!/deliveryStatus/.test(JSON.stringify(handoff.codingTargets)), 'WP_P2_ARCHITECTURE_BOUNDARY_GUARD: manual deliveryStatus target is forbidden');
 assert(
   /runner-owned deliveryStatus/i.test(handoff.taskExecutionPlan.executionStrategy),

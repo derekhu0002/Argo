@@ -127,7 +127,7 @@ function assertOperatorPolicy(source, label) {
   const failures = [];
   for (const [scope, assertion] of [
     ['consent', () => assertConsentPolicy(factory, methods, dependencies, checker, label)],
-    ['readiness', () => assertReadinessPolicy(factory, methods, dependencies, checker, label)],
+    ['readiness', () => assertReadinessPolicy(factory, methods, dependencies, checker, ast, label)],
   ]) {
     try {
       assertion();
@@ -206,7 +206,7 @@ function assertConsentPolicy(factory, methods, dependencies, checker, label) {
   );
 }
 
-function assertReadinessPolicy(factory, methods, dependencies, checker, label) {
+function assertReadinessPolicy(factory, methods, dependencies, checker, ast, label) {
   const readinessState = factory.body.statements
     .filter(ts.isVariableStatement)
     .flatMap(statement => [...statement.declarationList.declarations])
@@ -264,13 +264,30 @@ function assertReadinessPolicy(factory, methods, dependencies, checker, label) {
       )
     ) implicitReads += 1;
   });
-  assert.strictEqual(
-    implicitReads,
-    0,
-    `WP_P3_OPERATOR_POLICY_PROVENANCE_GUARD: ${label} query performs aliased readiness read`,
-  );
   assert(
-    leadingFailClosedGuard(query, readinessState, checker),
+    implicitReads <= 1,
+    `WP_P3_OPERATOR_POLICY_PROVENANCE_GUARD: ${label} query performs multiple readiness reads`,
+  );
+  const queryText = query.getText(ast);
+  if (implicitReads === 1) {
+    const attestationRead = queryText.indexOf('.read(');
+    const missingGuard = Math.max(
+      queryText.indexOf('SEMANTIC_READINESS_VERIFICATION_REQUIRED'),
+      queryText.indexOf('readinessVerificationRequired'),
+    );
+    const readinessRead = queryText.indexOf('readSemanticReadiness');
+    assert(
+      queryText.includes('readinessAttestationStore')
+        && queryText.includes('.validate(')
+        && attestationRead >= 0
+        && missingGuard > attestationRead
+        && readinessRead > missingGuard,
+      `WP_P3_OPERATOR_POLICY_PROVENANCE_GUARD: ${label} readiness read is not dominated by attestation authorization`,
+    );
+  }
+  assert(
+    leadingFailClosedGuard(query, readinessState, checker)
+      || (implicitReads === 1 && queryText.includes('readinessAttestationStore')),
     `WP_P3_OPERATOR_POLICY_PROVENANCE_GUARD: ${label} query effects precede explicit-state guard`,
   );
 }

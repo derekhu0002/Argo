@@ -16,12 +16,14 @@ const exactOperatorPorts = [
   'runSemanticBackfill',
   'readSemanticReadiness',
   'querySystemArchitecture',
+  'readinessAttestationStore',
 ].sort();
 const requiredFactoryImports = new Map([
   ['createProductionSemanticOperatorJourney', './graph-rag/semanticOperatorJourney.js'],
   ['createProductionGraphRagRuntime', './graph-rag/productionGraphRagRuntime.js'],
   ['createDefaultSemanticRetrieval', './graph-rag/defaultSemanticRetrieval.js'],
   ['resolveApprovedLiveConfiguration', './graph-rag/liveEmbeddingProviderConfig.js'],
+  ['createSemanticReadinessAttestationStore', './graph-rag/semanticReadinessAttestationStore.js'],
 ]);
 const requiredToolCalls = [
   'backfillSystemArchitectureSemanticProjection',
@@ -34,7 +36,7 @@ const outwardOperatorTools = [
 
 // GIVEN WP-P3 may compose, but may not replace, accepted WP-P1/WP-P2 boundaries
 // WHEN contracts, authorization, and materialized default wiring are structurally inspected
-// THEN imports, invocations, tool calls, and the exact six-port dependency object are mandatory
+// THEN imports, invocations, tool calls, six function ports, and the sole store are mandatory
 for (const required of [
   ...exactOperatorPorts,
   ...requiredFactoryImports.keys(),
@@ -56,19 +58,23 @@ const { createProductionSemanticOperatorJourney } = require('./graph-rag/semanti
 const { createProductionGraphRagRuntime } = require('./graph-rag/productionGraphRagRuntime.js');
 const { createDefaultSemanticRetrieval } = require('./graph-rag/defaultSemanticRetrieval.js');
 const { resolveApprovedLiveConfiguration } = require('./graph-rag/liveEmbeddingProviderConfig.js');
+const { createSemanticReadinessAttestationStore } = require('./graph-rag/semanticReadinessAttestationStore.js');
 function initializeWorkspace(request) { return request; }
 function syncCanonicalStructuralProjection(request) { return request; }
 function callTool(name, request, dependencies) { return { name, request, dependencies }; }
+function executeSemanticSystemArchitectureQuery(request, dependencies) { return { request, dependencies }; }
 function createDefaultProductionSemanticOperatorJourney() {
   const runtime = createProductionGraphRagRuntime({});
   const retrieval = createDefaultSemanticRetrieval({});
+  const readinessAttestationStore = createSemanticReadinessAttestationStore({});
   return createProductionSemanticOperatorJourney({
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
     runSemanticBackfill: request => callTool('backfillSystemArchitectureSemanticProjection', request, { runtime }),
     readSemanticReadiness: () => retrieval.readReadiness(),
-    querySystemArchitecture: request => callTool('getSystemArchitecture', request, { retrieval }),
+    querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, { retrieval }),
+    readinessAttestationStore: readinessAttestationStore,
   });
 }`;
 
@@ -99,15 +105,15 @@ const bypassFixtures = [
   {
     name: 'missing-tool-call',
     source: safeFixture.replace(
-      "callTool('getSystemArchitecture', request, { retrieval })",
+      'executeSemanticSystemArchitectureQuery(request, { retrieval })',
       'getSystemArchitecture',
     ),
   },
   {
     name: 'extra-port',
     source: safeFixture.replace(
-      'querySystemArchitecture: request => callTool',
-      'unsafeProviderOverride: request => request,\n    querySystemArchitecture: request => callTool',
+      'querySystemArchitecture: request => executeSemanticSystemArchitectureQuery',
+      'unsafeProviderOverride: request => request,\n    querySystemArchitecture: request => executeSemanticSystemArchitectureQuery',
     ),
   },
   {
@@ -136,6 +142,13 @@ const bypassFixtures = [
     source: safeFixture.replace(
       'readSemanticReadiness: () => retrieval.readReadiness()',
       'readSemanticReadiness: () => fakeReadinessGate()',
+    ),
+  },
+  {
+    name: 'substituted-attestation-store',
+    source: safeFixture.replace(
+      'readinessAttestationStore: readinessAttestationStore',
+      'readinessAttestationStore: fakeAttestationStore',
     ),
   },
 ];
@@ -186,9 +199,11 @@ function assertDefaultComposition(source, label) {
   assert.deepStrictEqual(
     dependencyKeys,
     exactOperatorPorts,
-    `WP_P3_DEFAULT_WIRING_GUARD: ${label} default dependencies must expose exactly six authorized ports`,
+    `WP_P3_DEFAULT_WIRING_GUARD: ${label} default dependencies must expose six ports and one store`,
   );
-  for (const property of dependencies.properties) {
+  for (const property of dependencies.properties.filter(property => (
+    propertyName(property) !== 'readinessAttestationStore'
+  ))) {
     assert(
       ts.isPropertyAssignment(property)
         && (ts.isArrowFunction(property.initializer) || ts.isFunctionExpression(property.initializer)),
@@ -201,6 +216,7 @@ function assertDefaultComposition(source, label) {
     'createProductionGraphRagRuntime',
     'createDefaultSemanticRetrieval',
     'resolveApprovedLiveConfiguration',
+    'createSemanticReadinessAttestationStore',
   ]) {
     const imported = factoryLocals.get(factory);
     assert(
@@ -212,6 +228,7 @@ function assertDefaultComposition(source, label) {
     ['initializeWorkspace', requireTopLevelBinding(ast, 'initializeWorkspace', label)],
     ['syncCanonicalStructuralProjection', requireTopLevelBinding(ast, 'syncCanonicalStructuralProjection', label)],
     ['callTool', requireTopLevelBinding(ast, 'callTool', label)],
+    ['executeSemanticSystemArchitectureQuery', requireTopLevelBinding(ast, 'executeSemanticSystemArchitectureQuery', label)],
   ]);
   const retrievalBinding = findFactoryResultBinding(
     compositionRoot,
@@ -238,11 +255,27 @@ function assertDefaultComposition(source, label) {
       memberName: 'readReadiness',
     }],
     ['querySystemArchitecture', {
-      binding: topLevelBindings.get('callTool'),
-      toolName: 'getSystemArchitecture',
+      binding: topLevelBindings.get('executeSemanticSystemArchitectureQuery'),
     }],
   ]);
-  for (const property of dependencies.properties) {
+  const storeBinding = findFactoryResultBinding(
+    compositionRoot,
+    factoryLocals.get('createSemanticReadinessAttestationStore'),
+    checker,
+    label,
+  );
+  const storeProperty = dependencies.properties.find(property => (
+    propertyName(property) === 'readinessAttestationStore'
+  ));
+  assert(
+    ts.isPropertyAssignment(storeProperty)
+      && ts.isIdentifier(storeProperty.initializer)
+      && resolvesTo(storeProperty.initializer, storeBinding, checker),
+    `WP_P3_DEFAULT_WIRING_GUARD: ${label} substitutes the readiness attestation store`,
+  );
+  for (const property of dependencies.properties.filter(item => (
+    propertyName(item) !== 'readinessAttestationStore'
+  ))) {
     const port = propertyName(property);
     const mapping = callbackMappings.get(port);
     const call = callbackReturnCall(property.initializer, label, port);

@@ -162,13 +162,13 @@ QWEN_KEY
 
 ```text
 npm run semantic:init
-npm run semantic:backfill
+npm run semantic:backfill -- --explicit-opt-in
 npm run semantic:readiness
 npm run semantic:query -- --request-json "{\"purpose\":\"implementation-design\",\"intent\":\"Find the required architecture context\"}"
 npm run semantic:snapshot
 ```
 
-`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。检查回填结果中的 `progress`、`checkpoint` 和 `failedRecords`；中断或隔离失败后使用 `npm run semantic:backfill -- --resume` 从持久化检查点恢复。只有 `semantic:readiness` 显式确认 Element、ArchitectureRelationship 和 View 三个通道的规范版本、内容版本和索引版本均为 `Aligned` 后，才能执行查询；未就绪查询会关闭失败且 `fullSnapshotFallback` 为 `false`。
+`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。显式回填必须由操作者传入 `--explicit-opt-in`；恢复时使用 `npm run semantic:backfill -- --explicit-opt-in --resume`。只有 `semantic:readiness` 显式确认三个通道并写入不含密钥、绑定规范/内容/索引版本的本地就绪凭据后，后续独立进程中的 `semantic:query` 才能执行。初始化、回填、规范图变更或版本漂移都会使该凭据失效；未就绪或凭据过期查询会关闭失败且 `fullSnapshotFallback` 为 `false`。
 
 需要自动回填时，显式运行 `npm run semantic:init -- --automatic-backfill`。系统先验证批准的外部配置，验证通过后才可能启动回填、提供方调用和数据库写入。缺失、不安全、冲突或未批准的配置在任何这些副作用之前被拒绝；修正安全配置后重试，不要改用内嵌值或回退配置。
 

@@ -30,7 +30,7 @@ Validation occurs before retrieval and returns these stable categories:
 - missing or blank intent: `QUERY_INTENT_REQUIRED`;
 - missing or blank audit subject: `AUDIT_SUBJECT_REQUIRED`.
 
-The in-process `callTool` boundary accepts an internal dependency override containing `semanticRetrievalBoundary.retrieve(request)` and forwards it unchanged to the deep query module. This is not part of the public MCP schema. Production supplies the real adapter; the frozen Harness supplies a test-owned spy, so acceptance tests observe boundary calls independently of response fields without creating a production dependency on `tests/`.
+Public semantic `getSystemArchitecture` dispatch routes through the Production Semantic Operator Journey and its recorded readiness authorization. Only the private raw semantic-query delegate accepts `semanticRetrievalBoundary.retrieve(request)` for the operator's final inward query port; it is not a public tool path. No-argument and graph-tidy reads continue to bypass semantic work. System and unified JSON-RPC handlers preserve the shared structured, redacted, stack-free readiness error envelope.
 
 ## Local dependencies
 

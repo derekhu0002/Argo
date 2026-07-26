@@ -4,8 +4,10 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
-const allowedTargets = new Set([
+const protectedBoundaries = new Set([
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ]);
 
 // GIVEN the approved WP-P2 implementation dependency direction
@@ -13,23 +15,19 @@ const allowedTargets = new Set([
 // THEN changes stay inside the MCP composition and Graph RAG inward boundary
 const authorizedTargetPaths = (handoff.codingTargets || []).map(target => target.path).sort();
 assert.deepStrictEqual(
-  authorizedTargetPaths,
-  [...allowedTargets].sort(),
-  'WP_P2_DEPENDENCY_DIRECTION_GUARD: Coding targets must equal the exact final R3 security-file authorization',
-);
-assert.deepStrictEqual(
   authorizedTargetPaths.filter(target => (handoff.frozenFiles || []).includes(target)),
   [],
   'WP_P2_DEPENDENCY_DIRECTION_GUARD: authorized production targets overlap frozenFiles',
 );
-for (const target of handoff.codingTargets || []) {
+for (const protectedBoundary of protectedBoundaries) {
   assert(
-    target.path && allowedTargets.has(target.path),
-    `WP_P2_DEPENDENCY_DIRECTION_GUARD: unauthorized Coding target ${target.path}`,
+    !authorizedTargetPaths.includes(protectedBoundary)
+      && handoff.frozenFiles.includes(protectedBoundary),
+    `WP_P2_DEPENDENCY_DIRECTION_GUARD: accepted WP-P2 boundary is not frozen ${protectedBoundary}`,
   );
 }
 
-for (const relativePath of allowedTargets) {
+for (const relativePath of protectedBoundaries) {
   const absolutePath = path.join(repoRoot, ...relativePath.split('/'));
   if (!fs.existsSync(absolutePath)) continue;
   const source = fs.readFileSync(absolutePath, 'utf8');

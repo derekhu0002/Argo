@@ -187,8 +187,16 @@ function assertOperatorConsentAndReadinessPolicy(source, label) {
       violations.push('promotes consent to literal true');
     }
   });
-  if (countDependencyCalls(methods.get('query'), 'readSemanticReadiness') !== 0) {
-    violations.push('query performs implicit readiness read');
+  const queryReadCount = countDependencyCalls(methods.get('query'), 'readSemanticReadiness');
+  const queryText = methods.get('query').getText(ast);
+  if (
+    queryReadCount > 1
+    || (
+      queryReadCount === 1
+      && (!queryText.includes('readinessAttestationStore') || !queryText.includes('.validate('))
+    )
+  ) {
+    violations.push('query readiness read is not attestation-dominated stale validation');
   }
   if (countCalls(methods.get('query'), 'verifyReadiness') !== 0) {
     violations.push('query performs implicit readiness verification');
