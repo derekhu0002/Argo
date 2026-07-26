@@ -39,12 +39,24 @@ function record(kind, details = {}) {
 }
 
 async function createJourney() {
+  const metadataAdapter = process.platform === 'win32'
+    ? createReadinessAttestationMetadataAdapter({ repositoryRoot: workspaceRoot })
+    : undefined;
+  const observedMetadataAdapter = metadataAdapter && process.env.SP05_ATTESTATION_OWNER_OVERRIDE
+    ? Object.freeze({
+      ...metadataAdapter,
+      readReadinessAttestationOwner() {
+        return {
+          status: 0,
+          stdout: `${process.env.SP05_ATTESTATION_OWNER_OVERRIDE}\r\n`,
+        };
+      },
+    })
+    : metadataAdapter;
   const attestationStore = createSemanticReadinessAttestationStore({
     repositoryRoot: workspaceRoot,
     graphPath: 'design/KG/SystemArchitecture.json',
-    metadataAdapter: process.platform === 'win32'
-      ? createReadinessAttestationMetadataAdapter({ repositoryRoot: workspaceRoot })
-      : undefined,
+    metadataAdapter: observedMetadataAdapter,
   });
   return createProductionSemanticOperatorJourney({
     async initializeWorkspace() {

@@ -168,7 +168,7 @@ npm run semantic:query -- --request-json "{\"purpose\":\"implementation-design\"
 npm run semantic:snapshot
 ```
 
-`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。显式回填必须由操作者传入 `--explicit-opt-in`；恢复时使用 `npm run semantic:backfill -- --explicit-opt-in --resume`。只有 `semantic:readiness` 显式确认三个通道并通过受限、原子替换写入不含密钥的本地就绪记录后，后续独立进程中的 `semantic:query` 才能执行。该记录采用与规范 JSON 权威一致的“同一操作系统用户 + 本地工作区”信任边界：文件所有权/ACL、链接/重解析点和完整性必须通过检查；摘要只检测损坏与规范字节漂移，并不是签名。初始化、回填、规范图变更或任一规范/内容/索引/通道漂移都会使记录失效；未就绪、记录不可信或记录过期时查询关闭失败且 `fullSnapshotFallback` 为 `false`。
+`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。显式回填必须由操作者传入 `--explicit-opt-in`；恢复时使用 `npm run semantic:backfill -- --explicit-opt-in --resume`。只有 `semantic:readiness` 显式确认三个通道并通过受限、原子替换写入不含密钥的本地就绪记录后，后续独立进程中的 `semantic:query` 才能执行。该记录采用与规范 JSON 权威一致的“同一操作系统用户 + 本地工作区”信任边界：文件所有者、文件及父目录 ACL/权限、链接/重解析点和完整性必须通过检查；支持的平台还会同步父目录，Windows 则显式验证同目录原子重命名回退。摘要只检测损坏与规范字节漂移，并不是签名。初始化、回填、规范图变更或任一规范/内容/索引/通道漂移都会使记录失效；未就绪、记录不可信或记录过期时查询关闭失败且 `fullSnapshotFallback` 为 `false`。
 
 需要自动回填时，显式运行 `npm run semantic:init -- --automatic-backfill`。系统先验证批准的外部配置，验证通过后才可能启动回填、提供方调用和数据库写入。缺失、不安全、冲突或未批准的配置在任何这些副作用之前被拒绝；修正安全配置后重试，不要改用内嵌值或回退配置。
 

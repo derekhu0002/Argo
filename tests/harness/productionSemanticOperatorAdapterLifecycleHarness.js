@@ -217,6 +217,15 @@ function runAttestationTrustScenarios(roots) {
   const aclMutation = makeAttestationAclUntrusted(untrustedAcl);
   const untrustedAclQuery = spawnSemanticQuery(untrustedAcl);
 
+  const untrustedParentAcl = createRecordedWorkspace(roots);
+  const parentAclMutation = makeAttestationDirectoryAclUntrusted(untrustedParentAcl);
+  const untrustedParentAclQuery = spawnSemanticQuery(untrustedParentAcl);
+
+  const foreignIdentityOwner = createRecordedWorkspace(roots);
+  const foreignIdentityOwnerQuery = spawnSemanticQuery(foreignIdentityOwner, {
+    SP05_ATTESTATION_OWNER_OVERRIDE: 'FOREIGN-DOMAIN\\ForeignIdentity',
+  });
+
   const mutation = createProcessWorkspace(
     roots,
     VERSION_ONE_READINESS,
@@ -268,6 +277,11 @@ function runAttestationTrustScenarios(roots) {
       ...scenarioResult(untrustedAcl, untrustedAclQuery),
       aclMutation,
     },
+    untrustedParentAcl: {
+      ...scenarioResult(untrustedParentAcl, untrustedParentAclQuery),
+      aclMutation: parentAclMutation,
+    },
+    foreignIdentityOwner: scenarioResult(foreignIdentityOwner, foreignIdentityOwnerQuery),
     mutation: {
       readiness: readinessBeforeMutation,
       mutation: mutationResult,
@@ -482,6 +496,33 @@ function assertAttestationTrustControls(trust) {
     'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
     'SP05_ATTESTATION_PERMISSIVE_ACL',
   );
+  assertEventCounts(trust.untrustedAcl.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, 'SP05_ATTESTATION_PERMISSIVE_ACL');
+  assert.strictEqual(
+    trust.untrustedParentAcl.aclMutation.status,
+    0,
+    `SP05_ATTESTATION_PARENT_ACL_FIXTURE_FAILED: ${trust.untrustedParentAcl.aclMutation.stderr}`,
+  );
+  assertStructuredProcessError(
+    trust.untrustedParentAcl.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    'SP05_ATTESTATION_PERMISSIVE_PARENT_ACL',
+  );
+  assertEventCounts(trust.untrustedParentAcl.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, 'SP05_ATTESTATION_PERMISSIVE_PARENT_ACL');
+  assertStructuredProcessError(
+    trust.foreignIdentityOwner.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    'SP05_ATTESTATION_FOREIGN_IDENTITY_OWNER',
+  );
+  assertEventCounts(trust.foreignIdentityOwner.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, 'SP05_ATTESTATION_FOREIGN_IDENTITY_OWNER');
 
   assertProcessPassed(trust.mutation.readiness, 'SP05_PRE_MUTATION_READINESS_FAILED');
   assertProcessPassed(trust.mutation.mutation, 'SP05_CANONICAL_MUTATION_PROCESS_FAILED');
@@ -586,6 +627,23 @@ function assertMcpWireErrors(mcp) {
       Object.keys(errorPayload.error).sort(),
       ERROR_ENVELOPE_KEYS,
       `SP05_${label}_WIRE_ERROR_ENVELOPE_CHANGED`,
+    );
+    assert.deepStrictEqual(
+      errorPayload.error,
+      {
+        category: 'SEMANTIC_INDEX_NOT_ALIGNED',
+        state: 'SemanticIndexPending',
+        verified: false,
+        canonicalVersion: 'canonical:wire-v1',
+        contentVersion: 'content:wire-v1',
+        indexVersion: 'index:wire-v1',
+        completedChannels: ['Element', 'ArchitectureRelationship'],
+        missingChannels: ['View'],
+        mismatchedChannels: [],
+        fullSnapshotFallback: false,
+        action: 'Run semantic readiness after completing the missing View channel',
+      },
+      `SP05_${label}_WIRE_ERROR_DIAGNOSTIC_MAPPING_CHANGED`,
     );
     assert.strictEqual(
       errorPayload.error.category,
@@ -737,12 +795,12 @@ function createRecordedWorkspace(roots) {
   return workspace;
 }
 
-function spawnSemanticQuery(workspace) {
+function spawnSemanticQuery(workspace, environment = {}) {
   return spawnFixture(workspace, [
     'query',
     '--request-json',
     JSON.stringify(semanticQuery()),
-  ]);
+  ], environment);
 }
 
 function ensureAttestationDirectory(workspace) {
@@ -800,6 +858,30 @@ function makeAttestationAclUntrusted(workspace) {
   return { status: 0, stdout: '', stderr: '' };
 }
 
+function makeAttestationDirectoryAclUntrusted(workspace) {
+  ensureAttestationDirectory(workspace);
+  const directoryPath = path.dirname(attestationPath(workspace));
+  if (process.platform === 'win32') {
+    const result = spawnSync(
+      'icacls',
+      [directoryPath, '/grant', '*S-1-1-0:(RX)'],
+      {
+        cwd: workspace.root,
+        encoding: 'utf8',
+        shell: false,
+        windowsHide: true,
+      },
+    );
+    return {
+      status: result.status,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
+  }
+  fs.chmodSync(directoryPath, 0o755);
+  return { status: 0, stdout: '', stderr: '' };
+}
+
 function scenarioResult(workspace, query) {
   return {
     query,
@@ -807,7 +889,7 @@ function scenarioResult(workspace, query) {
   };
 }
 
-function spawnFixture(workspace, args) {
+function spawnFixture(workspace, args, environment = {}) {
   const execution = spawnSync(
     process.execPath,
     [fixturePath, ...args],
@@ -819,6 +901,7 @@ function spawnFixture(workspace, args) {
         ARGO_REPO_ROOT: workspace.root,
         SP05_OPERATOR_WORKSPACE_ROOT: workspace.root,
         SP05_OPERATOR_STATE_PATH: workspace.statePath,
+        ...environment,
       },
       windowsHide: true,
     },

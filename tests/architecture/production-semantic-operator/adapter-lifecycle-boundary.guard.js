@@ -108,22 +108,33 @@ assert.throws(
 
 const safeStore = `
 const fs = require('node:fs');
+const path = require('node:path');
 const ATTESTATION_PATH = '.argo/temp/semantic-readiness-attestation.json';
 const FIELDS = ['authorizationOperation','canonicalVersion','contentVersion','indexVersion','completedChannels','missingChannels','mismatchedChannels'];
+function writeAttestationAtomically(readiness, metadataAdapter) {
+  const temporaryPath = ATTESTATION_PATH + '.nonce.tmp';
+  metadataAdapter.readCurrentIdentity();
+  metadataAdapter.readReadinessAttestationDirectoryAcl();
+  const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+  fs.writeSync(descriptor, JSON.stringify(readiness));
+  fs.fsyncSync(descriptor);
+  fs.closeSync(descriptor);
+  fs.renameSync(temporaryPath, ATTESTATION_PATH);
+  metadataAdapter.readReadinessAttestationAcl();
+  metadataAdapter.readReadinessAttestationOwner();
+  if (process.platform === 'win32') {
+    if (path.dirname(temporaryPath) !== path.dirname(ATTESTATION_PATH)) throw new Error('ATTESTATION_RENAME_VOLUME_CHANGED');
+    recordDirectoryFlushFallback('WINDOWS_DIRECTORY_FSYNC_UNSUPPORTED_SAME_DIRECTORY_RENAME');
+  } else {
+    const directoryDescriptor = fs.openSync(path.dirname(ATTESTATION_PATH), 'r');
+    fs.fsyncSync(directoryDescriptor);
+    fs.closeSync(directoryDescriptor);
+  }
+  return readiness;
+}
 function createSemanticReadinessAttestationStore({ metadataAdapter }) {
   return Object.freeze({
-    record(readiness) {
-      const temporaryPath = ATTESTATION_PATH + '.nonce.tmp';
-      const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
-      fs.writeSync(descriptor, JSON.stringify(readiness));
-      fs.fsyncSync(descriptor);
-      fs.closeSync(descriptor);
-      metadataAdapter.readCurrentIdentity();
-      metadataAdapter.readReadinessAttestationDirectoryAcl();
-      metadataAdapter.readReadinessAttestationAcl();
-      fs.renameSync(temporaryPath, ATTESTATION_PATH);
-      return readiness;
-    },
+    record(readiness) { return writeAttestationAtomically(readiness, metadataAdapter); },
     read() { fs.lstatSync(ATTESTATION_PATH); return strictRead(ATTESTATION_PATH); },
     clear() { return removeAttestation(ATTESTATION_PATH); },
     validate(attestation, readiness) { return exactVersionMatch(attestation, readiness); },
@@ -136,11 +147,20 @@ assert.doesNotThrow(
 );
 for (const [name, mutate] of [
   ['presence-only', source => source.replace(
-    "const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);",
-    "fs.writeFileSync(ATTESTATION_PATH, JSON.stringify(readiness));\n      const descriptor = 1;",
+    'record(readiness) { return writeAttestationAtomically(readiness, metadataAdapter); },',
+    'record(readiness) { fs.writeFileSync(ATTESTATION_PATH, JSON.stringify(readiness)); return readiness; },',
+  )],
+  ['dead-atomic-helper-active-append', source => source.replace(
+    'record(readiness) { return writeAttestationAtomically(readiness, metadataAdapter); },',
+    'record(readiness) { fs.appendFileSync(ATTESTATION_PATH, JSON.stringify(readiness)); return readiness; },',
   )],
   ['missing-fsync', source => source.replace('fs.fsyncSync(descriptor);', '')],
   ['missing-rename', source => source.replace('fs.renameSync(temporaryPath, ATTESTATION_PATH);', '')],
+  ['missing-directory-fsync', source => source.replace('fs.fsyncSync(directoryDescriptor);', '')],
+  ['silent-windows-directory-omission', source => source.replace(
+    "recordDirectoryFlushFallback('WINDOWS_DIRECTORY_FSYNC_UNSUPPORTED_SAME_DIRECTORY_RENAME');",
+    'return readiness;',
+  )],
   ['qwen-field', source => source.replace("'mismatchedChannels']", "'mismatchedChannels','QWEN_KEY']")],
   ['provider-field', source => source.replace("'mismatchedChannels']", "'mismatchedChannels','provider']")],
   ['neo4j-username-field', source => source.replace("'mismatchedChannels']", "'mismatchedChannels','neo4jUsername']")],
@@ -252,6 +272,7 @@ function createReadinessAttestationMetadataAdapter(options = {}) {
     readCurrentIdentity: () => spawnExact('whoami', []),
     readReadinessAttestationDirectoryAcl: () => spawnExact('icacls', [directory]),
     readReadinessAttestationAcl: () => spawnExact('icacls', [file]),
+    readReadinessAttestationOwner: () => spawnExact('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', exactOwnerScript(file)]),
   });
 }`;
 assert.doesNotThrow(
@@ -270,6 +291,10 @@ for (const [name, source] of [
     "requireExactKeys(options, ['repositoryRoot']);",
     "requireExactKeys(options, ['repositoryRoot','command']);",
   ).replace("spawnExact('whoami', [])", 'spawnExact(options.command, [])')],
+  ['caller-owner-script', safeMetadataBoundary.replace(
+    "requireExactKeys(options, ['repositoryRoot']);",
+    "requireExactKeys(options, ['repositoryRoot','ownerScript']);",
+  ).replace('exactOwnerScript(file)', 'options.ownerScript')],
 ]) {
   assert.throws(
     () => assertReadinessMetadataBoundary(source, `${name}.fixture.js`),
@@ -281,17 +306,17 @@ for (const [name, source] of [
 const safeErrorSerializer = `
 function semanticOperatorErrorPayload(error) {
   return Object.freeze({
-    category: error.category,
-    state: error.state,
-    verified: error.verified,
-    canonicalVersion: error.canonicalVersion,
-    contentVersion: error.contentVersion,
-    indexVersion: error.indexVersion,
-    completedChannels: error.completedChannels,
-    missingChannels: error.missingChannels,
-    mismatchedChannels: error.mismatchedChannels,
+    category: typeof error.category === 'string' ? error.category : 'SEMANTIC_OPERATOR_ERROR',
+    state: typeof error.state === 'string' ? error.state : null,
+    verified: error.verified === true,
+    canonicalVersion: typeof error.canonicalVersion === 'string' ? error.canonicalVersion : null,
+    contentVersion: typeof error.contentVersion === 'string' ? error.contentVersion : null,
+    indexVersion: typeof error.indexVersion === 'string' ? error.indexVersion : null,
+    completedChannels: Array.isArray(error.completedChannels) ? [...error.completedChannels] : [],
+    missingChannels: Array.isArray(error.missingChannels) ? [...error.missingChannels] : [],
+    mismatchedChannels: Array.isArray(error.mismatchedChannels) ? [...error.mismatchedChannels] : [],
     fullSnapshotFallback: false,
-    action: error.action,
+    action: typeof error.action === 'string' ? error.action : 'Correct readiness and retry',
   });
 }`;
 assert.doesNotThrow(
@@ -300,12 +325,42 @@ assert.doesNotThrow(
 );
 for (const [name, source] of [
   ['extra-message', safeErrorSerializer.replace(
-    'category: error.category,',
-    'category: error.category,\n    message: error.message,',
+    "category: typeof error.category === 'string' ? error.category : 'SEMANTIC_OPERATOR_ERROR',",
+    "category: typeof error.category === 'string' ? error.category : 'SEMANTIC_OPERATOR_ERROR',\n    message: error.message,",
   )],
   ['bracket-stack', safeErrorSerializer.replace(
-    'action: error.action,',
-    "action: error.action,\n    stack: error['stack'],",
+    "action: typeof error.action === 'string' ? error.action : 'Correct readiness and retry',",
+    "action: typeof error.action === 'string' ? error.action : 'Correct readiness and retry',\n    stack: error['stack'],",
+  )],
+  ['constant-category', safeErrorSerializer.replace(
+    "category: typeof error.category === 'string' ? error.category : 'SEMANTIC_OPERATOR_ERROR'",
+    + "",
+    "category: 'SEMANTIC_INDEX_NOT_ALIGNED'",
+  )],
+  ['wrong-state-source', safeErrorSerializer.replace(
+    "state: typeof error.state === 'string' ? error.state : null",
+    "state: typeof error.category === 'string' ? error.category : null",
+  )],
+  ['constant-verified', safeErrorSerializer.replace(
+    'verified: error.verified === true',
+    'verified: true',
+  )],
+  ['wrong-canonical-source', safeErrorSerializer.replace(
+    "canonicalVersion: typeof error.canonicalVersion === 'string' ? error.canonicalVersion : null",
+    "canonicalVersion: typeof error.contentVersion === 'string' ? error.contentVersion : null",
+  )],
+  ['constant-channels', safeErrorSerializer.replace(
+    'missingChannels: Array.isArray(error.missingChannels) ? [...error.missingChannels] : []',
+    'missingChannels: []',
+  )],
+  ['unsafe-fallback-source', safeErrorSerializer.replace(
+    'fullSnapshotFallback: false',
+    'fullSnapshotFallback: error.fullSnapshotFallback',
+  )],
+  ['constant-action', safeErrorSerializer.replace(
+    "action: typeof error.action === 'string' ? error.action : 'Correct readiness and retry'",
+    + "",
+    "action: 'retry'",
   )],
 ]) {
   assert.throws(
@@ -445,7 +500,7 @@ function assertStructuredWire(source, label) {
 }
 
 function assertStoreSafety(source, label) {
-  const { ast } = parseWithBindings(source, label);
+  const { ast, checker } = parseWithBindings(source, label);
   const tokens = tokenTexts(ast);
   for (const required of [
     'authorizationOperation',
@@ -462,14 +517,27 @@ function assertStoreSafety(source, label) {
     'readCurrentIdentity',
     'readReadinessAttestationDirectoryAcl',
     'readReadinessAttestationAcl',
+    'readReadinessAttestationOwner',
   ]) assert(tokens.all.has(required), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} omits ${required}`);
   assert(
     tokens.strings.has('.argo/temp/semantic-readiness-attestation.json'),
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} attestation path changed`,
   );
-  const callNames = [];
+  const factory = functionNamed(ast, 'createSemanticReadinessAttestationStore');
+  assert(factory, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} store factory missing`);
+  const record = returnedMethods(factory).get('record');
+  assert(record, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} active record path missing`);
+  const reachable = reachableFunctions(record, checker);
+  const reachableCalls = reachable.flatMap(executableCalls).sort((left, right) => left.pos - right.pos);
+  const fsBinding = topLevelDeclaration(ast, 'fs');
+  assert(fsBinding, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} fs binding missing`);
+  const atomicOwner = reachable.find(owner => (
+    executableCalls(owner).some(call => isBoundMemberCall(call, fsBinding, 'renameSync', checker))
+  ));
+  assert(atomicOwner, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} active record path never atomically renames`);
+  const atomicCalls = executableCalls(atomicOwner);
+  const callNames = reachableCalls.map(call => staticName(call.expression));
   walk(ast, node => {
-    if (ts.isCallExpression(node)) callNames.push(staticName(node.expression));
     if (
       (ts.isIdentifier(node) || ts.isStringLiteral(node))
       && /qwen|provider|neo4j.*(?:user|password)|password|credential|api[_-]?key|access[_-]?token|secret/i.test(node.text)
@@ -491,7 +559,6 @@ function assertStoreSafety(source, label) {
     'fsyncSync',
     'closeSync',
     'renameSync',
-    'lstatSync',
   ]) {
     assert(
       callNames.includes(requiredCall),
@@ -502,16 +569,64 @@ function assertStoreSafety(source, label) {
     tokens.strings.has('wx') && tokens.numbers.has('0o600'),
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} does not create an exclusive restricted temporary file`,
   );
-  walk(ast, node => {
-    if (
-      ts.isCallExpression(node)
-      && staticName(node.expression) === 'writeFileSync'
-      && node.arguments[0]
-      && node.arguments[0].getText(ast).includes('ATTESTATION_PATH')
-    ) {
-      assert.fail(`WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} writes final attestation non-atomically`);
+  assert(
+    tokenTexts(ast).all.has('lstatSync'),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} does not inspect the committed record without following links`,
+  );
+  for (const call of reachableCalls) {
+    if (['writeFileSync', 'appendFileSync', 'writeFile', 'appendFile'].includes(staticName(call.expression))) {
+      assert.fail(`WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} active record path writes non-atomically`);
     }
-  });
+  }
+  assertCallOrder(
+    atomicCalls,
+    call => isBoundMemberCall(call, fsBinding, 'openSync', checker)
+      && call.arguments[1]
+      && ts.isStringLiteral(call.arguments[1])
+      && call.arguments[1].text === 'wx'
+      && call.arguments[2]
+      && call.arguments[2].getText(ast) === '0o600',
+    call => isBoundMemberCall(call, fsBinding, 'renameSync', checker),
+    `${label} active exclusive-write-before-rename`,
+  );
+  for (const [first, second, stage] of [
+    ['openSync', 'writeSync', 'open-before-write'],
+    ['writeSync', 'fsyncSync', 'write-before-file-fsync'],
+    ['fsyncSync', 'closeSync', 'file-fsync-before-close'],
+    ['closeSync', 'renameSync', 'close-before-rename'],
+    ['renameSync', 'readReadinessAttestationAcl', 'rename-before-file-acl'],
+    ['readReadinessAttestationAcl', 'readReadinessAttestationOwner', 'acl-before-owner'],
+  ]) {
+    assertCallOrder(
+      atomicCalls,
+      call => staticName(call.expression) === first,
+      call => staticName(call.expression) === second,
+      `${label} active ${stage}`,
+    );
+  }
+  assertCallOrder(
+    atomicCalls,
+    call => isBoundMemberCall(call, fsBinding, 'renameSync', checker),
+    call => staticName(call.expression) === 'readReadinessAttestationOwner',
+    `${label} rename-before-owner-verification`,
+  );
+  const directoryOpen = atomicCalls.find(call => (
+    isBoundMemberCall(call, fsBinding, 'openSync', checker)
+    && call.arguments[1]
+    && ts.isStringLiteral(call.arguments[1])
+    && call.arguments[1].text === 'r'
+  ));
+  const directoryFsync = atomicCalls.filter(call => (
+    isBoundMemberCall(call, fsBinding, 'fsyncSync', checker)
+  ))[1];
+  assert(
+    directoryOpen && directoryFsync && directoryOpen.pos < directoryFsync.pos,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} active record path omits supported-platform directory fsync`,
+  );
+  assert(
+    hasExplicitWindowsDirectoryFlushFallback(atomicOwner),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} active record path silently omits Windows directory durability`,
+  );
 }
 
 function assertOperatorLifecycleFlow(source, label) {
@@ -628,6 +743,8 @@ function assertReadinessMetadataBoundary(source, label) {
     'readCurrentIdentity',
     'readReadinessAttestationDirectoryAcl',
     'readReadinessAttestationAcl',
+    'readReadinessAttestationOwner',
+    'exactOwnerScript',
   ]) {
     assert(tokens.all.has(required), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} metadata boundary omits ${required}`);
   }
@@ -637,6 +754,10 @@ function assertReadinessMetadataBoundary(source, label) {
     'semantic-readiness-attestation.json',
     'icacls',
     'whoami',
+    'powershell.exe',
+    '-NoProfile',
+    '-NonInteractive',
+    '-Command',
   ]) {
     assert(tokens.strings.has(requiredLiteral), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} metadata literal omits ${requiredLiteral}`);
   }
@@ -673,9 +794,13 @@ function assertReadinessMetadataBoundary(source, label) {
 }
 
 function assertErrorSerializer(source, label) {
-  const { ast } = parseWithBindings(source, label);
+  const { ast, checker } = parseWithBindings(source, label);
   const serializer = functionNamed(ast, 'semanticOperatorErrorPayload');
-  assert(serializer, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} payload serializer missing`);
+  assert(
+    serializer && serializer.parameters.length === 1,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} payload serializer missing`,
+  );
+  const errorBinding = serializer.parameters[0];
   const returned = serializer.body.statements
     .filter(ts.isReturnStatement)
     .map(statement => unwrapCall(statement.expression))
@@ -698,6 +823,54 @@ function assertErrorSerializer(source, label) {
       'verified',
     ].sort(),
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} error whitelist changed`,
+  );
+  const properties = new Map(returned.properties.map(property => [propertyName(property), property]));
+  for (const field of [
+    'category',
+    'state',
+    'verified',
+    'canonicalVersion',
+    'contentVersion',
+    'indexVersion',
+    'completedChannels',
+    'missingChannels',
+    'mismatchedChannels',
+    'action',
+  ]) {
+    const property = properties.get(field);
+    assert(
+      ts.isPropertyAssignment(property)
+        && hasOnlyExactDiagnosticSources(property.initializer, errorBinding, field, checker),
+      `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} ${field} does not derive from error.${field}`,
+    );
+    if (field === 'verified') {
+      assert(
+        isExactTrueComparison(property.initializer, errorBinding, field, checker),
+        `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} verified normalization changed`,
+      );
+    } else if (field.endsWith('Channels')) {
+      assert(
+        isExactChannelNormalization(property.initializer, errorBinding, field, checker),
+        `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} ${field} channel normalization changed`,
+      );
+    } else {
+      assert(
+        isExactNullableStringNormalization(
+          property.initializer,
+          errorBinding,
+          field,
+          checker,
+          field === 'category' || field === 'action',
+        ),
+        `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} ${field} string normalization changed`,
+      );
+    }
+  }
+  const fallback = properties.get('fullSnapshotFallback');
+  assert(
+    ts.isPropertyAssignment(fallback)
+      && fallback.initializer.kind === ts.SyntaxKind.FalseKeyword,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} fullSnapshotFallback must be literal false`,
   );
   assert(!containsStaticMember(serializer, 'stack'), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} serializer reads stack`);
 }
@@ -776,6 +949,126 @@ function staticName(expression) {
     && (ts.isStringLiteral(expression.argumentExpression) || ts.isNoSubstitutionTemplateLiteral(expression.argumentExpression))
   ) return expression.argumentExpression.text;
   return '';
+}
+
+function reachableFunctions(root, checker) {
+  const reachable = [];
+  const queue = [root];
+  const seen = new Set();
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || seen.has(current)) continue;
+    seen.add(current);
+    reachable.push(current);
+    for (const call of executableCalls(current)) {
+      if (!ts.isIdentifier(call.expression)) continue;
+      const symbol = checker.getSymbolAtLocation(call.expression);
+      for (const declaration of (symbol && symbol.declarations) || []) {
+        if (isFunctionLike(declaration)) queue.push(declaration);
+        if (
+          ts.isVariableDeclaration(declaration)
+          && declaration.initializer
+          && isFunctionLike(declaration.initializer)
+        ) queue.push(declaration.initializer);
+      }
+    }
+  }
+  return reachable;
+}
+
+function isBoundMemberCall(call, binding, member, checker) {
+  if (!call || staticName(call.expression) !== member) return false;
+  const receiver = receiverOf(call.expression);
+  return ts.isIdentifier(receiver) && resolvesTo(receiver, binding, checker);
+}
+
+function hasExplicitWindowsDirectoryFlushFallback(root) {
+  let matched = false;
+  walk(root, node => {
+    if (!ts.isIfStatement(node)) return;
+    const conditionTokens = tokenTexts(node.expression);
+    if (!conditionTokens.all.has('platform') || !conditionTokens.strings.has('win32')) return;
+    const branchTokens = tokenTexts(node.thenStatement);
+    const branchCalls = executableCalls(node.thenStatement);
+    const dirnameCalls = branchCalls.filter(call => staticName(call.expression) === 'dirname');
+    if (
+      branchTokens.strings.has('WINDOWS_DIRECTORY_FSYNC_UNSUPPORTED_SAME_DIRECTORY_RENAME')
+      && dirnameCalls.length >= 2
+      && containsThrow(node.thenStatement)
+      && branchCalls.some(call => staticName(call.expression) === 'recordDirectoryFlushFallback')
+    ) matched = true;
+  });
+  return matched;
+}
+
+function hasOnlyExactDiagnosticSources(expression, errorBinding, field, checker) {
+  const sources = [];
+  walk(expression, node => {
+    if (
+      (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node))
+      && ts.isIdentifier(receiverOf(node))
+      && resolvesTo(receiverOf(node), errorBinding, checker)
+    ) sources.push(staticName(node));
+  });
+  return sources.length > 0 && sources.every(source => source === field);
+}
+
+function isExactTrueComparison(expression, errorBinding, field, checker) {
+  return ts.isBinaryExpression(expression)
+    && expression.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+    && isDiagnosticMember(expression.left, errorBinding, field, checker)
+    && expression.right.kind === ts.SyntaxKind.TrueKeyword;
+}
+
+function isExactNullableStringNormalization(
+  expression,
+  errorBinding,
+  field,
+  checker,
+  requireStringFallback,
+) {
+  if (!ts.isConditionalExpression(expression)) return false;
+  const condition = expression.condition;
+  if (
+    !ts.isBinaryExpression(condition)
+    || condition.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+    || !ts.isTypeOfExpression(condition.left)
+    || !isDiagnosticMember(condition.left.expression, errorBinding, field, checker)
+    || !ts.isStringLiteral(condition.right)
+    || condition.right.text !== 'string'
+    || !isDiagnosticMember(expression.whenTrue, errorBinding, field, checker)
+  ) return false;
+  return requireStringFallback
+    ? ts.isStringLiteral(expression.whenFalse) && expression.whenFalse.text.trim() !== ''
+    : expression.whenFalse.kind === ts.SyntaxKind.NullKeyword;
+}
+
+function isExactChannelNormalization(expression, errorBinding, field, checker) {
+  if (!ts.isConditionalExpression(expression)) return false;
+  const condition = expression.condition;
+  if (
+    !ts.isCallExpression(condition)
+    || staticName(condition.expression) !== 'isArray'
+    || condition.arguments.length !== 1
+    || !isDiagnosticMember(condition.arguments[0], errorBinding, field, checker)
+    || !ts.isArrayLiteralExpression(expression.whenTrue)
+    || expression.whenTrue.elements.length !== 1
+    || !ts.isSpreadElement(expression.whenTrue.elements[0])
+    || !isDiagnosticMember(expression.whenTrue.elements[0].expression, errorBinding, field, checker)
+    || !ts.isArrayLiteralExpression(expression.whenFalse)
+    || expression.whenFalse.elements.length !== 0
+  ) return false;
+  return staticName(receiverOf(condition.expression)) === 'Array';
+}
+
+function isDiagnosticMember(expression, errorBinding, field, checker) {
+  return Boolean(
+    expression
+    && (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && staticName(expression) === field
+    && ts.isIdentifier(receiverOf(expression))
+    && resolvesTo(receiverOf(expression), errorBinding, checker),
+  );
 }
 
 function tokenTexts(root) {
