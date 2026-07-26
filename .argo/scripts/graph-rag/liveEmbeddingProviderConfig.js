@@ -24,6 +24,7 @@ const READABLE_KEYS = Object.freeze([
   ...Object.keys(OPT_IN_KEYS),
 ]);
 const LEGACY_KEYS = Object.freeze(['ARGO_NEO4J_URI', 'ARGO_NEO4J_USERNAME', 'ARGO_NEO4J_PASSWORD']);
+const PROHIBITED_RUNTIME_FIELD_KEYS = Object.freeze(['neo4jUri', 'embeddingCredential']);
 const SECRET_KEYS = new Set(['ARGO_NEO4J_DATABASE_PASSWORD', 'QWEN_KEY']);
 const APPROVED = Object.freeze({
   ARGO_EMBEDDING_BASE_URL: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
@@ -89,12 +90,12 @@ async function resolveTrusted({
   }
 
   const processValues = new Map();
-  for (const key of [...READABLE_KEYS, ...LEGACY_KEYS]) {
+  for (const key of [...READABLE_KEYS, ...LEGACY_KEYS, ...PROHIBITED_RUNTIME_FIELD_KEYS]) {
     const envelope = source.readProcessKey(key);
     validateEnvelope(envelope, source, key, null, 'process');
     processValues.set(key, envelope.value);
   }
-  if (LEGACY_KEYS.some(key => present(processValues.get(key)))) {
+  if ([...LEGACY_KEYS, ...PROHIBITED_RUNTIME_FIELD_KEYS].some(key => present(processValues.get(key)))) {
     throw safeError('SECRET_SOURCE_PROVENANCE_PROHIBITED');
   }
 
@@ -107,7 +108,7 @@ async function resolveTrusted({
       validateTrace(record.trace, source, record.key, configuredFilePath, 'file');
       if (fileValues.has(record.key)) throw safeError('SECRET_FILE_DUPLICATE_KEY');
       if (!READABLE_KEYS.includes(record.key)) {
-        throw safeError(secretLooking(record.key)
+        throw safeError(PROHIBITED_RUNTIME_FIELD_KEYS.includes(record.key) || secretLooking(record.key)
           ? 'SECRET_FILE_UNKNOWN_KEY'
           : 'LIVE_PROVIDER_CONFIGURATION_REQUIRED');
       }

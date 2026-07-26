@@ -13,6 +13,16 @@ const LEGACY_NEO4J_ENV_KEYS = Object.freeze([
   'ARGO_NEO4J_USERNAME',
   'ARGO_NEO4J_PASSWORD',
 ]);
+const APPROVED_NEO4J_CONFIG = Symbol('approvedNeo4jConfig');
+const DISALLOWED_RUNTIME_OVERRIDE_FIELDS = Object.freeze([
+  'uri',
+  'username',
+  'password',
+  'neo4jUri',
+  'neo4jUsername',
+  'neo4jPassword',
+  'embeddingCredential',
+]);
 
 function getRepoRoot() {
   return process.env.ARGO_REPO_ROOT
@@ -42,17 +52,28 @@ function getDefaultNeo4jDatabaseName() {
 }
 
 function getNeo4jConfig(overrides = {}) {
+  if (overrides && overrides[APPROVED_NEO4J_CONFIG] === true) {
+    return overrides;
+  }
+
   rejectLegacyNeo4jEnvironment();
+  rejectRuntimeConfigurationOverrides(overrides);
   const external = resolveExternalProductionConfig({
-    neo4jUri: selectExternalValue(overrides.uri, process.env.ARGO_NEO4J_DATABASE_URL),
-    neo4jUsername: selectExternalValue(overrides.username, process.env.ARGO_NEO4J_DATABASE_USERNAME),
-    neo4jPassword: selectExternalValue(overrides.password, process.env.ARGO_NEO4J_DATABASE_PASSWORD),
-    embeddingCredential: selectExternalValue(
-      overrides.embeddingCredential,
-      process.env.ARGO_EMBEDDING_CREDENTIAL,
-    ),
-  }, { operation: 'start' });
+    neo4jUri: process.env.ARGO_NEO4J_DATABASE_URL,
+    neo4jUsername: process.env.ARGO_NEO4J_DATABASE_USERNAME,
+    neo4jPassword: process.env.ARGO_NEO4J_DATABASE_PASSWORD,
+    embeddingCredential: process.env.QWEN_KEY,
+  }, {
+    operation: 'start',
+    sourceKeys: new Map([
+      ['neo4jUri', 'ARGO_NEO4J_DATABASE_URL'],
+      ['neo4jUsername', 'ARGO_NEO4J_DATABASE_USERNAME'],
+      ['neo4jPassword', 'ARGO_NEO4J_DATABASE_PASSWORD'],
+      ['embeddingCredential', 'QWEN_KEY'],
+    ]),
+  });
   return {
+    [APPROVED_NEO4J_CONFIG]: true,
     uri: external.neo4jUri,
     username: external.neo4jUsername,
     password: external.neo4jPassword,
@@ -75,11 +96,23 @@ function rejectLegacyNeo4jEnvironment() {
   throw error;
 }
 
-function selectExternalValue(overrideValue, environmentValue) {
-  if (overrideValue !== undefined) {
-    return overrideValue;
+function rejectRuntimeConfigurationOverrides(overrides) {
+  if (!overrides || typeof overrides !== 'object') {
+    return;
   }
-  return environmentValue;
+
+  const field = DISALLOWED_RUNTIME_OVERRIDE_FIELDS.find(candidate => (
+    Object.prototype.hasOwnProperty.call(overrides, candidate)
+      && overrides[candidate] !== undefined
+  ));
+  if (!field) {
+    return;
+  }
+
+  const error = new Error(`${field} is not an approved runtime configuration source`);
+  error.category = 'UNAPPROVED_RUNTIME_CONFIG_SOURCE';
+  error.field = field;
+  throw error;
 }
 
 function createDriver(config = {}) {
