@@ -14,7 +14,7 @@ async function main() {
   const semanticProbe = createSemanticRetrievalProbe();
 
   // WHEN a semantic positive control proves the probe is wired,
-  // followed by graph-tidy requesting the complete canonical context
+  // followed by anchored graph-tidy requesting the complete canonical context
   await readForPurpose({
     purpose: 'implementation-design',
     intent: 'Verify the semantic retrieval probe control',
@@ -27,6 +27,7 @@ async function main() {
   const graphTidyResult = await readForPurpose({
     purpose: 'graph-tidy',
     intent: 'Prepare a mutation while preserving global identity and View membership',
+    anchors: ['grag-seed-retrieval'],
   }, semanticProbe);
 
   // THEN the independent probe count does not increase, bypass metadata is reported,

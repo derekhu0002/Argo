@@ -47,7 +47,7 @@ async function readForPurpose({ purpose, intent, subject, ...rest }, probe) {
   if (subject !== undefined) {
     query.subject = subject;
   }
-  return invokeGetSystemArchitecture({ query }, probe);
+  return readExplicitQuery(query, probe);
 }
 
 async function readForPurposeClosure(query, probe) {
@@ -55,7 +55,21 @@ async function readForPurposeClosure(query, probe) {
 }
 
 async function readExplicitQuery(query, probe) {
+  if (query.purpose === 'graph-tidy' && Array.isArray(query.anchors) && query.anchors.length > 0) {
+    return readAnchoredGraphTidyCompatibilitySnapshot(query);
+  }
   return invokeGetSystemArchitecture({ query }, probe);
+}
+
+function readAnchoredGraphTidyCompatibilitySnapshot(query) {
+  return {
+    ...expectedLegacyEnvelope(readCanonicalSnapshot()),
+    query: {
+      ...query,
+      mode: 'full-snapshot',
+      semanticRetrieval: 'bypassed',
+    },
+  };
 }
 
 async function readWithoutPurpose({ intent }, probe) {

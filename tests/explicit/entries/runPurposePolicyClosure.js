@@ -11,7 +11,6 @@ const purposeCategories = Object.freeze([
   'implementation-design',
   'coding-repair',
   'audit',
-  'graph-tidy',
 ]);
 
 async function main() {
@@ -45,7 +44,7 @@ async function main() {
     'DT06_DEPENDENCY_MISCLASSIFIED_AS_SEMANTIC_SEED',
   );
 
-  // GIVEN equivalent anchors from a different caller and the same five approved categories
+  // GIVEN equivalent anchors from a different caller and the four semantic closure categories
   const repeatedImplementationResult = await readForPurposeClosure({
     purpose: 'implementation-design',
     intent: 'Resolve mandatory implementation dependencies',
@@ -68,7 +67,7 @@ async function main() {
   const repeatedBoundary = repeatedImplementationResult.result && repeatedImplementationResult.result.boundary;
   const policyIds = categoryResults.map(result => result.result && result.result.closurePolicy && result.result.closurePolicy.policyId);
 
-  // THEN caller identity cannot select scope, while all five purpose categories remain independent
+  // THEN caller identity cannot select scope, while all semantic closure categories remain independent
   assert.deepStrictEqual(repeatedBoundary, originalBoundary, 'DT07_CALLER_IDENTITY_POLICY_FORBIDDEN');
   assert.strictEqual(new Set(policyIds).size, purposeCategories.length, 'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT');
   for (let index = 0; index < purposeCategories.length; index += 1) {

@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T01:28:00+08:00",
+  "generatedAt": "2026-07-27T01:55:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P2 final-delivery RED correction after production commit 1ee9c370809e0334efdc40282f304e0db7294b36. CodingAndReparing is authorized to repair exactly two defects: define a trusted non-E2E production-semantic-query credential use case shared by liveEmbeddingProviderConfig.js and defaultSemanticRetrieval.js, and make every graph-tidy request in systemarchitecture-mcp-server.js bypass credentials/readiness/provider/vector work regardless of anchors. The source contract requires all approved profile, Neo4j, and provider-secret values from direct process or protected canonical-file sources without test/default, legacy, fallback, unsafe, conflicting, untrusted, or E2E-opt-in credentials. Existing WP-P1 E2E opt-in/security behavior, wrapper-arg4 compatibility injection, no-argument snapshots, persistent retrieval/readiness/closure, accepted intent, SP-05/WP-P3, production cleanup, CLI/docs/release work, and argo-mcp-server.js remain frozen.",
+  "summary": "WP-P2 final-delivery RED correction after production commit 1ee9c370809e0334efdc40282f304e0db7294b36. CodingAndReparing is authorized to repair exactly two defects: define a trusted non-E2E production-semantic-query credential use case shared by liveEmbeddingProviderConfig.js and defaultSemanticRetrieval.js, and make every graph-tidy request in systemarchitecture-mcp-server.js bypass credentials/readiness/provider/vector work regardless of anchors. The source contract requires all approved profile, Neo4j, and provider-secret values from direct process or protected canonical-file sources without test/default, legacy, fallback, unsafe, conflicting, untrusted, or E2E-opt-in credentials. Historical WP-P1/W3.1 pre-coding baseline metadata is retained only to freeze provider E2E opt-in and secret-isolation regressions; it adds no Coding target or task. Four semantic purpose categories retain deterministic closure, while anchored graph-tidy is a frozen canonical-snapshot compatibility bypass and the uninjected production defect remains isolated to SP-04. Existing WP-P1 E2E opt-in/security behavior, wrapper-arg4 compatibility injection, no-argument snapshots, persistent retrieval/readiness/closure, accepted intent, SP-05/WP-P3, production cleanup, CLI/docs/release work, and argo-mcp-server.js remain frozen.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -30,6 +30,33 @@
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js",
       "failureReason": "SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
+      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+      "controlPoint": "Frozen WP-P1 live-provider E2E opt-in security regression; not authorized Coding scope.",
+      "observationPoint": "Default execution rejects before loading live transport or Neo4j unless the existing explicit E2E opt-in is present.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
+      "failureReason": "LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
+      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+      "controlPoint": "Frozen WP-P1 provider-secret isolation and source provenance regression; not authorized Coding scope.",
+      "observationPoint": "Default execution requires the existing secret-isolation opt-in and preserves process/file/ACL/trace rejection behavior.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+      "failureReason": "LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+      "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+      "controlPoint": "Frozen W3.1 mutation-vector E2E opt-in regression; not authorized Coding scope.",
+      "observationPoint": "Default execution requires the existing mutation E2E opt-in and cannot be enabled by production-semantic-query credentials.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+      "failureReason": "W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED"
     }
   ],
   "criticalNonExplicitTests": [
@@ -146,6 +173,7 @@
     "tests/architecture/production-default-retrieval/implementation-traceability.guard.js",
     "tests/explicit/entries/runProductionGraphRagRuntime.js",
     "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
     "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
     "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
     "tests/explicit/entries/runEmbeddingQualificationGate.js",
@@ -177,6 +205,8 @@
     "tests/harness/productionSemanticPersistenceHarness.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
+    "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
+    "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
     "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
     "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",

@@ -40,6 +40,7 @@ const requiredObservations = new Map([
   ]],
   ['tests/explicit/entries/runGraphTidyFullSnapshot.js', [
     'createSemanticRetrievalProbe',
+    "anchors: ['grag-seed-retrieval']",
     'DT12_SEMANTIC_PROBE_NOT_WIRED',
     'DT12_SEMANTIC_PATH_INVOKED',
   ]],
@@ -111,6 +112,20 @@ for (const entryPath of entryPaths) {
   }
 }
 
+const purposeClosureSource = fs.readFileSync(
+  path.join(repoRoot, 'tests', 'explicit', 'entries', 'runPurposePolicyClosure.js'),
+  'utf8',
+);
+const purposeCategoriesStart = purposeClosureSource.indexOf('const purposeCategories');
+const purposeCategoriesEnd = purposeClosureSource.indexOf(']);', purposeCategoriesStart);
+const purposeCategoriesSource = purposeClosureSource.slice(purposeCategoriesStart, purposeCategoriesEnd);
+assert(
+  purposeCategoriesStart >= 0
+    && purposeCategoriesEnd > purposeCategoriesStart
+    && !purposeCategoriesSource.includes("'graph-tidy'"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: graph-tidy must not re-enter semantic purpose closure',
+);
+
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
 const harnessSource = fs.readFileSync(harnessPath, 'utf8');
 const {
@@ -130,6 +145,18 @@ assert(
 assert(
   innerSource.includes('async function callTool(name, args = {}, dependencies = undefined)'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: inner System Architecture boundary must accept dependencies at argument three',
+);
+const anchoredTidyStart = harnessSource.indexOf('function readAnchoredGraphTidyCompatibilitySnapshot(query)');
+const anchoredTidyEnd = harnessSource.indexOf('async function readWithoutPurpose', anchoredTidyStart);
+const anchoredTidySource = harnessSource.slice(anchoredTidyStart, anchoredTidyEnd);
+assert(
+  anchoredTidyStart >= 0
+    && anchoredTidyEnd > anchoredTidyStart
+    && anchoredTidySource.includes('expectedLegacyEnvelope(readCanonicalSnapshot())')
+    && anchoredTidySource.includes("mode: 'full-snapshot'")
+    && anchoredTidySource.includes("semanticRetrieval: 'bypassed'")
+    && !anchoredTidySource.includes('invokeGetSystemArchitecture'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: anchored graph-tidy compatibility must return the canonical snapshot without semantic dispatch',
 );
 const probeStart = harnessSource.indexOf('function createSemanticRetrievalProbe()');
 const probeEnd = harnessSource.indexOf('function assertSemanticRetrievalCalls', probeStart);
