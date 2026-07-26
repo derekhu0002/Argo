@@ -306,9 +306,11 @@ function evaluatePhase1QualityBenchmark(request = {}) {
 
 function evaluateCapacityEvidence(request = {}) {
   const purposes = normalizeDeclaredPurposes(request.purposes);
-  const qualityEvidence = request.qualityEvidence && typeof request.qualityEvidence === 'object'
-    ? request.qualityEvidence
-    : {};
+  const hasQualityEvidence = request.qualityEvidence && typeof request.qualityEvidence === 'object';
+  if (!hasQualityEvidence) {
+    throw capacityEvidenceError('DT19_QUALITY_EVIDENCE_REQUIRED');
+  }
+  const qualityEvidence = request.qualityEvidence;
   const perPurpose = Array.isArray(qualityEvidence.perPurpose)
     ? qualityEvidence.perPurpose
     : [];
@@ -438,15 +440,28 @@ function normalizePhase1Benchmark(benchmark) {
       expectedClosureIds: normalizeStringArray(purpose.expectedClosureIds),
       recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
       observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
+      observedResultIds: normalizeStringArray(selectObservedResultIds(purpose)),
+      resultCardinality: Number.isInteger(purpose.resultCardinality) ? purpose.resultCardinality : undefined,
       unrelatedForcedHits: purpose.unrelatedForcedHits,
       precision: purpose.precision,
     }))),
   });
 }
 
+function selectObservedResultIds(purpose) {
+  if (Array.isArray(purpose.observedResultIds)) {
+    return purpose.observedResultIds;
+  }
+  if (Array.isArray(purpose.resultIds)) {
+    return purpose.resultIds;
+  }
+  return purpose.observedClosureIds;
+}
+
 function evaluateBenchmarkPurpose(expectation) {
   const recalledKeySeedIds = expectation.recalledKeySeedIds;
   const observedClosureIds = expectation.observedClosureIds;
+  const observedResultIds = expectation.observedResultIds;
   const missingKeySeedIds = expectation.mandatoryKeySeedIds
     .filter(seedId => !recalledKeySeedIds.includes(seedId));
   const closureCorrect = expectation.expectedClosureIds
@@ -458,6 +473,10 @@ function evaluateBenchmarkPurpose(expectation) {
     recalledKeySeedIds: Object.freeze([...recalledKeySeedIds]),
     missingKeySeedIds: Object.freeze(missingKeySeedIds),
     closureCorrect,
+    observedResultIds: Object.freeze([...observedResultIds]),
+    resultCardinality: Number.isInteger(expectation.resultCardinality)
+      ? expectation.resultCardinality
+      : observedResultIds.length,
     unrelatedForcedHits: expectation.unrelatedForcedHits,
     precision: expectation.precision,
   });
