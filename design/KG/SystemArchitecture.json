@@ -2228,7 +2228,7 @@
       "id": "semprod-operator-journey-process",
       "name": "Establish Semantic Retrieval for New Project",
       "type": "Business Process",
-      "description": "Operator journey for a fresh project: argo init, canonical structural projection, semantic backfill, readiness verification, then semantic query. Without explicit automatic-backfill opt-in, structural completion reports actionable SemanticIndexPending and exposes explicit backfill and readiness operations without claiming readiness. With explicit opt-in and approved external configuration, orchestration may start backfill automatically but must verify readiness before query. Progress, checkpoints, failures, resume guidance, and actionable errors are production-facing and redact credentials; no embedded credentials, implicit provider defaults, silent fallback, canonical-authority weakening, fail-open semantic query, or no-argument full-snapshot regression is permitted.",
+      "description": "Operator journey for a fresh project: argo init, canonical structural projection, semantic backfill, readiness verification, then semantic query. Both successful paths receive equivalent approved external Neo4j and embedding-provider configuration and differ only in explicit automatic-backfill opt-in. Without opt-in, structural completion reports actionable SemanticIndexPending, performs zero automatic start, and exposes explicit backfill and readiness operations; after explicit backfill invocation the operator verifies readiness before semantic query. With opt-in, orchestration may start backfill automatically only after approved configuration passes validation. Opted-in missing, unsafe, or unapproved configuration fails before automatic start, backfill, provider, or database effects with redacted actionable errors. No embedded credentials, implicit provider defaults, silent fallback, canonical-authority weakening, fail-open semantic query, or no-argument full-snapshot regression is permitted.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-05",
@@ -2236,31 +2236,31 @@
         },
         {
           "name": "automaticPolicy",
-          "value": "Automatic semantic backfill is disabled unless the operator explicitly opts in. Opt-in authorizes automatic start only when approved external Neo4j and embedding-provider configuration is present; readiness verification remains mandatory before semantic query."
+          "value": "Automatic semantic backfill is disabled unless the operator explicitly opts in. Both successful paths use equivalent approved external configuration and vary only opt-in. Opt-in authorizes automatic start only after configuration provenance and safety validation; missing, unsafe, or unapproved configuration produces zero automatic start, backfill, provider, and database side effects."
         },
         {
           "name": "observableOutcomes",
-          "value": "No-opt-in structural completion: actionable SemanticIndexPending plus explicit backfill and readiness operations. Opted-in approved configuration: observable automatic start, bounded progress/checkpoint/failure/resume evidence, then Aligned. Both paths: semantic query only after verified readiness, redacted actionable errors, and unchanged no-argument full snapshots."
+          "value": "No-opt-in with approved configuration: actionable SemanticIndexPending, zero automatic start, explicit backfill command/tool invocation, readiness verification, then semantic query. Opted-in with equivalent approved configuration: validated automatic start, bounded progress/checkpoint/failure/resume evidence, readiness verification, then semantic query. Opted-in missing/unsafe/unapproved configuration: redacted actionable failure and zero automatic start/backfill/provider/database effects. All paths preserve fail-closed query and exact no-argument full snapshots."
         },
         {
           "name": "functionalPoint.SP-05-new-project-journey",
-          "value": "{\"description\":\"Expose a production-safe new-project journey from argo init through canonical structural projection, semantic backfill, readiness verification, and semantic query for both explicit and explicitly opted-in automation paths.\",\"businessOutcome\":\"Operators can establish semantic retrieval without silent readiness claims, credential leakage, implicit provider behavior, fallback, or regression of accepted persistence, retrieval, readiness, canonical authority, and full-snapshot compatibility.\",\"observableBoundary\":\"Without auto-backfill opt-in, structural completion reports actionable SemanticIndexPending and exposes explicit backfill/readiness operations; with opt-in plus approved external configuration, orchestration may auto-start backfill; both paths expose progress/checkpoint/failure/resume guidance with redacted actionable errors, verify readiness before semantic query, fail closed while non-aligned, and preserve exact no-argument full snapshots.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-05-NewProjectJourney\"}"
+          "value": "{\"description\":\"Expose a production-safe new-project journey from argo init through canonical structural projection, semantic backfill, readiness verification, and semantic query, with equivalent approved external configuration on both successful paths and explicit auto-start rejection controls.\",\"businessOutcome\":\"Operators can establish semantic retrieval without silent readiness claims, credential leakage, implicit provider behavior, fallback, or regression of accepted persistence, retrieval, readiness, canonical authority, and full-snapshot compatibility.\",\"observableBoundary\":\"The no-opt-in successful path uses approved external configuration, reports actionable SemanticIndexPending, performs zero automatic start, invokes explicit backfill and readiness operations, verifies readiness, then queries. The opted-in successful path differs only by opt-in and may auto-start after approved configuration validation. Opted-in missing, unsafe, or unapproved configuration fails with zero automatic start/backfill/provider/database side effects and redacted actionable errors. Semantic query remains rejected until verified alignment and no-argument full snapshots remain exact.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-05-NewProjectJourney\"}"
         },
         {
           "name": "requirementSource.WP-P3",
-          "value": "Human-authorized 2026-07-27 work package semprod-wp-operator-release: formalize SP-05 for controlled fresh-project paths with and without explicit automatic-backfill opt-in; require approved external configuration, explicit pending/backfill/readiness operations, verified readiness before semantic query, compatibility, canonical authority, fail-closed behavior, resumability guidance, and redacted actionable errors."
+          "value": "Human-authorized WP-P3 requirement plus delegated independent-audit correction dated 2026-07-27: both successful fresh-project paths use equivalent approved external configuration and vary only explicit auto-backfill opt-in; no-opt-in proves pending, zero auto-start, explicit backfill/readiness, then query; opted-in missing/unsafe/unapproved controls prove zero automatic/backfill/provider/database effects and redacted actionable failure."
         },
         {
           "name": "acceptanceApproval.SP-05",
-          "value": "approvedByHuman=true|2026-07-27|delegated parent/orchestrator authorization explicitly required mounting and formalizing exactly ExplicitAcceptanceTestcase-SP-05-NewProjectJourney with the stated two-path production boundaries and no unresolved adequacy blocker"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent/orchestrator approved original SP-05 and explicitly required this independent-audit correction for equivalent successful-path configuration and opted-in missing/unsafe/unapproved zero-side-effect controls"
         }
       ],
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-          "description": "Control point: run two controlled fresh-project journeys from argo init through canonical structural projection. In the first, omit automatic-backfill opt-in and exercise the exposed explicit backfill and readiness command/tool, including progress, checkpoint, controlled failure, and resume. In the second, provide explicit opt-in plus approved external Neo4j and embedding-provider configuration and permit orchestration to auto-start backfill. In both, invoke semantic query before and after readiness and invoke the no-argument full-snapshot boundary. Observation point: the no-opt-in path reports actionable SemanticIndexPending and never auto-starts or claims readiness; the opted-in path starts automatically only with approved external configuration; both expose bounded progress/checkpoint/failure/resume guidance and redacted actionable errors, reject semantic query until readiness is verified, permit it only when aligned, preserve canonical JSON authority and exact no-argument full snapshots, and introduce no embedded credentials, implicit provider defaults, silent fallback, or weakening of accepted WP-P1/WP-P2 boundaries.",
+          "description": "Control point: run two successful controlled fresh-project journeys from argo init through canonical structural projection with equivalent approved external Neo4j and embedding-provider configuration, differing only in automatic-backfill opt-in. In the no-opt-in journey, observe structural completion, invoke the exposed explicit backfill command/tool, inspect progress/checkpoint and controlled failure/resume evidence, invoke readiness verification, then semantic query. In the opted-in journey, permit orchestration to auto-start only after approved configuration validation, then verify readiness before query. Also run opted-in missing, unsafe, and unapproved configuration controls. In every fixture invoke the no-argument full-snapshot boundary and attempt semantic query before verified readiness. Observation point: the no-opt-in path reports actionable SemanticIndexPending, performs zero automatic start, requires explicit backfill invocation, verifies readiness, then permits semantic query only when aligned. The valid opted-in path auto-starts only after approved configuration validation. Every invalid opted-in control produces zero automatic start, backfill, provider, and database side effects and a redacted actionable failure containing no credential values or unsafe source contents. All non-aligned semantic queries fail closed; successful paths preserve canonical JSON authority and exact no-argument full snapshots; no path uses embedded credentials, implicit provider defaults, silent fallback, or weaker WP-P1/WP-P2 behavior.",
           "type": "Acceptance Test",
-          "Input": "Two controlled fresh projects differing only in explicit automatic-backfill opt-in, with approved external configuration supplied only for the opted-in automatic path; canonical structural source, controlled backfill progress/checkpoint/failure/resume fixtures, readiness states, semantic queries, and no-argument compatibility controls.",
+          "Input": "Two successful controlled fresh projects with equivalent approved external Neo4j and embedding-provider configuration differing only in explicit automatic-backfill opt-in; three additional opted-in projects with respectively missing, unsafe, and unapproved external configuration; canonical structural source; controlled progress/checkpoint/failure/resume fixtures; readiness states; semantic queries; side-effect ledgers; redaction canaries; and no-argument compatibility controls.",
           "acceptanceCriteria": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js"
         }
       ]
@@ -3322,13 +3322,13 @@
     },
     {
       "id": "semprod-rel-ready-journey",
-      "name": "Ready plateau enables semantic journey outcome",
+      "name": "Ready plateau and completed journey context",
       "type": "Association",
       "source_id": "semprod-ready-plateau",
       "target_id": "semprod-operator-journey-process",
       "source_name": "Production Semantic Retrieval Ready",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Reaching the verified plateau enables semantic-query outcome; the journey cannot claim readiness before gates pass.",
+      "description": "Non-directional Association: relates the verified production-ready target state to the completed operator-journey outcome for contextual traceability only; it does not encode causal direction, sequencing, activation, or delivery evidence.",
       "statement": "Production Semantic Retrieval Ready --(Association)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3506,6 +3506,17 @@
       "target_name": "External Production Credential Boundary",
       "description": "Directional semantics: automatic backfill may start only after explicit opt-in and approved externally supplied configuration; errors and operational evidence redact credentials and no implicit source or provider default is permitted.",
       "statement": "Establish Semantic Retrieval for New Project --(Realization)--> External Production Credential Boundary"
+    },
+    {
+      "id": "semprod-rel-journey-readiness",
+      "name": "Operator journey realizes readiness verification",
+      "type": "Realization",
+      "source_id": "semprod-operator-journey-process",
+      "target_id": "semprod-readiness-requirement",
+      "source_name": "Establish Semantic Retrieval for New Project",
+      "target_name": "Fail-Closed Semantic Index Readiness",
+      "description": "Directional semantics: the operator journey satisfies the readiness requirement by verifying complete three-channel canonical/content/index alignment before semantic query in both successful paths and by retaining fail-closed behavior for pending or rejected configuration paths.",
+      "statement": "Establish Semantic Retrieval for New Project --(Realization)--> Fail-Closed Semantic Index Readiness"
     }
   ],
   "views": [
@@ -4059,7 +4070,7 @@
       "view_name": "New Project Semantic Retrieval Operator Journey",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this view is an Application Usage Viewpoint instance because it shows the business process, operator assignment, application query service, and supporting structural/backfill/readiness behavior. Automatic backfill is permitted only with explicit opt-in plus approved external configuration, and readiness verification remains mandatory.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this focused Application Usage Viewpoint instance connects every included operational element. The Business Process realizes the included fail-closed readiness Requirement before query; both successful paths use equivalent approved external configuration and differ only by opt-in; invalid opted-in configuration has zero automatic/backfill/provider/database effects; the plateau Association is contextual and non-causal.",
       "included_elements": [
         "grag-query-service",
         "semprod-operator-role",
@@ -4075,7 +4086,8 @@
         "semprod-rel-structural-backfill",
         "semprod-rel-backfill-journey",
         "semprod-rel-query-journey",
-        "semprod-rel-ready-journey"
+        "semprod-rel-ready-journey",
+        "semprod-rel-journey-readiness"
       ]
     },
     {
