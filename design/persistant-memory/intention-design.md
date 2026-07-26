@@ -1,5 +1,52 @@
 # Intent Design Session Record
 
+## 2026-07-26 — Approved WP-P1 Persistence and Backfill Handoff
+
+- Persistent stage/session ID: `intent-semprod-wp-p1-20260726T2039+08`.
+- Scope: only architecture work package `semprod-wp-persistence-backfill` (WP-P1). WP-P2 and WP-P3 remain sequencing context and were not started.
+- Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint.
+- Stakeholder concern: delivery owners, ICT architects, runtime operators, requirements owners, and acceptors need a durable production semantic projection and an explicit bounded/resumable full backfill for canonical Element, ArchitectureRelationship, and View records without weakening canonical authority or reusing test-only cleanup as production persistence.
+- Modeling purpose: designing, deciding, auditing, and handoff preparation.
+- Affected view bindings: `semprod-requirements-realization` remains a Requirements Realization Viewpoint instance for SP-01/SP-02 requirement-to-realization semantics; new `semprod-wp1-persistence-backfill` is an Implementation and Migration Viewpoint instance for WP-P1 scope, upstream structural projection, affected-element dependencies, and delivery sequencing. Both descriptions use the required viewpoint/concern/purpose/scope/rationale binding.
+- Human approval evidence: on 2026-07-26 the human partner explicitly approved both complete mounted boundaries `ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`, and globally approved the intent-to-implementation scope limited to `semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`.
+
+### Intent mutation
+
+- Added `functionalPoint.SP-01-full-backfill` under `semprod-backfill-control`, mapped to mounted `ExplicitAcceptanceTestcase-SP-01-FullBackfill`.
+- Added `functionalPoint.SP-02-persistent-projection` under `semprod-persistent-projection-requirement`, mapped to mounted `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`.
+- Strengthened SP-01 around all-record three-channel enumeration, stable canonical identity, complete canonical/content/index/provider/model/version/dimensions/vector metadata, bounded batches, checkpoints, isolated failures, resume, idempotent rerun, external credentials, no fake mutation, and alignment only after all channels complete.
+- Strengthened SP-02 around a separate durable production persistence path, restart survival, stable-identity changed-record upsert, tombstone deletion, no production runId cleanup, preservation of existing live-E2E test-only cleanup, canonical JSON authority, and Neo4j projection/index status.
+- Added `semprod-rel-wp1-backfill`, `semprod-rel-backfill-lifecycle`, and `semprod-rel-adapter-backfill` to make WP-P1 realization and dependency directions graph-traversable.
+- No `deliveryStatus` attribute was created, changed, removed, or inferred.
+
+### Dependency-subgraph coverage matrix
+
+- `semprod-backfill-control` (focus/implementation target): `functionalPoint.SP-01-full-backfill` -> `ExplicitAcceptanceTestcase-SP-01-FullBackfill`; human-approved.
+- `semprod-persistent-projection-requirement` (implementation target): `functionalPoint.SP-02-persistent-projection` -> `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`; human-approved.
+- `grag-semantic-index` (delivered upstream boundary/context): `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`; graph evidence records `runMutationIndexLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `grag-index-lifecycle` (delivered upstream boundary/context): `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`; graph evidence records `runMutationIndexLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `grag-embedding-provider-adapter` (delivered upstream boundary/context): `functionalPoint.TS-09-adapter-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter`; graph evidence records `runEmbeddingProviderAdapterLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `semprod-structural-projection` is an evidence-backed excluded precondition rather than a WP-P1 implementation target: SP-01 starts only after ordinary structural projection, and WP-P1 neither changes structural projection nor treats it as semantic readiness.
+- WP-P2 default retrieval/readiness and WP-P3 operator release are excluded downstream dependents. The new WP-P1 view explicitly excludes both packages from implementation scope.
+
+### Validation and blockers
+
+- First `argo.previewSystemArchitectureMutation` attempt failed without writing because relationship additions referenced the not-yet-created `semprod-wp1-persistence-backfill` view. The ordered retry created the view before adding relationships and passed.
+- Successful preview evidence: 2 element updates, 1 new view, 3 new relationships, and 1 view update; counts `61 elements / 76 relationships / 30 views` -> `61 / 79 / 31`; no errors.
+- `argo.applySystemArchitectureMutation` wrote the same mutation successfully and preserved the same count delta. Canonical graph persistence passed.
+- Post-write Neo4j synchronization definitively failed with exact error `neo4jUri is required for start`. This is an environment/setup blocker; no synchronization evidence was fabricated.
+- `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `.argo/temp/IntentToImplementationHandoff.json` was found to contain an older unrelated TS-01/TS-07 handoff generated at `2026-07-26T17:30:00+08:00`; filesystem evidence shows creation at `2026-07-26 17:32` and last write at `2026-07-26 18:32`, before this WP-P1 session started at approximately `20:39`. The current session first inspected the file after the MCP graph apply, but the timestamps and absence of handoff-path references in the apply result prove the apply did not create it. The orchestrator's pre-dispatch empty-temp observation is therefore inconsistent with the repository filesystem observed by this session; no unsupported cause is asserted. The WP-P1 session did not overwrite or treat the stale file as WP-P1 evidence. `argo.validateStageHandoff(stage="intent-to-implementation")` passed only for that stale unrelated artifact, not for WP-P1.
+- The repository handoff schema has `additionalProperties: false` and no `approvedByHuman` property. The now-granted global approval is therefore recorded in schema-compliant handoff notes and in schema-compliant element attributes `acceptanceApproval.SP-01` and `acceptanceApproval.SP-02`, matching established repository practice.
+- Approval mutation preview passed for the two element updates with counts unchanged at `61 elements / 79 relationships / 31 views`; apply wrote the approval evidence successfully. Post-write Neo4j synchronization remained blocked with exact error `neo4jUri is required for start`; the canonical graph write still succeeded.
+- `.argo/temp/IntentToImplementationHandoff.json` now contains the approved five-element WP-P1 scope and seven relevant relationship ids; `openQuestions` is empty. `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Final `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Checklist self-audit after writing the handoff: A1-A5 satisfied by canonical MCP persistence, complete elements/functional points/directional relationships, and viewpoint-bound views; B1-B3 satisfied by same-element SP-01/SP-02 mappings and explicit human approval attributes; C1-C2 satisfied by the five-element coverage matrix, delivered boundary evidence, and evidence-backed structural-projection exclusion; D1-D8 satisfied with no open questions and explicit per-boundary/global approval; E1-E3 satisfied by the complete validated handoff and schema-compliant approval note; F1 is this session record and F2 is completed by the IntentDesign stage commit immediately following this audit.
+
+### Exact approval question
+
+Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`—and globally approve the WP-P1 intent-to-implementation handoff scope (`semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`) so IntentDesign may record approval, replace the stale unrelated intent handoff with the WP-P1 handoff, validate it, and create the required IntentDesign stage commit? Recommended answer: approve, because the boundaries now cover the requested durable production persistence, full three-channel backfill, test-only cleanup isolation, canonical authority, external credentials, and all required failure/recovery semantics while excluding WP-P2 and WP-P3.
+
 ## 2026-07-26 — Approved Neo4jUri And EmbeddingCredential Handoff
 
 - Selected viewpoint: Requirements Realization Viewpoint.

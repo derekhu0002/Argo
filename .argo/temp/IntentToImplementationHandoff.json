@@ -1,26 +1,41 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-26T17:30:00+08:00",
+  "generatedAt": "2026-07-26T20:51:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Clarifies the approved startup/config-resolution intent boundary for Argo harness Neo4j connectivity setup: canonical Neo4j names must materialize runtime neo4jUri, QWEN_KEY must materialize runtime embeddingCredential, and unresolved runtime fields must fail closed before database, provider, or index side effects.",
+  "summary": "WP-P1 Persistent Projection and Full Backfill: materialize a separate durable production semantic projection and an explicit bounded, resumable, idempotent full backfill for every canonical Element, ArchitectureRelationship, and View after structural projection, while preserving canonical JSON authority and existing test-only cleanup isolation.",
   "intentElementIds": [
-    "grag-production-runtime",
-    "grag-credential-boundary"
+    "semprod-backfill-control",
+    "semprod-persistent-projection-requirement",
+    "grag-semantic-index",
+    "grag-index-lifecycle",
+    "grag-embedding-provider-adapter"
   ],
   "relationshipIds": [
-    "grag-rel-credentials-runtime"
+    "semprod-rel-wp1-backfill",
+    "semprod-rel-structural-backfill",
+    "semprod-rel-adapter-backfill",
+    "semprod-rel-backfill-lifecycle",
+    "grag-rel-lifecycle-index",
+    "semprod-rel-backfill-persistence",
+    "semprod-rel-index-persistence"
   ],
   "openQuestions": [],
   "notes": [
-    "Selected viewpoint: Requirements Realization Viewpoint. Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need approved external configuration names to be the only source for internal runtime fields before Neo4j connectivity, provider, or index side effects.",
-    "View binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it traces production runtime, credential constraint, embedding qualification, canonical Neo4j names, live provider evidence, and canonical authority to release requirements before index delivery.",
-    "Coverage matrix: `grag-production-runtime` functional point `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`, now covering exact `.argo/.env` loading plus start-time `neo4jUri` and `embeddingCredential` validation.",
-    "Coverage matrix: `grag-credential-boundary` functional point `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.",
-    "Human approval: the human partner approved the existing-test boundary extensions for both observed blockers, `embeddingCredential is required for start` and `neo4jUri is required for start`; no new ExplicitAcceptanceTestcase identity was added because extension of TS-01, TS-07, and TS-07 Provider Secret Isolation remains adequate.",
-    "Acceptance boundary: `ARGO_NEO4J_DATABASE_URL` is the only approved source for in-process `neo4jUri`; legacy `ARGO_NEO4J_URI` never satisfies or overrides required configuration.",
-    "Acceptance boundary: `QWEN_KEY` is the only approved source for in-process `embeddingCredential`; separately supplied runtime-field keys, literals, defaults, command-line values, graph/Cypher values, or alternate files are forbidden.",
-    "Downstream ImplementationDesign should extend existing physical entrypoints `tests/explicit/entries/runProductionGraphRagRuntime.js`, `tests/explicit/entries/runExternalCredentialBoundary.js`, and `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js` where feasible, preserving existing secret non-disclosure rules and without reading real `.argo/.env` secret values.",
-    "Intent evidence: `argo.previewSystemArchitectureMutation` and `argo.applySystemArchitectureMutation` passed for two element updates and one Requirements Realization View update; counts remained 47 elements, 59 relationships, and 27 views. The MCP post-write Neo4j sync still reported `neo4jUri is required for start`; that setup failure is now an explicit downstream acceptance boundary rather than an unresolved intent-modeling blocker.",
-    "Secret handling: Intent Design did not read, create, output, migrate, copy, or expose any `.argo/.env` secret value."
+    "Persistent stage/session ID: intent-semprod-wp-p1-20260726T2039+08.",
+    "Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint. Stakeholder concern: delivery owners, ICT architects, runtime operators, requirements owners, and acceptors need durable production semantic persistence and complete recoverable three-channel backfill without weakening canonical authority or test-only cleanup isolation.",
+    "View binding: semprod-requirements-realization remains a Requirements Realization Viewpoint instance for SP-01/SP-02 requirement realization; semprod-wp1-persistence-backfill is an Implementation and Migration Viewpoint instance for WP-P1 scope, dependencies, and sequencing. WP-P2 and WP-P3 are explicitly excluded from this handoff.",
+    "Human approval: on 2026-07-26 the human partner explicitly approved both complete mounted boundaries ExplicitAcceptanceTestcase-SP-01-FullBackfill and ExplicitAcceptanceTestcase-SP-02-PersistentProjection, and globally approved exactly the five intentElementIds in this handoff. The schema has no approvedByHuman property, so global approval is recorded in this schema-compliant note and per-testcase approval is recorded in element attributes acceptanceApproval.SP-01 and acceptanceApproval.SP-02.",
+    "Coverage: semprod-backfill-control functionalPoint.SP-01-full-backfill -> mounted ExplicitAcceptanceTestcase-SP-01-FullBackfill.",
+    "Coverage: semprod-persistent-projection-requirement functionalPoint.SP-02-persistent-projection -> mounted ExplicitAcceptanceTestcase-SP-02-PersistentProjection.",
+    "Delivered boundary coverage: grag-semantic-index functionalPoint.DT-16-versioned-vector-baseline -> ExplicitAcceptanceTestcase-DT-16-SemanticIndex with recorded runMutationIndexLifecycle.js exitCode 0 and runner-owned deliveryStatus=delivered.",
+    "Delivered boundary coverage: grag-index-lifecycle functionalPoint.DT-16-all-mutation-version-advance -> ExplicitAcceptanceTestcase-DT-16 with recorded runMutationIndexLifecycle.js exitCode 0 and runner-owned deliveryStatus=delivered.",
+    "Delivered boundary coverage: grag-embedding-provider-adapter functionalPoint.TS-09-adapter-generation -> ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter with recorded runEmbeddingProviderAdapterLifecycle.js exitCode 0 and runner-owned deliveryStatus=delivered.",
+    "Evidence-backed exclusion: semprod-structural-projection is an unchanged prerequisite and SP-01 control begins after its completion; it is not a WP-P1 implementation target and does not establish semantic readiness.",
+    "SP-01 boundary: independently enumerate all canonical Element, ArchitectureRelationship, and View records; use external credentials and qualified provider evidence; persist stable identity plus canonical/content/index/provider/model/version/dimensions/vector metadata in bounded batches; expose checkpoints, retries, and isolated failures; resume without restarting completed work; rerun idempotently; perform no fake canonical mutation; align only after all three channels complete.",
+    "SP-02 boundary: use a separate durable production persistence path; survive restart and unrelated live-E2E cleanup; upsert changed records by stable canonical identity; delete tombstones; perform no production runId cleanup; preserve existing test-only cleanup; keep canonical JSON authoritative and Neo4j subordinate as projection/index.",
+    "ImplementationDesign must materialize the suggested SP-01 and SP-02 physical entrypoints before Coding/Repair; suggested acceptanceCriteria paths are intent anchors, not current execution evidence.",
+    "Canonical mutation evidence: initial WP-P1 preview ordering attempt failed without writing; ordered preview passed and apply wrote 2 element updates, 3 relationships, 1 new view, and 1 view update, changing counts from 61/76/30 to 61/79/31. Approval preview and apply then passed for 2 element updates with counts unchanged.",
+    "Canonical graph validation passed with exitCode 0. Post-write Neo4j synchronization remains an environment blocker with exact error: neo4jUri is required for start. No Neo4j synchronization evidence is claimed.",
+    "No runner-owned deliveryStatus attribute was manually created, changed, removed, or inferred."
   ]
 }

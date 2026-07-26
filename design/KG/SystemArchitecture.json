@@ -1935,6 +1935,359 @@
           "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js"
         }
       ]
+    },
+    {
+      "id": "semprod-goal",
+      "name": "Production-Ready Semantic Retrieval for New Projects",
+      "type": "Goal",
+      "description": "Newly initialized Argo projects can establish and use a durable, complete, version-aligned semantic retrieval projection after canonical structural synchronization, while canonical JSON remains authoritative and no-argument full snapshots remain backward compatible.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "SP-DT-01..SP-DT-06|accepted production completion goal"
+        },
+        {
+          "name": "constraints",
+          "value": "Canonical JSON authority; Neo4j projection/index only; no silent semantic fallback; no fabricated delivery evidence."
+        }
+      ]
+    },
+    {
+      "id": "semprod-operator-role",
+      "name": "Argo Project Operator",
+      "type": "Business Role",
+      "description": "Role accountable for initializing a project, observing structural and semantic readiness, explicitly starting backfill when automatic opt-in is absent, and verifying readiness before semantic use.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-05",
+          "value": "accepted|operator owns the explicit new-project journey"
+        }
+      ]
+    },
+    {
+      "id": "semprod-bootstrap-capability",
+      "name": "Semantic Index Bootstrap and Operation",
+      "type": "Capability",
+      "description": "Capability to create, resume, align, operate, and query the production semantic index for all canonical Element, ArchitectureRelationship, and View records without fake canonical mutations.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "SP-DT-01..SP-DT-04|accepted capability boundary"
+        }
+      ]
+    },
+    {
+      "id": "semprod-new-project-gap",
+      "name": "New Project Production Semantic Gap",
+      "type": "Gap",
+      "description": "After ordinary structural Neo4j synchronization, existing canonical records may lack production embeddings, durable vector records, aligned readiness evidence, and a real default MCP vector-retrieval boundary.",
+      "attributes": [
+        {
+          "name": "repositoryEvidence",
+          "value": "systemarchitecture-mcp-server.js defaults to approved-test profile and empty seeds; mutationEmbeddingVectorLifecycle.js cleanup is controlled E2E evidence, not production persistence; no full-graph backfill command/tool was found."
+        },
+        {
+          "name": "decisionTrace",
+          "value": "SP-DT-01..SP-DT-06|current-to-target gap"
+        }
+      ]
+    },
+    {
+      "id": "semprod-structural-projection",
+      "name": "Canonical Structural Neo4j Projection",
+      "type": "Application Process",
+      "description": "Existing ordinary projection step from canonical SystemArchitecture.json into Neo4j. It precedes semantic backfill but does not establish semantic readiness.",
+      "attributes": [
+        {
+          "name": "authorityBoundary",
+          "value": "Canonical JSON remains authority; Neo4j is subordinate projection."
+        },
+        {
+          "name": "readinessOutcome",
+          "value": "Structural completion without aligned embeddings yields SemanticIndexPending."
+        }
+      ]
+    },
+    {
+      "id": "semprod-backfill-control",
+      "name": "Full Semantic Index Backfill Control",
+      "type": "Application Process",
+      "description": "Explicit idempotent and resumable production control point after structural projection that independently enumerates every canonical Element, ArchitectureRelationship, and View record, invokes the externally credentialed qualified provider, upserts embeddings and complete canonical/content/index/provider/model/version/dimensions/vector metadata in bounded batches, checkpoints progress, isolates record failures, resumes without fake canonical mutations, permits idempotent reruns, and marks alignment only after all three channels complete.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-01",
+          "value": "accepted|full three-channel backfill after structural projection"
+        },
+        {
+          "name": "executionPolicy",
+          "value": "Explicit command/tool is always available; automatic execution only under explicit configuration or operator opt-in."
+        },
+        {
+          "name": "progressEvidence",
+          "value": "Per-channel totals/completed counts, bounded-batch checkpoint cursor and canonical version, retries, isolated record failures, resume position, and final alignment disposition."
+        },
+        {
+          "name": "rejectedBranches",
+          "value": "Fake canonical mutation; unbounded one-shot; infer ArchitectureRelationship/View completion from Element completion; partial-channel alignment; automatic backfill without explicit opt-in."
+        },
+        {
+          "name": "codingTargets",
+          "value": "systemarchitecture-mcp-server.js; productionGraphRagRuntime.js; new production backfill orchestration and MCP command/tool."
+        },
+        {
+          "name": "requirementSource.semprod-wp-persistence-backfill",
+          "value": "Human-approved WP-P1 requirement in stage session intent-semprod-wp-p1-20260726T2039+08 on 2026-07-26; approval is limited to SP-01/SP-02 and the five-element WP-P1 handoff scope."
+        },
+        {
+          "name": "functionalPoint.SP-01-full-backfill",
+          "value": "{\"description\":\"Run an explicit idempotent and resumable full semantic backfill for every canonical Element, ArchitectureRelationship, and View after structural projection.\",\"businessOutcome\":\"A new or pre-existing canonical graph can obtain a complete production semantic projection without fake canonical mutation, unbounded execution, lost progress, or partial-channel readiness.\",\"observableBoundary\":\"With external credentials, bounded batches enumerate all three canonical channels independently; complete metadata and vectors are upserted; checkpoints survive interruption; record failures are isolated and observable; resume continues from checkpoint; rerun is idempotent; and Aligned is withheld until Element, ArchitectureRelationship, and View channels are all complete.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-01-FullBackfill\"}"
+        },
+        {
+          "name": "acceptanceApproval.SP-01",
+          "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-01-FullBackfill boundary and globally approved the five-element WP-P1 handoff scope"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+          "description": "Control point: after ordinary structural projection, invoke explicit production backfill with external credentials for pre-existing Element, ArchitectureRelationship, and View records; interrupt a bounded batch, inject isolated record failure, resume, and rerun. Observation point: all three channels are independently enumerated and complete; stable canonical identity and canonical/content/index/provider/model/version/dimensions/vector metadata are persisted; checkpoints, retries, and isolated failures are visible; resume does not restart completed work; rerun is idempotent; no fake canonical mutation occurs; and alignment waits for all channels.",
+          "type": "Acceptance Test",
+          "Input": "Fresh-project and pre-existing three-channel canonical graph, bounded batches, interruption/retry and isolated-failure fixtures, external credentials, explicit opt-in, and idempotent rerun.",
+          "acceptanceCriteria": "Suggested: tests/explicit/entries/runProductionSemanticBackfill.js (new; not yet executed; ImplementationDesign must materialize the physical boundary before Coding/Repair)"
+        }
+      ]
+    },
+    {
+      "id": "semprod-persistent-projection-requirement",
+      "name": "Persistent Production Semantic Projection",
+      "type": "Requirement",
+      "description": "Production semantic records use a separate durable persistence path across process and test runs and carry stable canonical identity, channel, canonical/content/index versions, qualified provider/model/version/dimensions, and vector; unchanged records survive restart and unrelated test-only cleanup, changed records are upserted, tombstones are deleted, production never performs runId cleanup, canonical JSON remains authority, and Neo4j remains only projection/index.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-02",
+          "value": "accepted|durable versioned projection with upsert/tombstone lifecycle"
+        },
+        {
+          "name": "rejectedBranches",
+          "value": "Production runId evidence records; production cleanup; volatile vectors; shared production/test cleanup path; projection overwrites canonical intent."
+        },
+        {
+          "name": "testOnlyBoundary",
+          "value": "Existing live E2E runId cleanup remains test-only evidence and must not be weakened; production requires a separate persistence path with no runId cleanup."
+        },
+        {
+          "name": "codingTargets",
+          "value": "Split liveEmbeddingNeo4jBoundary test evidence from production store; production persistence adapter; mutation/backfill integration."
+        },
+        {
+          "name": "authorityBoundary",
+          "value": "Canonical design/KG/SystemArchitecture.json remains authority; Neo4j remains subordinate projection/index and cannot mutate or redefine canonical intent."
+        },
+        {
+          "name": "requirementSource.semprod-wp-persistence-backfill",
+          "value": "Human-approved WP-P1 requirement in stage session intent-semprod-wp-p1-20260726T2039+08 on 2026-07-26; approval is limited to SP-01/SP-02 and the five-element WP-P1 handoff scope."
+        },
+        {
+          "name": "functionalPoint.SP-02-persistent-projection",
+          "value": "{\"description\":\"Persist the production semantic projection durably and maintain it by stable-identity upsert and tombstone deletion without production runId cleanup.\",\"businessOutcome\":\"Production semantic evidence survives restart and unrelated test cleanup while remaining version-aligned with authoritative canonical JSON.\",\"observableBoundary\":\"After full backfill and restart, unchanged three-channel records and complete metadata remain; changing one canonical record upserts its stable identity with new content/index evidence; tombstoning another deletes its projection; unrelated live-E2E runId cleanup removes only test evidence; production uses a separate no-cleanup path; and Neo4j never mutates canonical JSON.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-02-PersistentProjection\"}"
+        },
+        {
+          "name": "acceptanceApproval.SP-02",
+          "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-02-PersistentProjection boundary and globally approved the five-element WP-P1 handoff scope"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+          "description": "Control point: use the separate production persistence path to backfill all three channels, restart, update one canonical object, tombstone another, and run unrelated live-E2E runId cleanup. Observation point: unchanged stable-identity vectors and complete canonical/content/index/provider/model/version/dimensions/vector metadata survive restart and test-only cleanup; the changed record is upserted and version-aligned; the tombstone is deleted; no production runId cleanup occurs; canonical JSON remains authoritative; and Neo4j remains projection/index only.",
+          "type": "Acceptance Test",
+          "Input": "Production three-channel records, restart, stable-identity update and tombstone mutations, separate production persistence path, and isolated existing test-only runId cleanup.",
+          "acceptanceCriteria": "Suggested: tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js (new; not yet executed; ImplementationDesign must materialize the physical boundary before Coding/Repair)"
+        }
+      ]
+    },
+    {
+      "id": "semprod-default-vector-retrieval",
+      "name": "Default MCP Neo4j Vector Retrieval",
+      "type": "Application Function",
+      "description": "Production default semantic boundary: embeds the query with the qualified profile, queries Neo4j Vector Index independently for Element, ArchitectureRelationship, and View using threshold-all correctness, permits zero results, then applies deterministic purpose/ArchiMate closure and canonical authority/version checks.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-03",
+          "value": "accepted|replace synthetic empty default with production Neo4j vector adapter"
+        },
+        {
+          "name": "correctnessBoundary",
+          "value": "No fixed top-k defines correctness; performance mechanics cannot omit qualifying candidates."
+        },
+        {
+          "name": "rejectedBranches",
+          "value": "Approved-test production default; empty-seed stub; Element-only retrieval; global channel rank; forced hits."
+        },
+        {
+          "name": "codingTargets",
+          "value": "systemarchitecture-mcp-server.js createDefaultSemanticRetrievalBoundary; productionGraphRagRuntime.js; production Neo4j vector adapter."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+          "description": "Control point: invoke MCP semantic query through the default dependency path, without injecting a test retrieval boundary, against an aligned index. Observation point: Neo4j Vector Index serves all three independently thresholded channels with complete qualifying or zero results, deterministic closure follows, and canonical checks hold.",
+          "type": "Acceptance Test",
+          "Input": "Aligned production-like vector index with above/below-threshold and zero-result fixtures; external credentials.",
+          "acceptanceCriteria": "Suggested: tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js (new; not yet executed)"
+        }
+      ]
+    },
+    {
+      "id": "semprod-readiness-requirement",
+      "name": "Fail-Closed Semantic Index Readiness",
+      "type": "Requirement",
+      "description": "Structural sync alone yields SemanticIndexPending. Pure semantic queries are rejected until canonical/content/index versions and all three channels align; no silent snapshot fallback occurs, while established no-argument canonical snapshots remain unchanged.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-04",
+          "value": "accepted|pending/aligned gate and fail-closed semantic query"
+        },
+        {
+          "name": "compatibilityBoundary",
+          "value": "No-argument getSystemArchitecture full snapshot remains exact; rejection applies only to semantic mode."
+        },
+        {
+          "name": "rejectedBranches",
+          "value": "Warning-only stale query; silent snapshot fallback; structural-sync-equals-ready; partial channel alignment."
+        },
+        {
+          "name": "codingTargets",
+          "value": "systemarchitecture-mcp-server.js query dispatch; productionGraphRagRuntime alignment; persistent alignment/version store."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+          "description": "Control point: exercise structural-only pending, partial, stale, failed, and aligned states through default MCP query. Observation point: non-aligned semantic requests reject actionably without snapshot fallback, no-argument snapshots remain compatible, and only complete version/channel alignment enables semantic retrieval.",
+          "type": "Acceptance Test",
+          "Input": "Fresh structural-only plus partial/stale/failed/aligned, no-argument, and canonical-read controls.",
+          "acceptanceCriteria": "Suggested: tests/explicit/entries/runProductionSemanticReadinessGate.js plus existing compatibility entries (new production case; not yet executed)"
+        }
+      ]
+    },
+    {
+      "id": "semprod-operator-journey-process",
+      "name": "Establish Semantic Retrieval for New Project",
+      "type": "Business Process",
+      "description": "Operator journey: argo init, canonical structural projection, explicit semantic backfill unless explicitly opted into automation, readiness verification, then semantic query; pending/failure states provide actionable recovery.",
+      "attributes": [
+        {
+          "name": "decisionTrace.SP-DT-05",
+          "value": "accepted|clear new-project journey"
+        },
+        {
+          "name": "automaticPolicy",
+          "value": "Automatic semantic backfill disabled unless explicitly configured/opted in."
+        },
+        {
+          "name": "observableOutcomes",
+          "value": "SemanticIndexPending; backfill progress/failure; Aligned; semantic query only when Aligned."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+          "description": "Control point: follow journey without automatic opt-in and with explicit opt-in. Observation point: first path exposes actionable pending plus explicit backfill command/tool; opted-in path starts automatically; both verify readiness before semantic query and preserve full snapshots.",
+          "type": "Acceptance Test",
+          "Input": "Two fresh projects differing only in explicit automatic-backfill configuration.",
+          "acceptanceCriteria": "Suggested: tests/explicit/entries/runNewProjectSemanticOperatorJourney.js (new; not yet executed)"
+        }
+      ]
+    },
+    {
+      "id": "semprod-ready-plateau",
+      "name": "Production Semantic Retrieval Ready",
+      "type": "Plateau",
+      "description": "Target state: structure exists, every canonical Element/ArchitectureRelationship/View has aligned durable semantics, default MCP uses Neo4j Vector Index, readiness passes, canonical authority holds, and compatible full snapshots remain.",
+      "attributes": [
+        {
+          "name": "releaseGates",
+          "value": "Full coverage; restart persistence/no production cleanup; upsert/delete/version; real default retrieval; three-channel threshold-all; fail-closed readiness; external credentials."
+        },
+        {
+          "name": "deliveryClaim",
+          "value": "Target only; no claim of current delivery or passed gates."
+        }
+      ]
+    },
+    {
+      "id": "semprod-wp-persistence-backfill",
+      "name": "WP-P1 Persistent Projection and Full Backfill",
+      "type": "Work Package",
+      "description": "Deliver production semantic record lifecycle and explicit bounded resumable three-channel backfill after structural projection.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "semprod-backfill-control; semprod-persistent-projection-requirement; grag-semantic-index; grag-index-lifecycle; grag-embedding-provider-adapter"
+        },
+        {
+          "name": "dependencies",
+          "value": "Canonical structural projection, qualified provider, external credentials."
+        },
+        {
+          "name": "codingTargets",
+          "value": "Production semantic store; backfill orchestrator; MCP command/tool; checkpoint/progress/failure evidence."
+        },
+        {
+          "name": "acceptanceBoundary",
+          "value": "SP-01/SP-02 proposed; no delivery evidence."
+        }
+      ]
+    },
+    {
+      "id": "semprod-wp-default-retrieval",
+      "name": "WP-P2 Default Vector Retrieval and Readiness",
+      "type": "Work Package",
+      "description": "Replace synthetic/empty default with production Neo4j-vector retrieval and bind fail-closed readiness to persistent alignment.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "semprod-default-vector-retrieval; semprod-readiness-requirement; grag-query-service; grag-mcp-interface; grag-native-retrieval-service; grag-seed-retrieval; grag-purpose-closure"
+        },
+        {
+          "name": "dependencies",
+          "value": "WP-P1 durable aligned index."
+        },
+        {
+          "name": "codingTargets",
+          "value": "Default boundary; Neo4j adapter; three-channel threshold-all; canonical checks; readiness dispatch."
+        },
+        {
+          "name": "acceptanceBoundary",
+          "value": "SP-03/SP-04 plus compatibility regression; no delivery evidence."
+        }
+      ]
+    },
+    {
+      "id": "semprod-wp-operator-release",
+      "name": "WP-P3 Operator Journey and Production Release",
+      "type": "Work Package",
+      "description": "Expose/document new-project backfill/readiness operations, run production acceptance, and permit target plateau only after all gates pass with external credentials.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "semprod-operator-journey-process; semprod-ready-plateau; grag-query-service; grag-credential-boundary"
+        },
+        {
+          "name": "dependencies",
+          "value": "WP-P1 and WP-P2; protected live environment and external credentials."
+        },
+        {
+          "name": "releaseGates",
+          "value": "SP-01..SP-05 and all production boundaries; compatibility regression."
+        },
+        {
+          "name": "acceptanceBoundary",
+          "value": "Proposed only; no pass or delivered status."
+        }
+      ]
     }
   ],
   "relationships": [
@@ -2776,6 +3129,226 @@
           "description": "Provenance and version evidence support the coherent-context outcome; the outcome does not add new closure rules beyond DT-00, DT-13, DT-14, and DT-15."
         }
       ]
+    },
+    {
+      "id": "semprod-rel-capability-goal",
+      "name": "Bootstrap capability advances production readiness",
+      "type": "Association",
+      "source_id": "semprod-bootstrap-capability",
+      "target_id": "semprod-goal",
+      "source_name": "Semantic Index Bootstrap and Operation",
+      "target_name": "Production-Ready Semantic Retrieval for New Projects",
+      "description": "Directional business semantics: the capability advances the new-project production-readiness goal. Decision trace: SP-DT-01 through SP-DT-05.",
+      "statement": "Semantic Index Bootstrap and Operation --(Association)--> Production-Ready Semantic Retrieval for New Projects"
+    },
+    {
+      "id": "semprod-rel-backfill-persistence",
+      "name": "Backfill realizes persistent projection requirement",
+      "type": "Realization",
+      "source_id": "semprod-backfill-control",
+      "target_id": "semprod-persistent-projection-requirement",
+      "source_name": "Full Semantic Index Backfill Control",
+      "target_name": "Persistent Production Semantic Projection",
+      "description": "Backfill realizes the initial durable projection by enumerating/upserting every canonical record with versioned evidence.",
+      "statement": "Full Semantic Index Backfill Control --(Realization)--> Persistent Production Semantic Projection"
+    },
+    {
+      "id": "semprod-rel-index-persistence",
+      "name": "Semantic index realizes persistence requirement",
+      "type": "Realization",
+      "source_id": "grag-semantic-index",
+      "target_id": "semprod-persistent-projection-requirement",
+      "source_name": "Semantic Retrieval Index",
+      "target_name": "Persistent Production Semantic Projection",
+      "description": "The projection satisfies persistence only when durable, versioned, upserted, tombstone-aware, and not production-cleaned by test runId.",
+      "statement": "Semantic Retrieval Index --(Realization)--> Persistent Production Semantic Projection"
+    },
+    {
+      "id": "semprod-rel-default-index",
+      "name": "Default retrieval reads semantic index",
+      "type": "Access",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "grag-semantic-index",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "Semantic Retrieval Index",
+      "description": "Production default reads three-channel candidates and validates projection identity/version against canonical authority.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Access)--> Semantic Retrieval Index"
+    },
+    {
+      "id": "semprod-rel-readiness-goal",
+      "name": "Readiness requirement protects production goal",
+      "type": "Influence",
+      "source_id": "semprod-readiness-requirement",
+      "target_id": "semprod-goal",
+      "source_name": "Fail-Closed Semantic Index Readiness",
+      "target_name": "Production-Ready Semantic Retrieval for New Projects",
+      "description": "Fail-closed alignment protects the goal by preventing incomplete projects from serving stale semantic context.",
+      "statement": "Fail-Closed Semantic Index Readiness --(Influence)--> Production-Ready Semantic Retrieval for New Projects"
+    },
+    {
+      "id": "semprod-rel-operator-journey",
+      "name": "Operator performs semantic setup journey",
+      "type": "Assignment",
+      "source_id": "semprod-operator-role",
+      "target_id": "semprod-operator-journey-process",
+      "source_name": "Argo Project Operator",
+      "target_name": "Establish Semantic Retrieval for New Project",
+      "description": "Operator owns explicit backfill initiation when auto opt-in is absent and readiness verification before semantic query.",
+      "statement": "Argo Project Operator --(Assignment)--> Establish Semantic Retrieval for New Project"
+    },
+    {
+      "id": "semprod-rel-journey-structural",
+      "name": "Journey triggers structural projection",
+      "type": "Triggering",
+      "source_id": "semprod-operator-journey-process",
+      "target_id": "semprod-structural-projection",
+      "source_name": "Establish Semantic Retrieval for New Project",
+      "target_name": "Canonical Structural Neo4j Projection",
+      "description": "After argo init, the operator journey initiates ordinary canonical structural synchronization.",
+      "statement": "Establish Semantic Retrieval for New Project --(Triggering)--> Canonical Structural Neo4j Projection"
+    },
+    {
+      "id": "semprod-rel-structural-backfill",
+      "name": "Structural projection precedes semantic backfill",
+      "type": "Triggering",
+      "source_id": "semprod-structural-projection",
+      "target_id": "semprod-backfill-control",
+      "source_name": "Canonical Structural Neo4j Projection",
+      "target_name": "Full Semantic Index Backfill Control",
+      "description": "Structural completion creates SemanticIndexPending and makes explicit/opted-in backfill actionable; it does not imply readiness.",
+      "statement": "Canonical Structural Neo4j Projection --(Triggering)--> Full Semantic Index Backfill Control"
+    },
+    {
+      "id": "semprod-rel-backfill-journey",
+      "name": "Backfill serves operator journey",
+      "type": "Serving",
+      "source_id": "semprod-backfill-control",
+      "target_id": "semprod-operator-journey-process",
+      "source_name": "Full Semantic Index Backfill Control",
+      "target_name": "Establish Semantic Retrieval for New Project",
+      "description": "Backfill serves the journey with progress, checkpoint, failure, resume, and alignment evidence.",
+      "statement": "Full Semantic Index Backfill Control --(Serving)--> Establish Semantic Retrieval for New Project"
+    },
+    {
+      "id": "semprod-rel-query-journey",
+      "name": "Query service serves ready journey",
+      "type": "Serving",
+      "source_id": "grag-query-service",
+      "target_id": "semprod-operator-journey-process",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Establish Semantic Retrieval for New Project",
+      "description": "Query service serves semantics only after readiness and preserves no-argument canonical snapshots during pending state.",
+      "statement": "Intent Architecture Query Service --(Serving)--> Establish Semantic Retrieval for New Project"
+    },
+    {
+      "id": "semprod-rel-ready-journey",
+      "name": "Ready plateau enables semantic journey outcome",
+      "type": "Association",
+      "source_id": "semprod-ready-plateau",
+      "target_id": "semprod-operator-journey-process",
+      "source_name": "Production Semantic Retrieval Ready",
+      "target_name": "Establish Semantic Retrieval for New Project",
+      "description": "Reaching the verified plateau enables semantic-query outcome; the journey cannot claim readiness before gates pass.",
+      "statement": "Production Semantic Retrieval Ready --(Association)--> Establish Semantic Retrieval for New Project"
+    },
+    {
+      "id": "semprod-rel-gap-wp1",
+      "name": "Production gap motivates persistence and backfill work",
+      "type": "Association",
+      "source_id": "semprod-new-project-gap",
+      "target_id": "semprod-wp-persistence-backfill",
+      "source_name": "New Project Production Semantic Gap",
+      "target_name": "WP-P1 Persistent Projection and Full Backfill",
+      "description": "The current-state gap is first addressed by durable lifecycle and complete backfill.",
+      "statement": "New Project Production Semantic Gap --(Association)--> WP-P1 Persistent Projection and Full Backfill"
+    },
+    {
+      "id": "semprod-rel-wp1-wp2",
+      "name": "Persistent aligned substrate precedes default retrieval",
+      "type": "Triggering",
+      "source_id": "semprod-wp-persistence-backfill",
+      "target_id": "semprod-wp-default-retrieval",
+      "source_name": "WP-P1 Persistent Projection and Full Backfill",
+      "target_name": "WP-P2 Default Vector Retrieval and Readiness",
+      "description": "Default retrieval/readiness depend on a durable, backfillable, version-aligned production substrate.",
+      "statement": "WP-P1 Persistent Projection and Full Backfill --(Triggering)--> WP-P2 Default Vector Retrieval and Readiness"
+    },
+    {
+      "id": "semprod-rel-wp2-wp3",
+      "name": "Default retrieval readiness precedes operator release",
+      "type": "Triggering",
+      "source_id": "semprod-wp-default-retrieval",
+      "target_id": "semprod-wp-operator-release",
+      "source_name": "WP-P2 Default Vector Retrieval and Readiness",
+      "target_name": "WP-P3 Operator Journey and Production Release",
+      "description": "Operator release waits for production default retrieval and fail-closed readiness.",
+      "statement": "WP-P2 Default Vector Retrieval and Readiness --(Triggering)--> WP-P3 Operator Journey and Production Release"
+    },
+    {
+      "id": "semprod-rel-wp1-persistence",
+      "name": "WP-P1 realizes persistent projection",
+      "type": "Realization",
+      "source_id": "semprod-wp-persistence-backfill",
+      "target_id": "semprod-persistent-projection-requirement",
+      "source_name": "WP-P1 Persistent Projection and Full Backfill",
+      "target_name": "Persistent Production Semantic Projection",
+      "description": "WP-P1 owns durable lifecycle and complete initial backfill acceptance.",
+      "statement": "WP-P1 Persistent Projection and Full Backfill --(Realization)--> Persistent Production Semantic Projection"
+    },
+    {
+      "id": "semprod-rel-wp2-readiness",
+      "name": "WP-P2 realizes readiness requirement",
+      "type": "Realization",
+      "source_id": "semprod-wp-default-retrieval",
+      "target_id": "semprod-readiness-requirement",
+      "source_name": "WP-P2 Default Vector Retrieval and Readiness",
+      "target_name": "Fail-Closed Semantic Index Readiness",
+      "description": "WP-P2 realizes fail-closed availability from persistent canonical/content/index alignment.",
+      "statement": "WP-P2 Default Vector Retrieval and Readiness --(Realization)--> Fail-Closed Semantic Index Readiness"
+    },
+    {
+      "id": "semprod-rel-wp3-plateau",
+      "name": "WP-P3 establishes production-ready plateau",
+      "type": "Realization",
+      "source_id": "semprod-wp-operator-release",
+      "target_id": "semprod-ready-plateau",
+      "source_name": "WP-P3 Operator Journey and Production Release",
+      "target_name": "Production Semantic Retrieval Ready",
+      "description": "WP-P3 establishes the target only after proposed production acceptance passes; this is intent, not delivery evidence.",
+      "statement": "WP-P3 Operator Journey and Production Release --(Realization)--> Production Semantic Retrieval Ready"
+    },
+    {
+      "id": "semprod-rel-wp1-backfill",
+      "name": "WP-P1 realizes full backfill control",
+      "type": "Realization",
+      "source_id": "semprod-wp-persistence-backfill",
+      "target_id": "semprod-backfill-control",
+      "source_name": "WP-P1 Persistent Projection and Full Backfill",
+      "target_name": "Full Semantic Index Backfill Control",
+      "description": "Directional semantics: WP-P1 delivers the explicit bounded, resumable, idempotent three-channel production backfill control; this relationship does not imply delivery evidence or human approval.",
+      "statement": "WP-P1 Persistent Projection and Full Backfill --(Realization)--> Full Semantic Index Backfill Control"
+    },
+    {
+      "id": "semprod-rel-backfill-lifecycle",
+      "name": "Full backfill triggers index lifecycle",
+      "type": "Triggering",
+      "source_id": "semprod-backfill-control",
+      "target_id": "grag-index-lifecycle",
+      "source_name": "Full Semantic Index Backfill Control",
+      "target_name": "All Mutation Index Lifecycle",
+      "description": "Directional semantics: explicit production backfill drives bounded generation/persistence lifecycle work for enumerated canonical records without fabricating canonical mutations; lifecycle completion cannot align the index until all three channels complete.",
+      "statement": "Full Semantic Index Backfill Control --(Triggering)--> All Mutation Index Lifecycle"
+    },
+    {
+      "id": "semprod-rel-adapter-backfill",
+      "name": "Qualified adapter serves production backfill",
+      "type": "Serving",
+      "source_id": "grag-embedding-provider-adapter",
+      "target_id": "semprod-backfill-control",
+      "source_name": "Independent Embedding Provider Adapter",
+      "target_name": "Full Semantic Index Backfill Control",
+      "description": "Directional semantics: the existing independent provider adapter serves backfill with the qualified externally credentialed embedding capability; backfill neither embeds credentials nor requires Neo4j GenAI Plugin.",
+      "statement": "Independent Embedding Provider Adapter --(Serving)--> Full Semantic Index Backfill Control"
     }
   ],
   "views": [
@@ -3298,6 +3871,102 @@
         "grag-rel-w3-w31",
         "grag-rel-w31-w4",
         "grag-rel-w31-index-lifecycle"
+      ]
+    },
+    {
+      "view_id": "semprod-requirements-realization",
+      "view_name": "Production Semantic Index Requirements Realization",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: a newly initialized project must progress from canonical structural projection to a complete, durable, aligned semantic index without weakening canonical authority, compatible full reads, or the existing live-E2E test-only cleanup boundary; Purpose: designing, deciding, auditing, and handoff preparation; Scope: WP-P1 production backfill and separate persistence path as the current handoff focus, with default retrieval/readiness retained only as later WP-P2 context; Rationale: this view traces SP-01/SP-02 production requirements to full-backfill behavior and the semantic-index realization while preserving canonical JSON authority and treating Neo4j only as projection/index.",
+      "included_elements": [
+        "grag-semantic-index",
+        "semprod-goal",
+        "semprod-bootstrap-capability",
+        "semprod-backfill-control",
+        "semprod-persistent-projection-requirement",
+        "semprod-default-vector-retrieval",
+        "semprod-readiness-requirement"
+      ],
+      "included_relationships": [
+        "semprod-rel-capability-goal",
+        "semprod-rel-backfill-persistence",
+        "semprod-rel-index-persistence",
+        "semprod-rel-default-index",
+        "semprod-rel-readiness-goal"
+      ]
+    },
+    {
+      "view_id": "semprod-operator-journey",
+      "view_name": "New Project Semantic Retrieval Operator Journey",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: an operator needs an explicit path from argo init through structural projection, semantic backfill, readiness verification, and semantic query; Purpose: designing and informing; Scope: new-project production operation and pending/ready states; Rationale: this view binds the business journey to application processes and service use while automatic backfill remains explicit opt-in.",
+      "included_elements": [
+        "grag-query-service",
+        "semprod-operator-role",
+        "semprod-structural-projection",
+        "semprod-backfill-control",
+        "semprod-readiness-requirement",
+        "semprod-operator-journey-process",
+        "semprod-ready-plateau"
+      ],
+      "included_relationships": [
+        "semprod-rel-operator-journey",
+        "semprod-rel-journey-structural",
+        "semprod-rel-structural-backfill",
+        "semprod-rel-backfill-journey",
+        "semprod-rel-query-journey",
+        "semprod-rel-ready-journey"
+      ]
+    },
+    {
+      "view_id": "semprod-delivery-sequence",
+      "view_name": "Production Semantic Completion Delivery Sequence",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: the production semantic gap must close through sequenced work packages whose dependencies match architecture dependencies and whose gates do not reuse test-only evidence; Purpose: deciding and handoff preparation; Scope: persistent projection/backfill, default retrieval/readiness, operator release, and target plateau; Rationale: this view exposes the gap, ordered work packages, affected requirements, and target plateau without marking new work delivered.",
+      "included_elements": [
+        "semprod-new-project-gap",
+        "semprod-persistent-projection-requirement",
+        "semprod-readiness-requirement",
+        "semprod-ready-plateau",
+        "semprod-wp-persistence-backfill",
+        "semprod-wp-default-retrieval",
+        "semprod-wp-operator-release"
+      ],
+      "included_relationships": [
+        "semprod-rel-gap-wp1",
+        "semprod-rel-wp1-wp2",
+        "semprod-rel-wp2-wp3",
+        "semprod-rel-wp1-persistence",
+        "semprod-rel-wp2-readiness",
+        "semprod-rel-wp3-plateau"
+      ]
+    },
+    {
+      "view_id": "semprod-wp1-persistence-backfill",
+      "view_name": "WP-P1 Persistent Projection and Full Backfill",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need WP-P1 scope and dependencies to prove a separate durable production persistence path plus bounded resumable three-channel full backfill without reusing or weakening test-only cleanup evidence; Purpose: deciding, auditing, and handoff preparation; Scope: only semprod-wp-persistence-backfill and its five affected elements, with canonical structural projection as the upstream trigger; Rationale: this view binds the WP-P1 work package to the explicit backfill control, persistence requirement, existing delivered lifecycle/index/adapter boundaries, and structural prerequisite while excluding WP-P2 default retrieval and WP-P3 release work.",
+      "included_elements": [
+        "semprod-wp-persistence-backfill",
+        "semprod-structural-projection",
+        "semprod-backfill-control",
+        "semprod-persistent-projection-requirement",
+        "grag-index-lifecycle",
+        "grag-embedding-provider-adapter",
+        "grag-semantic-index"
+      ],
+      "included_relationships": [
+        "semprod-rel-structural-backfill",
+        "grag-rel-lifecycle-index",
+        "semprod-rel-backfill-persistence",
+        "semprod-rel-index-persistence",
+        "semprod-rel-wp1-backfill",
+        "semprod-rel-backfill-lifecycle",
+        "semprod-rel-adapter-backfill"
       ]
     }
   ]
