@@ -1,6 +1,6 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-26T23:30:00+08:00",
+  "generatedAt": "2026-07-26T23:39:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "WP-P2 Default Vector Retrieval and Readiness: replace the synthetic or empty default uninjected MCP semantic path with qualified externally credentialed query embedding and persistent Neo4j Vector Index retrieval, independently return all qualifying or zero Element, ArchitectureRelationship, and View seeds, apply deterministic purpose and structural closure with canonical checks, and reject every non-aligned pure semantic request without snapshot fallback while preserving no-argument and graph-tidy full snapshots.",
   "intentElementIds": [
@@ -23,14 +23,15 @@
     "grag-rel-native-index",
     "grag-rel-native-seeds",
     "grag-rel-seeds-closure",
-    "semprod-rel-default-readiness"
+    "semprod-rel-default-readiness",
+    "semprod-rel-default-credentials"
   ],
   "openQuestions": [],
   "notes": [
     "Persistent stage/session ID: intent-semprod-wp-p2-20260726T2330+08.",
     "Replacement rationale: this schema has one temporary intent-to-implementation slot and previously contained the accepted WP-P1 handoff. WP-P2 is the explicitly authorized next package after accepted 40/40 WP-P1 delivery, so this artifact intentionally supersedes the temp WP-P1 handoff without revising or invalidating WP-P1; its governance record remains in design/persistant-memory/intention-design.md and accepted commits.",
-    "Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint. Concern: requirements owners, delivery owners, ICT architects, runtime operators, and acceptors need default production vector retrieval and fail-closed readiness with preserved full-snapshot compatibility. Purpose: designing, deciding, auditing, and handoff preparation.",
-    "View binding: semprod-requirements-realization traces SP-03/SP-04 realization. semprod-wp2-default-retrieval-readiness binds the public MCP/readiness delivery boundary, and semprod-wp2-vector-seed-closure binds the lower vector/seed/closure pipeline. The two WP-P2 delivery views are layered to remain at or below seven elements and explicitly exclude WP-P3.",
+    "Selected viewpoints and primary purposes: semprod-requirements-realization is a Requirements Realization Viewpoint instance whose single primary purpose is designing; semprod-wp2-default-retrieval-readiness and semprod-wp2-vector-seed-closure are Implementation and Migration Viewpoint instances whose single primary purpose is deciding.",
+    "View binding: semprod-requirements-realization traces SP-03/SP-04 to the motivation, capability, application, technology, data, and external-credential constraint elements that realize them. semprod-wp2-default-retrieval-readiness binds the public MCP/readiness decision boundary, and semprod-wp2-vector-seed-closure binds the lower vector/seed/closure dependency decision. The two WP-P2 delivery views remain at or below seven elements and explicitly exclude WP-P3.",
     "Human approval: the 2026-07-26 parent authorization explicitly required mounting and formalizing ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval and ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness and producing this seven-element WP-P2 handoff with no unresolved adequacy blocker. The schema has no approvedByHuman property, so global approval is recorded in this schema-compliant note; per-testcase approval is recorded in acceptanceApproval.SP-03 and acceptanceApproval.SP-04.",
     "Coverage: semprod-default-vector-retrieval functionalPoint.SP-03-default-vector-retrieval -> mounted ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval at tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js.",
     "Coverage: semprod-readiness-requirement functionalPoint.SP-04-fail-closed-readiness -> mounted ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness at tests/explicit/entries/runProductionSemanticReadinessGate.js.",
@@ -45,10 +46,12 @@
     "SP-04 boundary: structural-only SemanticIndexPending, partial, stale, failed, unknown, or version/channel-mismatched states reject pure semantic requests before retrieval with actionable state/version/channel evidence and fullSnapshotFallback:false; only complete three-channel canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests remain exact full snapshots.",
     "ImplementationDesign must materialize the two mounted physical entrypoints and define frozen implementation contracts/tests before Coding/Repair. Their graph acceptanceCriteria paths are approved intent anchors, not current pass evidence.",
     "Scope exclusion: no production cleanup beyond accepted WP-P1 contracts, no operator CLI/docs/release journey, no SP-05 mount, and no WP-P3 implementation are authorized.",
+    "External credential traceability: semprod-rel-default-credentials is a Realization from semprod-default-vector-retrieval to the existing grag-credential-boundary and appears in all three affected WP-P2 views. The constraint remains required context and does not broaden the seven intentElementIds implementation scope.",
     "SP-05 preservation: semprod-operator-journey-process retains empty testcases plus unchanged futureAcceptanceBoundary.SP-05 and futureMountOwner.SP-05 metadata; tests/explicit/entries/runNewProjectSemanticOperatorJourney.js remains uncreated.",
     "Mutation evidence: corrected authoritative preview passed with written=false for 2 element updates, 2 new layered views, 4 new relationships, and 1 view update; apply wrote the same mutation; counts changed from 61/79/31 to 61/83/33; errors were empty.",
     "Canonical graph validation passed with exitCode 0. Post-write structural Neo4j sync failed exactly neo4jUri is required for start; this environment evidence is not treated as production composition correctness and no sync success is fabricated.",
     "The apply response separately reported touched-record embedding lifecycle alignmentState=Aligned and fail-closed failure-matrix evidence with fullSnapshotFallback:false. This does not substitute for failed structural Neo4j synchronization or future SP-03/SP-04 acceptance.",
+    "Mounted-boundary audit correction: parent element 1210 now registers semprod-requirements-realization; parent element 1211 now registers semprod-wp2-default-retrieval-readiness and semprod-wp2-vector-seed-closure. Each corrected view declares exactly one primary purpose, and semprod-rel-default-credentials makes the external-credentials-only constraint graph-traversable.",
     "No runner-owned deliveryStatus attribute was manually created, changed, removed, or inferred."
   ]
 }

@@ -103,6 +103,10 @@
         {
           "view_id": "grag-vertical-chain-a",
           "view_name": "Graph RAG Vertical Dependency A"
+        },
+        {
+          "view_id": "semprod-requirements-realization",
+          "view_name": "Production Semantic Index Requirements Realization"
         }
       ]
     },
@@ -129,6 +133,14 @@
         {
           "view_id": "grag-vertical-chain-b",
           "view_name": "Graph RAG Vertical Dependency B"
+        },
+        {
+          "view_id": "semprod-wp2-default-retrieval-readiness",
+          "view_name": "WP-P2 Default Retrieval and Readiness Boundary"
+        },
+        {
+          "view_id": "semprod-wp2-vector-seed-closure",
+          "view_name": "WP-P2 Vector Seed and Closure Pipeline"
         }
       ]
     },
@@ -3425,6 +3437,17 @@
       "target_name": "Fail-Closed Semantic Index Readiness",
       "description": "Directional semantics: the default semantic path realizes readiness by rejecting pending, partial, stale, failed, unknown, or mismatched index states before retrieval with actionable evidence and fullSnapshotFallback:false, while preserving full-snapshot modes.",
       "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> Fail-Closed Semantic Index Readiness"
+    },
+    {
+      "id": "semprod-rel-default-credentials",
+      "name": "Default retrieval realizes external credential constraint",
+      "type": "Realization",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "grag-credential-boundary",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "External Production Credential Boundary",
+      "description": "Directional semantics: the WP-P2 default uninjected semantic retrieval function realizes the existing credential constraint by accepting Neo4j and embedding credentials only from approved external sources, rejecting missing, conflicting, unsafe, legacy-alias, literal, test, or default credentials before provider, database, retrieval, or index side effects, and never transporting secrets through Cypher or graph evidence.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> External Production Credential Boundary"
     }
   ],
   "views": [
@@ -3954,23 +3977,23 @@
       "view_name": "Production Semantic Index Requirements Realization",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, and acceptors need WP-P2 default semantic retrieval and fail-closed readiness to be realized by the shipped MCP, qualified embedding, persistent Neo4j vector, deterministic closure, structural completion, and canonical-authority boundaries without weakening full-snapshot compatibility; Purpose: designing, deciding, auditing, and handoff preparation; Scope: current WP-P2 SP-03/SP-04 requirement realization over the accepted WP-P1 durable aligned semantic-index substrate, with WP-P3 operator release excluded; Rationale: this view traces the mounted production retrieval/readiness acceptance boundaries to the exact application, data, and requirement elements that realize them while preserving canonical JSON authority.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, and acceptors need SP-03/SP-04 to be realized by the shipped default semantic function, native vector projection, bootstrap capability, and external credential constraint without weakening canonical authority or full-snapshot compatibility; Purpose: designing; Scope: WP-P2 default retrieval and fail-closed readiness requirements over the accepted durable semantic index, including native retrieval, production bootstrap capability, and external production credentials, while WP-P3 remains excluded; Rationale: this view is a Requirements Realization Viewpoint instance because it traces the two mounted requirements to the motivation, capability, application, technology, data, and constraint elements that satisfy them.",
       "included_elements": [
         "grag-semantic-index",
         "semprod-goal",
         "semprod-bootstrap-capability",
-        "semprod-backfill-control",
-        "semprod-persistent-projection-requirement",
         "semprod-default-vector-retrieval",
-        "semprod-readiness-requirement"
+        "semprod-readiness-requirement",
+        "grag-native-retrieval-service",
+        "grag-credential-boundary"
       ],
       "included_relationships": [
         "semprod-rel-capability-goal",
-        "semprod-rel-backfill-persistence",
-        "semprod-rel-index-persistence",
         "semprod-rel-default-index",
         "semprod-rel-readiness-goal",
-        "semprod-rel-default-readiness"
+        "semprod-rel-default-readiness",
+        "grag-rel-native-index",
+        "semprod-rel-default-credentials"
       ]
     },
     {
@@ -4051,24 +4074,24 @@
       "view_name": "WP-P2 Default Retrieval and Readiness Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need the WP-P2 default MCP and readiness boundary to replace synthetic/empty retrieval while preserving accepted WP-P1 and excluding WP-P3; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P2 work package, accepted WP-P1 predecessor, semantic index, default retrieval, readiness, query service, and MCP interface; Rationale: this bounded view binds WP-P2 sequencing and realization to the public default semantic query boundary and fail-closed availability without authorizing operator CLI, documentation, release journey, or SP-05 work.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need the WP-P2 public MCP/readiness boundary, realization assignments, and external credential dependency to agree without authorizing WP-P3; Purpose: deciding; Scope: WP-P2 work package, semantic index, default retrieval, fail-closed readiness, query service, MCP interface, and external production credential constraint; Rationale: this view is an Implementation and Migration Viewpoint instance because it binds the authorized work package to its public application boundary, readiness requirement, and mandatory credential constraint while predecessor sequencing remains in semprod-delivery-sequence.",
       "included_elements": [
-        "semprod-wp-persistence-backfill",
         "semprod-wp-default-retrieval",
         "grag-semantic-index",
         "semprod-default-vector-retrieval",
         "semprod-readiness-requirement",
         "grag-query-service",
-        "grag-mcp-interface"
+        "grag-mcp-interface",
+        "grag-credential-boundary"
       ],
       "included_relationships": [
-        "semprod-rel-wp1-wp2",
         "semprod-rel-wp2-default",
         "semprod-rel-wp2-readiness",
         "semprod-rel-default-index",
         "semprod-rel-default-query-service",
         "grag-rel-mcp-interface-service",
-        "semprod-rel-default-readiness"
+        "semprod-rel-default-readiness",
+        "semprod-rel-default-credentials"
       ]
     },
     {
@@ -4076,11 +4099,12 @@
       "view_name": "WP-P2 Vector Seed and Closure Pipeline",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners and acceptors need the production retrieval pipeline dependencies to match WP-P2 scope from durable aligned vectors through independent threshold-all seeds to deterministic closure; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P2 work package, default retrieval, delivered semantic index/native retrieval/seed retrieval/purpose closure boundaries; Rationale: this layered companion view isolates the lower retrieval pipeline so each view remains cognitively bounded, and shows that existing delivered native, seed, and closure elements are reused rather than redesigned; WP-P3 remains excluded.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners and acceptors need WP-P2 lower-pipeline dependencies to agree from externally credentialed default retrieval through the durable vector index, independent threshold-all seeds, and deterministic closure; Purpose: deciding; Scope: WP-P2 work package, default retrieval, semantic index, external production credential constraint, native retrieval, independent seed retrieval, and purpose closure; Rationale: this view is an Implementation and Migration Viewpoint instance because it isolates the affected lower retrieval pipeline and its mandatory constraint while reusing delivered native, seed, and closure elements and excluding WP-P3.",
       "included_elements": [
         "semprod-wp-default-retrieval",
         "grag-semantic-index",
         "semprod-default-vector-retrieval",
+        "grag-credential-boundary",
         "grag-native-retrieval-service",
         "grag-seed-retrieval",
         "grag-purpose-closure"
@@ -4091,7 +4115,8 @@
         "semprod-rel-default-seeds",
         "grag-rel-native-index",
         "grag-rel-native-seeds",
-        "grag-rel-seeds-closure"
+        "grag-rel-seeds-closure",
+        "semprod-rel-default-credentials"
       ]
     }
   ]
