@@ -1,15 +1,1 @@
-[
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-    "testdescription": "Control point: invoke a typed semantic query through the shipped default uninjected MCP path against a complete aligned persistent production-like Neo4j vector projection using only approved external credentials, with independent above-threshold, below-threshold, zero-result, closure, endpoint, View, provenance, graph-tidy, and canonical-version fixtures. Observation point: the path performs qualified query embedding and real Neo4j Vector Index retrieval for Element, ArchitectureRelationship, and View independently; returns every qualifying candidate or a valid zero result per channel; uses fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure plus endpoint/View/provenance completion; enforces canonical authority/version alignment; preserves graph-tidy full-snapshot bypass; and does not use a test-injected retrieval boundary, synthetic empty seeds, test/default credentials, or silent snapshot fallback.",
-    "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-    "relatedIntentElementId": "semprod-default-vector-retrieval",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP03_ACTUAL_MIXED_LEGACY_INSPECTION_MISSING:ARGO_NEO4J_URI\n+ actual - expected\n\n+ []\n- [\n-   'ARGO_NEO4J_PASSWORD',\n-   'ARGO_NEO4J_URI',\n-   'ARGO_NEO4J_USERNAME'\n- ]\n\n    at assertProductionQueryMixedLegacyRejections (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:950:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:34:3)",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP03_ACTUAL_MIXED_LEGACY_INSPECTION_MISSING:ARGO_NEO4J_URI\n+ actual - expected\n\n+ []\n- [\n-   'ARGO_NEO4J_PASSWORD',\n-   'ARGO_NEO4J_URI',\n-   'ARGO_NEO4J_USERNAME'\n- ]\n\n    at assertProductionQueryMixedLegacyRejections (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:950:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:34:3)"
-  }
-]
+[]

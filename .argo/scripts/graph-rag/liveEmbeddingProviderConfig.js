@@ -44,7 +44,6 @@ async function resolveApprovedLiveConfiguration(options) {
   return resolveTrusted({
     repositoryRoot,
     requiredOptIns: resolveRequiredOptIns(options),
-    readLegacyKeys: !Object.prototype.hasOwnProperty.call(options, 'useCase'),
     adapters: {
       filesystem: fs,
       systemMetadata: createSystemMetadataCommandAdapter({ repositoryRoot }),
@@ -64,7 +63,6 @@ async function withApprovedLiveConfigurationTestComposition(
   const resolver = Object.freeze(options => resolveTrusted({
     repositoryRoot: requireRoot(options && options.repositoryRoot),
     requiredOptIns: resolveRequiredOptIns(options),
-    readLegacyKeys: !Object.prototype.hasOwnProperty.call(options, 'useCase'),
     adapters,
     source,
   }));
@@ -74,7 +72,6 @@ async function withApprovedLiveConfigurationTestComposition(
 async function resolveTrusted({
   repositoryRoot,
   requiredOptIns = ['ARGO_LIVE_PROVIDER_E2E'],
-  readLegacyKeys = true,
   adapters,
   source,
 }) {
@@ -93,12 +90,7 @@ async function resolveTrusted({
   }
 
   const processValues = new Map();
-  const processKeys = [
-    ...READABLE_KEYS,
-    ...(readLegacyKeys ? LEGACY_KEYS : []),
-    ...PROHIBITED_RUNTIME_FIELD_KEYS,
-  ];
-  for (const key of processKeys) {
+  for (const key of [...READABLE_KEYS, ...LEGACY_KEYS, ...PROHIBITED_RUNTIME_FIELD_KEYS]) {
     const envelope = source.readProcessKey(key);
     validateEnvelope(envelope, source, key, null, 'process');
     processValues.set(key, envelope.value);
