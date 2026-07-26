@@ -304,6 +304,12 @@ function validatePhase1Benchmark(benchmark) {
     return 'DT18_BENCHMARK_INCOMPLETE';
   }
   for (const purpose of benchmark.purposes) {
+    if (purpose.mandatoryKeySeedIds.length === 0) {
+      return 'DT18_MANDATORY_KEY_SEEDS_MISSING';
+    }
+    if (purpose.expectedClosureIds.length === 0) {
+      return 'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING';
+    }
     if (purpose.recalledKeySeedIds.length === 0) {
       return 'DT18_ACTUAL_RECALL_EVIDENCE_MISSING';
     }
@@ -312,6 +318,12 @@ function validatePhase1Benchmark(benchmark) {
     }
     if (!isPrecisionInRange(purpose.precision)) {
       return 'DT18_PRECISION_OUT_OF_RANGE';
+    }
+    if (!Number.isInteger(purpose.unrelatedForcedHits)) {
+      return 'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING';
+    }
+    if (purpose.unrelatedForcedHits < 0) {
+      return 'DT18_UNRELATED_FORCED_HITS_NEGATIVE';
     }
   }
   return undefined;
@@ -331,7 +343,7 @@ function normalizePhase1Benchmark(benchmark) {
       expectedClosureIds: normalizeStringArray(purpose.expectedClosureIds),
       recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
       observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
-      unrelatedForcedHits: normalizeNonNegativeInteger(purpose.unrelatedForcedHits),
+      unrelatedForcedHits: purpose.unrelatedForcedHits,
       precision: purpose.precision,
     }))),
   });
@@ -403,10 +415,6 @@ function normalizeStringArray(value) {
   return Array.isArray(value)
     ? value.filter(entry => typeof entry === 'string' && entry.trim() !== '').map(entry => entry.trim())
     : [];
-}
-
-function normalizeNonNegativeInteger(value) {
-  return Number.isInteger(value) && value > 0 ? value : 0;
 }
 
 function isPrecisionInRange(value) {

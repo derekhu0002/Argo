@@ -1,18 +1,5 @@
 [
   {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-18",
-    "testdescription": "Acceptor perspective control point: run every approved benchmark query for all five purposes before overall delivery. Observation point: aggregate mandatory key seed recall, forbidden unrelated-query forced hits, expected closure correctness, and precision evidence.",
-    "acceptanceCriteria": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
-    "relatedIntentElementId": "grag-quality-gate",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runRetrievalQualityBenchmark.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT18_MANDATORY_KEY_SEEDS_MISSING\n+ actual - expected\n\n+ 'passed'\n- 'blocked'\n\n    at assertQualityBenchmarkBlocked (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:129:10)\n    at async main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:94:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT18_MANDATORY_KEY_SEEDS_MISSING\n+ actual - expected\n\n+ 'passed'\n- 'blocked'\n\n    at assertQualityBenchmarkBlocked (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:129:10)\n    at async main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runRetrievalQualityBenchmark.js:94:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'passed',\n  expected: 'blocked',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
-  },
-  {
     "testcasename": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
     "testdescription": "Acceptor perspective control point: record phase-1 result cardinality and precision by purpose. Observation point: inspect evidence availability and verify absence of silent truncation or a release cap.",
     "acceptanceCriteria": "tests/explicit/entries/runCapacityEvidence.js",
