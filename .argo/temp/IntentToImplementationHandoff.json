@@ -1,28 +1,25 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-25T16:27:00.000Z",
+  "generatedAt": "2026-07-26T13:50:00.000+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W7 Phase 1 business acceptance handoff: prove key seed recall, closure correctness, unrelated-query safety, and recorded precision through the approved business benchmark before allowing overall delivery.",
+  "summary": "DT-19/W7 capacity evidence handoff: create an ImplementationDesign RED boundary and Coding/Repair round for recording phase-1 result cardinality and precision evidence by purpose, while preserving the intent decision that capacity policy remains deferred.",
   "intentElementIds": [
-    "grag-quality-gate",
-    "grag-seven-wave-delivery"
+    "grag-capacity-residual"
   ],
   "relationshipIds": [
-    "grag-rel-provenance-quality",
     "grag-rel-quality-capacity",
     "grag-rel-w6-w7",
     "grag-rel-w7-quality"
   ],
   "openQuestions": [],
   "notes": [
-    "Global human approval evidence: the orchestrating W7 request approved Phase 1 business acceptance, release gates, acceptance mapping DT-00/DT-18/TS-08, handoff production, and the IntentDesign stage commit.",
-    "Coverage matrix: grag-quality-gate functionalPoint.DT-18-phase1-business-quality-gate -> ExplicitAcceptanceTestcase-DT-18; grag-seven-wave-delivery functionalPoint.TS-08 -> ExplicitAcceptanceTestcase-TS-08.",
-    "DT-18 boundary: key seed recall 100%, closure correctness 100%, unrelated queries zero forced hits, and precision recorded as evidence rather than as a lower-priority substitute for recall.",
-    "TS-08 boundary: W7 and whole delivery are blocked until W2-W6 are accepted and the W7 DT-18 business benchmark passes.",
-    "DT-00 mapping is preserved as goal/coherent-reading context through grag-goal and the existing coherent-result evidence; grag-capability remains capability context and is not a downstream implementation target for this handoff.",
-    "Selected viewpoints: Application Usage Viewpoint for business-observable query/retrieval acceptance context; Implementation and Migration Viewpoint for W7 sequencing, final delivery gate, and quality/capacity acceptance views.",
-    "View bindings affected: grag-quality-capacity and grag-seven-wave-gates remain Implementation and Migration Viewpoint instances with updated W7 business benchmark rationale.",
+    "Global human approval evidence: the orchestrating request approved opening a DT-19/W7 capacity evidence ImplementationDesign RED boundary and Coding/Repair round.",
+    "Selected viewpoint: Implementation and Migration Viewpoint. Concern: W7 produces capacity evidence after phase-1 quality proof without deciding budgets, pagination, caps, truncation, or continuation policy. Purpose: handoff preparation. Scope: grag-capacity-residual under grag-quality-capacity with W7 sequencing context.",
+    "Coverage matrix: grag-capacity-residual functionalPoint.DT-05-R2-DT-19-capacity-evidence -> ExplicitAcceptanceTestcase-DT-05-R2-DT-19.",
+    "Acceptance boundary: control point is recording phase-1 result cardinality and measured precision by declared purpose; observation point is evidence availability plus absence of silent cap, budget, pagination, truncation, or continuation control.",
+    "Upstream context: grag-quality-gate is delivered and influences grag-capacity-residual through grag-rel-quality-capacity; W7 sequencing remains represented by grag-rel-w6-w7 and grag-rel-w7-quality.",
+    "DT-19 remains an evidence-producing residual assessment only; this handoff does not authorize a human capacity decision or implementation of token budgets, pagination, caps, top-k, truncation, or continuation semantics.",
     "No deliveryStatus attribute was invented; existing runner-owned deliveryStatus values were preserved as read-only state.",
-    "No implementation artifacts, test code, scripts, configuration, or contracts were modified in this IntentDesign stage."
+    "No production code, test code, scripts, configuration, or implementation contracts were modified in this IntentDesign stage."
   ]
 }

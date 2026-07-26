@@ -1220,11 +1220,19 @@
         },
         {
           "name": "decisionTrace.DT-19",
-          "value": "open|human explicitly deferred budgets, pagination, caps, truncation, and continuation"
+          "value": "open|human explicitly deferred budgets, pagination, caps, truncation, and continuation decisions until after phase-1 capacity evidence is recorded"
+        },
+        {
+          "name": "functionalPoint.DT-05-R2-DT-19-capacity-evidence",
+          "value": "{\"description\":\"Record DT-19 capacity evidence without deciding capacity policy.\",\"businessOutcome\":\"Acceptors can inspect phase-1 result cardinality and precision by purpose before making any later human decision on budgets, pagination, caps, truncation, or continuation semantics.\",\"observableBoundary\":\"For each declared purpose in the phase-1 evidence run, capacity evidence records result cardinality and measured precision, while cap, budget, pagination, truncation, and continuation controls remain absent and cannot silently limit phase-1 correctness.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-05-R2-DT-19\"}"
         },
         {
           "name": "residualCoordination",
           "value": "No silent truncation or invented capacity limit is permitted in phase 1."
+        },
+        {
+          "name": "acceptanceApproval.DT-05-R2-DT-19",
+          "value": "approvedByHuman=true|2026-07-26|orchestrating DT-19/W7 capacity evidence request approved opening ImplementationDesign RED boundary and Coding/Repair round for evidence recording without capacity policy decisions"
         },
         {
           "name": "deliveryStatus",

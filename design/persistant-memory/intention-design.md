@@ -469,3 +469,32 @@
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
 - Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-00-W6, DT-13, DT-14, and DT-15 testcases and schema-compliant repair approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W5 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage repair commit.
 - Open business questions and adequacy blockers: none.
+
+## 2026-07-26 — DT-19 W7 Capacity Evidence Handoff
+
+- Selected viewpoint: Implementation and Migration Viewpoint.
+- Stakeholder concern: acceptors, requirements owners, implementation designers, and downstream repair owners need W7 to record phase-1 result cardinality and precision evidence for DT-19 without turning that evidence into a silent capacity policy decision.
+- Modeling purpose: handoff preparation for an ImplementationDesign RED boundary and Coding/Repair round.
+- Affected view binding: `grag-quality-capacity` remains an Implementation and Migration Viewpoint instance because it already frames W7 quality/capacity acceptance and explicitly keeps DT-19 capacity choices out of Phase 1 correctness.
+- Human approval evidence: the orchestrating request explicitly asked to open a DT-19/W7 capacity evidence ImplementationDesign RED boundary and Coding/Repair round. The schema does not permit an `approvedByHuman` field on the handoff JSON, so approval is recorded in handoff notes and as schema-compliant `acceptanceApproval.DT-05-R2-DT-19` on `grag-capacity-residual`.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved and not fabricated by Intent Design.
+
+### Coverage matrix
+
+- `grag-capacity-residual` — `functionalPoint.DT-05-R2-DT-19-capacity-evidence` -> `ExplicitAcceptanceTestcase-DT-05-R2-DT-19`.
+
+### Acceptance and dependency boundaries
+
+- DT-19 capacity evidence records phase-1 result cardinality and measured precision by declared purpose.
+- DT-19 remains a deferred residual assessment. This handoff does not authorize token budgets, pagination, caps, top-k, truncation, or continuation semantics.
+- `grag-quality-gate` is the delivered upstream context that influences DT-19 through `grag-rel-quality-capacity`; W7 sequencing remains represented by `grag-rel-w6-w7` and `grag-rel-w7-quality`.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for one `grag-capacity-residual` element update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read updated `grag-capacity-residual` context with implementation-design profile.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and existing viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-19 testcase and schema-compliant approval attribute; C1-C2 satisfied through explicit same-element coverage mapping and delivered W7 quality context; D1-D8 satisfied with no open questions and schema-compliant global approval note; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
+- Open business questions and adequacy blockers: none.
