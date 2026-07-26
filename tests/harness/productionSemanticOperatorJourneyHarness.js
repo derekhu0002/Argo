@@ -86,6 +86,7 @@ async function runNewProjectSemanticOperatorJourney() {
   const createJourney = loadFactory();
   const runCommand = loadCli();
   const canonicalBefore = fs.readFileSync(canonicalPath, 'utf8');
+  assertControlledReadinessAttestationStoreContract();
 
   const noOptIn = await runSuccessfulJourney({
     createJourney,
@@ -374,6 +375,7 @@ function createRecordingComposition({
   const configurationFingerprint = JSON.stringify(APPROVED_CONFIGURATION);
   let readiness = readinessRecord('SemanticIndexPending');
   let interrupted = false;
+  const readinessAttestationStore = createControlledReadinessAttestationStore();
 
   function record(kind, details = {}) {
     events.push(deepFreeze({ sequence: events.length + 1, kind, ...details }));
@@ -475,6 +477,7 @@ function createRecordingComposition({
         readinessVerified: true,
       };
     },
+    readinessAttestationStore,
   });
 
   return {
@@ -484,9 +487,88 @@ function createRecordingComposition({
       return deepFreeze({
         events: [...events],
         readiness,
+        readinessAttestation: readinessAttestationStore.snapshot(),
       });
     },
   };
+}
+
+function createControlledReadinessAttestationStore() {
+  const readinessFields = [
+    'state',
+    'verified',
+    'canonicalVersion',
+    'contentVersion',
+    'indexVersion',
+    'completedChannels',
+    'missingChannels',
+    'mismatchedChannels',
+    'fullSnapshotFallback',
+  ];
+  let storedRecord;
+
+  function copyReadiness(source = {}) {
+    return deepFreeze(Object.fromEntries(readinessFields.map(field => [
+      field,
+      Array.isArray(source[field]) ? [...source[field]] : source[field],
+    ])));
+  }
+
+  return Object.freeze({
+    clear() {
+      storedRecord = undefined;
+    },
+    read() {
+      return storedRecord;
+    },
+    record(readiness = {}) {
+      storedRecord = deepFreeze({
+        ...copyReadiness(readiness),
+        authorizationOperation: readiness.authorizationOperation,
+      });
+      return storedRecord;
+    },
+    validate(attestation, currentReadiness) {
+      if (
+        !attestation
+        || attestation.authorizationOperation !== 'verifyReadiness'
+        || attestation.verified !== true
+        || currentReadiness.verified !== true
+      ) return false;
+      const current = copyReadiness(currentReadiness);
+      return readinessFields.every(field => (
+        JSON.stringify(attestation[field]) === JSON.stringify(current[field])
+      ));
+    },
+    snapshot() {
+      return storedRecord;
+    },
+  });
+}
+
+function assertControlledReadinessAttestationStoreContract() {
+  const store = createControlledReadinessAttestationStore();
+  const aligned = readinessRecord('Aligned');
+  assert.strictEqual(store.read(), undefined, 'SP05_CONTROLLED_STORE_MUST_BEGIN_EMPTY');
+  const recorded = store.record({
+    ...aligned,
+    authorizationOperation: 'verifyReadiness',
+  });
+  assert.strictEqual(
+    store.validate(recorded, aligned),
+    true,
+    'SP05_CONTROLLED_STORE_REJECTED_EXACT_READINESS',
+  );
+  assert.strictEqual(
+    store.validate(recorded, {
+      ...aligned,
+      indexVersion: 'index:controlled-drift',
+    }),
+    false,
+    'SP05_CONTROLLED_STORE_ACCEPTED_READINESS_DRIFT',
+  );
+  store.clear();
+  assert.strictEqual(store.read(), undefined, 'SP05_CONTROLLED_STORE_CLEAR_FAILED');
 }
 
 function assertNewProjectSemanticOperatorJourney(result) {
@@ -676,6 +758,11 @@ function assertRejectedAutomaticBackfillControls(result) {
       countEvents(item, 'canonical-mutation'),
       0,
       `SP05_${item.configurationCase.toUpperCase()}_CANONICAL_MUTATION_SIDE_EFFECT`,
+    );
+    assert.strictEqual(
+      item.observations.readinessAttestation,
+      undefined,
+      `SP05_${item.configurationCase.toUpperCase()}_ATTESTATION_CREATED_AFTER_REJECTION`,
     );
   }
 }
@@ -883,6 +970,12 @@ function assertReadyThenQuery(outcome) {
   assert.strictEqual(outcome.readiness.state, 'Aligned', 'SP05_READINESS_NOT_ALIGNED');
   assert.strictEqual(outcome.readiness.verified, true, 'SP05_READINESS_NOT_EXPLICITLY_VERIFIED');
   assert.strictEqual(outcome.query.readinessVerified, true, 'SP05_QUERY_WITHOUT_READINESS_EVIDENCE');
+  assert.strictEqual(
+    outcome.observations.readinessAttestation
+      && outcome.observations.readinessAttestation.authorizationOperation,
+    'verifyReadiness',
+    'SP05_EXPLICIT_READINESS_ATTESTATION_NOT_RECORDED',
+  );
   assertBefore(
     outcome.observations.events,
     'semantic-readiness-read',

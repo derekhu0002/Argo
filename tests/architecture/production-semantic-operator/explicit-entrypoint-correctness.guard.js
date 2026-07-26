@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const ts = require('typescript');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const entryPath = 'tests/explicit/entries/runNewProjectSemanticOperatorJourney.js';
@@ -11,6 +12,19 @@ const entry = read(entryPath);
 const harness = read(harnessPath);
 const adapterHarness = read(adapterHarnessPath);
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+
+assert.doesNotThrow(
+  () => assertPrimaryHarnessDurableComposition(harness, harnessPath),
+  'WP_P3_ENTRYPOINT_GUARD: primary Harness durable store composition rejected',
+);
+assert.throws(
+  () => assertPrimaryHarnessDurableComposition(
+    harness.replace(/^\s*readinessAttestationStore,\r?$/m, ''),
+    'missing-primary-store.fixture.js',
+  ),
+  /WP_P3_ENTRYPOINT_GUARD/,
+  'WP_P3_ENTRYPOINT_GUARD: primary Harness missing-store fixture passed',
+);
 
 // GIVEN the one approved SP-05 physical entrypoint and its business-readable Harness
 // WHEN phases, public wishes, assertions, and frozen ownership are inspected
@@ -34,6 +48,7 @@ for (const required of [
   'SP05_CLI_CROSS_PROCESS_QUERY_NOT_AUTHORIZED',
   'SP05_SAME_PROCESS_READINESS_DRIFT',
   'SP05_DURABLE_ATTESTATION_STORE_NOT_MANDATORY',
+  'captureMissingDurableStoreRequirement',
   'SP05_PACKAGE_BACKFILL_FORGES_EXPLICIT_CONSENT',
   'SEMANTIC_QUERY_BYPASSES_OPERATOR',
   'captureAdapterQueryWithoutJourney',
@@ -138,8 +153,85 @@ for (const required of [
   'database-write',
   'SECRET_CANARY',
   'UNSAFE_SOURCE_CANARY',
+  'createControlledReadinessAttestationStore',
+  'assertControlledReadinessAttestationStoreContract',
+  'SP05_CONTROLLED_STORE_ACCEPTED_READINESS_DRIFT',
+  'SP05_EXPLICIT_READINESS_ATTESTATION_NOT_RECORDED',
+  'ATTESTATION_CREATED_AFTER_REJECTION',
 ]) {
   assert(harness.includes(required), `WP_P3_ENTRYPOINT_GUARD: Harness omits ${required}`);
+}
+
+function assertPrimaryHarnessDurableComposition(source, label) {
+  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  assert.strictEqual(
+    ast.parseDiagnostics.length,
+    0,
+    `WP_P3_ENTRYPOINT_GUARD: ${label} is not parseable JavaScript`,
+  );
+  const composition = ast.statements.find(statement => (
+    ts.isFunctionDeclaration(statement)
+    && statement.name
+    && statement.name.text === 'createRecordingComposition'
+  ));
+  assert(composition && composition.body, `WP_P3_ENTRYPOINT_GUARD: ${label} composition missing`);
+  const declarations = [];
+  walk(composition.body, node => {
+    if (ts.isVariableDeclaration(node)) declarations.push(node);
+  });
+  const store = declarations.find(declaration => (
+    ts.isIdentifier(declaration.name)
+    && declaration.name.text === 'readinessAttestationStore'
+  ));
+  assert(
+    store
+      && store.initializer
+      && ts.isCallExpression(store.initializer)
+      && ts.isIdentifier(store.initializer.expression)
+      && store.initializer.expression.text === 'createControlledReadinessAttestationStore'
+      && store.initializer.arguments.length === 0,
+    `WP_P3_ENTRYPOINT_GUARD: ${label} controlled store binding missing`,
+  );
+  const dependencies = declarations.find(declaration => (
+    ts.isIdentifier(declaration.name)
+    && declaration.name.text === 'dependencies'
+  ));
+  assert(
+    dependencies && dependencies.initializer && ts.isCallExpression(dependencies.initializer),
+    `WP_P3_ENTRYPOINT_GUARD: ${label} dependency object missing`,
+  );
+  const dependencyObject = dependencies.initializer.arguments[0];
+  assert(
+    dependencyObject
+      && ts.isObjectLiteralExpression(dependencyObject)
+      && dependencyObject.properties.some(property => (
+        ts.isShorthandPropertyAssignment(property)
+        && property.name.text === 'readinessAttestationStore'
+      )),
+    `WP_P3_ENTRYPOINT_GUARD: ${label} omits mandatory controlled store`,
+  );
+  const journeyCalls = [];
+  walk(ast, node => {
+    if (
+      ts.isCallExpression(node)
+      && ts.isIdentifier(node.expression)
+      && node.expression.text === 'createJourney'
+    ) journeyCalls.push(node);
+  });
+  assert(journeyCalls.length > 0, `WP_P3_ENTRYPOINT_GUARD: ${label} journey compositions missing`);
+  assert(
+    journeyCalls.every(call => (
+      call.arguments.length === 1
+      && ts.isPropertyAccessExpression(call.arguments[0])
+      && call.arguments[0].name.text === 'dependencies'
+    )),
+    `WP_P3_ENTRYPOINT_GUARD: ${label} bypasses controlled fixture dependencies`,
+  );
+}
+
+function walk(node, visit) {
+  visit(node);
+  ts.forEachChild(node, child => walk(child, visit));
 }
 
 for (const frozen of [
