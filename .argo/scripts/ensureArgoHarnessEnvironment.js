@@ -19,16 +19,82 @@ const REQUIRED_TOOL_NAMES = [
   'validateSystemArchitecture',
 ];
 
+function loadRepositoryArgoEnvironment(workspaceRoot) {
+  const envPath = path.join(workspaceRoot, '.argo', '.env');
+  const result = {
+    status: 'missing',
+    path: normalizeRelativePath(path.relative(workspaceRoot, envPath)),
+    loadedBeforeProjection: true,
+    assignedCount: 0,
+    preservedProcessCount: 0,
+  };
+
+  if (!fs.existsSync(envPath)) {
+    return result;
+  }
+
+  const entries = parseRepositoryEnvFile(fs.readFileSync(envPath, 'utf8'));
+  for (const [key, value] of entries) {
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+      result.assignedCount += 1;
+    } else {
+      result.preservedProcessCount += 1;
+    }
+  }
+
+  result.status = 'loaded';
+  return result;
+}
+
+function parseRepositoryEnvFile(content) {
+  const entries = [];
+  for (const rawLine of String(content).split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf('=');
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+      continue;
+    }
+
+    const value = parseRepositoryEnvValue(line.slice(separatorIndex + 1).trim());
+    entries.push([key, value]);
+  }
+  return entries;
+}
+
+function parseRepositoryEnvValue(value) {
+  if (value.length >= 2) {
+    const quote = value[0];
+    if ((quote === '"' || quote === "'") && value[value.length - 1] === quote) {
+      const inner = value.slice(1, -1);
+      return quote === '"' ? inner.replace(/\\n/g, '\n').replace(/\\r/g, '\r') : inner;
+    }
+  }
+  const commentIndex = value.search(/\s#/);
+  return commentIndex >= 0 ? value.slice(0, commentIndex).trimEnd() : value;
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const workspaceRoot = resolveWorkspaceRoot();
   const reportPath = path.join(workspaceRoot, '.argo', 'temp', 'argo-harness-init-report.json');
+  const harnessEnvironment = loadRepositoryArgoEnvironment(workspaceRoot);
   const report = {
     status: 'ok',
     workspaceRoot,
     generatedAt: new Date().toISOString(),
     mode: options.checkOnly ? 'check-only' : 'prepare-and-check',
     reportPath: normalizeRelativePath(path.relative(workspaceRoot, reportPath)),
+    harnessEnvironment,
   };
 
   try {
@@ -37,7 +103,7 @@ async function main() {
     report.neo4j = await ensureNeo4jProjection({ checkOnly: options.checkOnly });
   } catch (error) {
     report.status = 'failed';
-    report.error = String(error && error.stack ? error.stack : error);
+    report.error = formatErrorForReport(error);
   }
 
   if (report.mcp && report.mcp.status === 'failed') {
@@ -251,7 +317,18 @@ function writeJson(filePath, payload) {
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
+function formatErrorForReport(error) {
+  let message = String(error && error.stack ? error.stack : error);
+  for (const key of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.length > 0) {
+      message = message.split(value).join(`[REDACTED:${key}]`);
+    }
+  }
+  return message;
+}
+
 main().catch(error => {
-  console.error(String(error && error.stack ? error.stack : error));
+  console.error(formatErrorForReport(error));
   process.exit(1);
 });

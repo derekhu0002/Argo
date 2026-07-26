@@ -8,6 +8,11 @@ const {
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const SYNC_STATE_RELATIVE_PATH = '.argo/temp/neo4j-system-architecture-sync-state.json';
+const LEGACY_NEO4J_ENV_KEYS = Object.freeze([
+  'ARGO_NEO4J_URI',
+  'ARGO_NEO4J_USERNAME',
+  'ARGO_NEO4J_PASSWORD',
+]);
 
 function getRepoRoot() {
   return process.env.ARGO_REPO_ROOT
@@ -37,10 +42,11 @@ function getDefaultNeo4jDatabaseName() {
 }
 
 function getNeo4jConfig(overrides = {}) {
+  rejectLegacyNeo4jEnvironment();
   const external = resolveExternalProductionConfig({
-    neo4jUri: selectExternalValue(overrides.uri, process.env.ARGO_NEO4J_URI),
-    neo4jUsername: selectExternalValue(overrides.username, process.env.ARGO_NEO4J_USERNAME),
-    neo4jPassword: selectExternalValue(overrides.password, process.env.ARGO_NEO4J_PASSWORD),
+    neo4jUri: selectExternalValue(overrides.uri, process.env.ARGO_NEO4J_DATABASE_URL),
+    neo4jUsername: selectExternalValue(overrides.username, process.env.ARGO_NEO4J_DATABASE_USERNAME),
+    neo4jPassword: selectExternalValue(overrides.password, process.env.ARGO_NEO4J_DATABASE_PASSWORD),
     embeddingCredential: selectExternalValue(
       overrides.embeddingCredential,
       process.env.ARGO_EMBEDDING_CREDENTIAL,
@@ -52,6 +58,21 @@ function getNeo4jConfig(overrides = {}) {
     password: external.neo4jPassword,
     database: overrides.database || process.env.ARGO_NEO4J_DATABASE || getDefaultNeo4jDatabaseName(),
   };
+}
+
+function rejectLegacyNeo4jEnvironment() {
+  const legacyKey = LEGACY_NEO4J_ENV_KEYS.find(key => {
+    const value = process.env[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+  if (!legacyKey) {
+    return;
+  }
+
+  const error = new Error(`${legacyKey} is not an approved Neo4j configuration source`);
+  error.category = 'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS';
+  error.field = legacyKey;
+  throw error;
 }
 
 function selectExternalValue(overrideValue, environmentValue) {
