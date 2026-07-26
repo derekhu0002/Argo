@@ -272,6 +272,39 @@ assert.throws(
   /WP_P2_EXPLICIT_ENTRYPOINT_GUARD/,
   'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility raw-fallback fixture passed',
 );
+for (const [label, adversarial] of [
+  ['undefined-property', harness.replace(
+    'semanticOperatorJourney ? { semanticOperatorJourney } : undefined',
+    'semanticOperatorJourney ? { semanticOperatorJourney: undefined } : undefined',
+  )],
+  ['dead-conditional', harness.replace(
+    /\? createApprovedDefaultSemanticOperatorJourneyAdapter\(\)\r?\n    : undefined;/,
+    '? false\n      ? createApprovedDefaultSemanticOperatorJourneyAdapter()\n      : undefined\n    : undefined;',
+  )],
+  ['raw-substitution', harness.replace(
+    'semanticOperatorJourney ? { semanticOperatorJourney } : undefined',
+    'semanticOperatorJourney ? { semanticOperatorJourney: semanticRetrievalBoundary } : undefined',
+  )],
+  ['dead-decoy', harness
+    .replace(
+      'semanticOperatorJourney ? { semanticOperatorJourney } : undefined',
+      'semanticOperatorJourney ? { semanticOperatorJourney: undefined } : undefined',
+    )
+    .replace(
+      '  return callTool(',
+      '  createApprovedDefaultSemanticOperatorJourneyAdapter();\n  return callTool(',
+    )],
+  ['shadowed-factory', harness.replace(
+    'function callDefaultGetSystemArchitecture(args) {',
+    'function callDefaultGetSystemArchitecture(args) {\n  const createApprovedDefaultSemanticOperatorJourneyAdapter = () => undefined;',
+  )],
+]) {
+  assert.throws(
+    () => assertInheritedSemanticOperatorComposition(adversarial, compatibilityHarness),
+    /WP_P2_EXPLICIT_ENTRYPOINT_GUARD/,
+    `WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ${label} default journey fixture passed`,
+  );
+}
 const {
   assertNoProbeCompatibilityUsesInjectedBoundary,
 } = require(path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js'));
@@ -328,19 +361,47 @@ assertNoProbeCompatibilityUsesInjectedBoundary()
   });
 
 function assertInheritedSemanticOperatorComposition(defaultHarness, compatibilitySource) {
-  const defaultAst = parse(defaultHarness, 'productionDefaultRetrievalHarness.js');
+  const { ast: defaultAst, checker } = parseWithBindings(
+    defaultHarness,
+    'productionDefaultRetrievalHarness.js',
+  );
+  const defaultFactory = topLevelFunction(
+    defaultAst,
+    'createApprovedDefaultSemanticOperatorJourneyAdapter',
+  );
+  const adapterFactory = topLevelFunction(
+    defaultAst,
+    'createApprovedSemanticOperatorJourneyAdapter',
+  );
   const defaultCalls = semanticCallToolCalls(defaultAst);
   assert(
-    defaultCalls.length >= 2
+    defaultFactory
+      && adapterFactory
+      && defaultCalls.length >= 2
       && defaultCalls.every(call => (
         call.arguments.length >= 3
-        && containsObjectProperty(call.arguments[2], 'semanticOperatorJourney')
-        && !containsObjectProperty(call.arguments[2], 'semanticRetrievalBoundary')
+        && dependencyResolvesToFactory(
+          call.arguments[2],
+          checker,
+          defaultFactory,
+        )
       )),
     'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: inherited default semantic callTool depends on raw fallback',
   );
+  assertDefaultFactoryFlow(defaultFactory, adapterFactory, checker);
+  assertAdapterRetrievalFlow(adapterFactory, checker);
 
-  const compatibilityAst = parse(compatibilitySource, 'intentArchitectureQueryHarness.js');
+  const {
+    ast: compatibilityAst,
+    checker: compatibilityChecker,
+  } = parseWithBindings(
+    compatibilitySource,
+    'intentArchitectureQueryHarness.js',
+  );
+  const compatibilityFactory = topLevelFunction(
+    compatibilityAst,
+    'createApprovedSemanticOperatorJourneyAdapter',
+  );
   const compatibilityCalls = semanticCallToolCalls(compatibilityAst);
   assert.strictEqual(
     compatibilityCalls.length,
@@ -358,18 +419,22 @@ function assertInheritedSemanticOperatorComposition(defaultHarness, compatibilit
     wrapperCall.arguments[3].text,
   );
   assert(
+    compatibilityFactory
+      &&
     dependencyDeclaration
       && dependencyDeclaration.initializer
-      && containsObjectProperty(
+      && dependencyResolvesToFactory(
         dependencyDeclaration.initializer,
-        'semanticOperatorJourney',
+        compatibilityChecker,
+        compatibilityFactory,
       )
-      && !containsObjectProperty(
+      && dependencyValueIsNotRawBoundary(
         dependencyDeclaration.initializer,
-        'semanticRetrievalBoundary',
+        compatibilityChecker,
       ),
     'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility semantic callTool depends on raw fallback',
   );
+  assertAdapterRetrievalFlow(compatibilityFactory, compatibilityChecker);
 }
 
 function semanticCallToolCalls(ast) {
@@ -387,19 +452,203 @@ function semanticCallToolCalls(ast) {
   return calls;
 }
 
-function containsObjectProperty(root, name) {
-  let found = false;
+function dependencyResolvesToFactory(expression, checker, factory) {
+  if (ts.isIdentifier(expression)) {
+    const declaration = declarationForIdentifier(expression, checker);
+    return Boolean(
+      declaration
+      && declaration.initializer
+      && dependencyResolvesToFactory(declaration.initializer, checker, factory)
+    );
+  }
+  if (ts.isConditionalExpression(expression)) {
+    if (!isUndefined(expression.whenFalse) || isBooleanLiteral(expression.condition)) {
+      return false;
+    }
+    const property = journeyProperty(expression.whenTrue);
+    if (!property) return false;
+    if (ts.isShorthandPropertyAssignment(property)) {
+      const conditionSymbol = resolvedSymbol(checker, expression.condition);
+      const valueSymbol = checker.getShorthandAssignmentValueSymbol(property);
+      if (conditionSymbol && valueSymbol && conditionSymbol !== valueSymbol) return false;
+    }
+    return valueResolvesToFactory(
+      propertyValueExpression(property, checker),
+      checker,
+      factory,
+    );
+  }
+  const property = journeyProperty(expression);
+  return Boolean(
+    property
+    && valueResolvesToFactory(
+      propertyValueExpression(property, checker),
+      checker,
+      factory,
+    )
+  );
+}
+
+function valueResolvesToFactory(expression, checker, factory, seen = new Set()) {
+  if (!expression || seen.has(expression)) return false;
+  seen.add(expression);
+  if (ts.isCallExpression(expression)) {
+    return ts.isIdentifier(expression.expression)
+      && sameSymbol(checker, expression.expression, factory.name);
+  }
+  if (ts.isIdentifier(expression)) {
+    const declaration = declarationForIdentifier(expression, checker);
+    return Boolean(
+      declaration
+      && declaration.initializer
+      && valueResolvesToFactory(declaration.initializer, checker, factory, seen)
+    );
+  }
+  if (ts.isConditionalExpression(expression)) {
+    return !isBooleanLiteral(expression.condition)
+      && isUndefined(expression.whenFalse)
+      && valueResolvesToFactory(expression.whenTrue, checker, factory, seen);
+  }
+  return false;
+}
+
+function dependencyValueIsNotRawBoundary(expression, checker) {
+  const property = ts.isConditionalExpression(expression)
+    ? journeyProperty(expression.whenTrue)
+    : journeyProperty(expression);
+  const value = property && propertyValueExpression(property, checker);
+  return !(
+    value
+    && ts.isIdentifier(value)
+    && /semanticRetrievalBoundary/i.test(value.text)
+  );
+}
+
+function assertDefaultFactoryFlow(defaultFactory, adapterFactory, checker) {
+  const returns = returnExpressions(defaultFactory);
+  assert(
+    returns.length === 1
+      && ts.isCallExpression(returns[0])
+      && ts.isIdentifier(returns[0].expression)
+      && sameSymbol(checker, returns[0].expression, adapterFactory.name),
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: default journey factory does not reach the approved adapter factory',
+  );
+}
+
+function assertAdapterRetrievalFlow(factory, checker) {
+  const parameter = factory.parameters[0];
+  const query = firstObjectLiteral(returnExpressions(factory)[0]);
+  const queryMethod = query && query.properties.find(property => (
+    ts.isMethodDeclaration(property)
+    && property.name
+    && property.name.getText() === 'query'
+  ));
+  const retrievalCall = queryMethod && executableCalls(queryMethod).find(call => (
+    ts.isPropertyAccessExpression(call.expression)
+    && call.expression.name.text === 'retrieve'
+    && ts.isIdentifier(call.expression.expression)
+    && parameter
+    && ts.isIdentifier(parameter.name)
+    && sameSymbol(checker, call.expression.expression, parameter.name)
+  ));
+  assert(
+    parameter && queryMethod && retrievalCall,
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: approved adapter query does not reach its bound WP-P2 retrieval boundary',
+  );
+}
+
+function journeyProperty(expression) {
+  const object = firstObjectLiteral(expression);
+  if (!object) return undefined;
+  return object.properties.find(property => (
+    (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property))
+    && property.name
+    && property.name.getText() === 'semanticOperatorJourney'
+  ));
+}
+
+function propertyValueExpression(property, checker) {
+  if (ts.isPropertyAssignment(property)) return property.initializer;
+  const symbol = checker.getShorthandAssignmentValueSymbol(property);
+  const declaration = symbol
+    && symbol.declarations
+    && symbol.declarations.find(ts.isVariableDeclaration);
+  return declaration && declaration.initializer;
+}
+
+function declarationForIdentifier(identifier, checker) {
+  const symbol = resolvedSymbol(checker, identifier);
+  return symbol
+    && symbol.declarations
+    && symbol.declarations.find(ts.isVariableDeclaration);
+}
+
+function topLevelFunction(ast, name) {
+  return ast.statements.find(statement => (
+    ts.isFunctionDeclaration(statement)
+    && statement.name
+    && statement.name.text === name
+  ));
+}
+
+function returnExpressions(root) {
+  const values = [];
+  function visit(node) {
+    if (node !== root && isFunctionLike(node)) return;
+    if (ts.isReturnStatement(node) && node.expression) {
+      values.push(node.expression);
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(root);
+  return values;
+}
+
+function isFunctionLike(node) {
+  return ts.isFunctionDeclaration(node)
+    || ts.isFunctionExpression(node)
+    || ts.isArrowFunction(node)
+    || ts.isMethodDeclaration(node);
+}
+
+function executableCalls(root) {
+  const calls = [];
   walk(root, node => {
-    if (
-      ts.isObjectLiteralExpression(node)
-      && node.properties.some(property => (
-        (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property))
-        && property.name
-        && property.name.getText() === name
-      ))
-    ) found = true;
+    if (ts.isCallExpression(node)) calls.push(node);
+  });
+  return calls;
+}
+
+function firstObjectLiteral(root) {
+  let found;
+  if (!root) return undefined;
+  walk(root, node => {
+    if (!found && ts.isObjectLiteralExpression(node)) found = node;
   });
   return found;
+}
+
+function isUndefined(node) {
+  return ts.isIdentifier(node) && node.text === 'undefined';
+}
+
+function isBooleanLiteral(node) {
+  return node.kind === ts.SyntaxKind.TrueKeyword
+    || node.kind === ts.SyntaxKind.FalseKeyword;
+}
+
+function sameSymbol(checker, left, right) {
+  const leftSymbol = resolvedSymbol(checker, left);
+  return Boolean(leftSymbol && leftSymbol === resolvedSymbol(checker, right));
+}
+
+function resolvedSymbol(checker, node) {
+  let symbol = checker.getSymbolAtLocation(node);
+  if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+    symbol = checker.getAliasedSymbol(symbol);
+  }
+  return symbol;
 }
 
 function variableDeclaration(ast, name) {
@@ -414,14 +663,31 @@ function variableDeclaration(ast, name) {
   return found;
 }
 
-function parse(source, label) {
-  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-  assert.strictEqual(
-    ast.parseDiagnostics.length,
-    0,
-    `WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ${label} is not parseable`,
+function parseWithBindings(source, label) {
+  const fileName = path.resolve(repoRoot, '.argo', 'guard-fixtures', label);
+  const options = {
+    allowJs: true,
+    checkJs: false,
+    module: ts.ModuleKind.CommonJS,
+    noEmit: true,
+    target: ts.ScriptTarget.Latest,
+  };
+  const host = ts.createCompilerHost(options, true);
+  const canonical = candidate => path.resolve(candidate).toLowerCase();
+  host.fileExists = candidate => canonical(candidate) === canonical(fileName);
+  host.readFile = candidate => (
+    canonical(candidate) === canonical(fileName) ? source : undefined
   );
-  return ast;
+  host.getSourceFile = (candidate, languageVersion) => (
+    canonical(candidate) === canonical(fileName)
+      ? ts.createSourceFile(fileName, source, languageVersion, true, ts.ScriptKind.JS)
+      : undefined
+  );
+  host.writeFile = () => {};
+  const program = ts.createProgram([fileName], options, host);
+  const ast = program.getSourceFile(fileName);
+  assert(ast, `WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ${label} is not parseable`);
+  return { ast, checker: program.getTypeChecker() };
 }
 
 function walk(node, visit) {

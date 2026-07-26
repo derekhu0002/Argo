@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const ts = require('typescript');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const entryPaths = [
@@ -207,11 +208,31 @@ assert(
   !probeSource.includes('response') && !probeSource.includes('result'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: probe count must not derive from the tested response',
 );
-assert(
-  harnessSource.includes('? probe.semanticRetrievalBoundary')
-    && harnessSource.includes('? { semanticRetrievalBoundary }'),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the supplied probe or Harness-owned boundary',
-);
+assertApprovedCompatibilityComposition(harnessSource, 'intent-query-approved.fixture.js');
+for (const [label, adversarial] of [
+  ['raw-substitution', harnessSource.replace(
+    /semanticOperatorJourney:\s*createApprovedSemanticOperatorJourneyAdapter\(\s*semanticRetrievalBoundary,\s*\)/,
+    'semanticOperatorJourney: semanticRetrievalBoundary',
+  )],
+  ['undefined-property', harnessSource.replace(
+    /semanticOperatorJourney:\s*createApprovedSemanticOperatorJourneyAdapter\(\s*semanticRetrievalBoundary,\s*\)/,
+    'semanticOperatorJourney: undefined',
+  )],
+  ['dead-conditional', harnessSource.replace(
+    /semanticOperatorJourney:\s*createApprovedSemanticOperatorJourneyAdapter\(\s*semanticRetrievalBoundary,\s*\)/,
+    'semanticOperatorJourney: false\n        ? createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary)\n        : undefined',
+  )],
+  ['shadowed-factory', harnessSource.replace(
+    'async function invokeGetSystemArchitecture(args, probe) {',
+    'async function invokeGetSystemArchitecture(args, probe) {\n  const createApprovedSemanticOperatorJourneyAdapter = () => undefined;',
+  )],
+]) {
+  assert.throws(
+    () => assertApprovedCompatibilityComposition(adversarial, `${label}.fixture.js`),
+    /EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD/,
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${label} compatibility fixture passed`,
+  );
+}
 assert(
   harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility Harness must pass its probe through wrapper argument four',
@@ -269,12 +290,10 @@ for (const harnessOwnedAssertion of [
     `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness omits ${harnessOwnedAssertion}`,
   );
 }
-for (const entryPath of entryPaths) {
-  assert(
-    handoff.frozenFiles.includes(entryPath),
-    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${entryPath} must be frozen for Coding/Repair`,
-  );
-}
+assert(
+  handoff.frozenFiles.includes('tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility guard must remain frozen for Coding/Repair',
+);
 
 assertNoProbeCompatibilityUsesInjectedBoundary()
   .then(evidence => {
@@ -288,3 +307,195 @@ assertNoProbeCompatibilityUsesInjectedBoundary()
     console.error(error && error.stack ? error.stack : error);
     process.exitCode = 1;
   });
+
+function assertApprovedCompatibilityComposition(source, label) {
+  const { ast, checker } = parseWithBindings(source, label);
+  const invoke = topLevelFunction(ast, 'invokeGetSystemArchitecture');
+  const factory = topLevelFunction(ast, 'createApprovedSemanticOperatorJourneyAdapter');
+  assert(invoke && factory, 'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: approved compatibility composition declarations missing');
+
+  const semanticBoundary = variableIn(invoke, 'semanticRetrievalBoundary');
+  const dependencies = variableIn(invoke, 'testDependencies');
+  const call = callsIn(invoke).find(candidate => (
+    ts.isIdentifier(candidate.expression)
+    && candidate.expression.text === 'callTool'
+    && candidate.arguments[0]
+    && ts.isStringLiteral(candidate.arguments[0])
+    && candidate.arguments[0].text === 'getSystemArchitecture'
+  ));
+  assert(
+    semanticBoundary
+      && dependencies
+      && dependencies.initializer
+      && ts.isConditionalExpression(dependencies.initializer)
+      && isUndefined(dependencies.initializer.whenFalse)
+      && call
+      && call.arguments.length === 4
+      && ts.isIdentifier(call.arguments[3])
+      && sameSymbol(checker, call.arguments[3], dependencies.name),
+    'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: wrapper-four dependencies are not bound to the live compatibility selector',
+  );
+
+  const property = objectProperty(dependencies.initializer.whenTrue, 'semanticOperatorJourney');
+  const propertyValue = property && propertyValueExpression(property, checker);
+  assert(
+    propertyValue
+      && ts.isCallExpression(propertyValue)
+      && ts.isIdentifier(propertyValue.expression)
+      && sameSymbol(checker, propertyValue.expression, factory.name)
+      && propertyValue.arguments.length === 1
+      && ts.isIdentifier(propertyValue.arguments[0])
+      && sameSymbol(checker, propertyValue.arguments[0], semanticBoundary.name),
+    'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility journey property does not call the approved bound adapter factory',
+  );
+  assertApprovedAdapterFactory(factory, checker);
+}
+
+function assertApprovedAdapterFactory(factory, checker) {
+  const boundaryParameter = factory.parameters[0];
+  const returns = directReturnExpressions(factory);
+  assert(
+    boundaryParameter
+      && ts.isIdentifier(boundaryParameter.name)
+      && returns.length === 1,
+    'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: approved adapter factory return shape changed',
+  );
+  const queryObject = firstObjectLiteral(returns[0]);
+  const query = queryObject && queryObject.properties.find(property => (
+    ts.isMethodDeclaration(property)
+    && property.name
+    && property.name.getText() === 'query'
+  ));
+  const retrievalCall = query && callsIn(query).find(call => (
+    ts.isPropertyAccessExpression(call.expression)
+    && call.expression.name.text === 'retrieve'
+    && ts.isIdentifier(call.expression.expression)
+    && sameSymbol(checker, call.expression.expression, boundaryParameter.name)
+  ));
+  assert(
+    query && retrievalCall,
+    'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: approved adapter query does not call its bound retrieval boundary',
+  );
+}
+
+function directReturnExpressions(root) {
+  const values = [];
+  function visit(node) {
+    if (node !== root && isFunctionLike(node)) return;
+    if (ts.isReturnStatement(node) && node.expression) {
+      values.push(node.expression);
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(root);
+  return values;
+}
+
+function isFunctionLike(node) {
+  return ts.isFunctionDeclaration(node)
+    || ts.isFunctionExpression(node)
+    || ts.isArrowFunction(node)
+    || ts.isMethodDeclaration(node);
+}
+
+function topLevelFunction(ast, name) {
+  return ast.statements.find(statement => (
+    ts.isFunctionDeclaration(statement)
+    && statement.name
+    && statement.name.text === name
+  ));
+}
+
+function variableIn(root, name) {
+  let found;
+  walk(root, node => {
+    if (
+      !found
+      && ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.name.text === name
+    ) found = node;
+  });
+  return found;
+}
+
+function callsIn(root) {
+  const calls = [];
+  walk(root, node => {
+    if (ts.isCallExpression(node)) calls.push(node);
+  });
+  return calls;
+}
+
+function objectProperty(expression, name) {
+  const object = firstObjectLiteral(expression);
+  return object && object.properties.find(property => (
+    (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property))
+    && property.name
+    && property.name.getText() === name
+  ));
+}
+
+function propertyValueExpression(property, checker) {
+  if (ts.isPropertyAssignment(property)) return property.initializer;
+  const symbol = checker.getShorthandAssignmentValueSymbol(property);
+  const declaration = symbol && symbol.declarations && symbol.declarations.find(ts.isVariableDeclaration);
+  return declaration && declaration.initializer;
+}
+
+function firstObjectLiteral(root) {
+  let found;
+  walk(root, node => {
+    if (!found && ts.isObjectLiteralExpression(node)) found = node;
+  });
+  return found;
+}
+
+function isUndefined(node) {
+  return ts.isIdentifier(node) && node.text === 'undefined';
+}
+
+function sameSymbol(checker, left, right) {
+  return resolvedSymbol(checker, left) === resolvedSymbol(checker, right);
+}
+
+function resolvedSymbol(checker, node) {
+  let symbol = checker.getSymbolAtLocation(node);
+  if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+    symbol = checker.getAliasedSymbol(symbol);
+  }
+  return symbol;
+}
+
+function parseWithBindings(source, label) {
+  const fileName = path.resolve(repoRoot, '.argo', 'guard-fixtures', label);
+  const options = {
+    allowJs: true,
+    checkJs: false,
+    module: ts.ModuleKind.CommonJS,
+    noEmit: true,
+    target: ts.ScriptTarget.Latest,
+  };
+  const host = ts.createCompilerHost(options, true);
+  const canonical = candidate => path.resolve(candidate).toLowerCase();
+  host.fileExists = candidate => canonical(candidate) === canonical(fileName);
+  host.readFile = candidate => (
+    canonical(candidate) === canonical(fileName) ? source : undefined
+  );
+  host.getSourceFile = (candidate, languageVersion) => (
+    canonical(candidate) === canonical(fileName)
+      ? ts.createSourceFile(fileName, source, languageVersion, true, ts.ScriptKind.JS)
+      : undefined
+  );
+  host.writeFile = () => {};
+  const program = ts.createProgram([fileName], options, host);
+  const ast = program.getSourceFile(fileName);
+  assert(ast, `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: cannot parse ${label}`);
+  return { ast, checker: program.getTypeChecker() };
+}
+
+function walk(node, visit) {
+  visit(node);
+  ts.forEachChild(node, child => walk(child, visit));
+}
