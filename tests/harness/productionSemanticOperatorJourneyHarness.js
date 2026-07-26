@@ -70,14 +70,16 @@ async function runNewProjectSemanticOperatorJourney() {
     runCommand,
     automaticBackfillOptIn: false,
     configurationCase: 'approved',
-    exerciseInterruptedResume: true,
   });
   const optedIn = await runSuccessfulJourney({
     createJourney,
     runCommand,
     automaticBackfillOptIn: true,
     configurationCase: 'approved',
-    exerciseInterruptedResume: false,
+  });
+  const recovery = await runRecoveryJourney({
+    createJourney,
+    runCommand,
   });
 
   const rejectedOptIns = [];
@@ -92,6 +94,7 @@ async function runNewProjectSemanticOperatorJourney() {
   return deepFreeze({
     noOptIn,
     optedIn,
+    recovery,
     rejectedOptIns,
     canonicalBefore,
     canonicalAfter: fs.readFileSync(canonicalPath, 'utf8'),
@@ -103,11 +106,9 @@ async function runSuccessfulJourney({
   runCommand,
   automaticBackfillOptIn,
   configurationCase,
-  exerciseInterruptedResume,
 }) {
   const fixture = createRecordingComposition({
     configurationCase,
-    interruptFirstBackfill: exerciseInterruptedResume,
   });
   const journey = createJourney(fixture.dependencies);
   assertJourneySurface(journey);
@@ -130,20 +131,11 @@ async function runSuccessfulJourney({
   let interruption;
   let backfill;
   if (!automaticBackfillOptIn) {
-    interruption = await captureBlocked(() => runCommand({
+    backfill = await runCommand({
       command: 'backfill',
       options: { explicitOptIn: true },
       journey,
-    }));
-    if (exerciseInterruptedResume) {
-      backfill = await runCommand({
-        command: 'backfill',
-        options: { explicitOptIn: true, resume: true },
-        journey,
-      });
-    } else {
-      backfill = interruption;
-    }
+    });
   } else {
     backfill = start.backfill;
   }
@@ -164,6 +156,12 @@ async function runSuccessfulJourney({
 
   return deepFreeze({
     automaticBackfillOptIn,
+    fixtureInput: {
+      configurationCase,
+      canonicalPath: 'design/KG/SystemArchitecture.json',
+      query: semanticQuery(),
+      interruptFirstBackfill: false,
+    },
     configurationFingerprint: fixture.configurationFingerprint,
     initialSnapshot,
     start,
@@ -177,20 +175,53 @@ async function runSuccessfulJourney({
   });
 }
 
+async function runRecoveryJourney({ createJourney, runCommand }) {
+  const fixture = createRecordingComposition({
+    configurationCase: 'approved',
+    interruptFirstBackfill: true,
+  });
+  const journey = createJourney(fixture.dependencies);
+  assertJourneySurface(journey);
+  await runCommand({
+    command: 'init',
+    options: { automaticBackfillOptIn: false },
+    journey,
+  });
+  const interruption = await captureBlocked(() => runCommand({
+    command: 'backfill',
+    options: { explicitOptIn: true },
+    journey,
+  }));
+  const resumed = await runCommand({
+    command: 'backfill',
+    options: { explicitOptIn: true, resume: true },
+    journey,
+  });
+  const readiness = await runCommand({ command: 'readiness', journey });
+  return deepFreeze({
+    interruption,
+    resumed,
+    readiness,
+    observations: fixture.snapshot(),
+  });
+}
+
 async function runRejectedOptIn({ createJourney, runCommand, configurationCase }) {
   const fixture = createRecordingComposition({ configurationCase });
   const journey = createJourney(fixture.dependencies);
   assertJourneySurface(journey);
-  const snapshot = await runCommand({ command: 'snapshot', journey });
+  const preRejectionSnapshot = await runCommand({ command: 'snapshot', journey });
   const outcome = await captureBlocked(() => runCommand({
     command: 'init',
     options: { automaticBackfillOptIn: true },
     journey,
   }));
+  const postRejectionSnapshot = await runCommand({ command: 'snapshot', journey });
   return deepFreeze({
     configurationCase,
-    snapshot,
+    preRejectionSnapshot,
     outcome,
+    postRejectionSnapshot,
     observations: fixture.snapshot(),
   });
 }
@@ -231,7 +262,9 @@ function createRecordingComposition({
         unsafe: 'SECRET_FILE_ACL_UNSAFE',
         unapproved: 'SECRET_SOURCE_PROVENANCE_PROHIBITED',
       };
-      const error = new Error(`${categories[configurationCase]}: correct approved external configuration and retry`);
+      const error = new Error(
+        `${categories[configurationCase]}: ${SECRET_CANARY}; ${UNSAFE_SOURCE_CANARY}`,
+      );
       error.category = categories[configurationCase];
       error.action = 'Correct approved external configuration and retry argo semantic init';
       error.secret = SECRET_CANARY;
@@ -319,6 +352,11 @@ function assertNewProjectSemanticOperatorJourney(result) {
     result.optedIn.automaticBackfillOptIn,
     'SP05_SUCCESS_PATHS_MUST_DIFFER_ONLY_BY_OPT_IN',
   );
+  assert.deepStrictEqual(
+    result.noOptIn.fixtureInput,
+    result.optedIn.fixtureInput,
+    'SP05_SUCCESS_FIXTURES_DIFFER_BEYOND_OPT_IN',
+  );
 
   assertSnapshotPreserved(result.noOptIn, 'SP05_NO_OPT_IN');
   assertSnapshotPreserved(result.optedIn, 'SP05_OPTED_IN');
@@ -340,8 +378,12 @@ function assertNewProjectSemanticOperatorJourney(result) {
     'SP05_NO_OPT_IN_AUTOMATIC_START_PROHIBITED',
   );
   assertBlockedPendingQuery(result.noOptIn.pendingQuery, 'SP05_NO_OPT_IN');
-  assertBackfillEvidence(result.noOptIn.interruption, true);
   assertBackfillEvidence(result.noOptIn.backfill, false);
+  assertConfigurationBeforeSemanticEffects(
+    result.noOptIn,
+    'explicit-backfill-start',
+    'SP05_NO_OPT_IN',
+  );
   assertReadyThenQuery(result.noOptIn);
 
   assert.strictEqual(
@@ -355,8 +397,21 @@ function assertNewProjectSemanticOperatorJourney(result) {
     'automatic-backfill-start',
     'SP05_CONFIGURATION_MUST_PRECEDE_AUTO_START',
   );
+  assertConfigurationBeforeSemanticEffects(
+    result.optedIn,
+    'automatic-backfill-start',
+    'SP05_OPTED_IN',
+  );
   assertBackfillEvidence(result.optedIn.backfill, false);
   assertReadyThenQuery(result.optedIn);
+
+  assertBackfillEvidence(result.recovery.interruption, true);
+  assertBackfillEvidence(result.recovery.resumed, false);
+  assert.strictEqual(
+    result.recovery.readiness.state,
+    'Aligned',
+    'SP05_RECOVERY_READINESS_NOT_ALIGNED',
+  );
 }
 
 function assertRejectedAutomaticBackfillControls(result) {
@@ -367,16 +422,26 @@ function assertRejectedAutomaticBackfillControls(result) {
   );
   for (const item of result.rejectedOptIns) {
     assert.deepStrictEqual(
-      item.snapshot.document,
+      item.preRejectionSnapshot,
+      item.postRejectionSnapshot,
+      `SP05_${item.configurationCase.toUpperCase()}_POST_REJECTION_ENVELOPE_CHANGED`,
+    );
+    assert.deepStrictEqual(
+      item.postRejectionSnapshot.document,
       JSON.parse(result.canonicalBefore),
       `SP05_${item.configurationCase.toUpperCase()}_SNAPSHOT_CHANGED`,
+    );
+    assertExactFullSnapshotEnvelope(
+      item.postRejectionSnapshot,
+      `SP05_${item.configurationCase.toUpperCase()}_POST_REJECTION`,
     );
     assert.strictEqual(item.outcome.status, 'blocked', `SP05_${item.configurationCase.toUpperCase()}_NOT_BLOCKED`);
     assert(
       item.outcome.action && /correct|configure|retry/i.test(item.outcome.action),
       `SP05_${item.configurationCase.toUpperCase()}_ACTIONABLE_GUIDANCE_MISSING`,
     );
-    const serialized = JSON.stringify(item);
+    assert(item.outcome.observableError, `SP05_${item.configurationCase.toUpperCase()}_OBSERVABLE_ERROR_MISSING`);
+    const serialized = JSON.stringify(item.outcome.observableError);
     assert(!serialized.includes(SECRET_CANARY), `SP05_${item.configurationCase.toUpperCase()}_SECRET_LEAK`);
     assert(!serialized.includes(UNSAFE_SOURCE_CANARY), `SP05_${item.configurationCase.toUpperCase()}_UNSAFE_SOURCE_LEAK`);
     for (const forbidden of [
@@ -391,6 +456,22 @@ function assertRejectedAutomaticBackfillControls(result) {
         `SP05_${item.configurationCase.toUpperCase()}_${forbidden.toUpperCase()}_SIDE_EFFECT`,
       );
     }
+    assert.strictEqual(
+      countEvents(item, 'canonical-mutation'),
+      0,
+      `SP05_${item.configurationCase.toUpperCase()}_CANONICAL_MUTATION_SIDE_EFFECT`,
+    );
+  }
+}
+
+function assertConfigurationBeforeSemanticEffects(outcome, startKind, label) {
+  for (const semanticEffect of [startKind, 'provider-call', 'database-write']) {
+    assertBefore(
+      outcome.observations.events,
+      'configuration-validation',
+      semanticEffect,
+      `${label}_CONFIGURATION_MUST_PRECEDE_${semanticEffect.toUpperCase()}`,
+    );
   }
 }
 
@@ -412,12 +493,20 @@ function assertJourneySurface(journey) {
 
 function assertSnapshotPreserved(outcome, label) {
   assert.deepStrictEqual(outcome.initialSnapshot, outcome.finalSnapshot, `${label}_FULL_SNAPSHOT_CHANGED`);
-  assert.strictEqual(outcome.initialSnapshot.status, 'passed', `${label}_FULL_SNAPSHOT_FAILED`);
-  assert.strictEqual(
-    Object.prototype.hasOwnProperty.call(outcome.initialSnapshot, 'query'),
-    false,
-    `${label}_NO_ARGUMENT_QUERY_METADATA_ADDED`,
+  assertExactFullSnapshotEnvelope(outcome.initialSnapshot, label);
+}
+
+function assertExactFullSnapshotEnvelope(snapshot, label) {
+  assert.deepStrictEqual(
+    Object.keys(snapshot).sort(),
+    ['document', 'graphPath', 'status'],
+    `${label}_FULL_SNAPSHOT_ENVELOPE_CHANGED`,
   );
+  assert.strictEqual(snapshot.status, 'passed', `${label}_FULL_SNAPSHOT_FAILED`);
+  assert.strictEqual(snapshot.graphPath, 'design/KG/SystemArchitecture.json', `${label}_GRAPH_PATH_CHANGED`);
+  assert(snapshot.document && Array.isArray(snapshot.document.elements), `${label}_ELEMENTS_MISSING`);
+  assert(snapshot.document && Array.isArray(snapshot.document.relationships), `${label}_RELATIONSHIPS_MISSING`);
+  assert(snapshot.document && Array.isArray(snapshot.document.views), `${label}_VIEWS_MISSING`);
 }
 
 function assertActionablePending(start) {
@@ -510,8 +599,27 @@ async function captureBlocked(operation) {
       checkpoint: error && error.checkpoint,
       failedRecords: error && error.failedRecords,
       resume: error && error.resume,
+      observableError: serializeObservableError(error),
     });
   }
+}
+
+function serializeObservableError(error) {
+  return serializeObservableValue(error, new WeakSet());
+}
+
+function serializeObservableValue(value, seen) {
+  if (value === null || value === undefined || typeof value !== 'object') return value;
+  if (seen.has(value)) return '[Circular]';
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.map(item => serializeObservableValue(item, seen));
+  }
+  const observed = {};
+  for (const key of Object.getOwnPropertyNames(value)) {
+    observed[key] = serializeObservableValue(value[key], seen);
+  }
+  return observed;
 }
 
 function deepFreeze(value) {

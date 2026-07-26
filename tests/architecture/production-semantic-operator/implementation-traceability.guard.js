@@ -8,6 +8,7 @@ const intentHandoff = JSON.parse(read('.argo/temp/IntentToImplementationHandoff.
 const codingHandoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const root = read('OVERALL_ARCHITECTURE.md');
 const elements = new Map(graph.elements.map(element => [element.id, element]));
+const relationships = new Map(graph.relationships.map(relationship => [relationship.id, relationship]));
 const expectedScope = [
   'semprod-operator-journey-process',
   'grag-query-service',
@@ -26,6 +27,22 @@ assert.deepStrictEqual(
 for (const intentId of expectedScope) {
   assert(elements.has(intentId), `WP_P3_TRACEABILITY_GUARD: graph omits ${intentId}`);
   assert(root.includes(`\`${intentId}\``), `WP_P3_TRACEABILITY_GUARD: root mapping omits ${intentId}`);
+}
+for (const relationshipId of [
+  'semprod-rel-journey-credentials',
+  'semprod-rel-journey-readiness',
+]) {
+  const relationship = relationships.get(relationshipId);
+  assert(relationship, `WP_P3_TRACEABILITY_GUARD: protected topology omits ${relationshipId}`);
+  assert.strictEqual(
+    relationship.type,
+    'Association',
+    `WP_P3_TRACEABILITY_GUARD: ${relationshipId} must not propagate SP-05 delivery backward`,
+  );
+  assert(
+    /without claiming|cannot reopen|already-accepted/i.test(relationship.description),
+    `WP_P3_TRACEABILITY_GUARD: ${relationshipId} omits protected-boundary rationale`,
+  );
 }
 
 const owner = elements.get('semprod-operator-journey-process');

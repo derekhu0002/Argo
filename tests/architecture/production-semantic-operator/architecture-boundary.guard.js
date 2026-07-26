@@ -22,7 +22,7 @@ for (const required of [
   'SemanticIndexPending',
   'automatic-backfill opt-in',
   'approved external configuration',
-  'configuration validation precedes automatic start',
+  'approved configuration validation precedes',
   'progress',
   'checkpoint',
   'failure',

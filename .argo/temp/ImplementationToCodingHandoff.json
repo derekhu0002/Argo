@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T03:24:00+08:00",
+  "generatedAt": "2026-07-27T03:12:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 Operator Journey and Production Release implementation handoff, scoped only to semprod-wp-operator-release. Compose the accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness public boundaries into an operator-safe fresh-project sequence: argo init, canonical structural projection, SemanticIndexPending, explicit or approved opted-in semantic backfill, explicit readiness verification, then semantic query. Both successful fixtures use equivalent approved external configuration and differ only by automatic-backfill opt-in. Missing, unsafe, and unapproved opted-in configuration must stop before automatic-start/backfill/provider/database effects with redacted actionable errors. Canonical JSON authority, exact no-argument snapshots, graph-tidy behavior, external credential boundaries, WP-P1/WP-P2 internals, and runner-owned deliveryStatus remain frozen. This stage-owned artifact explicitly supersedes the tracked WP-P2 temporary handoff because WP-P2 is accepted at commit 56cfad2 and WP-P3 is the authorized sequential package; it does not revise or reopen WP-P2 behavior.",
+  "summary": "Corrected WP-P3 Operator Journey and Production Release implementation handoff, scoped only to semprod-wp-operator-release and consuming protected-topology correction b41bdbd3. Compose accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness public boundaries into argo init -> canonical structural projection -> SemanticIndexPending -> explicit or approved opted-in semantic backfill -> explicit readiness verification -> semantic query. The two successful fixtures are deep-equal except for automatic-backfill opt-in; interruption/resume is separate. Approved configuration validation precedes explicit or automatic backfill, provider, and database activity. Rejected opt-ins preserve the exact post-rejection full-snapshot envelope, produce zero semantic/canonical effects, and expose complete production-redacted error payloads with no forbidden canaries. Exact default production factory/tool wiring and authorized-source safety are frozen by two additional guards. Canonical JSON authority, graph-tidy, accepted WP-P1/WP-P2 internals and delivery, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -17,8 +17,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "controlPoint": "Run two controlled fresh-project journeys through the production semantic operator command adapter and composition boundary. Both receive equivalent approved externally supplied Neo4j and embedding-provider configuration and differ only by automaticBackfillOptIn. Exercise argo init, canonical structural projection, pre-ready query, explicit or automatic backfill, progress/checkpoint/isolated-failure/resume evidence, explicit readiness verification, aligned semantic query, and no-argument snapshots. Also run opted-in missing, unsafe, and unapproved configuration controls.",
-      "observationPoint": "No opt-in reports actionable SemanticIndexPending, performs zero automatic start, exposes explicit backfill/readiness/query commands, blocks pre-ready query without snapshot fallback, surfaces controlled progress/checkpoint/failure/resume evidence, then queries only after Aligned verification. Approved opt-in validates configuration before exactly one automatic start and follows the same readiness-before-query gate. Every rejected opt-in has zero automatic-start, explicit-backfill, provider, and database effects, returns redacted actionable guidance, preserves the exact no-argument snapshot, and leaks neither credential values nor unsafe source contents. Both successful paths leave canonical JSON byte-identical and preserve accepted WP-P1/WP-P2 behavior.",
+      "controlPoint": "Run two otherwise-identical successful fresh-project journeys through the production semantic operator command adapter, varying only automaticBackfillOptIn; run interruption/resume as a separate recovery fixture. Exercise argo init, structural projection, pre-ready query, approved configuration validation, explicit or automatic backfill, readiness verification, aligned query, and snapshots. Run opted-in missing, unsafe, and unapproved configuration controls while preserving each complete observable production error payload.",
+      "observationPoint": "Both successful event ledgers place approved configuration validation before explicit/automatic backfill start, provider, and database activity. No opt-in reports actionable SemanticIndexPending and zero auto-start. Recovery surfaces progress/checkpoint/failure/resume separately. Every rejected opt-in has zero automatic-start, backfill, provider, database, or canonical-mutation effects; its exact post-rejection {status,graphPath,document} envelope equals its pre-rejection snapshot; and its complete observable error contains no secret or unsafe-source canary. Readiness precedes query, canonical JSON remains byte-identical, and accepted WP-P1/WP-P2 behavior remains unchanged.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
       "failureReason": "SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING: create production semanticOperatorJourney.js"
@@ -54,7 +54,23 @@
       "path": "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
       "controlPoint": "Corrected intent handoff, implementation-bearing anchors, mounted SP-05 path, root mappings, and release-context exclusions.",
-      "observationPoint": "Exactly semprod-operator-journey-process, grag-query-service, and grag-credential-boundary are implementation-bearing handoff anchors; SP-05 is mounted only on the operator journey at the frozen physical path; semprod-ready-plateau and semprod-wp-operator-release remain non-executable context and cannot become Coding targets or delivery claims.",
+      "observationPoint": "Exactly semprod-operator-journey-process, grag-query-service, and grag-credential-boundary are implementation-bearing handoff anchors; both protected journey-to-credential/readiness relationships remain non-propagating Associations; SP-05 is mounted only on the operator journey; plateau/package remain non-executable context.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "WP-P3 Default Production Composition Wiring",
+      "path": "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Exact inward operator ports, accepted WP-P1/WP-P2 factories, System Architecture MCP tools, unified gateway forwarding, and CLI factory use.",
+      "observationPoint": "Default production wiring must use initializeWorkspace, structural projection, resolveApprovedLiveConfiguration, createProductionGraphRagRuntime, createDefaultSemanticRetrieval, createProductionSemanticOperatorJourney, and existing start/backfill/readiness/query tools. The operator may consume only the six declared ports and may not import accepted internal implementation modules.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "WP-P3 Authorized Production Source Safety",
+      "path": "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "All six authorized materialized Coding files plus executable unsafe source fixtures.",
+      "observationPoint": "Reject embedded credential or database URI literals, sensitive fallback expressions, implicit provider defaults, duplicated Cypher/auth/persistence internals, package-level configuration injection, and README secret values. Self-tests prove every prohibited class fails.",
       "expectedStatus": "passed"
     }
   ],
@@ -65,7 +81,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
       "failureSignal": "The production semantic operator composition factory and its start/backfill/readiness/query/snapshot surface do not exist.",
-      "nextAction": "Create createProductionSemanticOperatorJourney(dependencies) as a deep composition module over existing public boundaries only. Enforce approved configuration before auto-start, pending/explicit-command behavior without opt-in, readiness verification before query, redacted actionable outcomes, progress/checkpoint/failure/resume propagation, and exact canonical snapshot preservation."
+      "nextAction": "Create createProductionSemanticOperatorJourney(dependencies) over exactly initializeWorkspace, syncCanonicalStructuralProjection, resolveApprovedConfiguration, runSemanticBackfill, readSemanticReadiness, and querySystemArchitecture. Validate configuration before explicit or automatic backfill/provider/database effects; keep successful fixtures opt-in-only; sanitize production errors before exposure without relying on Harness sanitization; preserve exact post-rejection snapshots and zero effects; do not import or duplicate accepted internals."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
@@ -99,7 +115,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "WP-P3 composition and operator-surface work only. Reuse accepted WP-P1/WP-P2 public boundaries; do not modify or copy their persistence, checkpoint, Neo4j adapter, retrieval, credential, qualification, runtime, or readiness internals. Implement the frozen SP-05 RED in small dependency-ordered steps. Tests, Harnesses, guards, contracts, intent artifacts, canonical JSON authority, graph-tidy, no-argument snapshots, and runner-owned deliveryStatus are read-only during Coding. Only runArchitectureTests may refresh deliveryStatus and failure records.",
+    "executionStrategy": "Corrected WP-P3 composition and operator-surface work only. Reuse exact accepted WP-P1/WP-P2 factories/tools through the six-port allowlist; do not modify or copy persistence, checkpoint, Neo4j adapter, retrieval, credential, qualification, runtime, or readiness internals. Preserve the b41bdbd3 Association topology. Tests, Harnesses, six guards, contracts, intent artifacts, canonical JSON authority, graph-tidy, no-argument snapshots, and runner-owned deliveryStatus are read-only. Only runArchitectureTests may refresh status/failure records.",
     "tasks": [
       {
         "taskId": "WP-P3-C1",
@@ -113,12 +129,13 @@
           ".argo/scripts/graph-rag/semanticOperatorJourney.js"
         ],
         "steps": [
-          "Implement the exact five-method factory surface frozen by the Harness without importing tests or MCP/CLI adapters.",
+          "Implement the exact five-method factory surface using only initializeWorkspace, syncCanonicalStructuralProjection, resolveApprovedConfiguration, runSemanticBackfill, readSemanticReadiness, and querySystemArchitecture; import no accepted implementation module.",
           "For startNewProject, initialize the workspace, complete canonical structural projection, and return actionable SemanticIndexPending plus explicit commands when automaticBackfillOptIn is false.",
-          "For automaticBackfillOptIn true, resolve and validate approved external configuration before recording or invoking any automatic start; sanitize every failure and preserve zero backfill/provider/database effects on rejection.",
-          "Delegate explicit and automatic backfill to the existing public backfill port, preserving progress, checkpoint, isolated failure, resume, and final alignment evidence.",
+          "Resolve approved external configuration before both explicit and automatic backfill start, provider, and database activity. Ensure successful calls differ only by automaticBackfillOptIn; handle interruption/resume independently.",
+          "Sanitize resolver failures inside production before exposure; preserve complete observable safe error fields so the Harness can detect any secret or unsafe-source canary.",
+          "Delegate explicit and automatic backfill to the existing public backfill port, preserving progress, checkpoint, isolated failure, resume, and final alignment evidence without duplicating internals.",
           "Require explicit persistent Aligned readiness verification before semantic query and preserve fullSnapshotFallback:false on pre-ready rejection.",
-          "Delegate no-argument reads unchanged and never mutate canonical JSON."
+          "After rejected opt-in, preserve the exact no-argument {status,graphPath,document} envelope, perform zero semantic/canonical mutation effects, and never mutate canonical JSON."
         ],
         "completionSignal": "The frozen SP-05 entry advances past SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING and all journey assertions can observe sequencing through the injected accepted-boundary ports without any WP-P1/WP-P2 internal change."
       },
@@ -140,10 +157,10 @@
         ],
         "steps": [
           "Implement runSemanticOperatorCommand dispatch for exactly init, backfill, readiness, query, and snapshot.",
-          "Add startNewProjectSemanticJourney and verifySystemArchitectureSemanticReadiness to the System Architecture MCP tool list and compose them with existing production boundaries.",
+          "Add startNewProjectSemanticJourney and verifySystemArchitectureSemanticReadiness to the System Architecture MCP tool list and compose the operator with createProductionGraphRagRuntime, createDefaultSemanticRetrieval, resolveApprovedLiveConfiguration, and existing backfill/query tools.",
           "Expose and forward start, existing backfill, readiness, and existing query tools through the unified gateway without policy interpretation or dependency-position changes.",
           "Add package command aliases for the five documented operator commands without adding packages, defaults, credentials, or opt-ins.",
-          "Run the SP-05 entry after each adapter step and preserve the exact expected command shapes."
+          "Run the SP-05 entry and both default-composition/source-safety guards after each adapter step."
         ],
         "completionSignal": "The frozen SP-05 entry passes command dispatch, explicit/no-opt-in, approved auto-opt-in, invalid configuration, readiness-before-query, snapshot, and canonical-authority assertions."
       },
@@ -178,6 +195,8 @@
     "tests/architecture/production-semantic-operator/dependency-direction.guard.js",
     "tests/architecture/production-semantic-operator/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
+    "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
+    "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
     "tests/explicit/entries/runProductionSemanticBackfill.js",
     "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
     "tests/harness/productionSemanticPersistenceHarness.js",
@@ -230,9 +249,10 @@
   ],
   "openGaps": [
     "Persistent ImplementationDesign session ID: implementation-semprod-wp-p3-20260727T0241+08.",
-    "Selected intent viewpoints are the Application Usage Viewpoint for the seven-element operator journey and the Implementation and Migration Viewpoint for the exact five-element WP-P3 release boundary. This implementation stage does not alter those views or the canonical intent graph.",
-    "Direct frozen RED is intentional and exact: node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js exits 1 with SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING: create production semanticOperatorJourney.js after syntax-valid loading. This is missing WP-P3 production composition, not a test-environment or live-Neo4j failure.",
-    "Full pre-coding runner baseline is 43 total / 42 passed / 1 failed / 0 missing acceptanceCriteria. SP-05 is the sole failure with the same missing-boundary signal; SP-01 through SP-04 and all other mounted acceptance entries pass. Runner-owned deliveryStatus changed grag-credential-boundary and semprod-readiness-requirement from delivered to not_delivered through dependency propagation and added semprod-operator-journey-process=not_delivered. The status snapshot changed from 36 delivered / 0 not_delivered attributes to 34 delivered / 3 not_delivered attributes; no manual status edit is authorized.",
+    "IntentDesign correction b41bdbd3c9c249f7bfcb6b45daeaa3a53511fee3 passed canonical validation and changed semprod-rel-journey-credentials plus semprod-rel-journey-readiness from backward-propagating Realizations to non-directional Associations. SP-05 therefore observes but cannot reopen or control delivery of protected WP-P1/WP-P2 policy boundaries.",
+    "Independent audit defects are corrected in the frozen design: exact configuration-before-effects ordering in both successes; fixture equality except opt-in; separate recovery; complete observable error capture before canary assertions; exact default factory/tool wiring; executable authorized-source safety; and exact post-rejection snapshot/zero-effect assertions.",
+    "Direct frozen RED remains intentional and exact: node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js exits 1 with SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING: create production semanticOperatorJourney.js after syntax-valid loading. This is missing WP-P3 production composition, not a test-environment or live-Neo4j failure.",
+    "Corrected full pre-coding runner baseline is 43 total / 42 passed / 1 failed / 0 missing acceptanceCriteria. SP-05 is the sole expected RED; all prior entries including SP-01 through SP-04 pass. Runner-owned topology recovery changed grag-credential-boundary and semprod-readiness-requirement from not_delivered back to delivered; semprod-operator-journey-process alone remains not_delivered. The complete status snapshot is 36 delivered / 1 not_delivered attributes. Failure records remain at design/KG/test-failure-records.json; no deliveryStatus was manually edited.",
     "The tracked WP-P2 ImplementationToCodingHandoff.json is superseded only because the repository has one temporary coding-handoff slot and WP-P3 is the explicitly authorized successor to accepted WP-P2 commit 56cfad2. WP-P2 implementation, tests, contracts, and 42/42 acceptance evidence remain frozen regression controls.",
     "Live Neo4j synchronization remains unavailable with neo4jUri is required for start. Deterministic acceptance uses controlled recording ports below production composition boundaries and cannot be represented as live provider/database evidence. semprod-ready-plateau remains a target-only release context and is not claimed by this handoff; if its protected production-facing gate intrinsically requires live execution, that claim remains definitively blocked until the environment is supplied.",
     "No ImplementationToIntentTraceProposal.json is required: the corrected SP-05 testcase is mounted under the exact implementation-bearing owner, all three handoff anchors exist, and plateau/work-package exclusions are evidence-backed non-executable context."
