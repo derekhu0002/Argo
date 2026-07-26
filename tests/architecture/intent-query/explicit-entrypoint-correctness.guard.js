@@ -113,6 +113,10 @@ for (const entryPath of entryPaths) {
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
 const harnessSource = fs.readFileSync(harnessPath, 'utf8');
+assert(
+  harnessSource.includes("require('../../.argo/scripts/systemarchitecture-mcp-server.js')"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must call the public three-argument System Architecture query boundary directly',
+);
 const probeStart = harnessSource.indexOf('function createSemanticRetrievalProbe()');
 const probeEnd = harnessSource.indexOf('function assertSemanticRetrievalCalls', probeStart);
 assert(
@@ -138,6 +142,14 @@ assert(
 assert(
   harnessSource.includes('semanticRetrievalBoundary: probe.semanticRetrievalBoundary'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the test-owned probe boundary',
+);
+assert(
+  harnessSource.includes("callTool('getSystemArchitecture', args, testDependencies)"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must pass the probe through the actual third dependencies argument',
+);
+assert(
+  !harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must not pass probe dependencies through an ignored fourth argument',
 );
 assert(
   !harnessSource.includes('semanticRetrievalInvocationCount')

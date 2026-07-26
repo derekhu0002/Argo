@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+    "testdescription": "Control point: invoke a typed semantic query through the shipped default uninjected MCP path against a complete aligned persistent production-like Neo4j vector projection using only approved external credentials, with independent above-threshold, below-threshold, zero-result, closure, endpoint, View, provenance, graph-tidy, and canonical-version fixtures. Observation point: the path performs qualified query embedding and real Neo4j Vector Index retrieval for Element, ArchitectureRelationship, and View independently; returns every qualifying candidate or a valid zero result per channel; uses fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure plus endpoint/View/provenance completion; enforces canonical authority/version alignment; preserves graph-tidy full-snapshot bypass; and does not use a test-injected retrieval boundary, synthetic empty seeds, test/default credentials, or silent snapshot fallback.",
+    "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "relatedIntentElementId": "semprod-default-vector-retrieval",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE\n\n'passed' !== 'failed'\n\n    at assertLegacyControlWordProductionGate (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:639:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:27:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE\n\n'passed' !== 'failed'\n\n    at assertLegacyControlWordProductionGate (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:639:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:27:3)"
+  }
+]

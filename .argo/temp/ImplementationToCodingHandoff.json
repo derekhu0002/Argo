@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T00:20:00+08:00",
+  "generatedAt": "2026-07-27T00:42:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected WP-P2 Default Vector Retrieval and Readiness supersedes the temporary WP-P1 coding handoff because WP-P1 was accepted and delivered in commit 29e5937, while corrected intent commits b242a07538f0be908f72fbeda1a7dc017154535b and 6f0d1e04bb31c5bb23272501d6afdeb573af11f9 authorize the next seven-element slice. Coding must replace the synthetic default uninjected MCP semantic path with complete directly attributed approved-source reads, persistent ordered fail-closed readiness, one qualified query embedding, exact named-index parameterized Neo4j vector queries with expanding top-k through independent exhaustion even for all-zero results, and exact deterministic policy/direction, endpoint, complete View, unique per-object provenance, and canonical/content/index completion. WP-P1 remains frozen; SP-05/WP-P3, production cleanup, CLI/docs/release work, and manual deliveryStatus edits remain excluded.",
+  "summary": "WP-P2 coding-delivery audit correction after commit b13a2e8df431ccb7f16e10a9d4a8c142c19ff7cd. The production retrieval module and deterministic completion are accepted and frozen for this repair; CodingAndReparing is authorized only to remove content-, control-word-, lifecycle-, and anchor-based routing from the uninjected default MCP semantic path in systemarchitecture-mcp-server.js. Every ordinary semantic query must enter approved external credential resolution, persistent readiness, qualified embedding, and persistent vector retrieval. Only omitted-query and graph-tidy calls retain full-snapshot behavior. Deterministic compatibility probes are test-only dependencies passed through the actual third callTool dependencies argument. WP-P1, SP-05/WP-P3, production cleanup, CLI/docs/release work, accepted intent, and manual deliveryStatus edits remain excluded.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -71,77 +71,39 @@
   "codingTargets": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
-      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
-      "failureSignal": "SP03_DEFAULT_VECTOR_RETRIEVAL_BOUNDARY_MISSING and SP04_DEFAULT_READINESS_BOUNDARY_MISSING",
-      "nextAction": "Create the WP-P2 deep module. Directly read and attribute every approved embedding-profile, Neo4j, and provider-secret key through raw source behavior and filesystem/git/ACL metadata before readiness, rejecting missing, unsafe, conflicting, legacy, test/default, and fallback sources before side effects. Expose a callback-scoped composition with exactly sourceBehavior/sourceAdapters/transport/neo4jDriver; read exact persistent readiness into one ordered ledger before provider work; embed through the approved provider; send the unchanged raw provider vector through exact named-index parameterized db.index.vector.queryNodes calls with expanding top-k until independent exhaustion, including one exhausted sequence per channel for all-zero results; and return every threshold-qualifying seed with exact readiness evidence. Do not accept environment/configuration objects, semantic results, seed lists, readiness verdicts, retrieval boundaries, or approved-test profiles."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "The current createDefaultSemanticRetrievalBoundary hardcodes approved-test-provider/approved-test-model and returns seeds:[]; semantic error mapping drops actionable state/version/channel evidence.",
-      "nextAction": "Replace the synthetic default boundary with defaultSemanticRetrieval.js composition when getSystemArchitecture receives an explicit semantic query and no dependencies. Preserve direct dependency overrides for older frozen deterministic tests only, preserve no-argument and graph-tidy full-snapshot dispatch, propagate readiness state/version/channel evidence and fullSnapshotFallback:false, and remove all production approved-test profile or synthetic empty-seed behavior."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "Current purpose-category querySemantic dispatch enters closure before persistent query embedding/vector seed retrieval, so the default path cannot feed actual three-channel seeds into deterministic and structural completion.",
-      "nextAction": "Extend the existing runtime composition only as needed so defaultSemanticRetrieval binds exact threshold-all Element/ArchitectureRelationship/View seed IDs into w5.implementation-design.v1, preserves exact Realization source/target direction, returns endpoint objects with governing versions, completes the entire selected View metadata and viewpoint binding, parent viewpoint, and ordered versioned member/relationship endpoint objects while excluding overlapping View cascade, records exactly one semantic-seed-first or closure-first provenance record for every returned object with supplementary reasons, and exposes matching canonical/content/index versions. Preserve W4-W7 and WP-P1 public methods and do not alter SP-05/WP-P3 behavior."
+      "failureSignal": "SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE: an uninjected semantic query containing threshold-all/semantic-seed control words and explicit anchors succeeds through deterministic runtime routing despite an absent approved external secret.",
+      "nextAction": "Remove isDeterministicSemanticControlRequest and every content-, control-word-, lifecycle-, subject-, or anchor-based branch from createDefaultSemanticRetrievalBoundary. With no dependencies, every explicit semantic query except graph-tidy must invoke createDefaultSemanticRetrieval(...).retrieve(request) and therefore fail through production credential/readiness gates when external evidence is absent. Preserve only no-argument and graph-tidy full-snapshot compatibility. Preserve deterministic compatibility behavior solely through the actual third callTool dependencies argument used by test probes. Do not modify defaultSemanticRetrieval.js, productionGraphRagRuntime.js, accepted intent, WP-P1, or WP-P3."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Corrected WP-P2 only, after accepted WP-P1 delivery. Follow RED-to-GREEN in order: complete direct approved-source reads and attribution before readiness; exact ordered persistent fail-closed readiness; one qualified query embedding whose raw vector is reused unchanged by exact named-index parameterized queries; expanding top-k through independent exhaustion including all-zero channels; exact policy/direction, endpoint, complete View, unique per-object provenance, and version completion; then default MCP composition and compatibility verification. Tests, Harness, guards, contracts, WP-P1 implementation, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, canonical intent semantics, expectedFailureRecordsPath governance, and runner-owned deliveryStatus by hand are frozen.",
+    "executionStrategy": "WP-P2 post-audit routing correction only. The deep production retrieval and completion implementation from b13a2e8 is accepted and frozen. First remove all deterministic content/anchor routing from the uninjected MCP default semantic path; then prove legacy control words and anchors cannot bypass absent-credential/readiness gates while test-owned deterministic probes continue through the corrected third dependencies argument. Finally rerun frozen WP-P2, compatibility, guard, and full-runner evidence. Only systemarchitecture-mcp-server.js is authorized production scope; defaultSemanticRetrieval.js, productionGraphRagRuntime.js, tests, Harnesses, contracts, WP-P1, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, accepted intent, manual deliveryStatus edits, and any override of runner-owned deliveryStatus are frozen.",
     "tasks": [
       {
-        "taskId": "WP-P2-C1",
-        "title": "Implement persistent readiness and vector retrieval module",
-        "objective": "Create one deep default retrieval module that owns fail-closed persistent readiness, qualified external query embedding, and three independent threshold-all Neo4j Vector Index channels.",
+        "taskId": "WP-P2-R1",
+        "title": "Remove default semantic deterministic routing bypass",
+        "objective": "Ensure every uninjected ordinary semantic request enters the production credential, readiness, embedding, and vector boundary regardless of request words, subjects, lifecycle language, or anchors.",
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
           "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"
+          ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Implement createDefaultSemanticRetrieval(dependencies).retrieve(request) with approved external configuration and exact qwen3.7-text-embedding qualification at 1024 dimensions.",
-          "Implement module-owned callback-scoped composition with exactly sourceBehavior, sourceAdapters, transport, and neo4jDriver; reject ready-made environment/configuration, semantic result, seed list, readiness verdict, retrieval boundary, and test/default credential inputs.",
-          "Directly read and attribute all nine approved embedding-profile, Neo4j, and provider-secret keys from raw process/protected-file sources before readiness; reject zero/partial reads, missing secret, unsafe ACL/file state, conflicting dual source, legacy alias, test/default operation, and fallback operation before readiness/provider/vector effects.",
-          "Read persistent Element/ArchitectureRelationship/View readiness into one ordered ledger; reject pending, partial, stale, failed, unknown, content mismatch, index mismatch, channel-incomplete, and canonical mismatch evidence with exact state/versions/channels and fullSnapshotFallback:false.",
-          "For aligned evidence, make one qualified query embedding call and independently call argo_production_semantic_element_vector, argo_production_semantic_relationship_vector, and argo_production_semantic_view_vector with exact parameterized db.index.vector.queryNodes($indexName, $topK, $vector) Cypher and the unchanged raw provider vector.",
-          "Expand top-k from the initial two-record window by following nextOffset until raw windowExhausted for each channel; return every independently qualifying candidate beyond the first window. An all-zero result remains valid only after one readiness read, one embedding, and one exhausted query sequence per channel."
+          "Delete isDeterministicSemanticControlRequest and remove every no-dependency branch that selects deterministicRuntime from request content, anchors, subject, lifecycle language, or legacy control words.",
+          "Route every validated non-graph-tidy semantic query with no dependencies directly to createDefaultSemanticRetrieval({ canonicalGraph }).retrieve(request).",
+          "Retain semanticRetrievalBoundary or productionGraphRagRuntime overrides only when explicitly supplied through the third dependencies argument for frozen deterministic tests.",
+          "Preserve no-argument full-snapshot behavior, graph-tidy full-snapshot bypass, semantic error evidence, and the completed defaultSemanticRetrieval implementation unchanged."
         ],
-        "completionSignal": "The approved case proves all nine direct key reads and attributions before readiness; the other six credential cases reject before readiness. SP-04 rejects all seven non-aligned fixtures at readiness with exact evidence. Aligned SP-04 orders readiness before one provider request and all vector calls. SP-03 proves exact named-index/Cypher/provider-vector correlation, expanding top-k, all-zero three-channel exhaustion, and qualifying peers beyond every initial window."
+        "completionSignal": "The frozen legacy-control-word/anchor fixture fails at APPROVED_SECRET_REQUIRED with zero readiness/provider/vector operations instead of returning deterministic seeds; all existing SP-03/SP-04 production semantics remain green."
       },
       {
-        "taskId": "WP-P2-C2",
-        "title": "Feed persistent seeds into deterministic completion",
-        "objective": "Compose actual default vector seeds through the accepted purpose, structural completion, provenance, and canonical authority boundaries.",
+        "taskId": "WP-P2-R2",
+        "title": "Verify corrected production and compatibility boundaries",
+        "objective": "Prove the narrow routing repair without regression or scope expansion.",
         "dependsOn": [
-          "WP-P2-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
-        ],
-        "steps": [
-          "Bind the exact ordered Element, ArchitectureRelationship, and View seed IDs into w5.implementation-design.v1 purpose, anchors, subject, and policyAnchorId parameters rather than deriving closure from request text alone.",
-          "Preserve the exact parameter contract and declared ArchiMate Realization source-to-target rule.",
-          "Return semprod-rel-default-query-service with matching source/target objects and governing versions; complete the entire semprod-wp2-default-retrieval-readiness metadata and viewpoint binding, parent viewpoint, ordered versioned members, versioned member-relationship endpoints, and exclude semprod-wp2-vector-seed-closure unless independently matched or explicitly requested.",
-          "Record exactly one first-inclusion provenance record for every returned Element, ArchitectureRelationship, and View; preserve semantic-seed first for seeded duplicate-path objects, retain ordered purpose/endpoint/View supplementary reasons, and expose exact canonical/content/index versions in result and provenance.",
-          "Preserve all existing W4-W7, W3/W3.1, WP-P1, no-argument, and graph-tidy behavior."
-        ],
-        "completionSignal": "SP-03 deep-equals policy parameters/direction, endpoint identities/versions, complete selected-View metadata/viewpoint/parent and ordered versioned member/relationship endpoint objects, overlap exclusion, unique first-inclusion provenance for every returned object, and canonical/content/index versions rather than accepting shape-only arrays."
-      },
-      {
-        "taskId": "WP-P2-C3",
-        "title": "Replace synthetic default MCP composition",
-        "objective": "Make the shipped no-dependency getSystemArchitecture semantic path construct the WP-P2 production default retrieval boundary.",
-        "dependsOn": [
-          "WP-P2-C1",
-          "WP-P2-C2"
+          "WP-P2-R1"
         ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -151,42 +113,18 @@
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Replace createDefaultSemanticRetrievalBoundary's approved-test provider and empty seed adapter with createDefaultSemanticRetrieval production composition.",
-          "Keep caller dependency overrides only for already-frozen lower-level tests; the WP-P2 public acceptance call passes no dependencies.",
-          "Propagate exact SEMANTIC_INDEX_NOT_ALIGNED fixture state, canonical/content/index versions, missingChannels, mismatchedChannels, and fullSnapshotFallback:false through the MCP error envelope without normalizing away content/index mismatch evidence.",
-          "Preserve exact no-argument full-snapshot output and graph-tidy semantic bypass.",
-          "Do not modify canonical JSON, backfill/persistence behavior, cleanup, SP-05/WP-P3, or deliveryStatus."
+          "Run both frozen WP-P2 entries, all four production-default-retrieval guards, and the intent-query compatibility guard that freezes third-argument probe injection.",
+          "Run no-argument, graph-tidy, WP-P1 backfill, and persistent-projection compatibility controls.",
+          "Run full argo.runArchitectureTests and require 42/42, empty failure records, restored runner-owned deliveryStatus, and no delivered-to-not_delivered regression.",
+          "Validate this implementation-to-coding correction handoff and report the repair commit without amending the rejected coding commit."
         ],
-        "completionSignal": "Both WP-P2 entries pass, current synthetic profile/empty-seed source is absent, no-argument and graph-tidy controls pass, and there are no hand-authored deliveryStatus changes."
-      },
-      {
-        "taskId": "WP-P2-C4",
-        "title": "Verify WP-P2 and regression boundaries",
-        "objective": "Prove the narrow WP-P2 implementation against frozen entries, guards, compatibility, WP-P1, and the global architecture runner.",
-        "dependsOn": [
-          "WP-P2-C3"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-          "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "Run both frozen WP-P2 explicit entrypoints and all four production-default-retrieval guards.",
-          "Run runCanonicalGraphFullSnapshot.js, runGraphTidyFullSnapshot.js, runProductionSemanticBackfill.js, and runPersistentSemanticProjectionLifecycle.js as compatibility and WP-P1 regression controls.",
-          "Run full argo.runArchitectureTests and report exact totals, failures, expectedFailureRecordsPath, scoped statuses, out-of-scope statuses, and delivery transitions.",
-          "Validate .argo/temp/ImplementationToCodingHandoff.json with stage implementation-to-coding.",
-          "Treat neo4jUri is required for start only as environment evidence; never weaken readiness or fabricate live proof."
-        ],
-        "completionSignal": "Both WP-P2 entries, all four WP-P2 guards, no-argument/graph-tidy controls, and WP-P1 controls pass; full runner records no scoped failure; stage validation passes; runner-owned deliveryStatus changes only through the runner."
+        "completionSignal": "All frozen correction, compatibility, and guard evidence passes; full runner is 42/42 with empty failure records and no delivery regression; only systemarchitecture-mcp-server.js changes in Coding/Repair."
       }
     ]
   },
   "frozenFiles": [
+    "tests/explicit/entries/runGraphQueryCompatibility.js",
+    "tests/explicit/entries/runQueryPurposeValidation.js",
     "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "tests/explicit/entries/runProductionSemanticReadinessGate.js",
     "tests/harness/productionDefaultRetrievalHarness.js",
@@ -244,6 +182,8 @@
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
+    ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
     ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
     ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
     ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
@@ -255,10 +195,10 @@
   ],
   "openGaps": [
     "Selected viewpoints are the Requirements Realization Viewpoint for SP-03/SP-04 traceability and the Implementation and Migration Viewpoint for default retrieval/readiness and vector-seed/closure decisions. The corrected graph binds each affected view to one primary purpose and the independent intent audit passed after commit 6f0d1e04bb31c5bb23272501d6afdeb573af11f9.",
-    "Corrected direct RED is intentional production-behavior absence, not syntax or environment setup: SP-03 fails SP03_DEFAULT_VECTOR_RETRIEVAL_BOUNDARY_MISSING and SP-04 fails SP04_DEFAULT_READINESS_BOUNDARY_MISSING because defaultSemanticRetrieval.js does not exist. Before reaching that boundary, the corrected Harness is syntax-valid and freezes raw source operations, seven credential cases, raw vector windows/exhaustion, exact closure objects/versions, eight readiness cases, and total operation ordering. Existing no-argument and graph-tidy compatibility controls pass.",
-    "Current production evidence confirms the defect: systemarchitecture-mcp-server.js createDefaultSemanticRetrievalBoundary hardcodes approved-test-provider, approved-test-model, dimensions 1536, and an empty neo4j-native seed result. This must be removed, not treated as a baseline implementation.",
+    "Post-delivery-audit direct RED is intentional and narrow: SP-03 fails SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE because b13a2e8 routes a no-dependency semantic query with legacy control words and explicit anchors to deterministicRuntime despite an absent approved secret. SP-04 and all previously accepted retrieval/readiness/closure evidence remain green.",
+    "Current production evidence confirms only the routing defect: defaultSemanticRetrieval.js and unchanged productionGraphRagRuntime.js satisfy the frozen deep retrieval and completion contract, while systemarchitecture-mcp-server.js isDeterministicSemanticControlRequest creates the prohibited public bypass. The repair must delete that selector and preserve explicit third-argument test dependencies.",
     "This artifact intentionally supersedes the prior WP-P1 temporary handoff because WP-P1 is accepted and delivered; WP-P1 contracts, implementation, tests, and cleanup boundaries remain frozen and are regression controls only.",
     "Neo4j synchronization evidence remains exactly neo4jUri is required for start. This is environment evidence only and cannot weaken fail-closed readiness, replace deterministic raw production-like acceptance, or be represented as live production proof.",
-    "Delegated approval of the first RED design was rejected because it supplied ready-made environment credentials, trusted self-reported top-k evidence, used shape-only closure assertions, and lacked exact readiness ordering/evidence. The first correction was also rejected because approved-source success could read nothing, zero-result success could skip vector calls, index/Cypher/provider-vector correlation was not executable, and View/provenance assertions were incomplete. The third audit found that production assertions existed but the guard lacked explicit malformed counterexamples for missing parent viewpoint, incomplete/version-wrong members, missing/wrong relationship endpoints, and duplicate provenance. This correction freezes exactly thirteen guard-required negative detections covering those cases plus the previously accepted source, zero-result, vector, metadata, and missing-provenance cases. It requires final independent reapproval and then global human approval before stage validation, full runner refresh, stage commit, or downstream emission."
+    "ImplementationDesign owns the corrected compatibility injection: intentArchitectureQueryHarness.js now passes semanticRetrievalBoundary through callTool's actual third dependencies argument, and its frozen guard rejects the ignored-fourth-argument form. CodingAndReparing is authorized only for the systemarchitecture-mcp-server.js routing repair; all other production and test artifacts remain frozen."
   ]
 }

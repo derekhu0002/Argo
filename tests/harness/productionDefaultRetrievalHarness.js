@@ -139,6 +139,12 @@ const RAW_EVIDENCE_CONTRACT = deepFreeze({
     operation: 'direct',
     everyReadPrecedesReadiness: true,
   },
+  defaultProductionRouting: {
+    legacyControlWords: ['threshold-all', 'semantic seed'],
+    explicitAnchors: ['grag-seed-retrieval'],
+    absentCredentialCategory: 'APPROVED_SECRET_REQUIRED',
+    deterministicRuntimeBypassForbidden: true,
+  },
   closure: {
     policyId: 'w5.implementation-design.v1',
     parameterContract: ['purpose', 'anchors', 'subject', 'policyAnchorId'],
@@ -269,6 +275,19 @@ async function runZeroResultDefaultMcpRetrieval() {
     query: {
       purpose: 'implementation-design',
       intent: 'An unrelated semantic request with no qualifying production records',
+    },
+  });
+}
+
+async function runLegacyControlWordProductionGate() {
+  return runDefaultSemanticScenario({
+    sourceFixture: CREDENTIAL_SOURCE_CASES.find(fixture => fixture.name === 'missing-secret'),
+    readiness: alignedReadiness(),
+    candidatesByChannel: defaultCandidates(),
+    query: {
+      purpose: 'implementation-design',
+      intent: 'threshold-all semantic seed compatibility words must still use production retrieval',
+      anchors: ['grag-seed-retrieval'],
     },
   });
 }
@@ -614,6 +633,27 @@ function assertDefaultVectorRetrieval(observation) {
   assertReadinessBeforeProviderAndVector(observation, 'SP03');
   assertRawPaginationCompleteness(observation);
   assertExactClosureAndVersions(observation);
+}
+
+function assertLegacyControlWordProductionGate(observation) {
+  assert.strictEqual(
+    observation.result && observation.result.status,
+    'failed',
+    'SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE',
+  );
+  assert.strictEqual(
+    observation.result && observation.result.error && observation.result.error.category,
+    'APPROVED_SECRET_REQUIRED',
+    'SP03_LEGACY_CONTROL_WORDS_DID_NOT_REACH_CREDENTIAL_GATE',
+  );
+  assert.strictEqual(observation.readinessReads.length, 0, 'SP03_LEGACY_CONTROL_WORDS_REACHED_READINESS_WITHOUT_CREDENTIALS');
+  assert.strictEqual(observation.providerRequests.length, 0, 'SP03_LEGACY_CONTROL_WORDS_REACHED_PROVIDER_WITHOUT_CREDENTIALS');
+  assert.strictEqual(observation.vectorQueries.length, 0, 'SP03_LEGACY_CONTROL_WORDS_REACHED_VECTOR_QUERY_WITHOUT_CREDENTIALS');
+  assert(
+    observation.operationLedger.length > 0
+      && observation.operationLedger.every(event => event.kind === 'credential-source-resolution'),
+    'SP03_LEGACY_CONTROL_WORDS_CREDENTIAL_ORDER_INVALID',
+  );
 }
 
 function assertRawPaginationCompleteness(observation) {
@@ -1206,6 +1246,7 @@ module.exports = {
   assertCredentialSourceMatrix,
   assertDefaultVectorRetrieval,
   assertFullSnapshotCompatibility,
+  assertLegacyControlWordProductionGate,
   assertReadinessMatrix,
   assertZeroResultChannels,
   inspectFrozenRawEvidenceContract,
@@ -1213,6 +1254,7 @@ module.exports = {
   runCredentialSourceMatrix,
   runDefaultMcpNeo4jVectorRetrieval,
   runFullSnapshotCompatibilityControls,
+  runLegacyControlWordProductionGate,
   runReadinessMatrix,
   runZeroResultDefaultMcpRetrieval,
 };

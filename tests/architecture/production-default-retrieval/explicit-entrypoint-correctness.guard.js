@@ -9,9 +9,11 @@ const entries = new Map([
     'productionDefaultRetrievalHarness.js',
     'runCredentialSourceMatrix',
     'runDefaultMcpNeo4jVectorRetrieval',
+    'runLegacyControlWordProductionGate',
     'runZeroResultDefaultMcpRetrieval',
     'assertCredentialSourceMatrix',
     'assertDefaultVectorRetrieval',
+    'assertLegacyControlWordProductionGate',
     'assertZeroResultChannels',
     'assertFullSnapshotCompatibility',
   ]],
@@ -106,6 +108,12 @@ assert.deepStrictEqual(rawContract.approvedSourceEvidence, {
   operation: 'direct',
   everyReadPrecedesReadiness: true,
 });
+assert.deepStrictEqual(rawContract.defaultProductionRouting, {
+  legacyControlWords: ['threshold-all', 'semantic seed'],
+  explicitAnchors: ['grag-seed-retrieval'],
+  absentCredentialCategory: 'APPROVED_SECRET_REQUIRED',
+  deterministicRuntimeBypassForbidden: true,
+});
 assert.deepStrictEqual(rawContract.closure, {
   policyId: 'w5.implementation-design.v1',
   parameterContract: ['purpose', 'anchors', 'subject', 'policyAnchorId'],
@@ -158,6 +166,8 @@ for (const rawProperty of [
   'nextOffset',
   'SP03_APPROVED_SOURCE_REQUIRED_KEY_READS_INCOMPLETE',
   'SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH',
+  'SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE',
+  'SP03_LEGACY_CONTROL_WORDS_DID_NOT_REACH_CREDENTIAL_GATE',
   'SP03_ZERO_RESULT_QUERY_SEQUENCE_COUNT',
   'SP03_VECTOR_INDEX_NAME_MISMATCH',
   'SP03_PARAMETERIZED_VECTOR_CYPHER_MISMATCH',
