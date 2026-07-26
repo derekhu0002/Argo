@@ -468,11 +468,89 @@ async function invokeGetSystemArchitecture(args, probe) {
     ? probe.semanticRetrievalBoundary
     : (args && args.query ? defaultDeterministicSemanticRetrievalBoundary : undefined);
   const testDependencies = semanticRetrievalBoundary
-    ? { semanticRetrievalBoundary }
+    ? {
+      semanticOperatorJourney: createApprovedSemanticOperatorJourneyAdapter(
+        semanticRetrievalBoundary,
+      ),
+    }
     : undefined;
   const response = await callTool('getSystemArchitecture', args, null, testDependencies);
   assert(response && Array.isArray(response.content), 'QUERY_BOUNDARY_PROTOCOL_FAILURE: MCP response must contain content');
   return JSON.parse(response.content[0].text);
+}
+
+function createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary) {
+  assert(
+    semanticRetrievalBoundary && typeof semanticRetrievalBoundary.retrieve === 'function',
+    'QUERY_BOUNDARY_APPROVED_OPERATOR_RETRIEVAL_REQUIRED',
+  );
+  return Object.freeze({
+    async query(query) {
+      try {
+        const document = await semanticRetrievalBoundary.retrieve(query);
+        return semanticMcpResult({
+          status: 'passed',
+          graphPath: 'design/KG/SystemArchitecture.json',
+          query: {
+            ...query,
+            mode: 'semantic-query',
+            semanticRetrieval: 'invoked',
+          },
+          ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
+            ? { result: document.result }
+            : { result: document }),
+          document,
+        });
+      } catch (error) {
+        const evidence = {};
+        for (const field of [
+          'fullSnapshotFallback',
+          'state',
+          'canonicalVersion',
+          'contentVersion',
+          'indexVersion',
+          'completedChannels',
+          'missingChannels',
+          'mismatchedChannels',
+        ]) {
+          if (error && Object.prototype.hasOwnProperty.call(error, field)) {
+            evidence[field] = error[field];
+          }
+        }
+        return semanticMcpResult({
+          status: 'failed',
+          error: {
+            category: error && error.category
+              ? error.category
+              : 'SEMANTIC_RETRIEVAL_FAILED',
+            message: error && error.message
+              ? error.message
+              : 'Semantic retrieval failed',
+            ...evidence,
+          },
+        });
+      }
+    },
+  });
+}
+
+function semanticMcpResult(payload) {
+  const failed = payload.status === 'failed';
+  return {
+    ...payload,
+    content: [{
+      type: 'text',
+      text: JSON.stringify(payload, null, 2),
+    }],
+    structuredContent: {
+      version: '1.0',
+      mode: failed ? 'error' : ((payload.query && payload.query.mode) || 'full-snapshot'),
+      document: failed ? null : payload.document,
+      query: failed ? null : (payload.query || null),
+      error: failed ? payload.error : null,
+    },
+    isError: failed,
+  };
 }
 
 function assertUnique(values, message) {

@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T07:58:00+08:00",
+  "generatedAt": "2026-07-27T08:05:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
+  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Frozen inherited SP-03/SP-04/compatibility Harnesses now inject approved operator adapters around their exact accepted WP-P2 retrieval boundaries, preserving assertions and MCP envelopes without depending on raw fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -98,7 +98,16 @@
       "expectedStatus": "passed"
     }
   ],
-  "supportingNonExplicitTests": [],
+  "supportingNonExplicitTests": [
+    {
+      "name": "Inherited WP-P2 Operator Composition",
+      "path": "tests/architecture/production-default-retrieval/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "AST inspection of every inherited default and compatibility semantic callTool invocation plus executable raw-fallback negative fixtures.",
+      "observationPoint": "SP-03/SP-04 inner calls carry semanticOperatorJourney at dependency argument three; compatibility wrapper calls resolve argument four to an object containing only semanticOperatorJourney. Missing dependencies and semanticRetrievalBoundary substitution fail while accepted retrieval assertions remain unchanged.",
+      "expectedStatus": "passed"
+    }
+  ],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
@@ -306,6 +315,7 @@
     "The correction baseline expects 43 total / 42 passed / 1 failed with SP-05 sole RED, semprod-operator-journey-process sole not_delivered, 36 delivered / 1 not_delivered attributes, and failure records at design/KG/test-failure-records.json. Final counts are runner-owned and must be refreshed immediately before this handoff commit.",
     "The tracked handoff is superseded after accepted Coding commit 587ee41 only for the eight adapter-lifecycle production paths. WP-P1/WP-P2 internals, README, all frozen tests/contracts, canonical authority, and delivery status are not Coding targets.",
     "Live Neo4j synchronization remains unavailable with neo4jUri is required for start. Deterministic acceptance uses controlled recording ports below production composition boundaries and cannot be represented as live provider/database evidence. semprod-ready-plateau remains a target-only release context and is not claimed by this handoff; if its protected production-facing gate intrinsically requires live execution, that claim remains definitively blocked until the environment is supplied.",
-    "No ImplementationToIntentTraceProposal.json is required: the corrected SP-05 testcase is mounted under the exact implementation-bearing owner, all three handoff anchors exist, and plateau/work-package exclusions are evidence-backed non-executable context."
+    "No ImplementationToIntentTraceProposal.json is required: the corrected SP-05 testcase is mounted under the exact implementation-bearing owner, all three handoff anchors exist, and plateau/work-package exclusions are evidence-backed non-executable context.",
+    "Inherited composition migration: productionDefaultRetrievalHarness.js and intentArchitectureQueryHarness.js retain every accepted WP-P2 assertion and retrieval boundary but now pass semanticOperatorJourney through the correct inner-third or wrapper-fourth dependency position. The frozen WP-P2 correctness guard structurally inspects those calls and executes missing-dependency and raw-boundary-substitution negative fixtures."
   ]
 }

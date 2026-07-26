@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const ts = require('typescript');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
@@ -243,10 +244,34 @@ for (const rawProperty of [
 assert(!harness.includes('semanticRetrievalBoundary:'), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness injects a semantic retrieval boundary');
 assert(!/withDefaultSemanticRetrievalTestComposition\(\{\s*environment/s.test(harness), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness injects ready-made environment credentials');
 assert(
-  harness.includes("return callTool('getSystemArchitecture', args);"),
-  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ordinary default semantic scenarios must call the inner production boundary without dependencies',
+  harness.includes('createApprovedDefaultSemanticOperatorJourneyAdapter')
+    && harness.includes('semanticOperatorJourney ? { semanticOperatorJourney } : undefined'),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: default semantic scenarios must use approved operator composition',
 );
 const compatibilityHarness = read('tests/harness/intentArchitectureQueryHarness.js');
+assertInheritedSemanticOperatorComposition(harness, compatibilityHarness);
+assert.throws(
+  () => assertInheritedSemanticOperatorComposition(
+    harness.replace(
+      'semanticOperatorJourney ? { semanticOperatorJourney } : undefined',
+      'semanticOperatorJourney ? undefined : undefined',
+    ),
+    compatibilityHarness,
+  ),
+  /WP_P2_EXPLICIT_ENTRYPOINT_GUARD/,
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: default raw-fallback fixture passed',
+);
+assert.throws(
+  () => assertInheritedSemanticOperatorComposition(
+    harness,
+    compatibilityHarness.replace(
+      'semanticOperatorJourney: createApprovedSemanticOperatorJourneyAdapter(',
+      'semanticRetrievalBoundary: createApprovedSemanticOperatorJourneyAdapter(',
+    ),
+  ),
+  /WP_P2_EXPLICIT_ENTRYPOINT_GUARD/,
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility raw-fallback fixture passed',
+);
 const {
   assertNoProbeCompatibilityUsesInjectedBoundary,
 } = require(path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js'));
@@ -280,7 +305,7 @@ assert(
     && productionCredentialScenario.includes('runProductionQueryMixedLegacyRejections')
     && productionCredentialScenario.includes('item.mixedLegacyKey')
     && productionCredentialScenario.includes('runActualProductionQueryCredentialScenario'),
-  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: credential RED must invoke actual uninjected MCP orchestration with raw source instrumentation',
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: credential matrix must invoke actual MCP orchestration through the approved operator with raw source instrumentation',
 );
 assert(
   !productionCredentialScenario.includes('observations.neo4jDriver.execute')
@@ -301,6 +326,108 @@ assertNoProbeCompatibilityUsesInjectedBoundary()
     console.error(error && error.stack ? error.stack : error);
     process.exitCode = 1;
   });
+
+function assertInheritedSemanticOperatorComposition(defaultHarness, compatibilitySource) {
+  const defaultAst = parse(defaultHarness, 'productionDefaultRetrievalHarness.js');
+  const defaultCalls = semanticCallToolCalls(defaultAst);
+  assert(
+    defaultCalls.length >= 2
+      && defaultCalls.every(call => (
+        call.arguments.length >= 3
+        && containsObjectProperty(call.arguments[2], 'semanticOperatorJourney')
+        && !containsObjectProperty(call.arguments[2], 'semanticRetrievalBoundary')
+      )),
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: inherited default semantic callTool depends on raw fallback',
+  );
+
+  const compatibilityAst = parse(compatibilitySource, 'intentArchitectureQueryHarness.js');
+  const compatibilityCalls = semanticCallToolCalls(compatibilityAst);
+  assert.strictEqual(
+    compatibilityCalls.length,
+    1,
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility callTool count changed',
+  );
+  const wrapperCall = compatibilityCalls[0];
+  assert(
+    wrapperCall.arguments.length === 4
+      && ts.isIdentifier(wrapperCall.arguments[3]),
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility semantic call lacks wrapper dependencies',
+  );
+  const dependencyDeclaration = variableDeclaration(
+    compatibilityAst,
+    wrapperCall.arguments[3].text,
+  );
+  assert(
+    dependencyDeclaration
+      && dependencyDeclaration.initializer
+      && containsObjectProperty(
+        dependencyDeclaration.initializer,
+        'semanticOperatorJourney',
+      )
+      && !containsObjectProperty(
+        dependencyDeclaration.initializer,
+        'semanticRetrievalBoundary',
+      ),
+    'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: compatibility semantic callTool depends on raw fallback',
+  );
+}
+
+function semanticCallToolCalls(ast) {
+  const calls = [];
+  walk(ast, node => {
+    if (
+      ts.isCallExpression(node)
+      && ts.isIdentifier(node.expression)
+      && node.expression.text === 'callTool'
+      && node.arguments.length > 0
+      && ts.isStringLiteral(node.arguments[0])
+      && node.arguments[0].text === 'getSystemArchitecture'
+    ) calls.push(node);
+  });
+  return calls;
+}
+
+function containsObjectProperty(root, name) {
+  let found = false;
+  walk(root, node => {
+    if (
+      ts.isObjectLiteralExpression(node)
+      && node.properties.some(property => (
+        (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property))
+        && property.name
+        && property.name.getText() === name
+      ))
+    ) found = true;
+  });
+  return found;
+}
+
+function variableDeclaration(ast, name) {
+  let found;
+  walk(ast, node => {
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.name.text === name
+    ) found = node;
+  });
+  return found;
+}
+
+function parse(source, label) {
+  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  assert.strictEqual(
+    ast.parseDiagnostics.length,
+    0,
+    `WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ${label} is not parseable`,
+  );
+  return ast;
+}
+
+function walk(node, visit) {
+  visit(node);
+  ts.forEachChild(node, child => walk(child, visit));
+}
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');
