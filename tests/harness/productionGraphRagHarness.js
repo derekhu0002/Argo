@@ -322,14 +322,7 @@ async function evaluateCapacityEvidence(request = {}) {
   }
   return captureBusinessOutcome(() => runtime.evaluateCapacityEvidence({
     purposes: request.purposes || PURPOSE_CATEGORIES,
-    qualityEvidence: request.qualityEvidence || {
-      benchmarkId: 'w7-phase1-five-purpose-business-benchmark',
-      perPurpose: phase1BusinessBenchmarkFixture().purposes.map(purpose => ({
-        purpose: purpose.purpose,
-        precision: purpose.precision,
-        resultCardinality: purpose.mandatoryKeySeedIds.length + purpose.expectedClosureIds.length,
-      })),
-    },
+    qualityEvidence: request.qualityEvidence,
   }));
 }
 

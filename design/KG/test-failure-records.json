@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
+    "testdescription": "Acceptor perspective control point: record phase-1 result cardinality and precision by purpose. Observation point: inspect evidence availability and verify absence of silent truncation or a release cap.",
+    "acceptanceCriteria": "tests/explicit/entries/runCapacityEvidence.js",
+    "relatedIntentElementId": "grag-capacity-residual",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runCapacityEvidence.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCapacityEvidence.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: DT19_RESULT_CARDINALITY_NOT_RECORDED: intent-decision\n+ actual - expected\n\n+ 'blocked'\n- 'passed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:30:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'passed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: DT19_RESULT_CARDINALITY_NOT_RECORDED: intent-decision\n+ actual - expected\n\n+ 'blocked'\n- 'passed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:30:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'passed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  }
+]

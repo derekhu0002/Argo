@@ -1,38 +1,43 @@
 const assert = require('node:assert');
 const {
   evaluateCapacityEvidence,
+  evaluatePhase1QualityBenchmark,
+  phase1BusinessBenchmarkFixture,
 } = require('../../harness/productionGraphRagHarness.js');
 
-const DECLARED_PURPOSES = [
-  'intent-decision',
-  'implementation-design',
-  'coding-repair',
-  'audit',
-  'graph-tidy',
-];
 const MISSING_BOUNDARY_CATEGORY = 'DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING';
 
 async function main() {
-  // GIVEN phase-1 cardinality and measured precision for each declared purpose
+  // GIVEN real DT-18 phase-1 quality evidence for each declared purpose
+  const benchmark = phase1BusinessBenchmarkFixture();
+  const declaredPurposes = benchmark.purposes.map(purpose => purpose.purpose);
+  const qualityOutcome = await evaluatePhase1QualityBenchmark({ benchmark });
+  assert.strictEqual(
+    qualityOutcome.status,
+    'passed',
+    qualityOutcome.error && qualityOutcome.error.category
+      ? qualityOutcome.error.category
+      : 'DT18_PHASE1_QUALITY_EVIDENCE_REQUIRED',
+  );
+
+  // WHEN DT-19 capacity evidence is observed from the real DT-18 output
   const outcome = await evaluateCapacityEvidence({
-    purposes: DECLARED_PURPOSES,
+    purposes: declaredPurposes,
+    qualityEvidence: qualityOutcome.qualityEvidence,
   });
 
-  // WHEN capacity evidence is observed
+  // THEN evidence is available and no silent capacity control exists
   assert.strictEqual(
     outcome.status,
     'passed',
-    outcome.error && outcome.error.category
-      ? outcome.error.category
-      : MISSING_BOUNDARY_CATEGORY,
+    failureCategory(outcome, MISSING_BOUNDARY_CATEGORY),
   );
   const capacity = outcome.capacityEvidence;
 
-  // THEN evidence is available and no silent capacity control exists
   assert(Array.isArray(capacity && capacity.byPurpose), 'DT19_CAPACITY_EVIDENCE_MISSING');
   assert.deepStrictEqual(
     capacity.byPurpose.map(evidence => evidence && evidence.purpose).sort(),
-    [...DECLARED_PURPOSES].sort(),
+    [...declaredPurposes].sort(),
     'DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE',
   );
   for (const evidence of capacity.byPurpose) {
@@ -56,6 +61,30 @@ async function main() {
     undefined,
     'DT19_CAPACITY_POLICY_DECISION_FORBIDDEN',
   );
+
+  // THEN missing real DT-18 quality evidence blocks explicitly instead of using Harness defaults
+  const missingQualityEvidence = await evaluateCapacityEvidence({
+    purposes: declaredPurposes,
+  });
+  assert.strictEqual(
+    missingQualityEvidence.status,
+    'blocked',
+    'DT19_MISSING_QUALITY_EVIDENCE_ACCEPTED',
+  );
+  assert.strictEqual(
+    missingQualityEvidence.error && missingQualityEvidence.error.category,
+    'DT19_QUALITY_EVIDENCE_REQUIRED',
+    failureCategory(missingQualityEvidence, 'DT19_QUALITY_EVIDENCE_REQUIRED'),
+  );
+}
+
+function failureCategory(outcome, fallback) {
+  if (!outcome || !outcome.error || !outcome.error.category) {
+    return fallback;
+  }
+  return outcome.error.field
+    ? `${outcome.error.category}: ${outcome.error.field}`
+    : outcome.error.category;
 }
 
 main().catch(error => {

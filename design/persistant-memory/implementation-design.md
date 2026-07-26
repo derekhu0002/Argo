@@ -207,3 +207,11 @@
 - Direct RED evidence before Coding: `runCapacityEvidence.js` fails with `DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING`; the five production Graph RAG critical guards pass.
 - `argo.validateStageHandoff(stage=implementation-to-coding)` passed. Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 37 passed, 1 failed, 0 missing criteria. The only failure is DT-19 (`DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING`); DT-18 and TS-08 now pass and remain frozen context.
 - No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
+
+## 2026-07-26 DT-19 true-chain RED correction
+
+- Human review found an ImplementationDesign gap: the first DT-19 RED boundary let `runCapacityEvidence.js` pass through Harness-synthesized `qualityEvidence.resultCardinality` instead of chaining real DT-18 output into DT-19.
+- Corrected `runCapacityEvidence.js` now runs `evaluatePhase1QualityBenchmark({ benchmark })`, passes `qualityOutcome.qualityEvidence` into `evaluateCapacityEvidence()`, and expects the current production chain to fail with `DT19_RESULT_CARDINALITY_NOT_RECORDED: intent-decision` until DT-18 preserves actual result ids/cardinality.
+- `productionGraphRagHarness.evaluateCapacityEvidence()` no longer supplies synthetic quality-evidence defaults. Missing quality evidence is now a frozen negative boundary that must block with `DT19_QUALITY_EVIDENCE_REQUIRED` once Coding repairs the earlier true-chain failure.
+- The corrected handoff still authorizes Coding only to update `.argo/scripts/graph-rag/productionGraphRagRuntime.js`; tests, Harnesses, contracts, guardrails, and runner-owned `deliveryStatus` remain frozen during Coding/Repair.
+- `argo.validateStageHandoff(stage=implementation-to-coding)` passed. Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 37 passed, 1 failed, 0 missing criteria. The only failure is DT-19 (`DT19_RESULT_CARDINALITY_NOT_RECORDED: intent-decision`), and runner-owned delivery evidence changed `grag-capacity-residual` from `delivered` back to `not_delivered`.

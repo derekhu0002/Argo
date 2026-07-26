@@ -55,8 +55,11 @@ for (const ownership of [
   'precision outside `[0, 1]`',
   'W7 Phase 1 business acceptance requires',
   'DT-19 capacity evidence',
+  'real DT-18',
+  'result ids',
   'result cardinality',
   'measured precision',
+  'missing quality evidence',
   'capacity-policy decisions',
 ]) {
   assert(
