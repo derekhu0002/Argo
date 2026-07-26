@@ -322,11 +322,9 @@ function captureNeo4jProjectionConfig({ environment, expectedPassword }) {
         database: config.database,
       };
     } catch (error) {
-      return {
-        status: 'blocked',
-        category: error && error.category,
+      return blockedOutcome(error && error.category, {
         field: error && error.field,
-      };
+      });
     } finally {
       delete require.cache[require.resolve(neo4jProjectionStorePath)];
     }

@@ -45,6 +45,8 @@ const entryRequirements = new Map([
     'TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED',
     'TS07_CANONICAL_NEO4J_ENV_NORMALIZATION',
     'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS',
+    'assertBlocked(neo4jEnvironment.legacyOnly',
+    'assertBlocked(neo4jEnvironment.canonicalWithLegacyConflict',
   ]],
   ['tests/explicit/entries/runCanonicalGraphFullSnapshot.js', [
     'intentArchitectureQueryHarness.js',
