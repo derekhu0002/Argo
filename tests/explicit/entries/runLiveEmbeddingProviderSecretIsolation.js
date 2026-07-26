@@ -14,6 +14,14 @@ async function main() {
     observation.sourceFixtures.some(fixture => fixture.name === 'legacy-neo4j-alias-only'),
     'TS07_PROVIDER_LEGACY_NEO4J_ALIAS_FIXTURE_MISSING',
   );
+  assert(
+    observation.sourceFixtures.some(fixture => fixture.name === 'runtime-neo4j-uri-field-key'),
+    'TS07_PROVIDER_RUNTIME_NEO4J_URI_FIELD_FIXTURE_MISSING',
+  );
+  assert(
+    observation.sourceFixtures.some(fixture => fixture.name === 'runtime-embedding-credential-field-key'),
+    'TS07_PROVIDER_RUNTIME_EMBEDDING_CREDENTIAL_FIELD_FIXTURE_MISSING',
+  );
   for (const fixture of observation.sourceFixtures) {
     assert.strictEqual(
       fixture.status,

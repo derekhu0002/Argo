@@ -1,5 +1,6 @@
 const assert = require('node:assert');
 const {
+  evaluateNeo4jProjectionEnvironmentScenarios,
   inspectHarnessEnvironmentInitialization,
   runProductionSemanticQuery,
 } = require('../../harness/productionGraphRagHarness.js');
@@ -39,6 +40,14 @@ async function main() {
     harnessEnvironment.secretDiagnostics,
     [],
     `TS01_HARNESS_ENV_SECRET_DIAGNOSTIC:${harnessEnvironment.secretDiagnostics.join(',')}`,
+  );
+
+  // THEN canonical Neo4j names and QWEN_KEY resolve the runtime fields required for startup
+  const runtimeConfiguration = evaluateNeo4jProjectionEnvironmentScenarios();
+  assert.strictEqual(
+    runtimeConfiguration.canonicalOnly.status,
+    'accepted',
+    `TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:${runtimeConfiguration.canonicalOnly.category || runtimeConfiguration.canonicalOnly.field || 'missing'}`,
   );
 }
 

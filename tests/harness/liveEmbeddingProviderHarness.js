@@ -40,6 +40,8 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
   { name: 'blank-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', process: true, blankKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
   { name: 'duplicate-key', expectedCategory: 'SECRET_FILE_DUPLICATE_KEY', file: true, duplicateKey: 'QWEN_KEY' },
   { name: 'unknown-secret', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'OTHER_API_TOKEN' },
+  { name: 'runtime-neo4j-uri-field-key', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'neo4jUri' },
+  { name: 'runtime-embedding-credential-field-key', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'embeddingCredential' },
   { name: 'root-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: '.env' },
   { name: 'alternate-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: 'config/.env' },
   { name: 'tracked-file', expectedCategory: 'SECRET_FILE_TRACKED', file: true, tracked: true },

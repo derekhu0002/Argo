@@ -304,11 +304,12 @@ function captureNeo4jProjectionConfig({ environment, expectedPassword }) {
     'ARGO_NEO4J_URI',
     'ARGO_NEO4J_USERNAME',
     'ARGO_NEO4J_PASSWORD',
+    'QWEN_KEY',
     'ARGO_EMBEDDING_CREDENTIAL',
   ];
   return withTemporaryEnvironment({
     ...environment,
-    ARGO_EMBEDDING_CREDENTIAL: 'synthetic-embedding-credential',
+    QWEN_KEY: 'synthetic-qwen-key',
   }, keys, () => {
     try {
       delete require.cache[require.resolve(neo4jProjectionStorePath)];

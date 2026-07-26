@@ -1,169 +1,209 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T16:24:00+08:00",
+  "generatedAt": "2026-07-26T17:50:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Harness environment and canonical Neo4j configuration handoff. Coding/Repair is authorized only to repair the Argo harness initializer and Neo4j projection/runtime configuration so `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads only the approved repository-relative `.argo/.env` into `process.env` before projection/runtime checks, and projection configuration accepts only canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` while rejecting legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` aliases before connection or write side effects. ImplementationDesign repair note: TS-07 legacy-alias scenario failures are normalized by the Harness to the shared blocked outcome shape `{ status: \"blocked\", error: { category, field } }`, so Coding must not edit frozen tests or Harnesses to satisfy `assertBlocked()`. Original pre-coding baseline from `argo.runArchitectureTests`: 38 total, 36 passed, 2 failed, 0 missing acceptance criteria; failures are TS-01 (`TS01_HARNESS_ENV_FILE_LOADER_MISSING`) and TS-07 (`TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED`). Repair validation with Coding's scoped source edits present: 38 total, 38 passed, 0 failed, 0 missing acceptance criteria.",
+  "summary": "ImplementationDesign materialized the validated TS-01 and TS-07 startup/config-resolution boundary from .argo/temp/IntentToImplementationHandoff.json at 934f7dd977e5bc355ea4b6b5b64d5e9f2edabe58. The pre-coding baseline was refreshed after extending existing test entrypoints only: 35/38 explicit acceptance testcases pass, with TS-01, TS-07, and TS-07 Provider Secret Isolation failing until in-process neo4jUri is resolved only from ARGO_NEO4J_DATABASE_URL and embeddingCredential only from QWEN_KEY.",
   "implementationContracts": [
+    "design/KG/SystemArchitecture.json",
+    ".argo/temp/IntentToImplementationHandoff.json",
     "OVERALL_ARCHITECTURE.md",
-    ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md"
+    "tests/ARCHITECTURE.md",
+    ".argo/schema/ImplementationToCodingHandoff.schema.json"
   ],
   "explicitEntrypoints": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
       "entryPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
-      "controlPoint": "Run the production Graph RAG semantic query, then inspect the Argo harness initializer behavior before Neo4j projection/runtime checks.",
-      "observationPoint": "Node.js/Neo4j-native production evidence still holds, and the initializer loads only the repository-relative `.argo/.env` into process.env before projection, rejects root or alternate env files, preserves process precedence for credential-boundary conflict behavior, and emits no secret-bearing diagnostics.",
+      "controlPoint": "Production semantic query plus harness startup configuration resolution from approved canonical process/.argo/.env names.",
+      "observationPoint": "Node.js/Neo4j mainline remains intact and canonical ARGO_NEO4J_DATABASE_URL plus QWEN_KEY resolve required runtime neo4jUri and embeddingCredential before startup checks.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runProductionGraphRagRuntime.js",
-      "failureReason": "TS01_HARNESS_ENV_FILE_LOADER_MISSING"
+      "failureReason": "TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
       "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-      "controlPoint": "Resolve missing credential scenarios, inspect credential source policy, and evaluate Neo4j projection configuration under canonical-only, legacy-only, and canonical-plus-legacy environment scenarios using synthetic values.",
-      "observationPoint": "Canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` normalize into projection configuration; legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` do not satisfy configuration and fail closed before driver/projection/index side effects; hardcoded defaults, fallback expressions, and Cypher credential transport remain absent.",
+      "controlPoint": "External credential boundary scenarios for missing runtime fields, canonical Neo4j process values, and legacy alias rejection.",
+      "observationPoint": "Canonical Neo4j names and QWEN_KEY are accepted without legacy aliases, while legacy-only and conflict cases fail closed before side effects.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
-      "failureReason": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED"
+      "failureReason": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
       "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Execute the existing live provider secret-isolation source matrix and controlled Neo4j authentication canary with synthetic canaries and approved source fixtures.",
-      "observationPoint": "The source matrix includes a legacy-Neo4j-alias-only fixture that fails closed, canonical Neo4j database URL/username/password source attribution remains protected, `ARGO_NEO4J_DATABASE_PASSWORD` reaches only database authentication, no secret leaks to observable channels, rejected fixtures have zero side effects, and cleanup leaves zero persistence.",
-      "initialExecutionStatus": "passed",
+      "controlPoint": "Opted-in live provider and controlled-Neo4j secret isolation source matrix with generated canaries.",
+      "observationPoint": "QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD remain isolated, runtime-field source keys neo4jUri and embeddingCredential are rejected, and no observable channel leaks secret material.",
+      "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "failureReason": null
+      "failureReason": "LIVE_PROVIDER_OPERATION_FAILED"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "ArchitectureBoundaryGuard",
-      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root, local Graph RAG, and test contracts for the harness environment and canonical Neo4j naming boundary.",
-      "observationPoint": "Contracts declare repository-relative `.argo/.env` harness loading, canonical `ARGO_NEO4J_DATABASE_*` names, legacy alias rejection, and no connection/write side effects before approved configuration.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "DependencyDirectionGuard",
-      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "Inspect production Graph RAG modules for outward dependencies on tests and unsafe system command expansion.",
-      "observationPoint": "Production runtime code does not import tests or explicit entrypoints; the system metadata command adapter remains the only approved process-command boundary.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "ExplicitEntrypointCorrectnessGuard",
+      "name": "Production Graph RAG Explicit Entrypoint Correctness",
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect the extended TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints and Harness-owned assertions.",
-      "observationPoint": "Existing entrypoints, not new testcase paths, contain GIVEN/WHEN/THEN readability, Harness abstraction, `TS01_HARNESS_ENV_*`, `TS07_CANONICAL_NEO4J_ENV_*`, `UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS`, and provider legacy-alias fixture assertions.",
+      "kind": "ImplementationTraceabilityGuard",
+      "controlPoint": "Acceptance entrypoint structure and harness delegation remain frozen.",
+      "observationPoint": "TS entrypoints keep business assertions and do not expose low-level plumbing.",
       "expectedStatus": "passed"
     },
     {
-      "name": "KeyImplementationTraceabilityGuard",
-      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-      "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted TS-01/TS-07 testcase paths.",
-      "observationPoint": "Implementation mappings reference `grag-production-runtime` and `grag-credential-boundary`; the mounted TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints exist.",
+      "name": "Production Graph RAG Credential Source Policy",
+      "path": "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
+      "kind": "CredentialBoundaryGuard",
+      "controlPoint": "Approved configuration source policy and examples.",
+      "observationPoint": "Only approved names and empty examples are present; secrets are not introduced into tracked files.",
       "expectedStatus": "passed"
     },
     {
-      "name": "LiveProviderContractGuard",
-      "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect the live provider contract for approved canonical key names and placeholder discipline.",
-      "observationPoint": "The approved live configuration contract includes canonical Neo4j database URL/username/password names and excludes committed secret values.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "LiveProviderSecretIsolationGuard",
+      "name": "Live Provider Secret Isolation Guard",
       "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect committed live provider examples, source fixtures, and secret-isolation assertions.",
-      "observationPoint": "Only empty placeholders are committed, `.argo/.env` remains ignored/untracked, and secret-isolation tests protect generated canaries rather than real secret values.",
+      "kind": "SecretIsolationGuard",
+      "controlPoint": "Live provider and controlled Neo4j secret isolation contract.",
+      "observationPoint": "Secret source provenance, runtime-field rejection, redaction, and cleanup evidence remain intact.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Coding Scope Authorization Guard",
+      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+      "kind": "ScopeAuthorizationGuard",
+      "controlPoint": "Coding authorization text and target paths.",
+      "observationPoint": "Repair scope excludes TS-09 adapter/lifecycle, delivery sequence, capacity, and unrelated implementation work.",
       "expectedStatus": "passed"
     }
   ],
-  "supportingNonExplicitTests": [],
+  "supportingNonExplicitTests": [
+    {
+      "name": "Implementation Traceability Guard",
+      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+      "kind": "TraceabilityGuard",
+      "controlPoint": "Graph-to-implementation trace remains navigable.",
+      "observationPoint": "Coding changes stay attached to mounted intent evidence.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Dependency Direction Guard",
+      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Production Graph RAG dependency direction.",
+      "observationPoint": "Config repair does not invert harness/runtime boundaries.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Architecture Boundary Guard",
+      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Production Graph RAG boundary ownership.",
+      "observationPoint": "Repair remains within approved graph-rag startup/configuration boundary.",
+      "expectedStatus": "passed"
+    }
+  ],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
-      "path": ".argo/scripts/ensureArgoHarnessEnvironment.js",
-      "failureSignal": "TS01_HARNESS_ENV_FILE_LOADER_MISSING / TS01_HARNESS_ENV_PATH_BOUNDARY_MISSING / TS01_HARNESS_ENV_PROCESS_PRECEDENCE_MISSING / TS01_HARNESS_ENV_SECRET_DIAGNOSTIC",
-      "nextAction": "Add approved repository-relative `.argo/.env` loading before Neo4j projection/runtime checks, preserve existing process values for credential-boundary conflict behavior, ignore root or alternate env files, and keep diagnostics secret-free."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
       "path": ".argo/scripts/neo4j-system-architecture-store.js",
-      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED / TS07_CANONICAL_NEO4J_ENV_NORMALIZATION / UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS",
-      "nextAction": "Change projection configuration to read canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`, reject any legacy alias presence before connection/write side effects, and keep password flow limited to database authentication."
+      "failureSignal": "TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing",
+      "nextAction": "Change getNeo4jConfig startup normalization so embeddingCredential is materialized from QWEN_KEY, never ARGO_EMBEDDING_CREDENTIAL, while preserving ARGO_NEO4J_DATABASE_URL as the only source for neo4jUri and preserving legacy alias rejection."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
       "path": ".argo/scripts/graph-rag/externalProductionConfig.js",
-      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED / UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS",
-      "nextAction": "If needed, align the external configuration boundary vocabulary with canonical Neo4j database URL/username/password inputs while preserving missing-field and no-fallback behavior."
+      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing",
+      "nextAction": "Keep required internal fields explicit, but accept only normalized values whose provenance came from ARGO_NEO4J_DATABASE_URL and QWEN_KEY; reject unresolved runtime fields and any separately supplied runtime-field source before side effects."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
+      "path": ".argo/scripts/ensureArgoHarnessEnvironment.js",
+      "failureSignal": "neo4jUri is required for start / embeddingCredential is required for start",
+      "nextAction": "Ensure the existing repository-relative .argo/.env loader runs before Neo4j projection/start checks and does not read, print, or expose secret values; preserve process precedence."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
+      "path": ".argo/scripts/syncSystemArchitectureToNeo4j.js",
+      "failureSignal": "neo4jUri is required for start during MCP post-write Neo4j sync",
+      "nextAction": "Route sync startup through the same canonical Neo4j normalization path so ARGO_NEO4J_DATABASE_URL supplies neo4jUri and legacy/CLI runtime-field sources do not satisfy required configuration."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
+      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
+      "failureSignal": "LIVE_PROVIDER_OPERATION_FAILED",
+      "nextAction": "Preserve the approved source matrix and reject runtime-field source keys such as neo4jUri and embeddingCredential without leaking generated canaries to stdout, stderr, logs, graph evidence, failure records, or artifacts."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the harness environment initialization and Neo4j projection/runtime configuration boundary. Extend `ensureArgoHarnessEnvironment.js` so `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads the approved repository-relative `.argo/.env` into `process.env` before `ensureNeo4jProjection` or runtime checks, without reading root or alternate env files and without printing secret-bearing diagnostics. Update the Neo4j projection configuration path to accept only `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`, and to reject legacy aliases `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` before driver/projection/index side effects. Do not change intent graph semantics, test/Harness files, contracts, live provider behavior beyond legacy-alias rejection already frozen in the source matrix, capacity evidence, W7 delivery gates, TS-09, W3/W3.1 lifecycle, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Scoped completion for the validated TS-01/TS-07 configuration-resolution handoff. Coding must repair only canonical startup normalization and source provenance so the three explicit entrypoints pass, then rerun full argo.runArchitectureTests and validate the implementation-to-coding handoff before any delivery claim.",
     "tasks": [
       {
-        "taskId": "ENV-C1",
-        "title": "Load approved harness environment",
-        "objective": "Make the harness initializer prepare process.env from the approved local env file before Neo4j projection checks.",
+        "taskId": "W2-C1",
+        "title": "Normalize canonical runtime fields",
+        "objective": "Resolve in-process neo4jUri from ARGO_NEO4J_DATABASE_URL and embeddingCredential from QWEN_KEY before start-time validation.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01"
-        ],
-        "targetPaths": [
-          ".argo/scripts/ensureArgoHarnessEnvironment.js"
-        ],
-        "steps": [
-          "Add a small loader that resolves exactly `<workspaceRoot>/.argo/.env` after workspace root resolution and before `ensureNeo4jProjection` or runtime checks.",
-          "Parse only simple key=value lines needed by the approved Argo configuration contract; do not print values.",
-          "Do not load root `.env`, alternate `.env` files, `.env.local`, or dotenv defaults.",
-          "Do not overwrite existing `process.env` values; leave duplicate/conflict semantics to the credential boundary.",
-          "Run `node tests/explicit/entries/runProductionGraphRagRuntime.js` until TS-01 passes."
-        ],
-        "completionSignal": "runProductionGraphRagRuntime.js exits 0 and proves Node.js/Neo4j-native mainline plus repository `.argo/.env` loading before projection with no secret diagnostics."
-      },
-      {
-        "taskId": "ENV-C2",
-        "title": "Canonicalize Neo4j projection names",
-        "objective": "Move projection configuration from legacy Neo4j aliases to the approved canonical database names.",
-        "dependsOn": [
-          "ENV-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-07",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+          "ExplicitAcceptanceTestcase-TS-01",
+          "ExplicitAcceptanceTestcase-TS-07"
         ],
         "targetPaths": [
           ".argo/scripts/neo4j-system-architecture-store.js",
           ".argo/scripts/graph-rag/externalProductionConfig.js"
         ],
         "steps": [
-          "Read projection URL, username, and password from `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`.",
-          "Reject any present `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, or `ARGO_NEO4J_PASSWORD` with `UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS` before opening a Neo4j driver or writing projection/index evidence.",
-          "Preserve missing-field failures for absent canonical values and preserve credential-free startup/query blocking.",
-          "Keep the database password out of Cypher, logs, errors, failure records, snapshots, and returned evidence.",
-          "Run `node tests/explicit/entries/runExternalCredentialBoundary.js` until TS-07 passes.",
-          "Run `node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js` when live/provider prerequisites are available, or preserve the existing passing source-fixture behavior if the environment is already prepared."
+          "Replace any ARGO_EMBEDDING_CREDENTIAL startup dependency with QWEN_KEY as the sole approved embeddingCredential source.",
+          "Keep ARGO_NEO4J_DATABASE_URL as the sole approved source for neo4jUri.",
+          "Reject legacy Neo4j aliases, runtime-field source keys, blank values, literals, defaults, and CLI overrides before database/provider/index side effects."
         ],
-        "completionSignal": "runExternalCredentialBoundary.js exits 0, the live provider secret-isolation entrypoint remains green or only reports an approved opt-in blocker, canonical Neo4j names are accepted, legacy aliases fail closed, and no secret value is exposed."
+        "completionSignal": "TS-01 and TS-07 no longer fail with TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing or TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing."
       },
       {
-        "taskId": "ENV-C3",
-        "title": "Verify scoped guards",
-        "objective": "Prove the repair stays inside the approved harness-env and credential-boundary scope.",
+        "taskId": "W2-C2",
+        "title": "Preserve harness env loading",
+        "objective": "Keep the approved repository-relative .argo/.env loader ahead of projection/runtime checks without exposing secret values.",
         "dependsOn": [
-          "ENV-C1",
-          "ENV-C2"
+          "W2-C1"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-01"
+        ],
+        "targetPaths": [
+          ".argo/scripts/ensureArgoHarnessEnvironment.js",
+          ".argo/scripts/syncSystemArchitectureToNeo4j.js"
+        ],
+        "steps": [
+          "Verify the exact .argo/.env path is the only file-loader path used for harness startup.",
+          "Preserve process environment precedence and conflict behavior owned by the credential boundary.",
+          "Keep diagnostics category-only and free of secret values or .argo/.env contents."
+        ],
+        "completionSignal": "Harness startup and MCP post-write Neo4j sync no longer report neo4jUri or embeddingCredential missing when approved canonical names are present."
+      },
+      {
+        "taskId": "W2-C3",
+        "title": "Retain secret isolation matrix",
+        "objective": "Keep live provider source provenance and runtime-field source rejection intact while repairing the startup blockers.",
+        "dependsOn": [
+          "W2-C1"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js"
+        ],
+        "steps": [
+          "Preserve direct-process and exact .argo/.env source attribution for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD.",
+          "Reject file/process attempts to supply neo4jUri or embeddingCredential as runtime-field source keys.",
+          "Preserve zero-leak checks across errors, stdout, stderr, logs, Cypher, graph evidence, failure records, snapshots, and generated artifacts."
+        ],
+        "completionSignal": "TS-07 Provider Secret Isolation passes with runtime-neo4j-uri-field-key and runtime-embedding-credential-field-key fixtures present and leak-free."
+      },
+      {
+        "taskId": "W2-C7",
+        "title": "Refresh scoped completion evidence",
+        "objective": "Regenerate runner evidence after Coding repairs and keep global delivery status runner-owned.",
+        "dependsOn": [
+          "W2-C1",
+          "W2-C2",
+          "W2-C3"
         ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-TS-01",
@@ -171,66 +211,41 @@
           "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
         ],
         "targetPaths": [
-          ".argo/scripts/ensureArgoHarnessEnvironment.js",
-          ".argo/scripts/neo4j-system-architecture-store.js",
-          ".argo/scripts/graph-rag/externalProductionConfig.js"
+          "design/KG/test-failure-records.json",
+          "design/KG/SystemArchitecture.json"
         ],
         "steps": [
-          "Run the three explicit entrypoints listed in this handoff.",
-          "Run all critical production Graph RAG guards listed in `criticalNonExplicitTests`.",
-          "Run `npm run test:argo` or `argo.runArchitectureTests` to refresh failure records and runner-owned delivery evidence.",
-          "Confirm no test/Harness/contract edits occur during Coding/Repair and no hand-authored deliveryStatus changes are made."
+          "Run full argo.runArchitectureTests after code repair.",
+          "Confirm expectedFailureRecordsPath reflects zero remaining TS-01/TS-07 startup-resolution failures.",
+          "Validate .argo/temp/ImplementationToCodingHandoff.json with stage implementation-to-coding.",
+          "Do not manually edit deliveryStatus; let the architecture test runner own any refresh."
         ],
-        "completionSignal": "TS-01, TS-07, TS-07 Provider Secret Isolation, and critical guards pass; `design/KG/test-failure-records.json` is refreshed by the runner; no hand-authored deliveryStatus changes are made."
+        "completionSignal": "3/3 scoped explicit entrypoints pass; 5/5 critical guards remain applicable; 0 delivered-to-not_delivered regression after repair; TS-07 provider secret isolation remains leak-free; global grag-credential-boundary remains runner-owned."
       }
     ]
   },
   "frozenFiles": [
-    ".argo/temp/IntentToImplementationHandoff.json",
-    ".argo/temp/ImplementationToCodingHandoff.json",
-    "OVERALL_ARCHITECTURE.md",
-    ".argo/scripts/ARCHITECTURE.md",
-    ".argo/scripts/graph-rag/ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md",
-    "tests/harness/intentArchitectureQueryHarness.js",
+    "tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
     "tests/harness/productionGraphRagHarness.js",
     "tests/harness/liveEmbeddingProviderHarness.js",
-    "tests/explicit/entries/runGraphQueryCompatibility.js",
-    "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
-    "tests/explicit/entries/runQueryPurposeValidation.js",
-    "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-    "tests/explicit/entries/runProductionGraphRagRuntime.js",
-    "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
-    "tests/explicit/entries/runEmbeddingQualificationGate.js",
-    "tests/explicit/entries/runExternalCredentialBoundary.js",
-    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
-    "tests/explicit/entries/runSevenWaveDeliveryGates.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderE2E.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
-    "tests/explicit/entries/runIndependentSemanticSeeds.js",
-    "tests/explicit/entries/runMutationIndexLifecycle.js",
-    "tests/explicit/entries/runStaleSemanticQueryRejection.js",
-    "tests/explicit/entries/runPurposePolicyClosure.js",
-    "tests/explicit/entries/runIntentDecisionClosure.js",
-    "tests/explicit/entries/runImplementationDesignClosure.js",
-    "tests/explicit/entries/runCodingRepairClosure.js",
-    "tests/explicit/entries/runAuditProofClosure.js",
-    "tests/explicit/entries/runCoherentIntentReading.js",
-    "tests/explicit/entries/runRelationshipEndpointClosure.js",
-    "tests/explicit/entries/runCompleteViewClosure.js",
-    "tests/explicit/entries/runFirstInclusionProvenance.js",
-    "tests/explicit/entries/runRetrievalQualityBenchmark.js",
-    "tests/explicit/entries/runCapacityEvidence.js",
-    "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
-    "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
-    "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
+    "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
     "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-    "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js"
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+    "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+    "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+    "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+    "design/KG/test-failure-records.json",
+    "design/KG/SystemArchitecture.json",
+    ".argo/temp/IntentToImplementationHandoff.json"
   ],
-  "openGaps": []
+  "openGaps": [
+    "Selected viewpoint: Requirements Realization Viewpoint. Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need approved external configuration names to be the only source for internal runtime fields before Neo4j connectivity, provider, or index side effects. Purpose: handoff preparation for Coding/Repair. Affected view binding remains grag-native-embedding-release-requirements, already bound as a Requirements Realization Viewpoint instance in design/KG/SystemArchitecture.json.",
+    "ARGO_NEO4J_DATABASE_URL is the only approved source for materializing in-process neo4jUri; QWEN_KEY is the only approved source for materializing in-process embeddingCredential; legacy aliases, runtime-field source keys, literals, defaults, CLI values, graph/Cypher values, and alternate files remain forbidden.",
+    "Pre-coding baseline intentionally fails TS-01, TS-07, and TS-07 Provider Secret Isolation until Coding repairs canonical runtime-field resolution.",
+    "No real .argo/.env secret values were read, created, printed, copied, or exposed during ImplementationDesign.",
+    "No new ExplicitAcceptanceTestcase identity or physical entrypoint was created; existing TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints were extended because the validated intent handoff authorized existing-test boundary extension."
+  ]
 }
