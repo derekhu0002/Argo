@@ -200,6 +200,10 @@ function createProductionGraphRagRuntime(dependencies = {}) {
       return evaluatePhase1QualityBenchmark(request);
     },
 
+    evaluateCapacityEvidence(request = {}) {
+      return evaluateCapacityEvidence(request);
+    },
+
     evaluateDeliverySequence(request = {}) {
       return evaluateDeliverySequence(request);
     },
@@ -298,6 +302,77 @@ function evaluatePhase1QualityBenchmark(request = {}) {
       releasePrecisionThreshold: undefined,
     }),
   });
+}
+
+function evaluateCapacityEvidence(request = {}) {
+  const purposes = normalizeDeclaredPurposes(request.purposes);
+  const qualityEvidence = request.qualityEvidence && typeof request.qualityEvidence === 'object'
+    ? request.qualityEvidence
+    : {};
+  const perPurpose = Array.isArray(qualityEvidence.perPurpose)
+    ? qualityEvidence.perPurpose
+    : [];
+  if (purposes.length === 0 || perPurpose.length === 0) {
+    throw capacityEvidenceError('DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE');
+  }
+
+  const byPurpose = purposes.map(purpose => {
+    const evidence = perPurpose.find(candidate => candidate && candidate.purpose === purpose);
+    if (!evidence) {
+      throw capacityEvidenceError('DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE', purpose);
+    }
+    const resultCardinality = deriveResultCardinality(evidence);
+    if (!Number.isInteger(resultCardinality) || resultCardinality < 0) {
+      throw capacityEvidenceError('DT19_RESULT_CARDINALITY_NOT_RECORDED', purpose);
+    }
+    const measuredPrecision = deriveMeasuredPrecision(evidence);
+    if (!isPrecisionInRange(measuredPrecision)) {
+      throw capacityEvidenceError('DT19_MEASURED_PRECISION_NOT_RECORDED', purpose);
+    }
+    return Object.freeze({
+      purpose,
+      resultCardinality,
+      measuredPrecision,
+    });
+  });
+
+  return Object.freeze({
+    status: 'passed',
+    capacityEvidence: Object.freeze({
+      benchmarkId: qualityEvidence.benchmarkId,
+      byPurpose: Object.freeze(byPurpose),
+    }),
+  });
+}
+
+function normalizeDeclaredPurposes(purposes) {
+  return Object.freeze([...new Set(normalizeStringArray(purposes))]);
+}
+
+function deriveResultCardinality(evidence) {
+  if (Number.isInteger(evidence.resultCardinality)) {
+    return evidence.resultCardinality;
+  }
+  for (const field of ['observedResultIds', 'resultIds', 'observedClosureIds']) {
+    if (Array.isArray(evidence[field])) {
+      return evidence[field].length;
+    }
+  }
+  return undefined;
+}
+
+function deriveMeasuredPrecision(evidence) {
+  if (typeof evidence.measuredPrecision === 'number') {
+    return evidence.measuredPrecision;
+  }
+  return evidence.precision;
+}
+
+function capacityEvidenceError(category, field) {
+  const error = new Error(category);
+  error.category = category;
+  error.field = field;
+  return error;
 }
 
 function validatePhase1Benchmark(benchmark) {
