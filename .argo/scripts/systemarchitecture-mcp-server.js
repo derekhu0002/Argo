@@ -162,6 +162,18 @@ const TOOLS = [
     outputSchema: GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
   },
   {
+    name: 'backfillSystemArchitectureSemanticProjection',
+    description: 'Explicitly run the bounded production semantic projection backfill after same-version structural projection is complete.',
+    inputSchema: {
+      type: 'object',
+      required: ['explicitOptIn'],
+      properties: {
+        explicitOptIn: { type: 'boolean', const: true },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'getIntentElementContext',
     description: 'read-only query that returns an intent subgraph context for one element. Uses ArchiMate semantic dependency traversal with dependencyDepth and dependentDepth, preserving native subgraph elements, relationships, and views.',
     inputSchema: intentElementContextInputSchema(),
@@ -1591,6 +1603,19 @@ function getSystemArchitectureResult(payload) {
 }
 
 async function callTool(name, args = {}, dependencies = undefined) {
+  if (name === 'backfillSystemArchitectureSemanticProjection') {
+    const runtime = dependencies && (
+      dependencies.productionGraphRagRuntime
+      || (dependencies.productionGraphRagDependencies
+        ? createProductionGraphRagRuntime(dependencies.productionGraphRagDependencies)
+        : undefined)
+    );
+    if (!runtime || typeof runtime.runSemanticBackfill !== 'function') {
+      throw new TypeError('productionGraphRagRuntime.runSemanticBackfill is required');
+    }
+    return toolResult(await runtime.runSemanticBackfill(args));
+  }
+
   if (name === 'getSystemArchitecture') {
     if (Object.prototype.hasOwnProperty.call(args, 'query')) {
       const validation = validateExplicitQuery(args.query);

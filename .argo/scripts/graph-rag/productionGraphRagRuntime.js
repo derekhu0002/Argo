@@ -11,6 +11,18 @@ const {
 const {
   buildSemanticIndexEvidenceRecord,
 } = require('./liveEmbeddingIndexGate.js');
+const {
+  createProductionSemanticBackfill,
+} = require('./semantic-persistence/productionSemanticBackfill.js');
+const {
+  createProductionSemanticProjectionStore,
+} = require('./semantic-persistence/productionSemanticProjectionStore.js');
+const {
+  createProductionSemanticNeo4jAdapter,
+} = require('./semantic-persistence/productionSemanticNeo4jAdapter.js');
+const {
+  createProductionSemanticCheckpointStore,
+} = require('./semantic-persistence/productionSemanticCheckpointStore.js');
 
 const CHANNEL_THRESHOLDS = Object.freeze({
   elements: 0.8,
@@ -143,6 +155,42 @@ function createProductionGraphRagRuntime(dependencies = {}) {
   if (!neo4jRetrievalBoundary || typeof neo4jRetrievalBoundary.retrieve !== 'function') {
     throw new TypeError('neo4jRetrievalBoundary.retrieve is required');
   }
+  let semanticBackfill;
+
+  function resolveSemanticBackfill() {
+    if (semanticBackfill) {
+      return semanticBackfill;
+    }
+    const semantic = dependencies.semanticPersistence;
+    if (!semantic || typeof semantic !== 'object') {
+      throw new TypeError('semanticPersistence dependencies are required');
+    }
+    const persistenceAdapter = createProductionSemanticNeo4jAdapter({
+      driver: semantic.neo4jDriver,
+      configuration: semantic.configuration,
+    });
+    const checkpointStore = createProductionSemanticCheckpointStore({
+      driver: semantic.neo4jDriver,
+      configuration: semantic.configuration,
+    });
+    const projectionStore = createProductionSemanticProjectionStore({
+      persistenceAdapter,
+      canonicalAuthority: semantic.canonicalAuthority,
+      configuration: semantic.configuration,
+      qualification: semantic.qualification,
+    });
+    semanticBackfill = createProductionSemanticBackfill({
+      canonicalSource: semantic.canonicalSource,
+      structuralProjection: semantic.structuralProjection,
+      embeddingProvider: semantic.embeddingProvider,
+      projectionStore,
+      checkpointStore,
+      configuration: semantic.configuration,
+      qualification: semantic.qualification,
+      batchSize: semantic.batchSize,
+    });
+    return semanticBackfill;
+  }
 
   function evaluateReleaseGates(operation) {
     const resolvedConfiguration = resolveExternalProductionConfig(
@@ -206,6 +254,10 @@ function createProductionGraphRagRuntime(dependencies = {}) {
 
     evaluateDeliverySequence(request = {}) {
       return evaluateDeliverySequence(request);
+    },
+
+    runSemanticBackfill(request = {}) {
+      return resolveSemanticBackfill().execute(request);
     },
 
     async querySemantic(request) {
