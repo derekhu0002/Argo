@@ -71,6 +71,34 @@ const equivalentTopLevelAuthorizationText = JSON.stringify(
   Object.fromEntries(Object.entries(handoff)
     .filter(([key]) => /(?:strategy|completion|authorization|authorizedTargets)/i.test(key))),
 );
+const isWpP2FinalR3SecurityHandoff = /WP-P2 final R3 security/i.test(String(handoff.summary || ''));
+const governanceStatements = [
+  handoff.summary,
+  handoff.taskExecutionPlan.executionStrategy,
+  ...(handoff.openGaps || []),
+].flatMap(value => String(value || '').split(/[.!?]/));
+
+if (isWpP2FinalR3SecurityHandoff) {
+  const soleTarget = '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js';
+  assert.deepStrictEqual(
+    (handoff.codingTargets || []).map(target => target.path),
+    [soleTarget],
+    'CODING_SCOPE_AUTHORIZATION_GUARD: final R3 security handoff must authorize only liveEmbeddingProviderConfig.js',
+  );
+  for (const task of tasks) {
+    assert.deepStrictEqual(
+      task.targetPaths,
+      [soleTarget],
+      `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} contradicts final R3 one-file authorization`,
+    );
+  }
+  for (const statement of governanceStatements.filter(value => /authoriz/i.test(value))) {
+    assert(
+      !/(?:defaultSemanticRetrieval|systemarchitecture-mcp-server|productionGraphRagRuntime|argo-mcp-server)\.js/i.test(statement),
+      `CODING_SCOPE_AUTHORIZATION_GUARD: contradictory production authorization in handoff prose: ${statement.trim()}`,
+    );
+  }
+}
 
 // THEN mounted out-of-scope evidence remains frozen but cannot authorize implementation
 for (const entryPath of outOfScopeEntrypoints) {
