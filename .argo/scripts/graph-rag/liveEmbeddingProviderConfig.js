@@ -43,7 +43,8 @@ async function resolveApprovedLiveConfiguration(options) {
   const repositoryRoot = requireRoot(options.repositoryRoot);
   return resolveTrusted({
     repositoryRoot,
-    requiredOptIns: normalizeRequiredOptIns(options.requiredOptIns),
+    requiredOptIns: resolveRequiredOptIns(options),
+    readLegacyKeys: !Object.prototype.hasOwnProperty.call(options, 'useCase'),
     adapters: {
       filesystem: fs,
       systemMetadata: createSystemMetadataCommandAdapter({ repositoryRoot }),
@@ -62,7 +63,8 @@ async function withApprovedLiveConfigurationTestComposition(
   const source = createTrustedSource({ behavior: sourceBehavior, observeTrace });
   const resolver = Object.freeze(options => resolveTrusted({
     repositoryRoot: requireRoot(options && options.repositoryRoot),
-    requiredOptIns: normalizeRequiredOptIns(options && options.requiredOptIns),
+    requiredOptIns: resolveRequiredOptIns(options),
+    readLegacyKeys: !Object.prototype.hasOwnProperty.call(options, 'useCase'),
     adapters,
     source,
   }));
@@ -72,6 +74,7 @@ async function withApprovedLiveConfigurationTestComposition(
 async function resolveTrusted({
   repositoryRoot,
   requiredOptIns = ['ARGO_LIVE_PROVIDER_E2E'],
+  readLegacyKeys = true,
   adapters,
   source,
 }) {
@@ -90,7 +93,12 @@ async function resolveTrusted({
   }
 
   const processValues = new Map();
-  for (const key of [...READABLE_KEYS, ...LEGACY_KEYS, ...PROHIBITED_RUNTIME_FIELD_KEYS]) {
+  const processKeys = [
+    ...READABLE_KEYS,
+    ...(readLegacyKeys ? LEGACY_KEYS : []),
+    ...PROHIBITED_RUNTIME_FIELD_KEYS,
+  ];
+  for (const key of processKeys) {
     const envelope = source.readProcessKey(key);
     validateEnvelope(envelope, source, key, null, 'process');
     processValues.set(key, envelope.value);
@@ -396,11 +404,29 @@ function requireProductionOptions(options) {
     !options
     || typeof options !== 'object'
     || Array.isArray(options)
-    || !Reflect.ownKeys(options).every(key => key === 'repositoryRoot' || key === 'requiredOptIns')
+    || !Reflect.ownKeys(options).every(key => (
+      key === 'repositoryRoot'
+      || key === 'requiredOptIns'
+      || key === 'useCase'
+    ))
     || !Reflect.ownKeys(options).includes('repositoryRoot')
   ) {
     throw safeError('SOURCE_ADAPTER_UNTRUSTED');
   }
+}
+
+function resolveRequiredOptIns(options) {
+  requireProductionOptions(options);
+  if (Object.prototype.hasOwnProperty.call(options, 'useCase')) {
+    if (
+      options.useCase !== 'production-semantic-query'
+      || Object.prototype.hasOwnProperty.call(options, 'requiredOptIns')
+    ) {
+      throw safeError('SOURCE_ADAPTER_UNTRUSTED');
+    }
+    return [];
+  }
+  return normalizeRequiredOptIns(options.requiredOptIns);
 }
 
 function normalizeRequiredOptIns(value) {

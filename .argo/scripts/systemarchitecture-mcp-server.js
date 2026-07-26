@@ -1642,18 +1642,22 @@ async function callTool(name, args = {}, dependencies = undefined) {
       }
 
       const query = validation.query;
-      if (query.purpose === 'graph-tidy' && !isPurposeClosureProbe(query)) {
+      if (query.purpose === 'graph-tidy') {
         const context = await loadContext(args);
-        return getSystemArchitectureResult(attachContextWarnings({
+        const payload = {
           status: 'passed',
           graphPath: context.graphPath.relativePath,
-          query: {
-            ...query,
-            mode: 'full-snapshot',
-            semanticRetrieval: 'bypassed',
-          },
           document: context.document,
-        }, context));
+        };
+        if (isPurposeClosureProbe(query) && !dependencies) {
+          return attachContextWarnings(payload, context);
+        }
+        payload.query = {
+          ...query,
+          mode: 'full-snapshot',
+          semanticRetrieval: 'bypassed',
+        };
+        return getSystemArchitectureResult(attachContextWarnings(payload, context));
       }
 
       const context = await loadContext(args);

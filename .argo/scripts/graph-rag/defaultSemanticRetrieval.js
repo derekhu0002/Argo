@@ -139,7 +139,7 @@ async function createProductionComposition(dependencies) {
     async resolveConfiguration() {
       configurationEvidence = await resolveApprovedLiveConfiguration({
         repositoryRoot,
-        requiredOptIns: [],
+        useCase: 'production-semantic-query',
       });
       return configurationEvidence;
     },
