@@ -122,6 +122,7 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
           readiness,
           query,
           attestationAfterReadiness,
+          aclSetup: successful.aclSetup,
           state: readFixtureState(successful),
         },
         missing: {
@@ -209,6 +210,7 @@ function runAttestationTrustScenarios(roots) {
   const argoDirectory = path.join(reparsePoint.root, '.argo');
   const tempDirectory = path.join(argoDirectory, 'temp');
   fs.mkdirSync(argoDirectory, { recursive: true });
+  fs.rmSync(tempDirectory, { recursive: true, force: true });
   let reparseSetupError = null;
   try {
     fs.symlinkSync(reparseTarget, tempDirectory, process.platform === 'win32' ? 'junction' : 'dir');
@@ -347,6 +349,16 @@ function assertProductionSemanticOperatorAdapterLifecycle(result) {
 }
 
 function assertCliProcessLifecycle(cli) {
+  assert.strictEqual(
+    cli.successful.aclSetup.status,
+    0,
+    `SP05_SAFE_FIXTURE_ACL_SETUP_FAILED: ${cli.successful.aclSetup.stderr}`,
+  );
+  assert(
+    !/(?:BUILTIN\\Users|BUILTIN\\Administrators|Authenticated Users|Everyone|S-1-1-0)/i
+      .test(cli.successful.aclSetup.acl),
+    `SP05_SAFE_FIXTURE_ACL_REMAINS_BROAD: ${cli.successful.aclSetup.acl}`,
+  );
   assertProcessPassed(cli.successful.readiness, 'SP05_CLI_READINESS_PROCESS_FAILED');
   assertProcessPassed(cli.successful.query, 'SP05_CLI_QUERY_PROCESS_FAILED');
   assert.strictEqual(
@@ -889,6 +901,12 @@ function runWindowsTrustPolicyScenarios(roots) {
     builtinUsersFile: {
       SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Users:(R)`,
     },
+    builtinAdministratorsFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Administrators:(R)`,
+    },
+    authenticatedUsersFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nAuthenticated Users:(R)`,
+    },
     foreignPrincipalFile: {
       SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nFOREIGN-DOMAIN\\ForeignIdentity:(M)`,
     },
@@ -903,6 +921,12 @@ function runWindowsTrustPolicyScenarios(roots) {
     },
     builtinUsersParent: {
       SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Users:(RX)`,
+    },
+    builtinAdministratorsParent: {
+      SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Administrators:(M)`,
+    },
+    authenticatedUsersParent: {
+      SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nAuthenticated Users:(RX)`,
     },
   })) {
     const workspace = createRecordedWorkspace(roots);
@@ -988,7 +1012,62 @@ function createProcessWorkspace(
   );
   const statePath = path.join(root, 'fixture-state.json');
   fs.writeFileSync(statePath, JSON.stringify({ readiness, events: [] }, null, 2));
-  return { root, statePath };
+  const aclSetup = createRestrictedAttestationDirectory(root);
+  return { root, statePath, aclSetup };
+}
+
+function createRestrictedAttestationDirectory(root) {
+  const directoryPath = path.join(root, '.argo', 'temp');
+  fs.mkdirSync(directoryPath, { recursive: true });
+  if (process.platform !== 'win32') {
+    fs.chmodSync(directoryPath, 0o700);
+    return { status: 0, acl: 'mode:0700', stderr: '' };
+  }
+  const identityResult = spawnSync('whoami', [], {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+    windowsHide: true,
+  });
+  const identity = String(identityResult.stdout || '').trim();
+  if (identityResult.status !== 0 || !identity) {
+    return {
+      status: identityResult.status,
+      acl: '',
+      stderr: identityResult.stderr || 'whoami returned no identity',
+    };
+  }
+  const commands = [
+    ['/inheritance:r'],
+    ['/grant:r', `${identity}:(OI)(CI)(F)`, '*S-1-5-18:(OI)(CI)(F)'],
+    ['/setowner', identity],
+  ];
+  for (const args of commands) {
+    const result = spawnSync('icacls', [directoryPath, ...args], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+      windowsHide: true,
+    });
+    if (result.status !== 0) {
+      return {
+        status: result.status,
+        acl: result.stdout || '',
+        stderr: result.stderr || '',
+      };
+    }
+  }
+  const observed = spawnSync('icacls', [directoryPath], {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+    windowsHide: true,
+  });
+  return {
+    status: observed.status,
+    acl: observed.stdout || '',
+    stderr: observed.stderr || '',
+  };
 }
 
 function createRecordedWorkspace(roots) {
@@ -1104,8 +1183,6 @@ function spawnFixture(workspace, args, environment = {}) {
         SP05_OPERATOR_WORKSPACE_ROOT: workspace.root,
         SP05_OPERATOR_STATE_PATH: workspace.statePath,
         ...(process.platform === 'win32' ? {
-          SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: SAFE_WINDOWS_ACL,
-          SP05_ATTESTATION_FILE_ACL_OVERRIDE: SAFE_WINDOWS_ACL,
           SP05_ATTESTATION_OWNER_OVERRIDE: '%CURRENT_IDENTITY%',
         } : {}),
         ...environment,

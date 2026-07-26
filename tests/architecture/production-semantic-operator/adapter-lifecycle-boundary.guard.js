@@ -37,6 +37,7 @@ assert.throws(
 
 const safeDispatch = `
 function readFullSnapshot() { return {}; }
+function executeSemanticSystemArchitectureQuery() { throw new Error('private raw delegate'); }
 function createDefaultProductionSemanticOperatorJourney() { return { query() { throw new Error('fail closed'); } }; }
 function resolveSemanticOperatorJourney(dependencies) {
   return dependencies && dependencies.semanticOperatorJourney
@@ -65,6 +66,45 @@ assert.throws(
   ),
   /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
   'WP_P3_ADAPTER_LIFECYCLE_GUARD: missing-journey raw fallback fixture passed',
+);
+assert.throws(
+  () => assertSemanticDispatch(
+    safeDispatch.replace(
+      'const journey = await resolveSemanticOperatorJourney(dependencies);',
+      'const raw = executeSemanticSystemArchitectureQuery;\n    return raw(args, dependencies);\n    const journey = await resolveSemanticOperatorJourney(dependencies);',
+    ),
+    'aliased-raw-fallback.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: aliased raw fallback fixture passed',
+);
+assert.throws(
+  () => assertSemanticDispatch(
+    `function rawFallback(args, dependencies) {
+  return executeSemanticSystemArchitectureQuery(args, dependencies);
+}
+${safeDispatch.replace(
+    'const journey = await resolveSemanticOperatorJourney(dependencies);',
+    'return rawFallback(args, dependencies);\n    const journey = await resolveSemanticOperatorJourney(dependencies);',
+  )}`,
+    'helper-raw-fallback.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: helper raw fallback fixture passed',
+);
+assert.throws(
+  () => assertSemanticDispatch(
+    `function rawJourney(dependencies) {
+  return { query(request) { return executeSemanticSystemArchitectureQuery(request, dependencies); } };
+}
+${safeDispatch.replace(
+    ': createDefaultProductionSemanticOperatorJourney();',
+    ': rawJourney(dependencies);',
+  )}`,
+    'resolver-delegated-raw-fallback.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: resolver-delegated raw fallback fixture passed',
 );
 assert.throws(
   () => assertSemanticDispatch(
@@ -539,6 +579,12 @@ function assertSemanticDispatch(source, label) {
   const calls = executableCalls(callTool);
   const resolver = topLevelDeclaration(ast, 'resolveSemanticOperatorJourney');
   assert(resolver, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} operator resolver binding missing`);
+  const approvedDefault = topLevelDeclaration(ast, 'createDefaultProductionSemanticOperatorJourney');
+  const rawDelegate = topLevelDeclaration(ast, 'executeSemanticSystemArchitectureQuery');
+  assert(
+    approvedDefault,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} approved default operator factory missing`,
+  );
   const resolverCall = calls.find(call => (
     ts.isIdentifier(call.expression)
     && call.expression.text === 'resolveSemanticOperatorJourney'
@@ -556,6 +602,14 @@ function assertSemanticDispatch(source, label) {
     literalValues.has('getSystemArchitecture') && queryCall,
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} semantic query omits operator`,
   );
+  assertApprovedResolverFlow(resolver, approvedDefault, rawDelegate, checker, label);
+  assertNoRawDispatchFlow(
+    callTool,
+    approvedDefault,
+    rawDelegate,
+    checker,
+    label,
+  );
   assert(
     !calls.some(call => (
       staticName(call.expression) === 'retrieve'
@@ -568,6 +622,68 @@ function assertSemanticDispatch(source, label) {
       && containsStaticMember(callTool, 'hasOwnProperty'),
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} snapshot bypasses changed`,
   );
+}
+
+function assertApprovedResolverFlow(resolver, approvedDefault, rawDelegate, checker, label) {
+  const calls = executableCalls(resolver);
+  assert(
+    calls.some(call => callResolvesTo(call, approvedDefault, checker))
+      || containsThrow(resolver),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} missing journey neither defaults nor fails closed`,
+  );
+  for (const call of calls) {
+    if (callResolvesTo(call, approvedDefault, checker)) continue;
+    assert.fail(`WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} resolver delegates outside approved operator factory`);
+  }
+  assertNoBoundReference(resolver, rawDelegate, checker, label);
+}
+
+function assertNoRawDispatchFlow(root, approvedDefault, rawDelegate, checker, label) {
+  const queue = [root];
+  const seen = new Set();
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || seen.has(current) || current === approvedDefault) continue;
+    seen.add(current);
+    assertNoBoundReference(current, rawDelegate, checker, label);
+    for (const call of executableCalls(current)) {
+      const declaration = resolvedCallableDeclaration(call.expression, checker);
+      if (!declaration || declaration === approvedDefault) continue;
+      if (isFunctionLike(declaration)) queue.push(declaration);
+    }
+  }
+}
+
+function assertNoBoundReference(root, prohibited, checker, label) {
+  if (!prohibited) return;
+  walkExecutable(root, node => {
+    if (ts.isIdentifier(node) && resolvesTo(node, prohibited, checker)) {
+      assert.fail(`WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} public dispatch reaches bound raw retrieval`);
+    }
+  });
+}
+
+function callResolvesTo(call, declaration, checker) {
+  return Boolean(
+    call
+    && ts.isIdentifier(call.expression)
+    && resolvesTo(call.expression, declaration, checker)
+  );
+}
+
+function resolvedCallableDeclaration(expression, checker) {
+  if (!ts.isIdentifier(expression)) return undefined;
+  const symbol = checker.getSymbolAtLocation(expression);
+  for (const declaration of (symbol && symbol.declarations) || []) {
+    if (isFunctionLike(declaration)) return declaration;
+    if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
+      if (isFunctionLike(declaration.initializer)) return declaration.initializer;
+      if (ts.isIdentifier(declaration.initializer)) {
+        return resolvedCallableDeclaration(declaration.initializer, checker);
+      }
+    }
+  }
+  return undefined;
 }
 
 function assertStructuredWire(source, label) {
@@ -888,6 +1004,18 @@ module.exports.__assertWindowsAclTrust = typeof assertWindowsAclTrust === 'funct
   for (const [name, overrides] of Object.entries({
     groupOwner: { owner: 'BUILTIN\\Administrators' },
     builtinUsersRead: { fileAcl: `${safeAcl}\r\nBUILTIN\\Users:(RX)` },
+    builtinAdministratorsFile: {
+      fileAcl: `${safeAcl}\r\nBUILTIN\\Administrators:(R)`,
+    },
+    builtinAdministratorsParent: {
+      directoryAcl: `${safeAcl}\r\nBUILTIN\\Administrators:(M)`,
+    },
+    authenticatedUsersFile: {
+      fileAcl: `${safeAcl}\r\nAuthenticated Users:(R)`,
+    },
+    authenticatedUsersParent: {
+      directoryAcl: `${safeAcl}\r\nAuthenticated Users:(RX)`,
+    },
     everyoneWrite: { fileAcl: `${safeAcl}\r\nEveryone:(M)` },
     arbitraryForeignPrincipal: { fileAcl: `${safeAcl}\r\nFOREIGN\\Other:(R)` },
     missingCurrentIdentity: { fileAcl: 'NT AUTHORITY\\SYSTEM:(F)' },
@@ -1422,6 +1550,16 @@ function parseWithBindings(source, label) {
 function walk(node, visit) {
   visit(node);
   ts.forEachChild(node, child => walk(child, visit));
+}
+
+function walkExecutable(root, visit) {
+  const rootFunction = root;
+  function inspect(node) {
+    if (node !== rootFunction && isFunctionLike(node)) return;
+    visit(node);
+    ts.forEachChild(node, inspect);
+  }
+  inspect(root);
 }
 
 function check(scope, operation, failures) {
