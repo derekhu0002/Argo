@@ -215,7 +215,7 @@
           "Validate .argo/temp/ImplementationToCodingHandoff.json with stage implementation-to-coding.",
           "Do not manually edit design/KG/test-failure-records.json or design/KG/SystemArchitecture.json; the architecture test runner owns any failure-record rewrite and any permitted deliveryStatus graph-side refresh."
         ],
-        "completionSignal": "3/3 scoped explicit entrypoints pass; 5/5 critical guards remain applicable; 0 delivered-to-not_delivered regression after repair; TS-07 provider secret isolation remains leak-free; global grag-credential-boundary remains runner-owned."
+        "completionSignal": "3/3 scoped explicit entrypoints pass; 5/5 critical guards remain applicable; 0 delivered-to-not_delivered regression after repair; TS-07 provider secret isolation remains leak-free; global grag-credential-boundary remains runner-owned; no hand-authored deliveryStatus changes."
       }
     ]
   },
@@ -223,6 +223,18 @@
     "tests/explicit/entries/runProductionGraphRagRuntime.js",
     "tests/explicit/entries/runExternalCredentialBoundary.js",
     "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+    "tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js",
+    "tests/explicit/entries/runEmbeddingQualificationGate.js",
+    "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
+    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
+    "tests/explicit/entries/runSevenWaveDeliveryGates.js",
+    "tests/explicit/entries/runRetrievalQualityBenchmark.js",
+    "tests/explicit/entries/runCapacityEvidence.js",
+    "tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js",
+    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "tests/explicit/entries/runIndependentSemanticSeeds.js",
+    "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "tests/explicit/entries/runStaleSemanticQueryRejection.js",
     "tests/harness/productionGraphRagHarness.js",
     "tests/harness/liveEmbeddingProviderHarness.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
