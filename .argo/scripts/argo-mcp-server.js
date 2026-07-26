@@ -29,6 +29,9 @@ const VALIDATOR_TOOL_NAMES = new Set([
   'runArchitectureTests',
 ]);
 const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
+  'startNewProjectSemanticJourney',
+  'backfillSystemArchitectureSemanticProjection',
+  'verifySystemArchitectureSemanticReadiness',
   'getSystemArchitecture',
   'getIntentElementContext',
   'previewSystemArchitectureMutation',
@@ -553,5 +556,6 @@ if (require.main === module) {
 
 module.exports = {
   callTool,
+  initializeWorkspace,
   main,
 };

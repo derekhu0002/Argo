@@ -140,6 +140,49 @@ node ${workspaceFolder}/.argo/scripts/argo-mcp-server.js
 
 MCP 的工具参数、写入副作用和推荐调用顺序见[意图架构 MCP 功能列表](design/mcp/意图架构%20MCP%20功能列表.md)。
 
+### Production Semantic Operator Journey
+
+新项目的语义操作链固定为：工作区初始化、规范结构投影、显式语义回填、持久化就绪验证、语义查询。规范 JSON 始终是权威源；Neo4j 只保存从属投影和索引。`semantic:snapshot` 与无参数 `getSystemArchitecture` 始终返回完整的 `{ status, graphPath, document }` 快照。
+
+生产配置只能来自直接进程环境或仓库内受保护的 `.argo/.env`。该文件必须被 Git 忽略、未跟踪、是非重解析普通文件，并通过当前身份可读且无宽泛主体读取权限的 Windows ACL 检查。必须显式提供这些键，不能使用默认值、别名或回退值：
+
+```text
+ARGO_EMBEDDING_BASE_URL
+ARGO_EMBEDDING_MODEL
+ARGO_EMBEDDING_PROVIDER
+ARGO_EMBEDDING_MODEL_VERSION
+ARGO_EMBEDDING_DIMENSIONS
+ARGO_NEO4J_DATABASE_URL
+ARGO_NEO4J_DATABASE_USERNAME
+ARGO_NEO4J_DATABASE_PASSWORD
+QWEN_KEY
+```
+
+默认流程不自动回填：
+
+```text
+npm run semantic:init
+npm run semantic:backfill
+npm run semantic:readiness
+npm run semantic:query -- --request-json "{\"purpose\":\"implementation-design\",\"intent\":\"Find the required architecture context\"}"
+npm run semantic:snapshot
+```
+
+`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。检查回填结果中的 `progress`、`checkpoint` 和 `failedRecords`；中断或隔离失败后使用 `npm run semantic:backfill -- --resume` 从持久化检查点恢复。只有 `semantic:readiness` 显式确认 Element、ArchitectureRelationship 和 View 三个通道的规范版本、内容版本和索引版本均为 `Aligned` 后，才能执行查询；未就绪查询会关闭失败且 `fullSnapshotFallback` 为 `false`。
+
+需要自动回填时，显式运行 `npm run semantic:init -- --automatic-backfill`。系统先验证批准的外部配置，验证通过后才可能启动回填、提供方调用和数据库写入。缺失、不安全、冲突或未批准的配置在任何这些副作用之前被拒绝；修正安全配置后重试，不要改用内嵌值或回退配置。
+
+对应 MCP 工具顺序为：
+
+```text
+startNewProjectSemanticJourney
+backfillSystemArchitectureSemanticProjection
+verifySystemArchitectureSemanticReadiness
+getSystemArchitecture
+```
+
+仓库验收使用受控组合边界验证顺序、错误脱敏、检查点恢复和规范快照不变性。当前环境没有可用的 live Neo4j（`neo4jUri is required for start`），因此这些确定性结果不是实时提供方或数据库证明，也不声明 `semprod-ready-plateau` 已交付。
+
 ### 选择正确入口
 
 | 当前情况 | 从这里开始 |

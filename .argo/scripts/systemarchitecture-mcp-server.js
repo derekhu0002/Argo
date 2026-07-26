@@ -124,6 +124,9 @@ const {
   createDefaultSemanticRetrieval,
 } = require('./graph-rag/defaultSemanticRetrieval.js');
 const {
+  createProductionSemanticOperatorJourney,
+} = require('./graph-rag/semanticOperatorJourney.js');
+const {
   resolveExternalProductionConfig,
 } = require('./graph-rag/externalProductionConfig.js');
 const {
@@ -180,6 +183,17 @@ const TOOLS = [
     outputSchema: GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
   },
   {
+    name: 'startNewProjectSemanticJourney',
+    description: 'Initialize a workspace, complete canonical structural projection, and optionally start approved semantic backfill.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        automaticBackfillOptIn: { type: 'boolean' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'backfillSystemArchitectureSemanticProjection',
     description: 'Explicitly run the bounded production semantic projection backfill after same-version structural projection is complete.',
     inputSchema: {
@@ -188,6 +202,15 @@ const TOOLS = [
       properties: {
         explicitOptIn: { type: 'boolean', const: true },
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'verifySystemArchitectureSemanticReadiness',
+    description: 'Explicitly read persistent three-channel semantic readiness without provider or vector work.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
       additionalProperties: false,
     },
   },
@@ -416,6 +439,20 @@ function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
     || path.resolve(__dirname, '..', '..');
+}
+
+function initializeWorkspace(request) {
+  return require('./argo-mcp-server.js').initializeWorkspace(
+    request && request.repositoryRoot ? request.repositoryRoot : resolveWorkspaceRoot(),
+  );
+}
+
+async function syncCanonicalStructuralProjection(request) {
+  const context = await loadContext(request);
+  return syncArchitectureToNeo4j({
+    architecturePath: context.graphPath.relativePath,
+    document: context.document,
+  });
 }
 
 function resolveWorkspacePath(workspaceRoot, relativePath) {
@@ -1621,6 +1658,27 @@ function getSystemArchitectureResult(payload) {
 }
 
 async function callTool(name, args = {}, dependencies = undefined) {
+  if (name === 'startNewProjectSemanticJourney') {
+    const journey = dependencies && dependencies.semanticOperatorJourney
+      ? dependencies.semanticOperatorJourney
+      : await createDefaultProductionSemanticOperatorJourney();
+    return toolResult(await journey.startNewProject({
+      ...args,
+      repositoryRoot: resolveWorkspaceRoot(),
+      approvedConfigurationRequest: {
+        repositoryRoot: resolveWorkspaceRoot(),
+        useCase: 'production-semantic-query',
+      },
+    }));
+  }
+
+  if (name === 'verifySystemArchitectureSemanticReadiness') {
+    const journey = dependencies && dependencies.semanticOperatorJourney
+      ? dependencies.semanticOperatorJourney
+      : await createDefaultProductionSemanticOperatorJourney();
+    return toolResult(await journey.verifyReadiness(args));
+  }
+
   if (name === 'backfillSystemArchitectureSemanticProjection') {
     const runtime = (dependencies && (
       dependencies.productionGraphRagRuntime
@@ -1787,6 +1845,28 @@ async function callTool(name, args = {}, dependencies = undefined) {
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+async function createDefaultProductionSemanticOperatorJourney() {
+  const workspaceRoot = resolveWorkspaceRoot();
+  const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
+  const canonicalGraph = readJson(graphPath.absolutePath, graphPath.relativePath);
+  const retrieval = createDefaultSemanticRetrieval({
+    canonicalGraph,
+    repositoryRoot: workspaceRoot,
+  });
+  const runtime = createProductionGraphRagRuntime({
+    canonicalGraph,
+    neo4jRetrievalBoundary: retrieval,
+  });
+  return createProductionSemanticOperatorJourney({
+    initializeWorkspace: request => initializeWorkspace(request),
+    syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
+    resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
+    runSemanticBackfill: request => callTool('backfillSystemArchitectureSemanticProjection', request),
+    readSemanticReadiness: () => retrieval.readReadiness(),
+    querySystemArchitecture: request => callTool('getSystemArchitecture', request, { semanticRetrievalBoundary: retrieval, productionGraphRagRuntime: runtime }),
+  });
 }
 
 async function createDefaultProductionSemanticRuntime() {
@@ -2095,6 +2175,7 @@ module.exports = {
   TOOLS,
   applyMutations,
   callTool,
+  createDefaultProductionSemanticOperatorJourney,
   loadContext,
   main,
   validateDocument,

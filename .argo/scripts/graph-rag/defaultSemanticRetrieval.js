@@ -81,8 +81,9 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
         ? await createTestComposition(activeTestComposition)
         : await createProductionComposition(dependencies);
       const configurationEvidence = await composition.resolveConfiguration();
-      const readiness = await readPersistentReadiness(composition.neo4jDriver);
-      const alignment = evaluatePersistentReadiness(readiness, canonicalGraph);
+      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);
+      const readiness = evidence.readiness;
+      const alignment = evidence.alignment;
       if (!alignment.aligned) {
         throw semanticIndexNotAligned(alignment);
       }
@@ -109,6 +110,15 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
         seedsByType,
         configurationEvidence,
       });
+    },
+    async readReadiness() {
+      const activeTestComposition = testCompositionStorage.getStore();
+      const composition = activeTestComposition
+        ? await createTestComposition(activeTestComposition)
+        : await createProductionComposition(dependencies);
+      await composition.resolveConfiguration();
+      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);
+      return publicReadinessOutcome(evidence.alignment);
     },
   });
 }
@@ -395,6 +405,26 @@ function evaluatePersistentReadiness(readiness, canonicalGraph) {
     completedChannels: CHANNELS.map(item => item.channel).filter(channel => records.has(channel)),
     missingChannels,
     mismatchedChannels,
+  };
+}
+
+async function readAndEvaluatePersistentReadiness(composition, canonicalGraph) {
+  const readiness = await readPersistentReadiness(composition.neo4jDriver);
+  const alignment = evaluatePersistentReadiness(readiness, canonicalGraph);
+  return { composition, readiness, alignment };
+}
+
+function publicReadinessOutcome(alignment) {
+  return {
+    state: alignment.state,
+    verified: alignment.aligned,
+    canonicalVersion: alignment.canonicalVersion,
+    contentVersion: alignment.contentVersion,
+    indexVersion: alignment.indexVersion,
+    completedChannels: alignment.completedChannels,
+    missingChannels: alignment.missingChannels,
+    mismatchedChannels: alignment.mismatchedChannels,
+    fullSnapshotFallback: false,
   };
 }
 
