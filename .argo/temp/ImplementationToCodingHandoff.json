@@ -50,6 +50,30 @@
       "expectedStatus": "passed"
     },
     {
+      "name": "Implementation Traceability Guard",
+      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "Graph-to-implementation trace remains blocking for Coding/Repair.",
+      "observationPoint": "Coding changes stay attached to mounted TS-01 and TS-07 intent evidence.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Dependency Direction Guard",
+      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Production Graph RAG dependency direction is blocking for Coding/Repair.",
+      "observationPoint": "Config repair does not invert harness/runtime boundaries.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Architecture Boundary Guard",
+      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Production Graph RAG boundary ownership is blocking for Coding/Repair.",
+      "observationPoint": "Repair remains within approved graph-rag startup/configuration boundary.",
+      "expectedStatus": "passed"
+    },
+    {
       "name": "Production Graph RAG Credential Source Policy",
       "path": "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
       "kind": "CredentialBoundaryGuard",
@@ -74,32 +98,7 @@
       "expectedStatus": "passed"
     }
   ],
-  "supportingNonExplicitTests": [
-    {
-      "name": "Implementation Traceability Guard",
-      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-      "kind": "TraceabilityGuard",
-      "controlPoint": "Graph-to-implementation trace remains navigable.",
-      "observationPoint": "Coding changes stay attached to mounted intent evidence.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Dependency Direction Guard",
-      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "Production Graph RAG dependency direction.",
-      "observationPoint": "Config repair does not invert harness/runtime boundaries.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Architecture Boundary Guard",
-      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Production Graph RAG boundary ownership.",
-      "observationPoint": "Repair remains within approved graph-rag startup/configuration boundary.",
-      "expectedStatus": "passed"
-    }
-  ],
+  "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
@@ -199,7 +198,7 @@
       {
         "taskId": "W2-C7",
         "title": "Refresh scoped completion evidence",
-        "objective": "Regenerate runner evidence after Coding repairs and keep global delivery status runner-owned.",
+        "objective": "Run verification after Coding repairs, report runner-owned evidence, and keep SystemArchitecture plus failure records outside Coding target ownership except for automatic runner-owned deliveryStatus refresh.",
         "dependsOn": [
           "W2-C1",
           "W2-C2",
@@ -210,15 +209,11 @@
           "ExplicitAcceptanceTestcase-TS-07",
           "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
         ],
-        "targetPaths": [
-          "design/KG/test-failure-records.json",
-          "design/KG/SystemArchitecture.json"
-        ],
         "steps": [
-          "Run full argo.runArchitectureTests after code repair.",
-          "Confirm expectedFailureRecordsPath reflects zero remaining TS-01/TS-07 startup-resolution failures.",
+          "Run full argo.runArchitectureTests after code repair and report the resulting evidence.",
+          "Read expectedFailureRecordsPath as runner-owned evidence and confirm it reflects zero remaining TS-01/TS-07 startup-resolution failures.",
           "Validate .argo/temp/ImplementationToCodingHandoff.json with stage implementation-to-coding.",
-          "Do not manually edit deliveryStatus; let the architecture test runner own any refresh."
+          "Do not manually edit design/KG/test-failure-records.json or design/KG/SystemArchitecture.json; the architecture test runner owns any failure-record rewrite and any permitted deliveryStatus graph-side refresh."
         ],
         "completionSignal": "3/3 scoped explicit entrypoints pass; 5/5 critical guards remain applicable; 0 delivered-to-not_delivered regression after repair; TS-07 provider secret isolation remains leak-free; global grag-credential-boundary remains runner-owned."
       }
