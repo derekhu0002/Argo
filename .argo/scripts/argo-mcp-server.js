@@ -4,6 +4,9 @@ const readline = require('node:readline');
 
 const validatorMcp = require('./validator-mcp-server.js');
 const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
+const {
+  semanticOperatorErrorResult,
+} = require('./graph-rag/semanticOperatorError.js');
 
 const HANDOFF_FILES_TO_RESET = [
   ['.argo', 'temp', 'IntentToImplementationHandoff.json'],
@@ -450,7 +453,7 @@ function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-async function handleRequest(request) {
+async function handleRequest(request, dependencies = undefined) {
   const { id, method, params } = request;
 
   if (method === 'initialize') {
@@ -491,21 +494,32 @@ async function handleRequest(request) {
   if (method === 'tools/call') {
     try {
       const progressToken = (params._meta && params._meta.progressToken) || null;
-      const result = await callTool(params.name, params.arguments || {}, progressToken);
+      let activeDependencies = dependencies;
+      if (
+        !activeDependencies
+        && params.name === 'getSystemArchitecture'
+        && params.arguments
+        && Object.prototype.hasOwnProperty.call(params.arguments, 'query')
+        && params.arguments.query
+        && params.arguments.query.purpose !== 'graph-tidy'
+      ) {
+        activeDependencies = {
+          semanticOperatorJourney:
+            await systemArchitectureMcp.createDefaultProductionSemanticOperatorJourney(),
+        };
+      }
+      const result = await callTool(
+        params.name,
+        params.arguments || {},
+        progressToken,
+        activeDependencies,
+      );
       return { jsonrpc: '2.0', id, result };
     } catch (error) {
       return {
         jsonrpc: '2.0',
         id,
-        result: {
-          content: [
-            {
-              type: 'text',
-              text: String(error && error.stack ? error.stack : error),
-            },
-          ],
-          isError: true,
-        },
+        result: semanticOperatorErrorResult(error),
       };
     }
   }
@@ -556,6 +570,7 @@ if (require.main === module) {
 
 module.exports = {
   callTool,
+  handleRequest,
   initializeWorkspace,
   main,
 };

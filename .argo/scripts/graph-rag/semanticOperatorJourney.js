@@ -8,6 +8,12 @@ const OPERATOR_ACTIONS = Object.freeze({
 });
 
 function createProductionSemanticOperatorJourney(dependencies) {
+  dependencies = {
+    ...dependencies,
+    readinessAttestationStore: dependencies && dependencies.readinessAttestationStore
+      ? dependencies.readinessAttestationStore
+      : createVolatileReadinessAttestationStore(),
+  };
   assertDependencies(dependencies);
   let readinessVerified = false;
 
@@ -18,6 +24,7 @@ function createProductionSemanticOperatorJourney(dependencies) {
       configurationRequest,
     );
     readinessVerified = false;
+    await dependencies.readinessAttestationStore.clear();
     const explicitOptIn = automatic
       ? request.automaticBackfillOptIn === true
       : request.explicitOptIn;
@@ -30,6 +37,7 @@ function createProductionSemanticOperatorJourney(dependencies) {
 
   return Object.freeze({
     async startNewProject(request = {}) {
+      await dependencies.readinessAttestationStore.clear();
       const workspace = await dependencies.initializeWorkspace(request);
       const structuralProjection = await dependencies.syncCanonicalStructuralProjection(request);
       readinessVerified = false;
@@ -54,15 +62,29 @@ function createProductionSemanticOperatorJourney(dependencies) {
     async verifyReadiness(request = {}) {
       const readiness = await dependencies.readSemanticReadiness(request);
       readinessVerified = readiness.verified === true;
+      if (readiness.verified !== true) {
+        throw readinessError(readiness);
+      }
       if (!readinessVerified) {
         throw readinessError(readiness);
       }
+      await dependencies.readinessAttestationStore.record({
+        ...readiness,
+        authorizationOperation: 'verifyReadiness',
+      });
       return readiness;
     },
 
-    query(request = {}) {
-      if (!readinessVerified) {
-        throw readinessVerificationRequired();
+    async query(request = {}) {
+      if (readinessVerified) {
+        return queryAfterLocalVerification(request);
+      }
+      const attestation = await dependencies.readinessAttestationStore.read();
+      if (!attestation) throw readinessVerificationRequired();
+      const readiness = await dependencies.readSemanticReadiness();
+      if (!await dependencies.readinessAttestationStore.validate(attestation, readiness)) {
+        await dependencies.readinessAttestationStore.clear();
+        throw readinessAttestationStale(readiness);
       }
       return dependencies.querySystemArchitecture({ query: request });
     },
@@ -71,6 +93,10 @@ function createProductionSemanticOperatorJourney(dependencies) {
       return dependencies.querySystemArchitecture({});
     },
   });
+
+  function queryAfterLocalVerification(request) {
+    return dependencies.querySystemArchitecture({ query: request });
+  }
 }
 
 function assertDependencies(dependencies) {
@@ -84,6 +110,12 @@ function assertDependencies(dependencies) {
   ]) {
     if (!dependencies || typeof dependencies[name] !== 'function') {
       throw new TypeError(`${name} is required`);
+    }
+  }
+  const store = dependencies && dependencies.readinessAttestationStore;
+  for (const name of ['record', 'read', 'clear', 'validate']) {
+    if (!store || typeof store[name] !== 'function') {
+      throw new TypeError(`readinessAttestationStore.${name} is required`);
     }
   }
 }
@@ -131,7 +163,35 @@ function readinessVerificationRequired() {
   const error = new Error('SEMANTIC_READINESS_VERIFICATION_REQUIRED');
   error.category = 'SEMANTIC_READINESS_VERIFICATION_REQUIRED';
   error.fullSnapshotFallback = false;
+  error.action = 'Run semantic readiness before semantic query';
   return error;
+}
+
+function readinessAttestationStale(readiness = {}) {
+  const error = readinessError(readiness);
+  error.message = 'SEMANTIC_READINESS_ATTESTATION_STALE';
+  error.category = 'SEMANTIC_READINESS_ATTESTATION_STALE';
+  error.action = 'Run semantic readiness verification again before semantic query';
+  return error;
+}
+
+function createVolatileReadinessAttestationStore() {
+  let record;
+  return Object.freeze({
+    clear() {
+      record = undefined;
+    },
+    read() {
+      return record;
+    },
+    record(readiness) {
+      record = Object.freeze({ ...readiness });
+      return record;
+    },
+    validate(attestation, readiness) {
+      return attestation.verified === true && readiness.verified === true;
+    },
+  });
 }
 
 module.exports = {

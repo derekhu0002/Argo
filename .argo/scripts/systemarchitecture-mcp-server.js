@@ -127,6 +127,15 @@ const {
   createProductionSemanticOperatorJourney,
 } = require('./graph-rag/semanticOperatorJourney.js');
 const {
+  createSemanticReadinessAttestationStore,
+} = require('./graph-rag/semanticReadinessAttestationStore.js');
+const {
+  createReadinessAttestationMetadataAdapter,
+} = require('./graph-rag/systemMetadataCommandAdapter.js');
+const {
+  semanticOperatorErrorResult,
+} = require('./graph-rag/semanticOperatorError.js');
+const {
   resolveExternalProductionConfig,
 } = require('./graph-rag/externalProductionConfig.js');
 const {
@@ -474,6 +483,10 @@ function resolveSchemaPath(workspaceRoot) {
     const absolutePath = path.join(workspaceRoot, candidate);
     if (fs.existsSync(absolutePath)) {
       return { absolutePath, relativePath: candidate };
+    }
+    const bundledPath = path.resolve(__dirname, '..', '..', candidate);
+    if (fs.existsSync(bundledPath)) {
+      return { absolutePath: bundledPath, relativePath: candidate };
     }
   }
   throw new Error(`Unable to locate SystemArchitecture schema. Checked: ${SCHEMA_PATH_CANDIDATES.join(', ')}`);
@@ -1243,6 +1256,8 @@ async function buildMutationResult(context, mutations, write) {
 
   writeGraph(context.graphPath.absolutePath, mutationResult.document);
   result.written = true;
+  const readinessAttestationStore = createDefaultReadinessAttestationStore(context.workspaceRoot);
+  await readinessAttestationStore.clear();
 
   if (shouldSyncCanonicalGraphToNeo4j(context.graphPath.relativePath)) {
     try {
@@ -1680,6 +1695,10 @@ async function callTool(name, args = {}, dependencies = undefined) {
   }
 
   if (name === 'backfillSystemArchitectureSemanticProjection') {
+    const readinessAttestationStore = dependencies && dependencies.readinessAttestationStore
+      ? dependencies.readinessAttestationStore
+      : createDefaultReadinessAttestationStore(resolveWorkspaceRoot());
+    await readinessAttestationStore.clear();
     const runtime = (dependencies && (
       dependencies.productionGraphRagRuntime
       || (dependencies.productionGraphRagDependencies
@@ -1718,54 +1737,11 @@ async function callTool(name, args = {}, dependencies = undefined) {
         return getSystemArchitectureResult(attachContextWarnings(payload, context));
       }
 
-      const context = await loadContext(args);
-      const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
-        canonicalGraph: context.document,
-      });
-      if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
-        return getSystemArchitectureResult(queryError(
-          'SEMANTIC_RETRIEVAL_UNAVAILABLE',
-          'Semantic retrieval boundary is unavailable',
-        ));
+      if (!dependencies || !dependencies.semanticOperatorJourney) {
+        return executeSemanticSystemArchitectureQuery({ ...args, query }, dependencies);
       }
-      let document;
-      try {
-        document = await semanticRetrievalBoundary.retrieve(query);
-      } catch (error) {
-        const semanticErrorEvidence = {};
-        for (const field of [
-          'fullSnapshotFallback',
-          'state',
-          'canonicalVersion',
-          'contentVersion',
-          'indexVersion',
-          'completedChannels',
-          'missingChannels',
-          'mismatchedChannels',
-        ]) {
-          if (error && Object.prototype.hasOwnProperty.call(error, field)) {
-            semanticErrorEvidence[field] = error[field];
-          }
-        }
-        return getSystemArchitectureResult(queryError(
-          error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
-          error && error.message ? error.message : 'Semantic retrieval failed',
-          semanticErrorEvidence,
-        ));
-      }
-      return getSystemArchitectureResult({
-        status: 'passed',
-        graphPath: context.graphPath.relativePath,
-        query: {
-          ...query,
-          mode: 'semantic-query',
-          semanticRetrieval: 'invoked',
-        },
-        ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
-          ? { result: document.result }
-          : { result: document }),
-        document,
-      });
+      const journey = await resolveSemanticOperatorJourney(dependencies);
+      return journey.query(query);
     }
 
     const context = await loadContext(args);
@@ -1847,8 +1823,77 @@ async function callTool(name, args = {}, dependencies = undefined) {
   throw new Error(`Unknown tool: ${name}`);
 }
 
-async function createDefaultProductionSemanticOperatorJourney() {
-  const workspaceRoot = resolveWorkspaceRoot();
+async function resolveSemanticOperatorJourney(dependencies) {
+  return dependencies && dependencies.semanticOperatorJourney
+    ? dependencies.semanticOperatorJourney
+    : createDefaultProductionSemanticOperatorJourney();
+}
+
+async function executeSemanticSystemArchitectureQuery(args, dependencies) {
+  const context = await loadContext(args);
+  const query = args.query;
+  const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
+    canonicalGraph: context.document,
+  });
+  if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
+    return getSystemArchitectureResult(queryError(
+      'SEMANTIC_RETRIEVAL_UNAVAILABLE',
+      'Semantic retrieval boundary is unavailable',
+    ));
+  }
+  let document;
+  try {
+    document = await semanticRetrievalBoundary.retrieve(query);
+  } catch (error) {
+    const semanticErrorEvidence = {};
+    for (const field of [
+      'fullSnapshotFallback',
+      'state',
+      'canonicalVersion',
+      'contentVersion',
+      'indexVersion',
+      'completedChannels',
+      'missingChannels',
+      'mismatchedChannels',
+    ]) {
+      if (error && Object.prototype.hasOwnProperty.call(error, field)) {
+        semanticErrorEvidence[field] = error[field];
+      }
+    }
+    return getSystemArchitectureResult(queryError(
+      error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
+      error && error.message ? error.message : 'Semantic retrieval failed',
+      semanticErrorEvidence,
+    ));
+  }
+  return getSystemArchitectureResult({
+    status: 'passed',
+    graphPath: context.graphPath.relativePath,
+    query: {
+      ...query,
+      mode: 'semantic-query',
+      semanticRetrieval: 'invoked',
+    },
+    ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
+      ? { result: document.result }
+      : { result: document }),
+    document,
+  });
+}
+
+function createDefaultReadinessAttestationStore(repositoryRoot) {
+  const metadataAdapter = process.platform === 'win32'
+    ? createReadinessAttestationMetadataAdapter({ repositoryRoot })
+    : undefined;
+  return createSemanticReadinessAttestationStore({
+    repositoryRoot,
+    graphPath: DEFAULT_GRAPH_PATH,
+    metadataAdapter,
+  });
+}
+
+async function createDefaultProductionSemanticOperatorJourney(options = {}) {
+  const workspaceRoot = options.repositoryRoot || resolveWorkspaceRoot();
   const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
   const canonicalGraph = readJson(graphPath.absolutePath, graphPath.relativePath);
   const retrieval = createDefaultSemanticRetrieval({
@@ -1859,13 +1904,25 @@ async function createDefaultProductionSemanticOperatorJourney() {
     canonicalGraph,
     neo4jRetrievalBoundary: retrieval,
   });
+  const metadataAdapter = createReadinessAttestationMetadataAdapter({
+    repositoryRoot: workspaceRoot,
+  });
+  const readinessAttestationStore = createSemanticReadinessAttestationStore({
+    repositoryRoot: workspaceRoot,
+    graphPath: DEFAULT_GRAPH_PATH,
+    metadataAdapter: metadataAdapter,
+  });
   return createProductionSemanticOperatorJourney({
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
     runSemanticBackfill: request => callTool('backfillSystemArchitectureSemanticProjection', request),
     readSemanticReadiness: () => retrieval.readReadiness(),
-    querySystemArchitecture: request => callTool('getSystemArchitecture', request, { semanticRetrievalBoundary: retrieval, productionGraphRagRuntime: runtime }),
+    querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, {
+      semanticRetrievalBoundary: retrieval,
+      productionGraphRagRuntime: runtime,
+    }),
+    readinessAttestationStore: readinessAttestationStore,
   });
 }
 
@@ -2075,7 +2132,7 @@ function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-async function handleRequest(request) {
+async function handleRequest(request, dependencies = undefined) {
   const { id, method, params } = request;
 
   if (method === 'initialize') {
@@ -2107,21 +2164,30 @@ async function handleRequest(request) {
 
   if (method === 'tools/call') {
     try {
-      const result = await callTool(params.name, params.arguments || {});
+      let activeDependencies = dependencies;
+      if (
+        !activeDependencies
+        && params.name === 'getSystemArchitecture'
+        && params.arguments
+        && Object.prototype.hasOwnProperty.call(params.arguments, 'query')
+        && params.arguments.query
+        && params.arguments.query.purpose !== 'graph-tidy'
+      ) {
+        activeDependencies = {
+          semanticOperatorJourney: await createDefaultProductionSemanticOperatorJourney(),
+        };
+      }
+      const result = await callTool(
+        params.name,
+        params.arguments || {},
+        activeDependencies,
+      );
       return { jsonrpc: '2.0', id, result };
     } catch (error) {
       return {
         jsonrpc: '2.0',
         id,
-        result: {
-          content: [
-            {
-              type: 'text',
-              text: String(error && error.stack ? error.stack : error),
-            },
-          ],
-          isError: true,
-        },
+        result: semanticOperatorErrorResult(error),
       };
     }
   }
@@ -2176,6 +2242,7 @@ module.exports = {
   applyMutations,
   callTool,
   createDefaultProductionSemanticOperatorJourney,
+  handleRequest,
   loadContext,
   main,
   validateDocument,

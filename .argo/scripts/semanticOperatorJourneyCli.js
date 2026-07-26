@@ -1,4 +1,7 @@
 const path = require('node:path');
+const {
+  semanticOperatorErrorPayload,
+} = require('./graph-rag/semanticOperatorError.js');
 
 async function runSemanticOperatorCommand({ command, options = {}, journey }) {
   if (!journey) {
@@ -12,10 +15,16 @@ async function runSemanticOperatorCommand({ command, options = {}, journey }) {
   throw new Error(`Unknown semantic operator command: ${command}`);
 }
 
-async function main(argv = process.argv.slice(2)) {
+async function runCliProcess({
+  argv = [],
+  dependencies = {},
+  stdout = process.stdout,
+  stderr = process.stderr,
+} = {}) {
   const command = argv[0];
   const parsedOptions = parseOptions(argv.slice(1));
-  const repositoryRoot = process.env.ARGO_REPO_ROOT
+  const repositoryRoot = dependencies.repositoryRoot
+    || process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
     || path.resolve(__dirname, '..', '..');
   const options = {
@@ -28,9 +37,26 @@ async function main(argv = process.argv.slice(2)) {
   const {
     createDefaultProductionSemanticOperatorJourney,
   } = require('./systemarchitecture-mcp-server.js');
-  const journey = await createDefaultProductionSemanticOperatorJourney();
-  const result = await runSemanticOperatorCommand({ command, options, journey });
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  const createSemanticOperatorJourney = dependencies.createSemanticOperatorJourney
+    || createDefaultProductionSemanticOperatorJourney;
+  try {
+    const journey = await createSemanticOperatorJourney({ repositoryRoot });
+    const result = await runSemanticOperatorCommand({ command, options, journey });
+    stdout.write(`${JSON.stringify(result)}\n`);
+    return { exitCode: 0, result };
+  } catch (error) {
+    const result = {
+      status: 'failed',
+      error: semanticOperatorErrorPayload(error),
+    };
+    stderr.write(`${JSON.stringify(result)}\n`);
+    return { exitCode: 1, result };
+  }
+}
+
+async function main(argv = process.argv.slice(2)) {
+  const outcome = await runCliProcess({ argv });
+  process.exitCode = outcome.exitCode;
 }
 
 function parseOptions(args) {
@@ -50,11 +76,15 @@ function parseOptions(args) {
 
 if (require.main === module) {
   main().catch(error => {
-    console.error(error && error.stack ? error.stack : error);
+    process.stderr.write(`${JSON.stringify({
+      status: 'failed',
+      error: semanticOperatorErrorPayload(error),
+    })}\n`);
     process.exit(1);
   });
 }
 
 module.exports = {
+  runCliProcess,
   runSemanticOperatorCommand,
 };

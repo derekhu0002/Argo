@@ -169,7 +169,7 @@
     "sync:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js",
     "verify:neo4j:system-architecture": "node .argo/scripts/syncSystemArchitectureToNeo4j.js --verify",
     "semantic:init": "node .argo/scripts/semanticOperatorJourneyCli.js init",
-    "semantic:backfill": "node .argo/scripts/semanticOperatorJourneyCli.js backfill --explicit-opt-in",
+    "semantic:backfill": "node .argo/scripts/semanticOperatorJourneyCli.js backfill",
     "semantic:readiness": "node .argo/scripts/semanticOperatorJourneyCli.js readiness",
     "semantic:query": "node .argo/scripts/semanticOperatorJourneyCli.js query",
     "semantic:snapshot": "node .argo/scripts/semanticOperatorJourneyCli.js snapshot",
