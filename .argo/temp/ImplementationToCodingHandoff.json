@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T04:00:00+08:00",
+  "generatedAt": "2026-07-27T04:15:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected WP-P3 Operator Journey handoff consuming protected-topology correction b41bdbd3. The default operator retains exactly six inward ports, with readSemanticReadiness now supplied by the narrow backward-compatible createDefaultSemanticRetrieval(dependencies).readReadiness() public method. Coding may refactor only that accepted WP-P2 module so retrieve() and readReadiness() share the existing private composition/query/normalization/evaluation path; raw internals and module exports remain private and existing retrieval behavior is regression-frozen. The fresh-project, opt-in, redaction, exact snapshot, canonical authority, factory/tool binding, source safety, and runner-owned deliveryStatus controls remain unchanged.",
+  "summary": "Corrected WP-P3 Operator Journey handoff consuming protected-topology correction b41bdbd3. The default operator retains exactly six inward ports, with readSemanticReadiness supplied by the narrow backward-compatible createDefaultSemanticRetrieval(dependencies).readReadiness() method. Coding may refactor only that WP-P2 module so retrieve() and readReadiness() bind to one exact private readiness helper. TypeChecker guardrails enforce accepted read/evaluator provenance, exact alignment field mappings, literal false fallback, no provider/embed/vector/retrieval effects, no shadowed helper, private raw internals, and unchanged module exports. Existing retrieval behavior and runner-owned deliveryStatus remain regression-frozen.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -77,8 +77,8 @@
       "name": "WP-P3 Shared Persistent Readiness Public Boundary",
       "path": "tests/architecture/production-semantic-operator/readiness-public-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Narrow extension of createDefaultSemanticRetrieval with readReadiness(), shared private helper reuse, exact safe public envelope, one readiness query authority, and unchanged module exports.",
-      "observationPoint": "retrieve() and readReadiness() reuse the same readPersistentReadiness/evaluatePersistentReadiness path; the public method exposes only state, verified, canonical/content/index versions, completed/missing/mismatched channels, and fullSnapshotFallback:false. Raw query, driver, evaluator, and helper internals remain private.",
+      "controlPoint": "TypeChecker binding/provenance over readReadiness(), the shared private helper, accepted persistent read/evaluator, exact field mappings, literal false fallback, side-effect exclusion, one readiness query authority, and unchanged module exports.",
+      "observationPoint": "retrieve() and readReadiness() resolve to the exact top-level shared helper; that helper resolves to the accepted readPersistentReadiness/evaluatePersistentReadiness declarations and exact evidence bindings. Every public field maps to its approved alignment member, fullSnapshotFallback is literal false, provider/embed/vector/retrieval references are absent, and shadowed fakes fail.",
       "expectedStatus": "passed"
     }
   ],

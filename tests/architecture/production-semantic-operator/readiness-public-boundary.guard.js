@@ -18,6 +18,17 @@ const exactPublicKeys = [
   'state',
   'verified',
 ].sort();
+const exactAlignmentMappings = new Map([
+  ['state', 'state'],
+  ['verified', 'aligned'],
+  ['canonicalVersion', 'canonicalVersion'],
+  ['contentVersion', 'contentVersion'],
+  ['indexVersion', 'indexVersion'],
+  ['completedChannels', 'completedChannels'],
+  ['missingChannels', 'missingChannels'],
+  ['mismatchedChannels', 'mismatchedChannels'],
+]);
+const forbiddenReadEffectPattern = /provider|embed|vector|retriev|queryNodes|exhaustChannel|completeSemanticResult/i;
 
 // GIVEN accepted WP-P2 owns the only persistent readiness query and evaluator
 // WHEN WP-P3 requires a public read without provider/vector side effects
@@ -122,6 +133,48 @@ const bypassFixtures = [
       '',
     ),
   },
+  {
+    name: 'raw-secret-field-mapping',
+    source: safeFixture.replace(
+      '    state: alignment.state,',
+      '    state: alignment.secret,',
+    ),
+  },
+  {
+    name: 'arbitrary-alignment-field-mapping',
+    source: safeFixture.replace(
+      '    verified: alignment.aligned,',
+      '    verified: alignment.state,',
+    ),
+  },
+  {
+    name: 'fallback-true',
+    source: safeFixture.replace(
+      '    fullSnapshotFallback: false,',
+      '    fullSnapshotFallback: true,',
+    ),
+  },
+  {
+    name: 'provider-embed-side-effect',
+    source: safeFixture.replace(
+      '      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);\n      return publicReadinessOutcome(evidence.alignment);',
+      "      await provider.embed('readiness');\n      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);\n      return publicReadinessOutcome(evidence.alignment);",
+    ),
+  },
+  {
+    name: 'vector-retrieval-side-effect',
+    source: safeFixture.replace(
+      '  const readiness = await readPersistentReadiness(composition.neo4jDriver);',
+      '  await exhaustChannel({ channel: "Element" });\n  const readiness = await readPersistentReadiness(composition.neo4jDriver);',
+    ),
+  },
+  {
+    name: 'shadowed-shared-helper',
+    source: safeFixture.replace(
+      '    async readReadiness() {\n      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);',
+      '    async readReadiness() {\n      const readAndEvaluatePersistentReadiness = async () => ({ alignment: { aligned: true } });\n      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);',
+    ),
+  },
 ];
 for (const fixture of bypassFixtures) {
   assert.throws(
@@ -132,7 +185,7 @@ for (const fixture of bypassFixtures) {
 }
 
 function assertSharedReadinessBoundary(source, label) {
-  const ast = parse(source, label);
+  const { ast, checker } = parseWithBindings(source, label);
   const functions = topLevelFunctions(ast);
   for (const name of [
     'createDefaultSemanticRetrieval',
@@ -154,34 +207,45 @@ function assertSharedReadinessBoundary(source, label) {
   );
 
   const factory = functions.get('createDefaultSemanticRetrieval')[0];
+  const shared = functions.get('readAndEvaluatePersistentReadiness')[0];
+  const persistentRead = functions.get('readPersistentReadiness')[0];
+  const evaluate = functions.get('evaluatePersistentReadiness')[0];
+  const outcome = functions.get('publicReadinessOutcome')[0];
   const boundaryObject = findReturnedFrozenObject(factory);
   const methods = new Map(boundaryObject.properties.map(property => [propertyName(property), property]));
   for (const name of ['retrieve', 'readReadiness']) {
     assert(methods.has(name), `WP_P3_READINESS_PUBLIC_GUARD: ${label} omits ${name}`);
-    assert(
-      callsIdentifier(methods.get(name), 'readAndEvaluatePersistentReadiness'),
-      `WP_P3_READINESS_PUBLIC_GUARD: ${label} ${name} bypasses shared readiness helper`,
+    assert.strictEqual(
+      findBoundCalls(methods.get(name), shared, checker).length,
+      1,
+      `WP_P3_READINESS_PUBLIC_GUARD: ${label} ${name} must call the exact shared readiness helper once`,
     );
   }
-  assert(
-    callsIdentifier(methods.get('readReadiness'), 'publicReadinessOutcome'),
-    `WP_P3_READINESS_PUBLIC_GUARD: ${label} readReadiness bypasses public outcome mapping`,
+  assertReadReadinessProvenance(
+    methods.get('readReadiness'),
+    shared,
+    outcome,
+    checker,
+    label,
   );
+  assertNoForbiddenReadEffects(methods.get('readReadiness'), label, 'readReadiness');
 
-  const shared = functions.get('readAndEvaluatePersistentReadiness')[0];
-  assert(
-    callsIdentifier(shared, 'readPersistentReadiness')
-      && callsIdentifier(shared, 'evaluatePersistentReadiness'),
-    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper does not reuse accepted read/evaluation`,
+  assertSharedHelperProvenance(
+    shared,
+    persistentRead,
+    evaluate,
+    checker,
+    label,
   );
+  assertNoForbiddenReadEffects(shared, label, 'shared readiness helper');
 
-  const outcome = functions.get('publicReadinessOutcome')[0];
   const outcomeObject = findReturnedObject(outcome);
   assert.deepStrictEqual(
     outcomeObject.properties.map(propertyName).sort(),
     exactPublicKeys,
     `WP_P3_READINESS_PUBLIC_GUARD: ${label} public readiness envelope changed`,
   );
+  assertExactPublicMappings(outcome, outcomeObject, checker, label);
 
   const exported = findModuleExports(ast);
   assert.deepStrictEqual(
@@ -189,6 +253,162 @@ function assertSharedReadinessBoundary(source, label) {
     ['createDefaultSemanticRetrieval', 'withDefaultSemanticRetrievalTestComposition'].sort(),
     `WP_P3_READINESS_PUBLIC_GUARD: ${label} exposes private readiness internals`,
   );
+}
+
+function assertReadReadinessProvenance(method, shared, outcome, checker, label) {
+  const evidenceDeclarations = findVariablesInitializedByBoundCall(method, shared, checker);
+  assert.strictEqual(
+    evidenceDeclarations.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} readReadiness evidence must come from the exact shared helper`,
+  );
+  const returns = collectReturns(method);
+  assert.strictEqual(
+    returns.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} readReadiness must return one mapped outcome`,
+  );
+  const call = unwrapCall(returns[0].expression);
+  assert(
+    call
+      && ts.isIdentifier(call.expression)
+      && resolvesTo(call.expression, outcome, checker),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} readReadiness must return the exact public mapping`,
+  );
+  assert.strictEqual(
+    call.arguments.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} public mapping requires one alignment argument`,
+  );
+  const argument = call.arguments[0];
+  assert(
+    ts.isPropertyAccessExpression(argument)
+      && argument.name.text === 'alignment'
+      && ts.isIdentifier(argument.expression)
+      && resolvesTo(argument.expression, evidenceDeclarations[0], checker),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} public mapping must receive shared-helper alignment`,
+  );
+}
+
+function assertSharedHelperProvenance(shared, persistentRead, evaluate, checker, label) {
+  const parameters = shared.parameters;
+  assert(
+    parameters.length >= 2
+      && ts.isIdentifier(parameters[0].name)
+      && ts.isIdentifier(parameters[1].name),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper requires composition and canonicalGraph`,
+  );
+  const readDeclarations = findVariablesInitializedByBoundCall(shared, persistentRead, checker);
+  const alignmentDeclarations = findVariablesInitializedByBoundCall(shared, evaluate, checker);
+  assert.strictEqual(
+    readDeclarations.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper must bind one accepted persistent read`,
+  );
+  assert.strictEqual(
+    alignmentDeclarations.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper must bind one accepted evaluator result`,
+  );
+
+  const readCall = unwrapCall(readDeclarations[0].initializer);
+  assert(
+    readCall
+      && readCall.arguments.length === 1
+      && ts.isPropertyAccessExpression(readCall.arguments[0])
+      && readCall.arguments[0].name.text === 'neo4jDriver'
+      && ts.isIdentifier(readCall.arguments[0].expression)
+      && resolvesTo(readCall.arguments[0].expression, parameters[0], checker),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} persistent read must use composition.neo4jDriver`,
+  );
+  const evaluationCall = unwrapCall(alignmentDeclarations[0].initializer);
+  assert(
+    evaluationCall
+      && evaluationCall.arguments.length === 2
+      && ts.isIdentifier(evaluationCall.arguments[0])
+      && resolvesTo(evaluationCall.arguments[0], readDeclarations[0], checker)
+      && ts.isIdentifier(evaluationCall.arguments[1])
+      && resolvesTo(evaluationCall.arguments[1], parameters[1], checker),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} evaluator must consume the accepted read and canonicalGraph`,
+  );
+
+  const returns = collectReturns(shared);
+  assert.strictEqual(
+    returns.length,
+    1,
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper must return one evidence object`,
+  );
+  assert(
+    returns[0].expression && ts.isObjectLiteralExpression(returns[0].expression),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared helper must return evidence object`,
+  );
+  const expectedBindings = new Map([
+    ['composition', parameters[0]],
+    ['readiness', readDeclarations[0]],
+    ['alignment', alignmentDeclarations[0]],
+  ]);
+  assert.deepStrictEqual(
+    returns[0].expression.properties.map(propertyName).sort(),
+    [...expectedBindings.keys()].sort(),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared evidence envelope changed`,
+  );
+  for (const property of returns[0].expression.properties) {
+    const name = propertyName(property);
+    const value = propertyValue(property);
+    assert(
+      value
+        && ts.isIdentifier(value)
+        && resolvesTo(value, expectedBindings.get(name), checker),
+      `WP_P3_READINESS_PUBLIC_GUARD: ${label} shared evidence ${name} has wrong provenance`,
+    );
+  }
+}
+
+function assertExactPublicMappings(outcome, outcomeObject, checker, label) {
+  assert(
+    outcome.parameters.length === 1 && ts.isIdentifier(outcome.parameters[0].name),
+    `WP_P3_READINESS_PUBLIC_GUARD: ${label} public mapping requires one alignment parameter`,
+  );
+  const alignmentParameter = outcome.parameters[0];
+  for (const property of outcomeObject.properties) {
+    const name = propertyName(property);
+    assert(
+      ts.isPropertyAssignment(property),
+      `WP_P3_READINESS_PUBLIC_GUARD: ${label} public field ${name} must be an explicit assignment`,
+    );
+    if (name === 'fullSnapshotFallback') {
+      assert(
+        property.initializer.kind === ts.SyntaxKind.FalseKeyword,
+        `WP_P3_READINESS_PUBLIC_GUARD: ${label} fullSnapshotFallback must be literal false`,
+      );
+      continue;
+    }
+    const expectedMember = exactAlignmentMappings.get(name);
+    assert(
+      expectedMember
+        && ts.isPropertyAccessExpression(property.initializer)
+        && property.initializer.name.text === expectedMember
+        && ts.isIdentifier(property.initializer.expression)
+        && resolvesTo(property.initializer.expression, alignmentParameter, checker),
+      `WP_P3_READINESS_PUBLIC_GUARD: ${label} public field ${name} has unapproved alignment mapping`,
+    );
+  }
+}
+
+function assertNoForbiddenReadEffects(root, label, scope) {
+  walk(root, node => {
+    if (
+      (ts.isIdentifier(node) && forbiddenReadEffectPattern.test(node.text))
+      || (
+        ts.isPropertyAccessExpression(node)
+        && forbiddenReadEffectPattern.test(node.getText())
+      )
+    ) {
+      assert.fail(
+        `WP_P3_READINESS_PUBLIC_GUARD: ${label} ${scope} contains provider/vector/retrieval effect ${node.getText()}`,
+      );
+    }
+  });
 }
 
 function topLevelFunctions(ast) {
@@ -257,16 +477,64 @@ function findModuleExports(ast) {
   return found;
 }
 
-function callsIdentifier(root, name) {
-  let found = false;
+function findBoundCalls(root, declaration, checker) {
+  const calls = [];
   walk(root, node => {
     if (
       ts.isCallExpression(node)
       && ts.isIdentifier(node.expression)
-      && node.expression.text === name
-    ) found = true;
+      && resolvesTo(node.expression, declaration, checker)
+    ) calls.push(node);
   });
-  return found;
+  return calls;
+}
+
+function findVariablesInitializedByBoundCall(root, declaration, checker) {
+  const variables = [];
+  walk(root, node => {
+    if (!ts.isVariableDeclaration(node) || !node.initializer) return;
+    const call = unwrapCall(node.initializer);
+    if (
+      call
+      && ts.isIdentifier(call.expression)
+      && resolvesTo(call.expression, declaration, checker)
+    ) variables.push(node);
+  });
+  return variables;
+}
+
+function unwrapCall(node) {
+  let current = node;
+  while (
+    current
+    && (
+      ts.isAwaitExpression(current)
+      || ts.isParenthesizedExpression(current)
+    )
+  ) current = current.expression;
+  return current && ts.isCallExpression(current) ? current : undefined;
+}
+
+function collectReturns(root) {
+  const returns = [];
+  walk(root, node => {
+    if (ts.isReturnStatement(node) && node.expression) returns.push(node);
+  });
+  return returns;
+}
+
+function propertyValue(property) {
+  if (ts.isPropertyAssignment(property)) return property.initializer;
+  if (ts.isShorthandPropertyAssignment(property)) return property.name;
+  return undefined;
+}
+
+function resolvesTo(identifier, declaration, checker) {
+  let symbol = checker.getSymbolAtLocation(identifier);
+  if (ts.isShorthandPropertyAssignment(identifier.parent)) {
+    symbol = checker.getShorthandAssignmentValueSymbol(identifier.parent) || symbol;
+  }
+  return Boolean(symbol && symbol.declarations && symbol.declarations.includes(declaration));
 }
 
 function propertyName(property) {
@@ -274,14 +542,50 @@ function propertyName(property) {
   return name && (ts.isIdentifier(name) || ts.isStringLiteral(name)) ? name.text : '';
 }
 
-function parse(source, label) {
-  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+function parseWithBindings(source, label) {
+  const fileName = path.resolve(repoRoot, '.argo', 'guard-fixtures', label);
+  const ast = ts.createSourceFile(
+    fileName,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.JS,
+  );
   assert.strictEqual(
     ast.parseDiagnostics.length,
     0,
     `WP_P3_READINESS_PUBLIC_GUARD: ${label} is not parseable JavaScript`,
   );
-  return ast;
+  const options = {
+    allowJs: true,
+    checkJs: false,
+    module: ts.ModuleKind.CommonJS,
+    noLib: true,
+    noResolve: true,
+    target: ts.ScriptTarget.Latest,
+  };
+  const canonical = value => path.resolve(value).toLowerCase();
+  const host = {
+    fileExists: requested => canonical(requested) === canonical(fileName),
+    getCanonicalFileName: requested => requested.toLowerCase(),
+    getCurrentDirectory: () => repoRoot,
+    getDefaultLibFileName: () => 'lib.d.ts',
+    getDirectories: () => [],
+    getNewLine: () => '\n',
+    getSourceFile: requested => (
+      canonical(requested) === canonical(fileName) ? ast : undefined
+    ),
+    readFile: requested => (
+      canonical(requested) === canonical(fileName) ? source : undefined
+    ),
+    useCaseSensitiveFileNames: () => false,
+    writeFile() {},
+  };
+  const program = ts.createProgram([fileName], options, host);
+  return {
+    ast: program.getSourceFile(fileName),
+    checker: program.getTypeChecker(),
+  };
 }
 
 function walk(node, visitor) {
