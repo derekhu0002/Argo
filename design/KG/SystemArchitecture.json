@@ -1524,7 +1524,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2211,7 +2211,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2253,6 +2253,10 @@
         {
           "name": "acceptanceApproval.SP-05",
           "value": "approvedByHuman=true|2026-07-27|delegated parent/orchestrator approved original SP-05 and explicitly required this independent-audit correction for equivalent successful-path configuration and opted-in missing/unsafe/unapproved zero-side-effect controls"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
