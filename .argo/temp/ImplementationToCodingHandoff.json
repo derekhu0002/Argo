@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T08:28:00+08:00",
+  "generatedAt": "2026-07-27T08:45:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Frozen inherited SP-03/SP-04/compatibility Harnesses now inject approved operator adapters around their exact accepted WP-P2 retrieval boundaries, preserving assertions and MCP envelopes without depending on raw fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
+  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Frozen inherited SP-03/SP-04/compatibility and TS-00 typed-contract scenarios now inject approved operator adapters around their exact accepted controlled retrieval boundaries, preserving assertions and MCP envelopes without depending on raw fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -105,6 +105,14 @@
       "kind": "ExplicitEntrypointCorrectnessGuard",
       "controlPoint": "TypeChecker-bound inspection of every inherited default and compatibility semantic callTool invocation, journey property value, approved adapter-factory call flow, and bound WP-P2 retrieval parameter plus executable adversarial fixtures.",
       "observationPoint": "SP-03/SP-04 inner calls carry semanticOperatorJourney at dependency argument three; compatibility wrapper calls bind argument four to the live journey selector. The property value must reach the exact top-level approved adapter factory and its query must call retrieve on the bound WP-P2 parameter. Missing/undefined dependencies, dead conditionals/decoys, semanticRetrievalBoundary substitution, and shadowed factories fail while accepted assertions remain unchanged.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "Inherited TS-00 Operator Composition",
+      "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "TypeChecker-bound inspection of the TS-00 exported wrapper call, journey property, approved adapter factory, and bound retrieval parameter plus raw/missing/undefined/dead/shadowed adversarial fixtures.",
+      "observationPoint": "The semantic typed-envelope scenario passes only semanticOperatorJourney at wrapper argument four; its property value resolves to the exact approved adapter factory and query retrieves from the bound controlled boundary. Raw semanticRetrievalBoundary, absent or undefined journey, dead decoy, and shadowed factory fixtures fail without changing typed contract assertions.",
       "expectedStatus": "passed"
     }
   ],
@@ -261,6 +269,7 @@
     "tests/architecture/production-default-retrieval/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-default-retrieval/implementation-traceability.guard.js",
     "tests/explicit/entries/runGraphQueryCompatibility.js",
+    "tests/explicit/entries/runTypedMcpQueryContract.js",
     "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
     "tests/explicit/entries/runGraphTidyFullSnapshot.js",
     "tests/explicit/entries/runExternalCredentialBoundary.js",

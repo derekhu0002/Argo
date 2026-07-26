@@ -44,17 +44,19 @@ async function main() {
     purpose: 'implementation-design',
     intent: 'Return typed architecture context',
   };
+  const semanticRetrievalBoundary = {
+    async retrieve() {
+      return semanticDocument;
+    },
+  };
+  const semanticOperatorJourney = createApprovedSemanticOperatorJourneyAdapter(
+    semanticRetrievalBoundary,
+  );
   const semanticResponse = await callTool(
     'getSystemArchitecture',
     { query: semanticQuery },
     null,
-    {
-      semanticRetrievalBoundary: {
-        async retrieve() {
-          return semanticDocument;
-        },
-      },
-    },
+    { semanticOperatorJourney },
   );
   assertTypedResponse(semanticResponse, {
     mode: 'semantic-query',
@@ -83,6 +85,46 @@ async function main() {
     },
   });
   assertTypedError(missingAuditSubjectResponse, 'AUDIT_SUBJECT_REQUIRED');
+}
+
+function createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary) {
+  assert(
+    semanticRetrievalBoundary && typeof semanticRetrievalBoundary.retrieve === 'function',
+    'TS00_APPROVED_OPERATOR_RETRIEVAL_REQUIRED',
+  );
+  return Object.freeze({
+    async query(query) {
+      const document = await semanticRetrievalBoundary.retrieve(query);
+      const payload = {
+        status: 'passed',
+        graphPath: 'design/KG/SystemArchitecture.json',
+        query: {
+          ...query,
+          mode: 'semantic-query',
+          semanticRetrieval: 'invoked',
+        },
+        ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
+          ? { result: document.result }
+          : { result: document }),
+        document,
+      };
+      return {
+        ...payload,
+        content: [{
+          type: 'text',
+          text: JSON.stringify(payload, null, 2),
+        }],
+        structuredContent: {
+          version: '1.0',
+          mode: 'semantic-query',
+          document,
+          query: payload.query,
+          error: null,
+        },
+        isError: false,
+      };
+    },
+  });
 }
 
 function readListedGetSystemArchitectureTool() {

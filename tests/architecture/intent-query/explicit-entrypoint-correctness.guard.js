@@ -156,6 +156,11 @@ assert(
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
 const harnessSource = fs.readFileSync(harnessPath, 'utf8');
+const typedContractPath = 'tests/explicit/entries/runTypedMcpQueryContract.js';
+const typedContractSource = fs.readFileSync(
+  path.join(repoRoot, ...typedContractPath.split('/')),
+  'utf8',
+);
 const {
   assertNoProbeCompatibilityUsesInjectedBoundary,
 } = require(harnessPath);
@@ -233,6 +238,40 @@ for (const [label, adversarial] of [
     `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${label} compatibility fixture passed`,
   );
 }
+assertApprovedTypedComposition(typedContractSource, 'typed-contract-approved.fixture.js');
+for (const [label, adversarial] of [
+  ['typed-raw-substitution', typedContractSource.replace(
+    '{ semanticOperatorJourney },',
+    '{ semanticOperatorJourney: semanticRetrievalBoundary },',
+  )],
+  ['typed-missing-journey', typedContractSource.replace(
+    '{ semanticOperatorJourney },',
+    '{},',
+  )],
+  ['typed-undefined-journey', typedContractSource.replace(
+    '{ semanticOperatorJourney },',
+    '{ semanticOperatorJourney: undefined },',
+  )],
+  ['typed-dead-decoy', typedContractSource
+    .replace(
+      '{ semanticOperatorJourney },',
+      '{ semanticOperatorJourney: undefined },',
+    )
+    .replace(
+      '  const semanticResponse = await callTool(',
+      '  createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary);\n  const semanticResponse = await callTool(',
+    )],
+  ['typed-shadowed-factory', typedContractSource.replace(
+    'async function main() {',
+    'async function main() {\n  const createApprovedSemanticOperatorJourneyAdapter = () => undefined;',
+  )],
+]) {
+  assert.throws(
+    () => assertApprovedTypedComposition(adversarial, `${label}.fixture.js`),
+    /EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD/,
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${label} fixture passed`,
+  );
+}
 assert(
   harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility Harness must pass its probe through wrapper argument four',
@@ -294,6 +333,10 @@ assert(
   handoff.frozenFiles.includes('tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility guard must remain frozen for Coding/Repair',
 );
+assert(
+  handoff.frozenFiles.includes(typedContractPath),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: TS-00 typed contract entry must remain frozen for Coding/Repair',
+);
 
 assertNoProbeCompatibilityUsesInjectedBoundary()
   .then(evidence => {
@@ -347,6 +390,44 @@ function assertApprovedCompatibilityComposition(source, label) {
       && ts.isIdentifier(propertyValue.arguments[0])
       && sameSymbol(checker, propertyValue.arguments[0], semanticBoundary.name),
     'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility journey property does not call the approved bound adapter factory',
+  );
+  assertApprovedAdapterFactory(factory, checker);
+}
+
+function assertApprovedTypedComposition(source, label) {
+  const { ast, checker } = parseWithBindings(source, label);
+  const main = topLevelFunction(ast, 'main');
+  const factory = topLevelFunction(ast, 'createApprovedSemanticOperatorJourneyAdapter');
+  const boundary = main && variableIn(main, 'semanticRetrievalBoundary');
+  const journey = main && variableIn(main, 'semanticOperatorJourney');
+  const semanticCall = main && callsIn(main).find(call => (
+    ts.isIdentifier(call.expression)
+    && call.expression.text === 'callTool'
+    && call.arguments.length === 4
+    && call.arguments[0]
+    && ts.isStringLiteral(call.arguments[0])
+    && call.arguments[0].text === 'getSystemArchitecture'
+  ));
+  const dependency = semanticCall && semanticCall.arguments[3];
+  const property = dependency && objectProperty(dependency, 'semanticOperatorJourney');
+  const propertyValue = property && propertyValueExpression(property, checker);
+  assert(
+    main
+      && factory
+      && boundary
+      && journey
+      && journey.initializer
+      && ts.isCallExpression(journey.initializer)
+      && ts.isIdentifier(journey.initializer.expression)
+      && sameSymbol(checker, journey.initializer.expression, factory.name)
+      && journey.initializer.arguments.length === 1
+      && ts.isIdentifier(journey.initializer.arguments[0])
+      && sameSymbol(checker, journey.initializer.arguments[0], boundary.name)
+      && propertyValue
+      && ts.isCallExpression(propertyValue)
+      && ts.isIdentifier(propertyValue.expression)
+      && sameSymbol(checker, propertyValue.expression, factory.name),
+    'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: TS-00 semantic call does not bind its journey property to the approved adapter factory',
   );
   assertApprovedAdapterFactory(factory, checker);
 }
