@@ -50,6 +50,9 @@ const requiredObservations = new Map([
     'DT06_FREE_GENERATED_CYPHER_DECIDED_MANDATORY_CLOSURE',
     'DT07_CALLER_IDENTITY_POLICY_FORBIDDEN',
     'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT',
+    'DT07_GRAPH_TIDY_SEMANTIC_PATH_INVOKED',
+    'DT07_GRAPH_TIDY_SEMANTIC_POLICY_ID_FORBIDDEN',
+    'DT07_GRAPH_TIDY_SNAPSHOT_INCOMPLETE',
   ]],
   ['tests/explicit/entries/runIntentDecisionClosure.js', [
     'assertIntentDecisionClosure',
@@ -116,14 +119,21 @@ const purposeClosureSource = fs.readFileSync(
   path.join(repoRoot, 'tests', 'explicit', 'entries', 'runPurposePolicyClosure.js'),
   'utf8',
 );
+const semanticCategoriesStart = purposeClosureSource.indexOf('const semanticClosureCategories');
+const semanticCategoriesEnd = purposeClosureSource.indexOf(']);', semanticCategoriesStart);
+const semanticCategoriesSource = purposeClosureSource.slice(semanticCategoriesStart, semanticCategoriesEnd);
 const purposeCategoriesStart = purposeClosureSource.indexOf('const purposeCategories');
 const purposeCategoriesEnd = purposeClosureSource.indexOf(']);', purposeCategoriesStart);
 const purposeCategoriesSource = purposeClosureSource.slice(purposeCategoriesStart, purposeCategoriesEnd);
 assert(
-  purposeCategoriesStart >= 0
+  semanticCategoriesStart >= 0
+    && semanticCategoriesEnd > semanticCategoriesStart
+    && !semanticCategoriesSource.includes("'graph-tidy'")
+    && purposeCategoriesStart >= 0
     && purposeCategoriesEnd > purposeCategoriesStart
-    && !purposeCategoriesSource.includes("'graph-tidy'"),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: graph-tidy must not re-enter semantic purpose closure',
+    && purposeCategoriesSource.includes('...semanticClosureCategories')
+    && purposeCategoriesSource.includes("'graph-tidy'"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: DT-07 must dispatch four semantic closure categories plus graph-tidy bypass',
 );
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
