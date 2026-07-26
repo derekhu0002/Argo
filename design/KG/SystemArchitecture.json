@@ -2053,7 +2053,7 @@
           "description": "Control point: after ordinary structural projection, invoke explicit production backfill with external credentials for pre-existing Element, ArchitectureRelationship, and View records; interrupt a bounded batch, inject isolated record failure, resume, and rerun. Observation point: all three channels are independently enumerated and complete; stable canonical identity and canonical/content/index/provider/model/version/dimensions/vector metadata are persisted; checkpoints, retries, and isolated failures are visible; resume does not restart completed work; rerun is idempotent; no fake canonical mutation occurs; and alignment waits for all channels.",
           "type": "Acceptance Test",
           "Input": "Fresh-project and pre-existing three-channel canonical graph, bounded batches, interruption/retry and isolated-failure fixtures, external credentials, explicit opt-in, and idempotent rerun.",
-          "acceptanceCriteria": "Suggested: tests/explicit/entries/runProductionSemanticBackfill.js (new; not yet executed; ImplementationDesign must materialize the physical boundary before Coding/Repair)"
+          "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticBackfill.js"
         }
       ]
     },
@@ -2102,7 +2102,7 @@
           "description": "Control point: use the separate production persistence path to backfill all three channels, restart, update one canonical object, tombstone another, and run unrelated live-E2E runId cleanup. Observation point: unchanged stable-identity vectors and complete canonical/content/index/provider/model/version/dimensions/vector metadata survive restart and test-only cleanup; the changed record is upserted and version-aligned; the tombstone is deleted; no production runId cleanup occurs; canonical JSON remains authoritative; and Neo4j remains projection/index only.",
           "type": "Acceptance Test",
           "Input": "Production three-channel records, restart, stable-identity update and tombstone mutations, separate production persistence path, and isolated existing test-only runId cleanup.",
-          "acceptanceCriteria": "Suggested: tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js (new; not yet executed; ImplementationDesign must materialize the physical boundary before Coding/Repair)"
+          "acceptanceCriteria": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js"
         }
       ]
     },

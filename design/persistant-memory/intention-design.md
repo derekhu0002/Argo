@@ -43,6 +43,18 @@
 - Final `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
 - Checklist self-audit after writing the handoff: A1-A5 satisfied by canonical MCP persistence, complete elements/functional points/directional relationships, and viewpoint-bound views; B1-B3 satisfied by same-element SP-01/SP-02 mappings and explicit human approval attributes; C1-C2 satisfied by the five-element coverage matrix, delivered boundary evidence, and evidence-backed structural-projection exclusion; D1-D8 satisfied with no open questions and explicit per-boundary/global approval; E1-E3 satisfied by the complete validated handoff and schema-compliant approval note; F1 is this session record and F2 is completed by the IntentDesign stage commit immediately following this audit.
 
+### Implementation-to-intent trace correction
+
+- Source proposal: `design/KG/ImplementationToIntentTraceProposal.json`, ImplementationDesign session `implementation-semprod-wp-p1-20260726T2055+08`.
+- `argo.validateTraceProposal` passed with exitCode 0 and stdout `Trace proposal validation passed for: design/KG/ImplementationToIntentTraceProposal.json`.
+- Proposal verdict: accepted as semantically consistent and scope-preserving. It changes only the physical acceptance entrypoint strings; SP-01/SP-02 descriptions, Inputs, control points, observation points, functional points, approval evidence, relationships, viewpoint bindings, and the five-element WP-P1 scope remain unchanged.
+- `ExplicitAcceptanceTestcase-SP-01-FullBackfill` now has exact acceptanceCriteria `tests/explicit/entries/runProductionSemanticBackfill.js`.
+- `ExplicitAcceptanceTestcase-SP-02-PersistentProjection` now has exact acceptanceCriteria `tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js`.
+- Approval continuity: this is physical trace correction for the already-approved mounted boundaries, not a semantic boundary change. The 2026-07-26 per-testcase and global WP-P1 approvals remain valid; no additional human boundary approval is required.
+- `argo.previewSystemArchitectureMutation` passed for exactly two element testcase updates with counts unchanged at `61 elements / 79 relationships / 31 views`.
+- `argo.applySystemArchitectureMutation` wrote exactly those two updates with counts unchanged. Post-write Neo4j synchronization failed with exact error `neo4jUri is required for start`; no synchronization evidence is claimed.
+- No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
+
 ### Exact approval question
 
 Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`—and globally approve the WP-P1 intent-to-implementation handoff scope (`semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`) so IntentDesign may record approval, replace the stale unrelated intent handoff with the WP-P1 handoff, validate it, and create the required IntentDesign stage commit? Recommended answer: approve, because the boundaries now cover the requested durable production persistence, full three-channel backfill, test-only cleanup isolation, canonical authority, external credentials, and all required failure/recovery semantics while excluding WP-P2 and WP-P3.
