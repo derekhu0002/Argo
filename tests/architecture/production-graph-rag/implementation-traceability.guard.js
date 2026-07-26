@@ -23,6 +23,7 @@ const requiredMappings = new Map([
   ['grag-wp-3-1', ['tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js']],
   ['grag-quality-gate', ['tests/explicit/entries/runRetrievalQualityBenchmark.js']],
   ['grag-seven-wave-delivery', ['tests/explicit/entries/runSevenWaveDeliveryGates.js']],
+  ['grag-capacity-residual', ['tests/explicit/entries/runCapacityEvidence.js']],
 ]);
 const elements = new Map(graph.elements.map(element => [element.id, element]));
 

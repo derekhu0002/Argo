@@ -28,6 +28,7 @@ for (const ownership of [
   'generateAffectedEmbeddings(input)',
   'evaluateSemanticAlignment(request)',
   'evaluatePhase1QualityBenchmark(request)',
+  'evaluateCapacityEvidence(request)',
   'evaluateDeliverySequence(request)',
   'createMutationEmbeddingVectorLifecycle(dependencies)',
   'W3.1 mutation-vector integration is an automatic effect of the `applySystemArchitectureMutation` write success path',
@@ -53,6 +54,10 @@ for (const ownership of [
   'actual observed closure ids',
   'precision outside `[0, 1]`',
   'W7 Phase 1 business acceptance requires',
+  'DT-19 capacity evidence',
+  'result cardinality',
+  'measured precision',
+  'capacity-policy decisions',
 ]) {
   assert(
     localContract.includes(ownership) || read('tests/ARCHITECTURE.md').includes(ownership),

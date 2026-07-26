@@ -32,11 +32,15 @@ const isDt19InScope = /ExplicitAcceptanceTestcase-DT-05-R2-DT-19|runCapacityEvid
     targetPaths: (handoff.taskExecutionPlan.tasks || []).map(task => task.targetPaths),
   }),
 );
+const isDt19CapacityEvidenceHandoff = isDt19InScope
+  && /evaluateCapacityEvidence|capacity evidence|DT-19/i.test(handoffAuthorizationText);
 const outOfScopeEntrypoints = [];
 if (!isW7BusinessAcceptanceHandoff) {
   outOfScopeEntrypoints.push('tests/explicit/entries/runSevenWaveDeliveryGates.js');
 }
-outOfScopeEntrypoints.push('tests/explicit/entries/runCapacityEvidence.js');
+if (!isDt19CapacityEvidenceHandoff) {
+  outOfScopeEntrypoints.push('tests/explicit/entries/runCapacityEvidence.js');
+}
 if (!isTs09InScope) {
   outOfScopeEntrypoints.push('tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js');
 }
@@ -44,12 +48,16 @@ const forbiddenTestcases = [];
 if (!isW7BusinessAcceptanceHandoff) {
   forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-08');
 }
-forbiddenTestcases.push('ExplicitAcceptanceTestcase-DT-05-R2-DT-19');
+if (!isDt19CapacityEvidenceHandoff) {
+  forbiddenTestcases.push('ExplicitAcceptanceTestcase-DT-05-R2-DT-19');
+}
 if (!isTs09InScope) {
   forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter');
 }
 const forbiddenImplementationPattern = isW7BusinessAcceptanceHandoff
   ? /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|generateAffectedEmbeddings)/i
+  : isDt19CapacityEvidenceHandoff
+  ? /(?:sevenWave|deliverySequence|embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|generateAffectedEmbeddings)/i
   : isW3IndexLifecycleHandoff || isW31MutationVectorHandoff
   ? /(?:sevenWave|deliverySequence)/i
   : /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
@@ -77,11 +85,13 @@ for (const testcaseName of forbiddenTestcases) {
     `CODING_SCOPE_AUTHORIZATION_GUARD: codingTargets authorize ${testcaseName}`,
   );
 }
-assert.strictEqual(
-  isDt19InScope,
-  false,
-  'CODING_SCOPE_AUTHORIZATION_GUARD: DT-19 capacity evidence entered authorized Coding scope',
-);
+if (!isDt19CapacityEvidenceHandoff) {
+  assert.strictEqual(
+    isDt19InScope,
+    false,
+    'CODING_SCOPE_AUTHORIZATION_GUARD: DT-19 capacity evidence entered authorized Coding scope',
+  );
+}
 assert(
   !forbiddenImplementationPattern.test(codingTargetsText),
   'CODING_SCOPE_AUTHORIZATION_GUARD: codingTargets include adapter/lifecycle delivery',
@@ -108,6 +118,12 @@ for (const task of tasks) {
     !/deliveryStatus/i.test(targetAuthorizationText),
     `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} authorizes manual deliveryStatus editing`,
   );
+  if (isDt19CapacityEvidenceHandoff) {
+    assert(
+      (task.targetPaths || []).every(targetPath => targetPath === '.argo/scripts/graph-rag/productionGraphRagRuntime.js'),
+      `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} authorizes DT-19 work outside productionGraphRagRuntime.js`,
+    );
+  }
   const authorizationText = JSON.stringify({
     relatedTestcases: task.relatedTestcases,
     targetPaths: task.targetPaths,

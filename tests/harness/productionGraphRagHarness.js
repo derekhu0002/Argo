@@ -310,6 +310,29 @@ async function evaluatePhase1QualityBenchmark(request = {}) {
   }));
 }
 
+async function evaluateCapacityEvidence(request = {}) {
+  const runtime = createRuntime({
+    configuration: externalProductionConfiguration(),
+    embeddingQualification: approvedEmbeddingQualification(),
+    canonicalGraph: canonicalGraphFixture(),
+    neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
+  });
+  if (typeof runtime.evaluateCapacityEvidence !== 'function') {
+    return blockedOutcome('DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluateCapacityEvidence({
+    purposes: request.purposes || PURPOSE_CATEGORIES,
+    qualityEvidence: request.qualityEvidence || {
+      benchmarkId: 'w7-phase1-five-purpose-business-benchmark',
+      perPurpose: phase1BusinessBenchmarkFixture().purposes.map(purpose => ({
+        purpose: purpose.purpose,
+        precision: purpose.precision,
+        resultCardinality: purpose.mandatoryKeySeedIds.length + purpose.expectedClosureIds.length,
+      })),
+    },
+  }));
+}
+
 function acceptedWaveEvidence() {
   return {
     W2: 'accepted',
@@ -514,6 +537,7 @@ module.exports = {
   canonicalGraphFixture,
   conflictingNativeRetrievalBoundary,
   createNativeRetrievalProbe,
+  evaluateCapacityEvidence,
   evaluateCredentialConfiguration,
   evaluateEmbeddingQualification,
   evaluatePhase1QualityBenchmark,

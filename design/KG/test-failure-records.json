@@ -8,8 +8,8 @@
     "resolvedScriptPath": "tests/explicit/entries/runCapacityEvidence.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runCapacityEvidence.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING\n+ actual - expected\n\n+ 'blocked'\n- 'passed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'passed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_MISSING\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:16:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING\n+ actual - expected\n\n+ 'blocked'\n- 'passed'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runCapacityEvidence.js:22:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'passed',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
   }
 ]

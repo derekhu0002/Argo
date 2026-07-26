@@ -197,3 +197,13 @@
 - The repair handoff authorizes Coding only to update `.argo/scripts/graph-rag/productionGraphRagRuntime.js` for DT-18 quality-decision loopholes. TS-08 remains a frozen regression check; DT-19 capacity evidence, tests/Harnesses, contracts, and runner-owned `deliveryStatus` remain frozen and out of scope.
 - Direct RED evidence before Coding: `runRetrievalQualityBenchmark.js` fails with `DT18_KEY_SEED_RECALL_NOT_100_PERCENT`; `runSevenWaveDeliveryGates.js` remains passed.
 - `argo.validateStageHandoff(stage=implementation-to-coding)` passed. Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 36 passed, 2 failed, 0 missing criteria. Failures are DT-18 (`DT18_KEY_SEED_RECALL_NOT_100_PERCENT`) and out-of-scope DT-19 (`DT19_CAPACITY_EVIDENCE_MISSING`). TS-08 remains passed. Runner-owned delivery status changed `grag-quality-gate` from `delivered` to `not_delivered` as the new pre-coding baseline.
+
+## 2026-07-26 DT-19 W7 capacity evidence RED boundary
+
+- Materialized the DT-19 ImplementationToCoding handoff from validated intent commit `1e0de615986493092684656da7436d03899ae141`, scoped only to `grag-capacity-residual` and `ExplicitAcceptanceTestcase-DT-05-R2-DT-19`.
+- Contracts already declare DT-19 as evidence-only: `evaluateCapacityEvidence(request)` must record phase-1 result cardinality and measured precision by declared purpose, and must not introduce cap, budget, pagination, truncation, continuation, top-k, token-budget, result-limit, or capacity-policy decisions.
+- The handoff authorizes Coding only to update `.argo/scripts/graph-rag/productionGraphRagRuntime.js` for the missing capacity-evidence boundary. DT-18 quality scoring, TS-08 delivery sequence behavior, tests, Harnesses, contracts, and runner-owned `deliveryStatus` remain frozen.
+- The coding-scope authorization guard now permits DT-19 only when the current handoff explicitly targets `runCapacityEvidence.js` and `evaluateCapacityEvidence(request)`; otherwise DT-19 remains frozen out-of-scope evidence.
+- Direct RED evidence before Coding: `runCapacityEvidence.js` fails with `DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING`; the five production Graph RAG critical guards pass.
+- `argo.validateStageHandoff(stage=implementation-to-coding)` passed. Full pre-coding runner baseline refreshed through `argo.runArchitectureTests`: 38 total, 37 passed, 1 failed, 0 missing criteria. The only failure is DT-19 (`DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING`); DT-18 and TS-08 now pass and remain frozen context.
+- No intent mismatch was found, so no `ImplementationToIntentTraceProposal.json` is required.
