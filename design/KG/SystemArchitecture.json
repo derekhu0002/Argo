@@ -3502,25 +3502,25 @@
     },
     {
       "id": "semprod-rel-journey-credentials",
-      "name": "Operator journey realizes external credential constraint",
-      "type": "Realization",
+      "name": "Operator journey observes external credential boundary",
+      "type": "Association",
       "source_id": "semprod-operator-journey-process",
       "target_id": "grag-credential-boundary",
       "source_name": "Establish Semantic Retrieval for New Project",
       "target_name": "External Production Credential Boundary",
-      "description": "Directional semantics: automatic backfill may start only after explicit opt-in and approved externally supplied configuration; errors and operational evidence redact credentials and no implicit source or provider default is permitted.",
-      "statement": "Establish Semantic Retrieval for New Project --(Realization)--> External Production Credential Boundary"
+      "description": "Non-directional policy association: the operator journey consumes already-accepted backfill and query services subject to the protected external credential boundary. This relationship records active compliance and traceability without claiming that SP-05 realizes, reopens, or controls delivery of the credential policy; actual runtime dependency remains through the existing services that serve the journey.",
+      "statement": "Establish Semantic Retrieval for New Project --(Association)--> External Production Credential Boundary"
     },
     {
       "id": "semprod-rel-journey-readiness",
-      "name": "Operator journey realizes readiness verification",
-      "type": "Realization",
+      "name": "Operator journey observes fail-closed readiness boundary",
+      "type": "Association",
       "source_id": "semprod-operator-journey-process",
       "target_id": "semprod-readiness-requirement",
       "source_name": "Establish Semantic Retrieval for New Project",
       "target_name": "Fail-Closed Semantic Index Readiness",
-      "description": "Directional semantics: the operator journey satisfies the readiness requirement by verifying complete three-channel canonical/content/index alignment before semantic query in both successful paths and by retaining fail-closed behavior for pending or rejected configuration paths.",
-      "statement": "Establish Semantic Retrieval for New Project --(Realization)--> Fail-Closed Semantic Index Readiness"
+      "description": "Non-directional policy association: the operator journey actively verifies and obeys the already-accepted fail-closed readiness boundary while consuming the existing Query Service. This relationship preserves requirement traceability without claiming that SP-05 realizes, reopens, or controls delivery of the protected WP-P2 readiness requirement; actual runtime dependency remains through the Query Service serving the journey.",
+      "statement": "Establish Semantic Retrieval for New Project --(Association)--> Fail-Closed Semantic Index Readiness"
     }
   ],
   "views": [
@@ -4074,7 +4074,7 @@
       "view_name": "New Project Semantic Retrieval Operator Journey",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this focused Application Usage Viewpoint instance connects every included operational element. The Business Process realizes the included fail-closed readiness Requirement before query; both successful paths use equivalent approved external configuration and differ only by opt-in; invalid opted-in configuration has zero automatic/backfill/provider/database effects; the plateau Association is contextual and non-causal.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this focused Application Usage Viewpoint instance connects every included operational element. Existing Backfill and Query Services serve the journey and carry the accepted runtime dependencies; the journey actively observes the protected fail-closed readiness policy through a non-realizing Association, so SP-05 cannot reopen or regress WP-P2 delivery. Both successful paths use equivalent approved external configuration and differ only by opt-in; invalid opted-in configuration has zero automatic/backfill/provider/database effects; the plateau Association remains contextual and non-causal.",
       "included_elements": [
         "grag-query-service",
         "semprod-operator-role",
@@ -4198,7 +4198,7 @@
       "view_name": "WP-P3 Operator Journey and Release Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the exact WP-P3 scope, protected credential dependency, public query boundary, operator journey, and gated release plateau to agree without reopening WP-P1/WP-P2; Purpose: deciding; Scope: exactly semprod-wp-operator-release, semprod-operator-journey-process, semprod-ready-plateau, grag-query-service, and grag-credential-boundary; Rationale: this five-element focused decision view is an Implementation and Migration Viewpoint instance because it binds the work package to the affected business/application/constraint elements and target plateau while predecessor sequencing remains in semprod-delivery-sequence.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the exact WP-P3 scope, protected credential policy, public query boundary, operator journey, and gated release plateau to agree without reopening WP-P1/WP-P2; Purpose: deciding; Scope: exactly semprod-wp-operator-release, semprod-operator-journey-process, semprod-ready-plateau, grag-query-service, and grag-credential-boundary; Rationale: this five-element focused decision view binds the work package to the affected business/application context and target plateau. The journey actively observes the already-accepted external credential policy through a non-realizing Association, while actual runtime dependency is carried by existing services; SP-05 therefore cannot make the protected credential boundary depend on the new RED.",
       "included_elements": [
         "semprod-wp-operator-release",
         "semprod-operator-journey-process",
