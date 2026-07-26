@@ -195,6 +195,28 @@ for (const rawProperty of [
 }
 assert(!harness.includes('semanticRetrievalBoundary:'), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness injects a semantic retrieval boundary');
 assert(!/withDefaultSemanticRetrievalTestComposition\(\{\s*environment/s.test(harness), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness injects ready-made environment credentials');
+assert(
+  harness.includes("return callTool('getSystemArchitecture', args);"),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ordinary default semantic scenarios must call the inner production boundary without dependencies',
+);
+const compatibilityHarness = read('tests/harness/intentArchitectureQueryHarness.js');
+const wrapper = read('.argo/scripts/argo-mcp-server.js');
+const innerServer = read('.argo/scripts/systemarchitecture-mcp-server.js');
+assert(
+  compatibilityHarness.includes("require('../../.argo/scripts/argo-mcp-server.js')")
+    && compatibilityHarness.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: deterministic compatibility probes must use wrapper argument four',
+);
+assert(
+  wrapper.includes('async function callTool(name, args = {}, progressToken = null, dependencies = undefined)')
+    && wrapper.includes('systemArchitectureMcp.callTool(name, args, dependencies)')
+    && innerServer.includes('async function callTool(name, args = {}, dependencies = undefined)'),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: wrapper argument four must forward to inner argument three',
+);
+assert(
+  !compatibilityHarness.includes("callTool('getSystemArchitecture', args, testDependencies)"),
+  'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: wrapper progressToken position cannot carry deterministic test dependencies',
+);
 assert(handoff.frozenFiles.includes(harnessPath), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness is not frozen');
 
 function read(relativePath) {

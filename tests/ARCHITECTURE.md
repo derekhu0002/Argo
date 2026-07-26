@@ -55,7 +55,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 ## Local dependencies
 
-- Harness code may depend on the public query boundary in `systemarchitecture-mcp-server.js` and the canonical graph fixture; unified-gateway transport behavior remains covered separately. Legacy deterministic compatibility probes pass `semanticRetrievalBoundary` through that boundary's actual third `dependencies` argument of `callTool(name, args, dependencies)`; an ignored fourth argument is prohibited.
+- Harness code may depend on the public `argo-mcp-server.js` wrapper and canonical graph fixture. Legacy deterministic compatibility probes pass `semanticRetrievalBoundary` through wrapper argument four in `callTool(name, args, progressToken, dependencies)`; the wrapper forwards it to argument three of `systemarchitecture-mcp-server.js` `callTool(name, args, dependencies)`. In contrast, WP-P2 ordinary default semantic scenarios call the inner boundary without dependencies, so compatibility injection cannot mask production credential/readiness routing.
 - The frozen Harness owns the semantic retrieval spy and injects it through the in-process dependency override; its count changes only inside the spy's `retrieve()` method and never reads response telemetry.
 - Explicit entrypoints depend only on Node assertions and Harness methods.
 - Guardrails may inspect implementation contracts, graph metadata, and dependency declarations, but must not implement production behavior.

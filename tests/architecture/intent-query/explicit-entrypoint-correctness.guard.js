@@ -113,9 +113,20 @@ for (const entryPath of entryPaths) {
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
 const harnessSource = fs.readFileSync(harnessPath, 'utf8');
+const wrapperSource = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'argo-mcp-server.js'), 'utf8');
+const innerSource = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js'), 'utf8');
 assert(
-  harnessSource.includes("require('../../.argo/scripts/systemarchitecture-mcp-server.js')"),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must call the public three-argument System Architecture query boundary directly',
+  harnessSource.includes("require('../../.argo/scripts/argo-mcp-server.js')"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility Harness must traverse the public MCP wrapper',
+);
+assert(
+  wrapperSource.includes('async function callTool(name, args = {}, progressToken = null, dependencies = undefined)')
+    && wrapperSource.includes('systemArchitectureMcp.callTool(name, args, dependencies)'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: wrapper must accept dependencies at argument four and forward them to the inner argument three',
+);
+assert(
+  innerSource.includes('async function callTool(name, args = {}, dependencies = undefined)'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: inner System Architecture boundary must accept dependencies at argument three',
 );
 const probeStart = harnessSource.indexOf('function createSemanticRetrievalProbe()');
 const probeEnd = harnessSource.indexOf('function assertSemanticRetrievalCalls', probeStart);
@@ -144,12 +155,13 @@ assert(
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the test-owned probe boundary',
 );
 assert(
-  harnessSource.includes("callTool('getSystemArchitecture', args, testDependencies)"),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must pass the probe through the actual third dependencies argument',
+  harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility Harness must pass its probe through wrapper argument four',
 );
 assert(
-  !harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must not pass probe dependencies through an ignored fourth argument',
+  !harnessSource.includes("callTool('getSystemArchitecture', args, testDependencies)")
+    && !harnessSource.includes("require('../../.argo/scripts/systemarchitecture-mcp-server.js')"),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: compatibility Harness must not confuse wrapper argument three with inner dependencies',
 );
 assert(
   !harnessSource.includes('semanticRetrievalInvocationCount')

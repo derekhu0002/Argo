@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
-const { callTool } = require('../../.argo/scripts/systemarchitecture-mcp-server.js');
+const { callTool } = require('../../.argo/scripts/argo-mcp-server.js');
 
 async function readAsUnchangedConsumer() {
   return invokeGetSystemArchitecture({});
@@ -402,7 +402,7 @@ async function invokeGetSystemArchitecture(args, probe) {
   const testDependencies = probe
     ? { semanticRetrievalBoundary: probe.semanticRetrievalBoundary }
     : undefined;
-  const response = await callTool('getSystemArchitecture', args, testDependencies);
+  const response = await callTool('getSystemArchitecture', args, null, testDependencies);
   assert(response && Array.isArray(response.content), 'QUERY_BOUNDARY_PROTOCOL_FAILURE: MCP response must contain content');
   return JSON.parse(response.content[0].text);
 }
