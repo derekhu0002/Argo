@@ -85,14 +85,18 @@ async function main() {
   // and graph-tidy remains a fifth canonical full-snapshot dispatch with no semantic policy
   assert.deepStrictEqual(repeatedBoundary, originalBoundary, 'DT07_CALLER_IDENTITY_POLICY_FORBIDDEN');
   assert.strictEqual(categoryResults.size, purposeCategories.length, 'DT07_PURPOSE_DISPATCH_CATEGORY_MISSING');
-  assert.strictEqual(new Set(policyIds).size, semanticClosureCategories.length, 'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT');
   for (const category of semanticClosureCategories) {
+    assertParameterizedClosurePolicy(categoryResults.get(category), {
+      category,
+      failureCategory: 'DT07_PURPOSE_POLICY',
+    });
     assertPurposeCategoryBoundary(categoryResults.get(category), {
       category,
       failureCategory: 'DT07_PURPOSE_CATEGORY',
       excludedCategories: semanticClosureCategories.filter(purpose => purpose !== category),
     });
   }
+  assert.strictEqual(new Set(policyIds).size, semanticClosureCategories.length, 'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT');
   assertSemanticRetrievalCalls(graphTidyProbe, 0, 'DT07_GRAPH_TIDY_SEMANTIC_PATH_INVOKED');
   assert.strictEqual(graphTidyResult.query && graphTidyResult.query.mode, 'full-snapshot', 'DT07_GRAPH_TIDY_MODE_FAILURE');
   assert.strictEqual(graphTidyResult.query && graphTidyResult.query.semanticRetrieval, 'bypassed', 'DT07_GRAPH_TIDY_BYPASS_FAILURE');

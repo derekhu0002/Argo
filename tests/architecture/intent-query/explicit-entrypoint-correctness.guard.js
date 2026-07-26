@@ -49,6 +49,7 @@ const requiredObservations = new Map([
     'assertParameterizedClosurePolicy',
     'DT06_FREE_GENERATED_CYPHER_DECIDED_MANDATORY_CLOSURE',
     'DT07_CALLER_IDENTITY_POLICY_FORBIDDEN',
+    'DT07_PURPOSE_POLICY',
     'DT07_PURPOSE_CATEGORIES_NOT_INDEPENDENT',
     'DT07_GRAPH_TIDY_SEMANTIC_PATH_INVOKED',
     'DT07_GRAPH_TIDY_SEMANTIC_POLICY_ID_FORBIDDEN',
@@ -134,6 +135,22 @@ assert(
     && purposeCategoriesSource.includes('...semanticClosureCategories')
     && purposeCategoriesSource.includes("'graph-tidy'"),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: DT-07 must dispatch four semantic closure categories plus graph-tidy bypass',
+);
+const dt07PolicyAssertionStart = purposeClosureSource.indexOf(
+  'assertParameterizedClosurePolicy(categoryResults.get(category), {',
+);
+const dt07PolicyFailureCategory = purposeClosureSource.indexOf(
+  "failureCategory: 'DT07_PURPOSE_POLICY'",
+  dt07PolicyAssertionStart,
+);
+const dt07UniquenessAssertionStart = purposeClosureSource.indexOf(
+  "assert.strictEqual(new Set(policyIds).size, semanticClosureCategories.length",
+);
+assert(
+  dt07PolicyAssertionStart >= 0
+    && dt07PolicyFailureCategory > dt07PolicyAssertionStart
+    && dt07UniquenessAssertionStart > dt07PolicyFailureCategory,
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: every DT-07 semantic category must pass parameterized-policy validation before policy-id uniqueness',
 );
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
