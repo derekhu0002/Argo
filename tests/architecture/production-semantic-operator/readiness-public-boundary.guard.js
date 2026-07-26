@@ -31,15 +31,15 @@ const exactAlignmentMappings = new Map([
 const forbiddenReadEffectPattern = /provider|embed|vector|retriev|queryNodes|exhaustChannel|completeSemanticResult/i;
 
 // GIVEN accepted WP-P2 owns the only persistent readiness query and evaluator
-// WHEN WP-P3 requires a public read without provider/vector side effects
-// THEN Coding may add one method that reuses the same private path and exports no raw internals
+// WHEN WP-P3 repairs only operator sequencing
+// THEN the accepted public reader remains frozen and retains exact provenance
 assert(
-  handoff.codingTargets.some(target => target.path === retrievalPath),
-  'WP_P3_READINESS_PUBLIC_GUARD: default retrieval narrow refactor is not authorized',
+  !handoff.codingTargets.some(target => target.path === retrievalPath),
+  'WP_P3_READINESS_PUBLIC_GUARD: accepted reader was reauthorized during operator repair',
 );
 assert(
-  !handoff.frozenFiles.includes(retrievalPath),
-  'WP_P3_READINESS_PUBLIC_GUARD: authorized default retrieval remains frozen',
+  handoff.frozenFiles.includes(retrievalPath),
+  'WP_P3_READINESS_PUBLIC_GUARD: accepted default retrieval is not frozen',
 );
 
 if (exists(operatorPath)) {

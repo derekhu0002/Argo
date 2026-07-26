@@ -382,3 +382,9 @@
 
 - Envelope-key checks and identifier text do not prove a safe public readiness boundary. The guard now resolves the shared helper, persistent read, evaluator, evidence variables, mapping function, and alignment parameter through the TypeChecker.
 - Every public property has one approved source member, `fullSnapshotFallback` is literal `false`, and read-only paths reject provider/embed/vector/retrieval references. Executable fixtures cover raw-secret and arbitrary mappings, true fallback, provider and vector effects, and a locally shadowed fake shared helper.
+
+## 2026-07-27 WP-P3 consent and explicit-readiness repair
+
+- Coding commit `0782694` exposed two use-case defects missed by initial acceptance: explicit backfill promoted absent caller consent to literal true, and query implicitly executed the readiness port while locally re-evaluating WP-P2 channel policy.
+- Frozen SP-05 now runs direct and CLI missing-consent controls, query-before-verification controls both before and after aligned backfill, and a non-aligned diagnostics fixture. It requires no implicit read/query/provider/vector effects and exact state/version/channel/fallback propagation.
+- The architecture guard rejects literal consent promotion, query-time readiness calls, local required-channel/alignment verdict code, and failure to consume WP-P2 `verified`. Repair authorization is narrowed to `semanticOperatorJourney.js`; all completed adapters and the accepted readiness reader are frozen.

@@ -7,13 +7,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const authorized = (handoff.codingTargets || []).map(target => target.path).sort();
 const expectedAuthorized = [
-  '.argo/scripts/argo-mcp-server.js',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
-  '.argo/scripts/semanticOperatorJourneyCli.js',
-  '.argo/scripts/systemarchitecture-mcp-server.js',
-  'README.md',
-  'package.json',
 ].sort();
 const operatorPath = '.argo/scripts/graph-rag/semanticOperatorJourney.js';
 const cliPath = '.argo/scripts/semanticOperatorJourneyCli.js';

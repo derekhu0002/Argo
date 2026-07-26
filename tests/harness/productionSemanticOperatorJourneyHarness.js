@@ -27,6 +27,17 @@ const APPROVED_CONFIGURATION = deepFreeze({
 });
 const SECRET_CANARY = 'SP05-SECRET-MUST-NOT-LEAK';
 const UNSAFE_SOURCE_CANARY = 'SP05-UNSAFE-SOURCE-MUST-NOT-LEAK';
+const DIAGNOSTIC_READINESS = deepFreeze({
+  state: 'SemanticIndexPending',
+  verified: false,
+  canonicalVersion: 'canonical:fresh-project-v1',
+  contentVersion: 'content:partial-v1',
+  indexVersion: 'index:stale-v0',
+  completedChannels: ['Element'],
+  missingChannels: ['ArchitectureRelationship', 'View'],
+  mismatchedChannels: ['View'],
+  fullSnapshotFallback: false,
+});
 
 function loadFactory() {
   if (!fs.existsSync(operatorPath)) {
@@ -81,6 +92,14 @@ async function runNewProjectSemanticOperatorJourney() {
     createJourney,
     runCommand,
   });
+  const missingConsent = await runMissingConsentControls({
+    createJourney,
+    runCommand,
+  });
+  const readinessDiagnostics = await runReadinessDiagnosticsJourney({
+    createJourney,
+    runCommand,
+  });
 
   const rejectedOptIns = [];
   for (const configurationCase of ['missing', 'unsafe', 'unapproved']) {
@@ -95,6 +114,8 @@ async function runNewProjectSemanticOperatorJourney() {
     noOptIn,
     optedIn,
     recovery,
+    missingConsent,
+    readinessDiagnostics,
     rejectedOptIns,
     canonicalBefore,
     canonicalAfter: fs.readFileSync(canonicalPath, 'utf8'),
@@ -122,11 +143,13 @@ async function runSuccessfulJourney({
     options: { automaticBackfillOptIn },
     journey,
   });
+  const pendingQueryEventOffset = fixture.snapshot().events.length;
   const pendingQuery = await captureBlocked(() => runCommand({
     command: 'query',
     options: semanticQuery(),
     journey,
   }));
+  const pendingQueryEffects = fixture.snapshot().events.slice(pendingQueryEventOffset);
 
   let interruption;
   let backfill;
@@ -140,6 +163,15 @@ async function runSuccessfulJourney({
     backfill = start.backfill;
   }
 
+  const alignedUnverifiedQueryEventOffset = fixture.snapshot().events.length;
+  const alignedUnverifiedQuery = await captureBlocked(() => runCommand({
+    command: 'query',
+    options: semanticQuery(),
+    journey,
+  }));
+  const alignedUnverifiedQueryEffects = fixture.snapshot().events.slice(
+    alignedUnverifiedQueryEventOffset,
+  );
   const readiness = await runCommand({
     command: 'readiness',
     journey,
@@ -166,8 +198,11 @@ async function runSuccessfulJourney({
     initialSnapshot,
     start,
     pendingQuery,
+    pendingQueryEffects,
     interruption,
     backfill,
+    alignedUnverifiedQuery,
+    alignedUnverifiedQueryEffects,
     readiness,
     query,
     finalSnapshot,
@@ -206,6 +241,60 @@ async function runRecoveryJourney({ createJourney, runCommand }) {
   });
 }
 
+async function runMissingConsentControls({ createJourney, runCommand }) {
+  const directFixture = createRecordingComposition({ configurationCase: 'approved' });
+  const directJourney = createJourney(directFixture.dependencies);
+  await directJourney.startNewProject({ automaticBackfillOptIn: false });
+  const direct = await captureBlocked(() => directJourney.runExplicitBackfill({}));
+
+  const commandFixture = createRecordingComposition({ configurationCase: 'approved' });
+  const commandJourney = createJourney(commandFixture.dependencies);
+  await runCommand({
+    command: 'init',
+    options: { automaticBackfillOptIn: false },
+    journey: commandJourney,
+  });
+  const command = await captureBlocked(() => runCommand({
+    command: 'backfill',
+    options: {},
+    journey: commandJourney,
+  }));
+
+  return deepFreeze({
+    direct,
+    directObservations: directFixture.snapshot(),
+    command,
+    commandObservations: commandFixture.snapshot(),
+  });
+}
+
+async function runReadinessDiagnosticsJourney({ createJourney, runCommand }) {
+  const fixture = createRecordingComposition({
+    configurationCase: 'approved',
+    postBackfillReadiness: DIAGNOSTIC_READINESS,
+  });
+  const journey = createJourney(fixture.dependencies);
+  await runCommand({
+    command: 'init',
+    options: { automaticBackfillOptIn: false },
+    journey,
+  });
+  await runCommand({
+    command: 'backfill',
+    options: { explicitOptIn: true },
+    journey,
+  });
+  const readiness = await captureBlocked(() => runCommand({
+    command: 'readiness',
+    journey,
+  }));
+  return deepFreeze({
+    expected: DIAGNOSTIC_READINESS,
+    readiness,
+    observations: fixture.snapshot(),
+  });
+}
+
 async function runRejectedOptIn({ createJourney, runCommand, configurationCase }) {
   const fixture = createRecordingComposition({ configurationCase });
   const journey = createJourney(fixture.dependencies);
@@ -229,6 +318,7 @@ async function runRejectedOptIn({ createJourney, runCommand, configurationCase }
 function createRecordingComposition({
   configurationCase,
   interruptFirstBackfill = false,
+  postBackfillReadiness,
 }) {
   const events = [];
   const canonicalDocument = JSON.parse(fs.readFileSync(canonicalPath, 'utf8'));
@@ -272,6 +362,15 @@ function createRecordingComposition({
       throw error;
     },
     async runSemanticBackfill(input = {}) {
+      record('backfill-port-call', {
+        automatic: input.automatic === true,
+        explicitOptIn: input.explicitOptIn,
+      });
+      if (input.explicitOptIn !== true) {
+        const error = new Error('SEMANTIC_BACKFILL_OPT_IN_REQUIRED');
+        error.category = 'SEMANTIC_BACKFILL_OPT_IN_REQUIRED';
+        throw error;
+      }
       record(input.automatic ? 'automatic-backfill-start' : 'explicit-backfill-start');
       record('provider-call');
       record('database-write');
@@ -285,7 +384,7 @@ function createRecordingComposition({
         error.resume = { command: 'argo semantic backfill --resume' };
         throw error;
       }
-      readiness = readinessRecord('Aligned');
+      readiness = postBackfillReadiness || readinessRecord('Aligned');
       return {
         status: 'completed',
         progress: { completed: 6, total: 6 },
@@ -342,6 +441,7 @@ function createRecordingComposition({
 }
 
 function assertNewProjectSemanticOperatorJourney(result) {
+  assertConsentAndReadinessControls(result);
   assert.strictEqual(
     result.noOptIn.configurationFingerprint,
     result.optedIn.configurationFingerprint,
@@ -378,11 +478,22 @@ function assertNewProjectSemanticOperatorJourney(result) {
     'SP05_NO_OPT_IN_AUTOMATIC_START_PROHIBITED',
   );
   assertBlockedPendingQuery(result.noOptIn.pendingQuery, 'SP05_NO_OPT_IN');
+  assertExplicitVerificationRequired(
+    result.noOptIn.pendingQuery,
+    result.noOptIn.pendingQueryEffects,
+    'SP05_NO_OPT_IN_PENDING',
+  );
   assertBackfillEvidence(result.noOptIn.backfill, false);
+  assertBackfillConsentForwarded(result.noOptIn, false);
   assertConfigurationBeforeSemanticEffects(
     result.noOptIn,
     'explicit-backfill-start',
     'SP05_NO_OPT_IN',
+  );
+  assertExplicitVerificationRequired(
+    result.noOptIn.alignedUnverifiedQuery,
+    result.noOptIn.alignedUnverifiedQueryEffects,
+    'SP05_NO_OPT_IN_ALIGNED_UNVERIFIED',
   );
   assertReadyThenQuery(result.noOptIn);
 
@@ -403,6 +514,17 @@ function assertNewProjectSemanticOperatorJourney(result) {
     'SP05_OPTED_IN',
   );
   assertBackfillEvidence(result.optedIn.backfill, false);
+  assertBackfillConsentForwarded(result.optedIn, true);
+  assertExplicitVerificationRequired(
+    result.optedIn.pendingQuery,
+    result.optedIn.pendingQueryEffects,
+    'SP05_OPTED_IN_PENDING',
+  );
+  assertExplicitVerificationRequired(
+    result.optedIn.alignedUnverifiedQuery,
+    result.optedIn.alignedUnverifiedQueryEffects,
+    'SP05_OPTED_IN_ALIGNED_UNVERIFIED',
+  );
   assertReadyThenQuery(result.optedIn);
 
   assertBackfillEvidence(result.recovery.interruption, true);
@@ -411,6 +533,47 @@ function assertNewProjectSemanticOperatorJourney(result) {
     result.recovery.readiness.state,
     'Aligned',
     'SP05_RECOVERY_READINESS_NOT_ALIGNED',
+  );
+  assertMissingConsentControls(result.missingConsent);
+  assertReadinessDiagnostics(result.readinessDiagnostics);
+}
+
+function assertConsentAndReadinessControls(result) {
+  const failures = [];
+  for (const [label, assertion] of [
+    ['missing-consent', () => assertMissingConsentControls(result.missingConsent)],
+    ['no-opt-in-pending-query', () => assertExplicitVerificationRequired(
+      result.noOptIn.pendingQuery,
+      result.noOptIn.pendingQueryEffects,
+      'SP05_NO_OPT_IN_PENDING',
+    )],
+    ['no-opt-in-aligned-query', () => assertExplicitVerificationRequired(
+      result.noOptIn.alignedUnverifiedQuery,
+      result.noOptIn.alignedUnverifiedQueryEffects,
+      'SP05_NO_OPT_IN_ALIGNED_UNVERIFIED',
+    )],
+    ['opted-in-pending-query', () => assertExplicitVerificationRequired(
+      result.optedIn.pendingQuery,
+      result.optedIn.pendingQueryEffects,
+      'SP05_OPTED_IN_PENDING',
+    )],
+    ['opted-in-aligned-query', () => assertExplicitVerificationRequired(
+      result.optedIn.alignedUnverifiedQuery,
+      result.optedIn.alignedUnverifiedQueryEffects,
+      'SP05_OPTED_IN_ALIGNED_UNVERIFIED',
+    )],
+    ['readiness-diagnostics', () => assertReadinessDiagnostics(result.readinessDiagnostics)],
+  ]) {
+    try {
+      assertion();
+    } catch (error) {
+      failures.push(`${label}: ${error.message}`);
+    }
+  }
+  assert.deepStrictEqual(
+    failures,
+    [],
+    `SP05_CONSENT_AND_READINESS_CONTROLS_FAILED\n${failures.join('\n')}`,
   );
 }
 
@@ -475,6 +638,69 @@ function assertConfigurationBeforeSemanticEffects(outcome, startKind, label) {
   }
 }
 
+function assertMissingConsentControls(result) {
+  for (const [label, outcome, observations] of [
+    ['DIRECT', result.direct, result.directObservations],
+    ['COMMAND', result.command, result.commandObservations],
+  ]) {
+    assert.strictEqual(outcome.status, 'blocked', `SP05_${label}_MISSING_CONSENT_NOT_BLOCKED`);
+    assert.strictEqual(
+      outcome.category,
+      'SEMANTIC_BACKFILL_OPT_IN_REQUIRED',
+      `SP05_${label}_MISSING_CONSENT_CATEGORY_CHANGED`,
+    );
+    const portCall = observations.events.find(event => event.kind === 'backfill-port-call');
+    assert(portCall, `SP05_${label}_MISSING_CONSENT_NOT_FORWARDED_TO_WP1`);
+    assert.notStrictEqual(
+      portCall.explicitOptIn,
+      true,
+      `SP05_${label}_MISSING_CONSENT_PROMOTED_TO_TRUE`,
+    );
+    for (const forbidden of [
+      'automatic-backfill-start',
+      'explicit-backfill-start',
+      'provider-call',
+      'database-write',
+    ]) {
+      assert.strictEqual(
+        observations.events.filter(event => event.kind === forbidden).length,
+        0,
+        `SP05_${label}_MISSING_CONSENT_${forbidden.toUpperCase()}_SIDE_EFFECT`,
+      );
+    }
+  }
+}
+
+function assertReadinessDiagnostics(result) {
+  assert.strictEqual(result.readiness.status, 'blocked', 'SP05_READINESS_DIAGNOSTIC_NOT_BLOCKED');
+  for (const field of [
+    'state',
+    'canonicalVersion',
+    'contentVersion',
+    'indexVersion',
+    'completedChannels',
+    'missingChannels',
+    'mismatchedChannels',
+    'fullSnapshotFallback',
+  ]) {
+    assert.deepStrictEqual(
+      result.readiness[field],
+      result.expected[field],
+      `SP05_READINESS_DIAGNOSTIC_${field.toUpperCase()}_CHANGED`,
+    );
+  }
+  assert.strictEqual(
+    result.observations.events.filter(event => event.kind === 'semantic-readiness-read').length,
+    1,
+    'SP05_READINESS_DIAGNOSTIC_READ_COUNT_CHANGED',
+  );
+  assert.strictEqual(
+    result.observations.events.filter(event => event.kind === 'semantic-query-attempt').length,
+    0,
+    'SP05_READINESS_DIAGNOSTIC_QUERY_EFFECT',
+  );
+}
+
 function assertJourneySurface(journey) {
   for (const method of [
     'startNewProject',
@@ -519,11 +745,42 @@ function assertActionablePending(start) {
 
 function assertBlockedPendingQuery(outcome, label) {
   assert.strictEqual(outcome.status, 'blocked', `${label}_PRE_READY_QUERY_NOT_BLOCKED`);
-  assert(
-    ['SEMANTIC_INDEX_NOT_ALIGNED', 'SemanticIndexPending'].includes(outcome.category),
+  assert.strictEqual(
+    outcome.category,
+    'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
     `${label}_PRE_READY_QUERY_CATEGORY_INVALID`,
   );
   assert.strictEqual(outcome.fullSnapshotFallback, false, `${label}_SILENT_SNAPSHOT_FALLBACK`);
+}
+
+function assertExplicitVerificationRequired(outcome, effects, label) {
+  assert.strictEqual(outcome.status, 'blocked', `${label}_QUERY_NOT_BLOCKED`);
+  assert.strictEqual(
+    outcome.category,
+    'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
+    `${label}_QUERY_CATEGORY_CHANGED`,
+  );
+  assert.strictEqual(outcome.fullSnapshotFallback, false, `${label}_SILENT_SNAPSHOT_FALLBACK`);
+  for (const forbidden of [
+    'semantic-readiness-read',
+    'semantic-query-attempt',
+    'provider-call',
+    'database-write',
+  ]) {
+    assert.strictEqual(
+      effects.filter(event => event.kind === forbidden).length,
+      0,
+      `${label}_${forbidden.toUpperCase()}_IMPLICIT_EFFECT`,
+    );
+  }
+}
+
+function assertBackfillConsentForwarded(outcome, automatic) {
+  const portCall = outcome.observations.events.find(event => (
+    event.kind === 'backfill-port-call' && event.automatic === automatic
+  ));
+  assert(portCall, 'SP05_BACKFILL_PORT_CALL_MISSING');
+  assert.strictEqual(portCall.explicitOptIn, true, 'SP05_BACKFILL_CONSENT_NOT_FORWARDED');
 }
 
 function assertBackfillEvidence(outcome, interrupted) {
@@ -571,15 +828,19 @@ function semanticQuery() {
 }
 
 function readinessRecord(state) {
+  const aligned = state === 'Aligned';
   return deepFreeze({
     state,
-    verified: state === 'Aligned',
+    verified: aligned,
     canonicalVersion: 'canonical:fresh-project-v1',
-    contentVersion: state === 'Aligned' ? 'content:fresh-project-v1' : null,
-    indexVersion: state === 'Aligned' ? 'index:fresh-project-v1' : null,
-    channels: state === 'Aligned'
+    contentVersion: aligned ? 'content:fresh-project-v1' : null,
+    indexVersion: aligned ? 'index:fresh-project-v1' : null,
+    completedChannels: aligned
       ? ['Element', 'ArchitectureRelationship', 'View']
       : [],
+    missingChannels: aligned ? [] : ['Element', 'ArchitectureRelationship', 'View'],
+    mismatchedChannels: [],
+    fullSnapshotFallback: false,
   });
 }
 
@@ -591,6 +852,12 @@ async function captureBlocked(operation) {
       status: 'blocked',
       category: error && error.category ? error.category : error && error.message,
       state: error && error.state,
+      canonicalVersion: error && error.canonicalVersion,
+      contentVersion: error && error.contentVersion,
+      indexVersion: error && error.indexVersion,
+      completedChannels: error && error.completedChannels,
+      missingChannels: error && error.missingChannels,
+      mismatchedChannels: error && error.mismatchedChannels,
       fullSnapshotFallback: error && error.fullSnapshotFallback,
       action: error && error.action
         ? error.action
