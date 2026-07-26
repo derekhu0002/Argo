@@ -25,6 +25,7 @@ assert.throws(
   /WP_P3_ENTRYPOINT_GUARD/,
   'WP_P3_ENTRYPOINT_GUARD: primary Harness missing-store fixture passed',
 );
+assertExactVerifiedReadCount(harness, harnessPath);
 
 // GIVEN the one approved SP-05 physical entrypoint and its business-readable Harness
 // WHEN phases, public wishes, assertions, and frozen ownership are inspected
@@ -226,6 +227,25 @@ function assertPrimaryHarnessDurableComposition(source, label) {
       && call.arguments[0].name.text === 'dependencies'
     )),
     `WP_P3_ENTRYPOINT_GUARD: ${label} bypasses controlled fixture dependencies`,
+  );
+}
+
+function assertExactVerifiedReadCount(source, label) {
+  const ast = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  let assertion;
+  walk(ast, node => {
+    if (
+      ts.isCallExpression(node)
+      && node.arguments.length === 3
+      && ts.isStringLiteral(node.arguments[2])
+      && node.arguments[2].text === 'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED'
+    ) assertion = node;
+  });
+  assert(
+    assertion
+      && ts.isNumericLiteral(assertion.arguments[1])
+      && assertion.arguments[1].text === '2',
+    `WP_P3_ENTRYPOINT_GUARD: ${label} must require verify plus query WP-P2 reads`,
   );
 }
 

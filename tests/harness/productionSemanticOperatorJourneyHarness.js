@@ -859,7 +859,7 @@ function assertVerifiedSoleAuthorization(result) {
   );
   assert.strictEqual(
     result.observations.events.filter(event => event.kind === 'semantic-readiness-read').length,
-    1,
+    2,
     'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED',
   );
   assert.strictEqual(

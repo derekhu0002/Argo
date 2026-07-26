@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T07:32:00+08:00",
+  "generatedAt": "2026-07-27T07:49:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
@@ -21,7 +21,7 @@
       "observationPoint": "Every query traverses durable read -> current WP-P2 read -> exact validation -> retrieval. TypeChecker-bound public dispatch permits only the approved operator query chain and rejects direct, aliased, helper, or resolver-delegated raw fallback. Windows trust requires exact current-user ownership and effective current-user/SYSTEM-only ACLs after deny precedence; each unsafe case returns the exact redacted remediation with zero retrieval.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "failureReason": "SP05_ADAPTER_LIFECYCLE_CONTROLS_FAILED against 96f0fc2: same-process drift queries bypass durable revalidation, exported System/unified callTool falls back to raw retrieval when no journey is injected, the store is optional through a volatile fallback, and Windows ACL/owner rejection lacks exact principal/permission/deny policy and remediation."
+      "failureReason": "Current production is RED with SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED (one WP-P2 read instead of verification plus query-time revalidation), plus the adapter lifecycle defects against 96f0fc2: same-process drift bypasses durable revalidation, exported System/unified callTool falls back to raw retrieval without a journey, the store is optional through a volatile fallback, and Windows ACL/owner rejection lacks exact policy/remediation."
     }
   ],
   "criticalNonExplicitTests": [
