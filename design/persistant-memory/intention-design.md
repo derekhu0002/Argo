@@ -270,6 +270,51 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - Downstream ImplementationDesign should extend existing physical entrypoints where feasible: `tests/explicit/entries/runProductionGraphRagRuntime.js`, `tests/explicit/entries/runExternalCredentialBoundary.js`, and `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`.
 - Open business questions and adequacy blockers: none.
 
+## 2026-07-27 — WP-P3 Operator Journey and Production Release Handoff
+
+- Persistent session ID: `intent-semprod-wp-p3-20260727T0229+08`.
+- Scope: only `semprod-wp-operator-release` (WP-P3). WP-P1 remains accepted at 40/40 with SP-01/SP-02. WP-P2 remains accepted at commit `56cfad2` with SP-03/SP-04, full runner 42/42, valid handoffs/SystemArchitecture, and seven runner-delivered scoped elements.
+- Selected viewpoints: `semprod-operator-journey` is an Application Usage Viewpoint instance for designing the operator-to-application journey; new `semprod-wp3-operator-release-boundary` is an Implementation and Migration Viewpoint instance for deciding the exact five-element WP-P3 boundary; existing `semprod-delivery-sequence` remains the Implementation and Migration Viewpoint instance for predecessor sequencing and release-plateau context.
+- View limits and bindings: every touched view records Viewpoint, Concern, Purpose, Scope, and Rationale. `semprod-operator-journey` contains seven elements, `semprod-wp3-operator-release-boundary` contains five, and `semprod-delivery-sequence` contains seven.
+- Human approval evidence: the delegated parent/orchestrator authorization explicitly required formalizing and mounting exactly `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney`, the stated two-path production behavior, the WP-P3 handoff, no unresolved adequacy blocker, and a stage commit. Per-testcase approval is recorded as `acceptanceApproval.SP-05`; global handoff approval is recorded in the schema-compliant handoff notes because both graph testcase and handoff schemas reject an `approvedByHuman` property.
+- Delivery-status guardrail: no `deliveryStatus` attribute was manually added, changed, removed, reverted, or fabricated.
+
+### Exact modeled scope and relationships
+
+- Elements: `semprod-operator-journey-process`, `semprod-ready-plateau`, `grag-query-service`, `grag-credential-boundary`, `semprod-wp-operator-release`.
+- Relationships: `semprod-rel-wp2-wp3`, `semprod-rel-wp3-journey`, `semprod-rel-wp3-plateau`, `semprod-rel-operator-journey`, `semprod-rel-journey-structural`, `semprod-rel-structural-backfill`, `semprod-rel-backfill-journey`, `semprod-rel-query-journey`, `semprod-rel-ready-journey`, `semprod-rel-journey-credentials`.
+- Views: `semprod-operator-journey`, `semprod-wp3-operator-release-boundary`, `semprod-delivery-sequence`.
+
+### Coverage matrix
+
+- Focus: `semprod-operator-journey-process` — `functionalPoint.SP-05-new-project-journey` -> mounted `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney` at `tests/explicit/entries/runNewProjectSemanticOperatorJourney.js`.
+- Delivered boundary: `grag-query-service` — `functionalPoint.DT-01-compatible-reading-boundary` -> `ExplicitAcceptanceTestcase-DT-01`; `functionalPoint.DT-02-no-argument-full-snapshot` -> `ExplicitAcceptanceTestcase-DT-02`. Recorded W1 pass evidence names both physical entrypoints with exit code 0; runner-owned `deliveryStatus=delivered`.
+- Delivered boundary: `grag-credential-boundary` — `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> both mounted TS-07 cases. Recorded W2 pass evidence names both physical entrypoints with exit code 0; runner-owned `deliveryStatus=delivered`.
+- Evidence-backed exclusion: `semprod-wp-operator-release` is a non-executable migration Work Package with no functional points. Its obligations are sequencing/realization context; executable WP-P3 behavior is mounted on the exact owning Business Process.
+- Evidence-backed exclusion: `semprod-ready-plateau` is a non-executable gated target-state Plateau with no functional points. It cannot be delivered by graph validation; SP-01..SP-05 and compatibility/regression evidence collectively gate it.
+- Accepted dependency exclusions: WP-P1 and WP-P2 are predecessor sequencing context, not reopened implementation scope. Their protected accepted baselines and delivered owned boundaries stop recursive exploration.
+
+### SP-05 and release semantics
+
+- No-opt-in path: `argo init -> canonical structural projection` ends in actionable `SemanticIndexPending`, exposes explicit backfill and readiness command/tool operations, performs no automatic backfill, never claims readiness, rejects semantic query before verified alignment, and preserves exact no-argument full snapshots.
+- Opted-in path: automatic backfill may start only with explicit opt-in plus approved external Neo4j and embedding-provider configuration. Progress, checkpoint, controlled failure, resume guidance, and errors are observable and credential-redacted. Readiness verification precedes semantic query.
+- Both paths preserve canonical JSON authority, fail-closed semantic retrieval, accepted WP-P1 persistence/backfill, accepted WP-P2 retrieval/readiness, and prohibit embedded credentials, implicit provider defaults, legacy fallback, silent snapshot fallback, and readiness bypass.
+- `semprod-ready-plateau` is target-only until SP-01 full backfill, SP-02 persistent lifecycle, SP-03 default vector retrieval, SP-04 fail-closed readiness, SP-05 operator journey, canonical/no-argument compatibility, credential/redaction, and WP-P1/WP-P2 regression gates pass.
+- SP-05 has approval but no pass or delivery claim. Its physical entrypoint remains downstream ImplementationDesign work.
+
+### Handoff replacement and validation
+
+- `.argo/temp/IntentToImplementationHandoff.json` intentionally supersedes the tracked WP-P2 intent handoff because WP-P3 is the authorized sequential stage. The replacement preserves WP-P2 governance in commit `56cfad2` and this memory. `.argo/temp/ImplementationToCodingHandoff.json` remains unchanged.
+- The exact five-element modeled scope is retained in graph, relationships, views, and handoff notes. Validator-compliant downstream `intentElementIds` contains the three implementation-bearing elements with mounted same-element coverage: `semprod-operator-journey-process`, `grag-query-service`, and `grag-credential-boundary`.
+- Initial handoff validation correctly rejected `semprod-ready-plateau` and `semprod-wp-operator-release` because non-executable migration elements have no mounted testcases. The handoff was minimally repaired by moving those two elements to evidence-backed relationship/view context rather than inventing invalid testcases or duplicating SP-05 outside its owner.
+- Authoritative mutation preview passed with `written=false`, `errors=[]`, and counts 61/84/33 -> 61/86/34.
+- Authoritative mutation apply passed with `written=true`, `errors=[]`, three element updates, one existing view update, one new view, and two new relationships. Structural Neo4j sync failed exactly `neo4jUri is required for start`; this is environment evidence, not production proof. Touched-record embedding reported Aligned and `secretLeaks=[]`, but does not substitute for SP-05.
+- `argo.validateSystemArchitecture` passed with exit code 0.
+- `argo.getIntentElementContext` passed after mutation for both `semprod-operator-journey-process` and `semprod-wp-operator-release`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed after the evidence-backed scope repair.
+- Checklist self-audit: A1-A5 satisfied by authoritative mutation, complete requirement sources/functional point/relationships, and viewpoint-bound views; B1-B3 satisfied for every implementation-bearing element, with SP-05 mounted only under its exact owner and schema-compliant approval; C1-C2 satisfied by explicit same-element mappings, delivered boundary evidence, and evidence-backed non-executable/dependency exclusions; D1-D8 satisfied with global and per-testcase approval and no open questions; E1-E3 satisfied by the complete validated handoff and approval note; F1 is this record and F2 requires the following IntentDesign stage commit.
+- Open questions and adequacy blockers: none.
+
 ## 2026-07-26 — WP-P2 Default Vector Retrieval and Readiness Handoff
 
 - Persistent stage/session ID: `intent-semprod-wp-p2-20260726T2330+08`.

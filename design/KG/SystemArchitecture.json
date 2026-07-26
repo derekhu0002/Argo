@@ -2228,7 +2228,7 @@
       "id": "semprod-operator-journey-process",
       "name": "Establish Semantic Retrieval for New Project",
       "type": "Business Process",
-      "description": "Operator journey: argo init, canonical structural projection, explicit semantic backfill unless explicitly opted into automation, readiness verification, then semantic query; pending/failure states provide actionable recovery.",
+      "description": "Operator journey for a fresh project: argo init, canonical structural projection, semantic backfill, readiness verification, then semantic query. Without explicit automatic-backfill opt-in, structural completion reports actionable SemanticIndexPending and exposes explicit backfill and readiness operations without claiming readiness. With explicit opt-in and approved external configuration, orchestration may start backfill automatically but must verify readiness before query. Progress, checkpoints, failures, resume guidance, and actionable errors are production-facing and redact credentials; no embedded credentials, implicit provider defaults, silent fallback, canonical-authority weakening, fail-open semantic query, or no-argument full-snapshot regression is permitted.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-05",
@@ -2236,36 +2236,56 @@
         },
         {
           "name": "automaticPolicy",
-          "value": "Automatic semantic backfill disabled unless explicitly configured/opted in."
+          "value": "Automatic semantic backfill is disabled unless the operator explicitly opts in. Opt-in authorizes automatic start only when approved external Neo4j and embedding-provider configuration is present; readiness verification remains mandatory before semantic query."
         },
         {
           "name": "observableOutcomes",
-          "value": "SemanticIndexPending; backfill progress/failure; Aligned; semantic query only when Aligned."
+          "value": "No-opt-in structural completion: actionable SemanticIndexPending plus explicit backfill and readiness operations. Opted-in approved configuration: observable automatic start, bounded progress/checkpoint/failure/resume evidence, then Aligned. Both paths: semantic query only after verified readiness, redacted actionable errors, and unchanged no-argument full snapshots."
         },
         {
-          "name": "futureAcceptanceBoundary.SP-05",
-          "value": "Deferred and not mounted. Proposed control point: follow journey without automatic opt-in and with explicit opt-in. Proposed observation point: first path exposes actionable pending plus explicit backfill command/tool; opted-in path starts automatically; both verify readiness before semantic query and preserve full snapshots. Proposed input: two fresh projects differing only in explicit automatic-backfill configuration. Suggested future entrypoint: tests/explicit/entries/runNewProjectSemanticOperatorJourney.js; not created or executed."
+          "name": "functionalPoint.SP-05-new-project-journey",
+          "value": "{\"description\":\"Expose a production-safe new-project journey from argo init through canonical structural projection, semantic backfill, readiness verification, and semantic query for both explicit and explicitly opted-in automation paths.\",\"businessOutcome\":\"Operators can establish semantic retrieval without silent readiness claims, credential leakage, implicit provider behavior, fallback, or regression of accepted persistence, retrieval, readiness, canonical authority, and full-snapshot compatibility.\",\"observableBoundary\":\"Without auto-backfill opt-in, structural completion reports actionable SemanticIndexPending and exposes explicit backfill/readiness operations; with opt-in plus approved external configuration, orchestration may auto-start backfill; both paths expose progress/checkpoint/failure/resume guidance with redacted actionable errors, verify readiness before semantic query, fail closed while non-aligned, and preserve exact no-argument full snapshots.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-05-NewProjectJourney\"}"
         },
         {
-          "name": "futureMountOwner.SP-05",
-          "value": "WP-P3 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-05-NewProjectJourney; this WP-P1 correction does not approve, deliver, or physicalize it."
+          "name": "requirementSource.WP-P3",
+          "value": "Human-authorized 2026-07-27 work package semprod-wp-operator-release: formalize SP-05 for controlled fresh-project paths with and without explicit automatic-backfill opt-in; require approved external configuration, explicit pending/backfill/readiness operations, verified readiness before semantic query, compatibility, canonical authority, fail-closed behavior, resumability guidance, and redacted actionable errors."
+        },
+        {
+          "name": "acceptanceApproval.SP-05",
+          "value": "approvedByHuman=true|2026-07-27|delegated parent/orchestrator authorization explicitly required mounting and formalizing exactly ExplicitAcceptanceTestcase-SP-05-NewProjectJourney with the stated two-path production boundaries and no unresolved adequacy blocker"
         }
       ],
-      "testcases": []
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+          "description": "Control point: run two controlled fresh-project journeys from argo init through canonical structural projection. In the first, omit automatic-backfill opt-in and exercise the exposed explicit backfill and readiness command/tool, including progress, checkpoint, controlled failure, and resume. In the second, provide explicit opt-in plus approved external Neo4j and embedding-provider configuration and permit orchestration to auto-start backfill. In both, invoke semantic query before and after readiness and invoke the no-argument full-snapshot boundary. Observation point: the no-opt-in path reports actionable SemanticIndexPending and never auto-starts or claims readiness; the opted-in path starts automatically only with approved external configuration; both expose bounded progress/checkpoint/failure/resume guidance and redacted actionable errors, reject semantic query until readiness is verified, permit it only when aligned, preserve canonical JSON authority and exact no-argument full snapshots, and introduce no embedded credentials, implicit provider defaults, silent fallback, or weakening of accepted WP-P1/WP-P2 boundaries.",
+          "type": "Acceptance Test",
+          "Input": "Two controlled fresh projects differing only in explicit automatic-backfill opt-in, with approved external configuration supplied only for the opted-in automatic path; canonical structural source, controlled backfill progress/checkpoint/failure/resume fixtures, readiness states, semantic queries, and no-argument compatibility controls.",
+          "acceptanceCriteria": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js"
+        }
+      ]
     },
     {
       "id": "semprod-ready-plateau",
       "name": "Production Semantic Retrieval Ready",
       "type": "Plateau",
-      "description": "Target state: structure exists, every canonical Element/ArchitectureRelationship/View has aligned durable semantics, default MCP uses Neo4j Vector Index, readiness passes, canonical authority holds, and compatible full snapshots remain.",
+      "description": "Gated target state only: canonical structure exists; every canonical Element, ArchitectureRelationship, and View has aligned durable semantics; production backfill and resume boundaries are operable; default semantic query uses qualified external configuration and Neo4j Vector Index retrieval; readiness passes before query; canonical JSON remains authoritative; fail-closed behavior and compatible no-argument full snapshots remain intact. The plateau may be claimed only after SP-01 through SP-05 and compatibility/regression gates pass.",
       "attributes": [
         {
           "name": "releaseGates",
-          "value": "Full coverage; restart persistence/no production cleanup; upsert/delete/version; real default retrieval; three-channel threshold-all; fail-closed readiness; external credentials."
+          "value": "SP-01 full backfill; SP-02 persistent projection lifecycle; SP-03 default three-channel threshold-all vector retrieval; SP-04 fail-closed readiness; SP-05 new-project operator journey; no-argument full-snapshot and canonical-authority compatibility; WP-P1/WP-P2 regressions; external-credential and redaction boundaries."
         },
         {
           "name": "deliveryClaim",
-          "value": "Target only; no claim of current delivery or passed gates."
+          "value": "Target only. Claiming this plateau requires passing SP-01..SP-05 plus compatibility/regression gates in the protected production-facing acceptance environment; graph validation, intent approval, or partial test success is not delivery evidence."
+        },
+        {
+          "name": "releaseBoundary.WP-P3",
+          "value": "No embedded credentials, implicit provider defaults, silent fallback, readiness bypass, canonical JSON authority weakening, or regression of accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness behavior. deliveryStatus remains exclusively runner-owned."
+        },
+        {
+          "name": "requirementSource.WP-P3",
+          "value": "Human-authorized 2026-07-27 semprod-wp-operator-release release semantics: plateau only after SP-01..SP-05 and compatibility/regression gates."
         }
       ]
     },
@@ -2321,7 +2341,7 @@
       "id": "semprod-wp-operator-release",
       "name": "WP-P3 Operator Journey and Production Release",
       "type": "Work Package",
-      "description": "Expose/document new-project backfill/readiness operations, run production acceptance, and permit target plateau only after all gates pass with external credentials.",
+      "description": "WP-P3 exposes and documents the production new-project operator journey, formalizes SP-05, and authorizes the Production Semantic Retrieval Ready plateau only after SP-01 through SP-05 and all compatibility/regression, external-credential, canonical-authority, and fail-closed gates pass. It depends on accepted WP-P1/WP-P2 and protected live-environment evidence and does not itself claim delivery.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -2329,15 +2349,23 @@
         },
         {
           "name": "dependencies",
-          "value": "WP-P1 and WP-P2; protected live environment and external credentials."
+          "value": "Accepted WP-P1 at 40/40 and accepted WP-P2 at commit 56cfad2 with SP-03/SP-04 and full runner 42/42; protected live environment; approved external Neo4j and embedding-provider configuration."
         },
         {
           "name": "releaseGates",
-          "value": "SP-01..SP-05 and all production boundaries; compatibility regression."
+          "value": "SP-01..SP-05; no-argument full-snapshot compatibility; canonical JSON authority; fail-closed semantic query; external credential provenance and redaction; WP-P1 persistence/backfill and WP-P2 retrieval/readiness regression gates."
         },
         {
           "name": "acceptanceBoundary",
-          "value": "Proposed only; no pass or delivered status."
+          "value": "SP-05 is mounted on semprod-operator-journey-process. WP-P3 remains not delivered until SP-05 and the inherited SP-01..SP-04 plus compatibility/regression gates pass; intent approval and graph validation are not pass evidence."
+        },
+        {
+          "name": "scopeBoundary.WP-P3",
+          "value": "Only operator journey and production release intent. No production implementation, no credential embedding/defaulting, no fallback, and no weakening of accepted WP-P1/WP-P2 behavior."
+        },
+        {
+          "name": "requirementSource.WP-P3",
+          "value": "Delegated parent/orchestrator authorization dated 2026-07-27 for semprod-wp-operator-release."
         }
       ]
     }
@@ -3456,6 +3484,28 @@
       "target_name": "External Production Credential Boundary",
       "description": "Directional semantics: the WP-P2 default uninjected semantic retrieval function realizes the existing credential constraint by accepting Neo4j and embedding credentials only from approved external sources, rejecting missing, conflicting, unsafe, legacy-alias, literal, test, or default credentials before provider, database, retrieval, or index side effects, and never transporting secrets through Cypher or graph evidence.",
       "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> External Production Credential Boundary"
+    },
+    {
+      "id": "semprod-rel-wp3-journey",
+      "name": "WP-P3 realizes operator journey",
+      "type": "Realization",
+      "source_id": "semprod-wp-operator-release",
+      "target_id": "semprod-operator-journey-process",
+      "source_name": "WP-P3 Operator Journey and Production Release",
+      "target_name": "Establish Semantic Retrieval for New Project",
+      "description": "Directional semantics: WP-P3 delivers the documented two-path operator journey and SP-05 boundary without claiming delivery before acceptance passes.",
+      "statement": "WP-P3 Operator Journey and Production Release --(Realization)--> Establish Semantic Retrieval for New Project"
+    },
+    {
+      "id": "semprod-rel-journey-credentials",
+      "name": "Operator journey realizes external credential constraint",
+      "type": "Realization",
+      "source_id": "semprod-operator-journey-process",
+      "target_id": "grag-credential-boundary",
+      "source_name": "Establish Semantic Retrieval for New Project",
+      "target_name": "External Production Credential Boundary",
+      "description": "Directional semantics: automatic backfill may start only after explicit opt-in and approved externally supplied configuration; errors and operational evidence redact credentials and no implicit source or provider default is permitted.",
+      "statement": "Establish Semantic Retrieval for New Project --(Realization)--> External Production Credential Boundary"
     }
   ],
   "views": [
@@ -4009,7 +4059,7 @@
       "view_name": "New Project Semantic Retrieval Operator Journey",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: an operator needs an explicit path from argo init through structural projection, semantic backfill, readiness verification, and semantic query; Purpose: designing and informing; Scope: new-project production operation and pending/ready states; Rationale: this view binds the business journey to application processes and service use while automatic backfill remains explicit opt-in.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this view is an Application Usage Viewpoint instance because it shows the business process, operator assignment, application query service, and supporting structural/backfill/readiness behavior. Automatic backfill is permitted only with explicit opt-in plus approved external configuration, and readiness verification remains mandatory.",
       "included_elements": [
         "grag-query-service",
         "semprod-operator-role",
@@ -4125,6 +4175,27 @@
         "grag-rel-native-seeds",
         "grag-rel-seeds-closure",
         "semprod-rel-default-credentials"
+      ]
+    },
+    {
+      "view_id": "semprod-wp3-operator-release-boundary",
+      "view_name": "WP-P3 Operator Journey and Release Boundary",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the exact WP-P3 scope, protected credential dependency, public query boundary, operator journey, and gated release plateau to agree without reopening WP-P1/WP-P2; Purpose: deciding; Scope: exactly semprod-wp-operator-release, semprod-operator-journey-process, semprod-ready-plateau, grag-query-service, and grag-credential-boundary; Rationale: this five-element focused decision view is an Implementation and Migration Viewpoint instance because it binds the work package to the affected business/application/constraint elements and target plateau while predecessor sequencing remains in semprod-delivery-sequence.",
+      "included_elements": [
+        "semprod-wp-operator-release",
+        "semprod-operator-journey-process",
+        "semprod-ready-plateau",
+        "grag-query-service",
+        "grag-credential-boundary"
+      ],
+      "included_relationships": [
+        "semprod-rel-wp3-journey",
+        "semprod-rel-wp3-plateau",
+        "semprod-rel-query-journey",
+        "semprod-rel-ready-journey",
+        "semprod-rel-journey-credentials"
       ]
     }
   ]
