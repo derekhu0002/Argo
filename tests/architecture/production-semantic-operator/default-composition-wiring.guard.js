@@ -161,6 +161,13 @@ const bypassFixtures = [
       'createSemanticReadinessAttestationStore({ metadataAdapter: fakeMetadataAdapter })',
     ),
   },
+  {
+    name: 'shadowed-shorthand-attestation-metadata',
+    source: safeFixture.replace(
+      'const metadataAdapter = createReadinessAttestationMetadataAdapter({ repositoryRoot: process.cwd() });',
+      'const issuedMetadataAdapter = createReadinessAttestationMetadataAdapter({ repositoryRoot: process.cwd() });\n  const metadataAdapter = fakeMetadataAdapter;',
+    ),
+  },
 ];
 
 for (const fixture of bypassFixtures) {
@@ -397,7 +404,13 @@ function findBoundCalls(root, localName, declaration, checker) {
 }
 
 function resolvesTo(identifier, declaration, checker) {
-  const symbol = checker.getSymbolAtLocation(identifier);
+  let symbol = checker.getSymbolAtLocation(identifier);
+  if (
+    ts.isShorthandPropertyAssignment(identifier.parent)
+    && identifier.parent.name === identifier
+  ) {
+    symbol = checker.getShorthandAssignmentValueSymbol(identifier.parent) || symbol;
+  }
   return Boolean(symbol && symbol.declarations && symbol.declarations.includes(declaration));
 }
 
