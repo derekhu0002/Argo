@@ -1282,7 +1282,7 @@
       "id": "grag-production-runtime",
       "name": "Node.js Graph RAG Production Runtime",
       "type": "System Software",
-      "description": "Existing Node.js MCP runtime, independent Embedding Provider Adapter, and Neo4j JavaScript driver remain production mainline; no Python sidecar or Neo4j GenAI Plugin is required for production embedding generation.",
+      "description": "Existing Node.js MCP runtime, independent Embedding Provider Adapter, Neo4j JavaScript driver, and Argo harness environment initialization remain the production mainline; no Python sidecar or Neo4j GenAI Plugin is required for production embedding generation. Harness initialization must load the exact approved .argo/.env configuration into the Node process before projection/runtime checks when direct process values are absent, while preserving the credential source and safety rules owned by the credential boundary.",
       "attributes": [
         {
           "name": "referenceCandidates",
@@ -1301,12 +1301,24 @@
           "value": "{\"description\":\"Run production queries and generation without required Python or Neo4j GenAI Plugin.\",\"businessOutcome\":\"Preserve Node.js runtime and avoid plugin coupling.\",\"observableBoundary\":\"Production path has no mandatory Python or GenAI Plugin.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01\"}"
         },
         {
+          "name": "functionalPoint.TS-01-harness-env-loading",
+          "value": "{\"description\":\"Initialize the Argo harness process from the approved local environment file when direct process values are absent.\",\"businessOutcome\":\"Harness and projection commands can use the approved repository-local configuration without requiring duplicated manual shell exports.\",\"observableBoundary\":\"Running node .argo/scripts/ensureArgoHarnessEnvironment.js from a clean process loads only the exact repository-relative .argo/.env into process.env before Neo4j projection/runtime checks; root or alternate .env files are ignored; existing process values keep the approved precedence and conflict behavior owned by the credential boundary.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-01-HarnessEnvironmentLoading\"}"
+        },
+        {
           "name": "requirementSource.production-runtime-qualification",
           "value": "Human-approved 2026-07-24: Node/Neo4j is the production mainline; TS-01 is mounted on grag-production-runtime."
         },
         {
+          "name": "requirementSource.harness-env-defect",
+          "value": "Human requirement/defect report 2026-07-26: node .argo/scripts/ensureArgoHarnessEnvironment.js must automatically load .argo/.env into process.env before Neo4j projection/runtime checks."
+        },
+        {
           "name": "acceptanceApproval.TS-01",
           "value": "approvedByHuman=true|2026-07-24|chat approval"
+        },
+        {
+          "name": "acceptanceApproval.TS-01-HarnessEnvironmentLoading",
+          "value": "approvedByHuman=true|2026-07-26|orchestrator user requirement/defect report approved harness .argo/.env auto-loading acceptance boundary for coding handoff"
         },
         {
           "name": "deliveryEvidence.W2",
@@ -1324,6 +1336,13 @@
           "type": "Acceptance Test",
           "Input": "Production semantic query.",
           "acceptanceCriteria": "tests/explicit/entries/runProductionGraphRagRuntime.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-01-HarnessEnvironmentLoading",
+          "description": "Acceptor control point: run node .argo/scripts/ensureArgoHarnessEnvironment.js from a clean Node process with an approved repository-relative .argo/.env fixture and no pre-exported process values, then repeat with process values already present and with root or alternate .env files. Observation point: the harness initializes process.env from the exact .argo/.env before projection/runtime checks, ignores root or alternate files, preserves approved process precedence and conflict behavior delegated to the credential boundary, and reports safe non-secret diagnostics without leaking secret values.",
+          "type": "Acceptance Test",
+          "Input": "Approved .argo/.env fixture with canonical Argo/Neo4j configuration names; clean process environment; direct-process precedence fixture; root and alternate .env rejection fixtures.",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessEnvironmentProjectionConfig.js"
         }
       ]
     },
@@ -1448,7 +1467,7 @@
       "id": "grag-credential-boundary",
       "name": "External Production Credential Boundary",
       "type": "Constraint",
-      "description": "Production Neo4j and embedding-provider credentials are supplied to the Node.js application only through approved secure external configuration. Secret keys QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may originate only from direct process environment variables or the unique local file .argo/.env when that file is ignored, untracked, regular, non-reparse, and access-restricted. Process environment has precedence; if both sources define a key with different values, startup fails closed rather than silently overriding or falling back. Secrets are never hardcoded, defaulted, accepted from another file or command line, transported through Cypher text or parameters, or emitted to stdout/stderr, errors, logs, graph evidence, runner records, snapshots, or artifacts.",
+      "description": "Production Neo4j and embedding-provider credentials are supplied to the Node.js application only through approved secure external configuration. Approved Neo4j configuration names are ARGO_NEO4J_DATABASE_URL, ARGO_NEO4J_DATABASE_USERNAME, and ARGO_NEO4J_DATABASE_PASSWORD; legacy ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD aliases are not authorized as substitutes or overrides. Secret keys QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may originate only from direct process environment variables or the unique local file .argo/.env when that file is ignored, untracked, regular, non-reparse, and access-restricted. Process environment has precedence; if both sources define a key with different values, startup fails closed rather than silently overriding or falling back. Secrets are never hardcoded, defaulted, accepted from another file or command line, transported through Cypher text or parameters, or emitted to stdout/stderr, errors, logs, graph evidence, runner records, snapshots, or artifacts.",
       "attributes": [
         {
           "name": "productionEmbeddingBoundary",
@@ -1456,19 +1475,23 @@
         },
         {
           "name": "functionalPoint.TS-07",
-          "value": "{\"description\":\"Require external secure credentials for Neo4j and embedding provider.\",\"businessOutcome\":\"No embedded production secrets, implicit defaults, or Cypher credential transport.\",\"observableBoundary\":\"Absent, conflicting, unapproved-source, or unsafe-file credentials fail closed before network or index side effects, and production Cypher contains no provider or database credential.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07\"}"
+          "value": "{\"description\":\"Require external secure credentials for Neo4j and embedding provider.\",\"businessOutcome\":\"No embedded production secrets, implicit defaults, legacy alias substitution, or Cypher credential transport.\",\"observableBoundary\":\"Absent, conflicting, unapproved-source, unsafe-file, or legacy-alias-only credentials fail closed before network or index side effects, and production Cypher contains no provider or database credential.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07\"}"
         },
         {
           "name": "functionalPoint.TS-07-provider-secret-isolation",
-          "value": "{\"description\":\"Keep approved live provider and Neo4j password secrets isolated across source loading, execution, persistence, and evidence artifacts.\",\"businessOutcome\":\"Real provider and controlled Neo4j execution can use locally protected credentials without creating a tracked, durable, or observable secret copy.\",\"observableBoundary\":\"QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD originate only from direct process environment variables or the unique ignored/untracked .argo/.env; process environment has precedence and a differing duplicate fails closed; missing, blank, defaulted, alternate-path, tracked, reparse, broadly readable, command-line, or otherwise unapproved sources block before side effects; no secret appears in stdout/stderr, errors, logs, Cypher text/parameters, graph evidence, failure records, snapshots, or artifacts; cleanup leaves zero persistence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation\"}"
+          "value": "{\"description\":\"Keep approved live provider and Neo4j password secrets isolated across source loading, execution, persistence, and evidence artifacts.\",\"businessOutcome\":\"Real provider and controlled Neo4j execution can use locally protected credentials without creating a tracked, durable, or observable secret copy.\",\"observableBoundary\":\"QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD originate only from direct process environment variables or the unique ignored/untracked .argo/.env; process environment has precedence and a differing duplicate fails closed; missing, blank, defaulted, alternate-path, tracked, reparse, broadly readable, command-line, legacy alias, or otherwise unapproved sources block before side effects; no secret appears in stdout/stderr, errors, logs, Cypher text/parameters, graph evidence, failure records, snapshots, or artifacts; cleanup leaves zero persistence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation\"}"
+        },
+        {
+          "name": "functionalPoint.TS-07-canonical-neo4j-env-names",
+          "value": "{\"description\":\"Use only approved canonical Neo4j environment names for projection and database authentication configuration.\",\"businessOutcome\":\"Projection and harness setup cannot silently connect to the wrong database target or credentials through legacy aliases.\",\"observableBoundary\":\"ARGO_NEO4J_DATABASE_URL, ARGO_NEO4J_DATABASE_USERNAME, and ARGO_NEO4J_DATABASE_PASSWORD are the accepted Neo4j names from approved process or exact .argo/.env sources; legacy ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD do not satisfy required configuration, do not override canonical values, and produce a safe unsupported-alias failure before connection or write side effects.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-07-CanonicalNeo4jEnvNames\"}"
         },
         {
           "name": "liveProviderConfigurationContract",
-          "value": "The only approved local secret file is repository-relative .argo/.env for controlled local or protected CI execution. It must remain ignored and untracked, be a regular non-reparse file, reject duplicate keys and unknown secret-source paths, and pass a Windows ACL preflight that rejects read access for broad principals such as Everyone, BUILTIN\\\\Users, and Authenticated Users. Direct process environment is higher precedence; if the same approved secret key is present in both sources with different values, startup fails closed. No implicit or literal fallback default is permitted. Committed .env.example or .argo/.env.example may list key names with empty placeholders and instructions but never secret values."
+          "value": "The only approved local secret file is repository-relative .argo/.env for controlled local or protected CI execution. It must remain ignored and untracked, be a regular non-reparse file, reject duplicate keys, legacy Neo4j alias keys, and unknown secret-source paths, and pass a Windows ACL preflight that rejects read access for broad principals such as Everyone, BUILTIN\\\\Users, and Authenticated Users. Direct process environment is higher precedence; if the same approved secret key is present in both sources with different values, startup fails closed. No implicit, literal, or legacy-alias fallback default is permitted. Committed .env.example or .argo/.env.example may list key names with empty placeholders and instructions but never secret values."
         },
         {
           "name": "approvedSecretSourcePolicy",
-          "value": "Approved secret keys: QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD. Approved sources: direct process environment or exact repository-relative .argo/.env only. Forbidden sources include any other file path, tracked file, root .env, command-line argument, source literal, generated default, log/error channel, graph/Cypher data, snapshot, failure record, or artifact."
+          "value": "Approved secret keys: QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD. Approved Neo4j configuration keys: ARGO_NEO4J_DATABASE_URL, ARGO_NEO4J_DATABASE_USERNAME, and ARGO_NEO4J_DATABASE_PASSWORD. Approved sources: direct process environment or exact repository-relative .argo/.env only. Forbidden sources include legacy ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, ARGO_NEO4J_PASSWORD aliases, any other file path, tracked file, root .env, command-line argument, source literal, generated default, log/error channel, graph/Cypher data, snapshot, failure record, or artifact."
         },
         {
           "name": "windowsSecretFilePreflight",
@@ -1483,12 +1506,20 @@
           "value": "Human-approved 2026-07-25 allow_secret_file decision: live provider and controlled Neo4j verification may use direct process environment or the unique ignored/untracked .argo/.env for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, without reading secret values into design artifacts and with redaction across every observable channel."
         },
         {
+          "name": "requirementSource.harness-env-defect",
+          "value": "Human requirement/defect report 2026-07-26: repository-approved .env naming uses ARGO_NEO4J_DATABASE_URL/USERNAME/PASSWORD; legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases are not authorized for Neo4j projection configuration."
+        },
+        {
           "name": "acceptanceApproval.TS-07",
           "value": "approvedByHuman=true|2026-07-24|chat approval"
         },
         {
           "name": "acceptanceApproval.TS-07-Provider-Secret-Isolation",
           "value": "approvedByHuman=true|2026-07-25|chat approval allow_secret_file"
+        },
+        {
+          "name": "acceptanceApproval.TS-07-CanonicalNeo4jEnvNames",
+          "value": "approvedByHuman=true|2026-07-26|orchestrator user requirement/defect report approved canonical Neo4j environment-name acceptance boundary for coding handoff"
         },
         {
           "name": "deliveryEvidence.W2",
@@ -1502,17 +1533,24 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-TS-07",
-          "description": "Control: start/query without external credentials. Observe: safe failure and no hardcoded secret fallback.",
+          "description": "Control: start/query without external credentials or with legacy Neo4j aliases only. Observe: safe failure and no hardcoded, default, or legacy-alias secret fallback.",
           "type": "Acceptance Test",
-          "Input": "Credentials absent.",
+          "Input": "Credentials absent; legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases present without canonical values.",
           "acceptanceCriteria": "tests/explicit/entries/runExternalCredentialBoundary.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-          "description": "Acceptor control point: execute the opted-in live provider and controlled-Neo4j flow using generated canaries through each approved secret source—direct process environment and the unique repository-relative .argo/.env—then exercise process/file agreement, process precedence, conflicting duplicates, missing/blank values, alternate or tracked files, reparse/path indirection, broad Windows ACLs, command-line/default/fallback sources, and inspect all observable channels. Observation point: only QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may be loaded from an approved source; mismatches and every unsafe or unapproved source fail closed before provider, database, or index side effects; ARGO_NEO4J_DATABASE_PASSWORD is used only by the database authentication connection layer and neither secret enters stdout/stderr, errors, logs, Cypher text/parameters, graph evidence, failure records, snapshots, or artifacts; cleanup leaves zero persistence and zero generated secret artifacts.",
+          "description": "Acceptor control point: execute the opted-in live provider and controlled-Neo4j flow using generated canaries through each approved secret source—direct process environment and the unique repository-relative .argo/.env—then exercise process/file agreement, process precedence, conflicting duplicates, missing/blank values, alternate or tracked files, reparse/path indirection, broad Windows ACLs, command-line/default/fallback/legacy-alias sources, and inspect all observable channels. Observation point: only QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD may be loaded from an approved source; mismatches and every unsafe or unapproved source fail closed before provider, database, or index side effects; ARGO_NEO4J_DATABASE_PASSWORD is used only by the database authentication connection layer and neither secret enters stdout/stderr, errors, logs, Cypher text/parameters, graph evidence, failure records, snapshots, or artifacts; cleanup leaves zero persistence and zero generated secret artifacts.",
           "type": "Acceptance Test",
-          "Input": "Approved provider profile; generated non-secret canaries representing QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD provenance without exposing real values; exact ignored/untracked .argo/.env metadata; direct-process variants; controlled live-network opt-in; controlled Neo4j instance; unsafe-source, conflict, path, and Windows ACL fixtures.",
+          "Input": "Approved provider profile; generated non-secret canaries representing QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD provenance without exposing real values; exact ignored/untracked .argo/.env metadata; direct-process variants; controlled live-network opt-in; controlled Neo4j instance; unsafe-source, conflict, path, Windows ACL, and legacy-alias fixtures.",
           "acceptanceCriteria": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-TS-07-CanonicalNeo4jEnvNames",
+          "description": "Acceptor control point: run the harness/projection configuration boundary with canonical Neo4j names supplied from approved process and exact .argo/.env sources, then run legacy-alias-only and canonical-plus-legacy-conflict fixtures. Observation point: ARGO_NEO4J_DATABASE_URL, ARGO_NEO4J_DATABASE_USERNAME, and ARGO_NEO4J_DATABASE_PASSWORD satisfy the Neo4j projection/database configuration; ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD never satisfy missing canonical configuration, never override canonical values, and fail safely before Neo4j connection, projection, or write side effects.",
+          "type": "Acceptance Test",
+          "Input": "Canonical Neo4j configuration fixtures from process and .argo/.env; legacy-alias-only fixtures; canonical-plus-legacy conflict fixtures; controlled Neo4j projection setup with generated canaries only.",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessEnvironmentProjectionConfig.js"
         }
       ]
     },
@@ -3224,7 +3262,7 @@
       "view_name": "Native Technology and Embedding Release Requirements",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime boundary, approved secret-source isolation, explicit embedding qualification, real-provider evidence, and canonical authority are release requirements before index delivery; Purpose: designing, deciding, and handoff preparation; Scope: Node.js/Neo4j production mainline, native retrieval, the human-approved Alibaba Cloud Model Studio OpenAI-compatible provider profile, qualification-2026-07-25 with acknowledged alias drift, explicit dimensions 1024, opt-in live E2E through a controlled Neo4j instance, direct-process or unique ignored/untracked .argo/.env secret sourcing with fail-closed conflict and Windows ACL preflight, and canonical graph authority; Rationale: this view traces qualification and credential constraints to the existing runtime and native retrieval realization path, permits only the approved local secret-file/process sources without weakening zero-leakage evidence, requires live evidence without treating offline fakes as delivery proof, and preserves TS-09 adapter/lifecycle work outside this handoff.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: production runtime boundary, approved secret-source isolation, canonical harness environment loading, canonical Neo4j configuration names, explicit embedding qualification, real-provider evidence, and canonical authority are release requirements before index delivery; Purpose: designing, deciding, and handoff preparation; Scope: Node.js/Neo4j production mainline, Argo harness initialization through node .argo/scripts/ensureArgoHarnessEnvironment.js, native retrieval, the human-approved Alibaba Cloud Model Studio OpenAI-compatible provider profile, qualification-2026-07-25 with acknowledged alias drift, explicit dimensions 1024, opt-in live E2E through a controlled Neo4j instance, direct-process or unique ignored/untracked .argo/.env sourcing with fail-closed conflict and Windows ACL preflight, approved Neo4j names ARGO_NEO4J_DATABASE_URL/USERNAME/PASSWORD, rejection of legacy ARGO_NEO4J_URI/USERNAME/PASSWORD aliases, and canonical graph authority; Rationale: this Requirements Realization view traces configuration and credential constraints to the existing runtime and native retrieval realization path, permits only the approved local secret-file/process sources without weakening zero-leakage evidence, requires canonical Neo4j names before projection or database side effects, requires live evidence without treating offline fakes as delivery proof, and preserves TS-09 adapter/lifecycle work outside this handoff.",
       "included_elements": [
         "grag-production-runtime",
         "grag-native-retrieval-service",

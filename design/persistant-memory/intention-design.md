@@ -1,5 +1,38 @@
 # Intent Design Session Record
 
+## 2026-07-26 — Harness Environment And Canonical Neo4j Names
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, requirements managers, and acceptors need harness environment initialization and Neo4j projection configuration names to be explicit, decidable release requirements.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it traces runtime and credential constraints to the existing Node.js/Neo4j realization path, now including canonical `.argo/.env` harness loading and rejection of legacy Neo4j aliases.
+- Human approval evidence: the orchestrator user requirement/defect report explicitly required `node .argo/scripts/ensureArgoHarnessEnvironment.js` to load `.argo/.env` into `process.env` and required the approved `ARGO_NEO4J_DATABASE_*` naming to replace legacy `ARGO_NEO4J_*` projection aliases. The handoff schema does not permit an `approvedByHuman` field, so approval is recorded in handoff notes and schema-compliant `acceptanceApproval.*` graph attributes.
+- Secret handling: Intent Design did not read, create, output, migrate, or copy any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` — `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> `ExplicitAcceptanceTestcase-TS-01-HarnessEnvironmentLoading`.
+- `grag-credential-boundary` — `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> `ExplicitAcceptanceTestcase-TS-07-CanonicalNeo4jEnvNames`.
+
+### Acceptance boundaries
+
+- `ExplicitAcceptanceTestcase-TS-01-HarnessEnvironmentLoading` requires `node .argo/scripts/ensureArgoHarnessEnvironment.js` to initialize `process.env` from the exact repository-relative `.argo/.env` before projection/runtime checks when direct process values are absent, ignore root/alternate `.env` files, preserve process precedence and conflict behavior delegated to the credential boundary, and avoid secret-bearing diagnostics.
+- `ExplicitAcceptanceTestcase-TS-07-CanonicalNeo4jEnvNames` requires `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` to be the accepted Neo4j configuration names from approved process or exact `.argo/.env` sources; legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` must not satisfy missing canonical configuration, override canonical values, or reach connection/projection/write side effects.
+
+### Dependency-scope decisions
+
+- Handoff scope is exactly `grag-production-runtime` and `grag-credential-boundary`.
+- `grag-rel-credentials-runtime` remains the in-scope realization relationship. Existing native retrieval, canonical authority, embedding qualification, provider adapter, index lifecycle, W3.1 mutation-vector lifecycle, and downstream seed/closure/quality elements remain contextual and outside this handoff.
+- Existing runner-owned `deliveryStatus` attributes were preserved as runner data and not fabricated or manually reinterpreted as new pass evidence.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- New physical entrypoint `tests/explicit/entries/runHarnessEnvironmentProjectionConfig.js` is a downstream ImplementationDesign/Coding target; Intent Design did not implement it.
+- Open business questions and adequacy blockers: none.
+
 ## 2026-07-24 — Compatible Contract And Query Entry Boundary
 
 - Selected viewpoint: Application Usage Viewpoint.
