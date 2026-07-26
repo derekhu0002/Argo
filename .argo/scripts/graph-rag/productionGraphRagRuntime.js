@@ -271,12 +271,19 @@ function evaluatePhase1QualityBenchmark(request = {}) {
 
   const perPurpose = benchmark.purposes.map(evaluateBenchmarkPurpose);
   const totalMandatorySeeds = perPurpose.reduce((total, purpose) => total + purpose.mandatoryKeySeedIds.length, 0);
-  const totalRecalledSeeds = perPurpose.reduce((total, purpose) => total + purpose.recalledKeySeedIds.length, 0);
+  const totalRecalledSeeds = perPurpose.reduce(
+    (total, purpose) => total + purpose.mandatoryKeySeedIds.length - purpose.missingKeySeedIds.length,
+    0,
+  );
   const closureCorrectCount = perPurpose.filter(purpose => purpose.closureCorrect).length;
   const unrelatedForcedHits = perPurpose.reduce((total, purpose) => total + purpose.unrelatedForcedHits, 0);
   const precisionValues = perPurpose
     .map(purpose => purpose.precision)
     .filter(value => typeof value === 'number' && Number.isFinite(value));
+  const qualityFailure = evaluatePhase1QualityFailure(perPurpose);
+  if (qualityFailure) {
+    return blockedQualityBenchmark(qualityFailure);
+  }
 
   return Object.freeze({
     status: 'passed',
@@ -325,6 +332,19 @@ function validatePhase1Benchmark(benchmark) {
     if (purpose.unrelatedForcedHits < 0) {
       return 'DT18_UNRELATED_FORCED_HITS_NEGATIVE';
     }
+  }
+  return undefined;
+}
+
+function evaluatePhase1QualityFailure(perPurpose) {
+  if (perPurpose.some(purpose => purpose.missingKeySeedIds.length > 0)) {
+    return 'DT18_KEY_SEED_RECALL_NOT_100_PERCENT';
+  }
+  if (perPurpose.some(purpose => purpose.closureCorrect !== true)) {
+    return 'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT';
+  }
+  if (perPurpose.some(purpose => purpose.unrelatedForcedHits > 0)) {
+    return 'DT18_UNRELATED_FORCED_HITS';
   }
   return undefined;
 }
