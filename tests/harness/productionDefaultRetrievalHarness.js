@@ -43,6 +43,11 @@ const APPROVED_SOURCE_KEYS = Object.freeze([
   'ARGO_NEO4J_DATABASE_PASSWORD',
   'QWEN_KEY',
 ]);
+const LEGACY_SOURCE_KEYS = Object.freeze([
+  'ARGO_NEO4J_URI',
+  'ARGO_NEO4J_USERNAME',
+  'ARGO_NEO4J_PASSWORD',
+]);
 const VECTOR_QUERY_CYPHER = [
   'CALL db.index.vector.queryNodes($indexName, $topK, $vector)',
   'YIELD node, score',
@@ -56,6 +61,11 @@ const CREDENTIAL_SOURCE_CASES = Object.freeze([
   Object.freeze({ name: 'unsafe-file-acl', source: 'file', aclCase: 'broad-explicit-allow', expectedCategory: 'SECRET_FILE_ACL_UNSAFE' }),
   Object.freeze({ name: 'conflicting-dual-source', source: 'dual-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT' }),
   Object.freeze({ name: 'legacy-neo4j-alias', legacyOnly: true, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' }),
+  ...LEGACY_SOURCE_KEYS.map(mixedLegacyKey => Object.freeze({
+    name: `mixed-canonical-${mixedLegacyKey.toLowerCase().replaceAll('_', '-')}`,
+    mixedLegacyKey,
+    expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+  })),
   Object.freeze({ name: 'test-default-source', sourceOperation: 'test-default', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' }),
   Object.freeze({ name: 'fallback-source', sourceOperation: 'fallback', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' }),
 ]);
@@ -151,6 +161,9 @@ const RAW_EVIDENCE_CONTRACT = deepFreeze({
     actualUninjectedMcp: true,
     requiredResolverOptions: ['repositoryRoot', 'useCase'],
     prohibitedOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+    requiredLegacyInspectionKeys: LEGACY_SOURCE_KEYS,
+    legacyAttributionOrSelectionForbidden: true,
+    mixedCanonicalLegacyCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED',
     eventProducer: 'production-code',
     requiredBoundaryOrder: [
       'credential-source-resolution',
@@ -360,8 +373,27 @@ async function runFullSnapshotCompatibilityControls() {
 }
 
 async function runProductionQueryCredentialResolution() {
+  return runActualProductionQueryCredentialScenario(
+    CREDENTIAL_SOURCE_CASES[0],
+    'Resolve valid external production query credentials and retrieve semantic context',
+  );
+}
+
+async function runProductionQueryMixedLegacyRejections() {
+  const outcomes = [];
+  for (const fixture of CREDENTIAL_SOURCE_CASES.filter(item => item.mixedLegacyKey)) {
+    const observation = await runActualProductionQueryCredentialScenario(
+      fixture,
+      `Reject mixed canonical and legacy production query source ${fixture.mixedLegacyKey}`,
+    );
+    outcomes.push(Object.freeze({ fixture, observation }));
+  }
+  return Object.freeze(outcomes);
+}
+
+async function runActualProductionQueryCredentialScenario(sourceFixture, intent) {
   const observations = createRawProductionObservations({
-    sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+    sourceFixture,
     readiness: alignedReadiness(),
     candidatesByChannel: defaultCandidates(),
   });
@@ -399,7 +431,7 @@ async function runProductionQueryCredentialResolution() {
       result = await callTool('getSystemArchitecture', {
         query: {
           purpose: 'implementation-design',
-          intent: 'Resolve valid external production query credentials and retrieve semantic context',
+          intent,
         },
       });
     });
@@ -658,6 +690,11 @@ function createRawSourceFixture(fixture, record) {
     processValues.ARGO_NEO4J_USERNAME = `legacy-${marker}`;
     processValues.ARGO_NEO4J_PASSWORD = `legacy-password-${marker}`;
   }
+  if (fixture.mixedLegacyKey) {
+    processValues[fixture.mixedLegacyKey] = fixture.mixedLegacyKey === 'ARGO_NEO4J_URI'
+      ? `neo4j://mixed-legacy-${marker}.invalid:7687`
+      : `mixed-legacy-${marker}`;
+  }
   const sourceBehavior = {
     expectedFilePath: path.join(repoRoot, '.argo', '.env'),
     readProcessKey(key) {
@@ -734,6 +771,10 @@ function assertCredentialSourceMatrix(outcomes) {
       assertApprovedCredentialSourceEvidence(observation);
       continue;
     }
+    if (fixture.mixedLegacyKey) {
+      assertMixedCanonicalLegacyRejection(fixture, observation);
+      continue;
+    }
     assert.strictEqual(observation.result && observation.result.status, 'failed', `SP03_PROHIBITED_CREDENTIAL_SOURCE_ACCEPTED:${fixture.name}`);
     assert.strictEqual(observation.result.error && observation.result.error.category, fixture.expectedCategory, `SP03_CREDENTIAL_SOURCE_CATEGORY_MISMATCH:${fixture.name}`);
     assert.strictEqual(observation.readinessReads.length, 0, `SP03_PROHIBITED_SOURCE_REACHED_READINESS:${fixture.name}`);
@@ -744,6 +785,41 @@ function assertCredentialSourceMatrix(outcomes) {
       `SP03_PROHIBITED_SOURCE_SIDE_EFFECT:${fixture.name}`,
     );
   }
+}
+
+function assertMixedCanonicalLegacyRejection(fixture, observation) {
+  const legacyInspectionReads = observation.operationLedger.filter(event => (
+    event.kind === 'credential-source-resolution'
+    && event.source === 'process'
+    && event.operation === 'direct'
+    && LEGACY_SOURCE_KEYS.includes(event.key)
+  ));
+  assert.deepStrictEqual(
+    legacyInspectionReads.map(event => event.key).sort(),
+    [...LEGACY_SOURCE_KEYS].sort(),
+    `SP03_MIXED_LEGACY_INSPECTION_MISSING:${fixture.mixedLegacyKey}`,
+  );
+  assert.strictEqual(
+    observation.result && observation.result.status,
+    'failed',
+    `SP03_MIXED_LEGACY_SOURCE_ACCEPTED:${fixture.mixedLegacyKey}`,
+  );
+  assert.strictEqual(
+    observation.result.error && observation.result.error.category,
+    'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+    `SP03_MIXED_LEGACY_REJECTION_CATEGORY_MISMATCH:${fixture.mixedLegacyKey}`,
+  );
+  assert(
+    !(observation.result && observation.result.result && observation.result.result.configurationEvidence),
+    `SP03_MIXED_LEGACY_ATTRIBUTED_OR_SELECTED:${fixture.mixedLegacyKey}`,
+  );
+  assert.strictEqual(observation.readinessReads.length, 0, `SP03_MIXED_LEGACY_REACHED_READINESS:${fixture.mixedLegacyKey}`);
+  assert.strictEqual(observation.providerRequests.length, 0, `SP03_MIXED_LEGACY_REACHED_PROVIDER:${fixture.mixedLegacyKey}`);
+  assert.strictEqual(observation.vectorQueries.length, 0, `SP03_MIXED_LEGACY_REACHED_VECTOR_QUERY:${fixture.mixedLegacyKey}`);
+  assert(
+    observation.operationLedger.every(event => event.kind === 'credential-source-resolution'),
+    `SP03_MIXED_LEGACY_DOWNSTREAM_USE:${fixture.mixedLegacyKey}`,
+  );
 }
 
 function assertApprovedCredentialSourceEvidence(observation) {
@@ -825,11 +901,14 @@ function assertProductionQueryCredentialResolution(observation) {
     !sourceReads.some(event => (
       event.source === 'test-default'
       || event.operation === 'fallback'
-      || event.key === 'ARGO_NEO4J_URI'
-      || event.key === 'ARGO_NEO4J_USERNAME'
-      || event.key === 'ARGO_NEO4J_PASSWORD'
     )),
     'SP03_PRODUCTION_QUERY_PROHIBITED_SOURCE_PATH',
+  );
+  const legacyInspectionReads = sourceReads.filter(event => LEGACY_SOURCE_KEYS.includes(event.key));
+  assert.deepStrictEqual(
+    legacyInspectionReads.map(event => event.key).sort(),
+    [...LEGACY_SOURCE_KEYS].sort(),
+    'SP03_PRODUCTION_QUERY_LEGACY_INSPECTION_MISSING',
   );
   assert.deepStrictEqual(
     observation.productionEvents.map(event => event.kind),
@@ -842,6 +921,57 @@ function assertProductionQueryCredentialResolution(observation) {
     ],
     'SP03_PRODUCTION_QUERY_BOUNDARY_ORDER_MISMATCH',
   );
+}
+
+function assertProductionQueryMixedLegacyRejections(outcomes) {
+  assert.deepStrictEqual(
+    outcomes.map(outcome => outcome.fixture.mixedLegacyKey),
+    [...LEGACY_SOURCE_KEYS],
+    'SP03_PRODUCTION_QUERY_MIXED_LEGACY_MATRIX_INCOMPLETE',
+  );
+  for (const { fixture, observation } of outcomes) {
+    assert.deepStrictEqual(
+      observation.resolverOptions,
+      [{ repositoryRoot: repoRoot, useCase: 'production-semantic-query' }],
+      `SP03_MIXED_LEGACY_PRODUCTION_USE_CASE_NOT_REQUESTED:${fixture.mixedLegacyKey}`,
+    );
+    assert(
+      !observation.error,
+      `SP03_MIXED_LEGACY_ORCHESTRATION_ERROR:${fixture.mixedLegacyKey}:${
+        observation.error && (observation.error.category || observation.error.message)
+      }`,
+    );
+    const sourceReads = observation.sourceLedger.filter(event => event.kind === 'credential-source-resolution');
+    const legacyInspectionReads = sourceReads.filter(event => (
+      event.source === 'process'
+      && event.operation === 'direct'
+      && LEGACY_SOURCE_KEYS.includes(event.key)
+    ));
+    assert.deepStrictEqual(
+      legacyInspectionReads.map(event => event.key).sort(),
+      [...LEGACY_SOURCE_KEYS].sort(),
+      `SP03_ACTUAL_MIXED_LEGACY_INSPECTION_MISSING:${fixture.mixedLegacyKey}`,
+    );
+    assert.strictEqual(
+      observation.result && observation.result.status,
+      'failed',
+      `SP03_ACTUAL_MIXED_LEGACY_SOURCE_ACCEPTED:${fixture.mixedLegacyKey}`,
+    );
+    assert.strictEqual(
+      observation.result.error && observation.result.error.category,
+      'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+      `SP03_ACTUAL_MIXED_LEGACY_CATEGORY_MISMATCH:${fixture.mixedLegacyKey}`,
+    );
+    assert.deepStrictEqual(
+      observation.productionEvents,
+      [],
+      `SP03_ACTUAL_MIXED_LEGACY_DOWNSTREAM_USE:${fixture.mixedLegacyKey}`,
+    );
+    assert(
+      !(observation.result.result && observation.result.result.configurationEvidence),
+      `SP03_ACTUAL_MIXED_LEGACY_ATTRIBUTED_OR_SELECTED:${fixture.mixedLegacyKey}`,
+    );
+  }
 }
 
 function assertAnchoredGraphTidyCompatibility(observation) {
@@ -1474,6 +1604,7 @@ module.exports = {
   assertFullSnapshotCompatibility,
   assertLegacyControlWordProductionGate,
   assertProductionQueryCredentialResolution,
+  assertProductionQueryMixedLegacyRejections,
   assertReadinessMatrix,
   assertZeroResultChannels,
   inspectFrozenRawEvidenceContract,
@@ -1481,6 +1612,7 @@ module.exports = {
   runAnchoredGraphTidyCompatibilityControl,
   runCredentialSourceMatrix,
   runProductionQueryCredentialResolution,
+  runProductionQueryMixedLegacyRejections,
   runDefaultMcpNeo4jVectorRetrieval,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,

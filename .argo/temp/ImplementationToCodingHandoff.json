@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T02:12:00+08:00",
+  "generatedAt": "2026-07-27T02:35:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P2 final-delivery RED correction after production commit 1ee9c370809e0334efdc40282f304e0db7294b36. CodingAndReparing is authorized to repair exactly two defects: define a trusted non-E2E production-semantic-query credential use case shared by liveEmbeddingProviderConfig.js and defaultSemanticRetrieval.js, and make every graph-tidy request in systemarchitecture-mcp-server.js bypass credentials/readiness/provider/vector work regardless of anchors. The source contract requires all approved profile, Neo4j, and provider-secret values from direct process or protected canonical-file sources without test/default, legacy, fallback, unsafe, conflicting, untrusted, or E2E-opt-in credentials. Historical WP-P1/W3.1 pre-coding baseline metadata is retained only to freeze provider E2E opt-in and secret-isolation regressions; it adds no Coding target or task. DT-07 preserves all five same-element dispatch categories: each of the four ordinary semantic categories must first pass the full parameterized closure-policy assertion, including a non-empty policy id, before policy-id uniqueness is evaluated; graph-tidy is the fifth canonical full-snapshot bypass with zero semantic operations and no required semantic closure policy id. The independently uninjected production graph-tidy defect remains isolated to SP-04. Existing WP-P1 E2E opt-in/security behavior, wrapper-arg4 compatibility injection, no-argument snapshots, persistent retrieval/readiness/closure, accepted intent, SP-05/WP-P3, production cleanup, CLI/docs/release work, and argo-mcp-server.js remain frozen.",
+  "summary": "WP-P2 final R3 security RED correction after coding commit dd17403b1136b3df066a1572452a6e168d0917d1. CodingAndReparing is authorized to change only liveEmbeddingProviderConfig.js so production-semantic-query directly inspects all three prohibited legacy Neo4j aliases and rejects SECRET_SOURCE_PROVENANCE_PROHIBITED when any alias coexists with otherwise valid canonical external credentials. Inspection is mandatory, but legacy values may never be attributed, selected, returned, or used downstream. Historical WP-P1/W3.1 pre-coding baseline metadata remains frozen and adds no Coding authorization. The already-delivered default module use-case request, threshold-all retrieval, readiness, closure, DT-06/DT-07, universal anchored/unanchored graph-tidy bypass, WP-P1 E2E opt-in/security behavior, wrapper-arg4 compatibility injection, no-argument snapshots, accepted intent, SP-05/WP-P3, production cleanup, CLI/docs/release work, defaultSemanticRetrieval.js, systemarchitecture-mcp-server.js, and argo-mcp-server.js remain frozen.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -16,20 +16,19 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
       "entryPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-      "controlPoint": "Invoke typed implementation-design and unrelated semantic queries through getSystemArchitecture with no caller/Harness semantic retrieval or runtime dependency argument while the module-owned callback composition supplies exactly raw source behavior, filesystem/git/ACL metadata adapters, provider transport, and Neo4j driver operations. Exercise approved process resolution plus missing, unsafe-file, conflicting, legacy-alias, test/default, and fallback sources, aligned multi-window persistent records, and graph-tidy bypass.",
-      "observationPoint": "Prohibited sources reject before readiness/provider/vector effects; the approved path directly reads and attributes every required key before readiness, performs one exact qwen3.7-text-embedding 1024-dimensional request, and sends that raw vector unchanged to exact argo_production_semantic_element_vector, argo_production_semantic_relationship_vector, and argo_production_semantic_view_vector parameterized db.index.vector.queryNodes calls. Expanding top-k follows correlated raw continuation to independent exhaustion, while an all-zero result still proves readiness, embedding, and one exhausted sequence per channel. Closure binds exact seed IDs to w5.implementation-design.v1 and declared ArchiMate direction, returns endpoint objects/versions and the complete selected View metadata, viewpoint, parent, ordered versioned members and relationship endpoints while excluding overlap cascade, provides unique first-inclusion provenance for every returned object, preserves canonical/content/index versions, and keeps graph-tidy an exact snapshot.",
+      "controlPoint": "Invoke typed implementation-design and unrelated semantic queries through getSystemArchitecture with no caller/Harness semantic retrieval or runtime dependency argument while the module-owned callback composition supplies exactly raw source behavior, filesystem/git/ACL metadata adapters, provider transport, and Neo4j driver operations. Exercise approved process resolution plus missing, unsafe-file, conflicting, legacy-only, each mixed canonical-plus-one-legacy-alias, test/default, and fallback source; preserve aligned multi-window retrieval and graph-tidy bypass.",
+      "observationPoint": "Production-semantic-query must directly inspect ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD. Any present legacy alias rejects with SECRET_SOURCE_PROVENANCE_PROHIBITED before configuration attribution/selection, readiness, provider, or vector effects. The approved path still directly reads and attributes every canonical required key before readiness and preserves exact embedding/vector retrieval, expanding threshold-all windows, zero-result execution, deterministic closure, complete View/endpoints/provenance, and canonical/content/index versions.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-      "failureReason": "SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED: actual resolver options are repositoryRoot plus requiredOptIns:[]"
+      "failureReason": "SP03_ACTUAL_MIXED_LEGACY_INSPECTION_MISSING: actual uninjected production-semantic-query skips direct legacy alias inspection and accepts mixed canonical-plus-legacy sources"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
       "entryPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
       "controlPoint": "Invoke the same shipped default uninjected MCP path against exact raw persistent readiness records for structural-only SemanticIndexPending, missing View partial state, stale canonical version, failed, unknown, ArchitectureRelationship content-version mismatch, View index-version mismatch, and complete alignment, then invoke no-argument and graph-tidy controls.",
       "observationPoint": "One total ledger proves approved credential reads precede readiness, readiness precedes provider, and provider precedes vector windows. Every non-aligned request rejects at the readiness event with SEMANTIC_INDEX_NOT_ALIGNED, exact fixture state, canonical/content/index versions, exact missing and mismatched channels, and fullSnapshotFallback:false; only complete alignment continues; no-argument and graph-tidy remain exact snapshots.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js",
-      "failureReason": "SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-06-Provider-E2E",
@@ -99,65 +98,31 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
       "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-      "failureSignal": "A realistic direct approved production-query source is rejected because requiredOptIns cannot represent a trusted non-E2E operation.",
-      "nextAction": "Add the explicit production-semantic-query use case to the trusted source-adapter contract. It requires the nine approved configuration values and full issued trace validation but no ARGO_LIVE_PROVIDER_E2E or ARGO_W31_LIVE_MUTATION_VECTOR_E2E opt-in. Preserve all existing E2E required-opt-in paths and every rejection for test/default, legacy, fallback, unsafe file, conflict, unknown secret, forged/mutable/invalid trace, and prohibited runtime fields."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
-      "failureSignal": "createProductionComposition passes requiredOptIns:[], which liveEmbeddingProviderConfig rejects as SOURCE_ADAPTER_UNTRUSTED before readiness.",
-      "nextAction": "Request the trusted production-semantic-query source-adapter use case instead of passing an empty opt-in list. Preserve the deep retrieval module, raw test composition, approved-source rejection matrix, readiness ordering, provider transport, Neo4j vector retrieval, closure, and version/provenance behavior."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "Anchored graph-tidy requests enter semantic credential/readiness/retrieval instead of returning the exact canonical snapshot with zero operations.",
-      "nextAction": "Make purpose=graph-tidy an unconditional full-snapshot bypass independent of anchors. Preserve query validation, no-argument snapshots, wrapper-arg4 deterministic test dependencies, ordinary semantic production gating, and all non-graph-tidy behavior."
+      "failureSignal": "Production-semantic-query omits direct inspection of ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD, allowing otherwise-valid canonical credentials to coexist with prohibited legacy aliases.",
+      "nextAction": "Always inspect all three legacy Neo4j alias keys through issued direct source traces for production-semantic-query. If any is present, reject SECRET_SOURCE_PROVENANCE_PROHIBITED before returning configuration evidence or reaching readiness/provider/vector work. Never attribute, select, normalize, or use legacy values. Preserve the non-E2E use case, canonical-source success, all source/trace/ACL/opt-in rejection behavior, and every delivered R4/retrieval/readiness/closure boundary."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "WP-P2 final-delivery repair only. First add the trusted production-semantic-query credential use case without E2E opt-ins while preserving every WP-P1 source/trace/ACL/opt-in rejection; then have defaultSemanticRetrieval request that use case; then make graph-tidy an unconditional anchored-or-unanchored snapshot bypass; finally run frozen WP-P2, compatibility, security guards, and the full runner. Only liveEmbeddingProviderConfig.js, defaultSemanticRetrieval.js, and systemarchitecture-mcp-server.js are authorized production scope. Tests, Harnesses, contracts, argo-mcp-server.js, productionGraphRagRuntime.js, WP-P1 behavior, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, and accepted intent are frozen. Only runArchitectureTests may refresh deliveryStatus and failure records; editing, reverting, or fabricating runner-owned deliveryStatus by hand is forbidden.",
+    "executionStrategy": "WP-P2 final R3 security repair only. Modify only liveEmbeddingProviderConfig.js to inspect and reject mixed canonical-plus-legacy production-query sources without attributing or using legacy values. defaultSemanticRetrieval.js, systemarchitecture-mcp-server.js, tests, Harnesses, contracts, R4, closure, argo-mcp-server.js, productionGraphRagRuntime.js, WP-P1 behavior, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, and accepted intent are frozen. Only runArchitectureTests may refresh deliveryStatus and failure records; editing, reverting, or fabricating runner-owned deliveryStatus by hand is forbidden.",
     "tasks": [
       {
-        "taskId": "WP-P2-R3",
-        "title": "Add trusted production-query credential use case",
-        "objective": "Allow realistic approved external production-query configuration to pass trusted source resolution without E2E-only opt-ins.",
+        "taskId": "WP-P2-R3-Security",
+        "title": "Reject mixed canonical and legacy credential sources",
+        "objective": "Fail closed when any prohibited legacy Neo4j alias coexists with otherwise valid canonical production-query credentials.",
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"
+          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js"
         ],
         "steps": [
-          "Extend the issued source-adapter resolver options with the exact production-semantic-query use case; reject unknown use cases and invalid option combinations.",
-          "For production-semantic-query require all nine approved configuration keys, direct issued traces, canonical protected file rules, approved profile equality, and no E2E opt-in.",
-          "Preserve ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E requirements for their existing operations and preserve every prohibited source/trace/file/runtime-field rejection.",
-          "Replace defaultSemanticRetrieval's requiredOptIns:[] call with the explicit production-semantic-query use case.",
-          "Pass the frozen realistic source regression through credential resolution, one readiness operation, one provider operation, and one Neo4j vector operation in order."
+          "Inspect ARGO_NEO4J_URI, ARGO_NEO4J_USERNAME, and ARGO_NEO4J_PASSWORD with issued direct process-source traces during production-semantic-query resolution.",
+          "Reject SECRET_SOURCE_PROVENANCE_PROHIBITED when any inspected legacy alias is present, including each mixed canonical-plus-one-alias fixture.",
+          "Return no configuration attribution/evidence and perform no readiness, provider, driver, or vector operation on mixed-source rejection.",
+          "Preserve valid canonical production-semantic-query success without E2E opt-ins and preserve every existing source/trace/file/runtime-field rejection.",
+          "Run SP-03/SP-04, credential/WP-P2/compatibility guards, and the full architecture runner."
         ],
-        "completionSignal": "SP-03 passes the realistic valid external-source progression without E2E attribution while all seven prohibited source fixtures and the original no-credential control-word probe still reject correctly."
-      },
-      {
-        "taskId": "WP-P2-R4",
-        "title": "Make graph-tidy bypass independent of anchors",
-        "objective": "Return the exact canonical snapshot for every graph-tidy request without semantic side effects.",
-        "dependsOn": [
-          "WP-P2-R3"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "Remove the anchor-dependent condition from the graph-tidy full-snapshot dispatch only.",
-          "Prove anchored and unanchored graph-tidy responses exactly equal the canonical snapshot.",
-          "Prove anchored graph-tidy performs zero credential, readiness, provider, and vector operations.",
-          "Preserve all ordinary semantic production gating and explicit wrapper-arg4 test dependency behavior."
-        ],
-        "completionSignal": "SP-04 passes anchored and unanchored graph-tidy snapshot controls with zero operations, all guards pass, full runner is 42/42 with empty failure records, and no delivered baseline regresses."
+        "completionSignal": "SP-03 proves direct inspection of all three aliases, exact rejection for every mixed fixture, zero legacy attribution/use/downstream effects, and unchanged canonical-source success; SP-04 and all frozen compatibility/closure/security controls remain passed; the full runner is 42/42 with no delivered baseline regression."
       }
     ]
   },

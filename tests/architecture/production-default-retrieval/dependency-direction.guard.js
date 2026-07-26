@@ -5,8 +5,6 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const allowedTargets = new Set([
-  '.argo/scripts/systemarchitecture-mcp-server.js',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
 ]);
 
@@ -17,7 +15,7 @@ const authorizedTargetPaths = (handoff.codingTargets || []).map(target => target
 assert.deepStrictEqual(
   authorizedTargetPaths,
   [...allowedTargets].sort(),
-  'WP_P2_DEPENDENCY_DIRECTION_GUARD: Coding targets must equal the exact three-file authorization',
+  'WP_P2_DEPENDENCY_DIRECTION_GUARD: Coding targets must equal the exact final R3 security-file authorization',
 );
 assert.deepStrictEqual(
   authorizedTargetPaths.filter(target => (handoff.frozenFiles || []).includes(target)),

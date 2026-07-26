@@ -11,11 +11,13 @@ const entries = new Map([
     'runDefaultMcpNeo4jVectorRetrieval',
     'runLegacyControlWordProductionGate',
     'runProductionQueryCredentialResolution',
+    'runProductionQueryMixedLegacyRejections',
     'runZeroResultDefaultMcpRetrieval',
     'assertCredentialSourceMatrix',
     'assertDefaultVectorRetrieval',
     'assertLegacyControlWordProductionGate',
     'assertProductionQueryCredentialResolution',
+    'assertProductionQueryMixedLegacyRejections',
     'assertZeroResultChannels',
     'assertFullSnapshotCompatibility',
   ]],
@@ -74,6 +76,9 @@ assert.deepStrictEqual(rawContract.credentialSourceCases, [
   { name: 'unsafe-file-acl', expectedStatus: undefined, expectedCategory: 'SECRET_FILE_ACL_UNSAFE' },
   { name: 'conflicting-dual-source', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_CONFLICT' },
   { name: 'legacy-neo4j-alias', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
+  { name: 'mixed-canonical-argo-neo4j-uri', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
+  { name: 'mixed-canonical-argo-neo4j-username', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
+  { name: 'mixed-canonical-argo-neo4j-password', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
   { name: 'test-default-source', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
   { name: 'fallback-source', expectedStatus: undefined, expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED' },
 ]);
@@ -123,6 +128,9 @@ assert.deepStrictEqual(rawContract.productionQueryCredentialContract, {
   actualUninjectedMcp: true,
   requiredResolverOptions: ['repositoryRoot', 'useCase'],
   prohibitedOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+  requiredLegacyInspectionKeys: ['ARGO_NEO4J_URI', 'ARGO_NEO4J_USERNAME', 'ARGO_NEO4J_PASSWORD'],
+  legacyAttributionOrSelectionForbidden: true,
+  mixedCanonicalLegacyCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED',
   eventProducer: 'production-code',
   requiredBoundaryOrder: [
     'credential-source-resolution',
@@ -194,6 +202,16 @@ for (const rawProperty of [
   'SP03_DEFAULT_RETRIEVAL_PRODUCTION_USE_CASE_NOT_REQUESTED',
   'SP03_PRODUCTION_QUERY_NON_DIRECT_SOURCE_OPERATION',
   'SP03_PRODUCTION_QUERY_PROHIBITED_SOURCE_PATH',
+  'SP03_PRODUCTION_QUERY_LEGACY_INSPECTION_MISSING',
+  'SP03_MIXED_LEGACY_INSPECTION_MISSING',
+  'SP03_MIXED_LEGACY_SOURCE_ACCEPTED',
+  'SP03_MIXED_LEGACY_ATTRIBUTED_OR_SELECTED',
+  'SP03_MIXED_LEGACY_DOWNSTREAM_USE',
+  'SP03_PRODUCTION_QUERY_MIXED_LEGACY_MATRIX_INCOMPLETE',
+  'SP03_ACTUAL_MIXED_LEGACY_INSPECTION_MISSING',
+  'SP03_ACTUAL_MIXED_LEGACY_SOURCE_ACCEPTED',
+  'SP03_ACTUAL_MIXED_LEGACY_ATTRIBUTED_OR_SELECTED',
+  'SP03_ACTUAL_MIXED_LEGACY_DOWNSTREAM_USE',
   'SP03_PRODUCTION_QUERY_BOUNDARY_ORDER_MISMATCH',
   'SP04_ANCHORED_GRAPH_TIDY_NOT_FULL_SNAPSHOT',
   'SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS',
@@ -258,7 +276,10 @@ assert(
 const productionCredentialScenario = harness.slice(productionCredentialStart, productionCredentialEnd);
 assert(
   productionCredentialScenario.includes("callTool('getSystemArchitecture'")
-    && productionCredentialScenario.includes('liveConfiguration.resolveApprovedLiveConfiguration = options =>'),
+    && productionCredentialScenario.includes('liveConfiguration.resolveApprovedLiveConfiguration = options =>')
+    && productionCredentialScenario.includes('runProductionQueryMixedLegacyRejections')
+    && productionCredentialScenario.includes('item.mixedLegacyKey')
+    && productionCredentialScenario.includes('runActualProductionQueryCredentialScenario'),
   'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: credential RED must invoke actual uninjected MCP orchestration with raw source instrumentation',
 );
 assert(
