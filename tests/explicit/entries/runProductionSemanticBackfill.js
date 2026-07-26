@@ -10,7 +10,34 @@ async function main() {
   // WHEN an explicitly opted-in bounded production semantic backfill is interrupted, resumed, and rerun
   const observation = await runProductionSemanticBackfill();
 
-  // THEN structural projection completes before semantic work and no fake canonical mutation occurs
+  // THEN missing opt-in, mismatched structural version, credentials, or qualification fail before side effects
+  assert.strictEqual(
+    observation.missingOptIn.category,
+    'SP01_EXPLICIT_OPT_IN_REQUIRED',
+    'SP01_MISSING_OPT_IN_NOT_BLOCKED',
+  );
+  assert.strictEqual(
+    observation.structuralVersionMismatch.category,
+    'SP01_STRUCTURAL_VERSION_MISMATCH',
+    'SP01_STRUCTURAL_VERSION_MISMATCH_NOT_BLOCKED',
+  );
+  assert.strictEqual(
+    observation.missingCredentials.category,
+    'EXTERNAL_CREDENTIALS_REQUIRED',
+    'SP01_MISSING_EXTERNAL_CREDENTIALS_NOT_BLOCKED',
+  );
+  assert.strictEqual(
+    observation.missingQualification.category,
+    'EMBEDDING_QUALIFICATION_REQUIRED',
+    'SP01_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
+  );
+
+  // THEN the MCP operator reaches runtime production composition after structural projection without fake mutation
+  assert.strictEqual(
+    observation.operatorName,
+    'backfillSystemArchitectureSemanticProjection',
+    'SP01_MCP_OPERATOR_NOT_EXPOSED',
+  );
   const structuralCompletionIndex = observation.events.indexOf('structural-projection-complete');
   const firstProviderBatchIndex = observation.events.findIndex(event => event.startsWith('provider-batch:'));
   assert(structuralCompletionIndex >= 0, 'SP01_STRUCTURAL_PROJECTION_COMPLETION_REQUIRED');
@@ -20,8 +47,9 @@ async function main() {
     observation.originalCanonicalJson,
     'SP01_FAKE_CANONICAL_MUTATION_PROHIBITED',
   );
+  assert.strictEqual(observation.canonicalMutationAttempts, 0, 'SP01_FAKE_CANONICAL_MUTATION_TRIGGERED');
 
-  // THEN bounded checkpoints survive interruption, isolate failures, and resume without restarting completed work
+  // THEN durable checkpoints survive interruption and independent probes detect any replay on resume
   assert.strictEqual(
     observation.interruption && observation.interruption.category,
     'SP01_SYNTHETIC_INTERRUPTION',
@@ -33,10 +61,24 @@ async function main() {
     observation.isolatedFailures.some(failure => failure.canonicalIdentity === 'View:view-beta'),
     'SP01_ISOLATED_RECORD_FAILURE_MISSING',
   );
-  assert.strictEqual(
-    observation.resumed && observation.resumed.resumedFromCheckpoint,
-    true,
-    'SP01_RESUME_RESTARTED_COMPLETED_WORK',
+  assert(observation.completedBeforeResume.length > 0, 'SP01_PRE_RESUME_COMPLETED_IDENTITIES_MISSING');
+  assert.deepStrictEqual(
+    observation.replayedProviderIdentities,
+    [],
+    'SP01_RESUME_REEMBEDDED_COMPLETED_IDENTITY',
+  );
+  assert.deepStrictEqual(
+    observation.replayedUpsertIdentities,
+    [],
+    'SP01_RESUME_REUPSERTED_COMPLETED_IDENTITY',
+  );
+  assert(
+    observation.durableCheckpointOperations.some(operation => operation.kind === 'semantic-checkpoint-write'),
+    'SP01_DURABLE_CHECKPOINT_COMPOSITION_MISSING',
+  );
+  assert(
+    observation.durableAdapterOperations.some(operation => operation.kind === 'semantic-record-upsert'),
+    'SP01_DURABLE_PROJECTION_ADAPTER_COMPOSITION_MISSING',
   );
 
   // THEN all three channels persist stable identity and complete versioned vector metadata

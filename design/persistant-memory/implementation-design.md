@@ -258,3 +258,10 @@
 - IntentionDesign sequencing commit `5ed151d9f6c21f44e92778641cb379215d74769c` unmounted future SP-03/SP-04/SP-05 acceptance boundaries while preserving their semantics and ownership; SP-01/SP-02 remain mounted and approved. The rejected temporary trace proposal was removed after this canonical disposition.
 - Fresh pre-handoff rerun evidence remains intentional and exact: SP-01 exits 1 with `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING`; SP-02 exits 1 with `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`; all four WP-P1 critical guards exit 0.
 - Coding/Repair remains unapproved and unstarted. Neo4j synchronization remains blocked by `neo4jUri is required for start`.
+
+## 2026-07-26 WP-P1 testcase audit correction
+
+- IntentionDesign audit commit `edd90aecf5ed961f5f7840833692143bf9cfb505` rejected the first WP-P1 stage commit because injected test stores/checkpoints, self-reported resume evidence, incomplete negative gates, weak no-cleanup/no-runId checks, and absent runtime/MCP composition could false-pass without a durable production path.
+- Corrected the frozen Harness and explicit entries to require concrete production Neo4j projection and checkpoint factories over a deterministic recording raw driver, explicit MCP operator → runtime composition, independent provider/upsert identity replay observations, negative opt-in/version/configuration/qualification gates with zero side effects, exact four-method store reflection, and pre-persistence rejection of runId-bearing records.
+- Added Coding targets for `productionSemanticNeo4jAdapter.js` and `productionSemanticCheckpointStore.js`; contracts now require those factories, `runSemanticBackfill(request)`, explicit `backfillSystemArchitectureSemanticProjection` exposure, and no structural/fake-mutation trigger.
+- The handoff records the committed `40 total / 38 passed / 2 expected RED / 0 missing acceptanceCriteria` baseline and all 21 runner-owned delivery transitions, including the 19 named dependency cascades. Coding/Repair, WP-P2, WP-P3, future-wave mounts, live-E2E cleanup implementation, and manual deliveryStatus edits remain prohibited.

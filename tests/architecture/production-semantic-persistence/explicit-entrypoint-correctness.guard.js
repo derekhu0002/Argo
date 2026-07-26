@@ -10,13 +10,22 @@ const requirements = new Map([
     'WHEN',
     'THEN',
     'SP01_STRUCTURAL_PROJECTION_COMPLETION_REQUIRED',
+    'SP01_MISSING_OPT_IN_NOT_BLOCKED',
+    'SP01_STRUCTURAL_VERSION_MISMATCH_NOT_BLOCKED',
+    'SP01_MISSING_EXTERNAL_CREDENTIALS_NOT_BLOCKED',
+    'SP01_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
+    'SP01_MCP_OPERATOR_NOT_EXPOSED',
     'SP01_BOUNDED_BATCH_EXCEEDED',
     'SP01_CHANNEL_CHECKPOINTS_INCOMPLETE',
     'SP01_ISOLATED_RECORD_FAILURE_MISSING',
-    'SP01_RESUME_RESTARTED_COMPLETED_WORK',
+    'SP01_RESUME_REEMBEDDED_COMPLETED_IDENTITY',
+    'SP01_RESUME_REUPSERTED_COMPLETED_IDENTITY',
+    'SP01_DURABLE_CHECKPOINT_COMPOSITION_MISSING',
+    'SP01_DURABLE_PROJECTION_ADAPTER_COMPOSITION_MISSING',
     'SP01_THREE_CHANNEL_BACKFILL_INCOMPLETE',
     'SP01_IDEMPOTENT_RERUN_WROTE_DUPLICATES',
     'SP01_FAKE_CANONICAL_MUTATION_PROHIBITED',
+    'SP01_FAKE_CANONICAL_MUTATION_TRIGGERED',
     'SP01_ALIGNMENT_BEFORE_ALL_CHANNELS_COMPLETE',
   ]],
   ['tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js', [
@@ -25,10 +34,18 @@ const requirements = new Map([
     'WHEN',
     'THEN',
     'SP02_DURABLE_RESTART_RECORDS_MISSING',
+    'SP02_MISSING_EXTERNAL_CREDENTIALS_NOT_BLOCKED',
+    'SP02_MISSING_CREDENTIALS_REACHED_PERSISTENCE',
+    'SP02_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
+    'SP02_MISSING_QUALIFICATION_REACHED_PERSISTENCE',
     'SP02_STABLE_CANONICAL_IDENTITY_CHANGED_ON_RESTART',
     'SP02_CHANGED_RECORD_NOT_STABLE_IDENTITY_UPSERT',
     'SP02_TOMBSTONE_NOT_DELETED',
-    'SP02_PRODUCTION_RUNID_CLEANUP_PROHIBITED',
+    'SP02_STORE_PUBLIC_SURFACE_NOT_EXACT',
+    'SP02_PRODUCTION_RUNID_RECORD_NOT_BLOCKED',
+    'SP02_RUNID_RECORD_REACHED_PERSISTENCE',
+    'SP02_PRODUCTION_RECORD_RUNID_PROHIBITED',
+    'SP02_DURABLE_NEO4J_ADAPTER_NOT_EXERCISED',
     'SP02_LIVE_E2E_CLEANUP_DELETED_PRODUCTION_RECORD',
     'SP02_PROJECTION_MUTATED_CANONICAL_JSON',
     'SP02_NEO4J_BECAME_CANONICAL_AUTHORITY',
@@ -46,6 +63,25 @@ for (const [entryPath, expectedAssertions] of requirements) {
     assert(source.includes(expected), `WP_P1_ENTRYPOINT_GUARD: ${entryPath} omits ${expected}`);
   }
 }
+
+const harness = read('tests/harness/productionSemanticPersistenceHarness.js');
+for (const requiredBoundary of [
+  'createProductionSemanticNeo4jAdapter',
+  'createProductionSemanticCheckpointStore',
+  'createProductionGraphRagRuntime',
+  'backfillSystemArchitectureSemanticProjection',
+  'completedBeforeResume',
+  'replayedProviderIdentities',
+  'replayedUpsertIdentities',
+  'assertZeroSemanticSideEffects',
+  'assertExactStoreContract',
+]) {
+  assert(harness.includes(requiredBoundary), `WP_P1_ENTRYPOINT_GUARD: Harness omits ${requiredBoundary}`);
+}
+assert(
+  !harness.includes('function createDurableProjectionAdapter'),
+  'WP_P1_ENTRYPOINT_GUARD: Harness substitutes an in-memory production projection adapter',
+);
 
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 for (const entryPath of requirements.keys()) {

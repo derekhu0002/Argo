@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T21:23:00+08:00",
+  "generatedAt": "2026-07-26T21:42:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "WP-P1 ImplementationDesign materializes a separate durable production semantic projection path and explicit bounded, resumable, idempotent three-channel backfill after structural projection. Coding remains unauthorized until separate human approval; this artifact freezes SP-01/SP-02 RED entrypoints and four critical guards while excluding WP-P2, WP-P3, live-E2E cleanup changes, and manual deliveryStatus edits.",
   "implementationContracts": [
@@ -16,8 +16,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
       "entryPath": "tests/explicit/entries/runProductionSemanticBackfill.js",
-      "controlPoint": "After verified structural projection, explicitly run bounded production backfill over pre-existing canonical Element, ArchitectureRelationship, and View records; interrupt, resume, isolate one record failure, and rerun.",
-      "observationPoint": "Independent complete channels, stable identity, complete canonical/content/index/provider/model/version/dimensions/vector metadata, checkpoints, retry/failure evidence, resume without restarting completed work, idempotent rerun, no fake canonical mutation, and final-only alignment.",
+      "controlPoint": "Invoke the explicit MCP operator through runtime composition after opt-in and same-version structural projection, using concrete production Neo4j projection/checkpoint factories; also exercise missing opt-in, version mismatch, missing credentials, and missing qualification before bounded interruption, resume, isolated failure, and rerun.",
+      "observationPoint": "Blocked scenarios have zero provider/store/checkpoint/index side effects; independent provider and durable-upsert probes detect no completed-identity replay; all channels, metadata, checkpoints, idempotence, no fake canonical mutation trigger, explicit operator exposure, and final-only alignment are observed.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticBackfill.js",
       "failureReason": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING"
@@ -25,8 +25,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
       "entryPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-      "controlPoint": "Use the separate production semantic store across restart, update one stable canonical identity, delete one tombstone, and run unrelated existing live-E2E runId cleanup.",
-      "observationPoint": "Unchanged records and complete metadata survive restart and test cleanup, the changed record upserts in place, the tombstone disappears, production exposes no runId cleanup, canonical JSON remains authority, and Neo4j remains subordinate.",
+      "controlPoint": "Use the concrete production Neo4j adapter and exact-surface production semantic store across restart, missing release gates, update, tombstone, prohibited runId input, and unrelated existing live-E2E runId cleanup.",
+      "observationPoint": "Blocked paths have zero persistence side effects; records and metadata survive restart and test cleanup; changed identity upserts; tombstone disappears; the exact four-method API exposes no cleanup; runId records are rejected; canonical JSON remains authority; and Neo4j remains subordinate.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
       "failureReason": "SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING"
@@ -82,6 +82,18 @@
       "nextAction": "Implement the separate production store over a durable persistence adapter with stable-identity upsert, tombstone deletion, complete metadata validation, restart durability, no runId or production cleanup API, and canonical-authority enforcement."
     },
     {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js",
+      "failureSignal": "SP02_PRODUCTION_NEO4J_ADAPTER_MISSING",
+      "nextAction": "Implement the concrete durable production Neo4j projection adapter consumed by the store; deterministic tests may record the raw driver beneath this adapter but may not replace the adapter with an in-memory production store."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
+      "failureSignal": "SP01_DURABLE_CHECKPOINT_STORE_MISSING",
+      "nextAction": "Implement the concrete durable per-channel checkpoint store over the configured Neo4j driver, including completed canonical identities needed for independent no-replay verification."
+    },
+    {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
       "failureSignal": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING",
@@ -105,13 +117,15 @@
           "ExplicitAcceptanceTestcase-SP-02-PersistentProjection"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js"
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js",
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js"
         ],
         "steps": [
-          "Require external configuration and the existing canonical-authority policy before opening durable persistence.",
+          "Require external configuration and provider qualification before opening durable persistence, with zero blocked-path driver effects.",
+          "Compose the production store through createProductionSemanticNeo4jAdapter over the raw configured driver; never substitute a test persistence store.",
           "Validate stable canonical identity plus channel, canonical/content/index, provider/model/modelVersion/dimensions, and vector metadata.",
           "Upsert changed records by canonical identity and delete only explicit tombstones.",
-          "Expose no runId or cleanup method and never import liveEmbeddingNeo4jBoundary.js or write canonical JSON."
+          "Expose exactly upsertRecords, deleteTombstones, readRecords, and close; reject runId-bearing records before persistence; never import liveEmbeddingNeo4jBoundary.js or write canonical JSON."
         ],
         "completionSignal": "SP-02 passes restart, changed-record upsert, tombstone deletion, test-cleanup isolation, metadata, and authority assertions."
       },
@@ -126,13 +140,14 @@
           "ExplicitAcceptanceTestcase-SP-01-FullBackfill"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js"
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js"
         ],
         "steps": [
-          "Require explicit opt-in and same-version structural projection completion before provider or persistence calls.",
+          "Require exact explicit opt-in, external credentials, provider qualification, and same-version structural projection completion before provider, store, checkpoint, or index calls.",
           "Read one immutable canonical snapshot and enumerate all Element, ArchitectureRelationship, and View records independently.",
-          "Use bounded batches and durable per-channel totals, cursors, completed counts, retries, and isolated-failure records.",
-          "Resume after checkpoints without replaying completed work; rerun unchanged evidence idempotently.",
+          "Use createProductionSemanticCheckpointStore over the configured durable driver for per-channel totals, cursors, completed counts and identities, retries, and isolated-failure records.",
+          "Resume after checkpoints without replaying completed identities through provider or durable upsert; rerun unchanged evidence idempotently.",
           "Keep non-Aligned for any incomplete channel and align only when all three channels complete for one canonical version."
         ],
         "completionSignal": "SP-01 passes structural ordering, bounded checkpoint/resume, isolated failure, complete metadata, idempotence, no-mutation, and three-channel alignment assertions."
@@ -154,8 +169,8 @@
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Delegate runtime backfill calls inward to semantic-persistence.",
-          "Add backfillSystemArchitectureSemanticProjection as an explicit tool with no automatic fake-mutation trigger.",
+          "Compose concrete production adapter/store/checkpoint/backfill boundaries from semanticPersistence dependencies and delegate runtime runSemanticBackfill calls inward.",
+          "Add backfillSystemArchitectureSemanticProjection as an explicit tool delegating to runtime.runSemanticBackfill, with no automatic structural-mutation or fake-mutation trigger.",
           "Reuse existing external credential and qualified provider boundaries.",
           "Preserve existing live E2E cleanup code unchanged."
         ],
@@ -229,6 +244,7 @@
   "openGaps": [
     "Selected viewpoints remain Requirements Realization Viewpoint and Implementation and Migration Viewpoint. Purpose: WP-P1 handoff preparation for a separate durable production semantic projection and explicit full backfill. Intent commits 9a5899fffbe53342ebe738a85524b8870f3911d9 and 5ed151d9f6c21f44e92778641cb379215d74769c preserve the approved five-element scope: SP-01/SP-02 are executable and mounted; future SP-03/SP-04/SP-05 semantics and ownership are preserved but unmounted until separately authorized.",
     "Pre-coding RED intentionally fails SP-01 with SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING and SP-02 with SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING until separately approved Coding implements the contracted modules.",
+    "Committed pre-coding baseline from ImplementationDesign commit 1c08b31528620bb18c3346d3af44b8b8592c0235: 40 total / 38 passed / 2 expected RED / 0 missing acceptanceCriteria; design/KG/test-failure-records.json contains only SP-01 and SP-02. The runner recorded 21 runner-owned delivery transitions: semprod-backfill-control and semprod-persistent-projection-requirement changed absent-to-not_delivered; 19 cascades changed delivered-to-not_delivered: grag-consumer-role, grag-consumption-process, grag-query-service, grag-mode-validation, grag-seed-retrieval, grag-purpose-closure, grag-intent-decision-policy, grag-implementation-policy, grag-repair-policy, grag-audit-policy, grag-graph-tidy-policy, grag-endpoint-closure, grag-view-closure, grag-provenance, grag-index-lifecycle, grag-mcp-interface, grag-credential-boundary, grag-embedding-provider-adapter, and grag-embedding-generation.",
     "Neo4j synchronization remains an environment blocker with exact incoming evidence: neo4jUri is required for start. No synchronization evidence is inferred or fabricated.",
     "No Coding/Repair approval is recorded. WP-P2, WP-P3, live-E2E cleanup modification, fake canonical mutation, production runId cleanup, and manual deliveryStatus edits remain prohibited."
   ]

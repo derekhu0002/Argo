@@ -36,6 +36,19 @@ assert(
   handoff.frozenFiles.includes(liveEvidencePath),
   'WP_P1_DEPENDENCY_DIRECTION_GUARD: live-E2E cleanup boundary must remain frozen',
 );
+for (const productionTarget of [
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js',
+  '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
+  '.argo/scripts/systemarchitecture-mcp-server.js',
+]) {
+  assert(
+    targetPaths.includes(productionTarget),
+    `WP_P1_DEPENDENCY_DIRECTION_GUARD: handoff omits production composition target ${productionTarget}`,
+  );
+}
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

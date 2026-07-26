@@ -6,6 +6,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graph = JSON.parse(read('design/KG/SystemArchitecture.json'));
 const root = read('OVERALL_ARCHITECTURE.md');
 const local = read('.argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md');
+const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const elements = new Map(graph.elements.map(element => [element.id, element]));
 const requiredMappings = new Map([
   ['semprod-backfill-control', 'tests/explicit/entries/runProductionSemanticBackfill.js'],
@@ -31,6 +32,38 @@ for (const [intentId, entryPath] of requiredMappings) {
   assert(testcasePaths.includes(entryPath), `WP_P1_TRACEABILITY_GUARD: ${intentId} does not mount ${entryPath}`);
   assert(fs.existsSync(path.join(repoRoot, ...entryPath.split('/'))), `WP_P1_TRACEABILITY_GUARD: missing ${entryPath}`);
   assert(local.includes(entryPath), `WP_P1_TRACEABILITY_GUARD: local contract does not own ${entryPath}`);
+}
+
+const handoffEvidence = JSON.stringify(handoff);
+for (const baselineEvidence of [
+  '40 total / 38 passed / 2 expected RED',
+  '21 runner-owned delivery transitions',
+  'grag-consumer-role',
+  'grag-consumption-process',
+  'grag-query-service',
+  'grag-mode-validation',
+  'grag-seed-retrieval',
+  'grag-purpose-closure',
+  'grag-intent-decision-policy',
+  'grag-implementation-policy',
+  'grag-repair-policy',
+  'grag-audit-policy',
+  'grag-graph-tidy-policy',
+  'grag-endpoint-closure',
+  'grag-view-closure',
+  'grag-provenance',
+  'grag-index-lifecycle',
+  'grag-mcp-interface',
+  'grag-credential-boundary',
+  'grag-embedding-provider-adapter',
+  'grag-embedding-generation',
+  'semprod-backfill-control',
+  'semprod-persistent-projection-requirement',
+]) {
+  assert(
+    handoffEvidence.includes(baselineEvidence),
+    `WP_P1_TRACEABILITY_GUARD: handoff baseline omits ${baselineEvidence}`,
+  );
 }
 
 function read(relativePath) {

@@ -10,10 +10,33 @@ async function main() {
   // WHEN the process restarts, one stable identity changes, one identity is tombstoned, and unrelated live-E2E cleanup runs
   const observation = await runPersistentSemanticProjectionLifecycle();
 
+  // THEN configuration and qualification fail closed before durable store or index side effects
+  assert.strictEqual(
+    observation.missingConfiguration.category,
+    'EXTERNAL_CREDENTIALS_REQUIRED',
+    'SP02_MISSING_EXTERNAL_CREDENTIALS_NOT_BLOCKED',
+  );
+  assert.strictEqual(
+    observation.missingConfigurationSideEffects,
+    0,
+    'SP02_MISSING_CREDENTIALS_REACHED_PERSISTENCE',
+  );
+  assert.strictEqual(
+    observation.missingQualification.category,
+    'EMBEDDING_QUALIFICATION_REQUIRED',
+    'SP02_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
+  );
+  assert.strictEqual(
+    observation.missingQualificationSideEffects,
+    0,
+    'SP02_MISSING_QUALIFICATION_REACHED_PERSISTENCE',
+  );
+
   // THEN unchanged complete records survive restart under stable canonical identities
   assert.strictEqual(observation.afterRestart.length, CHANNELS.length, 'SP02_DURABLE_RESTART_RECORDS_MISSING');
   for (const record of observation.afterRestart) {
     assertCompleteMetadata(record, 'SP02_PERSISTED_METADATA_MISSING');
+    assert(!Object.prototype.hasOwnProperty.call(record, 'runId'), 'SP02_PRODUCTION_RECORD_RUNID_PROHIBITED');
   }
   assert.deepStrictEqual(
     new Set(observation.afterRestart.map(record => record.canonicalIdentity)),
@@ -33,17 +56,34 @@ async function main() {
     'SP02_TOMBSTONE_NOT_DELETED',
   );
 
-  // THEN test-only runId cleanup cannot delete production projection state and production exposes no cleanup operation
+  // THEN the exact production API has no cleanup surface and rejects runId-bearing records before persistence
+  assert.deepStrictEqual(
+    observation.publicMethods,
+    ['close', 'deleteTombstones', 'readRecords', 'upsertRecords'],
+    'SP02_STORE_PUBLIC_SURFACE_NOT_EXACT',
+  );
+  assert.strictEqual(
+    observation.runIdRecordBlocked.category,
+    'SP02_PRODUCTION_RUNID_PROHIBITED',
+    'SP02_PRODUCTION_RUNID_RECORD_NOT_BLOCKED',
+  );
+  assert.strictEqual(observation.runIdAttemptSideEffects, 0, 'SP02_RUNID_RECORD_REACHED_PERSISTENCE');
+  assert(
+    observation.durableAdapterOperations.some(operation => operation.kind === 'semantic-record-upsert'),
+    'SP02_DURABLE_NEO4J_ADAPTER_NOT_EXERCISED',
+  );
+
+  // THEN test-only runId cleanup cannot delete production projection state
   assert.deepStrictEqual(observation.testCleanupOperations, ['unrelated-live-e2e-run'], 'SP02_TEST_ONLY_CLEANUP_NOT_OBSERVED');
   assert.deepStrictEqual(observation.remainingTestEvidence, [], 'SP02_TEST_ONLY_CLEANUP_INCOMPLETE');
-  assert(
-    observation.afterLifecycle.some(record => record.canonicalIdentity === observation.changedRecord.canonicalIdentity),
+  assert.strictEqual(
+    observation.afterTestCleanup.length,
+    observation.productionCountBeforeTestCleanup,
     'SP02_LIVE_E2E_CLEANUP_DELETED_PRODUCTION_RECORD',
   );
-  assert(
-    observation.productionOperations.every(operation => operation.operation !== 'cleanup'),
-    'SP02_PRODUCTION_RUNID_CLEANUP_PROHIBITED',
-  );
+  for (const record of observation.afterTestCleanup) {
+    assert(!Object.prototype.hasOwnProperty.call(record, 'runId'), 'SP02_PRODUCTION_RECORD_RUNID_PROHIBITED');
+  }
 
   // THEN canonical JSON remains authority and Neo4j remains a subordinate projection/index
   assert.strictEqual(observation.canonicalWriteAttempts, 0, 'SP02_PROJECTION_MUTATED_CANONICAL_JSON');
