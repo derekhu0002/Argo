@@ -323,7 +323,7 @@ function evaluateCapacityEvidence(request = {}) {
     if (!evidence) {
       throw capacityEvidenceError('DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE', purpose);
     }
-    const resultCardinality = deriveResultCardinality(evidence);
+    const resultCardinality = deriveResultCardinality(evidence, purpose);
     if (!Number.isInteger(resultCardinality) || resultCardinality < 0) {
       throw capacityEvidenceError('DT19_RESULT_CARDINALITY_NOT_RECORDED', purpose);
     }
@@ -352,15 +352,18 @@ function normalizeDeclaredPurposes(purposes) {
 }
 
 function deriveResultCardinality(evidence) {
-  if (Number.isInteger(evidence.resultCardinality)) {
+  const resultIds = selectObservedResultIds(evidence);
+  if (!Array.isArray(resultIds)) {
+    return undefined;
+  }
+  const normalizedResultIds = normalizeStringArray(resultIds);
+  if (Object.prototype.hasOwnProperty.call(evidence, 'resultCardinality')) {
+    if (!Number.isInteger(evidence.resultCardinality) || evidence.resultCardinality !== normalizedResultIds.length) {
+      throw capacityEvidenceError('DT18_RESULT_CARDINALITY_MISMATCH');
+    }
     return evidence.resultCardinality;
   }
-  for (const field of ['observedResultIds', 'resultIds', 'observedClosureIds']) {
-    if (Array.isArray(evidence[field])) {
-      return evidence[field].length;
-    }
-  }
-  return undefined;
+  return normalizedResultIds.length;
 }
 
 function deriveMeasuredPrecision(evidence) {
@@ -400,6 +403,15 @@ function validatePhase1Benchmark(benchmark) {
     if (purpose.observedClosureIds.length === 0) {
       return 'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING';
     }
+    if (!purpose.resultEvidenceProvided) {
+      return 'DT18_RESULT_EVIDENCE_REQUIRED';
+    }
+    if (
+      purpose.resultCardinalityProvided
+      && (!Number.isInteger(purpose.resultCardinality) || purpose.resultCardinality !== purpose.observedResultIds.length)
+    ) {
+      return 'DT18_RESULT_CARDINALITY_MISMATCH';
+    }
     if (!isPrecisionInRange(purpose.precision)) {
       return 'DT18_PRECISION_OUT_OF_RANGE';
     }
@@ -434,17 +446,22 @@ function normalizePhase1Benchmark(benchmark) {
     benchmarkId: benchmark && benchmark.benchmarkId
       ? benchmark.benchmarkId
       : 'w7-phase1-five-purpose-business-benchmark',
-    purposes: Object.freeze(suppliedPurposes.map((purpose, index) => Object.freeze({
-      purpose: purpose.purpose || `purpose-${index + 1}`,
-      mandatoryKeySeedIds: normalizeStringArray(purpose.mandatoryKeySeedIds),
-      expectedClosureIds: normalizeStringArray(purpose.expectedClosureIds),
-      recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
-      observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
-      observedResultIds: normalizeStringArray(selectObservedResultIds(purpose)),
-      resultCardinality: Number.isInteger(purpose.resultCardinality) ? purpose.resultCardinality : undefined,
-      unrelatedForcedHits: purpose.unrelatedForcedHits,
-      precision: purpose.precision,
-    }))),
+    purposes: Object.freeze(suppliedPurposes.map((purpose, index) => {
+      const observedResultIds = selectObservedResultIds(purpose);
+      return Object.freeze({
+        purpose: purpose.purpose || `purpose-${index + 1}`,
+        mandatoryKeySeedIds: normalizeStringArray(purpose.mandatoryKeySeedIds),
+        expectedClosureIds: normalizeStringArray(purpose.expectedClosureIds),
+        recalledKeySeedIds: normalizeStringArray(purpose.recalledKeySeedIds),
+        observedClosureIds: normalizeStringArray(purpose.observedClosureIds),
+        observedResultIds: normalizeStringArray(observedResultIds),
+        resultEvidenceProvided: Array.isArray(observedResultIds),
+        resultCardinality: purpose.resultCardinality,
+        resultCardinalityProvided: Object.prototype.hasOwnProperty.call(purpose, 'resultCardinality'),
+        unrelatedForcedHits: purpose.unrelatedForcedHits,
+        precision: purpose.precision,
+      });
+    })),
   });
 }
 
@@ -455,7 +472,7 @@ function selectObservedResultIds(purpose) {
   if (Array.isArray(purpose.resultIds)) {
     return purpose.resultIds;
   }
-  return purpose.observedClosureIds;
+  return undefined;
 }
 
 function evaluateBenchmarkPurpose(expectation) {
