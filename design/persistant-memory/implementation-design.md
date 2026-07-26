@@ -236,3 +236,25 @@
 - Repaired the ImplementationDesign-owned Harness, not production code, by normalizing Neo4j projection blocked scenarios through the shared `blockedOutcome()` shape. Coding targets remain `.argo/scripts/ensureArgoHarnessEnvironment.js`, `.argo/scripts/neo4j-system-architecture-store.js`, and `.argo/scripts/graph-rag/externalProductionConfig.js`; tests/Harnesses remain frozen after this repair.
 - Direct repair evidence with Coding's scoped source edits present: `runExternalCredentialBoundary.js` passes after the Harness shape correction.
 - `argo.validateStageHandoff(stage=implementation-to-coding)` passed after the repair. Full `argo.runArchitectureTests` with Coding's uncommitted scoped source edits present passed 38 total / 38 passed / 0 failed / 0 missing criteria; this is repair validation evidence, while the original committed pre-coding baseline remains 38 total / 36 passed / 2 failed.
+
+## 2026-07-26 WP-P1 executable-path intent blocker
+
+- Persistent stage/session ID: `implementation-semprod-wp-p1-20260726T2055+08`.
+- ImplementationDesign accepted only the five-element `semprod-wp-persistence-backfill` handoff scope and did not start WP-P2, WP-P3, or Coding/Repair.
+- The SP-01 and SP-02 mounted `acceptanceCriteria` values are descriptive `Suggested: ...` strings rather than exact executable paths. The architecture runner would classify them as invalid criteria, and the implementation handoff validator requires exact graph-to-entrypoint equality plus a physical path.
+- Stopped before contracts, testcase assets, `ImplementationToCodingHandoff.json`, runner baseline, or stage commit, as required when implementation design reveals an intent graph correction.
+- Replaced the stale trace-proposal artifact with a focused `design/KG/ImplementationToIntentTraceProposal.json` requesting only these path corrections: SP-01 → `tests/explicit/entries/runProductionSemanticBackfill.js`; SP-02 → `tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js`.
+- No acceptance semantics, relationships, views, approvals, or deliveryStatus changes are proposed. No Neo4j synchronization evidence is claimed; incoming evidence remains `neo4jUri is required for start`.
+
+## 2026-07-26 WP-P1 global validator blocker
+
+- IntentionDesign commit `9a5899fffbe53342ebe738a85524b8870f3911d9` correctly repaired the two approved WP-P1 paths without changing semantics.
+- Drafted WP-P1 contracts, the `productionSemanticPersistenceHarness`, SP-01/SP-02 RED entrypoints, four critical guards, and the coding handoff. Direct RED results are `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING` and `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`.
+- Mandatory `implementation-to-coding` validation remains blocked globally by descriptive mounted acceptanceCriteria for unapproved, out-of-scope SP-03, SP-04, and SP-05. Physicalizing those entries would violate the explicit prohibition on starting WP-P2/WP-P3.
+- Replaced the applied proposal with a focused validated proposal recommending that IntentionDesign defer those three testcase mounts while preserving their elements and future acceptance semantics, unless the human explicitly authorizes a broader slice.
+- IntentionDesign audit commit `7326636cab44ae23984deb8345589fead1c56584` rejected/deferred the SP-03/SP-04/SP-05 proposal because changing those mounts is outside WP-P1 authorization; no graph mutation occurred.
+- Corrected only the WP-P1 local contract wording so the architecture guard recognizes `delete tombstones` and `Canonical JSON remains authority` without changing either requirement. All four WP-P1 critical guards now pass.
+- Rerun RED evidence remains intentional and exact: SP-01 exits 1 with `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING`; SP-02 exits 1 with `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`.
+- IntentionDesign sequencing commit `5ed151d9f6c21f44e92778641cb379215d74769c` unmounted future SP-03/SP-04/SP-05 acceptance boundaries while preserving their semantics and ownership; SP-01/SP-02 remain mounted and approved. The rejected temporary trace proposal was removed after this canonical disposition.
+- Fresh pre-handoff rerun evidence remains intentional and exact: SP-01 exits 1 with `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING`; SP-02 exits 1 with `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`; all four WP-P1 critical guards exit 0.
+- Coding/Repair remains unapproved and unstarted. Neo4j synchronization remains blocked by `neo4jUri is required for start`.

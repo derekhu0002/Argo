@@ -1,100 +1,68 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T17:50:00+08:00",
+  "generatedAt": "2026-07-26T21:23:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "ImplementationDesign materialized the validated TS-01 and TS-07 startup/config-resolution boundary from .argo/temp/IntentToImplementationHandoff.json at 934f7dd977e5bc355ea4b6b5b64d5e9f2edabe58. The pre-coding baseline was refreshed after extending existing test entrypoints only: 35/38 explicit acceptance testcases pass, with TS-01, TS-07, and TS-07 Provider Secret Isolation failing until in-process neo4jUri is resolved only from ARGO_NEO4J_DATABASE_URL and embeddingCredential only from QWEN_KEY.",
+  "summary": "WP-P1 ImplementationDesign materializes a separate durable production semantic projection path and explicit bounded, resumable, idempotent three-channel backfill after structural projection. Coding remains unauthorized until separate human approval; this artifact freezes SP-01/SP-02 RED entrypoints and four critical guards while excluding WP-P2, WP-P3, live-E2E cleanup changes, and manual deliveryStatus edits.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
     ".argo/schema/ImplementationToCodingHandoff.schema.json"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
-      "entryPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
-      "controlPoint": "Production semantic query plus harness startup configuration resolution from approved canonical process/.argo/.env names.",
-      "observationPoint": "Node.js/Neo4j mainline remains intact and canonical ARGO_NEO4J_DATABASE_URL plus QWEN_KEY resolve required runtime neo4jUri and embeddingCredential before startup checks.",
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "entryPath": "tests/explicit/entries/runProductionSemanticBackfill.js",
+      "controlPoint": "After verified structural projection, explicitly run bounded production backfill over pre-existing canonical Element, ArchitectureRelationship, and View records; interrupt, resume, isolate one record failure, and rerun.",
+      "observationPoint": "Independent complete channels, stable identity, complete canonical/content/index/provider/model/version/dimensions/vector metadata, checkpoints, retry/failure evidence, resume without restarting completed work, idempotent rerun, no fake canonical mutation, and final-only alignment.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runProductionGraphRagRuntime.js",
-      "failureReason": "TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing"
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticBackfill.js",
+      "failureReason": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
-      "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-      "controlPoint": "External credential boundary scenarios for missing runtime fields, canonical Neo4j process values, and legacy alias rejection.",
-      "observationPoint": "Canonical Neo4j names and QWEN_KEY are accepted without legacy aliases, while legacy-only and conflict cases fail closed before side effects.",
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "entryPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
+      "controlPoint": "Use the separate production semantic store across restart, update one stable canonical identity, delete one tombstone, and run unrelated existing live-E2E runId cleanup.",
+      "observationPoint": "Unchanged records and complete metadata survive restart and test cleanup, the changed record upserts in place, the tombstone disappears, production exposes no runId cleanup, canonical JSON remains authority, and Neo4j remains subordinate.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
-      "failureReason": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "controlPoint": "Opted-in live provider and controlled-Neo4j secret isolation source matrix with generated canaries.",
-      "observationPoint": "QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD remain isolated, runtime-field source keys neo4jUri and embeddingCredential are rejected, and no observable channel leaks secret material.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-      "failureReason": "LIVE_PROVIDER_OPERATION_FAILED"
+      "initialExecutionCommand": "node tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
+      "failureReason": "SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "Production Graph RAG Explicit Entrypoint Correctness",
-      "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-      "kind": "ImplementationTraceabilityGuard",
-      "controlPoint": "Acceptance entrypoint structure and harness delegation remain frozen.",
-      "observationPoint": "TS entrypoints keep business assertions and do not expose low-level plumbing.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Implementation Traceability Guard",
-      "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-      "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Graph-to-implementation trace remains blocking for Coding/Repair.",
-      "observationPoint": "Coding changes stay attached to mounted TS-01 and TS-07 intent evidence.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Dependency Direction Guard",
-      "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "Production Graph RAG dependency direction is blocking for Coding/Repair.",
-      "observationPoint": "Config repair does not invert harness/runtime boundaries.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Architecture Boundary Guard",
-      "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+      "name": "WP-P1 Architecture Boundary",
+      "path": "tests/architecture/production-semantic-persistence/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Production Graph RAG boundary ownership is blocking for Coding/Repair.",
-      "observationPoint": "Repair remains within approved graph-rag startup/configuration boundary.",
+      "controlPoint": "Root, parent, and local implementation contracts for the separate durable production semantic path.",
+      "observationPoint": "Contracts preserve explicit backfill/store interfaces, structural-before-semantic sequencing, stable metadata, no production runId cleanup, canonical authority, and subordinate projection.",
       "expectedStatus": "passed"
     },
     {
-      "name": "Production Graph RAG Credential Source Policy",
-      "path": "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
-      "kind": "CredentialBoundaryGuard",
-      "controlPoint": "Approved configuration source policy and examples.",
-      "observationPoint": "Only approved names and empty examples are present; secrets are not introduced into tracked files.",
+      "name": "WP-P1 Dependency Direction",
+      "path": "tests/architecture/production-semantic-persistence/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Production semantic persistence dependencies and coding authorization.",
+      "observationPoint": "Production does not depend on tests, Python, Neo4j GenAI, or live-E2E persistence; the live cleanup boundary remains frozen.",
       "expectedStatus": "passed"
     },
     {
-      "name": "Live Provider Secret Isolation Guard",
-      "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-      "kind": "SecretIsolationGuard",
-      "controlPoint": "Live provider and controlled Neo4j secret isolation contract.",
-      "observationPoint": "Secret source provenance, runtime-field rejection, redaction, and cleanup evidence remain intact.",
+      "name": "WP-P1 Explicit Entrypoint Correctness",
+      "path": "tests/architecture/production-semantic-persistence/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "Frozen SP-01/SP-02 entrypoint phases, Harness abstraction, and key assertions.",
+      "observationPoint": "Both entries retain GIVEN/WHEN/THEN, business-readable failure categories, and no low-level database/process plumbing.",
       "expectedStatus": "passed"
     },
     {
-      "name": "Coding Scope Authorization Guard",
-      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
-      "kind": "ScopeAuthorizationGuard",
-      "controlPoint": "Coding authorization text and target paths.",
-      "observationPoint": "Repair scope excludes TS-09 adapter/lifecycle, delivery sequence, capacity, and unrelated implementation work.",
+      "name": "WP-P1 Implementation Traceability",
+      "path": "tests/architecture/production-semantic-persistence/implementation-traceability.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "Five approved intent anchors, two mounted physical paths, and direct root mappings.",
+      "observationPoint": "Only WP-P1 SP-01/SP-02 and their prerequisite semantic-index/lifecycle/provider anchors are traceable to the new stable boundary.",
       "expectedStatus": "passed"
     }
   ],
@@ -102,120 +70,118 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
-      "path": ".argo/scripts/neo4j-system-architecture-store.js",
-      "failureSignal": "TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing",
-      "nextAction": "Change getNeo4jConfig startup normalization so embeddingCredential is materialized from QWEN_KEY, never ARGO_EMBEDDING_CREDENTIAL, while preserving ARGO_NEO4J_DATABASE_URL as the only source for neo4jUri and preserving legacy alias rejection."
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
+      "failureSignal": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING",
+      "nextAction": "Implement the explicit bounded backfill use case over immutable canonical Element, ArchitectureRelationship, and View snapshots after structural projection, with durable per-channel checkpoints, isolated failures, resume, idempotent rerun, and final-only alignment."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
-      "path": ".argo/scripts/graph-rag/externalProductionConfig.js",
-      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing",
-      "nextAction": "Keep required internal fields explicit, but accept only normalized values whose provenance came from ARGO_NEO4J_DATABASE_URL and QWEN_KEY; reject unresolved runtime fields and any separately supplied runtime-field source before side effects."
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js",
+      "failureSignal": "SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING",
+      "nextAction": "Implement the separate production store over a durable persistence adapter with stable-identity upsert, tombstone deletion, complete metadata validation, restart durability, no runId or production cleanup API, and canonical-authority enforcement."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
-      "path": ".argo/scripts/ensureArgoHarnessEnvironment.js",
-      "failureSignal": "neo4jUri is required for start / embeddingCredential is required for start",
-      "nextAction": "Ensure the existing repository-relative .argo/.env loader runs before Neo4j projection/start checks and does not read, print, or expose secret values; preserve process precedence."
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+      "failureSignal": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING",
+      "nextAction": "Compose and delegate runSemanticBackfill(request) inward to the semantic-persistence boundary without absorbing checkpoint, store, cleanup, or canonical-write policy."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
-      "path": ".argo/scripts/syncSystemArchitectureToNeo4j.js",
-      "failureSignal": "neo4jUri is required for start during MCP post-write Neo4j sync",
-      "nextAction": "Route sync startup through the same canonical Neo4j normalization path so ARGO_NEO4J_DATABASE_URL supplies neo4jUri and legacy/CLI runtime-field sources do not satisfy required configuration."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
-      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-      "failureSignal": "LIVE_PROVIDER_OPERATION_FAILED",
-      "nextAction": "Preserve the approved source matrix and reject runtime-field source keys such as neo4jUri and embeddingCredential without leaking generated canaries to stdout, stderr, logs, graph evidence, failure records, or artifacts."
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING",
+      "nextAction": "Expose backfillSystemArchitectureSemanticProjection as the explicit operator tool after structural projection verification; do not trigger fake canonical mutation or infer readiness from structural sync."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Scoped completion for the validated TS-01/TS-07 configuration-resolution handoff. Coding must repair only canonical startup normalization and source provenance so the three explicit entrypoints pass, then rerun full argo.runArchitectureTests and validate the implementation-to-coding handoff before any delivery claim.",
+    "executionStrategy": "WP-P1 only. If separately approved, Coding implements the durable store before orchestration, then the bounded backfill, then runtime/MCP composition, and finally verifies only SP-01/SP-02 plus frozen guards and the full runner. WP-P2, WP-P3, live-E2E cleanup changes, fake canonical mutation, production runId cleanup, and manual deliveryStatus edits are prohibited.",
     "tasks": [
       {
-        "taskId": "W2-C1",
-        "title": "Normalize canonical runtime fields",
-        "objective": "Resolve in-process neo4jUri from ARGO_NEO4J_DATABASE_URL and embeddingCredential from QWEN_KEY before start-time validation.",
+        "taskId": "WP-P1-C1",
+        "title": "Build durable projection store",
+        "objective": "Create the separate production store with complete metadata validation, durable restart behavior, stable-identity upsert, tombstone deletion, and no runId cleanup.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01",
-          "ExplicitAcceptanceTestcase-TS-07"
+          "ExplicitAcceptanceTestcase-SP-02-PersistentProjection"
         ],
         "targetPaths": [
-          ".argo/scripts/neo4j-system-architecture-store.js",
-          ".argo/scripts/graph-rag/externalProductionConfig.js"
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js"
         ],
         "steps": [
-          "Replace any ARGO_EMBEDDING_CREDENTIAL startup dependency with QWEN_KEY as the sole approved embeddingCredential source.",
-          "Keep ARGO_NEO4J_DATABASE_URL as the sole approved source for neo4jUri.",
-          "Reject legacy Neo4j aliases, runtime-field source keys, blank values, literals, defaults, and CLI overrides before database/provider/index side effects."
+          "Require external configuration and the existing canonical-authority policy before opening durable persistence.",
+          "Validate stable canonical identity plus channel, canonical/content/index, provider/model/modelVersion/dimensions, and vector metadata.",
+          "Upsert changed records by canonical identity and delete only explicit tombstones.",
+          "Expose no runId or cleanup method and never import liveEmbeddingNeo4jBoundary.js or write canonical JSON."
         ],
-        "completionSignal": "TS-01 and TS-07 no longer fail with TS01_CANONICAL_RUNTIME_FIELD_RESOLUTION:missing or TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:missing."
+        "completionSignal": "SP-02 passes restart, changed-record upsert, tombstone deletion, test-cleanup isolation, metadata, and authority assertions."
       },
       {
-        "taskId": "W2-C2",
-        "title": "Preserve harness env loading",
-        "objective": "Keep the approved repository-relative .argo/.env loader ahead of projection/runtime checks without exposing secret values.",
+        "taskId": "WP-P1-C2",
+        "title": "Build resumable full backfill",
+        "objective": "Implement explicit bounded independent three-channel backfill after structural projection with durable checkpoints and isolated failures.",
         "dependsOn": [
-          "W2-C1"
+          "WP-P1-C1"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01"
+          "ExplicitAcceptanceTestcase-SP-01-FullBackfill"
         ],
         "targetPaths": [
-          ".argo/scripts/ensureArgoHarnessEnvironment.js",
-          ".argo/scripts/syncSystemArchitectureToNeo4j.js"
+          ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js"
         ],
         "steps": [
-          "Verify the exact .argo/.env path is the only file-loader path used for harness startup.",
-          "Preserve process environment precedence and conflict behavior owned by the credential boundary.",
-          "Keep diagnostics category-only and free of secret values or .argo/.env contents."
+          "Require explicit opt-in and same-version structural projection completion before provider or persistence calls.",
+          "Read one immutable canonical snapshot and enumerate all Element, ArchitectureRelationship, and View records independently.",
+          "Use bounded batches and durable per-channel totals, cursors, completed counts, retries, and isolated-failure records.",
+          "Resume after checkpoints without replaying completed work; rerun unchanged evidence idempotently.",
+          "Keep non-Aligned for any incomplete channel and align only when all three channels complete for one canonical version."
         ],
-        "completionSignal": "Harness startup and MCP post-write Neo4j sync no longer report neo4jUri or embeddingCredential missing when approved canonical names are present."
+        "completionSignal": "SP-01 passes structural ordering, bounded checkpoint/resume, isolated failure, complete metadata, idempotence, no-mutation, and three-channel alignment assertions."
       },
       {
-        "taskId": "W2-C3",
-        "title": "Retain secret isolation matrix",
-        "objective": "Keep live provider source provenance and runtime-field source rejection intact while repairing the startup blockers.",
+        "taskId": "WP-P1-C3",
+        "title": "Compose runtime and operator tool",
+        "objective": "Expose WP-P1 through production runtime and an explicit MCP operator tool without coupling policy outward.",
         "dependsOn": [
-          "W2-C1"
+          "WP-P1-C1",
+          "WP-P1-C2"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+          "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+          "ExplicitAcceptanceTestcase-SP-02-PersistentProjection"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js"
+          ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+          ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Preserve direct-process and exact .argo/.env source attribution for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD.",
-          "Reject file/process attempts to supply neo4jUri or embeddingCredential as runtime-field source keys.",
-          "Preserve zero-leak checks across errors, stdout, stderr, logs, Cypher, graph evidence, failure records, snapshots, and generated artifacts."
+          "Delegate runtime backfill calls inward to semantic-persistence.",
+          "Add backfillSystemArchitectureSemanticProjection as an explicit tool with no automatic fake-mutation trigger.",
+          "Reuse existing external credential and qualified provider boundaries.",
+          "Preserve existing live E2E cleanup code unchanged."
         ],
-        "completionSignal": "TS-07 Provider Secret Isolation passes with runtime-neo4j-uri-field-key and runtime-embedding-credential-field-key fixtures present and leak-free."
+        "completionSignal": "Both explicit entries and all four WP-P1 guards pass without changes outside authorized targets."
       },
       {
-        "taskId": "W2-C7",
-        "title": "Refresh scoped completion evidence",
-        "objective": "Run verification after Coding repairs, report runner-owned evidence, and keep SystemArchitecture plus failure records outside Coding target ownership except for automatic runner-owned deliveryStatus refresh.",
+        "taskId": "WP-P1-C4",
+        "title": "Verify WP-P1 delivery",
+        "objective": "Run scoped and global verification while preserving runner ownership and reporting unrelated failures.",
         "dependsOn": [
-          "W2-C1",
-          "W2-C2",
-          "W2-C3"
+          "WP-P1-C1",
+          "WP-P1-C2",
+          "WP-P1-C3"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-01",
-          "ExplicitAcceptanceTestcase-TS-07",
-          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+          "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+          "ExplicitAcceptanceTestcase-SP-02-PersistentProjection"
         ],
         "steps": [
-          "Run full argo.runArchitectureTests after code repair and report the resulting evidence.",
-          "Read expectedFailureRecordsPath as runner-owned evidence and confirm it reflects zero remaining TS-01/TS-07 startup-resolution failures.",
+          "Run both frozen explicit entrypoints and all four frozen critical guards.",
+          "Run full argo.runArchitectureTests and report total, passed, failed, delivery changes, and out-of-scope failures.",
+          "Read expectedFailureRecordsPath as runner-owned evidence.",
           "Validate .argo/temp/ImplementationToCodingHandoff.json with stage implementation-to-coding.",
-          "Do not manually edit design/KG/test-failure-records.json or design/KG/SystemArchitecture.json; the architecture test runner owns any failure-record rewrite and any permitted deliveryStatus graph-side refresh."
+          "Do not manually edit or revert deliveryStatus or fabricate Neo4j synchronization evidence."
         ],
-        "completionSignal": "3/3 scoped explicit entrypoints pass; 5/5 critical guards remain applicable; 0 delivered-to-not_delivered regression after repair; TS-07 provider secret isolation remains leak-free; global grag-credential-boundary remains runner-owned; no hand-authored deliveryStatus changes."
+        "completionSignal": "2/2 WP-P1 entries and 4/4 guards pass, full runner evidence is recorded, no pre-coding delivered baseline regresses, and all unrelated failures are reported."
       }
     ]
   },
@@ -235,8 +201,11 @@
     "tests/explicit/entries/runIndependentSemanticSeeds.js",
     "tests/explicit/entries/runMutationIndexLifecycle.js",
     "tests/explicit/entries/runStaleSemanticQueryRejection.js",
+    "tests/explicit/entries/runProductionSemanticBackfill.js",
+    "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
     "tests/harness/productionGraphRagHarness.js",
     "tests/harness/liveEmbeddingProviderHarness.js",
+    "tests/harness/productionSemanticPersistenceHarness.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
     "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
@@ -244,15 +213,23 @@
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
+    "tests/architecture/production-semantic-persistence/architecture-boundary.guard.js",
+    "tests/architecture/production-semantic-persistence/dependency-direction.guard.js",
+    "tests/architecture/production-semantic-persistence/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/production-semantic-persistence/implementation-traceability.guard.js",
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
     "design/KG/test-failure-records.json",
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json"
   ],
   "openGaps": [
-    "Selected viewpoint: Requirements Realization Viewpoint. Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need approved external configuration names to be the only source for internal runtime fields before Neo4j connectivity, provider, or index side effects. Purpose: handoff preparation for Coding/Repair. Affected view binding remains grag-native-embedding-release-requirements, already bound as a Requirements Realization Viewpoint instance in design/KG/SystemArchitecture.json.",
-    "ARGO_NEO4J_DATABASE_URL is the only approved source for materializing in-process neo4jUri; QWEN_KEY is the only approved source for materializing in-process embeddingCredential; legacy aliases, runtime-field source keys, literals, defaults, CLI values, graph/Cypher values, and alternate files remain forbidden.",
-    "Pre-coding baseline intentionally fails TS-01, TS-07, and TS-07 Provider Secret Isolation until Coding repairs canonical runtime-field resolution.",
-    "No real .argo/.env secret values were read, created, printed, copied, or exposed during ImplementationDesign.",
-    "No new ExplicitAcceptanceTestcase identity or physical entrypoint was created; existing TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints were extended because the validated intent handoff authorized existing-test boundary extension."
+    "Selected viewpoints remain Requirements Realization Viewpoint and Implementation and Migration Viewpoint. Purpose: WP-P1 handoff preparation for a separate durable production semantic projection and explicit full backfill. Intent commits 9a5899fffbe53342ebe738a85524b8870f3911d9 and 5ed151d9f6c21f44e92778641cb379215d74769c preserve the approved five-element scope: SP-01/SP-02 are executable and mounted; future SP-03/SP-04/SP-05 semantics and ownership are preserved but unmounted until separately authorized.",
+    "Pre-coding RED intentionally fails SP-01 with SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING and SP-02 with SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING until separately approved Coding implements the contracted modules.",
+    "Neo4j synchronization remains an environment blocker with exact incoming evidence: neo4jUri is required for start. No synchronization evidence is inferred or fabricated.",
+    "No Coding/Repair approval is recorded. WP-P2, WP-P3, live-E2E cleanup modification, fake canonical mutation, production runId cleanup, and manual deliveryStatus edits remain prohibited."
   ]
 }

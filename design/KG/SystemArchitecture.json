@@ -207,7 +207,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -240,7 +240,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -297,7 +297,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -475,7 +475,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -552,7 +552,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -624,7 +624,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -676,7 +676,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -721,7 +721,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -766,7 +766,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -811,7 +811,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -860,7 +860,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -905,7 +905,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -950,7 +950,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -995,7 +995,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1093,7 +1093,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1265,7 +1265,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1512,7 +1512,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1805,7 +1805,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1854,7 +1854,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2045,6 +2045,10 @@
         {
           "name": "acceptanceApproval.SP-01",
           "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-01-FullBackfill boundary and globally approved the five-element WP-P1 handoff scope"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2094,6 +2098,10 @@
         {
           "name": "acceptanceApproval.SP-02",
           "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-02-PersistentProjection boundary and globally approved the five-element WP-P1 handoff scope"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
