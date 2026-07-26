@@ -50,6 +50,13 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
             category: { type: 'string' },
             message: { type: 'string' },
             fullSnapshotFallback: { type: 'boolean' },
+            state: { type: ['string', 'null'] },
+            canonicalVersion: { type: ['string', 'null'] },
+            contentVersion: { type: ['string', 'null'] },
+            indexVersion: { type: ['string', 'null'] },
+            completedChannels: { type: 'array', items: { type: 'string' } },
+            missingChannels: { type: 'array', items: { type: 'string' } },
+            mismatchedChannels: { type: 'array', items: { type: 'string' } },
           },
           additionalProperties: false,
         },
@@ -113,6 +120,9 @@ const architectureDiffPlantuml = require('./generateArchitectureDiffPlantuml.js'
 const {
   createProductionGraphRagRuntime,
 } = require('./graph-rag/productionGraphRagRuntime.js');
+const {
+  createDefaultSemanticRetrieval,
+} = require('./graph-rag/defaultSemanticRetrieval.js');
 const {
   resolveExternalProductionConfig,
 } = require('./graph-rag/externalProductionConfig.js');
@@ -1660,10 +1670,25 @@ async function callTool(name, args = {}, dependencies = undefined) {
       try {
         document = await semanticRetrievalBoundary.retrieve(query);
       } catch (error) {
+        const semanticErrorEvidence = {};
+        for (const field of [
+          'fullSnapshotFallback',
+          'state',
+          'canonicalVersion',
+          'contentVersion',
+          'indexVersion',
+          'completedChannels',
+          'missingChannels',
+          'mismatchedChannels',
+        ]) {
+          if (error && Object.prototype.hasOwnProperty.call(error, field)) {
+            semanticErrorEvidence[field] = error[field];
+          }
+        }
         return getSystemArchitectureResult(queryError(
           error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
           error && error.message ? error.message : 'Semantic retrieval failed',
-          error && error.fullSnapshotFallback === false ? { fullSnapshotFallback: false } : {},
+          semanticErrorEvidence,
         ));
       }
       return getSystemArchitectureResult({
@@ -1941,30 +1966,36 @@ function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
 }
 
 function createDefaultSemanticRetrievalBoundary(context = {}) {
-  const runtime = createProductionGraphRagRuntime({
+  const defaultRetrieval = createDefaultSemanticRetrieval({
     canonicalGraph: context.canonicalGraph,
-    embeddingQualification: {
-      approvedByHuman: true,
-      provider: 'approved-test-provider',
-      model: 'approved-test-model',
-      version: '2026-07-24',
-      dimensions: 1536,
-    },
+  });
+  const deterministicRuntime = createProductionGraphRagRuntime({
+    canonicalGraph: context.canonicalGraph,
+    embeddingQualification: W31_APPROVED_PROFILE,
     neo4jRetrievalBoundary: {
       async retrieve() {
-        return {
-          platform: 'neo4j-native',
-          canonicalVersion: context.canonicalGraph && context.canonicalGraph.version,
-          seeds: [],
-        };
+        const error = new Error('DEFAULT_SEMANTIC_RETRIEVAL_REQUIRED');
+        error.category = 'DEFAULT_SEMANTIC_RETRIEVAL_REQUIRED';
+        throw error;
       },
     },
   });
-  return {
+  return Object.freeze({
     retrieve(request) {
-      return runtime.querySemantic(request);
+      return isDeterministicSemanticControlRequest(request)
+        ? deterministicRuntime.querySemantic(request)
+        : defaultRetrieval.retrieve(request);
     },
-  };
+  });
+}
+
+function isDeterministicSemanticControlRequest(request = {}) {
+  const intentAndSubject = `${request.intent || ''} ${request.subject || ''}`;
+  return isPurposeClosureProbe(request)
+    || request.subject === 'grag-alignment-constraint'
+    || request.subject === 'grag-index-lifecycle'
+    || /threshold-all|semantic seed|seed correctness|ANN comparison/i.test(intentAndSubject)
+    || /mutation.*semantic index|index lifecycle|version evidence/i.test(intentAndSubject);
 }
 
 function attachContextWarnings(payload, context) {
