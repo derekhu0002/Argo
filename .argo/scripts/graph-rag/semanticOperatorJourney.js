@@ -8,12 +8,6 @@ const OPERATOR_ACTIONS = Object.freeze({
 });
 
 function createProductionSemanticOperatorJourney(dependencies) {
-  dependencies = {
-    ...dependencies,
-    readinessAttestationStore: dependencies && dependencies.readinessAttestationStore
-      ? dependencies.readinessAttestationStore
-      : createVolatileReadinessAttestationStore(),
-  };
   assertDependencies(dependencies);
   let readinessVerified = false;
 
@@ -76,9 +70,6 @@ function createProductionSemanticOperatorJourney(dependencies) {
     },
 
     async query(request = {}) {
-      if (readinessVerified) {
-        return queryAfterLocalVerification(request);
-      }
       const attestation = await dependencies.readinessAttestationStore.read();
       if (!attestation) throw readinessVerificationRequired();
       const readiness = await dependencies.readSemanticReadiness();
@@ -93,10 +84,6 @@ function createProductionSemanticOperatorJourney(dependencies) {
       return dependencies.querySystemArchitecture({});
     },
   });
-
-  function queryAfterLocalVerification(request) {
-    return dependencies.querySystemArchitecture({ query: request });
-  }
 }
 
 function assertDependencies(dependencies) {
@@ -173,25 +160,6 @@ function readinessAttestationStale(readiness = {}) {
   error.category = 'SEMANTIC_READINESS_ATTESTATION_STALE';
   error.action = 'Run semantic readiness verification again before semantic query';
   return error;
-}
-
-function createVolatileReadinessAttestationStore() {
-  let record;
-  return Object.freeze({
-    clear() {
-      record = undefined;
-    },
-    read() {
-      return record;
-    },
-    record(readiness) {
-      record = Object.freeze({ ...readiness });
-      return record;
-    },
-    validate(attestation, readiness) {
-      return attestation.verified === true && readiness.verified === true;
-    },
-  });
 }
 
 module.exports = {

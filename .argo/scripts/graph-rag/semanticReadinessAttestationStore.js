@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const ATTESTATION_PATH = '.argo/temp/semantic-readiness-attestation.json';
 const SCHEMA_VERSION = '1.0';
+const ACL_REMEDIATION = 'Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again';
 const FIELDS = Object.freeze([
   'schemaVersion',
   'authorizationOperation',
@@ -195,22 +196,19 @@ function assertOperatingSystemTrust(context) {
   assertPathTrust(context.attestationPath, context.directoryPath);
   if (process.platform === 'win32') {
     const identity = assertCommandSucceeded(context.metadataAdapter, 'readCurrentIdentity');
-    const directoryAcl = assertCommandSucceeded(
+    const directoryAcl = normalizeWindowsAclEvidence(assertCommandSucceeded(
       context.metadataAdapter,
       'readReadinessAttestationDirectoryAcl',
+    ), context.directoryPath);
+    const fileAcl = normalizeWindowsAclEvidence(
+      assertCommandSucceeded(context.metadataAdapter, 'readReadinessAttestationAcl'),
+      context.attestationPath,
     );
-    const fileAcl = assertCommandSucceeded(context.metadataAdapter, 'readReadinessAttestationAcl');
     const owner = assertCommandSucceeded(
       context.metadataAdapter,
       'readReadinessAttestationOwner',
     );
-    if (
-      !ownerMatchesIdentity(identity, owner)
-      || hasBroadWindowsAcl(directoryAcl)
-      || hasBroadWindowsAcl(fileAcl)
-    ) {
-      throw attestationError('SEMANTIC_READINESS_ATTESTATION_UNTRUSTED');
-    }
+    assertWindowsAclTrust({ identity, owner, directoryAcl, fileAcl });
     return;
   }
   const file = fs.lstatSync(context.attestationPath);
@@ -307,18 +305,78 @@ function normalizeIdentity(value) {
   return String(value).trim().toLowerCase();
 }
 
-function ownerMatchesIdentity(identity, owner) {
-  const current = normalizeIdentity(identity);
-  const recordedOwner = normalizeIdentity(owner);
-  return recordedOwner === current
-    || (
-      recordedOwner === 'builtin\\administrators'
-      && current.endsWith('\\administrator')
-    );
+function normalizeWindowsAclEvidence(value, subjectPath) {
+  const lines = String(value).split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => (
+      line
+      && !/^Successfully processed \d+ files?; Failed processing \d+ files?$/i.test(line)
+      && !/\b\d+\b.*;\s*.*\b\d+\b/.test(line)
+    ));
+  if (lines.length > 0) {
+    const prefix = String(subjectPath);
+    if (lines[0].toLowerCase().startsWith(prefix.toLowerCase())) {
+      lines[0] = lines[0].slice(prefix.length).trim();
+    }
+  }
+  return lines.filter(Boolean).join('\n');
 }
 
-function hasBroadWindowsAcl(value) {
-  return /(?:everyone|s-1-1-0|authenticated users)/i.test(value);
+function parseWindowsAcl(value) {
+  const lines = String(value).split(/\r?\n/).filter(Boolean);
+  if (lines.length === 0) throw windowsTrustError();
+  return lines.map(line => {
+    const match = line.match(/^(.+?):((?:\([^)]*\))+?)$/);
+    if (!match) throw windowsTrustError();
+    const flags = Array.from(
+      match[2].matchAll(/\(([^)]*)\)/g),
+      entry => entry[1].toUpperCase(),
+    );
+    return {
+      principal: normalizeIdentity(match[1]),
+      denied: flags.includes('DENY'),
+      permissions: flags
+        .filter(flag => !['DENY', 'I', 'OI', 'CI', 'IO'].includes(flag))
+        .flatMap(flag => flag.split(',')),
+    };
+  });
+}
+
+function grantsProtectedAccess(entry) {
+  return entry.permissions.some(permission => /^(?:F|M|R|RX|W|D|DC|WDAC|WO)$/.test(permission));
+}
+
+function grantsRequiredIdentityAccess(entry) {
+  return entry.permissions.some(permission => permission === 'F' || permission === 'M');
+}
+
+function windowsTrustError() {
+  const error = new Error('SEMANTIC_READINESS_ATTESTATION_UNTRUSTED');
+  error.category = 'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED';
+  error.fullSnapshotFallback = false;
+  error.action = ACL_REMEDIATION;
+  return error;
+}
+
+function assertWindowsAclTrust({ identity, owner, directoryAcl, fileAcl }) {
+  const current = normalizeIdentity(identity);
+  if (!current || normalizeIdentity(owner) !== current) throw windowsTrustError();
+  for (const acl of [directoryAcl, fileAcl]) {
+    const entries = parseWindowsAcl(acl);
+    const currentEntries = entries.filter(entry => entry.principal === current);
+    if (
+      !currentEntries.some(entry => !entry.denied && grantsRequiredIdentityAccess(entry))
+      || currentEntries.some(entry => entry.denied && grantsProtectedAccess(entry))
+      || entries.some(entry => (
+        !entry.denied
+        && grantsProtectedAccess(entry)
+        && entry.principal !== current
+        && entry.principal !== 'nt authority\\system'
+      ))
+    ) {
+      throw windowsTrustError();
+    }
+  }
 }
 
 function recordDirectoryFlushFallback(reason) {
@@ -329,7 +387,9 @@ function attestationError(category) {
   const error = new Error(category);
   error.category = category;
   error.fullSnapshotFallback = false;
-  error.action = 'Run semantic readiness verification again before semantic query';
+  error.action = category === 'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED'
+    ? ACL_REMEDIATION
+    : 'Run semantic readiness verification again before semantic query';
   return error;
 }
 

@@ -1737,9 +1737,6 @@ async function callTool(name, args = {}, dependencies = undefined) {
         return getSystemArchitectureResult(attachContextWarnings(payload, context));
       }
 
-      if (!dependencies || !dependencies.semanticOperatorJourney) {
-        return executeSemanticSystemArchitectureQuery({ ...args, query }, dependencies);
-      }
       const journey = await resolveSemanticOperatorJourney(dependencies);
       return journey.query(query);
     }
