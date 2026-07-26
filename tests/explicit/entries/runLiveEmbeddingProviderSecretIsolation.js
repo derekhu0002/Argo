@@ -10,6 +10,10 @@ async function main() {
   const observation = await runLiveProviderSecretIsolation();
 
   // THEN every source/path/ACL fixture is decided by the production configuration boundary
+  assert(
+    observation.sourceFixtures.some(fixture => fixture.name === 'legacy-neo4j-alias-only'),
+    'TS07_PROVIDER_LEGACY_NEO4J_ALIAS_FIXTURE_MISSING',
+  );
   for (const fixture of observation.sourceFixtures) {
     assert.strictEqual(
       fixture.status,

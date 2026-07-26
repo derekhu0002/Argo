@@ -6,9 +6,14 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const entryRequirements = new Map([
   ['tests/explicit/entries/runProductionGraphRagRuntime.js', [
     'productionGraphRagHarness.js',
+    'inspectHarnessEnvironmentInitialization',
     'TS01_NODE_RUNTIME_REQUIRED',
     'TS01_PYTHON_SIDECAR_PROHIBITED',
     'TS01_GENAI_PLUGIN_DEPENDENCY_PROHIBITED',
+    'TS01_HARNESS_ENV_FILE_LOADER_MISSING',
+    'TS01_HARNESS_ENV_PATH_BOUNDARY_MISSING',
+    'TS01_HARNESS_ENV_PROCESS_PRECEDENCE_MISSING',
+    'TS01_HARNESS_ENV_SECRET_DIAGNOSTIC',
   ]],
   ['tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js', [
     'productionGraphRagHarness.js',
@@ -36,6 +41,10 @@ const entryRequirements = new Map([
     'TS07_HARDCODED_CREDENTIAL_DEFAULT',
     'TS07_CREDENTIAL_FALLBACK_EXPRESSION',
     'TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION',
+    'evaluateNeo4jProjectionEnvironmentScenarios',
+    'TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED',
+    'TS07_CANONICAL_NEO4J_ENV_NORMALIZATION',
+    'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS',
   ]],
   ['tests/explicit/entries/runCanonicalGraphFullSnapshot.js', [
     'intentArchitectureQueryHarness.js',
@@ -131,6 +140,15 @@ const entryRequirements = new Map([
     'W31_FAILURE_MUST_NOT_ALIGN',
     'W31_UNALIGNED_QUERY_NOT_REJECTED',
     'W31_SECRET_LEAK',
+  ]],
+  ['tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js', [
+    'liveEmbeddingProviderHarness.js',
+    'runLiveProviderSecretIsolation',
+    'TS07_PROVIDER_LEGACY_NEO4J_ALIAS_FIXTURE_MISSING',
+    'TS07_PROVIDER_SOURCE_STATUS',
+    'TS07_PROVIDER_SOURCE_CATEGORY',
+    'TS07_PROVIDER_NEO4J_AUTH_ARGUMENTS_REQUIRED',
+    'TS07_PROVIDER_NEO4J_AUTH_UNIFIED_CHANNEL_LEAK',
   ]],
   ['tests/explicit/entries/runIndependentSemanticSeeds.js', [
     'intentArchitectureQueryHarness.js',

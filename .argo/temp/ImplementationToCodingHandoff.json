@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T14:11:00+08:00",
+  "generatedAt": "2026-07-26T16:24:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected DT-19/W7 capacity evidence RED handoff. Coding/Repair is authorized only to repair the real DT-18-to-DT-19 evidence chain for grag-capacity-residual: evaluatePhase1QualityBenchmark(request) must preserve explicit observedResultIds or equivalent real result ids with measured precision by purpose, must not fall back to closure ids, must block missing result evidence and cardinality mismatch, and evaluateCapacityEvidence(request) must consume that real qualityEvidence without Harness defaults while keeping caps, budgets, pagination, truncation, continuation, top-k, token-budget, result-limit, and capacity-policy decisions absent and deferred to later human governance.",
+  "summary": "Harness environment and canonical Neo4j configuration handoff. Coding/Repair is authorized only to repair the Argo harness initializer and Neo4j projection/runtime configuration so `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads only the approved repository-relative `.argo/.env` into `process.env` before projection/runtime checks, and projection configuration accepts only canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` while rejecting legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` aliases before connection or write side effects. Full pre-coding baseline from `argo.runArchitectureTests`: 38 total, 36 passed, 2 failed, 0 missing acceptance criteria; failures are TS-01 (`TS01_HARNESS_ENV_FILE_LOADER_MISSING`) and TS-07 (`TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED`).",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -11,13 +11,31 @@
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
-      "entryPath": "tests/explicit/entries/runCapacityEvidence.js",
-      "controlPoint": "Run the W7 DT-18 phase-1 quality benchmark, then pass the real qualityOutcome.qualityEvidence into the DT-19 capacity evidence request for the declared purposes.",
-      "observationPoint": "capacityEvidence.byPurpose contains exactly one record for each declared purpose, every record has integer non-negative resultCardinality derived from explicit observedResultIds/result ids and measuredPrecision inside [0,1], missing quality evidence blocks with DT19_QUALITY_EVIDENCE_REQUIRED, missing result evidence blocks with DT18_RESULT_EVIDENCE_REQUIRED instead of closure fallback, cardinality mismatch blocks with DT18_RESULT_CARDINALITY_MISMATCH, and the capacity evidence object exposes no cap, budget, pagination, truncation, continuation, topK, tokenBudget, resultLimit, or capacityPolicyDecision field.",
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
+      "entryPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
+      "controlPoint": "Run the production Graph RAG semantic query, then inspect the Argo harness initializer behavior before Neo4j projection/runtime checks.",
+      "observationPoint": "Node.js/Neo4j-native production evidence still holds, and the initializer loads only the repository-relative `.argo/.env` into process.env before projection, rejects root or alternate env files, preserves process precedence for credential-boundary conflict behavior, and emits no secret-bearing diagnostics.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runCapacityEvidence.js",
-      "failureReason": "DT18_MISSING_RESULT_EVIDENCE_ACCEPTED"
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionGraphRagRuntime.js",
+      "failureReason": "TS01_HARNESS_ENV_FILE_LOADER_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
+      "entryPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
+      "controlPoint": "Resolve missing credential scenarios, inspect credential source policy, and evaluate Neo4j projection configuration under canonical-only, legacy-only, and canonical-plus-legacy environment scenarios using synthetic values.",
+      "observationPoint": "Canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` normalize into projection configuration; legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` do not satisfy configuration and fail closed before driver/projection/index side effects; hardcoded defaults, fallback expressions, and Cypher credential transport remain absent.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runExternalCredentialBoundary.js",
+      "failureReason": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation",
+      "entryPath": "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+      "controlPoint": "Execute the existing live provider secret-isolation source matrix and controlled Neo4j authentication canary with synthetic canaries and approved source fixtures.",
+      "observationPoint": "The source matrix includes a legacy-Neo4j-alias-only fixture that fails closed, canonical Neo4j database URL/username/password source attribution remains protected, `ARGO_NEO4J_DATABASE_PASSWORD` reaches only database authentication, no secret leaks to observable channels, rejected fixtures have zero side effects, and cleanup leaves zero persistence.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
+      "failureReason": null
     }
   ],
   "criticalNonExplicitTests": [
@@ -25,40 +43,48 @@
       "name": "ArchitectureBoundaryGuard",
       "path": "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect root and Graph RAG contracts for the DT-19 capacity evidence public boundary.",
-      "observationPoint": "Contracts declare evaluateCapacityEvidence(request), result cardinality, measured precision, and prohibition of silent capacity controls or policy decisions.",
+      "controlPoint": "Inspect root, local Graph RAG, and test contracts for the harness environment and canonical Neo4j naming boundary.",
+      "observationPoint": "Contracts declare repository-relative `.argo/.env` harness loading, canonical `ARGO_NEO4J_DATABASE_*` names, legacy alias rejection, and no connection/write side effects before approved configuration.",
       "expectedStatus": "passed"
     },
     {
       "name": "DependencyDirectionGuard",
       "path": "tests/architecture/production-graph-rag/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Inspect production Graph RAG modules for outward dependencies on tests.",
-      "observationPoint": "Production runtime code does not import tests, explicit entrypoints, or frozen Harness files.",
+      "controlPoint": "Inspect production Graph RAG modules for outward dependencies on tests and unsafe system command expansion.",
+      "observationPoint": "Production runtime code does not import tests or explicit entrypoints; the system metadata command adapter remains the only approved process-command boundary.",
       "expectedStatus": "passed"
     },
     {
       "name": "ExplicitEntrypointCorrectnessGuard",
       "path": "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Inspect the frozen DT-19 explicit entrypoint and Harness-owned assertion vocabulary.",
-      "observationPoint": "runCapacityEvidence.js uses the production Harness abstraction, keeps GIVEN/WHEN/THEN readability, chains real DT-18 quality evidence into DT-19, and freezes missing-boundary, missing-quality-evidence, missing-result-evidence, cardinality-mismatch, incomplete-purpose, precision, and forbidden-policy failure categories.",
+      "controlPoint": "Inspect the extended TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints and Harness-owned assertions.",
+      "observationPoint": "Existing entrypoints, not new testcase paths, contain GIVEN/WHEN/THEN readability, Harness abstraction, `TS01_HARNESS_ENV_*`, `TS07_CANONICAL_NEO4J_ENV_*`, `UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS`, and provider legacy-alias fixture assertions.",
       "expectedStatus": "passed"
     },
     {
       "name": "KeyImplementationTraceabilityGuard",
       "path": "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted DT-19 testcase paths.",
-      "observationPoint": "Implementation mappings reference grag-capacity-residual and the mounted DT-19 entrypoint exists.",
+      "controlPoint": "Inspect intent anchors, root contract mappings, and mounted TS-01/TS-07 testcase paths.",
+      "observationPoint": "Implementation mappings reference `grag-production-runtime` and `grag-credential-boundary`; the mounted TS-01, TS-07, and TS-07 Provider Secret Isolation entrypoints exist.",
       "expectedStatus": "passed"
     },
     {
-      "name": "CodingScopeAuthorizationGuard",
-      "path": "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+      "name": "LiveProviderContractGuard",
+      "path": "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Inspect the DT-19 coding targets, task plan, frozen files, and top-level authorization fields.",
-      "observationPoint": "The handoff authorizes only evaluateCapacityEvidence(request) work in productionGraphRagRuntime.js, keeps TS-08 and all non-DT-19 mounted evidence frozen, prohibits capacity-policy implementation, and preserves runner-owned deliveryStatus authority.",
+      "controlPoint": "Inspect the live provider contract for approved canonical key names and placeholder discipline.",
+      "observationPoint": "The approved live configuration contract includes canonical Neo4j database URL/username/password names and excludes committed secret values.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "LiveProviderSecretIsolationGuard",
+      "path": "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "Inspect committed live provider examples, source fixtures, and secret-isolation assertions.",
+      "observationPoint": "Only empty placeholders are committed, `.argo/.env` remains ignored/untracked, and secret-isolation tests protect generated canaries rather than real secret values.",
       "expectedStatus": "passed"
     }
   ],
@@ -66,65 +92,102 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DT-05-R2-DT-19",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT18_MISSING_RESULT_EVIDENCE_ACCEPTED / DT18_RESULT_EVIDENCE_REQUIRED / DT18_RESULT_CARDINALITY_MISMATCH / DT19_RESULT_CARDINALITY_NOT_RECORDED / DT19_QUALITY_EVIDENCE_REQUIRED / DT19_CAPACITY_EVIDENCE_MISSING / DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE / DT19_MEASURED_PRECISION_NOT_RECORDED / DT19_CAPACITY_POLICY_DECISION_FORBIDDEN",
-      "nextAction": "Repair createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) and evaluateCapacityEvidence(request) only as needed so real DT-18 quality evidence preserves explicit observedResultIds or equivalent real result ids with measured precision, rejects closure fallback, rejects cardinality mismatch when resultCardinality is supplied, DT-19 consumes that evidence without defaults, missing quality/result evidence blocks clearly, and no capacity policy behavior is introduced."
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-01",
+      "path": ".argo/scripts/ensureArgoHarnessEnvironment.js",
+      "failureSignal": "TS01_HARNESS_ENV_FILE_LOADER_MISSING / TS01_HARNESS_ENV_PATH_BOUNDARY_MISSING / TS01_HARNESS_ENV_PROCESS_PRECEDENCE_MISSING / TS01_HARNESS_ENV_SECRET_DIAGNOSTIC",
+      "nextAction": "Add approved repository-relative `.argo/.env` loading before Neo4j projection/runtime checks, preserve existing process values for credential-boundary conflict behavior, ignore root or alternate env files, and keep diagnostics secret-free."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
+      "path": ".argo/scripts/neo4j-system-architecture-store.js",
+      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED / TS07_CANONICAL_NEO4J_ENV_NORMALIZATION / UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS",
+      "nextAction": "Change projection configuration to read canonical `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`, reject any legacy alias presence before connection/write side effects, and keep password flow limited to database authentication."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-07",
+      "path": ".argo/scripts/graph-rag/externalProductionConfig.js",
+      "failureSignal": "TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED / UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS",
+      "nextAction": "If needed, align the external configuration boundary vocabulary with canonical Neo4j database URL/username/password inputs while preserving missing-field and no-fallback behavior."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the DT-19 capacity evidence chain on createProductionGraphRagRuntime(dependencies). The implementation must preserve explicit observedResultIds or equivalent real per-purpose result ids in evaluatePhase1QualityBenchmark(request), never synthesize result ids from observedClosureIds or closure fallback, validate supplied resultCardinality against result ID count, expose that evidence through qualityEvidence, have evaluateCapacityEvidence(request) consume the real qualityEvidence without defaults, return capacityEvidence.byPurpose with resultCardinality and measuredPrecision for every declared purpose, and keep all capacity controls and policy decisions absent. Missing qualityEvidence must block with DT19_QUALITY_EVIDENCE_REQUIRED; missing result evidence must block with DT18_RESULT_EVIDENCE_REQUIRED; cardinality mismatch must block with DT18_RESULT_CARDINALITY_MISMATCH. Do not change TS-08 delivery sequence behavior, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Repair only the harness environment initialization and Neo4j projection/runtime configuration boundary. Extend `ensureArgoHarnessEnvironment.js` so `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads the approved repository-relative `.argo/.env` into `process.env` before `ensureNeo4jProjection` or runtime checks, without reading root or alternate env files and without printing secret-bearing diagnostics. Update the Neo4j projection configuration path to accept only `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`, and to reject legacy aliases `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` before driver/projection/index side effects. Do not change intent graph semantics, test/Harness files, contracts, live provider behavior beyond legacy-alias rejection already frozen in the source matrix, capacity evidence, W7 delivery gates, TS-09, W3/W3.1 lifecycle, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
-        "taskId": "DT19-C1",
-        "title": "Expose capacity evidence boundary",
-        "objective": "Make DT-19 evidence observable from real DT-18 quality output without deciding capacity policy.",
+        "taskId": "ENV-C1",
+        "title": "Load approved harness environment",
+        "objective": "Make the harness initializer prepare process.env from the approved local env file before Neo4j projection checks.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-05-R2-DT-19"
+          "ExplicitAcceptanceTestcase-TS-01"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+          ".argo/scripts/ensureArgoHarnessEnvironment.js"
         ],
         "steps": [
-          "Keep evaluateCapacityEvidence(request) on createProductionGraphRagRuntime's returned public boundary.",
-          "Make evaluatePhase1QualityBenchmark(request) preserve explicit observedResultIds or equivalent real per-purpose result ids along with measured precision in qualityEvidence.",
-          "Do not fall back from missing result ids to observedClosureIds or expected closure evidence.",
-          "Reject missing real result evidence with DT18_RESULT_EVIDENCE_REQUIRED.",
-          "Reject resultCardinality values that do not match the observed result ID count with DT18_RESULT_CARDINALITY_MISMATCH.",
-          "Use request.purposes as the declared purpose list and require real qualityEvidence for every declared purpose.",
-          "Use request.qualityEvidence per-purpose records to derive observed resultCardinality and measuredPrecision without inventing defaults that hide missing evidence.",
-          "Block missing request.qualityEvidence with DT19_QUALITY_EVIDENCE_REQUIRED.",
-          "Return capacityEvidence.byPurpose with one record per declared purpose, integer non-negative resultCardinality, and measuredPrecision inside [0,1].",
-          "Do not return or infer cap, budget, pagination, truncation, continuation, topK, tokenBudget, resultLimit, or capacityPolicyDecision.",
-          "Run node tests/explicit/entries/runCapacityEvidence.js until it passes."
+          "Add a small loader that resolves exactly `<workspaceRoot>/.argo/.env` after workspace root resolution and before `ensureNeo4jProjection` or runtime checks.",
+          "Parse only simple key=value lines needed by the approved Argo configuration contract; do not print values.",
+          "Do not load root `.env`, alternate `.env` files, `.env.local`, or dotenv defaults.",
+          "Do not overwrite existing `process.env` values; leave duplicate/conflict semantics to the credential boundary.",
+          "Run `node tests/explicit/entries/runProductionGraphRagRuntime.js` until TS-01 passes."
         ],
-        "completionSignal": "runCapacityEvidence.js exits 0 and DT-19 records cardinality plus precision from explicit real DT-18 result IDs for every declared purpose, closure fallback is rejected, missing quality/result evidence and cardinality mismatch block clearly, and all capacity-control and capacity-policy fields remain undefined."
+        "completionSignal": "runProductionGraphRagRuntime.js exits 0 and proves Node.js/Neo4j-native mainline plus repository `.argo/.env` loading before projection with no secret diagnostics."
       },
       {
-        "taskId": "DT19-C2",
-        "title": "Verify DT-19 guardrails",
-        "objective": "Prove the DT-19 repair stays inside the approved boundary.",
+        "taskId": "ENV-C2",
+        "title": "Canonicalize Neo4j projection names",
+        "objective": "Move projection configuration from legacy Neo4j aliases to the approved canonical database names.",
         "dependsOn": [
-          "DT19-C1"
+          "ENV-C1"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DT-05-R2-DT-19"
+          "ExplicitAcceptanceTestcase-TS-07",
+          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
+          ".argo/scripts/neo4j-system-architecture-store.js",
+          ".argo/scripts/graph-rag/externalProductionConfig.js"
         ],
         "steps": [
-          "Run node tests/explicit/entries/runCapacityEvidence.js.",
-          "Run all 5 production Graph RAG critical guards listed in criticalNonExplicitTests.",
-          "Run npm run test:argo or argo.runArchitectureTests to refresh failure records and runner-owned delivery evidence.",
-          "Confirm DT-18 still passes while exposing explicit observedResultIds/result ids for DT-19, TS-08 remains unchanged context, and no hand-authored deliveryStatus changes were made."
+          "Read projection URL, username, and password from `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD`.",
+          "Reject any present `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, or `ARGO_NEO4J_PASSWORD` with `UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS` before opening a Neo4j driver or writing projection/index evidence.",
+          "Preserve missing-field failures for absent canonical values and preserve credential-free startup/query blocking.",
+          "Keep the database password out of Cypher, logs, errors, failure records, snapshots, and returned evidence.",
+          "Run `node tests/explicit/entries/runExternalCredentialBoundary.js` until TS-07 passes.",
+          "Run `node tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js` when live/provider prerequisites are available, or preserve the existing passing source-fixture behavior if the environment is already prepared."
         ],
-        "completionSignal": "DT-19 passes with all 5 critical guards, real DT-18 output supplies explicit result ID capacity evidence inputs without closure fallback, no capacity-policy implementation exists, no test/Harness/contract edits occur during Coding, and no hand-authored deliveryStatus changes are made."
+        "completionSignal": "runExternalCredentialBoundary.js exits 0, the live provider secret-isolation entrypoint remains green or only reports an approved opt-in blocker, canonical Neo4j names are accepted, legacy aliases fail closed, and no secret value is exposed."
+      },
+      {
+        "taskId": "ENV-C3",
+        "title": "Verify scoped guards",
+        "objective": "Prove the repair stays inside the approved harness-env and credential-boundary scope.",
+        "dependsOn": [
+          "ENV-C1",
+          "ENV-C2"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-TS-01",
+          "ExplicitAcceptanceTestcase-TS-07",
+          "ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation"
+        ],
+        "targetPaths": [
+          ".argo/scripts/ensureArgoHarnessEnvironment.js",
+          ".argo/scripts/neo4j-system-architecture-store.js",
+          ".argo/scripts/graph-rag/externalProductionConfig.js"
+        ],
+        "steps": [
+          "Run the three explicit entrypoints listed in this handoff.",
+          "Run all critical production Graph RAG guards listed in `criticalNonExplicitTests`.",
+          "Run `npm run test:argo` or `argo.runArchitectureTests` to refresh failure records and runner-owned delivery evidence.",
+          "Confirm no test/Harness/contract edits occur during Coding/Repair and no hand-authored deliveryStatus changes are made."
+        ],
+        "completionSignal": "TS-01, TS-07, TS-07 Provider Secret Isolation, and critical guards pass; `design/KG/test-failure-records.json` is refreshed by the runner; no hand-authored deliveryStatus changes are made."
       }
     ]
   },
   "frozenFiles": [
     ".argo/temp/IntentToImplementationHandoff.json",
+    ".argo/temp/ImplementationToCodingHandoff.json",
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
@@ -164,7 +227,10 @@
     "tests/architecture/production-graph-rag/dependency-direction.guard.js",
     "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js"
+    "tests/architecture/production-graph-rag/coding-scope-authorization.guard.js",
+    "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
+    "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
+    "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js"
   ],
   "openGaps": []
 }

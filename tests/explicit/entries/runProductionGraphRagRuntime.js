@@ -1,5 +1,6 @@
 const assert = require('node:assert');
 const {
+  inspectHarnessEnvironmentInitialization,
   runProductionSemanticQuery,
 } = require('../../harness/productionGraphRagHarness.js');
 
@@ -13,6 +14,32 @@ async function main() {
   assert.strictEqual(result.retrievalPlatform, 'neo4j-native', 'TS01_NEO4J_NATIVE_PLATFORM_REQUIRED');
   assert.strictEqual(result.pythonRequired, false, 'TS01_PYTHON_SIDECAR_PROHIBITED');
   assert.strictEqual(result.neo4jGenAiPluginRequired, false, 'TS01_GENAI_PLUGIN_DEPENDENCY_PROHIBITED');
+
+  // GIVEN the Argo harness initializer is launched from a clean process
+  // WHEN projection/runtime checks need approved local configuration
+  const harnessEnvironment = inspectHarnessEnvironmentInitialization();
+
+  // THEN only the repository-relative .argo/.env is loaded into process.env before projection
+  assert.strictEqual(
+    harnessEnvironment.loadsRepositoryEnvBeforeProjection,
+    true,
+    'TS01_HARNESS_ENV_FILE_LOADER_MISSING',
+  );
+  assert.strictEqual(
+    harnessEnvironment.exactRepositoryEnvPathOnly,
+    true,
+    'TS01_HARNESS_ENV_PATH_BOUNDARY_MISSING',
+  );
+  assert.strictEqual(
+    harnessEnvironment.preservesProcessPrecedence,
+    true,
+    'TS01_HARNESS_ENV_PROCESS_PRECEDENCE_MISSING',
+  );
+  assert.deepStrictEqual(
+    harnessEnvironment.secretDiagnostics,
+    [],
+    `TS01_HARNESS_ENV_SECRET_DIAGNOSTIC:${harnessEnvironment.secretDiagnostics.join(',')}`,
+  );
 }
 
 main().catch(error => {

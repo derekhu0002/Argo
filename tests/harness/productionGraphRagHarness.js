@@ -9,6 +9,8 @@ const externalConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 
 const qualificationGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'embeddingQualificationGate.js');
 const canonicalAuthorityPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'canonicalProjectionAuthority.js');
 const nativeRetrievalPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'neo4jNativeRetrieval.js');
+const harnessEnvironmentPath = path.join(repoRoot, '.argo', 'scripts', 'ensureArgoHarnessEnvironment.js');
+const neo4jProjectionStorePath = path.join(repoRoot, '.argo', 'scripts', 'neo4j-system-architecture-store.js');
 
 function approvedEmbeddingQualification(overrides = {}) {
   return {
@@ -148,6 +150,29 @@ async function runProductionSemanticQuery(overrides = {}) {
   return runtime.querySemantic({ intent: 'Find approved production intent' });
 }
 
+function inspectHarnessEnvironmentInitialization() {
+  const source = fs.readFileSync(harnessEnvironmentPath, 'utf8');
+  const projectionIndex = source.indexOf('ensureNeo4jProjection');
+  const envPathIndex = source.search(/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/);
+  const processAssignmentIndex = source.search(/process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*=/);
+  const precedenceEvidence = /process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*===\s*undefined|Object\.hasOwn\(\s*process\.env|hasOwnProperty\.call\(\s*process\.env/.test(source);
+  const rootEnvEvidence = /path\.join\([^)]*workspaceRoot[^)]*['"`]\.env['"`]\)|['"`]\.env['"`]\s*\)/.test(source)
+    && !/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/.test(source);
+  const alternateEnvEvidence = /config[\\/]\.env|\.env\.local|dotenv\.config\(\s*\)/.test(source);
+  const secretDiagnosticEvidence = collectMatches(source, /console\.(?:log|error|warn)\([^)]*(?:QWEN_KEY|ARGO_NEO4J_DATABASE_PASSWORD|process\.env|\.env)[^)]*\)/g);
+
+  return {
+    loadsRepositoryEnvBeforeProjection: envPathIndex >= 0
+      && processAssignmentIndex >= 0
+      && projectionIndex >= 0
+      && envPathIndex < projectionIndex
+      && processAssignmentIndex < projectionIndex,
+    exactRepositoryEnvPathOnly: envPathIndex >= 0 && !rootEnvEvidence && !alternateEnvEvidence,
+    preservesProcessPrecedence: precedenceEvidence,
+    secretDiagnostics: secretDiagnosticEvidence,
+  };
+}
+
 async function evaluateCredentialConfiguration(configuration, operation) {
   const boundary = loadBoundary(
     externalConfigPath,
@@ -242,6 +267,92 @@ function inspectCredentialSourceBoundary() {
     }
   }
   return { hardcodedDefaults, fallbackCredentials, cypherCredentialLeaks };
+}
+
+function evaluateNeo4jProjectionEnvironmentScenarios() {
+  const canonical = {
+    ARGO_NEO4J_DATABASE_URL: 'neo4j://canonical.invalid:7687',
+    ARGO_NEO4J_DATABASE_USERNAME: 'canonical-user',
+    ARGO_NEO4J_DATABASE_PASSWORD: 'canonical-password-canary',
+  };
+  const legacy = {
+    ARGO_NEO4J_URI: 'neo4j://legacy.invalid:7687',
+    ARGO_NEO4J_USERNAME: 'legacy-user',
+    ARGO_NEO4J_PASSWORD: 'legacy-password-canary',
+  };
+  return {
+    canonicalOnly: captureNeo4jProjectionConfig({
+      environment: canonical,
+      expectedPassword: canonical.ARGO_NEO4J_DATABASE_PASSWORD,
+    }),
+    legacyOnly: captureNeo4jProjectionConfig({
+      environment: legacy,
+      expectedPassword: legacy.ARGO_NEO4J_PASSWORD,
+    }),
+    canonicalWithLegacyConflict: captureNeo4jProjectionConfig({
+      environment: { ...canonical, ...legacy },
+      expectedPassword: canonical.ARGO_NEO4J_DATABASE_PASSWORD,
+    }),
+  };
+}
+
+function captureNeo4jProjectionConfig({ environment, expectedPassword }) {
+  const keys = [
+    'ARGO_NEO4J_DATABASE_URL',
+    'ARGO_NEO4J_DATABASE_USERNAME',
+    'ARGO_NEO4J_DATABASE_PASSWORD',
+    'ARGO_NEO4J_URI',
+    'ARGO_NEO4J_USERNAME',
+    'ARGO_NEO4J_PASSWORD',
+    'ARGO_EMBEDDING_CREDENTIAL',
+  ];
+  return withTemporaryEnvironment({
+    ...environment,
+    ARGO_EMBEDDING_CREDENTIAL: 'synthetic-embedding-credential',
+  }, keys, () => {
+    try {
+      delete require.cache[require.resolve(neo4jProjectionStorePath)];
+      const boundary = require(neo4jProjectionStorePath);
+      const config = boundary.getNeo4jConfig();
+      return {
+        status: 'accepted',
+        uri: config.uri,
+        username: config.username,
+        passwordMatchesExpected: config.password === expectedPassword,
+        database: config.database,
+      };
+    } catch (error) {
+      return {
+        status: 'blocked',
+        category: error && error.category,
+        field: error && error.field,
+      };
+    } finally {
+      delete require.cache[require.resolve(neo4jProjectionStorePath)];
+    }
+  });
+}
+
+function withTemporaryEnvironment(environment, keys, action) {
+  const previous = new Map(keys.map(key => [key, process.env[key]]));
+  for (const key of keys) {
+    if (Object.hasOwn(environment, key)) {
+      process.env[key] = environment[key];
+    } else {
+      delete process.env[key];
+    }
+  }
+  try {
+    return action();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
 }
 
 function inspectCredentialSourceText(source) {
@@ -537,7 +648,9 @@ module.exports = {
   evaluateEmbeddingQualification,
   evaluatePhase1QualityBenchmark,
   evaluateSevenWaveDelivery,
+  evaluateNeo4jProjectionEnvironmentScenarios,
   externalProductionConfiguration,
+  inspectHarnessEnvironmentInitialization,
   inspectCredentialSourceBoundary,
   inspectCredentialSourceText,
   phase1BusinessBenchmarkFixture,

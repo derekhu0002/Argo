@@ -12,6 +12,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - C1-C4 use independently callable configuration, qualification, canonical-authority, and native-retrieval public boundaries so missing runtime composition cannot mask their completion signals.
 - TS-06 requires `approvedByHuman === true`, rejects non-boolean truthy values, trims provider/model/version, requires positive-integer dimensions without coercion, and separately prohibits implicit defaults.
 - TS-07 isolates every missing external credential field, blocks credential-free startup and semantic query, structurally detects direct literals and logical/nullish/ternary fallbacks, and follows credential-tainted query/parameter variables into Cypher execution calls.
+- TS-01 now also freezes Argo harness environment initialization: the initializer loads only the repository-relative `.argo/.env` into `process.env` before Neo4j projection/runtime checks, ignores root or alternate env files, preserves approved process precedence, and emits no secret-bearing diagnostics.
+- TS-07 now also freezes canonical Neo4j projection names: `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` are the only accepted Neo4j environment names, while legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` fail closed before driver/projection/index side effects and cannot override canonical names.
 - `credential-source-policy.guard.js` self-tests the TS-07 source policy with prohibited bypass fixtures and one safe fixture so scanner regressions cannot silently weaken the boundary.
 - `dependency-direction.guard.js` owns no command validator. It calls the production module's callback-scoped test composition so all safe/bypass fixtures traverse the same private validator. It inspects the adapter's complete own names/descriptors/symbols/prototype chain and each capability function, rejects any executor or callable-backdoor surface, and requires the composition return to be `undefined`. Captured adapters revoke on normal completion, callback throw, and async rejection; post-scope calls fail `TEST_SYSTEM_METADATA_ADAPTER_REVOKED` without executor increments, while nested/repeated compositions prove unique adapter and capability identities. Existing command bypasses still fail `SYSTEM_METADATA_COMMAND_PROHIBITED` with zero executor calls.
 - TS-01-Native uses a Harness-owned query probe to prove exact request propagation, exactly one native-boundary call, and unchanged propagation of an unpredictable runtime-generated full result.
@@ -60,14 +62,14 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/explicit/entries/runCanonicalGraphFullSnapshot.js`
 - `tests/explicit/entries/runQueryPurposeValidation.js`
 - `tests/explicit/entries/runGraphTidyFullSnapshot.js`
-- `tests/explicit/entries/runProductionGraphRagRuntime.js`
+- `tests/explicit/entries/runProductionGraphRagRuntime.js` — `ExplicitAcceptanceTestcase-TS-01` Node.js production mainline plus harness environment initialization. The control point is a production semantic query and the harness initializer before projection/runtime checks. The observation point is Node.js/Neo4j-native evidence, no Python or GenAI plugin requirement, exact repository `.argo/.env` process loading before projection, root/alternate env-file rejection, process precedence preservation, and no secret diagnostics.
 - `tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js`
 - `tests/explicit/entries/runEmbeddingQualificationGate.js`
-- `tests/explicit/entries/runExternalCredentialBoundary.js`
+- `tests/explicit/entries/runExternalCredentialBoundary.js` — `ExplicitAcceptanceTestcase-TS-07` external credential and canonical Neo4j naming boundary. The control point is start/query and projection configuration with missing credentials, canonical `ARGO_NEO4J_DATABASE_*` names, and legacy aliases. The observation point is safe blocking for missing credentials and legacy aliases, accepted canonical Neo4j URL/username/password normalization, no hardcoded/default credentials, no credential fallback expressions, and no credential-bearing Cypher.
 - `tests/explicit/entries/runCanonicalProjectionAuthority.js`
 - `tests/explicit/entries/runSevenWaveDeliveryGates.js`
 - `tests/explicit/entries/runLiveEmbeddingProviderE2E.js`
-- `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`
+- `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js` — `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` live/provider secret isolation and canonical Neo4j source policy. The control point is the approved live source matrix and controlled Neo4j authentication canary. The observation point is process/file source attribution for `QWEN_KEY` and canonical `ARGO_NEO4J_DATABASE_*` names, fail-closed legacy alias sources, zero side effects for rejected fixtures, password only reaching database auth, no Cypher/log/artifact leaks, and cleanup leaving zero persistence.
 - `tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js`
 
 The frozen `tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js` path is retained as the TS-09 explicit entrypoint. In corrected W3 handoffs it is in-scope acceptance evidence and a Coding target while remaining read-only during Coding/Repair.

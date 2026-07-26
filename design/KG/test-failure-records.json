@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-01",
+    "testdescription": "Control: production semantic query and Argo harness runtime initialization through the Node.js mainline, including node .argo/scripts/ensureArgoHarnessEnvironment.js with an approved repository-relative .argo/.env fixture when direct process values are absent. Observe: Node.js/Neo4j path and no required Python sidecar/framework; harness initialization loads only the exact .argo/.env before projection/runtime checks, ignores root or alternate files, preserves approved process precedence and credential conflict behavior, and emits no secret-bearing diagnostics.",
+    "acceptanceCriteria": "tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "relatedIntentElementId": "grag-production-runtime",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runProductionGraphRagRuntime.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: TS01_HARNESS_ENV_FILE_LOADER_MISSING\n\nfalse !== true\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionGraphRagRuntime.js:23:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: TS01_HARNESS_ENV_FILE_LOADER_MISSING\n\nfalse !== true\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionGraphRagRuntime.js:23:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-07",
+    "testdescription": "Control: start/query without external credentials, with legacy Neo4j aliases only, and with unsafe or unapproved credential sources. Observe: safe failure before network/index side effects and no hardcoded, default, Cypher, or legacy-alias secret fallback.",
+    "acceptanceCriteria": "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "relatedIntentElementId": "grag-credential-boundary",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runExternalCredentialBoundary.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED\n+ actual - expected\n\n+ 'blocked'\n- 'accepted'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:57:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'accepted',\n  operator: 'strictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:EXTERNAL_CREDENTIALS_REQUIRED\n+ actual - expected\n\n+ 'blocked'\n- 'accepted'\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:57:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'blocked',\n  expected: 'accepted',\n  operator: 'strictEqual',\n  diff: 'simple'\n}"
+  }
+]
