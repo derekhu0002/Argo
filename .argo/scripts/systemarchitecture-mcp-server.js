@@ -1966,36 +1966,9 @@ function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
 }
 
 function createDefaultSemanticRetrievalBoundary(context = {}) {
-  const defaultRetrieval = createDefaultSemanticRetrieval({
+  return createDefaultSemanticRetrieval({
     canonicalGraph: context.canonicalGraph,
   });
-  const deterministicRuntime = createProductionGraphRagRuntime({
-    canonicalGraph: context.canonicalGraph,
-    embeddingQualification: W31_APPROVED_PROFILE,
-    neo4jRetrievalBoundary: {
-      async retrieve() {
-        const error = new Error('DEFAULT_SEMANTIC_RETRIEVAL_REQUIRED');
-        error.category = 'DEFAULT_SEMANTIC_RETRIEVAL_REQUIRED';
-        throw error;
-      },
-    },
-  });
-  return Object.freeze({
-    retrieve(request) {
-      return isDeterministicSemanticControlRequest(request)
-        ? deterministicRuntime.querySemantic(request)
-        : defaultRetrieval.retrieve(request);
-    },
-  });
-}
-
-function isDeterministicSemanticControlRequest(request = {}) {
-  const intentAndSubject = `${request.intent || ''} ${request.subject || ''}`;
-  return isPurposeClosureProbe(request)
-    || request.subject === 'grag-alignment-constraint'
-    || request.subject === 'grag-index-lifecycle'
-    || /threshold-all|semantic seed|seed correctness|ANN comparison/i.test(intentAndSubject)
-    || /mutation.*semantic index|index lifecycle|version evidence/i.test(intentAndSubject);
 }
 
 function attachContextWarnings(payload, context) {
