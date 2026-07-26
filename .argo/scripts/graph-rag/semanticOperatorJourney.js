@@ -1,9 +1,3 @@
-const REQUIRED_CHANNELS = Object.freeze([
-  'Element',
-  'ArchitectureRelationship',
-  'View',
-]);
-
 const OPERATOR_ACTIONS = Object.freeze({
   backfillCommand: 'argo semantic backfill',
   readinessCommand: 'argo semantic readiness',
@@ -24,9 +18,12 @@ function createProductionSemanticOperatorJourney(dependencies) {
       configurationRequest,
     );
     readinessVerified = false;
+    const explicitOptIn = automatic
+      ? request.automaticBackfillOptIn === true
+      : request.explicitOptIn;
     return dependencies.runSemanticBackfill({
       ...request,
-      explicitOptIn: true,
+      explicitOptIn,
       automatic,
     });
   }
@@ -56,20 +53,16 @@ function createProductionSemanticOperatorJourney(dependencies) {
 
     async verifyReadiness(request = {}) {
       const readiness = await dependencies.readSemanticReadiness(request);
-      readinessVerified = isCompleteAlignedReadiness(readiness);
+      readinessVerified = readiness.verified === true;
       if (!readinessVerified) {
         throw readinessError(readiness);
       }
       return readiness;
     },
 
-    async query(request = {}) {
+    query(request = {}) {
       if (!readinessVerified) {
-        const readiness = await dependencies.readSemanticReadiness();
-        readinessVerified = isCompleteAlignedReadiness(readiness);
-        if (!readinessVerified) {
-          throw readinessError(readiness);
-        }
+        throw readinessVerificationRequired();
       }
       return dependencies.querySystemArchitecture({ query: request });
     },
@@ -119,27 +112,24 @@ function safeConfigurationCategory(category) {
   return approvedCategories.has(category) ? category : 'APPROVED_CONFIGURATION_REJECTED';
 }
 
-function isCompleteAlignedReadiness(readiness) {
-  const channels = readiness && (
-    readiness.completedChannels
-    || readiness.channels
-  );
-  return Boolean(
-    readiness
-    && readiness.state === 'Aligned'
-    && readiness.verified === true
-    && readiness.canonicalVersion
-    && readiness.contentVersion
-    && readiness.indexVersion
-    && Array.isArray(channels)
-    && REQUIRED_CHANNELS.every(channel => channels.includes(channel)),
-  );
-}
-
 function readinessError(readiness = {}) {
   const error = new Error('SemanticIndexPending');
   error.category = readiness.state || 'SemanticIndexPending';
   error.state = readiness.state || 'SemanticIndexPending';
+  error.verified = readiness.verified;
+  error.canonicalVersion = readiness.canonicalVersion;
+  error.contentVersion = readiness.contentVersion;
+  error.indexVersion = readiness.indexVersion;
+  error.completedChannels = readiness.completedChannels;
+  error.missingChannels = readiness.missingChannels;
+  error.mismatchedChannels = readiness.mismatchedChannels;
+  error.fullSnapshotFallback = readiness.fullSnapshotFallback;
+  return error;
+}
+
+function readinessVerificationRequired() {
+  const error = new Error('SEMANTIC_READINESS_VERIFICATION_REQUIRED');
+  error.category = 'SEMANTIC_READINESS_VERIFICATION_REQUIRED';
   error.fullSnapshotFallback = false;
   return error;
 }
