@@ -2127,17 +2127,17 @@
         {
           "name": "codingTargets",
           "value": "systemarchitecture-mcp-server.js createDefaultSemanticRetrievalBoundary; productionGraphRagRuntime.js; production Neo4j vector adapter."
+        },
+        {
+          "name": "futureAcceptanceBoundary.SP-03",
+          "value": "Deferred and not mounted. Proposed control point: invoke MCP semantic query through the default dependency path, without injecting a test retrieval boundary, against an aligned index. Proposed observation point: Neo4j Vector Index serves all three independently thresholded channels with complete qualifying or zero results, deterministic closure follows, and canonical checks hold. Proposed input: aligned production-like vector index with above/below-threshold and zero-result fixtures; external credentials. Suggested future entrypoint: tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js; not created or executed."
+        },
+        {
+          "name": "futureMountOwner.SP-03",
+          "value": "WP-P2 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; this WP-P1 correction does not approve, deliver, or physicalize it."
         }
       ],
-      "testcases": [
-        {
-          "name": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-          "description": "Control point: invoke MCP semantic query through the default dependency path, without injecting a test retrieval boundary, against an aligned index. Observation point: Neo4j Vector Index serves all three independently thresholded channels with complete qualifying or zero results, deterministic closure follows, and canonical checks hold.",
-          "type": "Acceptance Test",
-          "Input": "Aligned production-like vector index with above/below-threshold and zero-result fixtures; external credentials.",
-          "acceptanceCriteria": "Suggested: tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js (new; not yet executed)"
-        }
-      ]
+      "testcases": []
     },
     {
       "id": "semprod-readiness-requirement",
@@ -2160,17 +2160,17 @@
         {
           "name": "codingTargets",
           "value": "systemarchitecture-mcp-server.js query dispatch; productionGraphRagRuntime alignment; persistent alignment/version store."
+        },
+        {
+          "name": "futureAcceptanceBoundary.SP-04",
+          "value": "Deferred and not mounted. Proposed control point: exercise structural-only pending, partial, stale, failed, and aligned states through default MCP query. Proposed observation point: non-aligned semantic requests reject actionably without snapshot fallback, no-argument snapshots remain compatible, and only complete version/channel alignment enables semantic retrieval. Proposed input: fresh structural-only plus partial/stale/failed/aligned, no-argument, and canonical-read controls. Suggested future entrypoint: tests/explicit/entries/runProductionSemanticReadinessGate.js plus existing compatibility entries; not created or executed."
+        },
+        {
+          "name": "futureMountOwner.SP-04",
+          "value": "WP-P2 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness; this WP-P1 correction does not approve, deliver, or physicalize it."
         }
       ],
-      "testcases": [
-        {
-          "name": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
-          "description": "Control point: exercise structural-only pending, partial, stale, failed, and aligned states through default MCP query. Observation point: non-aligned semantic requests reject actionably without snapshot fallback, no-argument snapshots remain compatible, and only complete version/channel alignment enables semantic retrieval.",
-          "type": "Acceptance Test",
-          "Input": "Fresh structural-only plus partial/stale/failed/aligned, no-argument, and canonical-read controls.",
-          "acceptanceCriteria": "Suggested: tests/explicit/entries/runProductionSemanticReadinessGate.js plus existing compatibility entries (new production case; not yet executed)"
-        }
-      ]
+      "testcases": []
     },
     {
       "id": "semprod-operator-journey-process",
@@ -2189,17 +2189,17 @@
         {
           "name": "observableOutcomes",
           "value": "SemanticIndexPending; backfill progress/failure; Aligned; semantic query only when Aligned."
+        },
+        {
+          "name": "futureAcceptanceBoundary.SP-05",
+          "value": "Deferred and not mounted. Proposed control point: follow journey without automatic opt-in and with explicit opt-in. Proposed observation point: first path exposes actionable pending plus explicit backfill command/tool; opted-in path starts automatically; both verify readiness before semantic query and preserve full snapshots. Proposed input: two fresh projects differing only in explicit automatic-backfill configuration. Suggested future entrypoint: tests/explicit/entries/runNewProjectSemanticOperatorJourney.js; not created or executed."
+        },
+        {
+          "name": "futureMountOwner.SP-05",
+          "value": "WP-P3 IntentionDesign must separately obtain approval and mount ExplicitAcceptanceTestcase-SP-05-NewProjectJourney; this WP-P1 correction does not approve, deliver, or physicalize it."
         }
       ],
-      "testcases": [
-        {
-          "name": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-          "description": "Control point: follow journey without automatic opt-in and with explicit opt-in. Observation point: first path exposes actionable pending plus explicit backfill command/tool; opted-in path starts automatically; both verify readiness before semantic query and preserve full snapshots.",
-          "type": "Acceptance Test",
-          "Input": "Two fresh projects differing only in explicit automatic-backfill configuration.",
-          "acceptanceCriteria": "Suggested: tests/explicit/entries/runNewProjectSemanticOperatorJourney.js (new; not yet executed)"
-        }
-      ]
+      "testcases": []
     },
     {
       "id": "semprod-ready-plateau",

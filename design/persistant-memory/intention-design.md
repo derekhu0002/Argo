@@ -70,6 +70,23 @@
 - Routing: resume the same ImplementationDesign session to correct its WP-P1 contract/guard exact wording, preserve RED evidence, and report the global validator blocker to the orchestrator. The orchestrator must obtain separate human authorization for SP-03/SP-04/SP-05 or route a validator-scoping change to the owner of `.argo/scripts/validateStageHandoff.js`; IntentionDesign must not broaden WP-P1.
 - No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
 
+### Authorized sequential work-package isolation correction
+
+- Authorization: the parent delegated-review decision explicitly authorized only the narrow intent-governance correction needed to preserve sequential WP-P1/WP-P2/WP-P3 isolation. It did not approve, deliver, physicalize, or start SP-03/SP-04/SP-05.
+- Viewpoint frame: Requirements Realization Viewpoint for future acceptance-governance sequencing; Implementation and Migration Viewpoint for work-package isolation. No view was changed because existing requirement realization, work-package definitions, and view membership remain valid.
+- `argo.previewSystemArchitectureMutation` passed without writing for exactly three `updateElement` mutations: `semprod-default-vector-retrieval`, `semprod-readiness-requirement`, and `semprod-operator-journey-process`. Counts remained `61 elements / 79 relationships / 31 views`; touched relationships and views were empty; errors were empty.
+- `argo.applySystemArchitectureMutation` passed and wrote the same three element updates with counts unchanged at `61 / 79 / 31`.
+- SP-03/SP-04/SP-05 mounted testcase objects were removed by setting only their owning elements' `testcases` arrays to empty. Their requirements, descriptions, decision traces, coding targets, functional points, relationships, views, and work-package definitions were preserved.
+- Proposed future boundary semantics were preserved in `futureAcceptanceBoundary.SP-03`, `futureAcceptanceBoundary.SP-04`, and `futureAcceptanceBoundary.SP-05` attributes, including proposed control point, observation point, input, and suggested future entrypoint.
+- Future ownership was preserved in `futureMountOwner.SP-03` and `futureMountOwner.SP-04` as WP-P2 IntentionDesign, and `futureMountOwner.SP-05` as WP-P3 IntentionDesign. Each attribute requires separate approval and explicitly says this correction does not approve, deliver, or physicalize the boundary.
+- SP-01 and SP-02 remain mounted, executable-path anchored, and covered by their unchanged human-approval attributes. The approved five-element WP-P1 intent handoff is semantically unchanged and did not require regeneration.
+- `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- The former global blocker is removed: `argo.validateStageHandoff(stage="implementation-to-coding")` passed with exitCode 0 and stdout `Stage handoff validation passed for: implementation-to-coding`.
+- Post-write Neo4j synchronization failed exactly with `neo4jUri is required for start`; no Neo4j synchronization or semantic alignment evidence is claimed.
+- Checklist self-audit: A1-A5 remain satisfied for the WP-P1 scope; B1-B3, C1-C2, and D1-D8 remain satisfied for the approved mounted WP-P1 boundaries and five-element dependency scope; E1-E3 remain represented by the schema-compliant validated handoff and recorded human approval; F1 is this record and F2 requires the corrective stage commit.
+- No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
+
 ### Exact approval question
 
 Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`—and globally approve the WP-P1 intent-to-implementation handoff scope (`semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`) so IntentDesign may record approval, replace the stale unrelated intent handoff with the WP-P1 handoff, validate it, and create the required IntentDesign stage commit? Recommended answer: approve, because the boundaries now cover the requested durable production persistence, full three-channel backfill, test-only cleanup isolation, canonical authority, external credentials, and all required failure/recovery semantics while excluding WP-P2 and WP-P3.
