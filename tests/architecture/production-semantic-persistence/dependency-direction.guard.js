@@ -36,17 +36,29 @@ assert(
   handoff.frozenFiles.includes(liveEvidencePath),
   'WP_P1_DEPENDENCY_DIRECTION_GUARD: live-E2E cleanup boundary must remain frozen',
 );
-for (const productionTarget of [
+const productionCompositionPaths = [
   '.argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js',
   '.argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js',
   '.argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js',
   '.argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js',
   '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
-]) {
+];
+for (const productionTarget of productionCompositionPaths) {
   assert(
-    targetPaths.includes(productionTarget),
-    `WP_P1_DEPENDENCY_DIRECTION_GUARD: handoff omits production composition target ${productionTarget}`,
+    targetPaths.includes(productionTarget) || handoff.frozenFiles.includes(productionTarget),
+    `WP_P1_DEPENDENCY_DIRECTION_GUARD: handoff neither targets nor freezes ${productionTarget}`,
+  );
+}
+assert.deepStrictEqual(
+  [...new Set(targetPaths)].sort(),
+  ['.argo/scripts/systemarchitecture-mcp-server.js'],
+  'WP_P1_DEPENDENCY_DIRECTION_GUARD: final-audit repair authorizes production paths beyond the MCP gateway',
+);
+for (const frozenProductionPath of productionCompositionPaths.slice(0, -1)) {
+  assert(
+    handoff.frozenFiles.includes(frozenProductionPath),
+    `WP_P1_DEPENDENCY_DIRECTION_GUARD: final-audit repair does not freeze ${frozenProductionPath}`,
   );
 }
 

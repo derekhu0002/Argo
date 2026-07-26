@@ -32,6 +32,33 @@ async function main() {
     'SP01_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
   );
 
+  // THEN the shipped JSON-RPC tools/call path owns a non-injected production composition root
+  assert.strictEqual(
+    observation.defaultMcpComposition.request.method,
+    'tools/call',
+    'SP01_DEFAULT_MCP_JSONRPC_TOOLS_CALL_REQUIRED',
+  );
+  assert.strictEqual(
+    observation.defaultMcpComposition.request.params.name,
+    'backfillSystemArchitectureSemanticProjection',
+    'SP01_DEFAULT_MCP_OPERATOR_CALL_REQUIRED',
+  );
+  assert(
+    !observation.defaultMcpComposition.responseText.includes(
+      'productionGraphRagRuntime.runSemanticBackfill is required',
+    ),
+    'SP01_DEFAULT_MCP_PRODUCTION_COMPOSITION_MISSING: productionGraphRagRuntime.runSemanticBackfill is required',
+  );
+  assert(
+    observation.defaultMcpComposition.responseText.includes('EXTERNAL_CREDENTIALS_REQUIRED'),
+    'SP01_DEFAULT_MCP_EXTERNAL_CONFIGURATION_NOT_FAIL_CLOSED',
+  );
+  assert.strictEqual(
+    observation.defaultMcpComposition.canonicalJsonAfter,
+    observation.defaultMcpComposition.canonicalJsonBefore,
+    'SP01_DEFAULT_MCP_FAKE_CANONICAL_MUTATION_TRIGGERED',
+  );
+
   // THEN the MCP operator reaches runtime production composition after structural projection without fake mutation
   assert.strictEqual(
     observation.operatorName,

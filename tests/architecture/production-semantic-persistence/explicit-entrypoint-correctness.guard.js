@@ -15,6 +15,11 @@ const requirements = new Map([
     'SP01_MISSING_EXTERNAL_CREDENTIALS_NOT_BLOCKED',
     'SP01_MISSING_PROVIDER_QUALIFICATION_NOT_BLOCKED',
     'SP01_MCP_OPERATOR_NOT_EXPOSED',
+    'SP01_DEFAULT_MCP_JSONRPC_TOOLS_CALL_REQUIRED',
+    'SP01_DEFAULT_MCP_OPERATOR_CALL_REQUIRED',
+    'SP01_DEFAULT_MCP_PRODUCTION_COMPOSITION_MISSING',
+    'SP01_DEFAULT_MCP_EXTERNAL_CONFIGURATION_NOT_FAIL_CLOSED',
+    'SP01_DEFAULT_MCP_FAKE_CANONICAL_MUTATION_TRIGGERED',
     'SP01_BOUNDED_BATCH_EXCEEDED',
     'SP01_CHANNEL_CHECKPOINTS_INCOMPLETE',
     'SP01_ISOLATED_RECORD_FAILURE_MISSING',
@@ -73,6 +78,7 @@ for (const requiredBoundary of [
   'completedBeforeResume',
   'replayedProviderIdentities',
   'replayedUpsertIdentities',
+  'runDefaultMcpSemanticBackfillComposition',
   'assertZeroSemanticSideEffects',
   'assertExactStoreContract',
 ]) {
@@ -82,6 +88,35 @@ assert(
   !harness.includes('function createDurableProjectionAdapter'),
   'WP_P1_ENTRYPOINT_GUARD: Harness substitutes an in-memory production projection adapter',
 );
+const defaultCompositionProbe = harness.slice(
+  harness.indexOf('function runDefaultMcpSemanticBackfillComposition'),
+  harness.indexOf('async function runPersistentSemanticProjectionLifecycle'),
+);
+for (const requiredBoundary of [
+  'childProcess.spawnSync',
+  '[paths.mcp]',
+  "method: 'tools/call'",
+  "name: 'backfillSystemArchitectureSemanticProjection'",
+  "'QWEN_KEY'",
+  "'ARGO_NEO4J_DATABASE_URL'",
+  'canonicalJsonBefore',
+  'canonicalJsonAfter',
+]) {
+  assert(
+    defaultCompositionProbe.includes(requiredBoundary),
+    `WP_P1_ENTRYPOINT_GUARD: default MCP probe omits ${requiredBoundary}`,
+  );
+}
+for (const injectedBoundary of [
+  'productionGraphRagRuntime:',
+  'productionGraphRagDependencies:',
+  '.callTool(',
+]) {
+  assert(
+    !defaultCompositionProbe.includes(injectedBoundary),
+    `WP_P1_ENTRYPOINT_GUARD: default MCP probe injects ${injectedBoundary}`,
+  );
+}
 
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 for (const entryPath of requirements.keys()) {

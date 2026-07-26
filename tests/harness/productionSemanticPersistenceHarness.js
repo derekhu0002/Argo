@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -104,6 +105,7 @@ async function runProductionSemanticBackfill() {
   );
   assert.strictEqual(typeof mcp.callTool, 'function', 'SP01_MCP_OPERATOR_CALL_BOUNDARY_MISSING');
 
+  const defaultMcpComposition = runDefaultMcpSemanticBackfillComposition();
   const fixture = canonicalThreeChannelFixture();
   const originalCanonicalJson = JSON.stringify(fixture);
   const observations = createProductionCompositionObservations();
@@ -193,6 +195,61 @@ async function runProductionSemanticBackfill() {
     durableAdapterOperations: observations.durableAdapterOperations(),
     durableCheckpointOperations: observations.durableCheckpointOperations(),
     operatorName,
+    defaultMcpComposition,
+  });
+}
+
+function runDefaultMcpSemanticBackfillComposition() {
+  const canonicalPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
+  const canonicalJsonBefore = fs.readFileSync(canonicalPath, 'utf8');
+  const request = Object.freeze({
+    jsonrpc: '2.0',
+    id: 'sp01-default-production-composition',
+    method: 'tools/call',
+    params: Object.freeze({
+      name: 'backfillSystemArchitectureSemanticProjection',
+      arguments: Object.freeze({ explicitOptIn: true }),
+    }),
+  });
+  const environment = { ...process.env, ARGO_REPO_ROOT: repoRoot };
+  for (const key of [
+    'QWEN_KEY',
+    'ARGO_NEO4J_DATABASE_URL',
+    'ARGO_NEO4J_DATABASE_USERNAME',
+    'ARGO_NEO4J_DATABASE_PASSWORD',
+    'ARGO_NEO4J_URI',
+    'ARGO_NEO4J_USERNAME',
+    'ARGO_NEO4J_PASSWORD',
+  ]) {
+    delete environment[key];
+  }
+  const execution = childProcess.spawnSync(
+    process.execPath,
+    [paths.mcp],
+    {
+      cwd: repoRoot,
+      env: environment,
+      input: `${JSON.stringify(request)}\n`,
+      encoding: 'utf8',
+      timeout: 10000,
+    },
+  );
+  assert.strictEqual(execution.error, undefined, 'SP01_DEFAULT_MCP_JSONRPC_PROCESS_FAILED');
+  assert.strictEqual(execution.status, 0, `SP01_DEFAULT_MCP_JSONRPC_EXITED:${execution.status}`);
+  const responseLine = String(execution.stdout || '')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .at(-1);
+  assert(responseLine, 'SP01_DEFAULT_MCP_JSONRPC_RESPONSE_MISSING');
+  const response = JSON.parse(responseLine);
+  return Object.freeze({
+    request,
+    response,
+    responseText: JSON.stringify(response),
+    stderr: String(execution.stderr || ''),
+    canonicalJsonBefore,
+    canonicalJsonAfter: fs.readFileSync(canonicalPath, 'utf8'),
   });
 }
 

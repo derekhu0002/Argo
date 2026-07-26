@@ -38,6 +38,11 @@ const handoffEvidence = JSON.stringify(handoff);
 for (const baselineEvidence of [
   '40 total / 38 passed / 2 expected RED',
   '21 runner-owned delivery transitions',
+  '40 total / 39 passed / 1 expected RED',
+  '2 runner-owned delivery transitions',
+  'SP01_DEFAULT_MCP_PRODUCTION_COMPOSITION_MISSING',
+  'productionGraphRagRuntime.runSemanticBackfill is required',
+  '4e01094b56429991b32b0826968da0bea9f93b0e',
   'grag-consumer-role',
   'grag-consumption-process',
   'grag-query-service',
