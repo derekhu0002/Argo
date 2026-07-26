@@ -70,6 +70,10 @@ const entryRequirements = new Map([
     'DT18_BENCHMARK_EMPTY',
     'DT18_BENCHMARK_INCOMPLETE',
     'DT18_PRECISION_OUT_OF_RANGE',
+    'DT18_MANDATORY_KEY_SEEDS_MISSING',
+    'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING',
+    'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING',
+    'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
   ]],
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',

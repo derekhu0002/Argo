@@ -87,6 +87,34 @@ async function main() {
     mutatePurpose(benchmark, 2, { precision: -0.01 }),
     'DT18_PRECISION_OUT_OF_RANGE',
   );
+
+  // GIVEN benchmark purpose expectations omit mandatory business seed fixtures
+  // WHEN W7 business quality evidence is evaluated
+  // THEN empty expected seed requirements cannot create full-score recall evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 3, { mandatoryKeySeedIds: [] }),
+    'DT18_MANDATORY_KEY_SEEDS_MISSING',
+  );
+
+  // GIVEN benchmark purpose expectations omit expected closure fixtures
+  // WHEN W7 business quality evidence is evaluated
+  // THEN empty expected closure requirements cannot create full-score closure evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 4, { expectedClosureIds: [] }),
+    'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING',
+  );
+
+  // GIVEN unrelated-hit evidence is missing or negative
+  // WHEN W7 business quality evidence is evaluated
+  // THEN zero forced hits must be actual recorded non-negative integer evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { unrelatedForcedHits: undefined }),
+    'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING',
+  );
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { unrelatedForcedHits: -1 }),
+    'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
+  );
 }
 
 function assertRecordedPrecision(value, failureCategory) {

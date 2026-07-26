@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-26T01:30:00+08:00",
+  "generatedAt": "2026-07-26T12:41:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "W7 Phase 1 business acceptance repair handoff. Coding/Repair is authorized only to repair the DT-18/TS-08 production runtime loopholes where missing actual benchmark observations can fabricate perfect quality evidence and whole delivery can accept aggregatePrecision outside [0,1]. Whole delivery remains allowed only after W2-W6 are accepted and DT-18 proves 100% key seed recall from actual observations, 100% closure correctness from actual observations, zero forced unrelated hits, and recorded precision inside [0,1].",
+  "summary": "W7 Phase 1 business acceptance repair handoff. Coding/Repair is authorized only to repair DT-18 production runtime evidence-completeness loopholes where missing mandatory seed fixtures, missing expected closure fixtures, or missing/negative unrelated forced-hit evidence can fabricate perfect quality evidence. Whole delivery remains allowed only after W2-W6 are accepted and DT-18 proves non-empty mandatory key seed fixtures, 100% key seed recall from actual observations, non-empty expected closure fixtures, 100% closure correctness from actual observations, explicitly recorded zero forced unrelated hits, and recorded precision inside [0,1].",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -13,20 +13,20 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
       "entryPath": "tests/explicit/entries/runRetrievalQualityBenchmark.js",
-      "controlPoint": "Run the approved five-purpose business benchmark after W2-W6 acceptance evidence is available, then run negative benchmark counterexamples for missing observations, empty/incomplete content, and out-of-range precision.",
-      "observationPoint": "Every purpose reports mandatory key seed ids, actual recalled key seed ids, no missing key seeds, expected closure correctness from actual observed closure ids, zero forced hits for unrelated controls, recorded precision inside [0,1], aggregate recall 1, aggregate closure correctness 1, and no invented release precision threshold. Missing actual recall observations, missing actual closure observations, empty benchmarks, incomplete benchmarks, and precision outside [0,1] must block instead of synthesizing perfect evidence.",
+      "controlPoint": "Run the approved five-purpose business benchmark after W2-W6 acceptance evidence is available, then run negative benchmark counterexamples for missing fixtures, missing observations, missing/negative unrelated-hit evidence, empty/incomplete content, and out-of-range precision.",
+      "observationPoint": "Every purpose reports non-empty mandatory key seed ids, actual recalled key seed ids, no missing key seeds, non-empty expected closure ids, expected closure correctness from actual observed closure ids, explicitly recorded zero forced hits for unrelated controls, recorded precision inside [0,1], aggregate recall 1, aggregate closure correctness 1, and no invented release precision threshold. Missing mandatory seed fixtures, missing expected closure fixtures, missing actual recall observations, missing actual closure observations, missing or negative unrelated forced-hit evidence, empty benchmarks, incomplete benchmarks, and precision outside [0,1] must block instead of synthesizing perfect evidence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runRetrievalQualityBenchmark.js",
-      "failureReason": "DT18_ACTUAL_RECALL_EVIDENCE_MISSING"
+      "failureReason": "DT18_MANDATORY_KEY_SEEDS_MISSING"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
       "entryPath": "tests/explicit/entries/runSevenWaveDeliveryGates.js",
       "controlPoint": "Attempt W7 or whole delivery with incomplete W2-W6 evidence, with W2-W6 accepted but DT-18 missing or failing, with W2-W6 accepted and aggregatePrecision outside [0,1] including -99, and with a fully passing ordered control case.",
       "observationPoint": "The delivery gate blocks incomplete prerequisites, blocks whole delivery until W7 DT-18 passes, rejects invalid aggregate precision outside [0,1], and allows delivery only after W2-W6 plus W7 business benchmark evidence pass.",
-      "initialExecutionStatus": "failed",
+      "initialExecutionStatus": "passed",
       "initialExecutionCommand": "node tests/explicit/entries/runSevenWaveDeliveryGates.js",
-      "failureReason": "TS08_PRECISION_OUT_OF_RANGE_ACCEPTED"
+      "failureReason": "none"
     }
   ],
   "criticalNonExplicitTests": [
@@ -77,18 +77,12 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-18",
       "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "DT18_ACTUAL_RECALL_EVIDENCE_MISSING / DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING / DT18_BENCHMARK_EMPTY / DT18_BENCHMARK_INCOMPLETE / DT18_PRECISION_OUT_OF_RANGE",
-      "nextAction": "Repair only createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) so it requires actual recalledKeySeedIds and observedClosureIds, blocks empty or incomplete five-purpose benchmarks, blocks precision outside [0,1], and never substitutes expected seed or closure ids as observed evidence."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-TS-08",
-      "path": ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-      "failureSignal": "TS08_PRECISION_OUT_OF_RANGE_ACCEPTED / W7_QUALITY_BENCHMARK_REQUIRED",
-      "nextAction": "Repair only createProductionGraphRagRuntime().evaluateDeliverySequence(request) / hasPassingW7QualityBenchmark(qualityBenchmark) so whole delivery rejects aggregatePrecision outside [0,1], including -99, while preserving existing prerequisite and W7-quality blocking semantics."
+      "failureSignal": "DT18_MANDATORY_KEY_SEEDS_MISSING / DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING / DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING / DT18_UNRELATED_FORCED_HITS_NEGATIVE",
+      "nextAction": "Repair only createProductionGraphRagRuntime().evaluatePhase1QualityBenchmark(request) so every purpose requires non-empty mandatoryKeySeedIds, non-empty expectedClosureIds, and explicit non-negative integer unrelatedForcedHits evidence. Missing or negative unrelatedForcedHits must not be normalized into passing zero evidence; explicit 0 remains valid."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the W7 DT-18/TS-08 production runtime loopholes after W2-W6: missing actual benchmark observations must not fabricate perfect quality evidence, empty or incomplete benchmarks must not pass, and aggregate precision outside [0,1] must not allow whole delivery. Do not change W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, DT-19 capacity governance, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
+    "executionStrategy": "Repair only the W7 DT-18 production runtime evidence-completeness loopholes after W2-W6: missing mandatory seed fixtures, missing expected closure fixtures, and missing or negative unrelated forced-hit evidence must not fabricate perfect quality evidence. Do not change TS-08 delivery sequence behavior except as a regression check, W4 seed retrieval, W5 purpose closure, W6 structural/provenance evidence, graph-tidy full-snapshot behavior, DT-19 capacity governance, tests, Harnesses, contracts, or runner-owned deliveryStatus by hand. Frozen files are read-only during Coding/Repair.",
     "tasks": [
       {
         "taskId": "W7-C1",
@@ -102,51 +96,28 @@
         ],
         "steps": [
           "Keep evaluatePhase1QualityBenchmark(request) on createProductionGraphRagRuntime's returned public boundary.",
-          "Consume the Harness-provided benchmark purposes without inventing a precision release threshold, result cap, or observation fallback.",
+          "Consume the Harness-provided benchmark purposes without inventing a precision release threshold, result cap, observation fallback, or default unrelated-hit evidence.",
+          "Reject empty mandatoryKeySeedIds and empty expectedClosureIds for every benchmark purpose.",
           "Reject missing actual recalledKeySeedIds and missing actual observedClosureIds instead of falling back to mandatoryKeySeedIds or expectedClosureIds.",
+          "Reject missing or negative unrelatedForcedHits evidence; explicit 0 remains valid as recorded zero forced hits.",
           "Reject empty benchmarks, incomplete five-purpose benchmark content, and per-purpose precision outside [0,1].",
           "Return qualityEvidence.benchmarkId, purposes, perPurpose observations, keySeedRecall 1, closureCorrectness 1, unrelatedForcedHits 0, aggregatePrecision, and undefined releasePrecisionThreshold.",
           "Run node tests/explicit/entries/runRetrievalQualityBenchmark.js until it passes."
         ],
-        "completionSignal": "runRetrievalQualityBenchmark.js exits 0 and DT-18 records 100% recall, 100% closure correctness, zero forced unrelated hits, in-range precision evidence, and blocking failures for fabricated/missing observations, empty/incomplete benchmarks, and out-of-range precision."
-      },
-      {
-        "taskId": "W7-C2",
-        "title": "Gate whole delivery sequence",
-        "objective": "Block W7 and whole delivery until prerequisites and in-range DT-18 quality evidence pass.",
-        "dependsOn": [
-          "W7-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-TS-08"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
-        ],
-        "steps": [
-          "Keep evaluateDeliverySequence(request) on the production runtime public boundary.",
-          "For incomplete prerequisites, return blocked with category DELIVERY_PREREQUISITES_INCOMPLETE and exact missing waves from W2 through W6.",
-          "For whole-delivery attempts with missing, failed, incomplete, or out-of-range qualityBenchmark evidence, return blocked with category W7_QUALITY_BENCHMARK_REQUIRED.",
-          "Reject aggregatePrecision outside [0,1], including -99, as non-passing W7 quality evidence.",
-          "For W2-W6 accepted plus passed DT-18 evidence, return status allowed and releaseAllowed true.",
-          "Run node tests/explicit/entries/runSevenWaveDeliveryGates.js until it passes."
-        ],
-        "completionSignal": "runSevenWaveDeliveryGates.js exits 0 with prerequisite blocking, W7-quality blocking, aggregate-precision range blocking, and ordered delivery allowance proven."
+        "completionSignal": "runRetrievalQualityBenchmark.js exits 0 and DT-18 records non-empty mandatory fixtures, 100% recall, non-empty expected closure fixtures, 100% closure correctness, explicitly recorded zero forced unrelated hits, in-range precision evidence, and blocking failures for missing fixtures, fabricated/missing observations, missing/negative unrelated-hit evidence, empty/incomplete benchmarks, and out-of-range precision."
       },
       {
         "taskId": "W7-C3",
         "title": "Verify W7 release gate",
         "objective": "Prove W7 without broadening into DT-19 or manual deliveryStatus edits.",
         "dependsOn": [
-          "W7-C1",
-          "W7-C2"
+          "W7-C1"
         ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-DT-18",
           "ExplicitAcceptanceTestcase-TS-08"
         ],
         "targetPaths": [
-          ".argo/scripts/graph-rag/productionGraphRagRuntime.js"
         ],
         "steps": [
           "Run the two W7 explicit entrypoints.",
