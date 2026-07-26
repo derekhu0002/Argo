@@ -9,6 +9,7 @@ const authorized = (handoff.codingTargets || []).map(target => target.path).sort
 const expectedAuthorized = [
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   '.argo/scripts/graph-rag/semanticReadinessAttestationStore.js',
+  '.argo/scripts/graph-rag/systemMetadataCommandAdapter.js',
   '.argo/scripts/graph-rag/semanticOperatorError.js',
   '.argo/scripts/semanticOperatorJourneyCli.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
@@ -23,7 +24,7 @@ const sensitiveNamePattern = /provider|model|baseurl|dimension|password|secret|a
 const suspiciousLiteralPattern = /qwen|alibaba-cloud|openai|api[_-]?key|credential|password|secret|token|(?:neo4j|bolt)(?:\+s|\+ssc)?:\/\//i;
 const duplicateInternalPattern = /db\.index\.vector\.queryNodes|neo4j\.auth\.basic|createProductionSemantic(?:Backfill|CheckpointStore|Neo4jAdapter|ProjectionStore)|MATCH\s*\(|MERGE\s*\(/i;
 
-// GIVEN only seven production/operator adapter-lifecycle files are authorized
+// GIVEN only eight production/operator adapter-lifecycle files are authorized
 // WHEN structural source policy and executable adversarial fixtures are evaluated
 // THEN configuration may be forwarded directly but never defaulted, embedded, or reimplemented
 assert.deepStrictEqual(

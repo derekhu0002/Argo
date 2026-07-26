@@ -24,6 +24,7 @@ const requiredFactoryImports = new Map([
   ['createDefaultSemanticRetrieval', './graph-rag/defaultSemanticRetrieval.js'],
   ['resolveApprovedLiveConfiguration', './graph-rag/liveEmbeddingProviderConfig.js'],
   ['createSemanticReadinessAttestationStore', './graph-rag/semanticReadinessAttestationStore.js'],
+  ['createReadinessAttestationMetadataAdapter', './graph-rag/systemMetadataCommandAdapter.js'],
 ]);
 const requiredToolCalls = [
   'backfillSystemArchitectureSemanticProjection',
@@ -59,6 +60,7 @@ const { createProductionGraphRagRuntime } = require('./graph-rag/productionGraph
 const { createDefaultSemanticRetrieval } = require('./graph-rag/defaultSemanticRetrieval.js');
 const { resolveApprovedLiveConfiguration } = require('./graph-rag/liveEmbeddingProviderConfig.js');
 const { createSemanticReadinessAttestationStore } = require('./graph-rag/semanticReadinessAttestationStore.js');
+const { createReadinessAttestationMetadataAdapter } = require('./graph-rag/systemMetadataCommandAdapter.js');
 function initializeWorkspace(request) { return request; }
 function syncCanonicalStructuralProjection(request) { return request; }
 function callTool(name, request, dependencies) { return { name, request, dependencies }; }
@@ -66,7 +68,8 @@ function executeSemanticSystemArchitectureQuery(request, dependencies) { return 
 function createDefaultProductionSemanticOperatorJourney() {
   const runtime = createProductionGraphRagRuntime({});
   const retrieval = createDefaultSemanticRetrieval({});
-  const readinessAttestationStore = createSemanticReadinessAttestationStore({});
+  const metadataAdapter = createReadinessAttestationMetadataAdapter({ repositoryRoot: process.cwd() });
+  const readinessAttestationStore = createSemanticReadinessAttestationStore({ metadataAdapter });
   return createProductionSemanticOperatorJourney({
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
@@ -151,6 +154,13 @@ const bypassFixtures = [
       'readinessAttestationStore: fakeAttestationStore',
     ),
   },
+  {
+    name: 'substituted-attestation-metadata',
+    source: safeFixture.replace(
+      'createSemanticReadinessAttestationStore({ metadataAdapter })',
+      'createSemanticReadinessAttestationStore({ metadataAdapter: fakeMetadataAdapter })',
+    ),
+  },
 ];
 
 for (const fixture of bypassFixtures) {
@@ -217,6 +227,7 @@ function assertDefaultComposition(source, label) {
     'createDefaultSemanticRetrieval',
     'resolveApprovedLiveConfiguration',
     'createSemanticReadinessAttestationStore',
+    'createReadinessAttestationMetadataAdapter',
   ]) {
     const imported = factoryLocals.get(factory);
     assert(
@@ -263,6 +274,33 @@ function assertDefaultComposition(source, label) {
     factoryLocals.get('createSemanticReadinessAttestationStore'),
     checker,
     label,
+  );
+  const metadataBinding = findFactoryResultBinding(
+    compositionRoot,
+    factoryLocals.get('createReadinessAttestationMetadataAdapter'),
+    checker,
+    label,
+  );
+  const storeCall = storeBinding.initializer;
+  assert(
+    ts.isCallExpression(storeCall)
+      && storeCall.arguments.length === 1
+      && ts.isObjectLiteralExpression(storeCall.arguments[0]),
+    `WP_P3_DEFAULT_WIRING_GUARD: ${label} store factory options changed`,
+  );
+  const metadataProperty = storeCall.arguments[0].properties.find(property => (
+    propertyName(property) === 'metadataAdapter'
+  ));
+  assert(
+    metadataProperty
+      && (
+        (ts.isShorthandPropertyAssignment(metadataProperty)
+          && resolvesTo(metadataProperty.name, metadataBinding, checker))
+        || (ts.isPropertyAssignment(metadataProperty)
+          && ts.isIdentifier(metadataProperty.initializer)
+          && resolvesTo(metadataProperty.initializer, metadataBinding, checker))
+      ),
+    `WP_P3_DEFAULT_WIRING_GUARD: ${label} store does not use exact OS metadata boundary`,
   );
   const storeProperty = dependencies.properties.find(property => (
     propertyName(property) === 'readinessAttestationStore'

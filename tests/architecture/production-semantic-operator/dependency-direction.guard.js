@@ -7,6 +7,7 @@ const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json')
 const allowedTargets = new Set([
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   '.argo/scripts/graph-rag/semanticReadinessAttestationStore.js',
+  '.argo/scripts/graph-rag/systemMetadataCommandAdapter.js',
   '.argo/scripts/graph-rag/semanticOperatorError.js',
   '.argo/scripts/semanticOperatorJourneyCli.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
@@ -17,6 +18,7 @@ const inspectedProductionPaths = [
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/semanticReadinessAttestationStore.js',
+  '.argo/scripts/graph-rag/systemMetadataCommandAdapter.js',
   '.argo/scripts/graph-rag/semanticOperatorError.js',
   '.argo/scripts/semanticOperatorJourneyCli.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
@@ -64,6 +66,7 @@ for (const required of [
   'six function ports',
   'readinessAttestationStore',
   'semanticReadinessAttestationStore.js',
+  'createReadinessAttestationMetadataAdapter',
   'semanticOperatorError.js',
   'System Architecture MCP',
   'graph-tidy',

@@ -19,6 +19,19 @@ const attestationRelativePath = path.join(
 );
 const SECRET_CANARY = 'SP05-ADAPTER-SECRET-MUST-NOT-LEAK';
 const UNSAFE_SOURCE_CANARY = 'SP05-ADAPTER-UNSAFE-SOURCE-MUST-NOT-LEAK';
+const ERROR_ENVELOPE_KEYS = Object.freeze([
+  'action',
+  'canonicalVersion',
+  'category',
+  'completedChannels',
+  'contentVersion',
+  'fullSnapshotFallback',
+  'indexVersion',
+  'mismatchedChannels',
+  'missingChannels',
+  'state',
+  'verified',
+].sort());
 
 const VERSION_ONE_READINESS = Object.freeze({
   state: 'Aligned',
@@ -89,6 +102,7 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
       JSON.stringify(semanticQuery()),
     ]);
 
+    const trust = runAttestationTrustScenarios(roots);
     const packageBackfill = spawnPackageBackfillWithoutConsent();
     const mcp = await exerciseMcpAdapterPaths();
 
@@ -122,6 +136,7 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
           expectedCurrentReadiness: VERSION_TWO_READINESS,
           state: readFixtureState(stale),
         },
+        trust,
       },
       packageBackfill,
       mcp,
@@ -131,10 +146,143 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
   }
 }
 
+function runAttestationTrustScenarios(roots) {
+  const presenceOnly = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  writeRawAttestation(presenceOnly, '{}');
+  const presenceOnlyQuery = spawnSemanticQuery(presenceOnly);
+
+  const malformed = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  writeRawAttestation(malformed, '{"schemaVersion":');
+  const malformedQuery = spawnSemanticQuery(malformed);
+
+  const extraField = createRecordedWorkspace(roots);
+  mutateAttestation(extraField, record => ({ ...record, forgedExtra: true }));
+  const extraFieldQuery = spawnSemanticQuery(extraField);
+
+  const tampered = createRecordedWorkspace(roots);
+  mutateAttestation(tampered, record => ({
+    ...record,
+    indexVersion: 'index:tampered-without-integrity-update',
+  }));
+  const tamperedQuery = spawnSemanticQuery(tampered);
+
+  const foreignSource = createRecordedWorkspace(roots);
+  const foreign = readAttestation(foreignSource) || { schemaVersion: 'foreign-placeholder' };
+  const forgedForeign = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  fs.appendFileSync(canonicalPath(forgedForeign), '\n');
+  writeRawAttestation(forgedForeign, JSON.stringify(foreign));
+  const forgedForeignQuery = spawnSemanticQuery(forgedForeign);
+
+  const symbolicLink = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  const symbolicTarget = path.join(symbolicLink.root, 'outside-attestation.json');
+  fs.writeFileSync(symbolicTarget, JSON.stringify(foreign));
+  ensureAttestationDirectory(symbolicLink);
+  const symbolicPath = attestationPath(symbolicLink);
+  let symbolicLinkSetupError = null;
+  try {
+    fs.symlinkSync(symbolicTarget, symbolicPath, 'file');
+  } catch (error) {
+    symbolicLinkSetupError = observableError(error);
+  }
+  const symbolicLinkQuery = spawnSemanticQuery(symbolicLink);
+
+  const reparsePoint = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  const reparseTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-sp05-reparse-target-'));
+  roots.push(reparseTarget);
+  fs.writeFileSync(path.join(reparseTarget, 'semantic-readiness-attestation.json'), JSON.stringify(foreign));
+  const argoDirectory = path.join(reparsePoint.root, '.argo');
+  const tempDirectory = path.join(argoDirectory, 'temp');
+  fs.mkdirSync(argoDirectory, { recursive: true });
+  let reparseSetupError = null;
+  try {
+    fs.symlinkSync(reparseTarget, tempDirectory, process.platform === 'win32' ? 'junction' : 'dir');
+  } catch (error) {
+    reparseSetupError = observableError(error);
+  }
+  const reparsePointQuery = spawnSemanticQuery(reparsePoint);
+
+  const interruptedWithTarget = createRecordedWorkspace(roots);
+  writeInterruptedTemporary(interruptedWithTarget, '{"partial":');
+  const interruptedWithTargetQuery = spawnSemanticQuery(interruptedWithTarget);
+
+  const interruptedWithoutTarget = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  writeInterruptedTemporary(interruptedWithoutTarget, JSON.stringify(foreign));
+  const interruptedWithoutTargetQuery = spawnSemanticQuery(interruptedWithoutTarget);
+
+  const canonicalBytes = createRecordedWorkspace(roots);
+  fs.appendFileSync(canonicalPath(canonicalBytes), '\n');
+  const canonicalBytesQuery = spawnSemanticQuery(canonicalBytes);
+
+  const untrustedAcl = createRecordedWorkspace(roots);
+  const aclMutation = makeAttestationAclUntrusted(untrustedAcl);
+  const untrustedAclQuery = spawnSemanticQuery(untrustedAcl);
+
+  const mutation = createProcessWorkspace(
+    roots,
+    VERSION_ONE_READINESS,
+    JSON.parse(fs.readFileSync(path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'), 'utf8')),
+  );
+  const readinessBeforeMutation = spawnFixture(mutation, ['readiness']);
+  const mutationResult = spawnFixture(mutation, ['mcp-mutation']);
+  const queryAfterMutation = spawnSemanticQuery(mutation);
+
+  const drift = {};
+  for (const [name, readiness] of Object.entries({
+    canonical: { ...VERSION_ONE_READINESS, canonicalVersion: 'canonical:independent-drift' },
+    content: { ...VERSION_ONE_READINESS, contentVersion: 'content:independent-drift' },
+    index: { ...VERSION_ONE_READINESS, indexVersion: 'index:independent-drift' },
+    channels: {
+      ...VERSION_ONE_READINESS,
+      completedChannels: ['Element', 'ArchitectureRelationship'],
+      missingChannels: ['View'],
+      mismatchedChannels: ['View'],
+    },
+  })) {
+    const workspace = createRecordedWorkspace(roots);
+    writeReadiness(workspace, readiness);
+    drift[name] = {
+      query: spawnSemanticQuery(workspace),
+      expectedCurrentReadiness: readiness,
+      state: readFixtureState(workspace),
+    };
+  }
+
+  return {
+    presenceOnly: scenarioResult(presenceOnly, presenceOnlyQuery),
+    malformed: scenarioResult(malformed, malformedQuery),
+    extraField: scenarioResult(extraField, extraFieldQuery),
+    tampered: scenarioResult(tampered, tamperedQuery),
+    forgedForeign: scenarioResult(forgedForeign, forgedForeignQuery),
+    symbolicLink: {
+      ...scenarioResult(symbolicLink, symbolicLinkQuery),
+      setupError: symbolicLinkSetupError,
+    },
+    reparsePoint: {
+      ...scenarioResult(reparsePoint, reparsePointQuery),
+      setupError: reparseSetupError,
+    },
+    interruptedWithTarget: scenarioResult(interruptedWithTarget, interruptedWithTargetQuery),
+    interruptedWithoutTarget: scenarioResult(interruptedWithoutTarget, interruptedWithoutTargetQuery),
+    canonicalBytes: scenarioResult(canonicalBytes, canonicalBytesQuery),
+    untrustedAcl: {
+      ...scenarioResult(untrustedAcl, untrustedAclQuery),
+      aclMutation,
+    },
+    mutation: {
+      readiness: readinessBeforeMutation,
+      mutation: mutationResult,
+      query: queryAfterMutation,
+      state: readFixtureState(mutation),
+    },
+    drift,
+  };
+}
+
 function assertProductionSemanticOperatorAdapterLifecycle(result) {
   const failures = [];
   for (const [scope, assertion] of [
     ['cli-process-lifecycle', () => assertCliProcessLifecycle(result.cli)],
+    ['attestation-trust', () => assertAttestationTrustControls(result.cli.trust)],
     ['package-consent', () => assertPackageConsent(result.packageBackfill)],
     ['mcp-semantic-dispatch', () => assertMcpSemanticDispatch(result.mcp)],
     ['mcp-snapshot-bypasses', () => assertMcpSnapshotBypasses(result.mcp)],
@@ -170,6 +318,7 @@ function assertCliProcessLifecycle(cli) {
   assert.deepStrictEqual(
     Object.keys(attestation).sort(),
     [
+      'authorizationOperation',
       'canonicalDigest',
       'canonicalVersion',
       'completedChannels',
@@ -186,6 +335,11 @@ function assertCliProcessLifecycle(cli) {
     'SP05_CLI_ATTESTATION_ENVELOPE_CHANGED',
   );
   assert.strictEqual(attestation.verified, true, 'SP05_CLI_ATTESTATION_NOT_VERIFIED');
+  assert.strictEqual(
+    attestation.authorizationOperation,
+    'verifyReadiness',
+    'SP05_CLI_ATTESTATION_PROVENANCE_OPERATION_CHANGED',
+  );
   const serializedAttestation = JSON.stringify(attestation);
   assert(!serializedAttestation.includes(SECRET_CANARY), 'SP05_CLI_ATTESTATION_SECRET_LEAK');
   assert(
@@ -259,6 +413,115 @@ function assertCliProcessLifecycle(cli) {
   }, 'SP05_CLI_STALE_ATTESTATION');
 }
 
+function assertAttestationTrustControls(trust) {
+  for (const [name, scenario] of Object.entries({
+    presenceOnly: trust.presenceOnly,
+    malformed: trust.malformed,
+    extraField: trust.extraField,
+    tampered: trust.tampered,
+    forgedForeign: trust.forgedForeign,
+  })) {
+    assertStructuredProcessError(
+      scenario.query,
+      'SEMANTIC_READINESS_ATTESTATION_INVALID',
+      `SP05_ATTESTATION_${name.toUpperCase()}`,
+    );
+    assertEventCounts(scenario.state.events, {
+      'semantic-query': 0,
+    }, `SP05_ATTESTATION_${name.toUpperCase()}`);
+  }
+
+  assert.strictEqual(
+    trust.symbolicLink.setupError,
+    null,
+    `SP05_ATTESTATION_SYMLINK_FIXTURE_UNAVAILABLE: ${JSON.stringify(trust.symbolicLink.setupError)}`,
+  );
+  assertStructuredProcessError(
+    trust.symbolicLink.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    'SP05_ATTESTATION_SYMLINK',
+  );
+  assert.strictEqual(
+    trust.reparsePoint.setupError,
+    null,
+    `SP05_ATTESTATION_REPARSE_FIXTURE_UNAVAILABLE: ${JSON.stringify(trust.reparsePoint.setupError)}`,
+  );
+  assertStructuredProcessError(
+    trust.reparsePoint.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    'SP05_ATTESTATION_REPARSE',
+  );
+
+  assertProcessPassed(
+    trust.interruptedWithTarget.query,
+    'SP05_ATTESTATION_INTERRUPTED_REPLACEMENT_LOST_COMMITTED_TARGET',
+  );
+  assertStructuredProcessError(
+    trust.interruptedWithoutTarget.query,
+    'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
+    'SP05_ATTESTATION_INTERRUPTED_TEMP_ONLY',
+  );
+
+  assertStructuredProcessError(
+    trust.canonicalBytes.query,
+    'SEMANTIC_READINESS_ATTESTATION_STALE',
+    'SP05_ATTESTATION_CANONICAL_BYTES_DRIFT',
+  );
+  assertEventCounts(trust.canonicalBytes.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, 'SP05_ATTESTATION_CANONICAL_BYTES_DRIFT');
+
+  assert.strictEqual(
+    trust.untrustedAcl.aclMutation.status,
+    0,
+    `SP05_ATTESTATION_ACL_FIXTURE_FAILED: ${trust.untrustedAcl.aclMutation.stderr}`,
+  );
+  assertStructuredProcessError(
+    trust.untrustedAcl.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    'SP05_ATTESTATION_PERMISSIVE_ACL',
+  );
+
+  assertProcessPassed(trust.mutation.readiness, 'SP05_PRE_MUTATION_READINESS_FAILED');
+  assertProcessPassed(trust.mutation.mutation, 'SP05_CANONICAL_MUTATION_PROCESS_FAILED');
+  assertStructuredProcessError(
+    trust.mutation.query,
+    'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
+    'SP05_QUERY_AFTER_CANONICAL_MUTATION',
+  );
+  assertEventCounts(trust.mutation.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, 'SP05_QUERY_AFTER_CANONICAL_MUTATION');
+
+  for (const [name, scenario] of Object.entries(trust.drift)) {
+    assertStructuredProcessError(
+      scenario.query,
+      'SEMANTIC_READINESS_ATTESTATION_STALE',
+      `SP05_ATTESTATION_${name.toUpperCase()}_DRIFT`,
+    );
+    for (const field of [
+      'canonicalVersion',
+      'contentVersion',
+      'indexVersion',
+      'completedChannels',
+      'missingChannels',
+      'mismatchedChannels',
+    ]) {
+      assert.deepStrictEqual(
+        scenario.query.output.error[field],
+        scenario.expectedCurrentReadiness[field],
+        `SP05_ATTESTATION_${name.toUpperCase()}_${field.toUpperCase()}_DIAGNOSTIC_CHANGED`,
+      );
+    }
+    assertEventCounts(scenario.state.events, {
+      'readiness-read': 2,
+      'semantic-query': 0,
+    }, `SP05_ATTESTATION_${name.toUpperCase()}_DRIFT`);
+  }
+}
+
 function assertPackageConsent(outcome) {
   assert(
     outcome.commandLine.includes('semanticOperatorJourneyCli.js backfill'),
@@ -319,6 +582,11 @@ function assertMcpWireErrors(mcp) {
     assert.strictEqual(wire.available, true, `SP05_${label}_WIRE_HANDLER_NOT_EXPOSED`);
     assert.strictEqual(wire.result.isError, true, `SP05_${label}_WIRE_ERROR_FLAG_MISSING`);
     const errorPayload = JSON.parse(wire.result.content[0].text);
+    assert.deepStrictEqual(
+      Object.keys(errorPayload.error).sort(),
+      ERROR_ENVELOPE_KEYS,
+      `SP05_${label}_WIRE_ERROR_ENVELOPE_CHANGED`,
+    );
     assert.strictEqual(
       errorPayload.error.category,
       'SEMANTIC_INDEX_NOT_ALIGNED',
@@ -333,6 +601,12 @@ function assertMcpWireErrors(mcp) {
       errorPayload.error.missingChannels,
       ['View'],
       `SP05_${label}_WIRE_CHANNEL_DIAGNOSTICS_DROPPED`,
+    );
+    assert.strictEqual(errorPayload.error.verified, false, `SP05_${label}_WIRE_VERDICT_DROPPED`);
+    assert.strictEqual(
+      errorPayload.error.action,
+      'Run semantic readiness after completing the missing View channel',
+      `SP05_${label}_WIRE_ACTION_DROPPED`,
     );
     const serialized = JSON.stringify(wire.result);
     assert(!serialized.includes(SECRET_CANARY), `SP05_${label}_WIRE_SECRET_LEAK`);
@@ -414,6 +688,7 @@ function adapterDependencies(events, wire = false) {
           ? 'SEMANTIC_INDEX_NOT_ALIGNED'
           : 'SEMANTIC_READINESS_VERIFICATION_REQUIRED';
         error.state = wire ? 'SemanticIndexPending' : undefined;
+        error.verified = false;
         error.canonicalVersion = wire ? 'canonical:wire-v1' : undefined;
         error.contentVersion = wire ? 'content:wire-v1' : undefined;
         error.indexVersion = wire ? 'index:wire-v1' : undefined;
@@ -421,6 +696,9 @@ function adapterDependencies(events, wire = false) {
         error.missingChannels = wire ? ['View'] : undefined;
         error.mismatchedChannels = [];
         error.fullSnapshotFallback = false;
+        error.action = wire
+          ? 'Run semantic readiness after completing the missing View channel'
+          : 'Run semantic readiness before semantic query';
         error.secret = SECRET_CANARY;
         error.unsafeSource = UNSAFE_SOURCE_CANARY;
         throw error;
@@ -435,18 +713,98 @@ function adapterDependencies(events, wire = false) {
   };
 }
 
-function createProcessWorkspace(roots, readiness) {
+function createProcessWorkspace(
+  roots,
+  readiness,
+  canonicalDocument = { elements: [], relationships: [], views: [] },
+) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-sp05-adapter-'));
   roots.push(root);
   const graphDirectory = path.join(root, 'design', 'KG');
   fs.mkdirSync(graphDirectory, { recursive: true });
   fs.writeFileSync(
     path.join(graphDirectory, 'SystemArchitecture.json'),
-    JSON.stringify({ elements: [], relationships: [], views: [] }),
+    JSON.stringify(canonicalDocument),
   );
   const statePath = path.join(root, 'fixture-state.json');
   fs.writeFileSync(statePath, JSON.stringify({ readiness, events: [] }, null, 2));
   return { root, statePath };
+}
+
+function createRecordedWorkspace(roots) {
+  const workspace = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+  workspace.readiness = spawnFixture(workspace, ['readiness']);
+  return workspace;
+}
+
+function spawnSemanticQuery(workspace) {
+  return spawnFixture(workspace, [
+    'query',
+    '--request-json',
+    JSON.stringify(semanticQuery()),
+  ]);
+}
+
+function ensureAttestationDirectory(workspace) {
+  fs.mkdirSync(path.dirname(attestationPath(workspace)), { recursive: true });
+}
+
+function attestationPath(workspace) {
+  return path.join(workspace.root, attestationRelativePath);
+}
+
+function canonicalPath(workspace) {
+  return path.join(workspace.root, 'design', 'KG', 'SystemArchitecture.json');
+}
+
+function writeRawAttestation(workspace, contents) {
+  ensureAttestationDirectory(workspace);
+  fs.writeFileSync(attestationPath(workspace), contents);
+}
+
+function mutateAttestation(workspace, mutate) {
+  const existing = readAttestation(workspace) || {
+    schemaVersion: '1.0',
+    verified: true,
+  };
+  writeRawAttestation(workspace, JSON.stringify(mutate(existing)));
+}
+
+function writeInterruptedTemporary(workspace, contents) {
+  ensureAttestationDirectory(workspace);
+  fs.writeFileSync(
+    `${attestationPath(workspace)}.interrupted.tmp`,
+    contents,
+  );
+}
+
+function makeAttestationAclUntrusted(workspace) {
+  if (process.platform === 'win32') {
+    const result = spawnSync(
+      'icacls',
+      [attestationPath(workspace), '/grant', '*S-1-1-0:(R)'],
+      {
+        cwd: workspace.root,
+        encoding: 'utf8',
+        shell: false,
+        windowsHide: true,
+      },
+    );
+    return {
+      status: result.status,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
+  }
+  fs.chmodSync(attestationPath(workspace), 0o644);
+  return { status: 0, stdout: '', stderr: '' };
+}
+
+function scenarioResult(workspace, query) {
+  return {
+    query,
+    state: readFixtureState(workspace),
+  };
 }
 
 function spawnFixture(workspace, args) {
@@ -458,6 +816,7 @@ function spawnFixture(workspace, args) {
       encoding: 'utf8',
       env: {
         ...process.env,
+        ARGO_REPO_ROOT: workspace.root,
         SP05_OPERATOR_WORKSPACE_ROOT: workspace.root,
         SP05_OPERATOR_STATE_PATH: workspace.statePath,
       },
@@ -517,7 +876,7 @@ function readFixtureState(workspace) {
 }
 
 function readAttestation(workspace) {
-  const filePath = path.join(workspace.root, attestationRelativePath);
+  const filePath = attestationPath(workspace);
   return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null;
 }
 
@@ -543,11 +902,34 @@ function assertProcessPassed(result, category) {
 function assertStructuredProcessError(result, category, label) {
   assert.notStrictEqual(result.status, 0, `${label}_UNEXPECTED_SUCCESS`);
   assert(result.output && result.output.error, `${label}_STRUCTURED_ERROR_MISSING`);
+  assert.deepStrictEqual(
+    Object.keys(result.output.error).sort(),
+    ERROR_ENVELOPE_KEYS,
+    `${label}_ERROR_ENVELOPE_CHANGED`,
+  );
   assert.strictEqual(result.output.error.category, category, `${label}_CATEGORY_CHANGED`);
+  assert.strictEqual(
+    typeof result.output.error.verified,
+    'boolean',
+    `${label}_VERIFIED_DIAGNOSTIC_MISSING`,
+  );
+  assert.strictEqual(
+    result.output.error.fullSnapshotFallback,
+    false,
+    `${label}_FULL_SNAPSHOT_FALLBACK_CHANGED`,
+  );
+  assert(
+    typeof result.output.error.action === 'string' && result.output.error.action.trim() !== '',
+    `${label}_ACTION_MISSING`,
+  );
+  for (const channelField of ['completedChannels', 'missingChannels', 'mismatchedChannels']) {
+    assert(Array.isArray(result.output.error[channelField]), `${label}_${channelField.toUpperCase()}_MISSING`);
+  }
   const serialized = JSON.stringify(result.output);
   assert(!serialized.includes(SECRET_CANARY), `${label}_SECRET_LEAK`);
   assert(!serialized.includes(UNSAFE_SOURCE_CANARY), `${label}_UNSAFE_SOURCE_LEAK`);
   assert(!serialized.includes('\n    at '), `${label}_STACK_LEAK`);
+  assert(!Object.prototype.hasOwnProperty.call(result.output.error, 'message'), `${label}_RAW_MESSAGE_LEAK`);
 }
 
 function assertNoEvents(events, forbidden, label) {

@@ -12,6 +12,9 @@ const {
   createSemanticReadinessAttestationStore,
 } = require('../../.argo/scripts/graph-rag/semanticReadinessAttestationStore.js');
 const {
+  createReadinessAttestationMetadataAdapter,
+} = require('../../.argo/scripts/graph-rag/systemMetadataCommandAdapter.js');
+const {
   runCliProcess,
 } = require('../../.argo/scripts/semanticOperatorJourneyCli.js');
 
@@ -39,6 +42,9 @@ async function createJourney() {
   const attestationStore = createSemanticReadinessAttestationStore({
     repositoryRoot: workspaceRoot,
     graphPath: 'design/KG/SystemArchitecture.json',
+    metadataAdapter: process.platform === 'win32'
+      ? createReadinessAttestationMetadataAdapter({ repositoryRoot: workspaceRoot })
+      : undefined,
   });
   return createProductionSemanticOperatorJourney({
     async initializeWorkspace() {
@@ -80,15 +86,35 @@ async function createJourney() {
   });
 }
 
-runCliProcess({
-  argv: process.argv.slice(2),
-  dependencies: {
-    repositoryRoot: workspaceRoot,
-    createSemanticOperatorJourney: createJourney,
-  },
-  stdout: process.stdout,
-  stderr: process.stderr,
-}).then(
+async function runMcpMutation() {
+  const graphPath = path.join(workspaceRoot, 'design', 'KG', 'SystemArchitecture.json');
+  const graph = JSON.parse(fs.readFileSync(graphPath, 'utf8'));
+  const element = graph.elements[0];
+  if (!element) throw new Error('SP05_MUTATION_FIXTURE_ELEMENT_REQUIRED');
+  const systemArchitectureMcp = require('../../.argo/scripts/systemarchitecture-mcp-server.js');
+  const result = await systemArchitectureMcp.callTool('updateArchitectureElement', {
+    id: element.id,
+    patch: {
+      description: `${element.description || element.name} — SP05 mutation invalidation probe`,
+    },
+  });
+  process.stdout.write(`${JSON.stringify(result)}\n`);
+  return { exitCode: result.status === 'passed' ? 0 : 1 };
+}
+
+const operation = process.argv[2] === 'mcp-mutation'
+  ? runMcpMutation()
+  : runCliProcess({
+    argv: process.argv.slice(2),
+    dependencies: {
+      repositoryRoot: workspaceRoot,
+      createSemanticOperatorJourney: createJourney,
+    },
+    stdout: process.stdout,
+    stderr: process.stderr,
+  });
+
+operation.then(
   result => {
     process.exitCode = result.exitCode;
   },

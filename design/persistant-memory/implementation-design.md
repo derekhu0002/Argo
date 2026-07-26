@@ -1,3 +1,10 @@
+# WP-P3 adapter attestation trust correction (2026-07-27)
+
+- A deterministic digest is integrity evidence only. It cannot establish that explicit readiness verification occurred. WP-P3 therefore adopts the canonical-authority trust assumption explicitly: same OS user plus local workspace. Malicious code under that same identity can also rewrite canonical JSON and is outside this boundary; other identities, permissive ACL/mode, links/reparse points, malformed/extra/tampered/foreign records, and interrupted writes fail closed.
+- Authorization is created only by the guarded `verifyReadiness()` path after exact WP-P2 `verified === true`, and the record carries `authorizationOperation: verifyReadiness`. Record uses exclusive same-directory temporary creation, flush/close, ownership/ACL verification, and atomic rename. Query never treats file presence or an orphan temporary file as authorization.
+- Windows Node filesystem metadata cannot inspect ACLs. The narrow compatible extension is a separate `createReadinessAttestationMetadataAdapter({ repositoryRoot })` in the existing sole `child_process` boundary. It closes over exact `.argo/temp` directory/file paths and exposes only zero-argument `whoami`/`icacls` reads; the accepted four-capability credential adapter is unchanged. This evidence requires expanding Coding scope from seven to eight files.
+- Frozen runtime now covers malformed/extra/tampered/presence-only/foreign records, symlink/reparse points, permissive ACL/mode, both interrupted replacement outcomes, canonical-byte drift, init/backfill/actual MCP mutation invalidation, and independent canonical/content/index/channel drift. CLI/MCP errors have exactly eleven safe fields and exclude raw message, stack, secrets, and extras.
+
 # Implementation Design Memory
 
 ## 2026-07-24 compatible query boundary

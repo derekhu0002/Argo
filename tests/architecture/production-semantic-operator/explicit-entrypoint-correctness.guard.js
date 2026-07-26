@@ -36,6 +36,15 @@ for (const required of [
   'SEMANTIC_QUERY_BYPASSES_OPERATOR',
   'WIRE_HANDLER_NOT_EXPOSED',
   'SP05_CLI_STALE_ATTESTATION',
+  'presenceOnly',
+  'SP05_ATTESTATION_SYMLINK',
+  'SP05_ATTESTATION_REPARSE',
+  'untrustedAcl',
+  'SP05_ATTESTATION_INTERRUPTED_TEMP_ONLY',
+  'SP05_ATTESTATION_CANONICAL_BYTES_DRIFT',
+  'SP05_QUERY_AFTER_CANONICAL_MUTATION',
+  'ERROR_ENVELOPE_KEYS',
+  'authorizationOperation',
   'semantic-readiness-attestation.json',
 ]) {
   assert(
