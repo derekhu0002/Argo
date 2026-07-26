@@ -18,6 +18,7 @@ for (const required of [
   'startNewProject',
   'runExplicitBackfill',
   'verifyReadiness',
+  'createDefaultSemanticRetrieval(dependencies).readReadiness()',
   'readFullSnapshot',
   'SemanticIndexPending',
   'automatic-backfill opt-in',
@@ -53,7 +54,6 @@ for (const prohibited of [
   'productionSemanticCheckpointStore.js',
   'productionSemanticNeo4jAdapter.js',
   'productionSemanticProjectionStore.js',
-  'defaultSemanticRetrieval.js',
   'liveEmbeddingProviderConfig.js',
   'productionGraphRagRuntime.js',
 ]) {
@@ -62,6 +62,16 @@ for (const prohibited of [
     `WP_P3_ARCHITECTURE_BOUNDARY_GUARD: accepted internal boundary reauthorized ${prohibited}`,
   );
 }
+const readinessTarget = handoff.codingTargets.find(
+  target => target.path === '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+);
+assert(
+  readinessTarget
+    && /narrowly extend createDefaultSemanticRetrieval\(dependencies\) with readReadiness\(\)/i
+      .test(readinessTarget.nextAction)
+    && /preserve retrieve behavior/i.test(readinessTarget.nextAction),
+  'WP_P3_ARCHITECTURE_BOUNDARY_GUARD: narrow readiness compatibility authorization missing',
+);
 assert(
   /runner-owned deliveryStatus/i.test(authorization),
   'WP_P3_ARCHITECTURE_BOUNDARY_GUARD: runner-owned deliveryStatus authority missing',

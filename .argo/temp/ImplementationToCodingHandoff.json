@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T03:40:00+08:00",
+  "generatedAt": "2026-07-27T04:00:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected WP-P3 Operator Journey and Production Release implementation handoff, scoped only to semprod-wp-operator-release and consuming protected-topology correction b41bdbd3. Compose accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness public boundaries into argo init -> canonical structural projection -> SemanticIndexPending -> explicit or approved opted-in semantic backfill -> explicit readiness verification -> semantic query. The two successful fixtures are deep-equal except for automatic-backfill opt-in; interruption/resume is separate. Approved configuration validation precedes explicit or automatic backfill, provider, and database activity. Rejected opt-ins preserve the exact post-rejection full-snapshot envelope, produce zero semantic/canonical effects, and expose complete production-redacted error payloads with no forbidden canaries. Exact default production factory/tool wiring and authorized-source safety are frozen by two additional guards. Canonical JSON authority, graph-tidy, accepted WP-P1/WP-P2 internals and delivery, and runner-owned deliveryStatus remain protected.",
+  "summary": "Corrected WP-P3 Operator Journey handoff consuming protected-topology correction b41bdbd3. The default operator retains exactly six inward ports, with readSemanticReadiness now supplied by the narrow backward-compatible createDefaultSemanticRetrieval(dependencies).readReadiness() public method. Coding may refactor only that accepted WP-P2 module so retrieve() and readReadiness() share the existing private composition/query/normalization/evaluation path; raw internals and module exports remain private and existing retrieval behavior is regression-frozen. The fresh-project, opt-in, redaction, exact snapshot, canonical authority, factory/tool binding, source safety, and runner-owned deliveryStatus controls remain unchanged.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -62,7 +62,7 @@
       "path": "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
       "kind": "DependencyDirectionGuard",
       "controlPoint": "TypeScript Program/TypeChecker binding resolution over CommonJS imports, factory/tool invocations, exact callback returns, and the six-port dependency object, plus comments/unused/missing-call/extra-port/shadowed-binding bypass fixtures.",
-      "observationPoint": "Every accepted factory call resolves to its exact imported BindingElement; each callback directly returns the exact top-level or imported binding assigned to that port; named tool callbacks resolve to the unshadowed top-level callTool and exact literal tool. Locally shadowed/redeclared fake factories, operator factory, or callTool fail.",
+      "observationPoint": "Every accepted factory call resolves to its exact imported BindingElement; named tool callbacks resolve to unshadowed callTool and exact literal tools; readSemanticReadiness resolves only to readReadiness() on the exact createDefaultSemanticRetrieval result. Locally shadowed/redeclared factories, callTool, substituted readiness gates, or extra ports fail.",
       "expectedStatus": "passed"
     },
     {
@@ -72,11 +72,25 @@
       "controlPoint": "AST fixed-point default-flow analysis over variable/assignment aliases, destructuring and parameter initializers, objects and factory arguments, plus approved-external positive control and exact generic-literal/default negative fixtures.",
       "observationPoint": "Direct approved external provider/model/credential plumbing with no literal/default remains legal. Any literal or default, regardless of text, flowing through generic alias chains, destructuring initializers, parameter initializers, assignments, object properties, or factory arguments into a sensitive binding fails.",
       "expectedStatus": "passed"
+    },
+    {
+      "name": "WP-P3 Shared Persistent Readiness Public Boundary",
+      "path": "tests/architecture/production-semantic-operator/readiness-public-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Narrow extension of createDefaultSemanticRetrieval with readReadiness(), shared private helper reuse, exact safe public envelope, one readiness query authority, and unchanged module exports.",
+      "observationPoint": "retrieve() and readReadiness() reuse the same readPersistentReadiness/evaluatePersistentReadiness path; the public method exposes only state, verified, canonical/content/index versions, completed/missing/mismatched channels, and fullSnapshotFallback:false. Raw query, driver, evaluator, and helper internals remain private.",
+      "expectedStatus": "passed"
     }
   ],
   "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
+      "failureSignal": "Accepted WP-P2 persistent readiness is private, so default WP-P3 composition cannot supply its required readSemanticReadiness port without duplication.",
+      "nextAction": "Narrowly extend createDefaultSemanticRetrieval(dependencies) with readReadiness(). Refactor retrieve() and the new method through one private readAndEvaluatePersistentReadiness helper over the existing composition, READINESS_QUERY_CYPHER, readPersistentReadiness, and evaluatePersistentReadiness. Return only the frozen public readiness envelope; preserve retrieve behavior, existing module exports, credential-before-read ordering, and zero provider/vector effects."
+    },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
@@ -115,13 +129,35 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Corrected WP-P3 composition and operator-surface work only. Reuse exact accepted WP-P1/WP-P2 factories/tools through the six-port allowlist; do not modify or copy persistence, checkpoint, Neo4j adapter, retrieval, credential, qualification, runtime, or readiness internals. Preserve the b41bdbd3 Association topology. Tests, Harnesses, six guards, contracts, intent artifacts, canonical JSON authority, graph-tidy, no-argument snapshots, and runner-owned deliveryStatus are read-only. Only runArchitectureTests may refresh status/failure records.",
+    "executionStrategy": "Corrected WP-P3 composition and operator-surface work plus one narrow backward-compatible WP-P2 public-boundary refactor. Preserve the six-port operator contract. defaultSemanticRetrieval.js may change only to expose readReadiness() from its existing private persistent read/evaluation path and make retrieve() share that helper; no query, credential, provider, vector, closure, or module-export behavior may change. All tests, Harnesses, seven guards, other WP-P1/WP-P2 files, contracts, intent artifacts, canonical authority, and deliveryStatus remain read-only.",
     "tasks": [
+      {
+        "taskId": "WP-P3-C0",
+        "title": "Expose the accepted persistent readiness reader",
+        "objective": "Make the existing WP-P2 persistent readiness decision callable by default WP-P3 composition without exposing raw internals or duplicating Neo4j logic.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney"
+        ],
+        "targetPaths": [
+          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"
+        ],
+        "steps": [
+          "Add readReadiness() to the object returned by createDefaultSemanticRetrieval(dependencies); do not add a raw module export.",
+          "Extract one private readAndEvaluatePersistentReadiness helper used by both retrieve() and readReadiness(), preserving the existing approved-configuration composition, READINESS_QUERY_CYPHER, readPersistentReadiness, and evaluatePersistentReadiness functions.",
+          "Map alignment to exactly state, verified, canonicalVersion, contentVersion, indexVersion, completedChannels, missingChannels, mismatchedChannels, and fullSnapshotFallback:false.",
+          "Preserve credential resolution before Neo4j readiness read and zero provider/vector calls in readReadiness(). Preserve retrieve() ordering, errors, result shape, and all SP-03/SP-04 behavior.",
+          "Run readiness-public-boundary.guard.js, SP-03, and SP-04 before beginning operator composition."
+        ],
+        "completionSignal": "The public reader guard passes, SP-03/SP-04 remain green, module.exports is unchanged, and default composition can supply readSemanticReadiness without a duplicate database/readiness implementation."
+      },
       {
         "taskId": "WP-P3-C1",
         "title": "Compose the semantic operator journey",
         "objective": "Create the one production sequencing boundary over accepted initialization, structural projection, configuration, backfill, readiness, query, and snapshot ports.",
-        "dependsOn": [],
+        "dependsOn": [
+          "WP-P3-C0"
+        ],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney"
         ],
@@ -137,7 +173,7 @@
           "Require explicit persistent Aligned readiness verification before semantic query and preserve fullSnapshotFallback:false on pre-ready rejection.",
           "After rejected opt-in, preserve the exact no-argument {status,graphPath,document} envelope, perform zero semantic/canonical mutation effects, and never mutate canonical JSON."
         ],
-        "completionSignal": "The frozen SP-05 entry advances past SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING and all journey assertions can observe sequencing through the injected accepted-boundary ports without any WP-P1/WP-P2 internal change."
+        "completionSignal": "The frozen SP-05 entry advances past SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING and all journey assertions observe sequencing through accepted ports, including readSemanticReadiness supplied only by createDefaultSemanticRetrieval().readReadiness()."
       },
       {
         "taskId": "WP-P3-C2",
@@ -157,7 +193,7 @@
         ],
         "steps": [
           "Implement runSemanticOperatorCommand dispatch for exactly init, backfill, readiness, query, and snapshot.",
-          "Add startNewProjectSemanticJourney and verifySystemArchitectureSemanticReadiness to the System Architecture MCP tool list and compose the operator with createProductionGraphRagRuntime, createDefaultSemanticRetrieval, resolveApprovedLiveConfiguration, and existing backfill/query tools.",
+          "Add startNewProjectSemanticJourney and verifySystemArchitectureSemanticReadiness to the System Architecture MCP tool list and compose readSemanticReadiness from createDefaultSemanticRetrieval(...).readReadiness(), while retaining createProductionGraphRagRuntime, resolveApprovedLiveConfiguration, and existing backfill/query tools.",
           "Expose and forward start, existing backfill, readiness, and existing query tools through the unified gateway without policy interpretation or dependency-position changes.",
           "Add package command aliases for the five documented operator commands without adding packages, defaults, credentials, or opt-ins.",
           "Run the SP-05 entry and both default-composition/source-safety guards after each adapter step."
@@ -181,7 +217,7 @@
           "Document approved external configuration key names and safety prerequisites without values or fallback examples.",
           "Document the no-opt-in pending, explicit backfill, readiness, and query flow plus the approved opt-in flow and rejected configuration remediation.",
           "Document progress, checkpoint, isolated failure, resume, canonical-authority, exact snapshot, and live Neo4j evidence limitations.",
-          "Run SP-05 and all six WP-P3 guards by name: architecture-boundary.guard.js, dependency-direction.guard.js, explicit-entrypoint-correctness.guard.js, implementation-traceability.guard.js, default-composition-wiring.guard.js, and authorized-production-safety.guard.js. Then run SP-01 through SP-04, no-argument snapshot, graph-tidy, credential/redaction, and canonical-authority regressions.",
+          "Run SP-05 and all seven WP-P3 guards by name: architecture-boundary.guard.js, dependency-direction.guard.js, explicit-entrypoint-correctness.guard.js, implementation-traceability.guard.js, default-composition-wiring.guard.js, authorized-production-safety.guard.js, and readiness-public-boundary.guard.js. Then run SP-01 through SP-04, no-argument snapshot, graph-tidy, credential/redaction, and canonical-authority regressions.",
           "Run the full architecture runner last; accept no manual deliveryStatus edit and do not claim the ready plateau without protected live evidence."
         ],
         "completionSignal": "SP-05 and all frozen WP-P3/inherited regression gates pass, the full runner has no baseline regression, runner-owned statuses are committed unchanged except for legitimate runner output, and live evidence is reported honestly."
@@ -197,6 +233,7 @@
     "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
     "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
     "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
+    "tests/architecture/production-semantic-operator/readiness-public-boundary.guard.js",
     "tests/explicit/entries/runProductionSemanticBackfill.js",
     "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
     "tests/harness/productionSemanticPersistenceHarness.js",
@@ -237,7 +274,6 @@
     ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-    ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
     ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
     ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
     ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
@@ -253,9 +289,10 @@
     "Independent audit defects are corrected in the frozen design: exact configuration-before-effects ordering in both successes; fixture equality except opt-in; separate recovery; complete observable error capture before canary assertions; exact default factory/tool wiring; executable authorized-source safety; and exact post-rejection snapshot/zero-effect assertions.",
     "Second guard audit correction replaces lexical source matching with TypeScript AST inspection. Default wiring now proves exact CommonJS imports, real factory/tool calls, one exact six-function dependency object, and executable comments/unused/missing-call/extra-port rejection. Source safety now permits direct approved external plumbing while rejecting provider/model/credential defaults through assignments, aliases, object properties, logical/nullish/ternary expressions, and factory arguments.",
     "Clean Architecture re-audit correction adds TypeChecker symbol resolution and exact callback-return mapping so imported names cannot be satisfied by locally shadowed factories or callTool. Safety uses fixed-point default-source taint so generic literals and defaults in aliases, destructuring, parameters, assignments, objects, and factory arguments cannot flow into provider/model/credential bindings.",
+    "Coding/Repair session coding-repair-wp-p3-20260727T0327+08 correctly identified that readSemanticReadiness had no accepted public production source. The narrow compatibility decision is createDefaultSemanticRetrieval(dependencies).readReadiness(): both public methods must share the exact existing private composition/read/evaluate path. defaultSemanticRetrieval.js is unfrozen only for that method and private helper extraction; no new module export, query, credential, provider, vector, closure, or readiness semantics are authorized.",
     "Direct frozen RED remains intentional and exact: node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js exits 1 with SP05_OPERATOR_JOURNEY_BOUNDARY_MISSING: create production semanticOperatorJourney.js after syntax-valid loading. This is missing WP-P3 production composition, not a test-environment or live-Neo4j failure.",
     "Corrected full pre-coding runner baseline is 43 total / 42 passed / 1 failed / 0 missing acceptanceCriteria. SP-05 is the sole expected RED; all prior entries including SP-01 through SP-04 pass. Runner-owned topology recovery changed grag-credential-boundary and semprod-readiness-requirement from not_delivered back to delivered; semprod-operator-journey-process alone remains not_delivered. The complete status snapshot is 36 delivered / 1 not_delivered attributes. Failure records remain at design/KG/test-failure-records.json; no deliveryStatus was manually edited.",
-    "The tracked WP-P2 ImplementationToCodingHandoff.json is superseded only because the repository has one temporary coding-handoff slot and WP-P3 is the explicitly authorized successor to accepted WP-P2 commit 56cfad2. WP-P2 implementation, tests, contracts, and 42/42 acceptance evidence remain frozen regression controls.",
+    "The tracked WP-P2 ImplementationToCodingHandoff.json is superseded only because the repository has one temporary coding-handoff slot and WP-P3 is the explicitly authorized successor to accepted WP-P2 commit 56cfad2. WP-P2 tests, contracts, 42/42 acceptance evidence, and implementation remain frozen except the explicitly guarded backward-compatible readReadiness() method/private shared-helper refactor in defaultSemanticRetrieval.js.",
     "Live Neo4j synchronization remains unavailable with neo4jUri is required for start. Deterministic acceptance uses controlled recording ports below production composition boundaries and cannot be represented as live provider/database evidence. semprod-ready-plateau remains a target-only release context and is not claimed by this handoff; if its protected production-facing gate intrinsically requires live execution, that claim remains definitively blocked until the environment is supplied.",
     "No ImplementationToIntentTraceProposal.json is required: the corrected SP-05 testcase is mounted under the exact implementation-bearing owner, all three handoff anchors exist, and plateau/work-package exclusions are evidence-backed non-executable context."
   ]

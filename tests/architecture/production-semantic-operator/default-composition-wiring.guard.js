@@ -25,8 +25,11 @@ const requiredFactoryImports = new Map([
 ]);
 const requiredToolCalls = [
   'backfillSystemArchitectureSemanticProjection',
-  'verifySystemArchitectureSemanticReadiness',
   'getSystemArchitecture',
+];
+const outwardOperatorTools = [
+  'startNewProjectSemanticJourney',
+  'verifySystemArchitectureSemanticReadiness',
 ];
 
 // GIVEN WP-P3 may compose, but may not replace, accepted WP-P1/WP-P2 boundaries
@@ -35,7 +38,7 @@ const requiredToolCalls = [
 for (const required of [
   ...exactOperatorPorts,
   ...requiredFactoryImports.keys(),
-  'startNewProjectSemanticJourney',
+  ...outwardOperatorTools,
   ...requiredToolCalls,
 ]) {
   assert(
@@ -64,7 +67,7 @@ function createDefaultProductionSemanticOperatorJourney() {
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
     runSemanticBackfill: request => callTool('backfillSystemArchitectureSemanticProjection', request, { runtime }),
-    readSemanticReadiness: request => callTool('verifySystemArchitectureSemanticReadiness', request, { runtime }),
+    readSemanticReadiness: () => retrieval.readReadiness(),
     querySystemArchitecture: request => callTool('getSystemArchitecture', request, { retrieval }),
   });
 }`;
@@ -126,6 +129,13 @@ const bypassFixtures = [
     source: safeFixture.replace(
       '  const runtime = createProductionGraphRagRuntime({});',
       '  const callTool = () => ({ fake: true });\n  const runtime = createProductionGraphRagRuntime({});',
+    ),
+  },
+  {
+    name: 'substituted-readiness-reader',
+    source: safeFixture.replace(
+      'readSemanticReadiness: () => retrieval.readReadiness()',
+      'readSemanticReadiness: () => fakeReadinessGate()',
     ),
   },
 ];
@@ -203,6 +213,12 @@ function assertDefaultComposition(source, label) {
     ['syncCanonicalStructuralProjection', requireTopLevelBinding(ast, 'syncCanonicalStructuralProjection', label)],
     ['callTool', requireTopLevelBinding(ast, 'callTool', label)],
   ]);
+  const retrievalBinding = findFactoryResultBinding(
+    compositionRoot,
+    factoryLocals.get('createDefaultSemanticRetrieval'),
+    checker,
+    label,
+  );
   const callbackMappings = new Map([
     ['initializeWorkspace', {
       binding: topLevelBindings.get('initializeWorkspace'),
@@ -218,8 +234,8 @@ function assertDefaultComposition(source, label) {
       toolName: 'backfillSystemArchitectureSemanticProjection',
     }],
     ['readSemanticReadiness', {
-      binding: topLevelBindings.get('callTool'),
-      toolName: 'verifySystemArchitectureSemanticReadiness',
+      binding: retrievalBinding,
+      memberName: 'readReadiness',
     }],
     ['querySystemArchitecture', {
       binding: topLevelBindings.get('callTool'),
@@ -230,11 +246,21 @@ function assertDefaultComposition(source, label) {
     const port = propertyName(property);
     const mapping = callbackMappings.get(port);
     const call = callbackReturnCall(property.initializer, label, port);
-    assert(
-      ts.isIdentifier(call.expression)
-        && resolvesTo(call.expression, mapping.binding, checker),
-      `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} resolves to a shadowed or incorrect binding`,
-    );
+    if (mapping.memberName) {
+      assert(
+        ts.isPropertyAccessExpression(call.expression)
+          && call.expression.name.text === mapping.memberName
+          && ts.isIdentifier(call.expression.expression)
+          && resolvesTo(call.expression.expression, mapping.binding, checker),
+        `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} does not use accepted ${mapping.memberName}`,
+      );
+    } else {
+      assert(
+        ts.isIdentifier(call.expression)
+          && resolvesTo(call.expression, mapping.binding, checker),
+        `WP_P3_DEFAULT_WIRING_GUARD: ${label} port ${port} resolves to a shadowed or incorrect binding`,
+      );
+    }
     if (mapping.toolName) {
       assert.strictEqual(
         literalValue(call.arguments[0]),
@@ -243,6 +269,26 @@ function assertDefaultComposition(source, label) {
       );
     }
   }
+}
+
+function findFactoryResultBinding(root, imported, checker, label) {
+  const declarations = [];
+  walk(root, node => {
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.initializer
+      && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression)
+      && resolvesTo(node.initializer.expression, imported.declaration, checker)
+    ) declarations.push(node);
+  });
+  assert.strictEqual(
+    declarations.length,
+    1,
+    `WP_P3_DEFAULT_WIRING_GUARD: ${label} must bind one accepted createDefaultSemanticRetrieval result`,
+  );
+  return declarations[0];
 }
 
 function collectRequireImports(ast) {

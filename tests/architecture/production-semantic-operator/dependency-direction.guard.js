@@ -6,6 +6,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const allowedTargets = new Set([
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/semanticOperatorJourneyCli.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/argo-mcp-server.js',

@@ -371,3 +371,9 @@
 - Added executable correct-import-plus-shadowed-factory, shadowed-operator-factory, and shadowed-`callTool` counterexamples. Identifier text without binding identity no longer counts.
 - Safety taint now treats every literal/default as a possible source regardless of spelling and propagates through generic variable/assignment alias chains. Destructuring initializers and parameter initializers are default sources; sensitive forms fail directly, while generic forms fail when they later reach provider/model/credential assignments, objects, or factory arguments.
 - Approved externally supplied values remain legal only through direct member access, aliasing, or destructuring without any literal/default initializer.
+
+## 2026-07-27 WP-P3 public readiness compatibility correction
+
+- Coding/Repair correctly stopped because the six-port operator contract named `readSemanticReadiness`, while accepted WP-P2 exposed the persistent readiness read/evaluation only inside `defaultSemanticRetrieval.js`. Calling an outward operator tool recursively or reproducing its Neo4j query would violate dependency direction.
+- The smallest stable boundary is `createDefaultSemanticRetrieval(dependencies).readReadiness()`. It is a backward-compatible method on the already-declared Default Semantic Retrieval Composition, not a raw helper export or new persistence adapter. `retrieve()` and `readReadiness()` must share one private helper over the existing credentialed composition, readiness Cypher, normalization, and alignment evaluator.
+- `defaultSemanticRetrieval.js` is unfrozen only for this method/private helper extraction. A frozen seventh WP-P3 guard requires one query authority, shared retrieval/read path, the exact safe readiness envelope, unchanged module exports, and executable duplicate/bypass/private-export failures. The operator still exposes exactly six ports; default wiring maps the readiness port only to the accepted reader result.
