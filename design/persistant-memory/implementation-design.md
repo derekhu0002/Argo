@@ -1,3 +1,11 @@
+# WP-P3 final bypass correction (2026-07-27)
+
+- Final coding audit against `96f0fc2` proved exported System/unified `callTool` could select raw semantic retrieval whenever no `semanticOperatorJourney` dependency was supplied. Frozen acceptance now invokes both exported functions with no journey and a raw-retrieval trap; public dispatch must construct the approved default journey or fail closed.
+- A process-local `readinessVerified` shortcut also bypassed the durable record and current WP-P2 drift after same-process verification. The store is now a mandatory seventh object dependency, volatile fallback is prohibited, and every query must perform durable read → current WP-P2 read → exact validation → retrieval.
+- Windows trust is exact principal/effective-access policy rather than substring rejection. Owner equals current identity only; file and parent ACLs require effective current-user modify/full access after deny precedence, permit protected allows only for that identity and SYSTEM, and reject group ownership, BUILTIN Users/Administrators, broad/foreign allows, absent or denied current identity, malformed evidence, and permissive parents.
+- Exact safe remediation is frozen without raw metadata: `Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again`. The current host `.argo/temp` includes `BUILTIN\Users`; it therefore remains release-blocking until operators harden that ACL and rerun readiness. Acceptance uses controlled safe ACL evidence for positive scenarios and separately proves the live-host evidence fails closed.
+- Coding authorization remains the same eight production paths. No intent semantics changed and no trace proposal is needed.
+
 # WP-P3 adapter attestation trust correction (2026-07-27)
 
 - Follow-up audit required the guard to prove the active writer rather than inventory atomic calls anywhere in the module. `record()` must resolve through TypeChecker symbols to the exclusive write/file-fsync/close/rename path; a dead atomic helper beside active append/write is an explicit rejection fixture. Supported platforms must fsync the parent directory. Windows must explicitly verify same-directory rename and record its unsupported-directory-fsync fallback; omission is not accepted.

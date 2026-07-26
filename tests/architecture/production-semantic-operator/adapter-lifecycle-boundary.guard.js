@@ -37,7 +37,12 @@ assert.throws(
 
 const safeDispatch = `
 function readFullSnapshot() { return {}; }
-function resolveSemanticOperatorJourney(dependencies) { return dependencies.semanticOperatorJourney; }
+function createDefaultProductionSemanticOperatorJourney() { return { query() { throw new Error('fail closed'); } }; }
+function resolveSemanticOperatorJourney(dependencies) {
+  return dependencies && dependencies.semanticOperatorJourney
+    ? dependencies.semanticOperatorJourney
+    : createDefaultProductionSemanticOperatorJourney();
+}
 async function callTool(name, args, dependencies) {
   if (name === 'getSystemArchitecture') {
     if (!Object.prototype.hasOwnProperty.call(args, 'query')) return readFullSnapshot();
@@ -49,6 +54,17 @@ async function callTool(name, args, dependencies) {
 assert.doesNotThrow(
   () => assertSemanticDispatch(safeDispatch, 'safe-dispatch.fixture.js'),
   'WP_P3_ADAPTER_LIFECYCLE_GUARD: safe operator dispatch was rejected',
+);
+assert.throws(
+  () => assertSemanticDispatch(
+    safeDispatch.replace(
+      'const journey = await resolveSemanticOperatorJourney(dependencies);\n    return journey.query(args.query);',
+      'if (!dependencies || !dependencies.semanticOperatorJourney) return executeSemanticSystemArchitectureQuery(args, dependencies);\n    const journey = await resolveSemanticOperatorJourney(dependencies);\n    return journey.query(args.query);',
+    ),
+    'missing-journey-raw-fallback.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: missing-journey raw fallback fixture passed',
 );
 assert.throws(
   () => assertSemanticDispatch(
@@ -111,6 +127,52 @@ const fs = require('node:fs');
 const path = require('node:path');
 const ATTESTATION_PATH = '.argo/temp/semantic-readiness-attestation.json';
 const FIELDS = ['authorizationOperation','canonicalVersion','contentVersion','indexVersion','completedChannels','missingChannels','mismatchedChannels'];
+const ACL_REMEDIATION = 'Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again';
+function normalizePrincipal(value) { return String(value).trim().toLowerCase(); }
+function parseWindowsAcl(value) {
+  return String(value).split(/\\r?\\n/).filter(Boolean).map(line => {
+    const match = line.match(/^(.+?):((?:\\([^)]*\\))+?)$/);
+    if (!match) throw windowsTrustError();
+    const flags = Array.from(match[2].matchAll(/\\(([^)]*)\\)/g), entry => entry[1].toUpperCase());
+    return {
+      principal: normalizePrincipal(match[1]),
+      denied: flags.includes('DENY'),
+      permissions: flags
+        .filter(flag => !['DENY', 'I', 'OI', 'CI', 'IO'].includes(flag))
+        .flatMap(flag => flag.split(',')),
+    };
+  });
+}
+function grantsProtectedAccess(entry) {
+  return entry.permissions.some(permission => /^(?:F|M|R|RX|W|D|DC|WDAC|WO)$/.test(permission));
+}
+function grantsRequiredIdentityAccess(entry) {
+  return entry.permissions.some(permission => permission === 'F' || permission === 'M');
+}
+function windowsTrustError() {
+  const error = new Error('SEMANTIC_READINESS_ATTESTATION_UNTRUSTED');
+  error.category = 'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED';
+  error.action = ACL_REMEDIATION;
+  return error;
+}
+function assertWindowsAclTrust({ identity, owner, directoryAcl, fileAcl }) {
+  const current = normalizePrincipal(identity);
+  if (!current || normalizePrincipal(owner) !== current) throw windowsTrustError();
+  for (const acl of [directoryAcl, fileAcl]) {
+    const entries = parseWindowsAcl(acl);
+    const currentEntries = entries.filter(entry => entry.principal === current);
+    if (
+      !currentEntries.some(entry => !entry.denied && grantsRequiredIdentityAccess(entry))
+      || currentEntries.some(entry => entry.denied && grantsProtectedAccess(entry))
+      || entries.some(entry => (
+        !entry.denied
+        && grantsProtectedAccess(entry)
+        && entry.principal !== current
+        && entry.principal !== 'nt authority\\\\system'
+      ))
+    ) throw windowsTrustError();
+  }
+}
 function writeAttestationAtomically(readiness, metadataAdapter) {
   const temporaryPath = ATTESTATION_PATH + '.nonce.tmp';
   metadataAdapter.readCurrentIdentity();
@@ -142,7 +204,10 @@ function createSemanticReadinessAttestationStore({ metadataAdapter }) {
 }
 module.exports = { createSemanticReadinessAttestationStore };`;
 assert.doesNotThrow(
-  () => assertStoreSafety(safeStore, 'safe-store.fixture.js'),
+  () => {
+    assertStoreSafety(safeStore, 'safe-store.fixture.js');
+    assertWindowsTrustPolicy(safeStore, 'safe-store.fixture.js');
+  },
   'WP_P3_ADAPTER_LIFECYCLE_GUARD: safe non-secret store fixture was rejected',
 );
 for (const [name, mutate] of [
@@ -186,6 +251,7 @@ assert.throws(
 
 const safeLifecycleFlow = `
 function createProductionSemanticOperatorJourney(dependencies) {
+  assertDependencies(dependencies);
   async function runBackfill(request) {
     await dependencies.readinessAttestationStore.clear();
     return dependencies.runSemanticBackfill(request);
@@ -217,6 +283,28 @@ function createProductionSemanticOperatorJourney(dependencies) {
 assert.doesNotThrow(
   () => assertOperatorLifecycleFlow(safeLifecycleFlow, 'safe-lifecycle-flow.fixture.js'),
   'WP_P3_ADAPTER_LIFECYCLE_GUARD: safe lifecycle flow fixture was rejected',
+);
+assert.throws(
+  () => assertOperatorLifecycleFlow(
+    safeLifecycleFlow.replace(
+      'const attestation = await dependencies.readinessAttestationStore.read();',
+      'if (readinessVerified) return dependencies.querySystemArchitecture(request);\n      const attestation = await dependencies.readinessAttestationStore.read();',
+    ),
+    'same-process-shortcut.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: same-process durable-validation bypass fixture passed',
+);
+assert.throws(
+  () => assertOperatorLifecycleFlow(
+    safeLifecycleFlow.replace(
+      '  assertDependencies(dependencies);',
+      '  dependencies = { ...dependencies, readinessAttestationStore: dependencies.readinessAttestationStore || createVolatileReadinessAttestationStore() };\n  assertDependencies(dependencies);',
+    ),
+    'optional-volatile-store.fixture.js',
+  ),
+  /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+  'WP_P3_ADAPTER_LIFECYCLE_GUARD: optional volatile store fixture passed',
 );
 assert.throws(
   () => assertOperatorLifecycleFlow(
@@ -399,6 +487,7 @@ check('gateway-wire', () => assertStructuredWire(read(paths.gateway), paths.gate
 check('store-safety', () => {
   assert(exists(paths.store), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${paths.store} missing`);
   assertStoreSafety(read(paths.store), paths.store);
+  assertWindowsTrustPolicy(read(paths.store), paths.store);
 }, failures);
 check('shared-error', () => {
   assert(exists(paths.error), `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${paths.error} missing`);
@@ -468,8 +557,11 @@ function assertSemanticDispatch(source, label) {
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} semantic query omits operator`,
   );
   assert(
-    !calls.some(call => staticName(call.expression) === 'retrieve'),
-    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} public dispatch calls retrieval directly`,
+    !calls.some(call => (
+      staticName(call.expression) === 'retrieve'
+      || staticName(call.expression) === 'executeSemanticSystemArchitectureQuery'
+    )),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} public dispatch falls back to raw retrieval`,
   );
   assert(
     literalValues.has('graph-tidy')
@@ -634,6 +726,31 @@ function assertOperatorLifecycleFlow(source, label) {
   const factory = functionNamed(ast, 'createProductionSemanticOperatorJourney');
   assert(factory && factory.parameters.length === 1, `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} operator factory missing`);
   const dependencies = factory.parameters[0];
+  const firstStatement = factory.body.statements[0];
+  assert(
+    firstStatement
+      && ts.isExpressionStatement(firstStatement)
+      && ts.isCallExpression(firstStatement.expression)
+      && staticName(firstStatement.expression.expression) === 'assertDependencies'
+      && firstStatement.expression.arguments[0]
+      && ts.isIdentifier(firstStatement.expression.arguments[0])
+      && resolvesTo(firstStatement.expression.arguments[0], dependencies, checker),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} durable store is not mandatory at factory entry`,
+  );
+  walk(factory, node => {
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isIdentifier(node.left)
+      && resolvesTo(node.left, dependencies, checker)
+    ) {
+      assert.fail(`WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} rewrites dependencies before durable authorization`);
+    }
+  });
+  assert(
+    !tokenTexts(factory).all.has('createVolatileReadinessAttestationStore'),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} admits a volatile authorization store`,
+  );
   const runBackfill = factory.body.statements.find(statement => (
     ts.isFunctionDeclaration(statement)
     && statement.name
@@ -691,6 +808,29 @@ function assertOperatorLifecycleFlow(source, label) {
   );
 
   const queryCalls = executableCalls(methods.get('query'));
+  const queryReturns = [];
+  walk(methods.get('query'), node => {
+    if (ts.isReturnStatement(node)) queryReturns.push(node);
+  });
+  const queryReadCalls = queryCalls.filter(call => isStoreCall(call, dependencies, 'read', checker));
+  const queryReadinessCalls = queryCalls.filter(call => (
+    isDependencyCall(call, dependencies, 'readSemanticReadiness', checker)
+  ));
+  const queryValidateCalls = queryCalls.filter(call => isStoreCall(call, dependencies, 'validate', checker));
+  const queryRetrievalCalls = queryCalls.filter(call => (
+    isDependencyCall(call, dependencies, 'querySystemArchitecture', checker)
+  ));
+  assert(
+    queryReadCalls.length === 1
+      && queryReadinessCalls.length === 1
+      && queryValidateCalls.length === 1
+      && queryRetrievalCalls.length === 1,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} query must perform exactly one durable read/readiness/validation/retrieval chain`,
+  );
+  assert(
+    queryReturns.every(statement => statement.pos > queryValidateCalls[0].end),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} query can return before durable validation`,
+  );
   assertCallOrder(
     queryCalls,
     call => isStoreCall(call, dependencies, 'read', checker),
@@ -709,6 +849,64 @@ function assertOperatorLifecycleFlow(source, label) {
     call => isDependencyCall(call, dependencies, 'querySystemArchitecture', checker),
     `${label} validation-before-query`,
   );
+}
+
+function assertWindowsTrustPolicy(source, label) {
+  const compiledModule = { exports: {} };
+  const exposePolicy = `${source}
+module.exports.__assertWindowsAclTrust = typeof assertWindowsAclTrust === 'function'
+  ? assertWindowsAclTrust
+  : undefined;`;
+  Function('require', 'module', 'exports', exposePolicy)(
+    require,
+    compiledModule,
+    compiledModule.exports,
+  );
+  const policy = compiledModule.exports.__assertWindowsAclTrust;
+  assert.strictEqual(
+    typeof policy,
+    'function',
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} Windows ACL policy boundary missing`,
+  );
+  const identity = 'HOST\\Derek';
+  const safeAcl = [
+    `${identity}:(F)`,
+    'NT AUTHORITY\\SYSTEM:(F)',
+    'BUILTIN\\Users:(DENY)(R)',
+  ].join('\r\n');
+  const evaluate = overrides => policy({
+    identity,
+    owner: identity,
+    directoryAcl: safeAcl,
+    fileAcl: safeAcl,
+    ...overrides,
+  });
+  assert.doesNotThrow(
+    () => evaluate({}),
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} rejected exact current-user/SYSTEM ACL`,
+  );
+  for (const [name, overrides] of Object.entries({
+    groupOwner: { owner: 'BUILTIN\\Administrators' },
+    builtinUsersRead: { fileAcl: `${safeAcl}\r\nBUILTIN\\Users:(RX)` },
+    everyoneWrite: { fileAcl: `${safeAcl}\r\nEveryone:(M)` },
+    arbitraryForeignPrincipal: { fileAcl: `${safeAcl}\r\nFOREIGN\\Other:(R)` },
+    missingCurrentIdentity: { fileAcl: 'NT AUTHORITY\\SYSTEM:(F)' },
+    currentIdentityDeny: {
+      fileAcl: `${identity}:(DENY)(R,W)\r\n${identity}:(F)\r\nNT AUTHORITY\\SYSTEM:(F)`,
+    },
+    permissiveParent: { directoryAcl: `${safeAcl}\r\nBUILTIN\\Users:(M)` },
+    malformedAcl: { fileAcl: 'unparseable acl output' },
+  })) {
+    assert.throws(
+      () => evaluate(overrides),
+      error => (
+        error
+        && error.category === 'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED'
+        && error.action === 'Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again'
+      ),
+      `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} accepted unsafe Windows policy fixture ${name}`,
+    );
+  }
 }
 
 function assertSystemInvalidationFlow(source, label) {

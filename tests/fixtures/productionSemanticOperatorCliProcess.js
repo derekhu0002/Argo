@@ -17,6 +17,9 @@ const {
 const {
   runCliProcess,
 } = require('../../.argo/scripts/semanticOperatorJourneyCli.js');
+const {
+  semanticOperatorErrorPayload,
+} = require('../../.argo/scripts/graph-rag/semanticOperatorError.js');
 
 if (!workspaceRoot || !statePath) {
   throw new Error('SP05_OPERATOR_PROCESS_FIXTURE_PATHS_REQUIRED');
@@ -42,17 +45,9 @@ async function createJourney() {
   const metadataAdapter = process.platform === 'win32'
     ? createReadinessAttestationMetadataAdapter({ repositoryRoot: workspaceRoot })
     : undefined;
-  const observedMetadataAdapter = metadataAdapter && process.env.SP05_ATTESTATION_OWNER_OVERRIDE
-    ? Object.freeze({
-      ...metadataAdapter,
-      readReadinessAttestationOwner() {
-        return {
-          status: 0,
-          stdout: `${process.env.SP05_ATTESTATION_OWNER_OVERRIDE}\r\n`,
-        };
-      },
-    })
-    : metadataAdapter;
+  const observedMetadataAdapter = metadataAdapter
+    ? createObservedMetadataAdapter(metadataAdapter)
+    : undefined;
   const attestationStore = createSemanticReadinessAttestationStore({
     repositoryRoot: workspaceRoot,
     graphPath: 'design/KG/SystemArchitecture.json',
@@ -98,6 +93,69 @@ async function createJourney() {
   });
 }
 
+function createObservedMetadataAdapter(metadataAdapter) {
+  const identityResult = metadataAdapter.readCurrentIdentity();
+  const identity = identityResult && typeof identityResult.stdout === 'string'
+    ? identityResult.stdout.trim()
+    : '';
+  const overrideResult = (environmentName, fallback) => {
+    const override = process.env[environmentName];
+    if (typeof override !== 'string') return fallback();
+    return {
+      status: 0,
+      stdout: override.replace(/%CURRENT_IDENTITY%/g, identity),
+    };
+  };
+  return Object.freeze({
+    ...metadataAdapter,
+    readCurrentIdentity() {
+      return identityResult;
+    },
+    readReadinessAttestationDirectoryAcl() {
+      return overrideResult(
+        'SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE',
+        metadataAdapter.readReadinessAttestationDirectoryAcl,
+      );
+    },
+    readReadinessAttestationAcl() {
+      return overrideResult(
+        'SP05_ATTESTATION_FILE_ACL_OVERRIDE',
+        metadataAdapter.readReadinessAttestationAcl,
+      );
+    },
+    readReadinessAttestationOwner() {
+      return overrideResult(
+        'SP05_ATTESTATION_OWNER_OVERRIDE',
+        metadataAdapter.readReadinessAttestationOwner,
+      );
+    },
+  });
+}
+
+async function runSameProcessDrift() {
+  const journey = await createJourney();
+  await journey.verifyReadiness();
+  const nextReadiness = JSON.parse(process.env.SP05_CURRENT_READINESS_OVERRIDE);
+  updateState(state => {
+    state.readiness = nextReadiness;
+  });
+  try {
+    const result = await journey.query({
+      purpose: 'audit',
+      intent: 'prove same-process durable readiness revalidation',
+      subject: 'semprod-operator-journey-process',
+    });
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    return { exitCode: 0 };
+  } catch (error) {
+    process.stderr.write(`${JSON.stringify({
+      status: 'failed',
+      error: semanticOperatorErrorPayload(error),
+    })}\n`);
+    return { exitCode: 1 };
+  }
+}
+
 async function runMcpMutation() {
   const graphPath = path.join(workspaceRoot, 'design', 'KG', 'SystemArchitecture.json');
   const graph = JSON.parse(fs.readFileSync(graphPath, 'utf8'));
@@ -116,7 +174,9 @@ async function runMcpMutation() {
 
 const operation = process.argv[2] === 'mcp-mutation'
   ? runMcpMutation()
-  : runCliProcess({
+  : process.argv[2] === 'same-process-drift'
+    ? runSameProcessDrift()
+    : runCliProcess({
     argv: process.argv.slice(2),
     dependencies: {
       repositoryRoot: workspaceRoot,

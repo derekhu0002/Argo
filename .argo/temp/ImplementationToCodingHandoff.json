@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T06:12:00+08:00",
+  "generatedAt": "2026-07-27T06:35:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 adapter-lifecycle trust correction with exactly eight authorized production paths. Preserve six function ports plus one repository-local non-secret store under the same-user/local-workspace trust model. The digest detects corruption/drift, not provenance; authorization exists only when explicit verifyReadiness reaches the active exclusive-write/fsync/rename/owner-and-ACL path after exact WP-P2 verified:true. File ACL, parent-directory ACL, and owner identity are independently checked; supported platforms fsync the directory and Windows explicitly records same-directory rename fallback. Malformed, extra, tampered, foreign, permissive, temporary-only, canonical-byte, version, or channel drift evidence fails closed. System/unified semantic queries route through the operator; snapshots and graph-tidy remain unchanged. CLI/MCP errors expose the exact eleven-field whitelist with each value derived from its identically named approved diagnostic except literal-false fallback. runner-owned deliveryStatus remains untouched by Coding.",
+  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -17,11 +17,11 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "controlPoint": "Run separate CLI readiness/query processes plus malformed, extra, tampered, foreign, presence-only, symlink/reparse, independent permissive file ACL, permissive parent-directory ACL, foreign-owner identity, interrupted replacement, canonical-byte, init/backfill/actual MCP mutation, and independent version/channel drift scenarios; also exercise package, System/unified MCP, snapshots, graph-tidy, and wires.",
-      "observationPoint": "Only explicit readiness through the active atomic writer creates a trusted committed record. Every untrusted/stale/invalidation scenario rejects before retrieval; file ACL, parent ACL, and owner controls are independent. CLI/MCP errors have exactly eleven fields whose values come from the same-named approved diagnostics, with no cross-field/constant substitution, message, stack, canary, or extra.",
+      "controlPoint": "Run separate CLI readiness/query processes, same-process verification followed by readiness drift, missing durable-store construction, exported System/unified callTool probes without an injected journey, package/wire/snapshot controls, and the complete malformed/link/atomic/drift/Windows owner-and-ACL matrix including current-host parent ACL evidence.",
+      "observationPoint": "Every query traverses durable read -> current WP-P2 read -> exact validation -> retrieval. Exported semantic calls never reach a raw retrieval fallback. Windows trust requires exact current-user ownership and effective current-user/SYSTEM-only ACLs after deny precedence; each unsafe case returns the exact redacted remediation with zero retrieval.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "failureReason": "SP05_ADAPTER_LIFECYCLE_CONTROLS_FAILED against 587ee41: checkpoint module/process lifecycle missing, package command forges consent, System MCP performs direct retrieval, and MCP wire handlers expose stacks instead of structured diagnostics."
+      "failureReason": "SP05_ADAPTER_LIFECYCLE_CONTROLS_FAILED against 96f0fc2: same-process drift queries bypass durable revalidation, exported System/unified callTool falls back to raw retrieval when no journey is injected, the store is optional through a volatile fallback, and Windows ACL/owner rejection lacks exact principal/permission/deny policy and remediation."
     }
   ],
   "criticalNonExplicitTests": [
@@ -93,8 +93,8 @@
       "name": "WP-P3 Adapter Lifecycle Boundary",
       "path": "tests/architecture/production-semantic-operator/adapter-lifecycle-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "TypeChecker binding, active write call-graph reachability, exact diagnostic provenance, AST static-member inspection, and ordered executable flow plus adversarial fixtures over package consent, dispatch, serialization, atomic replacement/directory durability, metadata, and invalidation.",
-      "observationPoint": "A dead atomic helper with active append/write, missing file/directory fsync, silent Windows fallback, wrong serializer constants/cross-fields, secret-bearing fields, caller-controlled metadata, bracket retrieval/stack, extra fields, comments/dead clears, and out-of-order invalidation all fail while approved shapes pass.",
+      "controlPoint": "TypeChecker binding, active write call-graph reachability, query return domination, exact diagnostic provenance, private Windows policy execution, AST static-member inspection, and ordered executable flow plus adversarial fixtures.",
+      "observationPoint": "Missing-journey raw fallback, same-process early return, optional volatile store, group/foreign owner, BUILTIN Users/Everyone/foreign protected allows, missing or denied current identity, permissive parent, malformed ACL, wrong remediation, dead atomic helpers, serializer substitution, and non-executing invalidation all fail while approved shapes pass.",
       "expectedStatus": "passed"
     }
   ],
@@ -104,14 +104,14 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
-      "failureSignal": "Per-process readiness authorization cannot survive adapter reconstruction and has no stale-version invalidation.",
-      "nextAction": "Add the sole readinessAttestationStore dependency: clear before init/backfill, record only after verified:true, require a record before any query-time read, validate exact current WP-P2 versions/channels, clear stale evidence, and query only after validation."
+      "failureSignal": "A same-process readinessVerified shortcut retrieves without re-reading the committed record or current WP-P2 drift, and missing store silently receives a volatile fallback.",
+      "nextAction": "Require readinessAttestationStore at factory entry and remove createVolatileReadinessAttestationStore plus process-local authorization. Every query must perform exactly one durable read, one current WP-P2 read, one exact store validation, then retrieval; clear/reject stale evidence with current diagnostics and zero retrieval."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/graph-rag/semanticReadinessAttestationStore.js",
-      "failureSignal": "The non-secret cross-command checkpoint module does not exist.",
-      "nextAction": "Create the strict repository-local store at .argo/temp/semantic-readiness-attestation.json with authorizationOperation, exact safe fields, canonical/integrity drift digests, strict schema, link/reparse and ownership/ACL checks, exclusive flushed atomic replacement, exact validation, and idempotent clear. Never claim the unkeyed digest proves provenance."
+      "failureSignal": "Windows trust accepts BUILTIN Administrators group ownership and ACLs that omit the current user or grant protected access to BUILTIN Users or arbitrary principals.",
+      "nextAction": "Keep strict schema/atomic/digest behavior and add one private assertWindowsAclTrust policy: exact current-user owner; verifiable ACE parsing; deny precedence; effective current-user modify/full allow on file and parent; protected allows only for current identity and NT AUTHORITY SYSTEM. Reject group/foreign owner, broad/foreign allows, missing/denied identity, malformed evidence, and return the exact redacted ACL remediation."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
@@ -134,8 +134,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "Semantic getSystemArchitecture bypasses operator; backfill/mutations do not invalidate authorization; JSON-RPC catches serialize stacks.",
-      "nextAction": "Route only validated non-graph-tidy semantic requests through journey.query, keep snapshot/graph-tidy branches exact, use a private raw retrieval delegate in default operator composition, compose/invalidate the store, export dependency-aware handleRequest, and use shared structured errors."
+      "failureSignal": "Exported callTool still invokes executeSemanticSystemArchitectureQuery directly when dependencies or semanticOperatorJourney are absent.",
+      "nextAction": "Route every validated non-graph-tidy semantic callTool request through resolveSemanticOperatorJourney. Use an injected approved journey when present, otherwise construct the approved default journey or fail closed. Keep executeSemanticSystemArchitectureQuery private to the default operator's final inward query port; preserve snapshot/graph-tidy and invalidation behavior."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
@@ -151,7 +151,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Implement the minimal adapter-lifecycle trust boundary in three test-driven tasks. Preserve the six function ports and accepted WP-P1/WP-P2 logic; add only the store object. A prior explicit verification is mandatory. Query-time WP-P2 read is stale-evidence validation only after a trusted committed record exists. Extend the existing sole command adapter narrowly because Windows ACLs are not available through Node fs; do not add another process boundary. All frozen tests, nine guards, contracts, README, graph authority, and runner-owned deliveryStatus records are read-only.",
+    "executionStrategy": "Repair the three final bypasses in three test-driven tasks without expanding the same eight-file authorization. Preserve six function ports and accepted WP-P1/WP-P2 logic. The durable store is mandatory and every query revalidates it; exported semantic callTool never selects raw retrieval; Windows trust uses exact owner and ACE semantics with no host-policy exception. All frozen tests, nine guards, contracts, README, graph authority, and runner-owned deliveryStatus records are read-only.",
     "tasks": [
       {
         "taskId": "WP-P3-L1",
@@ -167,14 +167,15 @@
           ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js"
         ],
         "steps": [
-          "Document and implement the same-user/local-workspace boundary. The deterministic digest detects corruption and canonical drift only. Reject malformed/extra/tampered/foreign records, target or parent links/reparse points, non-regular files, foreign POSIX owners, permissive POSIX modes, broad/foreign Windows ACLs, and any metadata-command failure.",
+          "Implement exact Windows trust under the same-user/local-workspace boundary. Owner must equal current whoami identity, never a group. Parse each file/parent ACE, honor deny precedence, require effective current-user modify/full access, and permit protected allows only for current identity and NT AUTHORITY SYSTEM. Reject BUILTIN Users/Administrators, Everyone, Authenticated Users, arbitrary foreign allows, missing/denied current identity, malformed evidence, and permissive parent ACL.",
+          "For every Windows trust rejection set action exactly to: Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again. Do not include raw ACL, identity, owner, path detail, stack, or secret.",
           "Create the exact safe schema including authorizationOperation: verifyReadiness. Bind record() through resolved symbols to the active exclusive same-directory wx/0600 writer; complete write, file fsync/close, atomic rename, post-rename owner/file ACL checks, and supported-platform directory fsync. On Windows require an explicit same-directory rename fallback record; never silently omit durability, follow a dead helper, accept append/write, or authorize from presence.",
           "Add the narrow readiness-attestation metadata factory to the existing sole command adapter without changing its credential factory. Bind whoami/icacls plus one fixed non-interactive Get-Acl Owner expression to exact repository directory/file paths; accept no caller path, script, command, flags, environment, stdin, or secret.",
-          "Keep six existing function ports unchanged and require the seventh readinessAttestationStore object with record/read/clear/validate.",
+          "Keep six existing function ports unchanged and require the seventh readinessAttestationStore object with record/read/clear/validate at factory entry; delete the volatile fallback.",
           "Clear on the actual init and explicit/automatic backfill paths. After explicit verifyReadiness returns exact verified:true, record the complete safe WP-P2 diagnostics and operation marker.",
-          "On query, reject missing/invalid/untrusted evidence before readSemanticReadiness; if trusted, read WP-P2 once only to validate each exact attested version/channel. Clear and reject stale evidence with current safe diagnostics before retrieval."
+          "On every query, including same-process post-verification query, reject missing/invalid/untrusted evidence before readSemanticReadiness; if trusted, read WP-P2 once only to validate each exact attested version/channel. Clear and reject stale evidence with current safe diagnostics before retrieval. No process-local state may return early."
         ],
-        "completionSignal": "Child-process readiness then query succeeds; missing/init/backfill/version-drift cases reject with required categories and zero unauthorized retrieval."
+        "completionSignal": "Cross-process and same-process queries both traverse durable validation; missing store construction fails; every owner/ACL matrix case rejects with exact remediation and zero retrieval; controlled current-user/SYSTEM ACL succeeds."
       },
       {
         "taskId": "WP-P3-L2",
@@ -196,11 +197,11 @@
         "steps": [
           "Create the shared exact eleven-field whitelist serializer and MCP error result. Derive every field only from error.<identicallyNamedField> using the frozen type normalization; force verified to exact true comparison and fullSnapshotFallback to literal false. Reject constants, cross-field mappings, message, stack, canaries, arbitrary properties, credentials, or unsafe source.",
           "Refactor CLI process execution through runCliProcess with the default production factory and frozen injected composition seam; preserve request flags and output one JSON document.",
-          "Split System MCP raw semantic retrieval into a private delegate. Route public semantic getSystemArchitecture through the operator, while preserving validation, no-argument, and graph-tidy branches exactly.",
+          "Split System MCP raw semantic retrieval into a private delegate. Route exported System and unified callTool semantic getSystemArchitecture through an injected approved journey or approved default journey. Missing journey may fail closed but cannot invoke the raw delegate. Preserve validation, no-argument, graph-tidy, and JSON-RPC behavior exactly.",
           "Compose the store in the default journey; invalidate before external backfill and after successful canonical write. Export handleRequest(request, dependencies) from both servers and pass dependencies through unified dispatch.",
           "Remove --explicit-opt-in from the package script; do not add another implicit consent source."
         ],
-        "completionSignal": "System and unified semantic calls record operator-query only, snapshots/graph-tidy record no operator effect, package expansion contains no consent flag, and wire errors preserve exact safe diagnostics."
+        "completionSignal": "System and unified exported semantic probes without injected journey record zero raw retrieval and fail closed; injected operator probes record operator-query only; snapshots/graph-tidy remain bypasses; package and wire contracts remain exact."
       },
       {
         "taskId": "WP-P3-L3",
@@ -294,12 +295,12 @@
     "Second guard audit correction replaces lexical source matching with TypeScript AST inspection. Default wiring now proves exact CommonJS imports, real factory/tool calls, one exact six-function dependency object, and executable comments/unused/missing-call/extra-port rejection. Source safety now permits direct approved external plumbing while rejecting provider/model/credential defaults through assignments, aliases, object properties, logical/nullish/ternary expressions, and factory arguments.",
     "Clean Architecture re-audit correction adds TypeChecker symbol resolution and exact callback-return mapping so imported names cannot be satisfied by locally shadowed factories or callTool. Safety uses fixed-point default-source taint so generic literals and defaults in aliases, destructuring, parameters, assignments, objects, and factory arguments cannot flow into provider/model/credential bindings.",
     "Accepted createDefaultSemanticRetrieval(dependencies).readReadiness() remains the sole readiness authority and stays frozen. The new store records only its safe public envelope after explicit verified:true; it does not evaluate readiness or persist configuration.",
-    "Adapter audit findings are independently reproduced against 587ee41: actual System MCP semantic query returns SEMANTIC_INDEX_NOT_ALIGNED from direct retrieval instead of operator authorization; a fresh CLI query exposes SEMANTIC_READINESS_VERIFICATION_REQUIRED as a stack; unified readiness exposes a stack and loses version/channel diagnostics; npm expands semantic:backfill with hidden --explicit-opt-in.",
-    "Frozen SP-05 now also launches separate child CLI processes and exercises System/unified dispatch/wire handlers. Current RED reports missing semanticReadinessAttestationStore.js, forged package consent, direct-retrieval instead of operator-query, and unexposed structured wire handlers.",
+    "Final audit against 96f0fc2 reproduced three remaining bypasses: exported System/unified callTool accepts raw semanticRetrievalBoundary when no journey is injected; same-process query returns through readinessVerified without durable/current WP-P2 revalidation; and the Windows trust code accepts group owner plus ACLs without exact principal/permission/deny semantics.",
+    "Frozen SP-05 now launches separate and same-process child flows, probes exported System/unified callTool without a journey while installing a raw-retrieval trap, requires missing-store construction failure, and executes exact Windows owner/ACL/remediation cases. Current RED includes SP05_SAME_PROCESS_READINESS_DRIFT_UNEXPECTED_SUCCESS, SP05_SYSTEM_EXPORTED_CALLTOOL_RAW_RETRIEVAL_FALLBACK, and ACL remediation mismatch.",
     "Trust rationale: a durable local record is required because process memory is not an authorization boundary. The accepted canonical JSON authority already assumes a same-user local workspace, so this design adopts that explicit boundary rather than inventing a signing secret. A malicious process under the same OS identity can rewrite canonical JSON and is out of scope. Other identities, links/reparse points, permissive ACL/mode, corruption, malformed/extra fields, foreign records, and interrupted replacement are in scope and fail closed. The deterministic digest is only corruption/canonical-byte evidence; explicit-verification provenance derives from the guarded verifyReadiness writer path plus OS trust checks.",
-    "Windows ownership/ACL evidence requires the eighth narrowly authorized production file systemMetadataCommandAdapter.js because Node fs does not expose Windows ACLs and every other Graph RAG module is prohibited from importing child_process. Its existing credential adapter remains unchanged; a separate exact-path metadata profile is authorized.",
-    "Frozen runtime coverage now includes presence-only, malformed, extra, tampered, foreign-workspace, symlink/reparse, independent permissive file ACL, permissive parent-directory ACL, foreign-owner identity, interrupted committed-target and temporary-only, canonical-byte drift, init/backfill/actual MCP mutation invalidation, and independent canonical/content/index/channel drift.",
-    "The ninth guard resolves the active record() call graph rather than counting dead atomic calls, enforces file and directory durability including explicit Windows fallback, and checks every error field's same-name diagnostic provenance. Dead-helper append/write and wrong constant/cross-field serializer fixtures are mandatory.",
+    "Windows ownership/ACL evidence remains in the eighth narrowly authorized production file systemMetadataCommandAdapter.js, but policy evaluation belongs privately in semanticReadinessAttestationStore.js. Exact owner equality and parsed ACE semantics are mandatory; the known current-host .argo/temp BUILTIN Users inheritance is a release blocker, not an exception.",
+    "Frozen runtime coverage now includes separate/same-process drift, missing durable store, exported no-journey callTool, presence-only/malformed/extra/tampered/foreign/link/atomic/invalidation/version cases, group owner, BUILTIN Users file and parent allows, arbitrary foreign principal, missing current identity, current deny, broad principal, permissive parent, and current-host ACL evidence.",
+    "The ninth guard additionally rejects raw fallback calls in public dispatch, any query return before durable validation, dependency rewriting/volatile store creation, and executes the private Windows trust policy against safe and adversarial owner/ACE matrices.",
     "Inherited WP-P1/WP-P2 guard corrections remove stale assertions that permanently coupled the shared handoff slot to historical repair scopes or required future SP-05 absence. Stable invariants remain stronger: accepted persistence/retrieval/runtime files are forbidden targets and frozen; SP-01 through SP-04 entries remain mounted/frozen; delivered graph mappings remain present.",
     "The correction baseline expects 43 total / 42 passed / 1 failed with SP-05 sole RED, semprod-operator-journey-process sole not_delivered, 36 delivered / 1 not_delivered attributes, and failure records at design/KG/test-failure-records.json. Final counts are runner-owned and must be refreshed immediately before this handoff commit.",
     "The tracked handoff is superseded after accepted Coding commit 587ee41 only for the eight adapter-lifecycle production paths. WP-P1/WP-P2 internals, README, all frozen tests/contracts, canonical authority, and delivery status are not Coding targets.",

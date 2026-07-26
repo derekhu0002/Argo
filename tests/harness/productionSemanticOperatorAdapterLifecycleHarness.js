@@ -19,6 +19,11 @@ const attestationRelativePath = path.join(
 );
 const SECRET_CANARY = 'SP05-ADAPTER-SECRET-MUST-NOT-LEAK';
 const UNSAFE_SOURCE_CANARY = 'SP05-ADAPTER-UNSAFE-SOURCE-MUST-NOT-LEAK';
+const ACL_REMEDIATION = 'Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again';
+const SAFE_WINDOWS_ACL = [
+  '%CURRENT_IDENTITY%:(F)',
+  'NT AUTHORITY\\SYSTEM:(F)',
+].join('\r\n');
 const ERROR_ENVELOPE_KEYS = Object.freeze([
   'action',
   'canonicalVersion',
@@ -102,6 +107,11 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
       JSON.stringify(semanticQuery()),
     ]);
 
+    const sameProcessDrift = createProcessWorkspace(roots, VERSION_ONE_READINESS);
+    const sameProcessDriftQuery = spawnFixture(sameProcessDrift, ['same-process-drift'], {
+      SP05_CURRENT_READINESS_OVERRIDE: JSON.stringify(VERSION_TWO_READINESS),
+    });
+    const missingDurableStore = captureMissingDurableStoreRequirement();
     const trust = runAttestationTrustScenarios(roots);
     const packageBackfill = spawnPackageBackfillWithoutConsent();
     const mcp = await exerciseMcpAdapterPaths();
@@ -136,6 +146,12 @@ async function runProductionSemanticOperatorAdapterLifecycle() {
           expectedCurrentReadiness: VERSION_TWO_READINESS,
           state: readFixtureState(stale),
         },
+        sameProcessDrift: {
+          query: sameProcessDriftQuery,
+          expectedCurrentReadiness: VERSION_TWO_READINESS,
+          state: readFixtureState(sameProcessDrift),
+        },
+        missingDurableStore,
         trust,
       },
       packageBackfill,
@@ -215,16 +231,30 @@ function runAttestationTrustScenarios(roots) {
 
   const untrustedAcl = createRecordedWorkspace(roots);
   const aclMutation = makeAttestationAclUntrusted(untrustedAcl);
-  const untrustedAclQuery = spawnSemanticQuery(untrustedAcl);
+  const untrustedAclQuery = spawnSemanticQuery(untrustedAcl, {
+    SP05_ATTESTATION_FILE_ACL_OVERRIDE: [
+      SAFE_WINDOWS_ACL,
+      'Everyone:(R)',
+    ].join('\r\n'),
+  });
 
   const untrustedParentAcl = createRecordedWorkspace(roots);
   const parentAclMutation = makeAttestationDirectoryAclUntrusted(untrustedParentAcl);
-  const untrustedParentAclQuery = spawnSemanticQuery(untrustedParentAcl);
+  const untrustedParentAclQuery = spawnSemanticQuery(untrustedParentAcl, {
+    SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: [
+      SAFE_WINDOWS_ACL,
+      'Everyone:(M)',
+    ].join('\r\n'),
+  });
 
   const foreignIdentityOwner = createRecordedWorkspace(roots);
   const foreignIdentityOwnerQuery = spawnSemanticQuery(foreignIdentityOwner, {
     SP05_ATTESTATION_OWNER_OVERRIDE: 'FOREIGN-DOMAIN\\ForeignIdentity',
   });
+
+  const windowsPolicy = process.platform === 'win32'
+    ? runWindowsTrustPolicyScenarios(roots)
+    : { applicable: false };
 
   const mutation = createProcessWorkspace(
     roots,
@@ -282,6 +312,7 @@ function runAttestationTrustScenarios(roots) {
       aclMutation: parentAclMutation,
     },
     foreignIdentityOwner: scenarioResult(foreignIdentityOwner, foreignIdentityOwnerQuery),
+    windowsPolicy,
     mutation: {
       readiness: readinessBeforeMutation,
       mutation: mutationResult,
@@ -425,6 +456,40 @@ function assertCliProcessLifecycle(cli) {
     'readiness-read': 2,
     'semantic-query': 0,
   }, 'SP05_CLI_STALE_ATTESTATION');
+
+  assertStructuredProcessError(
+    cli.sameProcessDrift.query,
+    'SEMANTIC_READINESS_ATTESTATION_STALE',
+    'SP05_SAME_PROCESS_READINESS_DRIFT',
+  );
+  for (const field of [
+    'canonicalVersion',
+    'contentVersion',
+    'indexVersion',
+    'completedChannels',
+    'missingChannels',
+    'mismatchedChannels',
+  ]) {
+    assert.deepStrictEqual(
+      cli.sameProcessDrift.query.output.error[field],
+      cli.sameProcessDrift.expectedCurrentReadiness[field],
+      `SP05_SAME_PROCESS_DRIFT_${field.toUpperCase()}_DIAGNOSTIC_CHANGED`,
+    );
+  }
+  assertEventCounts(cli.sameProcessDrift.state.events, {
+    'readiness-read': 2,
+    'semantic-query': 0,
+  }, 'SP05_SAME_PROCESS_READINESS_DRIFT');
+  assert.strictEqual(
+    cli.missingDurableStore.accepted,
+    false,
+    'SP05_DURABLE_ATTESTATION_STORE_NOT_MANDATORY',
+  );
+  assert.match(
+    cli.missingDurableStore.error.message,
+    /readinessAttestationStore/i,
+    'SP05_MISSING_STORE_ERROR_NOT_ACTIONABLE',
+  );
 }
 
 function assertAttestationTrustControls(trust) {
@@ -491,38 +556,22 @@ function assertAttestationTrustControls(trust) {
     0,
     `SP05_ATTESTATION_ACL_FIXTURE_FAILED: ${trust.untrustedAcl.aclMutation.stderr}`,
   );
-  assertStructuredProcessError(
-    trust.untrustedAcl.query,
-    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
-    'SP05_ATTESTATION_PERMISSIVE_ACL',
-  );
-  assertEventCounts(trust.untrustedAcl.state.events, {
-    'readiness-read': 1,
-    'semantic-query': 0,
-  }, 'SP05_ATTESTATION_PERMISSIVE_ACL');
+  assertAclRejection(trust.untrustedAcl, 'SP05_ATTESTATION_PERMISSIVE_ACL');
   assert.strictEqual(
     trust.untrustedParentAcl.aclMutation.status,
     0,
     `SP05_ATTESTATION_PARENT_ACL_FIXTURE_FAILED: ${trust.untrustedParentAcl.aclMutation.stderr}`,
   );
-  assertStructuredProcessError(
-    trust.untrustedParentAcl.query,
-    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+  assertAclRejection(
+    trust.untrustedParentAcl,
     'SP05_ATTESTATION_PERMISSIVE_PARENT_ACL',
   );
-  assertEventCounts(trust.untrustedParentAcl.state.events, {
-    'readiness-read': 1,
-    'semantic-query': 0,
-  }, 'SP05_ATTESTATION_PERMISSIVE_PARENT_ACL');
-  assertStructuredProcessError(
-    trust.foreignIdentityOwner.query,
-    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+  assertAclRejection(
+    trust.foreignIdentityOwner,
     'SP05_ATTESTATION_FOREIGN_IDENTITY_OWNER',
   );
-  assertEventCounts(trust.foreignIdentityOwner.state.events, {
-    'readiness-read': 1,
-    'semantic-query': 0,
-  }, 'SP05_ATTESTATION_FOREIGN_IDENTITY_OWNER');
+
+  assertWindowsTrustPolicy(trust.windowsPolicy);
 
   assertProcessPassed(trust.mutation.readiness, 'SP05_PRE_MUTATION_READINESS_FAILED');
   assertProcessPassed(trust.mutation.mutation, 'SP05_CANONICAL_MUTATION_PROCESS_FAILED');
@@ -588,6 +637,22 @@ function assertMcpSemanticDispatch(mcp) {
       outcome.error && outcome.error.category,
       'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
       `SP05_${label}_SEMANTIC_QUERY_NOT_FAIL_CLOSED`,
+    );
+  }
+  for (const [label, outcome] of [
+    ['SYSTEM_EXPORTED', mcp.systemWithoutJourney],
+    ['UNIFIED_EXPORTED', mcp.unifiedWithoutJourney],
+  ]) {
+    assert(
+      !outcome.events.includes('direct-retrieval'),
+      `SP05_${label}_CALLTOOL_RAW_RETRIEVAL_FALLBACK`,
+    );
+    assert(
+      outcome.error && [
+        'SEMANTIC_READINESS_VERIFICATION_REQUIRED',
+        'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+      ].includes(outcome.error.category),
+      `SP05_${label}_CALLTOOL_WITHOUT_JOURNEY_NOT_FAIL_CLOSED`,
     );
   }
 }
@@ -678,6 +743,8 @@ async function exerciseMcpAdapterPaths() {
   const unified = require('../../.argo/scripts/argo-mcp-server.js');
   const systemOutcome = await captureAdapterQuery(system.callTool, false);
   const unifiedOutcome = await captureAdapterQuery(unified.callTool, true);
+  const systemWithoutJourney = await captureAdapterQueryWithoutJourney(system.callTool, false);
+  const unifiedWithoutJourney = await captureAdapterQueryWithoutJourney(unified.callTool, true);
   const systemSnapshot = await captureBypass(system.callTool, false, {});
   const unifiedSnapshot = await captureBypass(unified.callTool, true, {});
   const graphTidyArgs = { query: { purpose: 'graph-tidy', intent: 'preserve full snapshot' } };
@@ -688,6 +755,8 @@ async function exerciseMcpAdapterPaths() {
   return {
     system: systemOutcome,
     unified: unifiedOutcome,
+    systemWithoutJourney,
+    unifiedWithoutJourney,
     systemSnapshot,
     unifiedSnapshot,
     systemGraphTidy,
@@ -695,6 +764,26 @@ async function exerciseMcpAdapterPaths() {
     systemWire,
     unifiedWire,
   };
+}
+
+async function captureAdapterQueryWithoutJourney(callTool, unified) {
+  const events = [];
+  const dependencies = {
+    semanticRetrievalBoundary: {
+      async retrieve() {
+        events.push('direct-retrieval');
+        return { elements: [], relationships: [], views: [] };
+      },
+    },
+  };
+  try {
+    const result = unified
+      ? await callTool('getSystemArchitecture', { query: semanticQuery() }, null, dependencies)
+      : await callTool('getSystemArchitecture', { query: semanticQuery() }, dependencies);
+    return { events, result };
+  } catch (error) {
+    return { events, error: observableError(error) };
+  }
 }
 
 async function captureAdapterQuery(callTool, unified) {
@@ -768,6 +857,119 @@ function adapterDependencies(events, wire = false) {
         return { elements: [], relationships: [], views: [] };
       },
     },
+  };
+}
+
+function captureMissingDurableStoreRequirement() {
+  const {
+    createProductionSemanticOperatorJourney,
+  } = require('../../.argo/scripts/graph-rag/semanticOperatorJourney.js');
+  const dependencies = Object.fromEntries([
+    'initializeWorkspace',
+    'syncCanonicalStructuralProjection',
+    'resolveApprovedConfiguration',
+    'runSemanticBackfill',
+    'readSemanticReadiness',
+    'querySystemArchitecture',
+  ].map(name => [name, async () => ({ name })]));
+  try {
+    createProductionSemanticOperatorJourney(dependencies);
+    return { accepted: true, error: null };
+  } catch (error) {
+    return { accepted: false, error: observableError(error) };
+  }
+}
+
+function runWindowsTrustPolicyScenarios(roots) {
+  const scenarios = {};
+  for (const [name, environment] of Object.entries({
+    groupOwner: {
+      SP05_ATTESTATION_OWNER_OVERRIDE: 'BUILTIN\\Administrators',
+    },
+    builtinUsersFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Users:(R)`,
+    },
+    foreignPrincipalFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nFOREIGN-DOMAIN\\ForeignIdentity:(M)`,
+    },
+    missingCurrentIdentityFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: 'NT AUTHORITY\\SYSTEM:(F)',
+    },
+    currentIdentityDeniedFile: {
+      SP05_ATTESTATION_FILE_ACL_OVERRIDE: [
+        '%CURRENT_IDENTITY%:(DENY)(R,W)',
+        SAFE_WINDOWS_ACL,
+      ].join('\r\n'),
+    },
+    builtinUsersParent: {
+      SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nBUILTIN\\Users:(RX)`,
+    },
+  })) {
+    const workspace = createRecordedWorkspace(roots);
+    scenarios[name] = scenarioResult(
+      workspace,
+      spawnSemanticQuery(workspace, environment),
+    );
+  }
+
+  const hostAcl = readCurrentHostTempAcl();
+  const hostWorkspace = createRecordedWorkspace(roots);
+  scenarios.currentHostParent = {
+    ...scenarioResult(hostWorkspace, spawnSemanticQuery(hostWorkspace, {
+      SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: hostAcl.stdout,
+    })),
+    acl: hostAcl,
+  };
+  return { applicable: true, scenarios };
+}
+
+function assertWindowsTrustPolicy(windowsPolicy) {
+  if (!windowsPolicy.applicable) return;
+  for (const [name, scenario] of Object.entries(windowsPolicy.scenarios)) {
+    if (name === 'currentHostParent') {
+      assert.strictEqual(
+        scenario.acl.status,
+        0,
+        `SP05_CURRENT_HOST_ATTESTATION_ACL_UNREADABLE: ${scenario.acl.stderr}`,
+      );
+      assert(
+        /BUILTIN\\Users/i.test(scenario.acl.stdout),
+        'SP05_CURRENT_HOST_BUILTIN_USERS_ACL_PRECONDITION_MISSING',
+      );
+    }
+    assertAclRejection(scenario, `SP05_WINDOWS_ACL_${name.toUpperCase()}`);
+  }
+}
+
+function assertAclRejection(scenario, label) {
+  assertStructuredProcessError(
+    scenario.query,
+    'SEMANTIC_READINESS_ATTESTATION_UNTRUSTED',
+    label,
+  );
+  assert.strictEqual(
+    scenario.query.output.error.action,
+    ACL_REMEDIATION,
+    `${label}_REMEDIATION_CHANGED`,
+  );
+  assertEventCounts(scenario.state.events, {
+    'readiness-read': 1,
+    'semantic-query': 0,
+  }, label);
+}
+
+function readCurrentHostTempAcl() {
+  const directoryPath = path.join(repoRoot, '.argo', 'temp');
+  const result = spawnSync('icacls', [directoryPath], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    shell: false,
+    windowsHide: true,
+  });
+  return {
+    status: result.status,
+    stdout: result.stdout || '',
+    stderr: result.stderr || '',
   };
 }
 
@@ -901,6 +1103,11 @@ function spawnFixture(workspace, args, environment = {}) {
         ARGO_REPO_ROOT: workspace.root,
         SP05_OPERATOR_WORKSPACE_ROOT: workspace.root,
         SP05_OPERATOR_STATE_PATH: workspace.statePath,
+        ...(process.platform === 'win32' ? {
+          SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: SAFE_WINDOWS_ACL,
+          SP05_ATTESTATION_FILE_ACL_OVERRIDE: SAFE_WINDOWS_ACL,
+          SP05_ATTESTATION_OWNER_OVERRIDE: '%CURRENT_IDENTITY%',
+        } : {}),
         ...environment,
       },
       windowsHide: true,

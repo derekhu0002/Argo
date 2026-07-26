@@ -32,8 +32,12 @@ for (const required of [
 for (const required of [
   'spawnSync',
   'SP05_CLI_CROSS_PROCESS_QUERY_NOT_AUTHORIZED',
+  'SP05_SAME_PROCESS_READINESS_DRIFT',
+  'SP05_DURABLE_ATTESTATION_STORE_NOT_MANDATORY',
   'SP05_PACKAGE_BACKFILL_FORGES_EXPLICIT_CONSENT',
   'SEMANTIC_QUERY_BYPASSES_OPERATOR',
+  'captureAdapterQueryWithoutJourney',
+  'CALLTOOL_RAW_RETRIEVAL_FALLBACK',
   'WIRE_HANDLER_NOT_EXPOSED',
   'SP05_CLI_STALE_ATTESTATION',
   'presenceOnly',
@@ -43,6 +47,15 @@ for (const required of [
   'untrustedParentAcl',
   'SP05_ATTESTATION_PERMISSIVE_PARENT_ACL',
   'SP05_ATTESTATION_FOREIGN_IDENTITY_OWNER',
+  'groupOwner',
+  'builtinUsersFile',
+  'foreignPrincipalFile',
+  'missingCurrentIdentityFile',
+  'currentIdentityDeniedFile',
+  'builtinUsersParent',
+  'currentHostParent',
+  'SP05_CURRENT_HOST_BUILTIN_USERS_ACL_PRECONDITION_MISSING',
+  'ACL_REMEDIATION',
   'SP05_ATTESTATION_INTERRUPTED_TEMP_ONLY',
   'SP05_ATTESTATION_CANONICAL_BYTES_DRIFT',
   'SP05_QUERY_AFTER_CANONICAL_MUTATION',
@@ -53,6 +66,20 @@ for (const required of [
   assert(
     adapterHarness.includes(required),
     `WP_P3_ENTRYPOINT_GUARD: adapter Harness omits ${required}`,
+  );
+}
+for (const required of [
+  'same-process-drift',
+  'SP05_CURRENT_READINESS_OVERRIDE',
+  'SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE',
+  'SP05_ATTESTATION_FILE_ACL_OVERRIDE',
+  'SP05_ATTESTATION_OWNER_OVERRIDE',
+  '%CURRENT_IDENTITY%',
+  'semanticOperatorErrorPayload',
+]) {
+  assert(
+    read(processFixturePath).includes(required),
+    `WP_P3_ENTRYPOINT_GUARD: process fixture omits ${required}`,
   );
 }
 for (const prohibited of ['child_process', 'neo4j-driver', 'process.env', 'Cypher']) {
