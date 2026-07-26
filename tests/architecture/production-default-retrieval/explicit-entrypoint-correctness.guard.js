@@ -200,6 +200,9 @@ assert(
   'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: ordinary default semantic scenarios must call the inner production boundary without dependencies',
 );
 const compatibilityHarness = read('tests/harness/intentArchitectureQueryHarness.js');
+const {
+  assertNoProbeCompatibilityUsesInjectedBoundary,
+} = require(path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js'));
 const wrapper = read('.argo/scripts/argo-mcp-server.js');
 const innerServer = read('.argo/scripts/systemarchitecture-mcp-server.js');
 assert(
@@ -218,6 +221,19 @@ assert(
   'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: wrapper progressToken position cannot carry deterministic test dependencies',
 );
 assert(handoff.frozenFiles.includes(harnessPath), 'WP_P2_EXPLICIT_ENTRYPOINT_GUARD: Harness is not frozen');
+
+assertNoProbeCompatibilityUsesInjectedBoundary()
+  .then(evidence => {
+    assert.deepStrictEqual(evidence, {
+      wrapperDependencyArgument: 4,
+      innerDependencyArgument: 3,
+      invocationCount: 1,
+    });
+  })
+  .catch(error => {
+    console.error(error && error.stack ? error.stack : error);
+    process.exitCode = 1;
+  });
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

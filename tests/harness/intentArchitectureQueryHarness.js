@@ -6,6 +6,37 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..');
 const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const { callTool } = require('../../.argo/scripts/argo-mcp-server.js');
+const {
+  createProductionGraphRagRuntime,
+} = require('../../.argo/scripts/graph-rag/productionGraphRagRuntime.js');
+
+const HARNESS_DETERMINISTIC_QUALIFICATION = Object.freeze({
+  approvedByHuman: true,
+  provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
+  baseUrl: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
+  model: 'qwen3.7-text-embedding',
+  version: 'qualification-2026-07-25',
+  dimensions: 1024,
+  source: 'explicit-human-approval',
+});
+const defaultDeterministicBoundaryInvocations = [];
+const defaultDeterministicRuntime = createProductionGraphRagRuntime({
+  canonicalGraph: readCanonicalSnapshot(),
+  embeddingQualification: HARNESS_DETERMINISTIC_QUALIFICATION,
+  neo4jRetrievalBoundary: Object.freeze({
+    async retrieve() {
+      const error = new Error('HARNESS_DETERMINISTIC_BOUNDARY_UNSUPPORTED_QUERY');
+      error.category = 'HARNESS_DETERMINISTIC_BOUNDARY_UNSUPPORTED_QUERY';
+      throw error;
+    },
+  }),
+});
+const defaultDeterministicSemanticRetrievalBoundary = Object.freeze({
+  async retrieve(request) {
+    defaultDeterministicBoundaryInvocations.push(request);
+    return defaultDeterministicRuntime.querySemantic(request);
+  },
+});
 
 async function readAsUnchangedConsumer() {
   return invokeGetSystemArchitecture({});
@@ -95,6 +126,26 @@ function assertSemanticRetrievalCalls(probe, expectedCount, failureCategory) {
     expectedCount,
     `${failureCategory}: semantic retrieval boundary invocation count`,
   );
+}
+
+async function assertNoProbeCompatibilityUsesInjectedBoundary() {
+  defaultDeterministicBoundaryInvocations.length = 0;
+  const result = await readForPurpose({
+    purpose: 'implementation-design',
+    intent: 'Exercise no-probe deterministic compatibility dependency',
+    anchors: ['grag-purpose-closure'],
+  });
+  assert.strictEqual(result.status, 'passed', 'NO_PROBE_COMPATIBILITY_BOUNDARY_RESULT_FAILED');
+  assert.strictEqual(
+    defaultDeterministicBoundaryInvocations.length,
+    1,
+    'NO_PROBE_COMPATIBILITY_BOUNDARY_NOT_INVOKED',
+  );
+  return Object.freeze({
+    wrapperDependencyArgument: 4,
+    innerDependencyArgument: 3,
+    invocationCount: defaultDeterministicBoundaryInvocations.length,
+  });
 }
 
 function assertLegacyEnvelopeExternallyEquivalent(actual, expected) {
@@ -399,8 +450,11 @@ function assertUniqueCanonicalIdentities(graph, failureCategory) {
 
 async function invokeGetSystemArchitecture(args, probe) {
   process.env.ARGO_REPO_ROOT = repoRoot;
-  const testDependencies = probe
-    ? { semanticRetrievalBoundary: probe.semanticRetrievalBoundary }
+  const semanticRetrievalBoundary = probe
+    ? probe.semanticRetrievalBoundary
+    : (args && args.query ? defaultDeterministicSemanticRetrievalBoundary : undefined);
+  const testDependencies = semanticRetrievalBoundary
+    ? { semanticRetrievalBoundary }
     : undefined;
   const response = await callTool('getSystemArchitecture', args, null, testDependencies);
   assert(response && Array.isArray(response.content), 'QUERY_BOUNDARY_PROTOCOL_FAILURE: MCP response must contain content');
@@ -418,6 +472,7 @@ function assertSetEqual(expectedValues, actualValues, message) {
 }
 
 module.exports = {
+  assertNoProbeCompatibilityUsesInjectedBoundary,
   assertCompleteCanonicalSnapshot,
   assertAuditProofClosure,
   assertCodingRepairClosure,

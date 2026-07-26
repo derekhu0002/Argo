@@ -113,6 +113,9 @@ for (const entryPath of entryPaths) {
 
 const harnessPath = path.join(repoRoot, 'tests', 'harness', 'intentArchitectureQueryHarness.js');
 const harnessSource = fs.readFileSync(harnessPath, 'utf8');
+const {
+  assertNoProbeCompatibilityUsesInjectedBoundary,
+} = require(harnessPath);
 const wrapperSource = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'argo-mcp-server.js'), 'utf8');
 const innerSource = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js'), 'utf8');
 assert(
@@ -151,8 +154,9 @@ assert(
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: probe count must not derive from the tested response',
 );
 assert(
-  harnessSource.includes('semanticRetrievalBoundary: probe.semanticRetrievalBoundary'),
-  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the test-owned probe boundary',
+  harnessSource.includes('? probe.semanticRetrievalBoundary')
+    && harnessSource.includes('? { semanticRetrievalBoundary }'),
+  'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: Harness must inject the supplied probe or Harness-owned boundary',
 );
 assert(
   harnessSource.includes("callTool('getSystemArchitecture', args, null, testDependencies)"),
@@ -168,6 +172,16 @@ assert(
     && !harnessSource.includes('observeSemanticRetrievalActivity'),
   'EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: response telemetry cannot substitute for the test-owned probe',
 );
+for (const requiredDefaultBoundaryBehavior of [
+  'defaultDeterministicSemanticRetrievalBoundary',
+  'args && args.query ? defaultDeterministicSemanticRetrievalBoundary : undefined',
+  'NO_PROBE_COMPATIBILITY_BOUNDARY_NOT_INVOKED',
+]) {
+  assert(
+    harnessSource.includes(requiredDefaultBoundaryBehavior),
+    `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: no-probe compatibility boundary omits ${requiredDefaultBoundaryBehavior}`,
+  );
+}
 
 const handoff = JSON.parse(fs.readFileSync(path.join(repoRoot, '.argo', 'temp', 'ImplementationToCodingHandoff.json'), 'utf8'));
 assert(
@@ -207,3 +221,16 @@ for (const entryPath of entryPaths) {
     `EXPLICIT_ENTRYPOINT_CORRECTNESS_GUARD: ${entryPath} must be frozen for Coding/Repair`,
   );
 }
+
+assertNoProbeCompatibilityUsesInjectedBoundary()
+  .then(evidence => {
+    assert.deepStrictEqual(evidence, {
+      wrapperDependencyArgument: 4,
+      innerDependencyArgument: 3,
+      invocationCount: 1,
+    });
+  })
+  .catch(error => {
+    console.error(error && error.stack ? error.stack : error);
+    process.exitCode = 1;
+  });
