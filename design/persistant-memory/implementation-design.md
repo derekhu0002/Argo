@@ -357,3 +357,10 @@
 - Added frozen `default-composition-wiring.guard.js` for exact accepted factory/tool composition and six inward operator ports, plus `authorized-production-safety.guard.js` with executable unsafe fixtures for embedded credentials/URIs, sensitive fallbacks, implicit provider defaults, and duplicated accepted internals. WP-P3 now has six critical guards.
 - Corrected runner baseline remains `43 total / 42 passed / 1 failed / 0 missing acceptanceCriteria`; SP-05 alone is the expected missing-production RED. Runner-owned topology recovery changed `grag-credential-boundary` and `semprod-readiness-requirement` from `not_delivered` back to `delivered`; `semprod-operator-journey-process` alone remains `not_delivered`, yielding 36 delivered and 1 not_delivered attributes.
 - No production implementation was added. Live Neo4j remains unavailable, so deterministic composition evidence still cannot claim `semprod-ready-plateau`.
+
+## 2026-07-27 WP-P3 structural guard correction
+
+- Replaced bypassable source-text matching in `default-composition-wiring.guard.js` with TypeScript compiler AST inspection. The guard now proves exact CommonJS exported-symbol/module imports, real accepted factory calls, literal-name backfill/readiness/query tool calls, one operator factory call, one dependency object, and exactly six function-valued authorized ports.
+- Executable wiring counterexamples prove that comments-only text, imported-but-unused identifiers, a missing factory invocation, a missing named tool invocation, and an extra dependency port all fail. The missing production operator still leaves the explicit SP-05 entrypoint RED without making the pre-coding guard fail.
+- Replaced narrow provider-default regex matching with AST expression policy over assignments, aliases, object properties, logical `||`, nullish `??`, ternary defaults, and factory arguments for provider/model/credential values. A positive fixture preserves direct approved external configuration plumbing, avoiding rejection of legitimate boundary delegation.
+- Corrected WP-P3-C3 to name and require all six frozen WP-P3 guards rather than the stale four-guard count.
