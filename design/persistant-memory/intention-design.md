@@ -1,5 +1,40 @@
 # Intent Design Session Record
 
+## 2026-07-26 — Approved Neo4jUri And EmbeddingCredential Handoff
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need approved external configuration names to be the only source for internal startup fields before Neo4j connectivity, provider calls, or index side effects.
+- Modeling purpose: designing, deciding, auditing, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it already traces production runtime, credential constraint, embedding qualification, canonical Neo4j names, live provider evidence, and canonical authority to release requirements before index delivery.
+- Human approval evidence: the human partner explicitly approved the existing-test boundary extensions and asked to fix all issues, including the reported `embeddingCredential is required for start` blocker and the MCP post-write `neo4jUri is required for start` sync setup blocker.
+- Secret handling: Intent Design did not read, create, output, migrate, copy, or expose any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` - `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`, now covering exact `.argo/.env` loading and start-time `neo4jUri` plus `embeddingCredential` validation.
+- `grag-credential-boundary` - `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Acceptance boundaries
+
+- Existing `ExplicitAcceptanceTestcase-TS-01` must prove harness initialization loads only the exact repository-relative `.argo/.env` when direct process values are absent, preserves direct-process precedence and credential conflict behavior, validates `neo4jUri` and `embeddingCredential` before startup proceeds, fails closed when either remains unresolved, and emits no secret-bearing diagnostics.
+- Existing `ExplicitAcceptanceTestcase-TS-07` must prove absent, conflicting, unsafe, legacy-alias-only, canonical-Neo4j-plus-unresolved-`neo4jUri`, and canonical-Neo4j-plus-unresolved-`embeddingCredential` states fail closed before network or index side effects, without hardcoded, default, Cypher, runtime-field, or legacy-alias fallback.
+- Existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` must prove `ARGO_NEO4J_DATABASE_URL` is the only approved source for in-process `neo4jUri`, `QWEN_KEY` is the only approved source for in-process `embeddingCredential`, and neither runtime field may be sourced from separate keys, literals, defaults, command-line values, graph/Cypher data, or alternate files.
+
+### Dependency-scope decisions
+
+- Handoff scope is exactly `grag-production-runtime` and `grag-credential-boundary` with `grag-rel-credentials-runtime`.
+- No new testcase identity was added; the approved boundary changes extend TS-01, TS-07, and TS-07-Provider-Secret-Isolation.
+- Canonical Neo4j environment-name behavior is preserved: `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` remain the only accepted Neo4j names, and legacy aliases remain unsupported.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: canonical graph write passed for the same two elements and one view; element count 47, relationship count 59, and view count 27 unchanged. The post-write Neo4j sync still reported `neo4jUri is required for start`, which is now represented as a downstream acceptance boundary rather than an unresolved intent adequacy blocker.
+- `argo.validateSystemArchitecture`: passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `.argo/temp/IntentToImplementationHandoff.json` was emitted for `grag-production-runtime`, `grag-credential-boundary`, and `grag-rel-credentials-runtime`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Open business questions and intent adequacy blockers: none.
+
 ## 2026-07-26 — Embedding Credential Startup Boundary
 
 - Selected viewpoint: Requirements Realization Viewpoint.
