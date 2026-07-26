@@ -1,5 +1,38 @@
 # Intent Design Session Record
 
+## 2026-07-26 — Embedding Credential Startup Boundary
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need startup configuration to prove that the approved provider secret source resolves the runtime `embeddingCredential` after canonical Neo4j configuration succeeds and before any database, provider, or index side effects.
+- Modeling purpose: designing, deciding, auditing, and handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it already traces production runtime, credential constraint, embedding qualification, canonical Neo4j names, live provider evidence, and canonical authority to release requirements before index delivery.
+- Root-cause boundary: the prior `neo4jUri` harness blocker is treated as already repaired for the reported harness path; this follow-up boundary isolates the unresolved `embeddingCredential` field and requires evidence that it is materialized only from approved `QWEN_KEY` provenance before startup proceeds.
+- Secret handling: Intent Design did not read, create, output, migrate, copy, or expose any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` - `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`, now including start-time `embeddingCredential` validation after `.argo/.env` loading and after canonical Neo4j resolution.
+- `grag-credential-boundary` - `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Acceptance boundaries needing approval
+
+- Existing `ExplicitAcceptanceTestcase-TS-01` must prove `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads only the exact repository-relative `.argo/.env` when direct process values are absent, preserves direct-process precedence and credential conflict behavior, resolves the provider secret needed for `embeddingCredential` before start-time validation, and fails closed with no secret-bearing diagnostics when canonical Neo4j configuration is present but `embeddingCredential` remains unresolved.
+- Existing `ExplicitAcceptanceTestcase-TS-07` must prove absent, conflicting, unsafe, legacy-alias-only, and canonical-Neo4j-plus-unresolved-`embeddingCredential` states fail closed before network or index side effects, without hardcoded, default, Cypher, runtime-field, or legacy-alias secret fallback.
+- Existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` must prove `QWEN_KEY` is the only approved source for materializing in-process `embeddingCredential`; separately supplied `embeddingCredential` keys, unresolved provider credentials, unsafe `.argo/.env` metadata, conflicts, legacy aliases, and all unapproved sources fail closed before provider, database, or index side effects and leak no secret material to observable channels.
+
+### Dependency-scope decisions
+
+- Handoff scope, if approved later, should remain exactly `grag-production-runtime` and `grag-credential-boundary` with `grag-rel-credentials-runtime`.
+- No new testcase identity was added; the new acceptance expectations extend existing TS-01, TS-07, and TS-07-Provider-Secret-Isolation boundaries as requested.
+- The accepted canonical Neo4j environment-name behavior is preserved: `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` remain the only accepted Neo4j names, and legacy aliases remain unsupported.
+
+### Validation and blockers
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: canonical graph write passed for the same two elements and one view; element count 47, relationship count 59, and view count 27 unchanged. The tool's post-write Neo4j sync reported `neo4jUri is required for start`, so projection sync should be treated as a separate setup blocker from the reported harness path until verified.
+- `argo.validateSystemArchitecture`: passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Intent-to-implementation handoff was not emitted because the modified mounted testcase boundaries are explicitly marked `pendingHumanApproval` for the `embeddingCredential` extension, and the overall handoff does not yet have global human approval.
+
 ## 2026-07-26 — Harness Environment And Canonical Neo4j Names
 
 - Selected viewpoint: Requirements Realization Viewpoint.
