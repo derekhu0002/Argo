@@ -388,3 +388,9 @@
 - Coding commit `0782694` exposed two use-case defects missed by initial acceptance: explicit backfill promoted absent caller consent to literal true, and query implicitly executed the readiness port while locally re-evaluating WP-P2 channel policy.
 - Frozen SP-05 now runs direct and CLI missing-consent controls, query-before-verification controls both before and after aligned backfill, and a non-aligned diagnostics fixture. It requires no implicit read/query/provider/vector effects and exact state/version/channel/fallback propagation.
 - The architecture guard rejects literal consent promotion, query-time readiness calls, local required-channel/alignment verdict code, and failure to consume WP-P2 `verified`. Repair authorization is narrowed to `semanticOperatorJourney.js`; all completed adapters and the accepted readiness reader are frozen.
+
+## 2026-07-27 WP-P3 policy provenance hardening
+
+- Name and literal checks were bypassable by `Boolean(1)` aliases, aliased/bracket dependency reads, renamed state/channel helpers, and cosmetic `verified` references. A dedicated TypeChecker guard now follows local variable/assignment bindings and requires exact consent and verdict provenance.
+- Automatic consent is not a blanket prohibition: the positive shape is a factory-owned selector between `request.automaticBackfillOptIn === true` and unchanged `request.explicitOptIn`, reached only after the start guard and approved configuration.
+- Runtime acceptance now uses contradictory records. Aligned with `verified:false` rejects with exact diagnostics; non-Aligned with `verified:true` authorizes. The operator therefore cannot infer authorization from state, versions, or channels.

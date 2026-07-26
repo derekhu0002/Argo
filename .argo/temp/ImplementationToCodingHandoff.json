@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T04:30:00+08:00",
+  "generatedAt": "2026-07-27T05:05:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 repair handoff after Clean Architecture audit. Preserve exactly six inward ports, the accepted WP-P2 public readiness reader, and runner-owned deliveryStatus. Explicit backfill must forward caller explicitOptIn unchanged so missing direct/CLI consent is rejected by WP-P1 before effects; only automaticBackfillOptIn:true at start may derive automatic WP-P1 consent after configuration validation. query() must never read readiness implicitly and must reject until the same journey records a successful explicit verifyReadiness(). verifyReadiness() consumes only WP-P2 verified and propagates exact diagnostics without local channel/alignment policy. Frozen SP-05 and the architecture guard are RED against 0782694.",
+  "summary": "WP-P3 narrow repair handoff with binding-aware consent/readiness provenance. Preserve six ports and runner-owned deliveryStatus. Explicit backfill forwards caller explicitOptIn unchanged; only factory-owned start may select automaticBackfillOptIn === true after approved configuration. Query never reads readiness implicitly. verifyReadiness authorizes solely from the exact bound WP-P2 verified === true verdict and propagates all diagnostics. Contradictory runtime fixtures plus Boolean/alias, bracket-access, renamed-policy, and cosmetic-verdict source fixtures are RED against 0782694.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -17,8 +17,8 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "controlPoint": "Run equivalent explicit/automatic fresh-project journeys, direct and CLI missing-consent backfill controls, query-before-explicit-readiness controls before and after aligned backfill, one non-aligned WP-P2 diagnostics fixture, separate interruption/resume, rejected configuration controls, and exact snapshots.",
-      "observationPoint": "Missing explicit consent reaches WP-P1 as not true and produces zero backfill/provider/database effects. Query without recorded explicit verification fails SEMANTIC_READINESS_VERIFICATION_REQUIRED with no readiness/provider/vector/query effects. verifyReadiness consumes WP-P2 verified and preserves exact state/version/channel/fallback diagnostics. Existing sequencing, redaction, recovery, snapshots, and canonical authority remain unchanged.",
+      "controlPoint": "Run equivalent explicit/automatic journeys, direct/CLI missing consent, query-before-verification, Aligned/verified:false and non-Aligned/verified:true records, recovery, rejected configuration, and snapshots.",
+      "observationPoint": "Explicit consent is unchanged, automatic consent has approved orchestration provenance, query has zero implicit effects, WP-P2 verified is the sole authorization verdict, and all readiness diagnostics propagate exactly.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
       "failureReason": "SP05_CONSENT_AND_READINESS_CONTROLS_FAILED: 0782694 promotes missing consent, permits implicit query-time readiness, and drops WP-P2 diagnostics."
@@ -31,6 +31,14 @@
       "kind": "ArchitectureBoundaryGuard",
       "controlPoint": "Contracts plus executable AST fixtures for caller consent, explicit readiness state, WP-P2 verdict consumption, and prohibition of duplicated readiness policy.",
       "observationPoint": "Literal consent promotion, query-time readiness reads, local channel/alignment verdict logic, and failure to consume WP-P2 verified all fail; safe forwarding and explicit-state composition pass.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "WP-P3 Operator Policy Provenance",
+      "path": "tests/architecture/production-semantic-operator/operator-policy-provenance.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "TypeChecker binding and alias/assignment flow over factory-owned backfill modes, consent selector, configuration ordering, readiness read/verdict assignment, and query fail-closed state.",
+      "observationPoint": "Compliant automatic derivation passes. Boolean/nested consent aliases, dependency/key aliases with bracket readiness access, renamed state/channel decisions, and cosmetic verified references fail.",
       "expectedStatus": "passed"
     },
     {
@@ -93,7 +101,7 @@
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only semanticOperatorJourney.js. Preserve six ports, default composition, CLI/MCP adapters, the accepted WP-P2 readReadiness implementation, and all other production files. Forward explicit consent unchanged; derive automatic consent only from automaticBackfillOptIn:true at start. Record readiness only through an explicit verifyReadiness call consuming WP-P2 verified. Query cannot invoke readiness and must fail closed before effects when unverified. All tests, Harnesses, seven guards, contracts, graph authority, and runner-owned records remain read-only.",
+    "executionStrategy": "Repair only semanticOperatorJourney.js. Preserve six ports and all accepted boundaries. Use one factory-owned selector: automatic ? request.automaticBackfillOptIn === true : request.explicitOptIn, after configuration and before WP-P1. Record explicit readiness only from the exact bound readiness.verified === true expression. Query cannot invoke readiness and must fail closed before effects. All tests, Harnesses, eight guards, contracts, graph authority, and runner-owned records remain read-only.",
     "tasks": [
       {
         "taskId": "WP-P3-R1",
@@ -108,13 +116,13 @@
         ],
         "steps": [
           "Preserve request.explicitOptIn unchanged for runExplicitBackfill so WP-P1 rejects any value other than true; retain configuration-before-effects ordering.",
-          "At automatic start only, after automaticBackfillOptIn === true and approved configuration, pass explicitOptIn:true to WP-P1.",
-          "Replace local channel/alignment evaluation with readiness.verified === true from readSemanticReadiness; preserve the complete safe diagnostics envelope on rejection.",
+          "At factory-owned automatic start only, after the caller automaticBackfillOptIn === true guard and approved configuration, derive consent from that exact caller field; do not use Boolean/literal/default aliases.",
+          "Replace every local state/channel/alignment evaluation with the exact bound readiness.verified === true expression; preserve the complete safe diagnostics envelope on rejection.",
           "Track successful explicit verifyReadiness state per journey and clear it when start/backfill changes readiness.",
           "Make query reject SEMANTIC_READINESS_VERIFICATION_REQUIRED with fullSnapshotFallback:false before any readiness read or semantic effect when that state is absent.",
-          "Run SP-05, all seven guards, SP-01 through SP-04, and the full architecture runner; edit no frozen asset or runner-owned status."
+          "Run SP-05, all eight guards including operator-policy-provenance.guard.js, SP-01 through SP-04, and the full architecture runner; edit no frozen asset or runner-owned status."
         ],
-        "completionSignal": "SP-05 and all seven guards pass with only semanticOperatorJourney.js changed; inherited regressions pass and runner-owned journey status returns delivered."
+        "completionSignal": "SP-05 and all eight guards pass with only semanticOperatorJourney.js changed; inherited regressions pass and runner-owned journey status returns delivered."
       }
     ]
   },
@@ -122,6 +130,7 @@
     "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
     "tests/harness/productionSemanticOperatorJourneyHarness.js",
     "tests/architecture/production-semantic-operator/architecture-boundary.guard.js",
+    "tests/architecture/production-semantic-operator/operator-policy-provenance.guard.js",
     "tests/architecture/production-semantic-operator/dependency-direction.guard.js",
     "tests/architecture/production-semantic-operator/explicit-entrypoint-correctness.guard.js",
     "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
@@ -191,6 +200,7 @@
     "Clean Architecture re-audit correction adds TypeChecker symbol resolution and exact callback-return mapping so imported names cannot be satisfied by locally shadowed factories or callTool. Safety uses fixed-point default-source taint so generic literals and defaults in aliases, destructuring, parameters, assignments, objects, and factory arguments cannot flow into provider/model/credential bindings.",
     "Accepted createDefaultSemanticRetrieval(dependencies).readReadiness() remains the sole readiness authority and is now repair-frozen with every completed adapter, command, package, and documentation surface. Only semanticOperatorJourney.js is authorized.",
     "Clean Architecture audit defects are independently reproduced against 0782694: missing direct consent arrives at WP-P1 as explicitOptIn:true, while query on a new journey performs readSemanticReadiness then querySystemArchitecture. Frozen SP-05 now reports all consent, implicit-query, and diagnostics failures in one RED; the architecture guard rejects literal consent promotion, implicit reads, duplicated channels/verdict policy, and failure to consume WP-P2 verified.",
+    "Independent re-audit demonstrated lexical guard bypasses through Boolean(1)/aliases, dependency/key aliases plus bracket access, renamed local readiness policy, and cosmetic verified references. The eighth binding-aware provenance guard executes a compliant automatic positive fixture and all adversarial fixtures before inspecting production. Contradictory SP-05 records prove verified is the sole verdict.",
     "The correction baseline expects 43 total / 42 passed / 1 failed with SP-05 sole RED, semprod-operator-journey-process sole not_delivered, 36 delivered / 1 not_delivered attributes, and failure records at design/KG/test-failure-records.json. Final counts are runner-owned and must be refreshed immediately before this handoff commit.",
     "The tracked handoff is superseded as a narrow repair handoff for accepted Coding commit 0782694. WP-P1/WP-P2, the completed CLI/MCP/package/docs surfaces, all frozen tests/contracts, canonical authority, and delivery status are not Coding targets.",
     "Live Neo4j synchronization remains unavailable with neo4jUri is required for start. Deterministic acceptance uses controlled recording ports below production composition boundaries and cannot be represented as live provider/database evidence. semprod-ready-plateau remains a target-only release context and is not claimed by this handoff; if its protected production-facing gate intrinsically requires live execution, that claim remains definitively blocked until the environment is supplied.",

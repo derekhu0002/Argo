@@ -6,7 +6,8 @@ const {
 
 async function main() {
   // GIVEN two fresh projects with equivalent approved external configuration that differ
-  // only by automatic-backfill opt-in, plus missing consent/configuration controls
+  // only by automatic-backfill opt-in, plus missing consent/configuration controls and
+  // contradictory WP-P2 readiness verdict/diagnostic records
   const operatorJourney = await runNewProjectSemanticOperatorJourney();
 
   // WHEN each project follows argo init -> canonical structural projection -> semantic
@@ -15,8 +16,8 @@ async function main() {
   assertNewProjectSemanticOperatorJourney(operatorJourney);
 
   // THEN rejected opt-ins have zero automatic/backfill/provider/database effects, errors
-  // remain actionable and redacted, readiness diagnostics remain exact, implicit query effects
-  // are absent, and every path preserves the canonical full snapshot
+  // remain actionable and redacted, WP-P2 verified remains the sole readiness verdict,
+  // diagnostics remain exact, implicit effects are absent, and snapshots remain canonical
   assertRejectedAutomaticBackfillControls(operatorJourney);
 }
 

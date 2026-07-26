@@ -27,12 +27,23 @@ const APPROVED_CONFIGURATION = deepFreeze({
 });
 const SECRET_CANARY = 'SP05-SECRET-MUST-NOT-LEAK';
 const UNSAFE_SOURCE_CANARY = 'SP05-UNSAFE-SOURCE-MUST-NOT-LEAK';
-const DIAGNOSTIC_READINESS = deepFreeze({
-  state: 'SemanticIndexPending',
+const ALIGNED_BUT_UNVERIFIED_READINESS = deepFreeze({
+  state: 'Aligned',
   verified: false,
   canonicalVersion: 'canonical:fresh-project-v1',
   contentVersion: 'content:partial-v1',
   indexVersion: 'index:stale-v0',
+  completedChannels: ['Element'],
+  missingChannels: ['ArchitectureRelationship', 'View'],
+  mismatchedChannels: ['View'],
+  fullSnapshotFallback: false,
+});
+const NON_ALIGNED_BUT_VERIFIED_READINESS = deepFreeze({
+  state: 'SemanticIndexPending',
+  verified: true,
+  canonicalVersion: 'canonical:verdict-authority-v2',
+  contentVersion: 'content:verdict-authority-v2',
+  indexVersion: 'index:verdict-authority-v2',
   completedChannels: ['Element'],
   missingChannels: ['ArchitectureRelationship', 'View'],
   mismatchedChannels: ['View'],
@@ -100,6 +111,10 @@ async function runNewProjectSemanticOperatorJourney() {
     createJourney,
     runCommand,
   });
+  const verifiedContradiction = await runVerifiedContradictionJourney({
+    createJourney,
+    runCommand,
+  });
 
   const rejectedOptIns = [];
   for (const configurationCase of ['missing', 'unsafe', 'unapproved']) {
@@ -116,6 +131,7 @@ async function runNewProjectSemanticOperatorJourney() {
     recovery,
     missingConsent,
     readinessDiagnostics,
+    verifiedContradiction,
     rejectedOptIns,
     canonicalBefore,
     canonicalAfter: fs.readFileSync(canonicalPath, 'utf8'),
@@ -271,7 +287,7 @@ async function runMissingConsentControls({ createJourney, runCommand }) {
 async function runReadinessDiagnosticsJourney({ createJourney, runCommand }) {
   const fixture = createRecordingComposition({
     configurationCase: 'approved',
-    postBackfillReadiness: DIAGNOSTIC_READINESS,
+    postBackfillReadiness: ALIGNED_BUT_UNVERIFIED_READINESS,
   });
   const journey = createJourney(fixture.dependencies);
   await runCommand({
@@ -289,8 +305,41 @@ async function runReadinessDiagnosticsJourney({ createJourney, runCommand }) {
     journey,
   }));
   return deepFreeze({
-    expected: DIAGNOSTIC_READINESS,
+    expected: ALIGNED_BUT_UNVERIFIED_READINESS,
     readiness,
+    observations: fixture.snapshot(),
+  });
+}
+
+async function runVerifiedContradictionJourney({ createJourney, runCommand }) {
+  const fixture = createRecordingComposition({
+    configurationCase: 'approved',
+    postBackfillReadiness: NON_ALIGNED_BUT_VERIFIED_READINESS,
+  });
+  const journey = createJourney(fixture.dependencies);
+  await runCommand({
+    command: 'init',
+    options: { automaticBackfillOptIn: false },
+    journey,
+  });
+  await runCommand({
+    command: 'backfill',
+    options: { explicitOptIn: true },
+    journey,
+  });
+  const readiness = await captureBlocked(() => runCommand({
+    command: 'readiness',
+    journey,
+  }));
+  const query = await captureBlocked(() => runCommand({
+    command: 'query',
+    options: semanticQuery(),
+    journey,
+  }));
+  return deepFreeze({
+    expected: NON_ALIGNED_BUT_VERIFIED_READINESS,
+    readiness,
+    query,
     observations: fixture.snapshot(),
   });
 }
@@ -408,7 +457,7 @@ function createRecordingComposition({
         };
       }
       record('semantic-query-attempt');
-      if (readiness.state !== 'Aligned') {
+      if (readiness.verified !== true) {
         const error = new Error('SEMANTIC_INDEX_NOT_ALIGNED');
         error.category = 'SEMANTIC_INDEX_NOT_ALIGNED';
         error.state = readiness.state;
@@ -536,6 +585,7 @@ function assertNewProjectSemanticOperatorJourney(result) {
   );
   assertMissingConsentControls(result.missingConsent);
   assertReadinessDiagnostics(result.readinessDiagnostics);
+  assertVerifiedSoleAuthorization(result.verifiedContradiction);
 }
 
 function assertConsentAndReadinessControls(result) {
@@ -563,6 +613,9 @@ function assertConsentAndReadinessControls(result) {
       'SP05_OPTED_IN_ALIGNED_UNVERIFIED',
     )],
     ['readiness-diagnostics', () => assertReadinessDiagnostics(result.readinessDiagnostics)],
+    ['verified-sole-authorization', () => assertVerifiedSoleAuthorization(
+      result.verifiedContradiction,
+    )],
   ]) {
     try {
       assertion();
@@ -698,6 +751,34 @@ function assertReadinessDiagnostics(result) {
     result.observations.events.filter(event => event.kind === 'semantic-query-attempt').length,
     0,
     'SP05_READINESS_DIAGNOSTIC_QUERY_EFFECT',
+  );
+}
+
+function assertVerifiedSoleAuthorization(result) {
+  assert.deepStrictEqual(
+    result.readiness,
+    result.expected,
+    'SP05_WP2_VERIFIED_TRUE_DIAGNOSTICS_CHANGED',
+  );
+  assert.strictEqual(
+    result.query.status,
+    'passed',
+    'SP05_WP2_VERIFIED_TRUE_NOT_AUTHORIZED',
+  );
+  assert.strictEqual(
+    result.query.readinessVerified,
+    true,
+    'SP05_WP2_VERIFIED_TRUE_QUERY_EVIDENCE_MISSING',
+  );
+  assert.strictEqual(
+    result.observations.events.filter(event => event.kind === 'semantic-readiness-read').length,
+    1,
+    'SP05_WP2_VERIFIED_TRUE_READ_COUNT_CHANGED',
+  );
+  assert.strictEqual(
+    result.observations.events.filter(event => event.kind === 'semantic-query-attempt').length,
+    1,
+    'SP05_WP2_VERIFIED_TRUE_QUERY_COUNT_CHANGED',
   );
 }
 
