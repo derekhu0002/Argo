@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const crypto = require('node:crypto');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const LEGAL_QUERY_PURPOSES = new Set([
@@ -113,8 +114,14 @@ const {
   createProductionGraphRagRuntime,
 } = require('./graph-rag/productionGraphRagRuntime.js');
 const {
+  resolveExternalProductionConfig,
+} = require('./graph-rag/externalProductionConfig.js');
+const {
   resolveApprovedLiveConfiguration,
 } = require('./graph-rag/liveEmbeddingProviderConfig.js');
+const {
+  createLiveEmbeddingProviderClient,
+} = require('./graph-rag/liveEmbeddingProviderClient.js');
 const {
   createMutationEmbeddingVectorLifecycle,
 } = require('./graph-rag/mutationEmbeddingVectorLifecycle.js');
@@ -122,6 +129,7 @@ const {
   DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
   recoverNeo4jSyncIfNeeded,
   syncArchitectureToNeo4j,
+  verifyArchitectureSync,
 } = require('./neo4j-system-architecture-store.js');
 
 const HANDLED_MUTATION_TYPES = new Set([
@@ -1604,12 +1612,12 @@ function getSystemArchitectureResult(payload) {
 
 async function callTool(name, args = {}, dependencies = undefined) {
   if (name === 'backfillSystemArchitectureSemanticProjection') {
-    const runtime = dependencies && (
+    const runtime = (dependencies && (
       dependencies.productionGraphRagRuntime
       || (dependencies.productionGraphRagDependencies
         ? createProductionGraphRagRuntime(dependencies.productionGraphRagDependencies)
         : undefined)
-    );
+    )) || await createDefaultProductionSemanticRuntime();
     if (!runtime || typeof runtime.runSemanticBackfill !== 'function') {
       throw new TypeError('productionGraphRagRuntime.runSemanticBackfill is required');
     }
@@ -1750,6 +1758,161 @@ async function callTool(name, args = {}, dependencies = undefined) {
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+async function createDefaultProductionSemanticRuntime() {
+  const workspaceRoot = resolveWorkspaceRoot();
+  const configuration = await resolveDefaultSemanticConfiguration();
+  const neo4j = require('neo4j-driver');
+  const driver = neo4j.driver(
+    configuration.neo4jDatabaseUrl,
+    neo4j.auth.basic(
+      configuration.neo4jDatabaseUsername,
+      configuration.neo4jDatabasePassword,
+    ),
+  );
+  const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
+  const canonicalDocument = readJson(graphPath.absolutePath, graphPath.relativePath);
+  const canonicalVersion = deriveSemanticCanonicalVersion(canonicalDocument);
+  const canonicalSnapshot = Object.freeze({
+    ...canonicalDocument,
+    version: canonicalVersion,
+  });
+  const qualification = Object.freeze({
+    approvedByHuman: true,
+    provider: configuration.embeddingProvider,
+    model: configuration.embeddingModel,
+    version: configuration.embeddingModelVersion,
+    dimensions: configuration.embeddingDimensions,
+    source: 'explicit-human-approval',
+  });
+  const providerClient = createLiveEmbeddingProviderClient({
+    configuration,
+    transport: Object.freeze({
+      request(url, options) {
+        if (typeof global.fetch !== 'function') {
+          const error = new Error('LIVE_PROVIDER_TRANSPORT_UNAVAILABLE');
+          error.category = 'LIVE_PROVIDER_TRANSPORT_UNAVAILABLE';
+          throw error;
+        }
+        return global.fetch(url, options);
+      },
+    }),
+  });
+
+  return createProductionGraphRagRuntime({
+    canonicalGraph: canonicalSnapshot,
+    neo4jRetrievalBoundary: Object.freeze({
+      async retrieve() {
+        const error = new Error('SEMANTIC_RETRIEVAL_REQUEST_REQUIRED');
+        error.category = 'SEMANTIC_RETRIEVAL_REQUEST_REQUIRED';
+        throw error;
+      },
+    }),
+    embeddingQualification: qualification,
+    semanticPersistence: Object.freeze({
+      canonicalSource: Object.freeze({
+        async readSnapshot() {
+          return canonicalSnapshot;
+        },
+      }),
+      structuralProjection: Object.freeze({
+        async requireComplete() {
+          await verifyArchitectureSync({
+            architecturePath: graphPath.relativePath,
+            document: canonicalDocument,
+            driver,
+            database: configuration.neo4jDatabase,
+          });
+          return Object.freeze({
+            status: 'complete',
+            canonicalVersion,
+          });
+        },
+      }),
+      embeddingProvider: Object.freeze({
+        async embedBatch(batch) {
+          const vectors = [];
+          const failures = [];
+          for (const record of batch) {
+            try {
+              vectors.push(Object.freeze({
+                canonicalIdentity: record.canonicalIdentity,
+                vector: Object.freeze(await providerClient.embed(JSON.stringify(record.canonicalObject))),
+              }));
+            } catch (error) {
+              failures.push(Object.freeze({
+                canonicalIdentity: record.canonicalIdentity,
+                category: error && error.category ? error.category : 'LIVE_PROVIDER_REQUEST_FAILED',
+              }));
+            }
+          }
+          return Object.freeze({
+            vectors: Object.freeze(vectors),
+            failures: Object.freeze(failures),
+          });
+        },
+      }),
+      neo4jDriver: driver,
+      canonicalAuthority: Object.freeze({
+        assertProjectionOnly() {
+          return Object.freeze({
+            authority: 'canonical-json',
+            projectionRole: 'subordinate-projection-index',
+          });
+        },
+      }),
+      configuration,
+      qualification,
+      batchSize: 100,
+    }),
+  });
+}
+
+async function resolveDefaultSemanticConfiguration() {
+  let external;
+  try {
+    external = resolveExternalProductionConfig({
+      neo4jUri: process.env.ARGO_NEO4J_DATABASE_URL,
+      neo4jUsername: process.env.ARGO_NEO4J_DATABASE_USERNAME,
+      neo4jPassword: process.env.ARGO_NEO4J_DATABASE_PASSWORD,
+      embeddingCredential: process.env.QWEN_KEY,
+      neo4jDatabase: process.env.ARGO_NEO4J_DATABASE,
+    }, {
+      operation: 'semantic-backfill',
+      sourceKeys: new Map([
+        ['neo4jUri', 'ARGO_NEO4J_DATABASE_URL'],
+        ['neo4jUsername', 'ARGO_NEO4J_DATABASE_USERNAME'],
+        ['neo4jPassword', 'ARGO_NEO4J_DATABASE_PASSWORD'],
+        ['embeddingCredential', 'QWEN_KEY'],
+      ]),
+    });
+  } catch (error) {
+    if (error && error.category === 'EXTERNAL_CREDENTIALS_REQUIRED') {
+      const missing = new Error('EXTERNAL_CREDENTIALS_REQUIRED');
+      missing.category = 'EXTERNAL_CREDENTIALS_REQUIRED';
+      missing.field = error.field;
+      throw missing;
+    }
+    throw error;
+  }
+  return Object.freeze({
+    embeddingBaseUrl: W31_APPROVED_PROFILE.baseUrl,
+    embeddingModel: W31_APPROVED_PROFILE.model,
+    embeddingProvider: W31_APPROVED_PROFILE.provider,
+    embeddingModelVersion: W31_APPROVED_PROFILE.version,
+    embeddingDimensions: W31_APPROVED_PROFILE.dimensions,
+    neo4jDatabaseUrl: external.neo4jUri,
+    neo4jDatabaseUsername: external.neo4jUsername,
+    neo4jDatabasePassword: external.neo4jPassword,
+    qwenKey: external.embeddingCredential,
+    embeddingCredential: external.embeddingCredential,
+    ...(external.neo4jDatabase === undefined ? {} : { neo4jDatabase: external.neo4jDatabase }),
+  });
+}
+
+function deriveSemanticCanonicalVersion(document) {
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify(document)).digest('hex')}`;
 }
 
 function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
