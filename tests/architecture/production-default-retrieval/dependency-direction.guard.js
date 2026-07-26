@@ -7,6 +7,7 @@ const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json')
 const allowedTargets = new Set([
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
   '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ]);
 

@@ -3,11 +3,13 @@ const {
   assertDefaultVectorRetrieval,
   assertFullSnapshotCompatibility,
   assertLegacyControlWordProductionGate,
+  assertProductionQueryCredentialResolution,
   assertZeroResultChannels,
   runDefaultMcpNeo4jVectorRetrieval,
   runCredentialSourceMatrix,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,
+  runProductionQueryCredentialResolution,
   runZeroResultDefaultMcpRetrieval,
 } = require('../../harness/productionDefaultRetrievalHarness.js');
 
@@ -18,6 +20,7 @@ async function main() {
   const alignedRetrieval = await runDefaultMcpNeo4jVectorRetrieval();
   const zeroResultRetrieval = await runZeroResultDefaultMcpRetrieval();
   const legacyControlWordGate = await runLegacyControlWordProductionGate();
+  const productionQueryCredentials = await runProductionQueryCredentialResolution();
 
   // WHEN typed semantic requests cross the shipped default MCP path without a
   // caller- or Harness-injected semantic retrieval boundary
@@ -25,6 +28,7 @@ async function main() {
   assertDefaultVectorRetrieval(alignedRetrieval);
   assertZeroResultChannels(zeroResultRetrieval);
   assertLegacyControlWordProductionGate(legacyControlWordGate);
+  assertProductionQueryCredentialResolution(productionQueryCredentials);
 
   // THEN graph-tidy still bypasses embedding and retrieval for an exact canonical snapshot
   const compatibilityControls = await runFullSnapshotCompatibilityControls();

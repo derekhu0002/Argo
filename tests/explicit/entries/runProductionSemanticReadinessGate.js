@@ -1,5 +1,7 @@
 const {
+  assertAnchoredGraphTidyCompatibility,
   assertFullSnapshotCompatibility,
+  runAnchoredGraphTidyCompatibilityControl,
   assertReadinessMatrix,
   runFullSnapshotCompatibilityControls,
   runReadinessMatrix,
@@ -18,6 +20,8 @@ async function main() {
   // THEN no-argument and graph-tidy requests remain exact full-snapshot bypasses
   const compatibilityControls = await runFullSnapshotCompatibilityControls();
   assertFullSnapshotCompatibility(compatibilityControls);
+  const anchoredGraphTidy = await runAnchoredGraphTidyCompatibilityControl();
+  assertAnchoredGraphTidyCompatibility(anchoredGraphTidy);
 }
 
 main().catch(error => {

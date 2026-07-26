@@ -310,3 +310,9 @@
 - A second runtime audit showed that correct argument position alone was insufficient: no-probe calls still passed `undefined` at wrapper argument four, leaving sixteen legacy deterministic compatibility testcases dependent on the prohibited production text router.
 - Every explicit compatibility query now injects a test-only boundary at wrapper argument four: the caller's probe when supplied, otherwise a Harness-owned boundary over the deterministic Graph RAG runtime. No-argument full snapshots remain uninjected, and the separate WP-P2 production Harness still calls the inner server with no dependencies.
 - Both correctness guards behaviorally execute a no-probe purpose query and require exactly one Harness-owned boundary invocation. This counter proves wrapper forwarding and cannot pass through production content routing alone.
+
+## 2026-07-27 WP-P2 final delivery RED correction
+
+- Final IntentionDesign audit found two production defects after the semantic router repair: `defaultSemanticRetrieval.js` supplies `requiredOptIns: []`, which the trusted live configuration contract rejects, and graph-tidy bypass remains conditional on having no anchors.
+- The source contract now freezes a proposed `production-semantic-query` use case: all nine approved values and issued direct process/protected-file traces are mandatory, neither E2E opt-in is required or attributed, and every existing test/default/legacy/fallback/conflict/file/trace rejection remains unchanged.
+- SP-03 behaviorally requires realistic source resolution to proceed in order through readiness, provider, and Neo4j vector boundaries. SP-04 requires anchored graph-tidy to return the exact full snapshot with zero credential, readiness, provider, or vector operations.

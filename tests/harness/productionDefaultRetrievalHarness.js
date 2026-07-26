@@ -6,6 +6,7 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..');
 const canonicalPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const defaultRetrievalPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'defaultSemanticRetrieval.js');
+const liveConfigurationPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
 const systemArchitectureMcpPath = path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js');
 const CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
 const CHANNEL_KEYS = Object.freeze({
@@ -144,6 +145,22 @@ const RAW_EVIDENCE_CONTRACT = deepFreeze({
     explicitAnchors: ['grag-seed-retrieval'],
     absentCredentialCategory: 'APPROVED_SECRET_REQUIRED',
     deterministicRuntimeBypassForbidden: true,
+  },
+  productionQueryCredentialContract: {
+    useCase: 'production-semantic-query',
+    requiredOptIns: [],
+    prohibitedOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+    requiredBoundaryOrder: [
+      'credential-source-resolution',
+      'semantic-readiness-read',
+      'provider-request',
+      'semantic-vector-window-query',
+    ],
+  },
+  graphTidyBypass: {
+    anchorsDoNotChangeBypass: true,
+    downstreamOperationCount: 0,
+    exactCanonicalSnapshot: true,
   },
   closure: {
     policyId: 'w5.implementation-design.v1',
@@ -338,6 +355,92 @@ async function runFullSnapshotCompatibilityControls() {
     },
   });
   return Object.freeze({ before, noArgument, graphTidy });
+}
+
+async function runProductionQueryCredentialResolution() {
+  const observations = createRawProductionObservations({
+    sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+    readiness: alignedReadiness(),
+    candidatesByChannel: defaultCandidates(),
+  });
+  const {
+    withApprovedLiveConfigurationTestComposition,
+  } = require(liveConfigurationPath);
+  let configurationEvidence;
+  let error;
+  try {
+    configurationEvidence = await withApprovedLiveConfigurationTestComposition({
+      sourceBehavior: observations.sourceBehavior,
+      adapters: observations.sourceAdapters,
+    }, resolver => resolver({
+      repositoryRoot: repoRoot,
+      useCase: 'production-semantic-query',
+    }));
+    await observations.neo4jDriver.execute({
+      kind: 'semantic-readiness-read',
+      cypher: 'RETURN $projection AS readiness',
+      parameters: { projection: 'production-semantic-query' },
+    });
+    await observations.transport.request(configurationEvidence.embeddingBaseUrl, {
+      method: 'POST',
+    });
+    await observations.neo4jDriver.execute({
+      kind: 'semantic-vector-window-query',
+      channel: 'Element',
+      cypher: VECTOR_QUERY_CYPHER,
+      parameters: {
+        channel: 'Element',
+        indexName: VECTOR_INDEX_NAMES.Element,
+        offset: 0,
+        windowSize: 2,
+        topK: 2,
+        vector: Object.freeze(Array.from({ length: 1024 }, () => 0.25)),
+      },
+    });
+  } catch (caught) {
+    error = caught;
+  }
+  return Object.freeze({
+    configurationEvidence,
+    error,
+    operationLedger: observations.operationLedger(),
+    readinessReads: observations.readinessReads(),
+    providerRequests: observations.providerRequests(),
+    vectorQueries: observations.vectorQueries(),
+  });
+}
+
+async function runAnchoredGraphTidyCompatibilityControl() {
+  const before = canonicalSnapshot();
+  const observations = createRawProductionObservations({
+    sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+    readiness: alignedReadiness(),
+    candidatesByChannel: defaultCandidates(),
+  });
+  const boundary = loadDefaultRetrievalBoundary('SP04_ANCHORED_GRAPH_TIDY_BOUNDARY_MISSING');
+  let result;
+  await boundary.withDefaultSemanticRetrievalTestComposition({
+    sourceBehavior: observations.sourceBehavior,
+    sourceAdapters: observations.sourceAdapters,
+    transport: observations.transport,
+    neo4jDriver: observations.neo4jDriver,
+  }, async () => {
+    result = await callDefaultGetSystemArchitecture({
+      query: {
+        purpose: 'graph-tidy',
+        intent: 'Read the complete canonical graph while preserving explicit anchors',
+        anchors: ['grag-purpose-closure'],
+      },
+    });
+  });
+  return Object.freeze({
+    before,
+    result,
+    operationLedger: observations.operationLedger(),
+    readinessReads: observations.readinessReads(),
+    providerRequests: observations.providerRequests(),
+    vectorQueries: observations.vectorQueries(),
+  });
 }
 
 async function runDefaultSemanticScenario({
@@ -633,6 +736,63 @@ function assertDefaultVectorRetrieval(observation) {
   assertReadinessBeforeProviderAndVector(observation, 'SP03');
   assertRawPaginationCompleteness(observation);
   assertExactClosureAndVersions(observation);
+}
+
+function assertProductionQueryCredentialResolution(observation) {
+  assert(
+    !observation.error,
+    `SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: ${
+      observation.error && (observation.error.category || observation.error.message)
+    }`,
+  );
+  assert(observation.configurationEvidence, 'SP03_PRODUCTION_QUERY_CONFIGURATION_EVIDENCE_MISSING');
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(
+      observation.configurationEvidence.attribution || {},
+      'ARGO_LIVE_PROVIDER_E2E',
+    ),
+    false,
+    'SP03_PRODUCTION_QUERY_E2E_OPT_IN_PROHIBITED',
+  );
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(
+      observation.configurationEvidence.attribution || {},
+      'ARGO_W31_LIVE_MUTATION_VECTOR_E2E',
+    ),
+    false,
+    'SP03_PRODUCTION_QUERY_MUTATION_OPT_IN_PROHIBITED',
+  );
+  assert.strictEqual(observation.readinessReads.length, 1, 'SP03_PRODUCTION_QUERY_READINESS_NOT_REACHED');
+  assert.strictEqual(observation.providerRequests.length, 1, 'SP03_PRODUCTION_QUERY_PROVIDER_NOT_REACHED');
+  assert.strictEqual(observation.vectorQueries.length, 1, 'SP03_PRODUCTION_QUERY_NEO4J_VECTOR_NOT_REACHED');
+  assert.deepStrictEqual(
+    observation.operationLedger.map(event => event.kind).filter((kind, index, all) => (
+      kind !== 'credential-source-resolution' || index === all.lastIndexOf(kind)
+    )),
+    [
+      'credential-source-resolution',
+      'semantic-readiness-read',
+      'provider-request',
+      'semantic-vector-window-query',
+    ],
+    'SP03_PRODUCTION_QUERY_BOUNDARY_ORDER_MISMATCH',
+  );
+}
+
+function assertAnchoredGraphTidyCompatibility(observation) {
+  assert.strictEqual(
+    observation.operationLedger.length,
+    0,
+    'SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS',
+  );
+  assert.strictEqual(observation.readinessReads.length, 0, 'SP04_ANCHORED_GRAPH_TIDY_INVOKED_READINESS');
+  assert.strictEqual(observation.providerRequests.length, 0, 'SP04_ANCHORED_GRAPH_TIDY_INVOKED_PROVIDER');
+  assert.strictEqual(observation.vectorQueries.length, 0, 'SP04_ANCHORED_GRAPH_TIDY_INVOKED_VECTOR');
+  assert.deepStrictEqual(
+    observation.result,
+    { status: 'passed', graphPath: 'design/KG/SystemArchitecture.json', document: observation.before },
+    'SP04_ANCHORED_GRAPH_TIDY_NOT_FULL_SNAPSHOT',
+  );
 }
 
 function assertLegacyControlWordProductionGate(observation) {
@@ -1243,15 +1403,19 @@ function deepFreeze(value) {
 }
 
 module.exports = {
+  assertAnchoredGraphTidyCompatibility,
   assertCredentialSourceMatrix,
   assertDefaultVectorRetrieval,
   assertFullSnapshotCompatibility,
   assertLegacyControlWordProductionGate,
+  assertProductionQueryCredentialResolution,
   assertReadinessMatrix,
   assertZeroResultChannels,
   inspectFrozenRawEvidenceContract,
   runRawEvidenceAssertionSelfTests,
+  runAnchoredGraphTidyCompatibilityControl,
   runCredentialSourceMatrix,
+  runProductionQueryCredentialResolution,
   runDefaultMcpNeo4jVectorRetrieval,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,

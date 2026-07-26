@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T01:08:00+08:00",
+  "generatedAt": "2026-07-27T01:28:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P2 coding-delivery audit correction after commit b13a2e8df431ccb7f16e10a9d4a8c142c19ff7cd. The production retrieval module and deterministic completion are accepted and frozen for this repair; CodingAndReparing is authorized only to remove content-, control-word-, lifecycle-, and anchor-based routing from the uninjected default MCP semantic path in systemarchitecture-mcp-server.js. Every ordinary semantic query must enter approved external credential resolution, persistent readiness, qualified embedding, and persistent vector retrieval. Only omitted-query and graph-tidy calls retain full-snapshot behavior. Every explicit legacy compatibility query traverses argo-mcp-server.js with a test-only dependency at wrapper argument four: its supplied probe or a Harness-owned deterministic boundary, forwarded to systemarchitecture-mcp-server.js argument three. Behavioral guards require an actual no-probe boundary invocation. WP-P1, SP-05/WP-P3, production cleanup, CLI/docs/release work, accepted intent, argo-mcp-server.js production changes, and manual deliveryStatus edits remain excluded.",
+  "summary": "WP-P2 final-delivery RED correction after production commit 1ee9c370809e0334efdc40282f304e0db7294b36. CodingAndReparing is authorized to repair exactly two defects: define a trusted non-E2E production-semantic-query credential use case shared by liveEmbeddingProviderConfig.js and defaultSemanticRetrieval.js, and make every graph-tidy request in systemarchitecture-mcp-server.js bypass credentials/readiness/provider/vector work regardless of anchors. The source contract requires all approved profile, Neo4j, and provider-secret values from direct process or protected canonical-file sources without test/default, legacy, fallback, unsafe, conflicting, untrusted, or E2E-opt-in credentials. Existing WP-P1 E2E opt-in/security behavior, wrapper-arg4 compatibility injection, no-argument snapshots, persistent retrieval/readiness/closure, accepted intent, SP-05/WP-P3, production cleanup, CLI/docs/release work, and argo-mcp-server.js remain frozen.",
   "implementationContracts": [
     "design/KG/SystemArchitecture.json",
     ".argo/temp/IntentToImplementationHandoff.json",
@@ -20,7 +20,7 @@
       "observationPoint": "Prohibited sources reject before readiness/provider/vector effects; the approved path directly reads and attributes every required key before readiness, performs one exact qwen3.7-text-embedding 1024-dimensional request, and sends that raw vector unchanged to exact argo_production_semantic_element_vector, argo_production_semantic_relationship_vector, and argo_production_semantic_view_vector parameterized db.index.vector.queryNodes calls. Expanding top-k follows correlated raw continuation to independent exhaustion, while an all-zero result still proves readiness, embedding, and one exhausted sequence per channel. Closure binds exact seed IDs to w5.implementation-design.v1 and declared ArchiMate direction, returns endpoint objects/versions and the complete selected View metadata, viewpoint, parent, ordered versioned members and relationship endpoints while excluding overlap cascade, provides unique first-inclusion provenance for every returned object, preserves canonical/content/index versions, and keeps graph-tidy an exact snapshot.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-      "failureReason": "SP03_DEFAULT_VECTOR_RETRIEVAL_BOUNDARY_MISSING: create production defaultSemanticRetrieval.js"
+      "failureReason": "SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: LIVE_PROVIDER_E2E_OPT_IN_REQUIRED"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
@@ -29,7 +29,7 @@
       "observationPoint": "One total ledger proves approved credential reads precede readiness, readiness precedes provider, and provider precedes vector windows. Every non-aligned request rejects at the readiness event with SEMANTIC_INDEX_NOT_ALIGNED, exact fixture state, canonical/content/index versions, exact missing and mismatched channels, and fullSnapshotFallback:false; only complete alignment continues; no-argument and graph-tidy remain exact snapshots.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js",
-      "failureReason": "SP04_DEFAULT_READINESS_BOUNDARY_MISSING: create production defaultSemanticRetrieval.js"
+      "failureReason": "SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS"
     }
   ],
   "criticalNonExplicitTests": [
@@ -70,55 +70,67 @@
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
+      "failureSignal": "A realistic direct approved production-query source is rejected because requiredOptIns cannot represent a trusted non-E2E operation.",
+      "nextAction": "Add the explicit production-semantic-query use case to the trusted source-adapter contract. It requires the nine approved configuration values and full issued trace validation but no ARGO_LIVE_PROVIDER_E2E or ARGO_W31_LIVE_MUTATION_VECTOR_E2E opt-in. Preserve all existing E2E required-opt-in paths and every rejection for test/default, legacy, fallback, unsafe file, conflict, unknown secret, forged/mutable/invalid trace, and prohibited runtime fields."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
+      "failureSignal": "createProductionComposition passes requiredOptIns:[], which liveEmbeddingProviderConfig rejects as SOURCE_ADAPTER_UNTRUSTED before readiness.",
+      "nextAction": "Request the trusted production-semantic-query source-adapter use case instead of passing an empty opt-in list. Preserve the deep retrieval module, raw test composition, approved-source rejection matrix, readiness ordering, provider transport, Neo4j vector retrieval, closure, and version/provenance behavior."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE: an uninjected semantic query containing threshold-all/semantic-seed control words and explicit anchors succeeds through deterministic runtime routing despite an absent approved external secret.",
-      "nextAction": "Remove isDeterministicSemanticControlRequest and every content-, control-word-, lifecycle-, subject-, or anchor-based branch from createDefaultSemanticRetrievalBoundary. With no dependencies, every explicit semantic query except graph-tidy must invoke createDefaultSemanticRetrieval(...).retrieve(request) and therefore fail through production credential/readiness gates when external evidence is absent. Preserve only no-argument and graph-tidy full-snapshot compatibility. Frozen legacy tests now explicitly supply either their probe or the Harness-owned deterministic boundary through argo-mcp-server.js wrapper argument four, forwarded to inner argument three; no production compatibility routing is needed. Do not modify argo-mcp-server.js, defaultSemanticRetrieval.js, productionGraphRagRuntime.js, accepted intent, WP-P1, or WP-P3."
+      "failureSignal": "Anchored graph-tidy requests enter semantic credential/readiness/retrieval instead of returning the exact canonical snapshot with zero operations.",
+      "nextAction": "Make purpose=graph-tidy an unconditional full-snapshot bypass independent of anchors. Preserve query validation, no-argument snapshots, wrapper-arg4 deterministic test dependencies, ordinary semantic production gating, and all non-graph-tidy behavior."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "WP-P2 post-audit routing correction only. The deep production retrieval and completion implementation from b13a2e8 is accepted and frozen. First remove all deterministic content/anchor routing from the uninjected MCP default semantic path; then prove legacy control words and anchors cannot bypass absent-credential/readiness gates while every explicit legacy compatibility query uses its probe or the Harness-owned deterministic boundary through wrapper argument four forwarded to inner argument three. Finally rerun frozen WP-P2, compatibility, guard, and full-runner evidence. Only systemarchitecture-mcp-server.js is authorized production scope; argo-mcp-server.js, defaultSemanticRetrieval.js, productionGraphRagRuntime.js, tests, Harnesses, contracts, WP-P1, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, and accepted intent are frozen. Only runArchitectureTests may refresh deliveryStatus and failure records; editing, reverting, or fabricating runner-owned deliveryStatus by hand is forbidden.",
+    "executionStrategy": "WP-P2 final-delivery repair only. First add the trusted production-semantic-query credential use case without E2E opt-ins while preserving every WP-P1 source/trace/ACL/opt-in rejection; then have defaultSemanticRetrieval request that use case; then make graph-tidy an unconditional anchored-or-unanchored snapshot bypass; finally run frozen WP-P2, compatibility, security guards, and the full runner. Only liveEmbeddingProviderConfig.js, defaultSemanticRetrieval.js, and systemarchitecture-mcp-server.js are authorized production scope. Tests, Harnesses, contracts, argo-mcp-server.js, productionGraphRagRuntime.js, WP-P1 behavior, SP-05/WP-P3, cleanup, CLI/docs/release artifacts, and accepted intent are frozen. Only runArchitectureTests may refresh deliveryStatus and failure records; editing, reverting, or fabricating runner-owned deliveryStatus by hand is forbidden.",
     "tasks": [
       {
-        "taskId": "WP-P2-R1",
-        "title": "Remove default semantic deterministic routing bypass",
-        "objective": "Ensure every uninjected ordinary semantic request enters the production credential, readiness, embedding, and vector boundary regardless of request words, subjects, lifecycle language, or anchors.",
+        "taskId": "WP-P2-R3",
+        "title": "Add trusted production-query credential use case",
+        "objective": "Allow realistic approved external production-query configuration to pass trusted source resolution without E2E-only opt-ins.",
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-          "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
+          "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
+          ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"
         ],
         "steps": [
-          "Delete isDeterministicSemanticControlRequest and remove every no-dependency branch that selects deterministicRuntime from request content, anchors, subject, lifecycle language, or legacy control words.",
-          "Route every validated non-graph-tidy semantic query with no dependencies directly to createDefaultSemanticRetrieval({ canonicalGraph }).retrieve(request).",
-          "Retain semanticRetrievalBoundary or productionGraphRagRuntime overrides only when explicitly supplied through argo-mcp-server.js wrapper argument four and forwarded to the inner server's argument three; frozen deterministic tests now always supply a probe or Harness-owned boundary.",
-          "Preserve no-argument full-snapshot behavior, graph-tidy full-snapshot bypass, semantic error evidence, and the completed defaultSemanticRetrieval implementation unchanged."
+          "Extend the issued source-adapter resolver options with the exact production-semantic-query use case; reject unknown use cases and invalid option combinations.",
+          "For production-semantic-query require all nine approved configuration keys, direct issued traces, canonical protected file rules, approved profile equality, and no E2E opt-in.",
+          "Preserve ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E requirements for their existing operations and preserve every prohibited source/trace/file/runtime-field rejection.",
+          "Replace defaultSemanticRetrieval's requiredOptIns:[] call with the explicit production-semantic-query use case.",
+          "Pass the frozen realistic source regression through credential resolution, one readiness operation, one provider operation, and one Neo4j vector operation in order."
         ],
-        "completionSignal": "The frozen legacy-control-word/anchor fixture fails at APPROVED_SECRET_REQUIRED with zero readiness/provider/vector operations instead of returning deterministic seeds; all existing SP-03/SP-04 production semantics remain green."
+        "completionSignal": "SP-03 passes the realistic valid external-source progression without E2E attribution while all seven prohibited source fixtures and the original no-credential control-word probe still reject correctly."
       },
       {
-        "taskId": "WP-P2-R2",
-        "title": "Verify corrected production and compatibility boundaries",
-        "objective": "Prove the narrow routing repair without regression or scope expansion.",
+        "taskId": "WP-P2-R4",
+        "title": "Make graph-tidy bypass independent of anchors",
+        "objective": "Return the exact canonical snapshot for every graph-tidy request without semantic side effects.",
         "dependsOn": [
-          "WP-P2-R1"
+          "WP-P2-R3"
         ],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
           "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
         ],
         "targetPaths": [
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Run both frozen WP-P2 entries, all four production-default-retrieval guards, and the intent-query compatibility guard that behaviorally proves no-probe Harness-boundary invocation through wrapper-fourth to inner-third forwarding.",
-          "Run no-argument, graph-tidy, WP-P1 backfill, and persistent-projection compatibility controls.",
-          "Run full argo.runArchitectureTests and require 42/42, empty failure records, restored runner-owned deliveryStatus, and no delivered-to-not_delivered regression.",
-          "Validate this implementation-to-coding correction handoff and report the repair commit without amending the rejected coding commit."
+          "Remove the anchor-dependent condition from the graph-tidy full-snapshot dispatch only.",
+          "Prove anchored and unanchored graph-tidy responses exactly equal the canonical snapshot.",
+          "Prove anchored graph-tidy performs zero credential, readiness, provider, and vector operations.",
+          "Preserve all ordinary semantic production gating and explicit wrapper-arg4 test dependency behavior."
         ],
-        "completionSignal": "All frozen correction, compatibility, and guard evidence passes; full runner is 42/42 with empty failure records and no delivery regression; only systemarchitecture-mcp-server.js changes in Coding/Repair."
+        "completionSignal": "SP-04 passes anchored and unanchored graph-tidy snapshot controls with zero operations, all guards pass, full runner is 42/42 with empty failure records, and no delivered baseline regresses."
       }
     ]
   },
@@ -183,7 +195,6 @@
     ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
     ".argo/scripts/argo-mcp-server.js",
-    ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
     ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
     ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
     ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
@@ -196,10 +207,10 @@
   ],
   "openGaps": [
     "Selected viewpoints are the Requirements Realization Viewpoint for SP-03/SP-04 traceability and the Implementation and Migration Viewpoint for default retrieval/readiness and vector-seed/closure decisions. The corrected graph binds each affected view to one primary purpose and the independent intent audit passed after commit 6f0d1e04bb31c5bb23272501d6afdeb573af11f9.",
-    "Post-delivery-audit direct RED is intentional and narrow: SP-03 fails SP03_LEGACY_CONTROL_WORDS_BYPASSED_PRODUCTION_GATE because b13a2e8 routes a no-dependency semantic query with legacy control words and explicit anchors to deterministicRuntime despite an absent approved secret. SP-04 and all previously accepted retrieval/readiness/closure evidence remain green.",
-    "Current production evidence confirms only the routing defect: defaultSemanticRetrieval.js and unchanged productionGraphRagRuntime.js satisfy the frozen deep retrieval and completion contract, while systemarchitecture-mcp-server.js isDeterministicSemanticControlRequest creates the prohibited public bypass. The repair must delete that selector and preserve wrapper-fourth to inner-third test dependency forwarding without changing argo-mcp-server.js.",
+    "Final-delivery direct RED is intentional and narrow: SP-03 fails SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING because the proposed non-E2E production-semantic-query source use case falls back to LIVE_PROVIDER_E2E_OPT_IN_REQUIRED, while the current default module's requiredOptIns:[] call is rejected as SOURCE_ADAPTER_UNTRUSTED. SP-04 fails SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS because anchors suppress the graph-tidy snapshot bypass.",
+    "All previously accepted retrieval, readiness, closure, no-credential rejection, wrapper-arg4 compatibility, no-argument snapshot, and unanchored graph-tidy evidence remains frozen. The repair must preserve WP-P1 E2E source security while adding only the production-query use case and unconditional graph-tidy bypass.",
     "This artifact intentionally supersedes the prior WP-P1 temporary handoff because WP-P1 is accepted and delivered; WP-P1 contracts, implementation, tests, and cleanup boundaries remain frozen and are regression controls only.",
     "Neo4j synchronization evidence remains exactly neo4jUri is required for start. This is environment evidence only and cannot weaken fail-closed readiness, replace deterministic raw production-like acceptance, or be represented as live production proof.",
-    "ImplementationDesign owns the corrected compatibility injection: intentArchitectureQueryHarness.js traverses argo-mcp-server.js, whose callTool(name,args,progressToken,dependencies) accepts a test boundary at argument four and forwards dependencies to systemarchitecture-mcp-server.js callTool(name,args,dependencies) argument three. Explicit-query calls use a supplied probe or the Harness-owned deterministic boundary. Both guards execute a no-probe query and require exactly one Harness-boundary invocation while separately requiring the WP-P2 production Harness to call the inner server with no dependencies. CodingAndReparing is authorized only for the systemarchitecture-mcp-server.js routing repair; all other production and test artifacts remain frozen."
+    "CodingAndReparing is authorized only for liveEmbeddingProviderConfig.js, defaultSemanticRetrieval.js, and systemarchitecture-mcp-server.js. The realistic source fixture, anchored graph-tidy fixture, all tests/Harnesses/guards/contracts, argo-mcp-server.js, productionGraphRagRuntime.js, accepted intent, and SP-05/WP-P3 remain frozen."
   ]
 }

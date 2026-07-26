@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+    "testdescription": "Control point: invoke a typed semantic query through the shipped default uninjected MCP path against a complete aligned persistent production-like Neo4j vector projection using only approved external credentials, with independent above-threshold, below-threshold, zero-result, closure, endpoint, View, provenance, graph-tidy, and canonical-version fixtures. Observation point: the path performs qualified query embedding and real Neo4j Vector Index retrieval for Element, ArchitectureRelationship, and View independently; returns every qualifying candidate or a valid zero result per channel; uses fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure plus endpoint/View/provenance completion; enforces canonical authority/version alignment; preserves graph-tidy full-snapshot bypass; and does not use a test-injected retrieval boundary, synthetic empty seeds, test/default credentials, or silent snapshot fallback.",
+    "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "relatedIntentElementId": "semprod-default-vector-retrieval",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: LIVE_PROVIDER_E2E_OPT_IN_REQUIRED\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:742:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_PRODUCTION_QUERY_SOURCE_ADAPTER_CONTRACT_MISSING: LIVE_PROVIDER_E2E_OPT_IN_REQUIRED\n    at assertProductionQueryCredentialResolution (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:742:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:31:3)"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+    "testdescription": "Control point: invoke the shipped default MCP boundary in structural-only SemanticIndexPending, partial-channel, stale-version, failed, unknown/mismatched, and complete aligned states, then invoke no-argument and graph-tidy controls. Observation point: every non-aligned pure semantic request rejects before retrieval with actionable state, canonical/content/index version, and missing-channel evidence plus fullSnapshotFallback:false; no silent snapshot fallback occurs; only complete Element, ArchitectureRelationship, and View canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests retain exact full canonical snapshots.",
+    "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "relatedIntentElementId": "semprod-readiness-requirement",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:783:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP04_ANCHORED_GRAPH_TIDY_INVOKED_SEMANTIC_OPERATIONS\n\n22 !== 0\n\n    at assertAnchoredGraphTidyCompatibility (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:783:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:24:3)"
+  }
+]
