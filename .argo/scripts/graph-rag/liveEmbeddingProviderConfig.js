@@ -15,12 +15,16 @@ const CONFIG_KEYS = Object.freeze([
   'ARGO_NEO4J_DATABASE_PASSWORD',
   'QWEN_KEY',
 ]);
+const OPTIONAL_CONFIG_KEYS = Object.freeze([
+  'ARGO_NEO4J_DATABASE',
+]);
 const OPT_IN_KEYS = Object.freeze({
   ARGO_LIVE_PROVIDER_E2E: 'LIVE_PROVIDER_E2E_OPT_IN_REQUIRED',
   ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'W31_MUTATION_VECTOR_E2E_OPT_IN_REQUIRED',
 });
 const READABLE_KEYS = Object.freeze([
   ...CONFIG_KEYS,
+  ...OPTIONAL_CONFIG_KEYS,
   ...Object.keys(OPT_IN_KEYS),
 ]);
 const LEGACY_KEYS = Object.freeze(['ARGO_NEO4J_URI', 'ARGO_NEO4J_USERNAME', 'ARGO_NEO4J_PASSWORD']);
@@ -164,6 +168,7 @@ async function resolveTrusted({
     neo4jDatabaseUrl: normalized.ARGO_NEO4J_DATABASE_URL,
     neo4jDatabaseUsername: normalized.ARGO_NEO4J_DATABASE_USERNAME,
     neo4jDatabasePassword: normalized.ARGO_NEO4J_DATABASE_PASSWORD,
+    neo4jDatabase: optionalDatabaseName(processValues.get('ARGO_NEO4J_DATABASE') || fileValues.get('ARGO_NEO4J_DATABASE'), repositoryRoot),
     qwenKey: normalized.QWEN_KEY,
   });
   return Object.freeze({
@@ -171,6 +176,20 @@ async function resolveTrusted({
     configuration,
     attribution: Object.freeze({ ...attribution }),
   });
+}
+
+function optionalDatabaseName(value, repositoryRoot) {
+  if (present(value)) return String(value).trim();
+  const repoName = path.basename(repositoryRoot);
+  const normalized = String(repoName)
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/-{2,}/g, '-');
+  const safe = normalized || 'workspace';
+  const prefixed = /^[a-z]/.test(safe) ? safe : `db-${safe}`;
+  return prefixed.slice(0, 63);
 }
 
 function createTrustedSource({ behavior, observeTrace }) {

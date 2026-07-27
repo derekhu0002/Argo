@@ -1,4 +1,18 @@
 const SEMANTIC_LABEL = 'ArgoProductionSemanticRecord';
+const CHANNEL_INDEXES = Object.freeze({
+  Element: Object.freeze({
+    label: 'ArgoProductionSemanticElement',
+    indexName: 'argo_production_semantic_element_vector',
+  }),
+  ArchitectureRelationship: Object.freeze({
+    label: 'ArgoProductionSemanticRelationship',
+    indexName: 'argo_production_semantic_relationship_vector',
+  }),
+  View: Object.freeze({
+    label: 'ArgoProductionSemanticView',
+    indexName: 'argo_production_semantic_view_vector',
+  }),
+});
 
 function createProductionSemanticNeo4jAdapter(dependencies = {}) {
   const { driver } = dependencies;
@@ -15,13 +29,21 @@ function createProductionSemanticNeo4jAdapter(dependencies = {}) {
         }));
       }
       return withSession(driver, dependencies.configuration, async session => {
-        const query = [
-          `UNWIND $records AS record`,
-          `MERGE (semantic:${SEMANTIC_LABEL} {canonicalIdentity: record.canonicalIdentity})`,
-          'SET semantic = record',
-          'RETURN count(semantic) AS count',
-        ].join('\n');
-        return executeWrite(session, query, { records: records.map(cloneRecord) });
+        await ensureVectorIndexes(session);
+        const results = [];
+        for (const [channel, definition] of Object.entries(CHANNEL_INDEXES)) {
+          const channelRecords = records.filter(record => record.channel === channel).map(cloneRecord);
+          if (channelRecords.length === 0) continue;
+          const query = [
+            'UNWIND $records AS record',
+            `MERGE (semantic:${SEMANTIC_LABEL} {canonicalIdentity: record.canonicalIdentity})`,
+            'SET semantic = record',
+            `SET semantic:${definition.label}`,
+            'RETURN count(semantic) AS count',
+          ].join('\n');
+          results.push(await executeWrite(session, query, { records: channelRecords }));
+        }
+        return results[results.length - 1] || { records: [] };
       });
     },
 
@@ -66,6 +88,20 @@ function createProductionSemanticNeo4jAdapter(dependencies = {}) {
       }
     },
   });
+}
+
+async function ensureVectorIndexes(session) {
+  for (const definition of Object.values(CHANNEL_INDEXES)) {
+    await executeWrite(
+      session,
+      [
+        `CREATE VECTOR INDEX ${definition.indexName} IF NOT EXISTS`,
+        `FOR (semantic:${definition.label}) ON (semantic.vector)`,
+        'OPTIONS { indexConfig: { `vector.dimensions`: 1024, `vector.similarity_function`: "cosine" } }',
+      ].join('\n'),
+      {},
+    );
+  }
 }
 
 async function withSession(driver, configuration, action) {

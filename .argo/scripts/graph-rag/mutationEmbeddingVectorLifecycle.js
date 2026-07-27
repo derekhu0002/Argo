@@ -263,7 +263,9 @@ async function verifyProductionTouchedQueryability(resources, { records, tombsto
     ArchitectureRelationship: 'argo_production_semantic_relationship_vector',
     View: 'argo_production_semantic_view_vector',
   });
-  const session = resources.driver.session();
+  const session = resources.driver.session(resources.configuration.neo4jDatabase === undefined
+    ? undefined
+    : { database: resources.configuration.neo4jDatabase });
   try {
     for (const record of records) {
       const result = await session.run([

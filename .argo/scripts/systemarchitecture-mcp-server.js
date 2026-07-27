@@ -1862,7 +1862,13 @@ function createDefaultCanonicalSemanticInitComposition() {
     productionGraphRagRuntime: Object.freeze({
       async runSemanticBackfill(request) {
         const runtime = await createDefaultProductionSemanticRuntime();
-        return runtime.runSemanticBackfill(request);
+        try {
+          return await runtime.runSemanticBackfill(request);
+        } finally {
+          if (runtime && typeof runtime.close === 'function') {
+            await runtime.close();
+          }
+        }
       },
     }),
     finalReadiness: Object.freeze({
@@ -1963,7 +1969,7 @@ async function createDefaultProductionSemanticRuntime() {
     }),
   });
 
-  return createProductionGraphRagRuntime({
+  const runtime = createProductionGraphRagRuntime({
     canonicalGraph: canonicalSnapshot,
     neo4jRetrievalBoundary: Object.freeze({
       async retrieve() {
@@ -2030,6 +2036,12 @@ async function createDefaultProductionSemanticRuntime() {
       batchSize: 100,
     }),
   });
+  return Object.freeze({
+    ...runtime,
+    async close() {
+      await driver.close();
+    },
+  });
 }
 
 async function resolveDefaultSemanticConfiguration() {
@@ -2040,7 +2052,7 @@ async function resolveDefaultSemanticConfiguration() {
       neo4jUsername: process.env.ARGO_NEO4J_DATABASE_USERNAME,
       neo4jPassword: process.env.ARGO_NEO4J_DATABASE_PASSWORD,
       embeddingCredential: process.env.QWEN_KEY,
-      neo4jDatabase: process.env.ARGO_NEO4J_DATABASE,
+      neo4jDatabase: process.env.ARGO_NEO4J_DATABASE || getDefaultSemanticNeo4jDatabaseName(),
     }, {
       operation: 'semantic-backfill',
       sourceKeys: new Map([
@@ -2072,6 +2084,19 @@ async function resolveDefaultSemanticConfiguration() {
     embeddingCredential: external.embeddingCredential,
     ...(external.neo4jDatabase === undefined ? {} : { neo4jDatabase: external.neo4jDatabase }),
   });
+}
+
+function getDefaultSemanticNeo4jDatabaseName() {
+  const repoName = path.basename(resolveWorkspaceRoot());
+  const normalized = String(repoName)
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/-{2,}/g, '-');
+  const safe = normalized || 'workspace';
+  const prefixed = /^[a-z]/.test(safe) ? safe : `db-${safe}`;
+  return prefixed.slice(0, 63);
 }
 
 function deriveSemanticCanonicalVersion(document) {

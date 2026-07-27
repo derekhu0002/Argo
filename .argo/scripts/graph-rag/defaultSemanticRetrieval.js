@@ -242,7 +242,9 @@ async function executeProductionNeo4jOperation(configuration, operation) {
       configuration.neo4jDatabasePassword,
     ),
   );
-  const session = driver.session();
+  const session = driver.session(configuration.neo4jDatabase === undefined
+    ? undefined
+    : { database: configuration.neo4jDatabase });
   try {
     const result = await session.run(operation.cypher, operation.parameters);
     if (operation.kind === 'semantic-readiness-read') {

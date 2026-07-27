@@ -137,6 +137,10 @@ async function observeAutomaticInitLifecycle() {
       ARGO_LIVE_PROVIDER_E2E: '1',
       ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
     }, effects),
+    trackedConfigurationFile: await runActualArgoInitScenario('tracked-configuration-file', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
   });
   let scenarios;
   let compositionMissing = true;
@@ -189,6 +193,7 @@ function assertAutomaticInitLifecycle(observation) {
     observation.missingConfiguration,
     observation.unsafeConfiguration,
     observation.unknownConfigurationKey,
+    observation.trackedConfigurationFile,
   ]) {
     assert(
       rejected.outcome.status === 'failed' || rejected.outcome.isError === true,
@@ -230,6 +235,13 @@ function assertAutomaticInitLifecycle(observation) {
         failure.field,
         'ARGO_EMBEDDING_CREDENTIAL',
         'SP05_UNKNOWN_CONFIGURATION_FIELD_NOT_PRESERVED',
+      );
+    }
+    if (rejected.name === 'tracked-configuration-file') {
+      assert.strictEqual(
+        failure.category,
+        'SECRET_FILE_TRACKED',
+        'SP05_TRACKED_CONFIGURATION_CATEGORY_NOT_PRESERVED',
       );
     }
   }
@@ -1288,6 +1300,9 @@ function createActualInitEffects() {
           }
           if (state.scenario.name === 'unknown-configuration-key') {
             throw observedConfigurationDiagnostic('SECRET_FILE_UNKNOWN_KEY', 'ARGO_EMBEDDING_CREDENTIAL');
+          }
+          if (state.scenario.name === 'tracked-configuration-file') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_TRACKED');
           }
           return externalConfigurationValues();
         },

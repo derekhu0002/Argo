@@ -245,6 +245,10 @@ function sanitizeLifecycleError(sourceError) {
     'SECRET_FILE_ACL_UNSAFE',
     'SECRET_FILE_DUPLICATE_KEY',
     'SECRET_FILE_UNKNOWN_KEY',
+    'SECRET_FILE_TRACKED',
+    'SECRET_FILE_NOT_IGNORED',
+    'SECRET_FILE_PATH_PROHIBITED',
+    'SECRET_FILE_REPARSE_PROHIBITED',
     'SECRET_SOURCE_CONFLICT',
     'SECRET_SOURCE_PROVENANCE_PROHIBITED',
     'LIVE_PROVIDER_CONFIGURATION_CONFLICT',
@@ -289,6 +293,18 @@ function configurationMessage(category, field) {
       ? `Approved semantic configuration has conflicting sources for ${field}.`
       : 'Approved semantic configuration has conflicting sources.';
   }
+  if (category === 'SECRET_FILE_TRACKED') {
+    return 'Approved semantic configuration file is tracked by Git.';
+  }
+  if (category === 'SECRET_FILE_NOT_IGNORED') {
+    return 'Approved semantic configuration file is not ignored by Git.';
+  }
+  if (category === 'SECRET_FILE_PATH_PROHIBITED') {
+    return 'Semantic configuration must come from repository-relative .argo/.env.';
+  }
+  if (category === 'SECRET_FILE_REPARSE_PROHIBITED') {
+    return 'Approved semantic configuration file must not be a reparse point or symlink.';
+  }
   return 'Approved external semantic configuration was rejected.';
 }
 
@@ -307,6 +323,18 @@ function configurationAction(category, field) {
     return field
       ? `Make process environment and .argo/.env agree for ${field}, then run argo init again.`
       : 'Resolve conflicting approved configuration sources, then run argo init again.';
+  }
+  if (category === 'SECRET_FILE_TRACKED') {
+    return 'Remove .argo/.env from Git tracking, add it to .gitignore, then run argo init again.';
+  }
+  if (category === 'SECRET_FILE_NOT_IGNORED') {
+    return 'Add .argo/.env to .gitignore, then run argo init again.';
+  }
+  if (category === 'SECRET_FILE_PATH_PROHIBITED') {
+    return 'Move semantic secrets to .argo/.env and remove alternate env file usage, then run argo init again.';
+  }
+  if (category === 'SECRET_FILE_REPARSE_PROHIBITED') {
+    return 'Replace .argo/.env with a regular file, then run argo init again.';
   }
   return 'Correct approved external configuration and retry argo init.';
 }

@@ -912,7 +912,9 @@ function normalizedFixtureConfigurationMatches(result, values) {
     qwenKey: values.QWEN_KEY,
   };
   return result.configuration
-    && Object.keys(expected).length === Object.keys(result.configuration).length
+    && Object.keys(expected).length + 1 === Object.keys(result.configuration).length
+    && typeof result.configuration.neo4jDatabase === 'string'
+    && result.configuration.neo4jDatabase.trim().length > 0
     && Object.entries(expected).every(([key, value]) => result.configuration[key] === value);
 }
 
