@@ -93,6 +93,11 @@ async function main() {
   // THEN the default payload is business-readable and omits high-cost debug fields
   assert.strictEqual(defaultResult.result.responseProfile, 'business-summary', 'BUSINESS_SUMMARY_PROFILE_NOT_DEFAULT');
   assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(defaultResult, 'document'),
+    false,
+    'BUSINESS_SUMMARY_DOCUMENT_DUPLICATES_RESULT',
+  );
+  assert.strictEqual(
     defaultResult.result.semanticSeeds.elements[0].vector,
     undefined,
     'BUSINESS_SUMMARY_VECTOR_LEAKED',

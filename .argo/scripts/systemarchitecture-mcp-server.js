@@ -1812,7 +1812,7 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
     ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
       ? { result: document.result }
       : { result: document }),
-    document,
+    ...(shouldReturnDebugSemanticResult(query) ? { document } : {}),
   });
 }
 
@@ -1897,14 +1897,14 @@ function applySemanticResponseProfile(response, query) {
   if (!payload || payload.status === 'failed') return response;
   const source = payload.result || payload.document;
   const summary = buildBusinessSemanticSummary(source, query);
+  const { document: _omittedDocument, ...payloadWithoutDocument } = payload;
   return getSystemArchitectureResult({
-    ...payload,
+    ...payloadWithoutDocument,
     query: {
       ...(payload.query || query),
       responseProfile: 'business-summary',
     },
     result: summary,
-    document: summary,
   });
 }
 
