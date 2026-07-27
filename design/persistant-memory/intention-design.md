@@ -918,3 +918,29 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
 - Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and existing viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-19 testcase and schema-compliant approval attribute; C1-C2 satisfied through explicit same-element coverage mapping and delivered W7 quality context; D1-D8 satisfied with no open questions and schema-compliant global approval note; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
 - Open business questions and adequacy blockers: none.
+
+## 2026-07-28 — BP MCP Semantic Query Contract WP-1..WP-4
+
+- Selected viewpoints: Application Usage Viewpoint for runtime `getSystemArchitecture` request, payload, Relationship endpoint closure, and View membership closure semantics; Implementation and Migration Viewpoint for WP-1 through WP-4 delivery sequence and implementation-impact views.
+- Stakeholder concern: agent-facing ARGO MCP semantic architecture reads must expose only canonical intent architecture full snapshots or structurally closed canonical object subsets, while rejecting public debug/evidence/response-shape controls.
+- Modeling purpose: deciding and intent-to-implementation handoff preparation.
+- Affected view bindings: existing Application Usage views continue to frame semantic request and closure behavior under `CapabilityRealizationViewpoint`; new/updated `bp-mcp-sem-delivery-sequence`, `bp-mcp-sem-delivery-impact-query`, and `bp-mcp-sem-delivery-impact-closure` are Implementation and Migration Viewpoint instances under `AcceptanceDeliveryViewpoint`.
+- Delivery-status guardrail: pre-existing runner-owned delivered statuses were read only. Agent-authored `deliveryStatus=planned` attributes on the four new Work Package elements were removed through `argo.applySystemArchitectureMutation`.
+
+### Coverage matrix
+
+- `grag-mode-validation` — `functionalPoint.BP-MCP-SEM-REQ` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ` at `tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls`.
+- `grag-query-service` — `functionalPoint.BP-MCP-SEM-COMPAT` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT` at `#preserve-full-snapshot-read-modes`; `functionalPoint.BP-MCP-SEM-PAYLOAD` and `functionalPoint.BP-MCP-SEM-FIELDS` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD` at `#canonical-object-subset-only`; `functionalPoint.BP-MCP-SEM-ELEMENT` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT` at `#element-hit-no-neighbor-expansion`.
+- `grag-canonical-graph` — reused delivered canonical authority boundary with existing mounted canonical graph acceptance testcases; WP-2 depends on it for full-snapshot authority and deep-equal canonical object identity.
+- `grag-endpoint-closure` — `functionalPoint.BP-MCP-SEM-REL` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-REL` at `#relationship-endpoint-closure`; `functionalPoint.BP-MCP-SEM-BROKEN-REL` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL` at `#broken-relationship-endpoint-rejection`.
+- `grag-view-closure` — `functionalPoint.BP-MCP-SEM-VIEW` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW` at `#view-membership-closure`; `functionalPoint.BP-MCP-SEM-NOCASCADE` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE` at `#no-overlapping-view-cascade`; `functionalPoint.BP-MCP-SEM-BROKEN-VIEW` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW` at `#broken-view-reference-rejection`.
+
+### Validation and open risks
+
+- `argo.getIntentElementContext`: read implementation-design dependency context for `grag-query-service`, `grag-endpoint-closure`, and `grag-view-closure`. The initial semantic `argo.getSystemArchitecture` query failed with `EXTERNAL_CREDENTIALS_REQUIRED`; focused graph context reads succeeded.
+- `argo.previewSystemArchitectureMutation`: passed for four Work Package attribute repairs and the broken Relationship endpoint testcase anchor repair; `written=false`, `errors=[]`, counts 65 elements / 95 relationships / 37 views.
+- `argo.applySystemArchitectureMutation`: passed and wrote the repair set; Neo4j sync passed with counts 65 elements / 95 relationships / 37 views. Embedding lifecycle remained failed with missing Element, ArchitectureRelationship, and View channels, so no semantic-index readiness proof is claimed.
+- `argo.validateSystemArchitecture`: passed for `design/KG/SystemArchitecture.json`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph and viewpoint-bound views; B1-B2 satisfied by same-element mounted testcase mappings above; B3/D7 require parent acceptance of newly mounted BP-MCP-SEM boundaries before downstream dispatch; C1-C2 recorded through dependency contexts and delivered reused boundaries; D8/E3 remain an orchestration gate because the handoff schema has no `approvedByHuman` field; E1-E2 satisfied; F1 recorded here and F2 requires the IntentDesign stage commit.
+- Open business questions: none. Dispatch blocker: parent/global approval is still required before ImplementationDesign consumes the handoff.
