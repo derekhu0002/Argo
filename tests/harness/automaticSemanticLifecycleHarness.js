@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -359,6 +360,7 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
   const results = [];
   const scenarios = [];
   const focusedDryRuns = [];
+  const failureQueryRejections = [];
   await withTestComposition(effects.composition, async () => {
     for (const mutation of mutationMatrix) {
       effects.selectScenario({ name: mutation.kind });
@@ -397,49 +399,38 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
       { name: 'coherence-failure', gates: enabledGates(), failAt: 'coherence' },
     ]) {
       effects.selectScenario(scenario);
+      const mutationObservation = await invokeActualMutationAdapter(mutationMatrix[7], scenario.gates);
       scenarios.push({
         name: scenario.name,
-        observation: await invokeActualMutationAdapter(mutationMatrix[7], scenario.gates),
+        observation: mutationObservation,
       });
+      if (scenario.name === 'disabled' || MUTATION_FAILURE_SCENARIOS.includes(scenario.name)) {
+        failureQueryRejections.push(Object.freeze({
+          name: scenario.name,
+          ...await observeSharedStoreQueryAtCanonicalBytes(
+            mutationObservation.afterBytes,
+            effects.readinessStore,
+          ),
+        }));
+      }
     }
   });
-  const {
-    runExportedReadinessScenario,
-  } = require('./productionDefaultRetrievalHarness.js');
-  const failureQueryRejections = [];
-  const recordedEffects = effects.snapshot();
-  for (const name of ['disabled', ...MUTATION_FAILURE_SCENARIOS]) {
-    const persisted = recordedEffects.failureRecords.find(item => item.scenario === name);
-    const scenario = scenarios.find(item => item.name === name);
-    const publicPayload = scenario && extractToolPayload(scenario.observation.result);
-    const evidence = (persisted && persisted.evidence)
-      || (publicPayload && publicPayload.alignment)
-      || {};
-    failureQueryRejections.push(Object.freeze({
-      name,
-      observation: await runExportedReadinessScenario({
-        name: `${name}-persisted-readiness`,
-        state: evidence.state === 'Pending' ? 'SemanticIndexPending' : (evidence.state || 'Failed'),
-        canonicalVersion: evidence.canonicalVersion,
-        contentVersion: evidence.contentVersion,
-        indexVersion: evidence.indexVersion,
-        missingChannels: evidence.missingChannels || [],
-        mismatchedChannels: evidence.mismatchedChannels || [],
-      }),
-    }));
-  }
-  const failedCanonicalWrite = scenarios.find(item => item.name === 'persistence-failure');
-  const laterInitRecovery = await runControlledEnabledArgoInitScenario(
+  const failedCanonicalWrite = scenarios.find(item => item.name === 'coherence-failure');
+  const sharedReadinessRecovery = await runSharedReadinessRecoveryChain(
     failedCanonicalWrite.observation.afterBytes,
+    effects.readinessStore,
   );
+  const effectSnapshot = effects.snapshot();
+  effects.readinessStore.dispose();
   return Object.freeze({
     mutationMatrix,
     results: Object.freeze(results),
     scenarios: Object.freeze(scenarios),
     focusedDryRuns: Object.freeze(focusedDryRuns),
     failureQueryRejections: Object.freeze(failureQueryRejections),
-    laterInitRecovery,
-    effects: effects.snapshot(),
+    laterInitRecovery: sharedReadinessRecovery.init,
+    sharedReadinessRecovery,
+    effects: effectSnapshot,
   });
 }
 
@@ -560,6 +551,7 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
   }
   const disabledRejection = observation.failureQueryRejections.find(item => item.name === 'disabled');
   assert(disabledRejection, `${prefix}_DISABLED_SUBSEQUENT_QUERY_NOT_RUN`);
+  assertDurableQueryReadSameRecord(disabledRejection, `${prefix}_DISABLED`);
   for (const outcome of disabledRejection.observation.outcomes) {
     const error = exportedPublicError(outcome);
     assert(error && error.category, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
@@ -578,6 +570,15 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
     const persisted = observation.effects.failureRecords.find(item => item.scenario === name);
     assert(persisted, `${prefix}_${name}_FAILED_STATE_NOT_PERSISTED`);
     assert(['Failed', 'Stale'].includes(persisted.evidence.state), `${prefix}_${name}_PERSISTED_STATE_INVALID`);
+    const durableWrite = observation.effects.readinessOperations.find(operation => (
+      operation.operation === 'mutation-failed' && operation.source === name
+    ));
+    assert(durableWrite, `${prefix}_${name}_DURABLE_FAILURE_WRITE_MISSING`);
+    assert.deepStrictEqual(
+      durableWrite.after,
+      persisted.evidence,
+      `${prefix}_${name}_FAILURE_LEDGER_NOT_STORE_RECORD`,
+    );
     const raw = observation.effects.rawDiagnostics.find(item => item.scenario === name);
     if (['missing-configuration', 'unsafe-configuration', 'provider-failure', 'persistence-failure', 'queryability-failure', 'coherence-failure'].includes(name)) {
       assert(raw && JSON.stringify(raw.diagnostic).includes(SECRET_CANARY), `${prefix}_${name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`);
@@ -594,6 +595,7 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
     );
     const rejection = observation.failureQueryRejections.find(item => item.name === name);
     assert(rejection, `${prefix}_${name}_SUBSEQUENT_QUERY_NOT_RUN`);
+    assertDurableQueryReadSameRecord(rejection, `${prefix}_${name}`);
     for (const outcome of rejection.observation.outcomes) {
       const error = exportedPublicError(outcome);
       assert(error && error.category, `${prefix}_${name}_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
@@ -611,6 +613,82 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
     'Aligned',
     `${prefix}_LATER_INIT_DID_NOT_RESTORE_ALIGNMENT`,
   );
+  assertSharedReadinessRecovery(observation.sharedReadinessRecovery, prefix);
+}
+
+function assertDurableQueryReadSameRecord(queryEvidence, prefix) {
+  assert(queryEvidence.recordBefore, `${prefix}_DURABLE_RECORD_BEFORE_QUERY_MISSING`);
+  assert.deepStrictEqual(
+    queryEvidence.recordAfter,
+    queryEvidence.recordBefore,
+    `${prefix}_DURABLE_RECORD_CHANGED_DURING_QUERY`,
+  );
+  assert.strictEqual(queryEvidence.storeOperations.length, 2, `${prefix}_DURABLE_QUERY_READ_COUNT_CHANGED`);
+  for (const operation of queryEvidence.storeOperations) {
+    assert.strictEqual(operation.kind, 'durable-readiness-read', `${prefix}_NON_READ_STORE_OPERATION_DURING_QUERY`);
+    assert.deepStrictEqual(operation.record, queryEvidence.recordBefore, `${prefix}_QUERY_DID_NOT_READ_WRITTEN_RECORD`);
+  }
+  for (const read of queryEvidence.observation.readinessReads) {
+    assert.deepStrictEqual(read.record, queryEvidence.recordBefore, `${prefix}_ROUTER_READ_DIFFERENT_RECORD`);
+  }
+}
+
+function assertSharedReadinessRecovery(recovery, prefix) {
+  assert(recovery && recovery.failureRecord, `${prefix}_SHARED_FAILURE_RECORD_MISSING`);
+  assert.deepStrictEqual(
+    recovery.recordBeforeInit,
+    recovery.failureRecord,
+    `${prefix}_FAILURE_RECORD_REFIXTURED_BEFORE_INIT`,
+  );
+  for (const read of recovery.rejection.readinessReads) {
+    assert.deepStrictEqual(read.record, recovery.failureRecord, `${prefix}_REJECTION_DID_NOT_READ_FAILURE_RECORD`);
+  }
+  assert(recovery.alignedRecord, `${prefix}_SHARED_ALIGNED_RECORD_MISSING`);
+  assert.strictEqual(recovery.alignedRecord.identity, recovery.failureRecord.identity, `${prefix}_READINESS_IDENTITY_CHANGED`);
+  assert.strictEqual(recovery.alignedRecord.recordId, recovery.failureRecord.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+  assert.strictEqual(recovery.alignedRecord.canonicalVersion, recovery.failureRecord.canonicalVersion, `${prefix}_CANONICAL_VERSION_CHANGED_DURING_RECOVERY`);
+  assert(recovery.alignedRecord.revision > recovery.failureRecord.revision, `${prefix}_READINESS_REVISION_NOT_ADVANCED`);
+  assert.strictEqual(recovery.alignedRecord.state, 'Aligned', `${prefix}_DURABLE_RECORD_NOT_ALIGNED`);
+  for (const field of ['canonicalVersion', 'contentVersion', 'indexVersion']) {
+    assert(
+      typeof recovery.alignedRecord[field] === 'string' && recovery.alignedRecord[field].length > 0,
+      `${prefix}_ALIGNED_VERSION_MISSING:${field}`,
+    );
+  }
+  for (const read of recovery.success.readinessReads) {
+    assert.deepStrictEqual(read.record, recovery.alignedRecord, `${prefix}_SUCCESS_DID_NOT_READ_TRANSFORMED_RECORD`);
+  }
+  for (const outcome of recovery.success.outcomes) {
+    assert(outcome.result && outcome.result.isError !== true, `${prefix}_${outcome.dispatcher}_QUERY_NOT_RESTORED`);
+    assert.strictEqual(outcome.effects.readinessReads, 1, `${prefix}_${outcome.dispatcher}_SUCCESS_READINESS_COUNT`);
+    assert.strictEqual(outcome.effects.providerRequests, 1, `${prefix}_${outcome.dispatcher}_SUCCESS_PROVIDER_COUNT`);
+  }
+  const operationKinds = recovery.storeOperations.map(operation => (
+    operation.operation || operation.kind
+  ));
+  assertPhaseBefore(
+    operationKinds,
+    ['durable-readiness-read'],
+    ['init-aligned'],
+    `${prefix}_FAILURE_READ_BEFORE_INIT_ALIGNMENT`,
+  );
+  assertBefore(
+    operationKinds,
+    'durable-readiness-queryability',
+    'durable-readiness-global-coherence',
+    `${prefix}_INIT_QUERYABILITY_BEFORE_COHERENCE`,
+  );
+  assertBefore(
+    operationKinds,
+    'durable-readiness-global-coherence',
+    'init-aligned',
+    `${prefix}_INIT_COHERENCE_BEFORE_DURABLE_ALIGNMENT`,
+  );
+  const alignedIndex = operationKinds.indexOf('init-aligned');
+  assert(
+    operationKinds.slice(alignedIndex + 1).includes('durable-readiness-read'),
+    `${prefix}_ALIGNED_RECORD_NOT_READ_AFTER_INIT`,
+  );
 }
 
 function canonicalContainsMutation(bytes, mutation) {
@@ -624,8 +702,72 @@ function canonicalContainsMutation(bytes, mutation) {
   return document.views.some(item => item.view_id === mutation.id);
 }
 
+async function observeSharedStoreQueryAtCanonicalBytes(canonicalBytes, readinessStore) {
+  const {
+    runExportedDurableReadinessStore,
+  } = require('./productionDefaultRetrievalHarness.js');
+  return withCanonicalBytesWorkspace(canonicalBytes, async () => {
+    const recordBefore = readinessStore.inspect();
+    const operationStart = readinessStore.operations().length;
+    const observation = await runExportedDurableReadinessStore(readinessStore);
+    return Object.freeze({
+      recordBefore,
+      observation,
+      recordAfter: readinessStore.inspect(),
+      storeOperations: Object.freeze(readinessStore.operations().slice(operationStart)),
+    });
+  });
+}
+
+async function runSharedReadinessRecoveryChain(canonicalBytes, readinessStore) {
+  const {
+    runExportedDurableReadinessStore,
+  } = require('./productionDefaultRetrievalHarness.js');
+  return withCanonicalBytesWorkspace(canonicalBytes, async workspaceRoot => {
+    const failureRecord = readinessStore.inspect();
+    const operationStart = readinessStore.operations().length;
+    const rejection = await runExportedDurableReadinessStore(readinessStore);
+    const recordBeforeInit = readinessStore.inspect();
+    const init = await runControlledEnabledArgoInitScenario({
+      canonicalBytes,
+      workspaceRoot,
+      readinessStore,
+    });
+    const alignedRecord = readinessStore.inspect();
+    const success = await runExportedDurableReadinessStore(readinessStore);
+    return Object.freeze({
+      failureRecord,
+      rejection,
+      recordBeforeInit,
+      init,
+      alignedRecord,
+      success,
+      storeOperations: Object.freeze(readinessStore.operations().slice(operationStart)),
+    });
+  });
+}
+
+async function withCanonicalBytesWorkspace(canonicalBytes, callback) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-shared-readiness-workspace-'));
+  const previous = captureEnvironment(['ARGO_REPO_ROOT']);
+  try {
+    process.env.ARGO_REPO_ROOT = root;
+    fs.writeFileSync(path.join(root, 'Argo.feap'), 'shared readiness lifecycle template');
+    const graphDirectory = path.join(root, 'design', 'KG');
+    fs.mkdirSync(graphDirectory, { recursive: true });
+    fs.writeFileSync(path.join(graphDirectory, 'SystemArchitecture.json'), canonicalBytes);
+    return await callback(root);
+  } finally {
+    restoreEnvironment(previous);
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
 async function runActualArgoInitScenario(name, environment, effectObserver = undefined) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-canonical-init-'));
+  const ownsRoot = !(environment && environment.workspaceRoot);
+  const root = ownsRoot
+    ? fs.mkdtempSync(path.join(os.tmpdir(), 'argo-canonical-init-'))
+    : environment.workspaceRoot;
   const previous = captureEnvironment([
     'ARGO_REPO_ROOT',
     ...DUAL_GATES,
@@ -657,7 +799,7 @@ async function runActualArgoInitScenario(name, environment, effectObserver = und
       'ARGO_NEO4J_DATABASE_PASSWORD',
     ]) delete process.env[key];
     for (const [key, value] of Object.entries(environment || {})) {
-      if (!['createUnsafeConfiguration', 'canonicalBytes'].includes(key)) process.env[key] = value;
+      if (!['createUnsafeConfiguration', 'canonicalBytes', 'workspaceRoot'].includes(key)) process.env[key] = value;
     }
     if (environment && environment.createUnsafeConfiguration) {
       const argoDirectory = path.join(root, '.argo');
@@ -696,11 +838,15 @@ async function runActualArgoInitScenario(name, environment, effectObserver = und
     });
   } finally {
     restoreEnvironment(previous);
-    fs.rmSync(root, { recursive: true, force: true });
+    if (ownsRoot) fs.rmSync(root, { recursive: true, force: true });
   }
 }
 
-async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) {
+async function runControlledEnabledArgoInitScenario(input = undefined) {
+  const options = typeof input === 'string'
+    ? { canonicalBytes: input }
+    : (input || {});
+  const canonicalBytes = options.canonicalBytes;
   if (typeof unifiedMcp.withCanonicalSemanticInitTestComposition !== 'function') {
     return Object.freeze({ boundaryMissing: true });
   }
@@ -710,7 +856,7 @@ async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) 
   const controlled = createControlledPrivateBackfillComposition(canonicalBytes ? {
     fixture: {
       ...JSON.parse(canonicalBytes),
-      version: 'canonical-mutation-recovery',
+      version: canonicalDocumentVersion(JSON.parse(canonicalBytes)),
     },
   } : {});
   let interruption;
@@ -723,11 +869,14 @@ async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) 
       state: 'valid-external-only',
     }),
     productionGraphRagRuntime: controlled.runtime,
-    finalReadiness: controlled.finalReadiness,
+    finalReadiness: options.readinessStore
+      ? options.readinessStore.createInitFinalReadiness(controlled.finalReadiness)
+      : controlled.finalReadiness,
   }, async () => {
     const controlledEnvironment = {
       ...enabledGates(),
       ...(canonicalBytes ? { canonicalBytes } : {}),
+      ...(options.workspaceRoot ? { workspaceRoot: options.workspaceRoot } : {}),
     };
     interruption = (await runActualArgoInitScenario('controlled-interruption', controlledEnvironment)).outcome;
     controlled.observations.releaseInterruption();
@@ -746,6 +895,16 @@ async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) 
     writesAfterRerun: controlled.observations.writeCount(),
     finalReadinessEvents: controlled.observations.finalReadinessEvents(),
   });
+}
+
+function canonicalDocumentVersion(document) {
+  const identity = {
+    name: document.name || 'System',
+    elements: (document.elements || []).map(element => element.id).sort(),
+    relationships: (document.relationships || []).map(relationship => relationship.id).sort(),
+    views: (document.views || []).map(view => view.view_id).sort(),
+  };
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`;
 }
 
 function assertZeroActualInitSemanticEffects(observation, prefix) {
@@ -857,6 +1016,7 @@ function createActualInitEffects() {
 }
 
 function createActualMutationEffects() {
+  const readinessStore = createSharedDurableReadinessStore();
   const state = {
     lifecycleCalls: [],
     operations: [],
@@ -892,13 +1052,23 @@ function createActualMutationEffects() {
         }));
       },
       readiness: Object.freeze({
-        async invalidate() { record('readiness-invalidate'); },
-        async recordAligned(evidence) { record('readiness-aligned', { evidence }); },
+        async invalidate(evidence) {
+          record('readiness-invalidate');
+          readinessStore.write('mutation-invalidate', {
+            ...(evidence || {}),
+            state: (evidence && evidence.state) || 'Stale',
+          }, scenario.name);
+        },
+        async recordAligned(evidence) {
+          record('readiness-aligned', { evidence });
+          readinessStore.write('mutation-aligned', evidence, scenario.name);
+        },
         async recordFailure(evidence) {
           record('readiness-failed', { evidence });
+          const durableRecord = readinessStore.write('mutation-failed', evidence, scenario.name);
           state.failureRecords.push(Object.freeze({
             scenario: scenario.name,
-            evidence: Object.freeze({ ...(evidence || {}) }),
+            evidence: durableRecord,
           }));
         },
       }),
@@ -950,6 +1120,7 @@ function createActualMutationEffects() {
     selectScenario(next) {
       scenario = next;
     },
+    readinessStore,
     snapshot() {
       return Object.freeze({
         ...state,
@@ -958,6 +1129,7 @@ function createActualMutationEffects() {
         records: Object.freeze([...state.records]),
         failureRecords: Object.freeze([...state.failureRecords]),
         rawDiagnostics: Object.freeze([...state.rawDiagnostics]),
+        readinessOperations: readinessStore.operations(),
       });
     },
   };
@@ -971,6 +1143,106 @@ function createActualMutationEffects() {
     return error;
   }
 
+}
+
+function createSharedDurableReadinessStore() {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-durable-readiness-'));
+  const filePath = path.join(directory, 'readiness.json');
+  const identity = 'system-architecture-semantic-readiness';
+  const recordId = crypto.randomUUID();
+  const operations = [];
+  let revision = 0;
+
+  const inspect = () => {
+    if (!fs.existsSync(filePath)) return null;
+    return Object.freeze(JSON.parse(fs.readFileSync(filePath, 'utf8')));
+  };
+  const snapshot = record => Object.freeze({
+    ...(record || {}),
+    channels: Object.freeze([...(record && record.channels ? record.channels : [])].map(
+      channel => Object.freeze({ ...channel }),
+    )),
+  });
+  const digest = record => crypto.createHash('sha256')
+    .update(JSON.stringify(record))
+    .digest('hex');
+  const write = (kind, evidence, source) => {
+    assert(evidence && typeof evidence === 'object', `DURABLE_READINESS_EVIDENCE_REQUIRED:${kind}`);
+    const before = inspect();
+    const record = snapshot({
+      ...evidence,
+      identity,
+      recordId,
+      revision: ++revision,
+    });
+    const temporaryPath = `${filePath}.${revision}.tmp`;
+    fs.writeFileSync(temporaryPath, JSON.stringify(record));
+    fs.renameSync(temporaryPath, filePath);
+    operations.push(Object.freeze({
+      kind: 'durable-readiness-write',
+      operation: kind,
+      source,
+      before,
+      after: record,
+      digest: digest(record),
+    }));
+    return record;
+  };
+  const read = source => {
+    const record = inspect();
+    operations.push(Object.freeze({
+      kind: 'durable-readiness-read',
+      source,
+      record,
+      digest: record && digest(record),
+    }));
+    return record;
+  };
+
+  return Object.freeze({
+    identity,
+    recordId,
+    write,
+    inspect,
+    operations: () => Object.freeze([...operations]),
+    neo4jDriver() {
+      return Object.freeze({
+        async execute(operation) {
+          assert.strictEqual(operation && operation.kind, 'semantic-readiness-read', 'DURABLE_READINESS_READ_OPERATION_CHANGED');
+          const record = read('exported-query');
+          return { records: record ? [record] : [] };
+        },
+        async close() {},
+      });
+    },
+    createInitFinalReadiness(baseFinalReadiness) {
+      return Object.freeze({
+        async verifyQueryability(evidence) {
+          operations.push(Object.freeze({
+            kind: 'durable-readiness-queryability',
+            source: 'argo-init',
+            record: inspect(),
+          }));
+          return baseFinalReadiness.verifyQueryability(evidence);
+        },
+        async verifyGlobalCoherence(evidence) {
+          operations.push(Object.freeze({
+            kind: 'durable-readiness-global-coherence',
+            source: 'argo-init',
+            record: inspect(),
+          }));
+          return baseFinalReadiness.verifyGlobalCoherence(evidence);
+        },
+        async recordAligned(evidence) {
+          await baseFinalReadiness.recordAligned(evidence);
+          return write('init-aligned', evidence, 'argo-init');
+        },
+      });
+    },
+    dispose() {
+      fs.rmSync(directory, { recursive: true, force: true });
+    },
+  });
 }
 
 function buildMutationMatrix() {

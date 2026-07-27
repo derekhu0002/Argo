@@ -13,7 +13,6 @@ const lifecyclePath = '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.
 // WHEN their AST call graphs are inspected
 // THEN direct private-factory substitutes cannot satisfy init, write, or query evidence
 assertIntegrationBindings(read(automaticPath), read(retrievalPath), read(backfillEntryPath), 'repository');
-assertPersistentLifecycleNoCleanup(read(lifecyclePath), lifecyclePath);
 
 const commentsOnly = [
   '// unifiedMcp.callTool("initializeWorkspace")',
@@ -35,6 +34,7 @@ assert.throws(
         await dependencies.projectionStore.cleanup(runId);
       } };
     }
+    module.exports = { createPersistentMutationEmbeddingLifecycle };
   `, 'cleanup-bypass.js'),
   /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
   'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: persistent cleanup bypass passed',
@@ -49,6 +49,53 @@ assert.throws(
   () => assertIntegrationBindings(directFactory, commentsOnly, commentsOnly, 'direct-factory'),
   /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
   'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: direct lifecycle factory bypass passed',
+);
+
+assert.doesNotThrow(
+  () => assertPersistentLifecycleNoCleanup(`
+    const persistentFactory = dependencies => ({
+      reconcile: async input => dependencies.projectionStore.upsertRecords(input.records),
+    });
+    const exportedAlias = persistentFactory;
+    module.exports = { createPersistentMutationEmbeddingLifecycle: exportedAlias };
+  `, 'compliant-alias-export.js'),
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: compliant alias export was not resolved',
+);
+
+assert.throws(
+  () => assertPersistentLifecycleNoCleanup(`
+    const unsafeFactory = dependencies => ({
+      reconcile: async () => dependencies.projectionStore.cleanup(),
+    });
+    const firstAlias = unsafeFactory;
+    const exportedAlias = firstAlias;
+    module.exports = { createPersistentMutationEmbeddingLifecycle: exportedAlias };
+  `, 'unsafe-alias-export.js'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING.*cleanup/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: alias-exported cleanup factory passed',
+);
+
+assert.throws(
+  () => assertPersistentLifecycleNoCleanup(`
+    const cleanupRecords = store => store.cleanup();
+    const delegated = cleanupRecords;
+    const aliasedHelper = delegated;
+    function persistentFactory(dependencies) {
+      return { reconcile: () => aliasedHelper(dependencies.projectionStore) };
+    }
+    module.exports = { createPersistentMutationEmbeddingLifecycle: persistentFactory };
+  `, 'aliased-helper-cleanup.js'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING.*cleanup/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: aliased helper cleanup passed',
+);
+
+assert.throws(
+  () => assertPersistentLifecycleNoCleanup(`
+    const unrelatedFactory = () => ({ reconcile() {} });
+    module.exports = { unrelatedFactory };
+  `, 'missing-production-export.js'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING.*export.*not resolved/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: missing production export returned silently',
 );
 
 const aliasedFactory = `
@@ -90,6 +137,10 @@ assert.throws(
   'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: delegated arrow cleanup bypass passed',
 );
 
+// The frozen production guard intentionally remains RED until Coding exports the
+// persistent factory; absence is a production gap, never a guard pass.
+assertPersistentLifecycleNoCleanup(read(lifecyclePath), lifecyclePath);
+
 function assertIntegrationBindings(automaticSource, retrievalSource, backfillSource, label) {
   const automatic = parse(automaticSource, `${label}-automatic.js`);
   const retrieval = parse(retrievalSource, `${label}-retrieval.js`);
@@ -114,6 +165,14 @@ function assertIntegrationBindings(automaticSource, retrievalSource, backfillSou
   );
   assertProductionReachableAdapterNames(automatic, label);
   assertNoPrivateFactoryInvocation(automatic, label);
+  assert(
+    automaticReachable.some(node => hasIdentifierCall(node, 'runExportedDurableReadinessStore')),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not query the shared durable readiness store`,
+  );
+  assert(
+    !automaticReachable.some(node => hasIdentifierCall(node, 'runExportedReadinessScenario')),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} re-fixtures mutation readiness for exported queries`,
+  );
   const retrievalReachable = reachableFunctionNodes(retrieval, [
     'runExportedFreshReadinessPerQuery',
     'runExportedReadinessStateMatrix',
@@ -425,9 +484,14 @@ function assertNoPrivateFactoryInvocation(ast, label) {
 
 function assertPersistentLifecycleNoCleanup(source, label) {
   const ast = parse(source, label);
-  const factory = functionNode(ast, 'createPersistentMutationEmbeddingLifecycle');
-  if (!factory) return;
-  const reachable = reachableFunctionNodes(ast, ['createPersistentMutationEmbeddingLifecycle']);
+  const index = buildFunctionAliasIndex(ast);
+  const factory = resolveExportedFactory(
+    ast,
+    'createPersistentMutationEmbeddingLifecycle',
+    index,
+    label,
+  );
+  const reachable = reachableFactoryNodes(factory, index);
   for (const body of reachable) visit(body, node => {
     const text = ts.isIdentifier(node) || ts.isStringLiteral(node)
       ? node.text
@@ -443,6 +507,112 @@ function assertPersistentLifecycleNoCleanup(source, label) {
       );
     }
   });
+}
+
+function buildFunctionAliasIndex(ast) {
+  const functions = new Map();
+  const aliases = new Map();
+  visit(ast, node => {
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      functions.set(node.name.text, node);
+      return;
+    }
+    if (!ts.isVariableDeclaration(node) || !ts.isIdentifier(node.name) || !node.initializer) return;
+    if (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer)) {
+      functions.set(node.name.text, node.initializer);
+    } else if (ts.isIdentifier(node.initializer)) {
+      aliases.set(node.name.text, node.initializer.text);
+    }
+  });
+  return Object.freeze({ functions, aliases });
+}
+
+function resolveExportedFactory(ast, exportName, index, label) {
+  let exportedExpression;
+  visit(ast, node => {
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isModuleExports(node.left)
+      && ts.isObjectLiteralExpression(node.right)
+    ) {
+      for (const property of node.right.properties) {
+        const name = propertyName(property.name);
+        if (name !== exportName) continue;
+        if (ts.isPropertyAssignment(property)) exportedExpression = property.initializer;
+        if (ts.isShorthandPropertyAssignment(property)) exportedExpression = property.name;
+      }
+    }
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isNamedExport(node.left, exportName)
+    ) {
+      exportedExpression = node.right;
+    }
+  });
+  assert(
+    exportedExpression,
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} production factory export ${exportName} not resolved`,
+  );
+  const factory = resolveFunctionExpression(exportedExpression, index);
+  assert(
+    factory,
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} production factory export ${exportName} does not resolve to a function`,
+  );
+  return factory;
+}
+
+function isModuleExports(node) {
+  return ts.isPropertyAccessExpression(node)
+    && ts.isIdentifier(node.expression)
+    && node.expression.text === 'module'
+    && node.name.text === 'exports';
+}
+
+function isNamedExport(node, exportName) {
+  if (!ts.isPropertyAccessExpression(node) || node.name.text !== exportName) return false;
+  return (
+    ts.isIdentifier(node.expression) && node.expression.text === 'exports'
+  ) || isModuleExports(node.expression);
+}
+
+function propertyName(name) {
+  if (!name) return undefined;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
+  return name.getText().replaceAll(/['"]/g, '');
+}
+
+function resolveFunctionExpression(expression, index) {
+  if (ts.isArrowFunction(expression) || ts.isFunctionExpression(expression)) return expression;
+  if (!ts.isIdentifier(expression)) return undefined;
+  const visited = new Set();
+  let name = expression.text;
+  while (!visited.has(name)) {
+    visited.add(name);
+    if (index.functions.has(name)) return index.functions.get(name);
+    if (!index.aliases.has(name)) return undefined;
+    name = index.aliases.get(name);
+  }
+  return undefined;
+}
+
+function reachableFactoryNodes(factory, index) {
+  const reachable = [];
+  const pending = [factory];
+  const seen = new Set();
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (seen.has(node)) continue;
+    seen.add(node);
+    reachable.push(node);
+    visit(node, child => {
+      if (!ts.isCallExpression(child) || !ts.isIdentifier(child.expression)) return;
+      const target = resolveFunctionExpression(child.expression, index);
+      if (target && !seen.has(target)) pending.push(target);
+    });
+  }
+  return reachable;
 }
 
 function read(relativePath) {

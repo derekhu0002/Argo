@@ -591,7 +591,12 @@ async function runDefaultSemanticScenario({
   });
 }
 
-function createRawProductionObservations({ sourceFixture, readiness, candidatesByChannel }) {
+function createRawProductionObservations({
+  sourceFixture,
+  readiness,
+  readinessDriver = undefined,
+  candidatesByChannel,
+}) {
   const ledger = [];
   const providerCalls = [];
   const providerResponseVectors = [];
@@ -628,8 +633,15 @@ function createRawProductionObservations({ sourceFixture, readiness, candidatesB
     async execute(operation) {
       if (operation && operation.kind === 'semantic-readiness-read') {
         const event = record('semantic-readiness-read');
-        readinessOperations.push(Object.freeze({ sequence: event.sequence, ...freezeOperation(operation) }));
-        return { records: [readiness] };
+        const result = readinessDriver
+          ? await readinessDriver.execute(operation)
+          : { records: [readiness] };
+        readinessOperations.push(Object.freeze({
+          sequence: event.sequence,
+          ...freezeOperation(operation),
+          record: result && result.records && result.records[0],
+        }));
+        return result;
       }
       if (operation && operation.kind === 'semantic-vector-window-query') {
         const event = record('semantic-vector-window-query', {
@@ -1728,11 +1740,12 @@ async function runExportedReadinessStateMatrix() {
   return Object.freeze(scenarios);
 }
 
-async function runExportedReadinessScenario(definition, repetitions = 1) {
+async function runExportedReadinessScenario(definition, repetitions = 1, options = {}) {
   const boundary = loadDefaultRetrievalBoundary('SP04_FRESH_READINESS_BOUNDARY_MISSING');
   const observations = createRawProductionObservations({
     sourceFixture: CREDENTIAL_SOURCE_CASES[0],
-    readiness: readinessFixture(definition),
+    readiness: options.readinessDriver ? undefined : readinessFixture(definition),
+    readinessDriver: options.readinessDriver,
     candidatesByChannel: defaultCandidates(),
   });
   const composition = {
@@ -1790,13 +1803,29 @@ async function runExportedReadinessScenario(definition, repetitions = 1) {
   });
   return Object.freeze({
     name: definition.name,
-    readiness: readinessFixture(definition),
+    readiness: options.expectedReadiness || readinessFixture(definition),
     outcomes: Object.freeze(outcomes),
     compatibility: Object.freeze(compatibility),
     readinessReads: observations.readinessReads(),
     providerRequests: observations.providerRequests(),
     vectorQueries: observations.vectorQueries(),
     operationLedger: observations.operationLedger(),
+  });
+}
+
+async function runExportedDurableReadinessStore(readinessStore, repetitions = 1) {
+  assert(readinessStore && typeof readinessStore.inspect === 'function', 'SP04_DURABLE_READINESS_STORE_INSPECT_REQUIRED');
+  assert(readinessStore && typeof readinessStore.neo4jDriver === 'function', 'SP04_DURABLE_READINESS_STORE_DRIVER_REQUIRED');
+  const current = readinessStore.inspect();
+  assert(current, 'SP04_DURABLE_READINESS_RECORD_REQUIRED');
+  return runExportedReadinessScenario({
+    name: `durable-${current.state}`,
+    state: current.state,
+    missingChannels: current.missingChannels || [],
+    mismatchedChannels: current.mismatchedChannels || [],
+  }, repetitions, {
+    readinessDriver: readinessStore.neo4jDriver(),
+    expectedReadiness: current,
   });
 }
 
@@ -1845,6 +1874,7 @@ module.exports = {
   runProductionQueryMixedLegacyRejections,
   runDefaultMcpNeo4jVectorRetrieval,
   runExportedFreshReadinessPerQuery,
+  runExportedDurableReadinessStore,
   runExportedReadinessScenario,
   runExportedReadinessStateMatrix,
   runFullSnapshotCompatibilityControls,

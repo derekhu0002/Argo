@@ -1,3 +1,11 @@
+# Canonical lifecycle third audit correction (2026-07-27)
+
+- This correction removes the last seam-copy in incremental recovery evidence. Actual mutation lifecycle readiness writes, exported System and unified rejection reads, shipped `argo init` reconciliation, and restored System/unified success reads now use one filesystem-backed raw readiness record. The Harness does not reconstruct readiness from public mutation evidence.
+- The backing record has one stable identity and random `recordId`; every write is atomic temporary-file replacement with a monotonically increasing revision. Frozen assertions require exact pre-init failure record reads through both exported routers, unchanged record bytes during rejection, stable identity/recordId/canonicalVersion through init, queryability → global coherence → Aligned write ordering, and exact post-init Aligned record reads plus provider execution through both routers.
+- The integration guard now resolves the exact `module.exports`/`exports` production symbol `createPersistentMutationEmbeddingLifecycle`, including direct functions, inline functions, alias exports, and transitive identifier aliases. Its reachable call graph follows aliased delegated helpers and rejects cleanup/runId anywhere reachable.
+- Executable guard fixtures prove a compliant alias export resolves; an unsafe alias export, aliased-helper cleanup, delegated-arrow cleanup, and missing export all reject. The repository guard now intentionally reports `production factory export createPersistentMutationEmbeddingLifecycle not resolved` instead of silently passing while Coding has not supplied the accepted factory. Five other lifecycle guards remain pre-Coding green; this one is a frozen production RED input.
+- Coding authorization and the four-file target set are unchanged. No production code or intent graph is modified by this correction.
+
 # Canonical lifecycle second audit correction (2026-07-27)
 
 - This section supersedes lifecycle-test evidence details in the correction immediately below. No production behavior or intent graph was changed; Coding remains authorized for exactly the same four production targets.
