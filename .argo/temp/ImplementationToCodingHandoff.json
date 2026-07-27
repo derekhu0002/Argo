@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T16:00:00+08:00",
+  "generatedAt": "2026-07-27T16:25:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Close only the SP-05 durable init-transition acceptance gap. Fresh pre-coding evidence is 42/43: seven unique scoped entrypoints pass and only SP-05 is RED with SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED; all six lifecycle guards pass. Every shipped canonical argo init invocation must transform the pre-existing unified durable readiness record before its outcome, preserving identity, recordId, and canonical version while increasing revision. Disabled becomes SemanticIndexPending/disabled. Half-enabled, malformed, missing/unsafe external configuration, and reconciliation failure become actionable redacted Failed/Stale. Enabled valid execution invalidates before provider/vector work and records verified Aligned on the same record only after queryability and global coherence. Resume/no-replay and rerun idempotence remain mandatory. Exact gates ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E remain unchanged with no third flag; credentials remain external-only; WP-P1/WP-P2 stay private; retired public routes stay absent; production cleanup remains prohibited and cleanup remains test-only; deliveryStatus stays runner-owned; code-complete remains distinct from live-release. This correction authorizes only systemarchitecture-mcp-server.js and semanticOperatorJourney.js; all cumulative accepted gateway, mutation, retrieval, persistence, configuration, and provider behavior remains frozen.",
+  "summary": "Close only the SP-05 durable init-transition and reconciliation-redaction acceptance gap. Fresh pre-coding evidence remains 42/43: seven unique scoped entrypoints pass and only SP-05 is RED with SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED; all six lifecycle guards pass. Every shipped canonical argo init invocation must transform the pre-existing unified durable readiness record before its outcome, preserving identity, recordId, and canonical version while increasing revision. Disabled becomes SemanticIndexPending/disabled. Half-enabled, malformed, missing/unsafe external configuration, and reconciliation failure become actionable redacted Failed/Stale. A raw reconciliation secret canary must remain visible only to the independent raw diagnostic observer; durable same-record evidence and exported init error must carry exact safe category/message/action, public fullSnapshotFallback:false, and no canary. Enabled valid execution invalidates before provider/vector work and records verified Aligned on the same record only after queryability and global coherence. Resume/no-replay and rerun idempotence remain mandatory. Exact gates ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E remain unchanged with no third flag; credentials remain external-only; WP-P1/WP-P2 stay private; retired public routes stay absent; cleanup remains test-only; deliveryStatus stays runner-owned; code-complete remains distinct from live-release. This correction authorizes only argo-mcp-server.js, systemarchitecture-mcp-server.js, and semanticOperatorJourney.js; shared semanticOperatorError.js query mapping remains frozen.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -15,7 +15,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
       "controlPoint": "Seed complete durable verified Aligned readiness, then invoke shipped initializeWorkspace through disabled, half-enabled, malformed, missing/unsafe configuration, interruption, resume, and rerun.",
-      "observationPoint": "The same identity/recordId/canonical-version record advances monotonically before every outcome; invalid paths have zero provider/vector effects and durable safe evidence; enabled work sees invalidated readiness before backfill and aligns only after queryability/coherence.",
+      "observationPoint": "The same identity/recordId/canonical-version record advances monotonically before every outcome; reconciliation raw canary is observed privately while exact safe category/message/action survives in durable and exported evidence with false fallback and zero leak; enabled work aligns only after queryability/coherence.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
       "failureReason": "SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED"
@@ -149,6 +149,12 @@
       "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
       "failureSignal": "SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED",
       "nextAction": "Invalidate/transform the same durable record before every init outcome, record actionable redacted failure on all thrown paths, and align that record only after queryability/coherence; preserve resume/rerun."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+      "path": ".argo/scripts/argo-mcp-server.js",
+      "failureSignal": "SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED; after transition closure SP05_CONTROLLED_PUBLIC_RECONCILIATION_FAILURE_MESSAGE_CHANGED",
+      "nextAction": "On the exported init-specific error path, expose the exact safe reconciliation message beside category/action and literal-false fallback without forwarding the raw diagnostic or changing shared semantic-query error mapping."
     }
   ],
   "taskExecutionPlan": {
@@ -166,6 +172,7 @@
           "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"
         ],
         "targetPaths": [
+          ".argo/scripts/argo-mcp-server.js",
           ".argo/scripts/systemarchitecture-mcp-server.js",
           ".argo/scripts/graph-rag/semanticOperatorJourney.js"
         ],
@@ -174,6 +181,7 @@
           "Transform the same record before disabled, invalid, configuration, reconciliation, resume, rerun, and successful outcomes.",
           "Keep identity, recordId, and canonical version stable with monotonic revision; never leave prior Aligned authorization after failure.",
           "Preserve zero invalid-path provider/vector effects and actionable redacted category/message/action.",
+          "Normalize raw reconciliation failure to exact SEMANTIC_RECONCILIATION_FAILED category, safe message, and remediation in both durable and exported evidence; expose false fallback publicly and no raw canary anywhere durable/public.",
           "Record verified Aligned only after provider/vector work, queryability, and global coherence; preserve checkpoint resume/no-replay and rerun idempotence.",
           "Run eight scoped entrypoints, six guards, and the full runner without editing frozen files."
         ],
@@ -212,7 +220,7 @@
     "tests/architecture/automatic-semantic-lifecycle/implementation-traceability.guard.js",
     "tests/architecture/automatic-semantic-lifecycle/lifecycle-invariants.guard.js",
     "tests/architecture/automatic-semantic-lifecycle/integration-control-points.guard.js",
-    ".argo/scripts/argo-mcp-server.js",
+    ".argo/scripts/graph-rag/semanticOperatorError.js",
     ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
     ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
     ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
@@ -223,18 +231,18 @@
     "package.json"
   ],
   "frozenFileHashes": {
-    "tests/harness/automaticSemanticLifecycleHarness.js": "d43216f50dd399b1ead3f95f1bf4bce8fda279642617ff3624bad2c44fd26874",
+    "tests/harness/automaticSemanticLifecycleHarness.js": "f92ce32d21ae49cb0b2027dd9515af114b1424f1fbce8f894e1c285fc2a82b80",
     "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js": "351e26d02b13cc64d5836d8dbb695fb0322ac9f6f60022608ac5f0c3b95cb193",
-    "tests/architecture/automatic-semantic-lifecycle/architecture-boundary.guard.js": "529b70332e1121d7b32c55ee9075b9e06e3c27df2a74d743a67fbe57a74de647",
-    "tests/architecture/automatic-semantic-lifecycle/dependency-direction.guard.js": "403370f582a73e3a6214ac6e85fd756bef2e8ef90414bed09b6a6a7148b4078f",
-    "tests/architecture/automatic-semantic-lifecycle/explicit-entrypoint-correctness.guard.js": "ee6dc023d3d0d183d5b964778a35797ac8af0644dfc5187bd0cf91f70020d65a",
+    "tests/architecture/automatic-semantic-lifecycle/architecture-boundary.guard.js": "230c3844cca31481ab10115a79e4a77173335f78a1edc03e03138594f21e241e",
+    "tests/architecture/automatic-semantic-lifecycle/dependency-direction.guard.js": "5148015a99305a34866594ca24d4da38cea28c74f3c3e43364abd33c4698f17b",
+    "tests/architecture/automatic-semantic-lifecycle/explicit-entrypoint-correctness.guard.js": "4c3fd54b4f2242183f0c7fb0aa50c8732f7bad23a31daef3e82c6bddb75136c5",
     "tests/architecture/automatic-semantic-lifecycle/implementation-traceability.guard.js": "e90326c67b6cf40de92f7160a13c1a1916b9e336d23cbc542c7e20f90a995607",
     "tests/architecture/automatic-semantic-lifecycle/lifecycle-invariants.guard.js": "02358e5b02599ca3c95d1d0d903d5b66d54d4bb3ac202ddb5d70a5087b7199a5",
     "tests/architecture/automatic-semantic-lifecycle/integration-control-points.guard.js": "6618209e25528fb5089ce3139481040e5e70ac1b9bb760037fb1ebf9d0c2670e"
   },
   "openGaps": [
     "SP-05 is intentionally RED at SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED because shipped canonical init currently leaves a pre-existing durable Aligned record unchanged on disabled outcome.",
-    "The same missing transition contract also affects invalid gate, missing/unsafe configuration, reconciliation failure, resume, and rerun paths; frozen assertions cover each without implementing production behavior.",
+    "After transition closure, reconciliation acceptance independently expects SP05_CONTROLLED_PUBLIC_RECONCILIATION_FAILURE_MESSAGE_CHANGED or its durable/category/action/leak sibling when exact safe evidence is absent. A raw reconciliation secret canary proves the redaction check is non-vacuous.",
     "Final full-runner evidence is 42/43 with exactly one expected SP-05 failure, 0 missing criteria, and 0 out-of-scope failures. Runner-owned outputs contain one failure record and changed only semprod-operator-journey-process from delivered to not_delivered.",
     "Live-release evidence remains environment-gated and is not part of this code-complete correction."
   ]

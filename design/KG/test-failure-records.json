@@ -8,8 +8,8 @@
     "resolvedScriptPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:253:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:167:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:259:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:173:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:253:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:167:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:259:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:173:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)"
   }
 ]

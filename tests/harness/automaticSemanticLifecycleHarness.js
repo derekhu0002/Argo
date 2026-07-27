@@ -19,6 +19,12 @@ const DUAL_GATES = Object.freeze([
   'ARGO_W31_LIVE_MUTATION_VECTOR_E2E',
 ]);
 const SECRET_CANARY = 'SEMANTIC-SECRET-CANARY';
+const RECONCILIATION_SECRET_CANARY = 'SEMANTIC-RECONCILIATION-SECRET-CANARY';
+const RECONCILIATION_SAFE_ERROR = Object.freeze({
+  category: 'SEMANTIC_RECONCILIATION_FAILED',
+  message: 'Semantic reconciliation failed before readiness could be verified.',
+  action: 'Repair the durable semantic reconciliation failure, then run argo init again.',
+});
 const MUTATION_FAILURE_SCENARIOS = Object.freeze([
   'provider-only',
   'mutation-only',
@@ -335,6 +341,40 @@ function assertControlledDurableInitRecovery(observation) {
     'SP05_CONTROLLED_STALE_PRIOR_ALIGNED_SURVIVED_FAILURE',
   );
   assert.strictEqual(
+    observation.rawReconciliationDiagnostics.length,
+    1,
+    'SP05_CONTROLLED_RAW_RECONCILIATION_DIAGNOSTIC_NOT_OBSERVED',
+  );
+  assert(
+    JSON.stringify(observation.rawReconciliationDiagnostics)
+      .includes(RECONCILIATION_SECRET_CANARY),
+    'SP05_CONTROLLED_RAW_RECONCILIATION_CANARY_NOT_OBSERVED',
+  );
+  assertExactActionableReconciliationFailure(
+    interruptionFailure,
+    'SP05_CONTROLLED_DURABLE_RECONCILIATION_FAILURE',
+  );
+  const publicFailure = observation.interruption
+    && observation.interruption.error;
+  assertExactActionableReconciliationFailure(
+    publicFailure,
+    'SP05_CONTROLLED_PUBLIC_RECONCILIATION_FAILURE',
+  );
+  assert.strictEqual(
+    publicFailure.fullSnapshotFallback,
+    false,
+    'SP05_CONTROLLED_PUBLIC_RECONCILIATION_FALLBACK_CHANGED',
+  );
+  for (const [kind, evidence] of [
+    ['DURABLE', interruptionFailure],
+    ['PUBLIC', observation.interruption],
+  ]) {
+    assert(
+      !JSON.stringify(evidence).includes(RECONCILIATION_SECRET_CANARY),
+      `SP05_CONTROLLED_${kind}_RECONCILIATION_SECRET_LEAK`,
+    );
+  }
+  assert.strictEqual(
     observation.durableReadiness.state,
     'Aligned',
     'SP05_CONTROLLED_FINAL_READINESS_NOT_ALIGNED',
@@ -359,6 +399,13 @@ function assertControlledDurableInitRecovery(observation) {
         > priorKinds.lastIndexOf('durable-readiness-queryability'),
       'SP05_CONTROLLED_ALIGNED_BEFORE_GLOBAL_COHERENCE',
     );
+  }
+}
+
+function assertExactActionableReconciliationFailure(evidence, prefix) {
+  assert(evidence && typeof evidence === 'object', `${prefix}_EVIDENCE_MISSING`);
+  for (const [field, expected] of Object.entries(RECONCILIATION_SAFE_ERROR)) {
+    assert.strictEqual(evidence[field], expected, `${prefix}_${field.toUpperCase()}_CHANGED`);
   }
 }
 
@@ -1092,10 +1139,26 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
     )
     : readinessStore.inspect();
   const readinessAtBackfillStart = [];
+  const rawReconciliationDiagnostics = [];
+  let rawReconciliationCanaryPending = true;
   const observedRuntime = Object.freeze({
     async runSemanticBackfill(request) {
       readinessAtBackfillStart.push(readinessStore.inspect());
-      return controlled.runtime.runSemanticBackfill(request);
+      try {
+        return await controlled.runtime.runSemanticBackfill(request);
+      } catch (sourceError) {
+        if (!rawReconciliationCanaryPending) throw sourceError;
+        rawReconciliationCanaryPending = false;
+        const rawError = new Error(
+          `Raw reconciliation transport failed: ${RECONCILIATION_SECRET_CANARY}`,
+          { cause: sourceError },
+        );
+        rawError.category = 'RAW_RECONCILIATION_TRANSPORT_FAILURE';
+        rawError.action = `Inspect transport secret ${RECONCILIATION_SECRET_CANARY}`;
+        rawError.secret = RECONCILIATION_SECRET_CANARY;
+        rawReconciliationDiagnostics.push(Object.freeze(serializeDiagnostic(rawError)));
+        throw rawError;
+      }
     },
   });
   let interruption;
@@ -1135,6 +1198,7 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
     durableReadiness: readinessStore.inspect(),
     readinessOperations: readinessStore.operations(),
     readinessAtBackfillStart: Object.freeze([...readinessAtBackfillStart]),
+    rawReconciliationDiagnostics: Object.freeze([...rawReconciliationDiagnostics]),
   });
   if (ownsReadinessStore) readinessStore.dispose();
   return observation;

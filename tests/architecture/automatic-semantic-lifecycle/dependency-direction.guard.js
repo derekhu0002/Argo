@@ -6,6 +6,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const targetPaths = handoff.codingTargets.map(target => target.path);
 const allowedTargets = new Set([
+  '.argo/scripts/argo-mcp-server.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
 ]);
@@ -46,7 +47,7 @@ assert(
   'SEMANTIC_LIFECYCLE_INIT_TRANSITION_BOUNDARY_NOT_AUTHORIZED',
 );
 for (const frozenProduction of [
-  '.argo/scripts/argo-mcp-server.js',
+  '.argo/scripts/graph-rag/semanticOperatorError.js',
   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
   '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
 ]) {

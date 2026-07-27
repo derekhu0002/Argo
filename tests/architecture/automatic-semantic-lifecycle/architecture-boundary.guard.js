@@ -51,6 +51,7 @@ assert(
 assert.deepStrictEqual(
   handoff.codingTargets.map(target => target.path).sort(),
   [
+    '.argo/scripts/argo-mcp-server.js',
     '.argo/scripts/systemarchitecture-mcp-server.js',
     '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   ].sort(),
@@ -119,7 +120,8 @@ for (const target of handoff.codingTargets) {
     `SEMANTIC_LIFECYCLE_HANDOFF_TARGET_SIGNAL_STALE:${target.path}`,
   );
   assert(
-    target.nextAction.includes('same durable record'),
+    target.nextAction.includes('same durable record')
+      || target.nextAction.includes('exact safe reconciliation message'),
     `SEMANTIC_LIFECYCLE_HANDOFF_TARGET_ACTION_STALE:${target.path}`,
   );
 }
