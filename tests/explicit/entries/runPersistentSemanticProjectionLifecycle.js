@@ -4,6 +4,10 @@ const {
   assertCompleteMetadata,
   runPersistentSemanticProjectionLifecycle,
 } = require('../../harness/productionSemanticPersistenceHarness.js');
+const {
+  assertPersistentIncrementalMatrix,
+  runPersistentIncrementalMatrix,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
   // GIVEN a separate durable production semantic projection containing all three canonical channels
@@ -89,6 +93,12 @@ async function main() {
   assert.strictEqual(observation.canonicalWriteAttempts, 0, 'SP02_PROJECTION_MUTATED_CANONICAL_JSON');
   assert.strictEqual(observation.authority, 'canonical-json', 'SP02_CANONICAL_AUTHORITY_LOST');
   assert.strictEqual(observation.projectionRole, 'subordinate-projection-index', 'SP02_NEO4J_BECAME_CANONICAL_AUTHORITY');
+
+  // WHEN every batch and focused add/update/remove path uses the production incremental boundary
+  const persistentIncremental = await runPersistentIncrementalMatrix('SP02');
+
+  // THEN exact touched identities survive durably as upserts/tombstones without runId cleanup
+  assertPersistentIncrementalMatrix(persistentIncremental, 'SP02');
 }
 
 main().catch(error => {

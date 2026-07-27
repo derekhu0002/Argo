@@ -1,330 +1,330 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T09:05:00+08:00",
+  "generatedAt": "2026-07-27T12:40:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP-P3 final bypass correction with the same eight authorized production paths. Preserve six function ports plus one mandatory repository-local non-secret store; no volatile or process-local authorization fallback exists. Every query re-reads the durable record and current WP-P2 readiness before retrieval, including same-process post-verification queries. Exported System/unified callTool semantic paths use an injected approved journey or the approved default journey and never raw retrieval fallback. Frozen inherited SP-03/SP-04/compatibility and TS-00 typed-contract scenarios now inject approved operator adapters around their exact accepted controlled retrieval boundaries, preserving assertions and MCP envelopes without depending on raw fallback. Windows owner must equal the current identity exactly; both ACLs require effective current-user modify/full access after deny precedence and may grant protected access only to that identity and SYSTEM. Group owners, BUILTIN Users/Administrators, broad or foreign allows, missing identity, denied identity, permissive parent ACL, and the current host ACL fail closed with exact redacted remediation. Snapshots, graph-tidy, error whitelist, canonical authority, and runner-owned deliveryStatus remain protected.",
+  "summary": "Implement the accepted canonical semantic lifecycle without changing intent or frozen tests. Canonical argo init privately composes preserved WP-P1 full reconciliation and WP-P2 readiness under exactly ARGO_LIVE_PROVIDER_E2E plus ARGO_W31_LIVE_MUTATION_VECTOR_E2E (no third flag); successful batch/focused writes use readiness-first exact-touched durable upsert/tombstone; every ordinary getSystemArchitecture query freshly verifies persistent readiness; getSystemArchitecture is the sole public read/query semantic surface. Credentials remain external-only, WP-P1/WP-P2 remain private, WP-P3 public exposure is retired, production runId cleanup is prohibited while existing cleanup remains test-only, deliveryStatus is runner-owned, and code-complete evidence remains distinct from live-release evidence. Pre-coding runner baseline: 43 total, 34 passed, 9 scoped failures, 0 missing criteria, and 0 out-of-scope failures; failure records are design/KG/test-failure-records.json.",
   "implementationContracts": [
-    "design/KG/SystemArchitecture.json",
-    ".argo/temp/IntentToImplementationHandoff.json",
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md",
-    ".argo/schema/ImplementationToCodingHandoff.schema.json"
+    "tests/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "controlPoint": "Run primary success/rejection compositions with an explicit contract-faithful controlled readiness-attestation store; separately run missing durable-store construction rejection, restricted-directory CLI readiness/query processes, same-process verification followed by readiness drift, exported System/unified callTool probes without an injected journey, package/wire/snapshot controls, and the complete malformed/link/atomic/drift/Windows owner-and-ACL matrix.",
-      "observationPoint": "Every query traverses durable read -> current WP-P2 read -> exact validation -> retrieval. TypeChecker-bound public dispatch permits only the approved operator query chain and rejects direct, aliased, helper, or resolver-delegated raw fallback. Windows trust requires exact current-user ownership and effective current-user/SYSTEM-only ACLs after deny precedence; each unsafe case returns the exact redacted remediation with zero retrieval.",
+      "controlPoint": "Invoke canonical argo init through enabled, disabled, half-enabled, missing/unsafe configuration, interrupted/resume, rerun, and prior structural-only controlled compositions.",
+      "observationPoint": "Enabled init reconciles three channels privately; disabled is structural-only; invalid gates/configuration fail closed and redacted; readiness follows queryability/coherence; retired tools remain absent.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "failureReason": "Current production is RED because Windows ACL parsing recognizes only the historical basic-right subset and therefore accepts foreign allows or current-identity denies containing advanced effective icacls rights such as WD, AD, GW, GA, WEA, GR, and RD."
+      "failureReason": "SP05_AUTOMATIC_INIT_RECONCILIATION_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "entryPath": "tests/explicit/entries/runProductionSemanticBackfill.js",
+      "controlPoint": "Run accepted bounded/resumable WP-P1 reconciliation and inspect MCP discovery/routing.",
+      "observationPoint": "WP-P1 remains private under argo init; the former backfill public name is absent and unknown.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticBackfill.js",
+      "failureReason": "SP01_BACKFILL_TOOL_NOT_PRIVATE"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "entryPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
+      "controlPoint": "Run all batch/focused add/update/remove combinations through the durable production projection boundary.",
+      "observationPoint": "Exact touched identities use complete durable upsert/tombstone evidence and no production runId cleanup.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
+      "failureReason": "SP02_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
+      "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
+      "controlPoint": "Execute 18 batch/focused Element, ArchitectureRelationship, and View add/update/remove cases plus preview.",
+      "observationPoint": "Readiness invalidates first, touched IDs are exact, preview is inert, persistence is durable, and alignment follows queryability/global coherence.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
+      "failureReason": "DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
+      "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
+      "controlPoint": "Inspect complete semantic-index evidence for the same exact-touched incremental mutation matrix.",
+      "observationPoint": "Each touched Element, ArchitectureRelationship, and View record carries complete canonical/content/index/provider/model/version/dimensions evidence and partial persistence never aligns.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
+      "failureReason": "DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+      "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+      "controlPoint": "Run controlled production incremental acceptance by default and protected real provider/Neo4j execution only when both exact gates are 1.",
+      "observationPoint": "Code-complete evidence is environment-independent; live release additionally proves real finite 1024-dimensional vectors, durable queryability, and coherence without production cleanup.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+      "failureReason": "W31_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+      "entryPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+      "controlPoint": "Invoke two ordinary semantic queries without a prior standalone readiness command.",
+      "observationPoint": "Each query reads persistent readiness exactly once before retrieval and requires no retired explicit attestation.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+      "failureReason": "SP03_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+      "entryPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+      "controlPoint": "Invoke repeated ordinary queries across persistent states and after later valid reconciliation without a public readiness command.",
+      "observationPoint": "Every query freshly verifies readiness; non-Aligned states reject exactly with fullSnapshotFallback:false; later reconciliation restores alignment.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js",
+      "failureReason": "SP04_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-00",
+      "entryPath": "tests/explicit/entries/runTypedMcpQueryContract.js",
+      "controlPoint": "Inspect System/unified tools/list and public routing, then exercise typed, no-argument, and graph-tidy compatibility.",
+      "observationPoint": "Only getSystemArchitecture remains public for architecture read/query semantics; three retired names are unknown; compatibility remains exact.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "node tests/explicit/entries/runTypedMcpQueryContract.js",
+      "failureReason": "TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC:startNewProjectSemanticJourney"
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "WP-P3 Architecture Boundary",
-      "path": "tests/architecture/production-semantic-operator/architecture-boundary.guard.js",
+      "name": "Canonical lifecycle architecture boundary",
+      "path": "tests/architecture/automatic-semantic-lifecycle/architecture-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Contracts plus executable AST fixtures for caller consent, explicit readiness state, WP-P2 verdict consumption, and prohibition of duplicated readiness policy.",
-      "observationPoint": "Literal consent promotion, query-time readiness reads, local channel/alignment verdict logic, and failure to consume WP-P2 verified all fail; safe forwarding and explicit-state composition pass.",
+      "controlPoint": "Inspect contracts and Coding authorization.",
+      "observationPoint": "Init, dual gates, persistence, readiness, public retirement, canonical authority, and code/live boundaries remain explicit.",
       "expectedStatus": "passed"
     },
     {
-      "name": "WP-P3 Operator Policy Provenance",
-      "path": "tests/architecture/production-semantic-operator/operator-policy-provenance.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "TypeChecker binding and alias/assignment flow over factory-owned backfill modes, consent selector, configuration ordering, readiness read/verdict assignment, and query fail-closed state.",
-      "observationPoint": "Compliant automatic derivation passes. Boolean/nested consent aliases, dependency/key aliases with bracket readiness access, renamed state/channel decisions, and cosmetic verified references fail.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "WP-P3 Dependency Direction",
-      "path": "tests/architecture/production-semantic-operator/dependency-direction.guard.js",
+      "name": "Canonical lifecycle dependency direction",
+      "path": "tests/architecture/automatic-semantic-lifecycle/dependency-direction.guard.js",
       "kind": "DependencyDirectionGuard",
-      "controlPoint": "Exact authorized Coding paths and present operator/adapter dependencies.",
-      "observationPoint": "The operator module depends inward on existing initialization, structural projection, external configuration, backfill, readiness, query, and snapshot ports; CLI/MCP/docs adapt outward; production never depends on tests, Python, Neo4j GenAI embedding, or reimplemented WP-P1/WP-P2 internals.",
+      "controlPoint": "Inspect exact production targets and imports.",
+      "observationPoint": "Dependencies point inward; tests, unrelated live adapters, runtime, package, and intent remain unauthorized.",
       "expectedStatus": "passed"
     },
     {
-      "name": "WP-P3 Explicit Entrypoint Correctness",
-      "path": "tests/architecture/production-semantic-operator/explicit-entrypoint-correctness.guard.js",
+      "name": "Canonical lifecycle entrypoint correctness",
+      "path": "tests/architecture/automatic-semantic-lifecycle/explicit-entrypoint-correctness.guard.js",
       "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Frozen SP-05 entrypoint phases, business-readable Harness, command matrix, raw operation ledger, redaction canaries, and structurally bound key assertions including the live verified-read counter.",
-      "observationPoint": "The entry retains GIVEN/WHEN/THEN and hides process/database plumbing. TypeChecker binding requires the live assert.strictEqual inside assertVerifiedSoleAuthorization to count exactly two semantic-readiness-read events; wrong-count, dead-decoy, and wrong-counter fixtures fail. The Harness also freezes success parity, consent/configuration ordering, lifecycle evidence, exact snapshots, zero rejected effects, and redaction.",
+      "controlPoint": "Inspect eight entrypoints and the shared Harness.",
+      "observationPoint": "GIVEN/WHEN/THEN, independent RED signals, complete matrices, and code-complete-before-live ordering remain frozen.",
       "expectedStatus": "passed"
     },
     {
-      "name": "WP-P3 Implementation Traceability",
-      "path": "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
+      "name": "Canonical lifecycle traceability",
+      "path": "tests/architecture/automatic-semantic-lifecycle/implementation-traceability.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Corrected intent handoff, implementation-bearing anchors, mounted SP-05 path, root mappings, and release-context exclusions.",
-      "observationPoint": "Exactly semprod-operator-journey-process, grag-query-service, and grag-credential-boundary are implementation-bearing handoff anchors; both protected journey-to-credential/readiness relationships remain non-propagating Associations; SP-05 is mounted only on the operator journey; plateau/package remain non-executable context.",
+      "controlPoint": "Compare graph testcase mounts, handoff paths, and frozen files.",
+      "observationPoint": "All scoped intent IDs and exact physical entrypoints remain mapped.",
       "expectedStatus": "passed"
     },
     {
-      "name": "WP-P3 Default Production Composition Wiring",
-      "path": "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "TypeScript Program/TypeChecker binding resolution over CommonJS imports, factory/tool invocations, exact callback returns, and the six-port dependency object, plus comments/unused/missing-call/extra-port/shadowed-binding bypass fixtures.",
-      "observationPoint": "Every accepted factory call resolves to its exact imported BindingElement; named tool callbacks resolve to unshadowed callTool and exact literal tools; readSemanticReadiness resolves only to readReadiness() on the exact createDefaultSemanticRetrieval result. Locally shadowed/redeclared factories, callTool, substituted readiness gates, or extra ports fail.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "WP-P3 Authorized Production Source Safety",
-      "path": "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
+      "name": "Canonical lifecycle safety invariants",
+      "path": "tests/architecture/automatic-semantic-lifecycle/lifecycle-invariants.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "AST fixed-point default-flow analysis over variable/assignment aliases, destructuring and parameter initializers, objects and factory arguments, plus approved-external positive control and exact generic-literal/default negative fixtures.",
-      "observationPoint": "Direct approved external provider/model/credential plumbing with no literal/default remains legal. Any literal or default, regardless of text, flowing through generic alias chains, destructuring initializers, parameter initializers, assignments, object properties, or factory arguments into a sensitive binding fails.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "WP-P3 Shared Persistent Readiness Public Boundary",
-      "path": "tests/architecture/production-semantic-operator/readiness-public-boundary.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "TypeChecker binding/provenance over readReadiness(), the shared private helper, accepted persistent read/evaluator, exact field mappings, literal false fallback, side-effect exclusion, one readiness query authority, and unchanged module exports.",
-      "observationPoint": "retrieve() and readReadiness() resolve to the exact top-level shared helper; that helper resolves to the accepted readPersistentReadiness/evaluatePersistentReadiness declarations and exact evidence bindings. Every public field maps to its approved alignment member, fullSnapshotFallback is literal false, provider/embed/vector/retrieval references are absent, and shadowed fakes fail.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "WP-P3 Adapter Lifecycle Boundary",
-      "path": "tests/architecture/production-semantic-operator/adapter-lifecycle-boundary.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "TypeChecker binding and call-graph reachability for public dispatch and active writes, exact approved resolver boundary, query return domination, exact diagnostic provenance, private Windows policy execution, AST static-member inspection, and ordered executable flow plus adversarial fixtures.",
-      "observationPoint": "Direct, alias, helper, and resolver-delegated missing-journey raw fallback; same-process early return; optional volatile store; group/foreign owner; isolated file and parent allows for BUILTIN Users, BUILTIN Administrators, Authenticated Users, Everyone, and foreign principals; every protected F/M/RX/R/W/D/DE/RC/WDAC/WO/S/AS/MA/GR/GW/GE/GA/RD/WD/AD/REA/WEA/X/DC/RA/WA foreign allow and current-identity deny; missing identity; malformed or compound ACL; wrong remediation; dead atomic helpers; serializer substitution; and non-executing invalidation all fail while approved shapes pass.",
+      "controlPoint": "Inspect handoff and Harness gate/configuration surfaces.",
+      "observationPoint": "No third flag, embedded/default credential, production cleanup, manual status, or fabricated live evidence is authorized.",
       "expectedStatus": "passed"
     }
   ],
-  "supportingNonExplicitTests": [
-    {
-      "name": "Inherited WP-P2 Operator Composition",
-      "path": "tests/architecture/production-default-retrieval/explicit-entrypoint-correctness.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "TypeChecker-bound inspection of every inherited default and compatibility semantic callTool invocation, journey property value, approved adapter-factory call flow, and bound WP-P2 retrieval parameter plus executable adversarial fixtures.",
-      "observationPoint": "SP-03/SP-04 inner calls carry semanticOperatorJourney at dependency argument three; compatibility wrapper calls bind argument four to the live journey selector. The property value must reach the exact top-level approved adapter factory and its query must call retrieve on the bound WP-P2 parameter. Missing/undefined dependencies, dead conditionals/decoys, semanticRetrievalBoundary substitution, and shadowed factories fail while accepted assertions remain unchanged.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "Inherited TS-00 Operator Composition",
-      "path": "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "TypeChecker-bound inspection of the TS-00 exported wrapper call, journey property, approved adapter factory, and bound retrieval parameter plus raw/missing/undefined/dead/shadowed adversarial fixtures.",
-      "observationPoint": "The semantic typed-envelope scenario passes only semanticOperatorJourney at wrapper argument four; its property value resolves to the exact approved adapter factory and query retrieves from the bound controlled boundary. Raw semanticRetrievalBoundary, absent or undefined journey, dead decoy, and shadowed factory fixtures fail without changing typed contract assertions.",
-      "expectedStatus": "passed"
-    }
-  ],
+  "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
-      "failureSignal": "A same-process readinessVerified shortcut retrieves without re-reading the committed record or current WP-P2 drift, and missing store silently receives a volatile fallback.",
-      "nextAction": "Require readinessAttestationStore at factory entry and remove createVolatileReadinessAttestationStore plus process-local authorization. Every query must perform exactly one durable read, one current WP-P2 read, one exact store validation, then retrieval; clear/reject stale evidence with current diagnostics and zero retrieval."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/graph-rag/semanticReadinessAttestationStore.js",
-      "failureSignal": "Windows trust still accepts foreign allows and current-identity denies when an ACE contains advanced effective icacls rights outside its historical F/M/R/RX/W/D/DC/WDAC/WO subset.",
-      "nextAction": "Keep strict schema/atomic/digest behavior and extend the private assertWindowsAclTrust parser with the exact protected-right matrix F/M/RX/R/W/D/DE/RC/WDAC/WO/S/AS/MA/GR/GW/GE/GA/RD/WD/AD/REA/WEA/X/DC/RA/WA. Honor deny precedence on file and parent ACLs; reject any protected foreign allow or current-identity deny, including comma-delimited advanced ACEs, while retaining current-identity/SYSTEM-only allows and the exact redacted remediation."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js",
-      "failureSignal": "The sole production command boundary can inspect only .argo/.env; Node fs cannot verify Windows ownership/ACL for the readiness file and directory.",
-      "nextAction": "Keep createSystemMetadataCommandAdapter and its exact four-capability surface unchanged. Add a separate createReadinessAttestationMetadataAdapter({ repositoryRoot }) with only zero-argument current-identity, exact .argo/temp directory ACL, exact attestation-file ACL, and exact attestation-owner reads. Bind whoami/icacls and one fixed non-interactive PowerShell Get-Acl Owner expression to closure-owned paths; accept no caller path/script/command/flags/environment/stdin/secret."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/graph-rag/semanticOperatorError.js",
-      "failureSignal": "CLI and MCP have no shared structured redacted error boundary.",
-      "nextAction": "Create one serializer/result builder whose error object has exactly category, state, verified, canonicalVersion, contentVersion, indexVersion, completedChannels, missingChannels, mismatchedChannels, fullSnapshotFallback, and action. Exclude message, stack, secrets, unsafe source, arbitrary properties, and credentials."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/semanticOperatorJourneyCli.js",
-      "failureSignal": "CLI reconstructs journey state and prints stack-only errors.",
-      "nextAction": "Compose the store-backed journey on every process, expose the frozen runCliProcess seam for child-process acceptance, preserve caller flags, and emit shared structured JSON errors."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "Exported callTool still invokes executeSemanticSystemArchitectureQuery directly when dependencies or semanticOperatorJourney are absent.",
-      "nextAction": "Route every validated non-graph-tidy semantic callTool request through resolveSemanticOperatorJourney. Use an injected approved journey when present, otherwise construct the approved default journey or fail closed. Keep executeSemanticSystemArchitectureQuery private to the default operator's final inward query port; preserve snapshot/graph-tidy and invalidation behavior."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/argo-mcp-server.js",
-      "failureSignal": "Unified JSON-RPC wire drops diagnostics and stack-serializes errors.",
-      "nextAction": "Forward dependency-aware semantic calls unchanged, export dependency-aware handleRequest for frozen wire acceptance, and use the same shared structured error result."
+      "failureSignal": "SP05_AUTOMATIC_INIT_RECONCILIATION_MISSING",
+      "nextAction": "After canonical initializeWorkspace succeeds, privately invoke canonical semantic init and attach structural-only, reconciled, or redacted fail-closed evidence."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-TS-00",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC and write integration gaps",
+      "nextAction": "Retire three public names; integrate readiness-first exact-touched durable lifecycle after successful writes; preserve preview and canonical bypasses."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-      "path": "package.json",
-      "failureSignal": "semantic:backfill pre-injects --explicit-opt-in.",
-      "nextAction": "Set semantic:backfill exactly to node .argo/scripts/semanticOperatorJourneyCli.js backfill so the user must append -- --explicit-opt-in."
+      "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
+      "failureSignal": "SP05 automatic init and SP03/SP04 retired explicit-readiness failures",
+      "nextAction": "Convert the module to private canonical lifecycle composition and make every ordinary query use current persistent readiness without prior public attestation."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
+      "failureSignal": "SP03_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS",
+      "nextAction": "Preserve the accepted shared evaluator/retrieval while supporting the private per-query fresh-readiness composition."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+      "path": ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
+      "failureSignal": "Exact dual-gate init decision missing",
+      "nextAction": "Return one sanitized decision for the two existing flags only; preserve external-only source trust and add no third flag."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
+      "path": ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
+      "failureSignal": "DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING",
+      "nextAction": "Add createPersistentMutationEmbeddingLifecycle(dependencies).reconcile({ canonicalWrite, preview, gates }) over readiness, provider, production store, queryability, and coherence ports without runId/cleanup."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
+      "failureSignal": "SP01_BACKFILL_TOOL_NOT_PRIVATE",
+      "nextAction": "Preserve WP-P1 bounded/resumable/idempotent behavior for private init consumption only."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js",
+      "failureSignal": "SP02_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING",
+      "nextAction": "Reuse the exact four-method store for incremental upsert/tombstone and reject runId production records."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js",
+      "failureSignal": "Durable incremental upsert/tombstone evidence missing",
+      "nextAction": "Support stable-identity parameterized MERGE/upsert and tombstone delete without cleanup APIs or canonical writes."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+      "path": ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
+      "failureSignal": "Resumable automatic reconciliation evidence missing",
+      "nextAction": "Preserve one durable per-channel checkpoint authority for automatic interruption/resume and idempotent rerun."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair the three final bypasses in three test-driven tasks without expanding the same eight-file authorization. Preserve six function ports and accepted WP-P1/WP-P2 logic. The durable store is mandatory and every query revalidates it; exported semantic callTool never selects raw retrieval; Windows trust uses exact owner and ACE semantics with no host-policy exception. All frozen tests, nine guards, contracts, README, graph authority, and runner-owned deliveryStatus records are read-only.",
+    "executionStrategy": "Dependency-first, frozen tests read-only: C1 retires WP-P3 public exposure and creates exact two-gate private init; C2 builds durable incremental persistence over WP-P1; C3 integrates every successful write; C4 makes every ordinary query freshly verify WP-P2 readiness; C5 proves controlled code-complete evidence before optional protected live-release evidence. Preserve runner-owned deliveryStatus; no third flag, embedded/default credential, production runId cleanup, or test rewrite.",
     "tasks": [
       {
-        "taskId": "WP-P3-L1",
-        "title": "Add non-secret readiness attestation lifecycle",
-        "objective": "Make explicit readiness authorization survive process reconstruction while remaining version-bound and fail-closed.",
+        "taskId": "CSL-C1",
+        "title": "Retire public tools and compose canonical init",
+        "objective": "Make canonical argo init the only automatic lifecycle entry while preserving private WP-P1/WP-P2 ports.",
         "dependsOn": [],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/semanticOperatorJourney.js",
-          ".argo/scripts/graph-rag/semanticReadinessAttestationStore.js",
-          ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js"
-        ],
+        "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-05-NewProjectJourney", "ExplicitAcceptanceTestcase-SP-01-FullBackfill", "ExplicitAcceptanceTestcase-TS-00"],
+        "targetPaths": [".argo/scripts/argo-mcp-server.js", ".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js"],
         "steps": [
-          "Implement exact Windows trust under the same-user/local-workspace boundary. Owner must equal current whoami identity, never a group. Parse each file/parent ACE, honor deny precedence, require effective current-user modify/full access, and treat F/M/RX/R/W/D/DE/RC/WDAC/WO/S/AS/MA/GR/GW/GE/GA/RD/WD/AD/REA/WEA/X/DC/RA/WA as protected. Permit protected allows only for current identity and NT AUTHORITY SYSTEM; reject every protected foreign allow and current-identity deny, including comma-delimited advanced ACEs, plus malformed evidence and permissive parent ACL.",
-          "For every Windows trust rejection set action exactly to: Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again. Do not include raw ACL, identity, owner, path detail, stack, or secret.",
-          "Create the exact safe schema including authorizationOperation: verifyReadiness. Bind record() through resolved symbols to the active exclusive same-directory wx/0600 writer; complete write, file fsync/close, atomic rename, post-rename owner/file ACL checks, and supported-platform directory fsync. On Windows require an explicit same-directory rename fallback record; never silently omit durability, follow a dead helper, accept append/write, or authorize from presence.",
-          "Add the narrow readiness-attestation metadata factory to the existing sole command adapter without changing its credential factory. Bind whoami/icacls plus one fixed non-interactive Get-Acl Owner expression to exact repository directory/file paths; accept no caller path, script, command, flags, environment, stdin, or secret.",
-          "Keep six existing function ports unchanged and require the seventh readinessAttestationStore object with record/read/clear/validate at factory entry; delete the volatile fallback.",
-          "Clear on the actual init and explicit/automatic backfill paths. After explicit verifyReadiness returns exact verified:true, record the complete safe WP-P2 diagnostics and operation marker.",
-          "On every query, including same-process post-verification query, reject missing/invalid/untrusted evidence before readSemanticReadiness; if trusted, read WP-P2 once only to validate each exact attested version/channel. Clear and reject stale evidence with current safe diagnostics before retrieval. No process-local state may return early."
+          "Run TS-00, SP-01, and SP-05 and preserve their current RED signals.",
+          "Remove the three retired names from both TOOLS sets, routing sets, callTool branches, and JSON-RPC public dispatch; retain private ports only.",
+          "Resolve exactly the two existing flags through approved external-source trust: both disabled returns structural-only, half-enabled fails closed, both exact 1 continues with valid configuration.",
+          "After canonical init and structural projection, privately run WP-P1 full reconciliation; preserve checkpoints/resume/idempotence and record readiness only after queryability/coherence.",
+          "Run TS-00, SP-01, SP-05, no-argument, and graph-tidy regressions."
         ],
-        "completionSignal": "Cross-process and same-process queries both traverse durable validation; missing store construction fails; every owner/ACL matrix case rejects with exact remediation and zero retrieval; controlled current-user/SYSTEM ACL succeeds."
+        "completionSignal": "Retired names are absent/unknown and canonical init passes enabled, disabled, half-enabled, configuration, resume, rerun, and prior-structural-only controls."
       },
       {
-        "taskId": "WP-P3-L2",
-        "title": "Route and serialize production adapters",
-        "objective": "Make CLI, System MCP, unified MCP, and package boundaries preserve authorization, consent, and diagnostics.",
-        "dependsOn": [
-          "WP-P3-L1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney"
-        ],
-        "targetPaths": [
-          ".argo/scripts/graph-rag/semanticOperatorError.js",
-          ".argo/scripts/semanticOperatorJourneyCli.js",
-          ".argo/scripts/systemarchitecture-mcp-server.js",
-          ".argo/scripts/argo-mcp-server.js",
-          "package.json"
-        ],
+        "taskId": "CSL-C2",
+        "title": "Build durable incremental lifecycle",
+        "objective": "Reconcile exact touched records through the production store without runId cleanup.",
+        "dependsOn": ["CSL-C1"],
+        "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-02-PersistentProjection", "ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"],
+        "targetPaths": [".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js"],
         "steps": [
-          "Create the shared exact eleven-field whitelist serializer and MCP error result. Derive every field only from error.<identicallyNamedField> using the frozen type normalization; force verified to exact true comparison and fullSnapshotFallback to literal false. Reject constants, cross-field mappings, message, stack, canaries, arbitrary properties, credentials, or unsafe source.",
-          "Refactor CLI process execution through runCliProcess with the default production factory and frozen injected composition seam; preserve request flags and output one JSON document.",
-          "Split System MCP raw semantic retrieval into a private delegate. Route exported System and unified callTool semantic getSystemArchitecture through an injected approved journey or approved default journey. Missing journey may fail closed but cannot invoke the raw delegate. Preserve validation, no-argument, graph-tidy, and JSON-RPC behavior exactly.",
-          "Compose the store in the default journey; invalidate before external backfill and after successful canonical write. Export handleRequest(request, dependencies) from both servers and pass dependencies through unified dispatch.",
-          "Remove --explicit-opt-in from the package script; do not add another implicit consent source."
+          "Run SP-02, DT-16, and W3.1 and preserve missing-boundary RED before live checks.",
+          "Add createPersistentMutationEmbeddingLifecycle(dependencies).reconcile({ canonicalWrite, preview, gates }) and validate exact touched arrays.",
+          "Invalidate readiness before side effects; make preview inert, disabled Pending/Stale with zero effects, and half-enabled/configuration rejection fail closed.",
+          "For dual-enabled valid execution, generate qualified vectors and use only upsertRecords/deleteTombstones with complete evidence and no runId/cleanup.",
+          "Verify every touched identity, verify global coherence, then record Aligned; record Failed/Stale on partial failure.",
+          "Run SP-02, DT-16, and controlled W3.1 without live credentials."
         ],
-        "completionSignal": "System and unified exported semantic probes without injected journey record zero raw retrieval and fail closed; injected operator probes record operator-query only; snapshots/graph-tidy remain bypasses; package and wire contracts remain exact."
+        "completionSignal": "The 18-case matrix and preview pass with exact IDs, durable upsert/tombstone, complete evidence, ordered alignment, and zero production cleanup."
       },
       {
-        "taskId": "WP-P3-L3",
-        "title": "Prove full WP-P3 repair",
-        "objective": "Complete all frozen acceptance and regression evidence without changing tests/contracts.",
-        "dependsOn": [
-          "WP-P3-L2"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney"
-        ],
-        "targetPaths": [],
+        "taskId": "CSL-C3",
+        "title": "Integrate every canonical write",
+        "objective": "Automatically invoke the durable lifecycle after all successful batch/focused writes only.",
+        "dependsOn": ["CSL-C2"],
+        "relatedTestcases": ["ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"],
+        "targetPaths": [".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"],
         "steps": [
-          "Run SP-05 and all nine production-semantic-operator guards, including every self-fixture.",
-          "Run SP-01 through SP-04 critical regressions, validate graph and handoff, then run the full architecture runner.",
-          "Verify only the eight authorized production paths changed in Coding and runner-owned delivery/failure records are accepted outputs."
+          "Route batch and every focused add/update/remove adapter through one post-write function using actual touched arrays.",
+          "Invalidate readiness immediately after canonical write success and before configuration/provider/store/queryability effects.",
+          "Never invoke semantic lifecycle for preview, dry-run, failed validation, or failed canonical write.",
+          "Retain successful canonical JSON and attach Failed/Stale redacted evidence when semantic work fails.",
+          "Remove production random runId, runId writes/queries, and cleanup calls while leaving frozen live-test adapters unchanged."
         ],
-        "completionSignal": "SP-05, nine guards, regressions, validators, and full 43/43 runner pass; delivery attributes return 37 delivered and 0 not_delivered."
+        "completionSignal": "All canonical write surfaces share readiness-first exact-touched behavior, preserve canonical authority on failure, and never leak preview/vector or cleanup effects."
+      },
+      {
+        "taskId": "CSL-C4",
+        "title": "Verify readiness on every query",
+        "objective": "Make ordinary getSystemArchitecture(query) self-contained and fail-closed.",
+        "dependsOn": ["CSL-C1", "CSL-C3"],
+        "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
+        "targetPaths": [".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"],
+        "steps": [
+          "Run SP-03 and SP-04 and preserve retired-explicit-readiness RED.",
+          "On every ordinary query, read/evaluate persistent WP-P2 readiness exactly once before provider/vector work; remove prior WP-P3 attestation/process-local authorization.",
+          "Propagate exact redacted readiness fields and literal false fullSnapshotFallback for every non-Aligned state.",
+          "Retrieve only when complete Aligned; preserve credential/provider/vector/closure/canonical completion behavior.",
+          "Keep omitted query and all graph-tidy calls exact zero-semantic-work canonical bypasses."
+        ],
+        "completionSignal": "Consecutive ordinary queries each perform a fresh readiness read; non-Aligned rejects without fallback; canonical bypasses remain exact."
+      },
+      {
+        "taskId": "CSL-C5",
+        "title": "Prove controlled and live evidence",
+        "objective": "Finish deterministic acceptance and separately report protected live-release blockers.",
+        "dependsOn": ["CSL-C1", "CSL-C2", "CSL-C3", "CSL-C4"],
+        "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-05-NewProjectJourney", "ExplicitAcceptanceTestcase-SP-01-FullBackfill", "ExplicitAcceptanceTestcase-SP-02-PersistentProjection", "ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E", "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
+        "targetPaths": [".argo/scripts/argo-mcp-server.js", ".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/defaultSemanticRetrieval.js", ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js", ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js", ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js"],
+        "steps": [
+          "Run all eight frozen scoped entrypoints and five guards; fix production only.",
+          "Run the full architecture runner and preserve runner-owned records/status; separate scoped from baseline failures.",
+          "Only when both gates and safe external credentials/Neo4j exist, run protected live W3.1 and record real provider, persistence, queryability, and coherence evidence.",
+          "Otherwise report the precise environment blocker; controlled pass is code-complete only.",
+          "Verify no third flag, retired route, production cleanup, embedded/default credential, manual status edit, or frozen-file edit appears."
+        ],
+        "completionSignal": "Controlled scope and guards pass without regression; live evidence passes honestly or remains explicitly environment-blocked."
       }
     ]
   },
   "frozenFiles": [
-    "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-    "tests/harness/productionSemanticOperatorJourneyHarness.js",
-    "tests/harness/productionSemanticOperatorAdapterLifecycleHarness.js",
-    "tests/fixtures/productionSemanticOperatorCliProcess.js",
-    "tests/architecture/production-semantic-operator/architecture-boundary.guard.js",
-    "tests/architecture/production-semantic-operator/operator-policy-provenance.guard.js",
-    "tests/architecture/production-semantic-operator/dependency-direction.guard.js",
-    "tests/architecture/production-semantic-operator/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-semantic-operator/implementation-traceability.guard.js",
-    "tests/architecture/production-semantic-operator/default-composition-wiring.guard.js",
-    "tests/architecture/production-semantic-operator/authorized-production-safety.guard.js",
-    "tests/architecture/production-semantic-operator/readiness-public-boundary.guard.js",
-    "tests/architecture/production-semantic-operator/adapter-lifecycle-boundary.guard.js",
-    "tests/explicit/entries/runProductionSemanticBackfill.js",
-    "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-    "tests/harness/productionSemanticPersistenceHarness.js",
-    "tests/architecture/production-semantic-persistence/architecture-boundary.guard.js",
-    "tests/architecture/production-semantic-persistence/dependency-direction.guard.js",
-    "tests/architecture/production-semantic-persistence/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-semantic-persistence/implementation-traceability.guard.js",
-    "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-    "tests/explicit/entries/runProductionSemanticReadinessGate.js",
-    "tests/harness/productionDefaultRetrievalHarness.js",
-    "tests/architecture/production-default-retrieval/architecture-boundary.guard.js",
-    "tests/architecture/production-default-retrieval/dependency-direction.guard.js",
-    "tests/architecture/production-default-retrieval/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-default-retrieval/implementation-traceability.guard.js",
-    "tests/explicit/entries/runGraphQueryCompatibility.js",
-    "tests/explicit/entries/runTypedMcpQueryContract.js",
-    "tests/explicit/entries/runCanonicalGraphFullSnapshot.js",
-    "tests/explicit/entries/runGraphTidyFullSnapshot.js",
-    "tests/explicit/entries/runExternalCredentialBoundary.js",
-    "tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js",
-    "tests/explicit/entries/runCanonicalProjectionAuthority.js",
-    "tests/harness/intentArchitectureQueryHarness.js",
-    "tests/harness/liveEmbeddingProviderHarness.js",
-    "tests/architecture/intent-query/architecture-boundary.guard.js",
-    "tests/architecture/intent-query/dependency-direction.guard.js",
-    "tests/architecture/intent-query/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/intent-query/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/architecture-boundary.guard.js",
-    "tests/architecture/production-graph-rag/dependency-direction.guard.js",
-    "tests/architecture/production-graph-rag/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/production-graph-rag/implementation-traceability.guard.js",
-    "tests/architecture/production-graph-rag/credential-source-policy.guard.js",
-    "tests/architecture/production-graph-rag/live-provider-contract.guard.js",
-    "tests/architecture/production-graph-rag/live-provider-opt-in.guard.js",
-    "tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js",
-    ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
-    "README.md",
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/ARCHITECTURE.md",
     ".argo/scripts/graph-rag/semantic-persistence/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
-    ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
-    ".argo/scripts/graph-rag/liveEmbeddingProviderConfig.js",
-    ".argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js",
-    ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
-    ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js",
-    ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js",
-    ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
+    ".argo/temp/IntentToImplementationHandoff.json",
+    ".argo/temp/ImplementationToCodingHandoff.json",
     "design/KG/SystemArchitecture.json",
-    ".argo/temp/IntentToImplementationHandoff.json"
+    "design/KG/test-failure-records.json",
+    "design/persistant-memory/implementation-design.md",
+    "tests/harness/automaticSemanticLifecycleHarness.js",
+    "tests/harness/productionSemanticOperatorJourneyHarness.js",
+    "tests/harness/productionSemanticOperatorAdapterLifecycleHarness.js",
+    "tests/harness/productionSemanticPersistenceHarness.js",
+    "tests/harness/productionDefaultRetrievalHarness.js",
+    "tests/harness/liveEmbeddingProviderHarness.js",
+    "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
+    "tests/explicit/entries/runProductionSemanticBackfill.js",
+    "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
+    "tests/explicit/entries/runMutationIndexLifecycle.js",
+    "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+    "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "tests/explicit/entries/runTypedMcpQueryContract.js",
+    "tests/architecture/automatic-semantic-lifecycle/architecture-boundary.guard.js",
+    "tests/architecture/automatic-semantic-lifecycle/dependency-direction.guard.js",
+    "tests/architecture/automatic-semantic-lifecycle/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/automatic-semantic-lifecycle/implementation-traceability.guard.js",
+    "tests/architecture/automatic-semantic-lifecycle/lifecycle-invariants.guard.js",
+    ".argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js",
+    ".argo/scripts/graph-rag/liveEmbeddingProviderClient.js",
+    ".argo/scripts/graph-rag/productionGraphRagRuntime.js",
+    ".argo/scripts/graph-rag/semanticReadinessAttestationStore.js",
+    ".argo/scripts/graph-rag/systemMetadataCommandAdapter.js",
+    "package.json"
   ],
   "openGaps": [
-    "Persistent ImplementationDesign session ID: implementation-semprod-wp-p3-20260727T0241+08.",
-    "IntentDesign correction b41bdbd3c9c249f7bfcb6b45daeaa3a53511fee3 passed canonical validation and changed semprod-rel-journey-credentials plus semprod-rel-journey-readiness from backward-propagating Realizations to non-directional Associations. SP-05 therefore observes but cannot reopen or control delivery of protected WP-P1/WP-P2 policy boundaries.",
-    "Independent audit defects are corrected in the frozen design: exact configuration-before-effects ordering in both successes; fixture equality except opt-in; separate recovery; complete observable error capture before canary assertions; exact default factory/tool wiring; executable authorized-source safety; and exact post-rejection snapshot/zero-effect assertions.",
-    "Second guard audit correction replaces lexical source matching with TypeScript AST inspection. Default wiring now proves exact CommonJS imports, real factory/tool calls, one exact six-function dependency object, and executable comments/unused/missing-call/extra-port rejection. Source safety now permits direct approved external plumbing while rejecting provider/model/credential defaults through assignments, aliases, object properties, logical/nullish/ternary expressions, and factory arguments.",
-    "Clean Architecture re-audit correction adds TypeChecker symbol resolution and exact callback-return mapping so imported names cannot be satisfied by locally shadowed factories or callTool. Safety uses fixed-point default-source taint so generic literals and defaults in aliases, destructuring, parameters, assignments, objects, and factory arguments cannot flow into provider/model/credential bindings.",
-    "Accepted createDefaultSemanticRetrieval(dependencies).readReadiness() remains the sole readiness authority and stays frozen. The new store records only its safe public envelope after explicit verified:true; it does not evaluate readiness or persist configuration.",
-    "Final audit against 96f0fc2 reproduced three remaining bypasses: exported System/unified callTool accepts raw semanticRetrievalBoundary when no journey is injected; same-process query returns through readinessVerified without durable/current WP-P2 revalidation; and the Windows trust code accepts group owner plus ACLs without exact principal/permission/deny semantics.",
-    "Frozen SP-05 now launches separate and same-process child flows, probes exported System/unified callTool without a journey while installing a raw-retrieval trap, requires missing-store construction failure, and executes exact Windows owner/ACL/remediation cases. Current RED includes SP05_SAME_PROCESS_READINESS_DRIFT_UNEXPECTED_SUCCESS, SP05_SYSTEM_EXPORTED_CALLTOOL_RAW_RETRIEVAL_FALLBACK, and ACL remediation mismatch.",
-    "Primary Harness correction: every success, consent rejection, configuration rejection, diagnostics, contradiction, and recovery composition now receives the same explicit controlled readinessAttestationStore. Its record/read/clear/validate behavior preserves exact readiness fields and rejects version/channel drift; it is not an ACL substitute. The adapter Harness retains the isolated no-store factory probe and all real durable filesystem/owner/ACL assertions. The entrypoint guard structurally rejects omission of the controlled store.",
-    "Trust rationale: a durable local record is required because process memory is not an authorization boundary. The accepted canonical JSON authority already assumes a same-user local workspace, so this design adopts that explicit boundary rather than inventing a signing secret. A malicious process under the same OS identity can rewrite canonical JSON and is out of scope. Other identities, links/reparse points, permissive ACL/mode, corruption, malformed/extra fields, foreign records, and interrupted replacement are in scope and fail closed. The deterministic digest is only corruption/canonical-byte evidence; explicit-verification provenance derives from the guarded verifyReadiness writer path plus OS trust checks.",
-    "Windows ownership/ACL evidence remains in the eighth narrowly authorized production file systemMetadataCommandAdapter.js, but policy evaluation belongs privately in semanticReadinessAttestationStore.js. Exact owner equality and complete protected-right parsing are mandatory; the known current-host .argo/temp BUILTIN Users inheritance is a release blocker, not an exception. Current production remains RED because its historical right regex omits advanced effective icacls rights.",
-    "Frozen runtime coverage now includes separate/same-process drift, missing durable store, exported no-journey callTool, presence-only/malformed/extra/tampered/foreign/link/atomic/invalidation/version cases, group owner, isolated broad file/parent principals, and isolated foreign-allow plus current-identity-deny process cases for the newly demonstrated WD/AD/GW/GA/WEA/GR/RD rights. The guard exhaustively executes every protected F/M/RX/R/W/D/DE/RC/WDAC/WO/S/AS/MA/GR/GW/GE/GA/RD/WD/AD/REA/WEA/X/DC/RA/WA right against both file and parent ACLs and compound ACEs. Positive Windows workspaces remain current-identity/SYSTEM-only.",
-    "The ninth guard additionally follows TypeChecker-resolved aliases/helpers from public callTool and accepts only the injected/default operator query chain, stopping traversal solely at the exact approved default factory. It rejects direct, aliased, helper, and resolver-delegated raw fallback, any query return before durable validation, dependency rewriting/volatile store creation, and executes the private Windows trust policy against safe and adversarial owner/ACE matrices.",
-    "Inherited WP-P1/WP-P2 and production Graph RAG guard corrections remove stale assertions that permanently coupled the single shared handoff slot to historical TS-01/TS-06/TS-07/W3.1 repair scopes or required future SP-05 absence. Historical Graph RAG entrypoints remain bound to graph-mounted acceptance paths, executable behavior, and tests/ARCHITECTURE.md; current-scope handoff freezing is required only when that testcase is actually named by the active handoff.",
-    "The correction baseline expects 43 total / 42 passed / 1 failed with SP-05 sole RED, semprod-operator-journey-process sole not_delivered, 36 delivered / 1 not_delivered attributes, and failure records at design/KG/test-failure-records.json. Final counts are runner-owned and must be refreshed immediately before this handoff commit.",
-    "The tracked handoff is superseded after accepted Coding commit 587ee41 only for the eight adapter-lifecycle production paths. WP-P1/WP-P2 internals, README, all frozen tests/contracts, canonical authority, and delivery status are not Coding targets.",
-    "Live Neo4j synchronization remains unavailable with neo4jUri is required for start. Deterministic acceptance uses controlled recording ports below production composition boundaries and cannot be represented as live provider/database evidence. semprod-ready-plateau remains a target-only release context and is not claimed by this handoff; if its protected production-facing gate intrinsically requires live execution, that claim remains definitively blocked until the environment is supplied.",
-    "No ImplementationToIntentTraceProposal.json is required: the corrected SP-05 testcase is mounted under the exact implementation-bearing owner, all three handoff anchors exist, and plateau/work-package exclusions are evidence-backed non-executable context.",
-    "Inherited composition migration: productionDefaultRetrievalHarness.js and intentArchitectureQueryHarness.js retain every accepted WP-P2 assertion and retrieval boundary but now pass semanticOperatorJourney through the correct inner-third or wrapper-fourth dependency position. The frozen WP-P2 correctness guard structurally inspects those calls and executes missing-dependency and raw-boundary-substitution negative fixtures."
+    "No unresolved implementation-design gaps or user decisions. Scope, interfaces, dependencies, frozen acceptance, failure signals, and completion evidence are explicit.",
+    "Runner-owned deliveryStatus baseline changed 28 elements from delivered to not_delivered: grag-consumer-role, grag-consumption-process, grag-query-service, grag-mode-validation, grag-seed-retrieval, grag-purpose-closure, grag-intent-decision-policy, grag-implementation-policy, grag-repair-policy, grag-audit-policy, grag-graph-tidy-policy, grag-endpoint-closure, grag-view-closure, grag-provenance, grag-semantic-index, grag-index-lifecycle, grag-mcp-interface, grag-native-retrieval-service, grag-embedding-qualification, grag-credential-boundary, grag-embedding-provider-adapter, grag-embedding-generation, grag-wp-3-1, semprod-backfill-control, semprod-persistent-projection-requirement, semprod-default-vector-retrieval, semprod-readiness-requirement, and semprod-operator-journey-process. These are pre-coding dependency cascades, not manual intent edits.",
+    "Live-release evidence is environment-gated, not a design gap: both existing exact gates, safe external-only credentials, a real qualified finite 1024-dimensional provider response, durable Neo4j records, vector queryability, and global coherence are required. Incoming evidence reports neo4jUri is required and unsafe Windows .argo/temp ACL; Coding must not fabricate evidence or weaken trust."
   ]
 }

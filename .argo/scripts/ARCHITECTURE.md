@@ -4,8 +4,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 ## Responsibilities
 
-- `.argo/scripts/argo-mcp-server.js` owns transport-neutral tool registration and delegates `getSystemArchitecture` without interpreting query policy.
-- `.argo/scripts/systemarchitecture-mcp-server.js` owns the deep query module: request validation, mode selection, canonical full reads, and later semantic-query dispatch.
+- `.argo/scripts/argo-mcp-server.js` owns transport-neutral tool registration, keeps canonical `initializeWorkspace`/argo init semantics explicit, privately invokes the canonical semantic lifecycle after initialization, and delegates `getSystemArchitecture` without interpreting query policy.
+- `.argo/scripts/systemarchitecture-mcp-server.js` owns the deep query and canonical-write orchestration module: request validation, mode selection, canonical full reads, per-call persistent semantic readiness, exact touched-ID mutation dispatch, and durable lifecycle outcome attachment.
 - `design/KG/SystemArchitecture.json` remains the canonical read source; no query mode may rewrite it.
 - W6 semantic-query responses must expose the governing canonical graph version in query/result evidence and it must equal the canonical version or Harness-defined fingerprint of the same legacy graph read; missing or mismatched canonical-version evidence blocks coherent-result delivery even when the no-argument canonical read still succeeds.
 
@@ -30,11 +30,15 @@ Validation occurs before retrieval and returns these stable categories:
 - missing or blank intent: `QUERY_INTENT_REQUIRED`;
 - missing or blank audit subject: `AUDIT_SUBJECT_REQUIRED`.
 
-Public semantic `getSystemArchitecture` dispatch routes through the Production Semantic Operator Journey and its durable recorded-readiness authorization. This applies to exported System/unified `callTool` invocations and JSON-RPC handlers alike: an absent injected journey must construct the approved default journey or fail closed, never call raw retrieval. Only the private raw semantic-query delegate accepts `semanticRetrievalBoundary.retrieve(request)` for the operator's final inward query port; it is not a public tool path or a missing-dependency fallback. No-argument and graph-tidy reads continue to bypass semantic work. System and unified JSON-RPC handlers preserve one exact readiness error object containing only `category`, `state`, `verified`, canonical/content/index versions, completed/missing/mismatched channels, `fullSnapshotFallback`, and `action`. Every value derives from its identically named approved error diagnostic under the frozen normalization, except literal-false `fullSnapshotFallback`; constants, cross-field substitutions, message, stack, secrets, unsafe source, and extras are prohibited.
+Public semantic `getSystemArchitecture` dispatch privately composes accepted WP-P2 readiness and retrieval on every ordinary query. No prior explicit readiness command or durable WP-P3 authorization record is required or publicly routable. This applies to exported System/unified `callTool` invocations and JSON-RPC handlers alike. Only the private raw semantic-query delegate accepts `semanticRetrievalBoundary.retrieve(request)` after the same invocation has freshly verified persistent readiness; it is not a public tool path or a missing-dependency fallback. No-argument and graph-tidy reads continue to bypass semantic work. System and unified JSON-RPC handlers preserve one exact readiness error object containing only `category`, `state`, `verified`, canonical/content/index versions, completed/missing/mismatched channels, `fullSnapshotFallback`, and `action`. Every value derives from its identically named approved error diagnostic under the frozen normalization, except literal-false `fullSnapshotFallback`; constants, cross-field substitutions, message, stack, secrets, unsafe source, and extras are prohibited.
+
+`startNewProjectSemanticJourney`, `backfillSystemArchitectureSemanticProjection`, and `verifySystemArchitectureSemanticReadiness` are retired public names. They are absent from both `TOOLS` registries, both `tools/list` responses, `SYSTEM_ARCHITECTURE_TOOL_NAMES`, and all public `callTool` branches. Their WP-P1/WP-P2 operations remain private ports under canonical argo init and ordinary `getSystemArchitecture(query)`.
+
+Every successful batch or focused canonical write clears readiness before semantic side effects and passes exact `touchedElementIds`, `touchedRelationshipIds`, and `touchedViewIds` to the durable incremental lifecycle. Preview/dry-run never enters that lifecycle. Canonical JSON remains written and authoritative when semantic work is disabled or fails; the response records Pending, Stale, or Failed with `fullSnapshotFallback: false`.
 
 ## Local dependencies
 
-- The unified gateway may depend on `systemarchitecture-mcp-server.js` through `callTool`.
+- The unified gateway may depend on `systemarchitecture-mcp-server.js` through `callTool` and one private post-initialize lifecycle port.
 - The deep query module depends inward on the injected semantic retrieval boundary rather than constructing retrieval inside validation or mode selection.
 - The query boundary may depend on graph/schema validation, canonical filesystem loading, and Neo4j synchronization support.
 - Neither runtime module may depend on `tests/`, explicit entrypoints, or test-only fixtures.

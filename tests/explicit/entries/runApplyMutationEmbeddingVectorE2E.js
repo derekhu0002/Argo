@@ -1,12 +1,25 @@
 const assert = require('node:assert');
 const {
   runApplyMutationEmbeddingVectorE2E,
-  safeCategory,
 } = require('../../harness/liveEmbeddingProviderHarness.js');
+const {
+  assertPersistentIncrementalMatrix,
+  runPersistentIncrementalMatrix,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
   // GIVEN explicit W3.1 live opt-in, approved Qwen/Neo4j secret sources, and mutation fixtures touching Element, Relationship, and View
-  // WHEN one applySystemArchitectureMutation call automatically triggers the production mutation-driven embedding lifecycle
+  // WHEN controlled production composition exercises the same persistent incremental boundary
+  const persistentIncremental = await runPersistentIncrementalMatrix('W31');
+  assertPersistentIncrementalMatrix(persistentIncremental, 'W31');
+
+  // THEN code-complete evidence remains distinct from protected live-release evidence
+  if (
+    process.env.ARGO_LIVE_PROVIDER_E2E !== '1'
+    || process.env.ARGO_W31_LIVE_MUTATION_VECTOR_E2E !== '1'
+  ) return;
+
+  // WHEN one live applySystemArchitectureMutation call automatically triggers the production lifecycle
   const observation = await runApplyMutationEmbeddingVectorE2E();
 
   // THEN the canonical mutation call is the only control point and the lifecycle is not created by the Harness
@@ -58,9 +71,10 @@ async function main() {
     assert.strictEqual(failure.offlineEvidenceAccepted, false, `W31_FAILURE_FAKE_EVIDENCE_ACCEPTED:${failure.name}`);
   }
   assert.deepStrictEqual(observation.secretLeaks, [], 'W31_SECRET_LEAK');
+
 }
 
 main().catch(error => {
-  console.error(safeCategory(error));
+  console.error(error && error.message ? error.message : error);
   process.exit(1);
 });

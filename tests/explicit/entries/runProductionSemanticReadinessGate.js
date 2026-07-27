@@ -6,6 +6,10 @@ const {
   runFullSnapshotCompatibilityControls,
   runReadinessMatrix,
 } = require('../../harness/productionDefaultRetrievalHarness.js');
+const {
+  assertFreshReadinessPerQuery,
+  observeFreshReadinessPerQuery,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
   // GIVEN persistent structural-only SemanticIndexPending, partial, stale, failed,
@@ -22,6 +26,11 @@ async function main() {
   assertFullSnapshotCompatibility(compatibilityControls);
   const anchoredGraphTidy = await runAnchoredGraphTidyCompatibilityControl();
   assertAnchoredGraphTidyCompatibility(anchoredGraphTidy);
+
+  // WHEN ordinary queries run without a retired explicit readiness command
+  // THEN each call freshly verifies persistent readiness before retrieval
+  const freshReadiness = await observeFreshReadinessPerQuery();
+  assertFreshReadinessPerQuery(freshReadiness, 'SP04');
 }
 
 main().catch(error => {

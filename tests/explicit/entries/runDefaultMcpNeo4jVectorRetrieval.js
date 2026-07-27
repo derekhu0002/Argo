@@ -14,6 +14,10 @@ const {
   runProductionQueryMixedLegacyRejections,
   runZeroResultDefaultMcpRetrieval,
 } = require('../../harness/productionDefaultRetrievalHarness.js');
+const {
+  assertFreshReadinessPerQuery,
+  observeFreshReadinessPerQuery,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
   // GIVEN approved and prohibited raw external credential sources, an aligned persistent
@@ -37,6 +41,11 @@ async function main() {
   // THEN graph-tidy still bypasses embedding and retrieval for an exact canonical snapshot
   const compatibilityControls = await runFullSnapshotCompatibilityControls();
   assertFullSnapshotCompatibility(compatibilityControls);
+
+  // THEN every ordinary public query performs its own durable readiness read;
+  // no prior public readiness command or process-local authorization is required
+  const freshReadiness = await observeFreshReadinessPerQuery();
+  assertFreshReadinessPerQuery(freshReadiness, 'SP03');
 }
 
 main().catch(error => {

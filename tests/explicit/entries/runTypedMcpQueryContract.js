@@ -6,8 +6,13 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const { callTool } = require('../../../.argo/scripts/argo-mcp-server.js');
+const {
+  assertSolePublicSemanticSurface,
+  observeSolePublicSemanticSurface,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
+  // GIVEN the typed architecture query contract and canonical graph
   process.env.ARGO_REPO_ROOT = repoRoot;
 
   const tool = readListedGetSystemArchitectureTool();
@@ -85,6 +90,11 @@ async function main() {
     },
   });
   assertTypedError(missingAuditSubjectResponse, 'AUDIT_SUBJECT_REQUIRED');
+
+  // WHEN public discovery and routing are inspected after WP-P3 retirement
+  // THEN getSystemArchitecture is the sole architecture read/query semantic surface
+  const publicSurface = await observeSolePublicSemanticSurface();
+  assertSolePublicSemanticSurface(publicSurface);
 }
 
 function createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary) {
