@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const graph = JSON.parse(read('design/KG/SystemArchitecture.json'));
+const testContract = read('tests/ARCHITECTURE.md');
 const entryRequirements = new Map([
   ['tests/explicit/entries/runProductionGraphRagRuntime.js', [
     'productionGraphRagHarness.js',
@@ -198,20 +200,25 @@ for (const [entryPath, requiredObservations] of entryRequirements) {
   }
 }
 
-const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+const mountedEntryPaths = new Set(
+  (graph.elements || [])
+    .flatMap(element => element.testcases || [])
+    .map(testcase => testcase.acceptanceCriteria)
+    .filter(Boolean),
+);
 for (const entryPath of entryRequirements.keys()) {
   assert(
-    handoff.frozenFiles.includes(entryPath),
-    `PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: ${entryPath} must be frozen`,
+    mountedEntryPaths.has(entryPath) && testContract.includes(entryPath),
+    `PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: ${entryPath} lacks persistent mounted contract evidence`,
   );
 }
 assert(
-  handoff.frozenFiles.includes('tests/harness/productionGraphRagHarness.js'),
-  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: production Harness must be frozen',
+  testContract.includes('tests/harness/productionGraphRagHarness.js'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: production Harness lacks persistent test contract evidence',
 );
 assert(
-  handoff.frozenFiles.includes('tests/harness/liveEmbeddingProviderHarness.js'),
-  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness must be frozen',
+  testContract.includes('tests/harness/liveEmbeddingProviderHarness.js'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness lacks persistent test contract evidence',
 );
 
 const liveHarness = read('tests/harness/liveEmbeddingProviderHarness.js');

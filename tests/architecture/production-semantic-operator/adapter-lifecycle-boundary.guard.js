@@ -168,6 +168,12 @@ const path = require('node:path');
 const ATTESTATION_PATH = '.argo/temp/semantic-readiness-attestation.json';
 const FIELDS = ['authorizationOperation','canonicalVersion','contentVersion','indexVersion','completedChannels','missingChannels','mismatchedChannels'];
 const ACL_REMEDIATION = 'Restrict .argo/temp and semantic-readiness-attestation.json ownership and ACLs to the current OS identity and SYSTEM, then run semantic readiness again';
+const WINDOWS_PROTECTED_RIGHTS = Object.freeze([
+  'F','M','RX','R','W','D',
+  'DE','RC','WDAC','WO','S','AS','MA',
+  'GR','GW','GE','GA',
+  'RD','WD','AD','REA','WEA','X','DC','RA','WA',
+]);
 function normalizePrincipal(value) { return String(value).trim().toLowerCase(); }
 function parseWindowsAcl(value) {
   return String(value).split(/\\r?\\n/).filter(Boolean).map(line => {
@@ -184,7 +190,7 @@ function parseWindowsAcl(value) {
   });
 }
 function grantsProtectedAccess(entry) {
-  return entry.permissions.some(permission => /^(?:F|M|R|RX|W|D|DC|WDAC|WO)$/.test(permission));
+  return entry.permissions.some(permission => WINDOWS_PROTECTED_RIGHTS.includes(permission));
 }
 function grantsRequiredIdentityAccess(entry) {
   return entry.permissions.some(permission => permission === 'F' || permission === 'M');
@@ -250,6 +256,19 @@ assert.doesNotThrow(
   },
   'WP_P3_ADAPTER_LIFECYCLE_GUARD: safe non-secret store fixture was rejected',
 );
+for (const [name, source] of [
+  ['missing-advanced-right', safeStore.replace("'RD','WD','AD','REA'", "'RD','AD','REA'")],
+  ['legacy-right-regex', safeStore.replace(
+    'WINDOWS_PROTECTED_RIGHTS.includes(permission)',
+    '/^(?:F|M|R|RX|W|D|DC|WDAC|WO)$/.test(permission)',
+  )],
+]) {
+  assert.throws(
+    () => assertWindowsTrustPolicy(source, `${name}.fixture.js`),
+    /WP_P3_ADAPTER_LIFECYCLE_GUARD/,
+    `WP_P3_ADAPTER_LIFECYCLE_GUARD: incomplete Windows rights parser fixture passed ${name}`,
+  );
+}
 for (const [name, mutate] of [
   ['presence-only', source => source.replace(
     'record(readiness) { return writeAttestationAtomically(readiness, metadataAdapter); },',
@@ -1001,7 +1020,13 @@ module.exports.__assertWindowsAclTrust = typeof assertWindowsAclTrust === 'funct
     () => evaluate({}),
     `WP_P3_ADAPTER_LIFECYCLE_GUARD: ${label} rejected exact current-user/SYSTEM ACL`,
   );
-  for (const [name, overrides] of Object.entries({
+  const protectedRights = [
+    'F', 'M', 'RX', 'R', 'W', 'D',
+    'DE', 'RC', 'WDAC', 'WO', 'S', 'AS', 'MA',
+    'GR', 'GW', 'GE', 'GA',
+    'RD', 'WD', 'AD', 'REA', 'WEA', 'X', 'DC', 'RA', 'WA',
+  ];
+  const unsafeFixtures = {
     groupOwner: { owner: 'BUILTIN\\Administrators' },
     builtinUsersRead: { fileAcl: `${safeAcl}\r\nBUILTIN\\Users:(RX)` },
     builtinAdministratorsFile: {
@@ -1022,9 +1047,30 @@ module.exports.__assertWindowsAclTrust = typeof assertWindowsAclTrust === 'funct
     currentIdentityDeny: {
       fileAcl: `${identity}:(DENY)(R,W)\r\n${identity}:(F)\r\nNT AUTHORITY\\SYSTEM:(F)`,
     },
+    compoundAdvancedForeignAllow: {
+      fileAcl: `${safeAcl}\r\nFOREIGN\\Other:(OI)(CI)(WD,AD,WEA)`,
+    },
+    compoundAdvancedCurrentDeny: {
+      directoryAcl: `${identity}:(DENY)(GR,GA,RD)\r\n${safeAcl}`,
+    },
     permissiveParent: { directoryAcl: `${safeAcl}\r\nBUILTIN\\Users:(M)` },
     malformedAcl: { fileAcl: 'unparseable acl output' },
-  })) {
+  };
+  for (const right of protectedRights) {
+    unsafeFixtures[`foreignFile_${right}`] = {
+      fileAcl: `${safeAcl}\r\nFOREIGN\\Other:(${right})`,
+    };
+    unsafeFixtures[`foreignParent_${right}`] = {
+      directoryAcl: `${safeAcl}\r\nFOREIGN\\Other:(${right})`,
+    };
+    unsafeFixtures[`currentDenyFile_${right}`] = {
+      fileAcl: `${identity}:(DENY)(${right})\r\n${safeAcl}`,
+    };
+    unsafeFixtures[`currentDenyParent_${right}`] = {
+      directoryAcl: `${identity}:(DENY)(${right})\r\n${safeAcl}`,
+    };
+  }
+  for (const [name, overrides] of Object.entries(unsafeFixtures)) {
     assert.throws(
       () => evaluate(overrides),
       error => (

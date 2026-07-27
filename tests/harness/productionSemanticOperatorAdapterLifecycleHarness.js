@@ -24,6 +24,15 @@ const SAFE_WINDOWS_ACL = [
   '%CURRENT_IDENTITY%:(F)',
   'NT AUTHORITY\\SYSTEM:(F)',
 ].join('\r\n');
+const WINDOWS_PROTECTED_RIGHTS = Object.freeze([
+  'F', 'M', 'RX', 'R', 'W', 'D',
+  'DE', 'RC', 'WDAC', 'WO', 'S', 'AS', 'MA',
+  'GR', 'GW', 'GE', 'GA',
+  'RD', 'WD', 'AD', 'REA', 'WEA', 'X', 'DC', 'RA', 'WA',
+]);
+const WINDOWS_RUNTIME_RIGHTS = Object.freeze([
+  'WD', 'AD', 'GW', 'GA', 'WEA', 'GR', 'RD',
+]);
 const ERROR_ENVELOPE_KEYS = Object.freeze([
   'action',
   'canonicalVersion',
@@ -894,7 +903,7 @@ function captureMissingDurableStoreRequirement() {
 
 function runWindowsTrustPolicyScenarios(roots) {
   const scenarios = {};
-  for (const [name, environment] of Object.entries({
+  const scenarioEnvironments = {
     groupOwner: {
       SP05_ATTESTATION_OWNER_OVERRIDE: 'BUILTIN\\Administrators',
     },
@@ -928,7 +937,24 @@ function runWindowsTrustPolicyScenarios(roots) {
     authenticatedUsersParent: {
       SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: `${SAFE_WINDOWS_ACL}\r\nAuthenticated Users:(RX)`,
     },
-  })) {
+  };
+  assert(
+    WINDOWS_RUNTIME_RIGHTS.every(right => WINDOWS_PROTECTED_RIGHTS.includes(right)),
+    'SP05_WINDOWS_RUNTIME_RIGHT_MATRIX_INVALID',
+  );
+  scenarioEnvironments.foreignAllowFileAdvancedRights = {
+    SP05_ATTESTATION_FILE_ACL_OVERRIDE: [
+      SAFE_WINDOWS_ACL,
+      `FOREIGN-DOMAIN\\ForeignIdentity:(${WINDOWS_RUNTIME_RIGHTS.join(',')})`,
+    ].join('\r\n'),
+  };
+  scenarioEnvironments.currentDenyParentAdvancedRights = {
+    SP05_ATTESTATION_DIRECTORY_ACL_OVERRIDE: [
+      `%CURRENT_IDENTITY%:(DENY)(${WINDOWS_RUNTIME_RIGHTS.join(',')})`,
+      SAFE_WINDOWS_ACL,
+    ].join('\r\n'),
+  };
+  for (const [name, environment] of Object.entries(scenarioEnvironments)) {
     const workspace = createRecordedWorkspace(roots);
     scenarios[name] = scenarioResult(
       workspace,

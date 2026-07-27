@@ -94,7 +94,8 @@ assert(gitignore.split(/\r?\n/).includes('.env'), 'LIVE_PROVIDER_CONTRACT_GUARD:
 assert(gitignore.split(/\r?\n/).includes('.env.*'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env variants are not ignored');
 assert(gitignore.split(/\r?\n/).includes('!.argo/.env.example'), 'LIVE_PROVIDER_CONTRACT_GUARD: canonical example is not committable');
 
-// THEN intent-mounted testcases map to physical entries, and current-scope entries are explicit in the handoff
+// THEN intent-mounted testcases map to physical entries; current scope uses the handoff,
+// while accepted historical scope remains bound to the persistent test contract
 for (const [testcaseName, entryPath] of mountedEntries) {
   const mounted = graph.elements
     .flatMap(element => element.testcases || [])
@@ -112,8 +113,16 @@ for (const [testcaseName, entryPath] of mountedEntries) {
       )),
       `LIVE_PROVIDER_CONTRACT_GUARD: handoff omits ${testcaseName}`,
     );
+    assert(
+      handoff.frozenFiles.includes(entryPath),
+      `LIVE_PROVIDER_CONTRACT_GUARD: current-scope ${entryPath} is not frozen`,
+    );
+  } else {
+    assert(
+      testContract.includes(entryPath),
+      `LIVE_PROVIDER_CONTRACT_GUARD: accepted ${entryPath} lacks persistent test contract evidence`,
+    );
   }
-  assert(handoff.frozenFiles.includes(entryPath), `LIVE_PROVIDER_CONTRACT_GUARD: ${entryPath} is not frozen`);
 }
 
 // THEN runner-owned expected live failures are recorded without adding schema-invalid handoff fields
