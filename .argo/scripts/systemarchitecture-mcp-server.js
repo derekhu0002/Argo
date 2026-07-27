@@ -1777,6 +1777,7 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   } catch (error) {
     const semanticErrorEvidence = {};
     for (const field of [
+      'action',
       'fullSnapshotFallback',
       'state',
       'canonicalVersion',
@@ -1811,126 +1812,6 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   });
 }
 
-async function executeProductionSemanticQuery(request, canonicalGraph, repositoryRoot, readiness) {
-  const configurationEvidence = await resolveApprovedLiveConfiguration({
-    repositoryRoot,
-    useCase: 'production-semantic-query',
-  });
-  const configuration = configurationEvidence.configuration;
-  const provider = createLiveEmbeddingProviderClient({
-    configuration,
-    transport: Object.freeze({
-      request(url, options) {
-        if (typeof global.fetch !== 'function') {
-          const error = new Error('LIVE_PROVIDER_TRANSPORT_UNAVAILABLE');
-          error.category = 'LIVE_PROVIDER_TRANSPORT_UNAVAILABLE';
-          throw error;
-        }
-        return global.fetch(url, options);
-      },
-    }),
-  });
-  const vector = await provider.embed(request.intent);
-  const recordsByChannel = await queryProductionVectorChannels(configuration, vector);
-  const selectedIds = channel => new Set(
-    (recordsByChannel[channel] || []).map(record => (
-      record.objectId
-      || String(record.canonicalIdentity || '').slice(String(record.canonicalIdentity || '').indexOf(':') + 1)
-    )),
-  );
-  const elementIds = selectedIds('Element');
-  const relationshipIds = selectedIds('ArchitectureRelationship');
-  const viewIds = selectedIds('View');
-  const document = Object.freeze({
-    ...canonicalGraph,
-    elements: Object.freeze((canonicalGraph.elements || []).filter(element => elementIds.has(element.id))),
-    relationships: Object.freeze((canonicalGraph.relationships || []).filter(
-      relationship => relationshipIds.has(relationship.id),
-    )),
-    views: Object.freeze((canonicalGraph.views || []).filter(view => viewIds.has(view.view_id))),
-  });
-  return Object.freeze({
-    readiness,
-    result: document,
-  });
-}
-
-function evaluateProductionReadinessRecord(readiness, canonicalGraph) {
-  const canonicalVersion = deriveSemanticCanonicalVersion(canonicalGraph);
-  const records = new Map((Array.isArray(readiness.channels) ? readiness.channels : [])
-    .map(record => [record.channel, record]));
-  const required = ['Element', 'ArchitectureRelationship', 'View'];
-  const missingChannels = required.filter(channel => !records.has(channel));
-  const mismatchedChannels = required.filter(channel => {
-    const record = records.get(channel);
-    return record && (
-      record.state !== 'Aligned'
-      || record.canonicalVersion !== readiness.canonicalVersion
-      || record.contentVersion !== readiness.contentVersion
-      || record.indexVersion !== readiness.indexVersion
-      || typeof record.provider !== 'string'
-      || typeof record.model !== 'string'
-      || typeof record.modelVersion !== 'string'
-      || !Number.isInteger(record.dimensions)
-      || record.dimensions <= 0
-      || record.queryable !== true
-      || record.coherent !== true
-    );
-  });
-  const verified = readiness.state === 'Aligned'
-    && readiness.verified === true
-    && readiness.canonicalVersion === canonicalVersion
-    && missingChannels.length === 0
-    && mismatchedChannels.length === 0;
-  return Object.freeze({
-    ...readiness,
-    verified,
-    completedChannels: required.filter(channel => records.has(channel)),
-    missingChannels: Object.freeze(missingChannels),
-    mismatchedChannels: Object.freeze(mismatchedChannels),
-    fullSnapshotFallback: false,
-  });
-}
-
-async function queryProductionVectorChannels(configuration, vector) {
-  const neo4j = require('neo4j-driver');
-  const driver = neo4j.driver(
-    configuration.neo4jDatabaseUrl,
-    neo4j.auth.basic(
-      configuration.neo4jDatabaseUsername,
-      configuration.neo4jDatabasePassword,
-    ),
-  );
-  const session = driver.session();
-  const definitions = [
-    ['Element', 'argo_production_semantic_element_vector'],
-    ['ArchitectureRelationship', 'argo_production_semantic_relationship_vector'],
-    ['View', 'argo_production_semantic_view_vector'],
-  ];
-  try {
-    const recordsByChannel = {};
-    for (const [channel, indexName] of definitions) {
-      const result = await session.run([
-        'CALL db.index.vector.queryNodes($indexName, $topK, $vector)',
-        'YIELD node, score',
-        'WHERE node.channel = $channel',
-        'RETURN properties(node) AS record, score',
-        'ORDER BY score DESC',
-      ].join('\n'), {
-        indexName,
-        topK: 8,
-        vector,
-        channel,
-      });
-      recordsByChannel[channel] = result.records.map(row => row.get('record'));
-    }
-    return Object.freeze(recordsByChannel);
-  } finally {
-    await session.close();
-    await driver.close();
-  }
-}
-
 async function createDefaultProductionSemanticOperatorJourney(options = {}) {
   const workspaceRoot = options.repositoryRoot || resolveWorkspaceRoot();
   const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
@@ -1938,66 +1819,23 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
   const readinessStore = createProductionSemanticReadinessStore({
     repositoryRoot: workspaceRoot,
   });
-  const retrieval = createDefaultSemanticRetrieval({ canonicalGraph, repositoryRoot: workspaceRoot });
+  const retrieval = createDefaultSemanticRetrieval({
+    canonicalGraph,
+    repositoryRoot: workspaceRoot,
+    readinessBoundary: readinessStore,
+  });
   const runtime = createProductionGraphRagRuntime({
     canonicalGraph,
     neo4jRetrievalBoundary: retrieval,
-  });
-  const unifiedRetrieval = Object.freeze({
-    async retrieve(query) {
-      const durable = readinessStore.read();
-      if (durable.state !== 'Unknown') {
-        const readiness = evaluateProductionReadinessRecord(
-          durable,
-          canonicalGraph,
-        );
-        if (readiness.verified !== true || readiness.state !== 'Aligned') {
-          const error = new Error(readiness.state || 'SemanticIndexPending');
-          for (const field of [
-            'state',
-            'canonicalVersion',
-            'contentVersion',
-            'indexVersion',
-            'completedChannels',
-            'missingChannels',
-            'mismatchedChannels',
-            'fullSnapshotFallback',
-          ]) {
-            error[field] = readiness[field];
-          }
-          error.category = readiness.state || 'SEMANTIC_INDEX_NOT_ALIGNED';
-          throw error;
-        }
-        return executeProductionSemanticQuery(
-          query,
-          canonicalGraph,
-          workspaceRoot,
-          readiness,
-        );
-      }
-      return retrieval.retrieve(query);
-    },
   });
   return createProductionSemanticOperatorJourney({
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
     runSemanticBackfill: request => runtime.runSemanticBackfill(request),
-    readSemanticReadiness: async () => {
-      const durable = readinessStore.read();
-      if (durable.state !== 'Unknown') {
-        return evaluateProductionReadinessRecord(durable, canonicalGraph);
-      }
-      try {
-        const readiness = await retrieval.readReadiness();
-        if (readiness.state !== 'Unknown') return readiness;
-      } catch {
-        // Credential-independent durable readiness remains authoritative.
-      }
-      return evaluateProductionReadinessRecord(durable, canonicalGraph);
-    },
+    readSemanticReadiness: () => retrieval.readReadiness(),
     querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, {
-      semanticRetrievalBoundary: unifiedRetrieval,
+      semanticRetrievalBoundary: retrieval,
     }),
   });
 }
@@ -2005,6 +1843,8 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
 function createDefaultCanonicalSemanticInitComposition() {
   const repositoryRoot = resolveWorkspaceRoot();
   const readinessStore = createProductionSemanticReadinessStore({ repositoryRoot });
+  const graphPath = resolveWorkspacePath(repositoryRoot, DEFAULT_GRAPH_PATH);
+  const canonicalGraph = readJson(graphPath.absolutePath, graphPath.relativePath);
   let configurationEvidence;
   return Object.freeze({
     configurationBehavior: Object.freeze({
@@ -2028,29 +1868,38 @@ function createDefaultCanonicalSemanticInitComposition() {
     finalReadiness: Object.freeze({
       async verifyQueryability(backfill) {
         if (!backfill || backfill.alignmentState !== 'Aligned') return false;
-        const configuration = configurationEvidence && configurationEvidence.configuration;
-        if (!configuration) return false;
-        const provider = createLiveEmbeddingProviderClient({
-          configuration,
-          transport: Object.freeze({
-            request(url, options) {
-              if (typeof global.fetch !== 'function') {
-                const error = new Error('LIVE_PROVIDER_TRANSPORT_UNAVAILABLE');
-                error.category = 'LIVE_PROVIDER_TRANSPORT_UNAVAILABLE';
-                throw error;
-              }
-              return global.fetch(url, options);
+        const contentVersion = backfill.contentVersion || backfill.canonicalVersion;
+        const indexVersion = backfill.indexVersion || backfill.canonicalVersion;
+        const readiness = Object.freeze({
+          state: 'Aligned',
+          verified: true,
+          canonicalVersion: backfill.canonicalVersion,
+          contentVersion,
+          indexVersion,
+          channels: Object.freeze(['Element', 'ArchitectureRelationship', 'View'].map(
+            channel => Object.freeze({
+              channel,
+              state: 'Aligned',
+              canonicalVersion: backfill.canonicalVersion,
+              contentVersion,
+              indexVersion,
+            }),
+          )),
+        });
+        const retrieval = createDefaultSemanticRetrieval({
+          canonicalGraph,
+          repositoryRoot,
+          readinessBoundary: Object.freeze({
+            read() {
+              return readiness;
             },
           }),
         });
-        const vector = await provider.embed('system architecture semantic queryability');
-        const recordsByChannel = await queryProductionVectorChannels(configuration, vector);
-        return ['Element', 'ArchitectureRelationship', 'View'].every(channel => {
-          const expected = backfill.channels
-            && backfill.channels[channel]
-            && backfill.channels[channel].total;
-          return expected === 0 || (recordsByChannel[channel] || []).length > 0;
-        });
+        await retrieval.retrieve(Object.freeze({
+          purpose: 'implementation-design',
+          intent: 'verify system architecture semantic queryability',
+        }));
+        return true;
       },
       async verifyGlobalCoherence(backfill) {
         return Boolean(

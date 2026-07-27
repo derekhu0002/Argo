@@ -74,18 +74,34 @@ const testCompositionStorage = new AsyncLocalStorage();
 
 function createDefaultSemanticRetrieval(dependencies = {}) {
   const canonicalGraph = requireCanonicalGraph(dependencies.canonicalGraph);
+  const readinessBoundary = dependencies.readinessBoundary;
   return Object.freeze({
     async retrieve(request = {}) {
       const activeTestComposition = testCompositionStorage.getStore();
       const composition = activeTestComposition
         ? await createTestComposition(activeTestComposition)
         : await createProductionComposition(dependencies);
-      const configurationEvidence = await composition.resolveConfiguration();
-      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);
+      let configurationEvidence;
+      if (!readinessBoundary) {
+        configurationEvidence = await composition.resolveConfiguration();
+      }
+      const evidence = await readAndEvaluatePersistentReadiness(
+        composition,
+        canonicalGraph,
+        readinessBoundary,
+      );
       const readiness = evidence.readiness;
       const alignment = evidence.alignment;
       if (!alignment.aligned) {
-        throw semanticIndexNotAligned(alignment);
+        throw semanticIndexNotAligned({
+          ...alignment,
+          category: alignment.category,
+          message: alignment.message,
+          action: alignment.action,
+        });
+      }
+      if (!configurationEvidence) {
+        configurationEvidence = await composition.resolveConfiguration();
       }
 
       const provider = createLiveEmbeddingProviderClient({
@@ -116,8 +132,14 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
       const composition = activeTestComposition
         ? await createTestComposition(activeTestComposition)
         : await createProductionComposition(dependencies);
-      await composition.resolveConfiguration();
-      const evidence = await readAndEvaluatePersistentReadiness(composition, canonicalGraph);
+      if (!readinessBoundary) {
+        await composition.resolveConfiguration();
+      }
+      const evidence = await readAndEvaluatePersistentReadiness(
+        composition,
+        canonicalGraph,
+        readinessBoundary,
+      );
       return publicReadinessOutcome(evidence.alignment);
     },
   });
@@ -349,11 +371,18 @@ function requireApprovedProfile(values) {
   }
 }
 
-async function readPersistentReadiness(neo4jDriver) {
+async function readPersistentReadiness(neo4jDriver, readinessBoundary) {
+  if (readinessBoundary) {
+    if (typeof readinessBoundary.read !== 'function') {
+      throw safeError('SEMANTIC_READINESS_BOUNDARY_INVALID');
+    }
+    const readiness = await readinessBoundary.read();
+    if (readiness && readiness.state !== 'Unknown') return readiness;
+  }
   const result = await neo4jDriver.execute(Object.freeze({
     kind: 'semantic-readiness-read',
     cypher: READINESS_QUERY_CYPHER,
-    parameters: Object.freeze({ identity: 'argo-production-semantic-index' }),
+    parameters: Object.freeze({ identity: 'system-architecture-semantic-readiness' }),
   }));
   const readiness = result && Array.isArray(result.records) ? result.records[0] : undefined;
   if (!readiness || typeof readiness !== 'object') {
@@ -393,25 +422,61 @@ function evaluatePersistentReadiness(readiness, canonicalGraph) {
       if (!mismatchedChannels.includes(channel.channel)) mismatchedChannels.push(channel.channel);
     }
   }
+  const aligned = readiness.state === 'Aligned'
+    && readiness.canonicalVersion === expectedCanonicalVersion
+    && missingChannels.length === 0
+    && mismatchedChannels.length === 0;
   return {
-    aligned: readiness.state === 'Aligned'
-      && readiness.canonicalVersion === expectedCanonicalVersion
-      && missingChannels.length === 0
-      && mismatchedChannels.length === 0,
+    aligned,
     state: readiness.state || 'Unknown',
     canonicalVersion: readiness.canonicalVersion,
     contentVersion: readiness.contentVersion,
     indexVersion: readiness.indexVersion,
-    completedChannels: CHANNELS.map(item => item.channel).filter(channel => records.has(channel)),
-    missingChannels,
-    mismatchedChannels,
+    completedChannels: aligned
+      ? CHANNELS.map(item => item.channel)
+      : arrayEvidence(readiness.completedChannels),
+    missingChannels: aligned ? [] : arrayEvidence(readiness.missingChannels, missingChannels),
+    mismatchedChannels: aligned
+      ? []
+      : arrayEvidence(readiness.mismatchedChannels, mismatchedChannels),
+    ...publicFailureEvidence(readiness),
   };
 }
 
-async function readAndEvaluatePersistentReadiness(composition, canonicalGraph) {
-  const readiness = await readPersistentReadiness(composition.neo4jDriver);
+function arrayEvidence(value, fallback = []) {
+  return Array.isArray(value)
+    ? value.filter(item => typeof item === 'string')
+    : fallback;
+}
+
+async function readAndEvaluatePersistentReadiness(composition, canonicalGraph, readinessBoundary) {
+  const readiness = await readPersistentReadiness(composition.neo4jDriver, readinessBoundary);
   const alignment = evaluatePersistentReadiness(readiness, canonicalGraph);
   return { composition, readiness, alignment };
+}
+
+function publicFailureEvidence(readiness) {
+  const categories = new Set([
+    'APPROVED_SECRET_REQUIRED',
+    'SECRET_FILE_ACL_UNSAFE',
+    'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+    'EXTERNAL_CREDENTIALS_REQUIRED',
+    'EMBEDDING_QUALIFICATION_REQUIRED',
+    'EMBEDDING_CONFIGURATION_REQUIRED',
+    'SEMANTIC_LIFECYCLE_GATE_INVALID',
+    'SEMANTIC_LIFECYCLE_FAILED',
+    'PROVIDER_FAILED',
+    'PROVIDER_VECTOR_INVALID',
+    'PERSISTENCE_FAILED',
+    'QUERYABILITY_FAILED',
+    'GLOBAL_COHERENCE_FAILED',
+  ]);
+  if (!categories.has(readiness && readiness.category)) return {};
+  return {
+    category: readiness.category,
+    ...(typeof readiness.message === 'string' ? { message: readiness.message } : {}),
+    ...(typeof readiness.action === 'string' ? { action: readiness.action } : {}),
+  };
 }
 
 function publicReadinessOutcome(alignment) {
@@ -695,8 +760,9 @@ function deriveCanonicalVersion(graph) {
 }
 
 function semanticIndexNotAligned(alignment) {
-  const error = safeError('SEMANTIC_INDEX_NOT_ALIGNED');
-  error.message = `Semantic index is ${alignment.state}`;
+  const error = safeError(alignment.category || 'SEMANTIC_INDEX_NOT_ALIGNED');
+  error.message = alignment.message || `Semantic index is ${alignment.state}`;
+  if (alignment.action) error.action = alignment.action;
   error.fullSnapshotFallback = false;
   error.state = alignment.state;
   error.canonicalVersion = alignment.canonicalVersion;
