@@ -26,6 +26,68 @@ const CHANNEL_BY_TYPE = Object.freeze({
 });
 const persistentCompositionStorage = new AsyncLocalStorage();
 const PERSISTENT_CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
+const PRODUCTION_READINESS_IDENTITY = 'system-architecture-semantic-readiness';
+const PRODUCTION_READINESS_PATH = '.argo/temp/system-architecture-semantic-readiness.json';
+
+function createProductionSemanticReadinessStore(options = {}) {
+  const repositoryRoot = path.resolve(
+    options.repositoryRoot
+    || process.env.ARGO_REPO_ROOT
+    || process.env.WORKSPACE_FOLDER
+    || path.join(__dirname, '..', '..', '..'),
+  );
+  const recordPath = path.join(repositoryRoot, ...PRODUCTION_READINESS_PATH.split('/'));
+
+  function read() {
+    if (!fs.existsSync(recordPath)) {
+      return Object.freeze({
+        identity: PRODUCTION_READINESS_IDENTITY,
+        state: 'Unknown',
+        verified: false,
+        revision: 0,
+        channels: Object.freeze([]),
+        completedChannels: Object.freeze([]),
+        missingChannels: Object.freeze([...PERSISTENT_CHANNELS]),
+        mismatchedChannels: Object.freeze([]),
+        fullSnapshotFallback: false,
+      });
+    }
+    const parsed = JSON.parse(fs.readFileSync(recordPath, 'utf8'));
+    if (!parsed || parsed.identity !== PRODUCTION_READINESS_IDENTITY) {
+      throw safePersistentError(
+        'READINESS_RECORD_INVALID',
+        'Repair the durable semantic readiness record, then run argo init.',
+      );
+    }
+    return Object.freeze(parsed);
+  }
+
+  function record(evidence) {
+    const previous = read();
+    const next = Object.freeze({
+      ...evidence,
+      identity: PRODUCTION_READINESS_IDENTITY,
+      recordId: previous.recordId || crypto.randomUUID(),
+      revision: Number(previous.revision || 0) + 1,
+      fullSnapshotFallback: false,
+    });
+    fs.mkdirSync(path.dirname(recordPath), { recursive: true });
+    const temporaryPath = `${recordPath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(temporaryPath, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
+    fs.renameSync(temporaryPath, recordPath);
+    return next;
+  }
+
+  return Object.freeze({
+    identity: PRODUCTION_READINESS_IDENTITY,
+    path: recordPath,
+    read,
+    record,
+    invalidate: record,
+    recordAligned: record,
+    recordFailure: record,
+  });
+}
 
 function createPersistentMutationEmbeddingLifecycle(dependencies = {}) {
   const productionDependencies = hasPersistentLifecyclePorts(dependencies)
@@ -65,7 +127,7 @@ function createProductionPersistentLifecycleDependencies(options = {}) {
     || process.env.WORKSPACE_FOLDER
     || path.join(__dirname, '..', '..', '..'),
   );
-  let pendingReadiness;
+  const readinessStore = createProductionSemanticReadinessStore({ repositoryRoot });
   let resources;
 
   async function requireResources() {
@@ -132,25 +194,19 @@ function createProductionPersistentLifecycleDependencies(options = {}) {
       projectionStore,
       provider,
     });
-    if (pendingReadiness) {
-      await writeProductionReadiness(resources, pendingReadiness);
-    }
     return resources;
   }
 
   return Object.freeze({
     readiness: Object.freeze({
       async invalidate(evidence) {
-        pendingReadiness = Object.freeze({ ...evidence });
-        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+        return readinessStore.invalidate(evidence);
       },
       async recordAligned(evidence) {
-        pendingReadiness = Object.freeze({ ...evidence });
-        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+        return readinessStore.recordAligned(evidence);
       },
       async recordFailure(evidence) {
-        pendingReadiness = Object.freeze({ ...evidence });
-        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+        return readinessStore.recordFailure(evidence);
       },
     }),
     configuration: Object.freeze({
@@ -185,17 +241,7 @@ function createProductionPersistentLifecycleDependencies(options = {}) {
     queryability: Object.freeze({
       async verifyTouched({ records, tombstones }) {
         const active = await requireResources();
-        const persisted = await active.projectionStore.readRecords();
-        const byIdentity = new Map(persisted.map(record => [record.canonicalIdentity, record]));
-        return records.every(record => {
-          const stored = byIdentity.get(record.canonicalIdentity);
-          return stored
-            && stored.canonicalVersion === record.canonicalVersion
-            && stored.contentVersion === record.contentVersion
-            && stored.indexVersion === record.indexVersion
-            && Array.isArray(stored.vector)
-            && stored.vector.length === record.dimensions;
-        }) && tombstones.every(tombstone => !byIdentity.has(tombstone.canonicalIdentity));
+        return verifyProductionTouchedQueryability(active, { records, tombstones });
       },
     }),
     coherence: Object.freeze({
@@ -211,43 +257,36 @@ function createProductionPersistentLifecycleDependencies(options = {}) {
   });
 }
 
-async function writeProductionReadiness(resources, evidence) {
-  const session = resources.driver.session(
-    resources.configuration.neo4jDatabase === undefined
-      ? undefined
-      : { database: resources.configuration.neo4jDatabase },
-  );
+async function verifyProductionTouchedQueryability(resources, { records, tombstones }) {
+  const indexByChannel = Object.freeze({
+    Element: 'argo_production_semantic_element_vector',
+    ArchitectureRelationship: 'argo_production_semantic_relationship_vector',
+    View: 'argo_production_semantic_view_vector',
+  });
+  const session = resources.driver.session();
   try {
-    await session.run([
-      'MERGE (readiness:ArgoProductionSemanticReadiness {identity: $identity})',
-      'SET readiness.state = $state,',
-      '    readiness.verified = $verified,',
-      '    readiness.canonicalVersion = $canonicalVersion,',
-      '    readiness.contentVersion = $contentVersion,',
-      '    readiness.indexVersion = $indexVersion,',
-      '    readiness.completedChannels = $completedChannels,',
-      '    readiness.missingChannels = $missingChannels,',
-      '    readiness.mismatchedChannels = $mismatchedChannels,',
-      '    readiness.fullSnapshotFallback = false,',
-      '    readiness.category = $category,',
-      '    readiness.action = $action,',
-      '    readiness.revision = coalesce(readiness.revision, 0) + 1,',
-      '    readiness.recordId = coalesce(readiness.recordId, $recordId)',
-      'RETURN properties(readiness) AS readiness',
-    ].join('\n'), {
-      identity: 'argo-production-semantic-index',
-      recordId: crypto.randomUUID(),
-      state: evidence.state || 'Stale',
-      verified: evidence.verified === true,
-      canonicalVersion: evidence.canonicalVersion || '',
-      contentVersion: evidence.contentVersion || '',
-      indexVersion: evidence.indexVersion || '',
-      completedChannels: evidence.completedChannels || [],
-      missingChannels: evidence.missingChannels || [...PERSISTENT_CHANNELS],
-      mismatchedChannels: evidence.mismatchedChannels || [],
-      category: evidence.category || 'SEMANTIC_INDEX_NOT_ALIGNED',
-      action: evidence.action || 'Run argo init to reconcile the semantic index.',
-    });
+    for (const record of records) {
+      const result = await session.run([
+        'CALL db.index.vector.queryNodes($indexName, $topK, $vector)',
+        'YIELD node, score',
+        'WHERE node.channel = $channel',
+        'RETURN properties(node) AS record, score',
+        'ORDER BY score DESC',
+      ].join('\n'), {
+        indexName: indexByChannel[record.channel],
+        topK: 100,
+        vector: record.vector,
+        channel: record.channel,
+      });
+      const found = result.records.some(row => {
+        const value = row.get('record');
+        return value && value.canonicalIdentity === record.canonicalIdentity;
+      });
+      if (!found) return false;
+    }
+    const persisted = await resources.projectionStore.readRecords();
+    const identities = new Set(persisted.map(record => record.canonicalIdentity));
+    return tombstones.every(tombstone => !identities.has(tombstone.canonicalIdentity));
   } finally {
     await session.close();
   }
@@ -280,7 +319,13 @@ async function persistentReconcile(dependencies, input) {
 
   const gateDecision = persistentGateDecision(input.gates || {});
   if (gateDecision === 'disabled') {
-    return persistentOutcome('SemanticIndexPending', 'SEMANTIC_LIFECYCLE_DISABLED', versions);
+    const pending = persistentOutcome(
+      'SemanticIndexPending',
+      'SEMANTIC_LIFECYCLE_DISABLED',
+      versions,
+    );
+    await dependencies.readiness.invalidate(pending.alignment);
+    return pending;
   }
   if (gateDecision !== 'enabled') {
     return recordPersistentFailure(
@@ -349,7 +394,7 @@ async function persistentReconcile(dependencies, input) {
         'Repair semantic global coherence, then run argo init.',
       );
     }
-    const aligned = persistentReadinessEvidence('Aligned', versions);
+    const aligned = persistentReadinessEvidence('Aligned', versions, work.profile);
     await dependencies.readiness.recordAligned(aligned);
     return Object.freeze({
       state: 'Aligned',
@@ -413,7 +458,8 @@ function persistentGateDecision(gates) {
 }
 
 function persistentVersions(canonicalWrite) {
-  const canonicalVersion = canonicalWrite.document.version
+  const canonicalVersion = canonicalWrite.canonicalVersion
+    || canonicalWrite.document.version
     || `canonical:${fingerprint({
       name: canonicalWrite.document.name || 'System',
       elements: (canonicalWrite.document.elements || []).map(element => element.id).sort(),
@@ -487,6 +533,7 @@ function buildPersistentWork(canonicalWrite, configuration, versions) {
     }
   }
   return Object.freeze({
+    profile,
     upserts: Object.freeze(upserts),
     tombstones: Object.freeze(tombstones),
   });
@@ -546,7 +593,7 @@ async function recordPersistentFailure(dependencies, versions, sourceError) {
   });
 }
 
-function persistentReadinessEvidence(state, versions) {
+function persistentReadinessEvidence(state, versions, profile = {}) {
   return Object.freeze({
     state,
     verified: state === 'Aligned',
@@ -556,10 +603,17 @@ function persistentReadinessEvidence(state, versions) {
     mismatchedChannels: [],
     channels: Object.freeze(PERSISTENT_CHANNELS.map(channel => Object.freeze({
       channel,
+      state,
       canonicalVersion: versions.canonicalVersion,
       contentVersion: versions.contentVersion,
       indexVersion: versions.indexVersion,
       complete: state === 'Aligned',
+      queryable: state === 'Aligned',
+      coherent: state === 'Aligned',
+      ...(profile.provider ? { provider: profile.provider } : {}),
+      ...(profile.model ? { model: profile.model } : {}),
+      ...(profile.modelVersion ? { modelVersion: profile.modelVersion } : {}),
+      ...(profile.dimensions ? { dimensions: profile.dimensions } : {}),
     }))),
     fullSnapshotFallback: false,
   });
@@ -1154,5 +1208,7 @@ function safeError(category) {
 module.exports = {
   createMutationEmbeddingVectorLifecycle,
   createPersistentMutationEmbeddingLifecycle,
+  createProductionSemanticReadinessStore,
+  PRODUCTION_READINESS_IDENTITY,
   withPersistentMutationEmbeddingLifecycleTestComposition,
 };
