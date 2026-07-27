@@ -36,6 +36,8 @@ Public semantic `getSystemArchitecture` dispatch privately composes accepted WP-
 
 Every successful batch or focused canonical write clears readiness before semantic side effects and passes exact `touchedElementIds`, `touchedRelationshipIds`, and `touchedViewIds` to the durable incremental lifecycle. Preview/dry-run never enters that lifecycle. Canonical JSON remains written and authoritative when semantic work is disabled or fails; the response records Pending, Stale, or Failed with `fullSnapshotFallback: false`.
 
+The canonical lifecycle's authoritative minimal Coding target set is exactly `argo-mcp-server.js`, `systemarchitecture-mcp-server.js`, `graph-rag/semanticOperatorJourney.js`, and `graph-rag/mutationEmbeddingVectorLifecycle.js`. All configuration, WP-P1 persistence/backfill/checkpoint/Neo4j adapter, WP-P2 retrieval, runtime, and provider modules are frozen inward dependencies.
+
 ## Local dependencies
 
 - The unified gateway may depend on `systemarchitecture-mcp-server.js` through `callTool` and one private post-initialize lifecycle port.

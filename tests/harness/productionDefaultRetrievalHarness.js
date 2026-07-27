@@ -8,6 +8,7 @@ const canonicalPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.js
 const defaultRetrievalPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'defaultSemanticRetrieval.js');
 const liveConfigurationPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'liveEmbeddingProviderConfig.js');
 const systemArchitectureMcpPath = path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js');
+const unifiedMcpPath = path.join(repoRoot, '.argo', 'scripts', 'argo-mcp-server.js');
 const CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
 const CHANNEL_KEYS = Object.freeze({
   Element: 'elements',
@@ -1693,6 +1694,57 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
+async function runExportedFreshReadinessPerQuery() {
+  const boundary = loadDefaultRetrievalBoundary('SP04_FRESH_READINESS_BOUNDARY_MISSING');
+  const observations = createRawProductionObservations({
+    sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+    readiness: alignedReadiness(),
+    candidatesByChannel: defaultCandidates(),
+  });
+  const composition = {
+    sourceBehavior: observations.sourceBehavior,
+    sourceAdapters: observations.sourceAdapters,
+    transport: observations.transport,
+    neo4jDriver: observations.neo4jDriver,
+  };
+  const system = require(systemArchitectureMcpPath);
+  const unified = require(unifiedMcpPath);
+  const outcomes = [];
+  await boundary.withDefaultSemanticRetrievalTestComposition(composition, async () => {
+    for (const [dispatcher, invoke] of [
+      ['system', args => system.callTool('getSystemArchitecture', args)],
+      ['unified', args => unified.callTool('getSystemArchitecture', args)],
+    ]) {
+      for (const intent of ['first fresh durable readiness read', 'second fresh durable readiness read']) {
+        try {
+          outcomes.push(Object.freeze({
+            dispatcher,
+            result: await invoke({
+              query: {
+                purpose: 'implementation-design',
+                intent,
+              },
+            }),
+          }));
+        } catch (error) {
+          outcomes.push(Object.freeze({
+            dispatcher,
+            error: Object.freeze({
+              category: error && (error.category || error.message),
+              fullSnapshotFallback: error && error.fullSnapshotFallback,
+            }),
+          }));
+        }
+      }
+    }
+  });
+  return Object.freeze({
+    outcomes: Object.freeze(outcomes),
+    readinessReads: observations.readinessReads(),
+    operationLedger: observations.operationLedger(),
+  });
+}
+
 module.exports = {
   assertAnchoredGraphTidyCompatibility,
   assertCredentialSourceMatrix,
@@ -1710,6 +1762,7 @@ module.exports = {
   runProductionQueryCredentialResolution,
   runProductionQueryMixedLegacyRejections,
   runDefaultMcpNeo4jVectorRetrieval,
+  runExportedFreshReadinessPerQuery,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,
   runReadinessMatrix,

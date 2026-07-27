@@ -35,20 +35,25 @@ for (const entryPath of entrypoints) {
 }
 
 for (const required of [
-  'SP05_AUTOMATIC_INIT_RECONCILIATION_MISSING',
+  'SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING',
   'SP01_BACKFILL_TOOL_NOT_PRIVATE',
-  '_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING',
+  '_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING',
   "runPersistentIncrementalMatrix('SP02')",
   "runPersistentIncrementalMatrix('DT16')",
   "runPersistentIncrementalMatrix('W31')",
-  '_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS',
+  '_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY',
   "assertFreshReadinessPerQuery(freshReadiness, 'SP03')",
   "assertFreshReadinessPerQuery(freshReadiness, 'SP04')",
   'TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC',
   'PRODUCTION_RUNID_CLEANUP_PROHIBITED',
-  'READINESS_INVALIDATION_COUNT_CHANGED',
-  'QUERYABILITY_NOT_VERIFIED',
-  'GLOBAL_COHERENCE_NOT_VERIFIED',
+  'READINESS_NOT_INVALIDATED_FIRST',
+  'ACTUAL_TOUCHED_IDS_NOT_EXACT',
+  'REMOVE_UPSERT_MAPPING_INVALID',
+  'CANONICAL_WRITE_LOST',
+  'initializeWorkspace',
+  'applySystemArchitectureMutation',
+  'addArchitectureElement',
+  'removeArchitectureView',
 ]) {
   assert(
     harness.includes(required) || entrypoints.some(entryPath => read(entryPath).includes(required)),

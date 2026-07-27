@@ -7,7 +7,9 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const { callTool } = require('../../../.argo/scripts/argo-mcp-server.js');
 const {
+  assertFreshReadinessPerQuery,
   assertSolePublicSemanticSurface,
+  observeFreshReadinessPerQuery,
   observeSolePublicSemanticSurface,
 } = require('../../harness/automaticSemanticLifecycleHarness.js');
 
@@ -44,36 +46,18 @@ async function main() {
     document: canonicalGraph,
   });
 
-  const semanticDocument = { elements: [], relationships: [], views: [] };
-  const semanticQuery = {
-    purpose: 'implementation-design',
-    intent: 'Return typed architecture context',
-  };
-  const semanticRetrievalBoundary = {
-    async retrieve() {
-      return semanticDocument;
-    },
-  };
-  const semanticOperatorJourney = createApprovedSemanticOperatorJourneyAdapter(
-    semanticRetrievalBoundary,
-  );
-  const semanticResponse = await callTool(
-    'getSystemArchitecture',
-    { query: semanticQuery },
-    null,
-    { semanticOperatorJourney },
-  );
-  assertTypedResponse(semanticResponse, {
-    mode: 'semantic-query',
-    document: semanticDocument,
-    query: {
-      ...semanticQuery,
-      mode: 'semantic-query',
-      semanticRetrieval: 'invoked',
-    },
-    error: null,
-  });
-  assertLegacyStructuredSemanticsMatch(semanticResponse);
+  // WHEN ordinary queries cross exported System and unified dispatch without
+  // a supplied journey or retrieval boundary
+  const semanticQueries = await observeFreshReadinessPerQuery();
+  assertFreshReadinessPerQuery(semanticQueries, 'TS00');
+  for (const observation of semanticQueries.outcomes) {
+    assert.strictEqual(
+      observation.result.structuredContent.mode,
+      'semantic-query',
+      `TS00_${observation.dispatcher.toUpperCase()}_SEMANTIC_MODE_CHANGED`,
+    );
+    assertLegacyStructuredSemanticsMatch(observation.result);
+  }
 
   const invalidPurposeResponse = await callTool('getSystemArchitecture', {
     query: {
@@ -95,46 +79,6 @@ async function main() {
   // THEN getSystemArchitecture is the sole architecture read/query semantic surface
   const publicSurface = await observeSolePublicSemanticSurface();
   assertSolePublicSemanticSurface(publicSurface);
-}
-
-function createApprovedSemanticOperatorJourneyAdapter(semanticRetrievalBoundary) {
-  assert(
-    semanticRetrievalBoundary && typeof semanticRetrievalBoundary.retrieve === 'function',
-    'TS00_APPROVED_OPERATOR_RETRIEVAL_REQUIRED',
-  );
-  return Object.freeze({
-    async query(query) {
-      const document = await semanticRetrievalBoundary.retrieve(query);
-      const payload = {
-        status: 'passed',
-        graphPath: 'design/KG/SystemArchitecture.json',
-        query: {
-          ...query,
-          mode: 'semantic-query',
-          semanticRetrieval: 'invoked',
-        },
-        ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
-          ? { result: document.result }
-          : { result: document }),
-        document,
-      };
-      return {
-        ...payload,
-        content: [{
-          type: 'text',
-          text: JSON.stringify(payload, null, 2),
-        }],
-        structuredContent: {
-          version: '1.0',
-          mode: 'semantic-query',
-          document,
-          query: payload.query,
-          error: null,
-        },
-        isError: false,
-      };
-    },
-  });
 }
 
 function readListedGetSystemArchitectureTool() {

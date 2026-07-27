@@ -30,6 +30,8 @@ for (const required of [
   'test-only',
   'code-complete',
   'live-release',
+  'authoritative minimal',
+  'supersedes',
 ]) {
   assert(
     contractText.toLowerCase().includes(required.toLowerCase()),
@@ -40,6 +42,16 @@ for (const required of [
 assert(
   handoff.codingTargets.every(target => target.path && target.path.startsWith('.argo/scripts/')),
   'SEMANTIC_LIFECYCLE_ARCHITECTURE_BOUNDARY_TEST_FILE_AUTHORIZED',
+);
+assert.deepStrictEqual(
+  handoff.codingTargets.map(target => target.path).sort(),
+  [
+    '.argo/scripts/argo-mcp-server.js',
+    '.argo/scripts/systemarchitecture-mcp-server.js',
+    '.argo/scripts/graph-rag/semanticOperatorJourney.js',
+    '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+  ].sort(),
+  'SEMANTIC_LIFECYCLE_ARCHITECTURE_TARGET_SET_CONFLICT',
 );
 assert(
   handoff.frozenFiles.includes('design/KG/SystemArchitecture.json'),

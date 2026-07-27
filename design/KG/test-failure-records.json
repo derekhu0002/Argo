@@ -8,9 +8,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
     "exitCode": 1,
-    "failureError": "Error: DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:285:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:291:27)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)",
+    "failureError": "Error: DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:238:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:244:31)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)",
     "stdout": "",
-    "stderr": "Error: DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:285:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:291:27)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)"
+    "stderr": "Error: DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:238:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:244:31)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-DT-16",
@@ -21,9 +21,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
     "exitCode": 1,
-    "failureError": "Error: DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:285:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:291:27)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)",
+    "failureError": "Error: DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:238:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:244:31)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)",
     "stdout": "",
-    "stderr": "Error: DT16_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:285:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:291:27)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)"
+    "stderr": "Error: DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING\n    at observePersistentIncrementalLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:238:11)\n    at runPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:244:31)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:65:39)"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-TS-00",
@@ -34,9 +34,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runTypedMcpQueryContract.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runTypedMcpQueryContract.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC:startNewProjectSemanticJourney\n    at assertSolePublicSemanticSurface (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:72:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:97:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: TS00_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:52:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC:startNewProjectSemanticJourney\n    at assertSolePublicSemanticSurface (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:72:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:97:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: TS00_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:52:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
@@ -47,9 +47,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
     "exitCode": 1,
-    "failureError": "W31_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING",
+    "failureError": "W31_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING",
     "stdout": "",
-    "stderr": "W31_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    "stderr": "W31_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
@@ -73,9 +73,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
     "exitCode": 1,
-    "failureError": "SP02_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING",
+    "failureError": "SP02_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING",
     "stdout": "",
-    "stderr": "SP02_PERSISTENT_INCREMENTAL_LIFECYCLE_BOUNDARY_MISSING"
+    "stderr": "SP02_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -86,9 +86,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP03_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS\n+ actual - expected\n\n  [\n+   'failed',\n+   'failed'\n-   'passed',\n-   'passed'\n  ]\n\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:265:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:48:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:48:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP03_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS\n+ actual - expected\n\n  [\n+   'failed',\n+   'failed'\n-   'passed',\n-   'passed'\n  ]\n\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:265:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:48:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:48:3)"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
@@ -99,9 +99,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runProductionSemanticReadinessGate.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP04_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS\n+ actual - expected\n\n  [\n+   'failed',\n+   'failed'\n-   'passed',\n-   'passed'\n  ]\n\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:265:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:33:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:33:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP04_QUERY_REQUIRES_RETIRED_EXPLICIT_READINESS\n+ actual - expected\n\n  [\n+   'failed',\n+   'failed'\n-   'passed',\n-   'passed'\n  ]\n\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:265:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:33:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:210:5)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:33:3)"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
@@ -112,8 +112,8 @@
     "resolvedScriptPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
     "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP05_AUTOMATIC_INIT_RECONCILIATION_MISSING\n+ actual - expected\n\n+ undefined\n- 'Aligned'\n\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:142:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:130:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP05_AUTOMATIC_INIT_RECONCILIATION_MISSING\n+ actual - expected\n\n+ undefined\n- 'Aligned'\n\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:142:10)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:130:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)"
   }
 ]

@@ -9,13 +9,7 @@ const allowedTargets = new Set([
   '.argo/scripts/argo-mcp-server.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
-  '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
-  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js',
-  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js',
-  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js',
-  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js',
 ]);
 
 // GIVEN the approved successor scope
@@ -26,11 +20,22 @@ for (const target of targetPaths) {
   const source = read(target);
   assert(!/require\s*\(\s*['"][^'"]*tests\//.test(source), `SEMANTIC_LIFECYCLE_PRODUCTION_DEPENDS_ON_TESTS:${target}`);
 }
+assert.deepStrictEqual(
+  [...targetPaths].sort(),
+  [...allowedTargets].sort(),
+  'SEMANTIC_LIFECYCLE_TARGET_SET_NOT_AUTHORITATIVE_MINIMUM',
+);
 for (const forbidden of [
   'package.json',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
   '.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderClient.js',
   '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticBackfill.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js',
+  '.argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js',
   'design/KG/SystemArchitecture.json',
 ]) {
   assert(!targetPaths.includes(forbidden), `SEMANTIC_LIFECYCLE_FORBIDDEN_TARGET:${forbidden}`);

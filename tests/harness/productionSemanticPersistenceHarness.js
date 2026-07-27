@@ -1,5 +1,4 @@
 const assert = require('node:assert');
-const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -11,7 +10,6 @@ const paths = Object.freeze({
   adapter: path.join(semanticDirectory, 'productionSemanticNeo4jAdapter.js'),
   checkpoints: path.join(semanticDirectory, 'productionSemanticCheckpointStore.js'),
   runtime: path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'productionGraphRagRuntime.js'),
-  mcp: path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js'),
 });
 
 const CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
@@ -97,15 +95,7 @@ async function runProductionSemanticBackfill() {
     'createProductionGraphRagRuntime',
     'SP01_PRODUCTION_RUNTIME_BOUNDARY_MISSING',
   );
-  const mcp = loadModule(paths.mcp);
-  const operatorName = 'backfillSystemArchitectureSemanticProjection';
-  assert(
-    Array.isArray(mcp.TOOLS) && mcp.TOOLS.some(tool => tool.name === operatorName),
-    'SP01_MCP_OPERATOR_NOT_EXPOSED',
-  );
-  assert.strictEqual(typeof mcp.callTool, 'function', 'SP01_MCP_OPERATOR_CALL_BOUNDARY_MISSING');
-
-  const defaultMcpComposition = runDefaultMcpSemanticBackfillComposition();
+  const operatorName = 'private-argo-init:runSemanticBackfill';
   const fixture = canonicalThreeChannelFixture();
   const originalCanonicalJson = JSON.stringify(fixture);
   const observations = createProductionCompositionObservations();
@@ -115,7 +105,7 @@ async function runProductionSemanticBackfill() {
     qualification: qualifiedProviderProfile(),
   });
 
-  const missingOptIn = await captureBlocked(() => invokeOperator(mcp, runtime, {}));
+  const missingOptIn = await captureBlocked(() => invokeOperator(runtime, {}));
   assertZeroSemanticSideEffects(observations.snapshot(), 'SP01_OPT_IN');
 
   const mismatchedObservations = createProductionCompositionObservations();
@@ -126,7 +116,7 @@ async function runProductionSemanticBackfill() {
     qualification: qualifiedProviderProfile(),
   });
   const structuralVersionMismatch = await captureBlocked(
-    () => invokeOperator(mcp, mismatchRuntime, { explicitOptIn: true }),
+    () => invokeOperator(mismatchRuntime, { explicitOptIn: true }),
   );
   assertZeroSemanticSideEffects(mismatchedObservations.snapshot(), 'SP01_VERSION_MISMATCH');
 
@@ -137,7 +127,7 @@ async function runProductionSemanticBackfill() {
     { fixture, configuration: {}, qualification: qualifiedProviderProfile() },
   );
   const missingCredentials = await captureBlocked(
-    () => invokeOperator(mcp, missingCredentialsRuntime, { explicitOptIn: true }),
+    () => invokeOperator(missingCredentialsRuntime, { explicitOptIn: true }),
   );
   assertZeroSemanticSideEffects(missingCredentialsObservations.snapshot(), 'SP01_MISSING_CREDENTIALS');
 
@@ -148,18 +138,18 @@ async function runProductionSemanticBackfill() {
     { fixture, configuration: externalProductionCredentials(), qualification: {} },
   );
   const missingQualification = await captureBlocked(
-    () => invokeOperator(mcp, missingQualificationRuntime, { explicitOptIn: true }),
+    () => invokeOperator(missingQualificationRuntime, { explicitOptIn: true }),
   );
   assertZeroSemanticSideEffects(missingQualificationObservations.snapshot(), 'SP01_MISSING_QUALIFICATION');
 
   observations.setPhase('initial');
   const interruption = await captureBlocked(
-    () => invokeOperator(mcp, runtime, { explicitOptIn: true }),
+    () => invokeOperator(runtime, { explicitOptIn: true }),
   );
   const completedBeforeResume = new Set(observations.persistedIdentities('initial'));
   observations.releaseInterruption();
   observations.setPhase('resume');
-  const resumed = await invokeOperator(mcp, runtime, { explicitOptIn: true });
+  const resumed = await invokeOperator(runtime, { explicitOptIn: true });
   const replayedProviderIdentities = observations.providerIdentities('resume')
     .filter(identity => completedBeforeResume.has(identity));
   const replayedUpsertIdentities = observations.persistedIdentities('resume')
@@ -167,7 +157,7 @@ async function runProductionSemanticBackfill() {
   const recordsAfterResume = observations.productionRecords();
   const writesAfterResume = observations.writeCount();
   observations.setPhase('rerun');
-  const rerun = await invokeOperator(mcp, runtime, { explicitOptIn: true });
+  const rerun = await invokeOperator(runtime, { explicitOptIn: true });
 
   return Object.freeze({
     missingOptIn,
@@ -195,61 +185,29 @@ async function runProductionSemanticBackfill() {
     durableAdapterOperations: observations.durableAdapterOperations(),
     durableCheckpointOperations: observations.durableCheckpointOperations(),
     operatorName,
-    defaultMcpComposition,
   });
 }
 
-function runDefaultMcpSemanticBackfillComposition() {
-  const canonicalPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
-  const canonicalJsonBefore = fs.readFileSync(canonicalPath, 'utf8');
-  const request = Object.freeze({
-    jsonrpc: '2.0',
-    id: 'sp01-default-production-composition',
-    method: 'tools/call',
-    params: Object.freeze({
-      name: 'backfillSystemArchitectureSemanticProjection',
-      arguments: Object.freeze({ explicitOptIn: true }),
-    }),
-  });
-  const environment = { ...process.env, ARGO_REPO_ROOT: repoRoot };
-  for (const key of [
-    'QWEN_KEY',
-    'ARGO_NEO4J_DATABASE_URL',
-    'ARGO_NEO4J_DATABASE_USERNAME',
-    'ARGO_NEO4J_DATABASE_PASSWORD',
-    'ARGO_NEO4J_URI',
-    'ARGO_NEO4J_USERNAME',
-    'ARGO_NEO4J_PASSWORD',
-  ]) {
-    delete environment[key];
-  }
-  const execution = childProcess.spawnSync(
-    process.execPath,
-    [paths.mcp],
-    {
-      cwd: repoRoot,
-      env: environment,
-      input: `${JSON.stringify(request)}\n`,
-      encoding: 'utf8',
-      timeout: 10000,
-    },
+function createControlledPrivateBackfillComposition(options = {}) {
+  const createProductionGraphRagRuntime = loadFactory(
+    paths.runtime,
+    'createProductionGraphRagRuntime',
+    'SP05_PRODUCTION_RUNTIME_BOUNDARY_MISSING',
   );
-  assert.strictEqual(execution.error, undefined, 'SP01_DEFAULT_MCP_JSONRPC_PROCESS_FAILED');
-  assert.strictEqual(execution.status, 0, `SP01_DEFAULT_MCP_JSONRPC_EXITED:${execution.status}`);
-  const responseLine = String(execution.stdout || '')
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(Boolean)
-    .at(-1);
-  assert(responseLine, 'SP01_DEFAULT_MCP_JSONRPC_RESPONSE_MISSING');
-  const response = JSON.parse(responseLine);
+  const fixture = options.fixture || canonicalThreeChannelFixture(
+    options.version || 'canonical-init-controlled-v1',
+  );
+  const observations = createProductionCompositionObservations();
+  if (options.interrupt === false) observations.releaseInterruption();
+  const runtime = createSemanticRuntime(createProductionGraphRagRuntime, observations, {
+    fixture,
+    configuration: externalProductionCredentials(),
+    qualification: qualifiedProviderProfile(),
+  });
   return Object.freeze({
-    request,
-    response,
-    responseText: JSON.stringify(response),
-    stderr: String(execution.stderr || ''),
-    canonicalJsonBefore,
-    canonicalJsonAfter: fs.readFileSync(canonicalPath, 'utf8'),
+    fixture,
+    runtime,
+    observations,
   });
 }
 
@@ -383,12 +341,8 @@ function createSemanticRuntime(createProductionGraphRagRuntime, observations, op
   });
 }
 
-async function invokeOperator(mcp, runtime, request) {
-  return mcp.callTool(
-    'backfillSystemArchitectureSemanticProjection',
-    request,
-    { productionGraphRagRuntime: runtime },
-  );
+async function invokeOperator(runtime, request) {
+  return runtime.runSemanticBackfill(request);
 }
 
 function createProductionCompositionObservations() {
@@ -691,6 +645,7 @@ module.exports = {
   STORE_METHODS,
   assertCompleteMetadata,
   canonicalThreeChannelFixture,
+  createControlledPrivateBackfillComposition,
   runPersistentSemanticProjectionLifecycle,
   runProductionSemanticBackfill,
 };
