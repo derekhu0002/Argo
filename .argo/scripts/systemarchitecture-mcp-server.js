@@ -1866,6 +1866,12 @@ function createDefaultCanonicalSemanticInitComposition() {
       },
     }),
     finalReadiness: Object.freeze({
+      async invalidate(evidence) {
+        return readinessStore.invalidate(evidence);
+      },
+      async recordFailure(evidence) {
+        return readinessStore.recordFailure(evidence);
+      },
       async verifyQueryability(backfill) {
         if (!backfill || backfill.alignmentState !== 'Aligned') return false;
         const contentVersion = backfill.contentVersion || backfill.canonicalVersion;

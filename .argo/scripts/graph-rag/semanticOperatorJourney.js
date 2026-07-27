@@ -1,5 +1,10 @@
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const LIVE_PROVIDER_GATE = 'ARGO_LIVE_PROVIDER_E2E';
 const MUTATION_VECTOR_GATE = 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E';
+const SEMANTIC_CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
 
 function createProductionSemanticOperatorJourney(dependencies) {
   assertDependencies(dependencies);
@@ -79,54 +84,78 @@ async function runCanonicalSemanticInit(dependencies, request = {}) {
   const providerGate = readGate(dependencies.configurationBehavior, LIVE_PROVIDER_GATE);
   const mutationGate = readGate(dependencies.configurationBehavior, MUTATION_VECTOR_GATE);
   const gateDecision = evaluateDualGate(providerGate, mutationGate);
+  const versions = canonicalInitVersions(request);
+  await dependencies.finalReadiness.invalidate(canonicalInitReadiness(
+    gateDecision === 'disabled' ? 'SemanticIndexPending' : 'Stale',
+    versions,
+  ));
   if (gateDecision === 'disabled') {
     return Object.freeze({
       state: 'SemanticDisabled',
       alignment: 'SemanticIndexPending',
+      readiness: canonicalInitReadiness('SemanticIndexPending', versions),
       fullSnapshotFallback: false,
     });
   }
   if (gateDecision !== 'enabled') {
-    throw safeLifecycleError(
+    const error = safeLifecycleError(
       'SEMANTIC_LIFECYCLE_GATE_INVALID',
       'Set both semantic lifecycle gates to exactly 1, or disable both.',
+      'Semantic lifecycle gates must both be exactly 1 or both disabled.',
     );
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Failed');
   }
 
-  await resolveCanonicalConfiguration(dependencies.configurationBehavior, request);
-  const backfill = await dependencies.productionGraphRagRuntime.runSemanticBackfill({
-    ...request,
-    explicitOptIn: true,
-    automatic: true,
-  });
-  if (!backfill || backfill.alignmentState !== 'Aligned') {
-    throw safeLifecycleError(
-      'SEMANTIC_RECONCILIATION_INCOMPLETE',
-      'Repair the durable semantic reconciliation failure, then run argo init again.',
-    );
+  try {
+    await resolveCanonicalConfiguration(dependencies.configurationBehavior, request);
+  } catch (error) {
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Failed');
   }
-  const queryable = await dependencies.finalReadiness.verifyQueryability(backfill);
+  let backfill;
+  try {
+    backfill = await dependencies.productionGraphRagRuntime.runSemanticBackfill({
+      ...request,
+      explicitOptIn: true,
+      automatic: true,
+    });
+  } catch {
+    const error = reconciliationFailure();
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Stale');
+  }
+  if (!backfill || backfill.alignmentState !== 'Aligned') {
+    const error = reconciliationFailure();
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Stale');
+  }
+  let queryable;
+  try {
+    queryable = await dependencies.finalReadiness.verifyQueryability(backfill);
+  } catch {
+    queryable = false;
+  }
   if (queryable !== true) {
-    throw safeLifecycleError(
+    const error = safeLifecycleError(
       'SEMANTIC_QUERYABILITY_NOT_VERIFIED',
       'Repair semantic vector queryability, then run argo init again.',
     );
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Stale');
   }
-  const coherent = await dependencies.finalReadiness.verifyGlobalCoherence(backfill);
+  let coherent;
+  try {
+    coherent = await dependencies.finalReadiness.verifyGlobalCoherence(backfill);
+  } catch {
+    coherent = false;
+  }
   if (coherent !== true) {
-    throw safeLifecycleError(
+    const error = safeLifecycleError(
       'SEMANTIC_GLOBAL_COHERENCE_NOT_VERIFIED',
       'Repair semantic global coherence, then run argo init again.',
     );
+    throw await recordCanonicalInitFailure(dependencies.finalReadiness, versions, error, 'Stale');
   }
-  const contentVersion = backfill.contentVersion || backfill.canonicalVersion;
-  const indexVersion = backfill.indexVersion || backfill.canonicalVersion;
   const alignedEvidence = Object.freeze({
     state: 'Aligned',
     verified: true,
-    canonicalVersion: backfill.canonicalVersion,
-    contentVersion,
-    indexVersion,
+    ...versions,
     completedChannels: ['Element', 'ArchitectureRelationship', 'View'],
     missingChannels: [],
     mismatchedChannels: [],
@@ -135,9 +164,7 @@ async function runCanonicalSemanticInit(dependencies, request = {}) {
       Object.freeze({
         channel,
         state: 'Aligned',
-        canonicalVersion: backfill.canonicalVersion,
-        contentVersion,
-        indexVersion,
+        ...versions,
       })
     ))),
   });
@@ -161,7 +188,13 @@ function requireCanonicalInitDependencies(dependencies) {
   ) {
     throw new TypeError('productionGraphRagRuntime.runSemanticBackfill is required');
   }
-  for (const name of ['verifyQueryability', 'verifyGlobalCoherence', 'recordAligned']) {
+  for (const name of [
+    'invalidate',
+    'recordFailure',
+    'verifyQueryability',
+    'verifyGlobalCoherence',
+    'recordAligned',
+  ]) {
     if (!dependencies.finalReadiness || typeof dependencies.finalReadiness[name] !== 'function') {
       throw new TypeError(`finalReadiness.${name} is required`);
     }
@@ -195,7 +228,7 @@ async function resolveCanonicalConfiguration(configurationBehavior, request) {
       return configurationBehavior;
     }
     if (typeof configurationBehavior.resolve === 'function') {
-      return configurationBehavior.resolve(request);
+      return await configurationBehavior.resolve(request);
     }
     throw safeLifecycleError(
       'EXTERNAL_CREDENTIALS_REQUIRED',
@@ -215,20 +248,86 @@ function sanitizeLifecycleError(sourceError) {
     'EMBEDDING_QUALIFICATION_REQUIRED',
     'EMBEDDING_CONFIGURATION_REQUIRED',
   ]);
-  const category = approvedCategories.has(sourceError && sourceError.category)
-    ? sourceError.category
-    : 'APPROVED_CONFIGURATION_REJECTED';
+  const sourceCategory = sourceError && sourceError.category;
+  const category = sourceCategory === 'LIVE_PROVIDER_CONFIGURATION_REQUIRED'
+    ? 'EXTERNAL_CREDENTIALS_REQUIRED'
+    : (approvedCategories.has(sourceCategory)
+      ? sourceCategory
+      : 'EMBEDDING_CONFIGURATION_REQUIRED');
   return safeLifecycleError(
     category,
     'Correct approved external configuration and retry argo init.',
+    'Approved external semantic configuration was rejected.',
   );
 }
 
-function safeLifecycleError(category, action) {
-  const error = new Error(category);
+function safeLifecycleError(category, action, message = category) {
+  const error = new Error(message);
   error.category = category;
   error.action = action;
   error.fullSnapshotFallback = false;
+  error.safeSemanticLifecycleMessage = true;
+  return error;
+}
+
+function reconciliationFailure() {
+  return safeLifecycleError(
+    'SEMANTIC_RECONCILIATION_FAILED',
+    'Repair the durable semantic reconciliation failure, then run argo init again.',
+    'Semantic reconciliation failed before readiness could be verified.',
+  );
+}
+
+function canonicalInitVersions(request) {
+  const repositoryRoot = path.resolve(
+    request.repositoryRoot
+    || (request.workspace && request.workspace.workspaceRoot)
+    || process.cwd(),
+  );
+  const graph = JSON.parse(fs.readFileSync(
+    path.join(repositoryRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    'utf8',
+  ));
+  const identity = {
+    name: graph.name || 'System',
+    elements: (graph.elements || []).map(element => element.id).sort(),
+    relationships: (graph.relationships || []).map(relationship => relationship.id).sort(),
+    views: (graph.views || []).map(view => view.view_id).sort(),
+  };
+  const canonicalVersion = `canonical:${crypto.createHash('sha256')
+    .update(JSON.stringify(identity))
+    .digest('hex')}`;
+  return Object.freeze({
+    canonicalVersion,
+    contentVersion: `content:${canonicalVersion}`,
+    indexVersion: `index:${canonicalVersion}`,
+  });
+}
+
+function canonicalInitReadiness(state, versions, failure = {}) {
+  return Object.freeze({
+    state,
+    verified: false,
+    ...versions,
+    completedChannels: [],
+    missingChannels: [...SEMANTIC_CHANNELS],
+    mismatchedChannels: [],
+    channels: Object.freeze([]),
+    fullSnapshotFallback: false,
+    ...failure,
+  });
+}
+
+async function recordCanonicalInitFailure(finalReadiness, versions, error, state) {
+  const evidence = canonicalInitReadiness(state, versions, {
+    category: error.category || 'SEMANTIC_LIFECYCLE_FAILED',
+    message: error.message || 'Semantic lifecycle failed.',
+    action: error.action || 'Repair semantic readiness, then run argo init again.',
+  });
+  await finalReadiness.recordFailure(evidence);
+  for (const [field, value] of Object.entries(evidence)) {
+    error[field] = value;
+  }
   return error;
 }
 

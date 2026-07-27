@@ -470,6 +470,28 @@ function toolResult(payload) {
   };
 }
 
+function canonicalInitErrorResult(error) {
+  const result = semanticOperatorErrorResult(error);
+  if (error.safeSemanticLifecycleMessage !== true) return result;
+  const payload = Object.freeze({
+    status: 'failed',
+    error: Object.freeze({
+      ...result.error,
+      message: error.message,
+    }),
+  });
+  return Object.freeze({
+    ...result,
+    ...payload,
+    content: Object.freeze([
+      Object.freeze({
+        type: 'text',
+        text: JSON.stringify(payload),
+      }),
+    ]),
+  });
+}
+
 function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
@@ -540,7 +562,9 @@ async function handleRequest(request, dependencies = undefined) {
       return {
         jsonrpc: '2.0',
         id,
-        result: semanticOperatorErrorResult(error),
+        result: params.name === 'initializeWorkspace'
+          ? canonicalInitErrorResult(error)
+          : semanticOperatorErrorResult(error),
       };
     }
   }
