@@ -1,3 +1,11 @@
+# Canonical lifecycle handoff-baseline correction (2026-07-27)
+
+- Independent audit found the handoff still described the pre-implementation nine-RED baseline after Coding had completed C1-C3. Fresh evidence is 41/43: six unique scoped entrypoints pass, and only SP-03/SP-04 remain expected RED. Five lifecycle guards pass; `integration-control-points.guard.js` is intentionally RED on router-side WP-P2 duplication.
+- Passing SP-05, SP-01, SP-02, DT-16/DT-16-SemanticIndex, controlled W3.1, and TS-00 entries no longer carry stale `failureReason` values. C1-C3 are explicitly completed regression prerequisites. Their task steps now preserve passing invariants instead of instructing Coding to reproduce obsolete failures.
+- Handoff schema requires non-empty `failureSignal` and `nextAction` for every authorized target. Completed C1-C3 targets therefore carry explicit `REGRESSION_ONLY` passing-baseline signals and `No completed C… implementation work` constraints instead of old missing-production signals. `systemarchitecture-mcp-server.js` and `defaultSemanticRetrieval.js` carry only the current C4 SP-03/SP-04/integration evidence.
+- The architecture-boundary guard now freezes the fresh six-pass/two-RED entrypoint set, exact SP-03/SP-04 signals, five-green/one-intentional-RED guard status, absence of stale failure reasons and obsolete target failure categories, regression-only completed-target instructions, and completed C1-C3 task status.
+- The five-file target authorization and all unified readiness, WP-P2 algorithm-reuse, redaction, gate, persistence, cleanup, compatibility, runner-owned delivery, and code-complete/live-release constraints remain unchanged.
+
 # Canonical lifecycle WP-P2 target-scope correction (2026-07-27)
 
 - Coding correctly identified that the frozen `defaultSemanticRetrieval.js` private reader still hardcodes obsolete readiness identity `argo-production-semantic-index` and exposes no production `readinessBoundary` dependency. The prior four-file authorization made compliant reuse of the unified durable record impossible without router-side algorithm duplication.

@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T14:38:00+08:00",
+  "generatedAt": "2026-07-27T14:53:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Complete the accepted canonical semantic lifecycle without changing intent or frozen tests. The authoritative minimal Coding target set is exactly argo-mcp-server.js, systemarchitecture-mcp-server.js, semanticOperatorJourney.js, mutationEmbeddingVectorLifecycle.js, and defaultSemanticRetrieval.js. The fifth target is narrowly authorized because the frozen WP-P2 reader hardcodes an obsolete readiness identity and exposes no production readiness-boundary input; Coding must make createDefaultSemanticRetrieval consume the unified production readinessBoundary while preserving its existing threshold filtering, expanding-window exhaustion, purpose closure, endpoint/View closure, provenance, and canonical completion. Both exported routers must delegate to this one WP-P2 algorithm; router-side provider/vector/closure duplication and production reliance on test-only composition are prohibited. Stored non-Aligned evidence preserves only redacted category/message/action plus exact state/version/channel fields and fullSnapshotFallback:false; unknown diagnostic fields and secret canaries remain private. Canonical init, actual writes, both routers, and later recovery continue to share one durable identity/recordId/canonicalVersion with monotonic revision. All prior exact dual gates ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E remain unchanged with no third flag; configuration and credentials remain external-only; WP-P1/WP-P2 stay private; WP-P3 public exposure remains retired; production cleanup is prohibited while cleanup remains test-only; deliveryStatus stays runner-owned; and code-complete remains distinct from live-release.",
+  "summary": "Complete only the remaining unified WP-P2 retrieval correction without changing intent or frozen tests. Fresh pre-coding evidence is 41/43: six unique scoped entrypoints pass, and only SP-03/SP-04 remain expected RED with SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2 and SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED. Five lifecycle guards pass; integration-control-points.guard.js is intentionally RED because the System router still duplicates WP-P2. C1-C3 are completed regression prerequisites, not missing implementation. The authoritative minimal Coding target set remains exactly argo-mcp-server.js, systemarchitecture-mcp-server.js, semanticOperatorJourney.js, mutationEmbeddingVectorLifecycle.js, and defaultSemanticRetrieval.js. The fifth target is narrowly authorized because the WP-P2 reader hardcodes obsolete readiness identity argo-production-semantic-index and exposes no production readiness-boundary input. Coding must make createDefaultSemanticRetrieval consume the unified production readinessBoundary while preserving threshold filtering, expanding-window exhaustion, purpose closure, endpoint/View closure, provenance, and canonical completion. Both exported routers delegate to this one WP-P2 algorithm; router-side provider/vector/closure duplication and production reliance on test-only composition are prohibited. Stored non-Aligned evidence preserves only redacted category/message/action plus exact state/version/channel fields and fullSnapshotFallback:false; unknown diagnostics and secret canaries remain private. Exact gates ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E remain unchanged with no third flag; configuration and credentials remain external-only; WP-P1/WP-P2 stay private; WP-P3 public exposure remains retired; production cleanup is prohibited while cleanup remains test-only; deliveryStatus stays runner-owned; and code-complete remains distinct from live-release.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -16,54 +16,48 @@
       "entryPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
       "controlPoint": "Invoke the shipped uninjected argo-mcp-server initializeWorkspace path through disabled, half-enabled, malformed non-'1', missing, and unsafe configuration controls; bind enabled reconciliation structurally to concrete WP-P1 evidence.",
       "observationPoint": "Independent concrete-runtime/store deltas prove zero provider/vector effects without defaulting missing counters; unsafe/missing raw diagnostics retain a secret canary while actual JSON-RPC evidence must be actionable and redacted; enabled final Aligned follows queryability and global coherence.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
-      "failureReason": "SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runNewProjectSemanticOperatorJourney.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
       "entryPath": "tests/explicit/entries/runProductionSemanticBackfill.js",
       "controlPoint": "Run concrete productionSemanticBackfill/store/Neo4j/checkpoint boundaries through interruption, resume, no-replay, and rerun, then inspect actual argo init and both public dispatchers.",
       "observationPoint": "Concrete durable WP-P1 behavior remains checkpointed, no-replay, complete, and idempotent; actual canonical init records Aligned only after concrete queryability and global-coherence ports, and the former backfill route stays absent.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticBackfill.js",
-      "failureReason": "SP01_BACKFILL_TOOL_NOT_PRIVATE"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticBackfill.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
       "entryPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
       "controlPoint": "Run all batch/focused add/update/remove combinations through the durable production projection boundary.",
       "observationPoint": "Exact touched identities use complete durable upsert/tombstone evidence and no production runId cleanup.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-      "failureReason": "SP02_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
       "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
       "controlPoint": "Execute 18 batch/focused Element, ArchitectureRelationship, and View add/update/remove cases, batch preview, and dryRun on all nine focused adapters.",
       "observationPoint": "Independent raw-port ledgers prove zero provider/vector writes for every disabled/invalid control. One filesystem-backed readiness record is written by the actual mutation lifecycle and read unchanged by both routers before init; each init alignment follows queryability/coherence; both restored router reads occur only after the final alignment and observe the same transformed identity/recordId/canonicalVersion at a higher revision.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
-      "failureReason": "DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
       "entryPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
       "controlPoint": "Inspect complete semantic-index evidence for the same exact-touched incremental mutation matrix.",
       "observationPoint": "Each touched Element, ArchitectureRelationship, and View record carries complete canonical/content/index/provider/model/version/dimensions evidence and partial persistence never aligns.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js",
-      "failureReason": "DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runMutationIndexLifecycle.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
       "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
       "controlPoint": "Run controlled production incremental acceptance by default and protected real provider/Neo4j execution only when both exact gates are 1.",
       "observationPoint": "Code-complete evidence is environment-independent; live release additionally proves real finite 1024-dimensional vectors, durable queryability, and coherence without production cleanup.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
-      "failureReason": "W31_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -88,9 +82,8 @@
       "entryPath": "tests/explicit/entries/runTypedMcpQueryContract.js",
       "controlPoint": "Inspect System/unified tools/list and public routing, then exercise typed, no-argument, and graph-tidy compatibility.",
       "observationPoint": "Only getSystemArchitecture remains public for architecture read/query semantics; three retired names are unknown; compatibility remains exact.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runTypedMcpQueryContract.js",
-      "failureReason": "TS00_SYSTEM_SEMANTICDISABLED_READINESS_NOT_FRESH"
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "node tests/explicit/entries/runTypedMcpQueryContract.js"
     }
   ],
   "criticalNonExplicitTests": [
@@ -149,26 +142,34 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/argo-mcp-server.js",
-      "failureSignal": "SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING",
-      "nextAction": "After canonical initializeWorkspace succeeds, privately invoke canonical semantic init and attach structural-only, reconciled, or redacted fail-closed evidence."
+      "baselineStatus": "passed-completed-prerequisite",
+      "authorizationConstraint": "Preserve the passing canonical init and retired public-tool behavior; no new argo gateway behavior is required by the remaining WP-P2 correction.",
+      "failureSignal": "REGRESSION_ONLY: SP-05, SP-01, and TS-00 currently pass; any new failure is a regression, not remaining C1 work.",
+      "nextAction": "No completed C1 implementation work. Leave this target unchanged unless the C4 delegation requires a minimal wrapper-preserving adjustment."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-00",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "TS00_SYSTEM_SEMANTICDISABLED_READINESS_NOT_FRESH plus retired routing and actual-write integration gaps",
-      "nextAction": "Retire three public names; integrate readiness-first exact-touched durable lifecycle after successful writes; preserve preview and canonical bypasses."
+      "baselineStatus": "passed-for-C1-C3-with-C4-work-remaining",
+      "authorizationConstraint": "Preserve passing init/write/public-surface behavior while replacing only router-side WP-P2 duplication with defaultSemanticRetrieval composition.",
+      "failureSignal": "SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2; SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED; integration guard reports duplicated WP-P2 executeProductionSemanticQuery.",
+      "nextAction": "Perform only C4 router delegation: pass unified readinessBoundary into defaultSemanticRetrieval and remove duplicated provider/vector/closure execution."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
       "path": ".argo/scripts/graph-rag/semanticOperatorJourney.js",
-      "failureSignal": "SP05 actual init and SP03/SP04 exported-query fresh-readiness failures",
-      "nextAction": "Convert the module to private canonical lifecycle composition and make every ordinary query use current persistent readiness without prior public attestation."
+      "baselineStatus": "passed-completed-prerequisite",
+      "authorizationConstraint": "Preserve the passing private canonical lifecycle composition; do not reintroduce public WP-P3 authorization or process-local readiness.",
+      "failureSignal": "REGRESSION_ONLY: SP-05, SP-01, and TS-00 currently pass; any new journey failure is a regression, not remaining C1 work.",
+      "nextAction": "No completed C1 implementation work. Leave this target unchanged unless a minimal C4 delegation adjustment is strictly required."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DT-16",
       "path": ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
-      "failureSignal": "DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING",
-      "nextAction": "Add the durable lifecycle plus module-owned callback-scoped controlled composition, then make every actual write adapter invoke it with actual touched arrays; reuse frozen WP-P1 store/configuration ports without runId/cleanup."
+      "baselineStatus": "passed-completed-prerequisite",
+      "authorizationConstraint": "Preserve the passing durable lifecycle, shared readiness store, exact touched arrays, and no-runId/no-cleanup boundary.",
+      "failureSignal": "REGRESSION_ONLY: SP-02, DT-16, controlled W3.1, SP-01, SP-05, and TS-00 currently pass; any new lifecycle failure is a regression, not remaining C2/C3 work.",
+      "nextAction": "No completed C2/C3 implementation work. Reuse the existing production readiness store as C4 input without changing mutation lifecycle behavior."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -183,56 +184,49 @@
       {
         "taskId": "CSL-C1",
         "title": "Retire public tools and compose canonical init",
+        "status": "completed",
         "objective": "Make canonical argo init the only automatic lifecycle entry while preserving private WP-P1/WP-P2 ports.",
         "dependsOn": [],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-05-NewProjectJourney", "ExplicitAcceptanceTestcase-SP-01-FullBackfill", "ExplicitAcceptanceTestcase-TS-00"],
         "targetPaths": [".argo/scripts/argo-mcp-server.js", ".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js"],
         "steps": [
-          "Run TS-00, SP-01, and SP-05 and preserve their current RED signals.",
-          "Remove the three retired names from both TOOLS sets, routing sets, callTool branches, and JSON-RPC public dispatch; retain private ports only.",
-          "Add callback-scoped withCanonicalSemanticInitTestComposition(raw configuration behavior, concrete productionGraphRagRuntime, and finalReadiness ports, callback); the callback must invoke shipped initializeWorkspace JSON-RPC without a supplied journey, and production never accepts a preassembled backfill result or returned effect counters.",
-          "Consume the frozen approved configuration boundary for exactly the two existing flags: both disabled returns structural-only, malformed or half-enabled fails closed, both exact 1 continues with valid configuration.",
-          "After canonical init and structural projection, privately call the frozen runtime runSemanticBackfill port; preserve concrete checkpoints/resume/no-replay/idempotence, independently verify queryability then global coherence, and only then persist Aligned.",
-          "Run TS-00, SP-01, SP-05, no-argument, and graph-tidy regressions."
+          "Treat passing TS-00, SP-01, and SP-05 as the frozen regression baseline.",
+          "Preserve retired public names, exact dual-gate init, private WP-P1 reconciliation, queryability/coherence ordering, no-argument compatibility, and graph-tidy compatibility while completing C4."
         ],
         "completionSignal": "Retired names are absent/unknown and canonical init passes enabled, disabled, half-enabled, configuration, resume, rerun, and prior-structural-only controls."
       },
       {
         "taskId": "CSL-C2",
         "title": "Build durable incremental lifecycle",
+        "status": "completed",
         "objective": "Reconcile exact touched records through the production store without runId cleanup.",
         "dependsOn": ["CSL-C1"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-02-PersistentProjection", "ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E"],
         "targetPaths": [".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"],
         "steps": [
-          "Run SP-02, DT-16, and W3.1 and preserve actual-adapter controlled-composition RED before live checks.",
-          "Add createPersistentMutationEmbeddingLifecycle(dependencies).reconcile({ canonicalWrite, preview, gates }) plus withPersistentMutationEmbeddingLifecycleTestComposition(rawPorts, callback); the callback must still invoke actual MCP adapters.",
-          "Invalidate readiness before configuration resolution and every provider/persistence side effect; make batch preview and all nine focused dry-runs inert; independently prove disabled, half-enabled, malformed, missing, and unsafe controls have zero provider/vector writes.",
-          "For dual-enabled valid execution, generate qualified vectors and use only upsertRecords/deleteTombstones with complete evidence and no runId/cleanup.",
-          "After persistence, verify every touched identity, then global coherence, then record Aligned; provider/persistence/queryability/coherence failure must write one durable readiness record. Both exported failure reads precede the first init alignment; each resume/rerun alignment has queryability and coherence in its own segment; no exported read occurs between alignments; both restored reads follow the final alignment. Preserve stable identity, recordId, and canonicalVersion while revision advances.",
-          "Run SP-02, DT-16, and controlled W3.1 without live credentials."
+          "Treat passing SP-02, DT-16, and controlled W3.1 as the frozen regression baseline.",
+          "Preserve readiness-first exact-touched upsert/tombstone, inert preview/dry-run, durable failure, recovery ordering, stable record identity, monotonic revision, and no production runId/cleanup while completing C4."
         ],
         "completionSignal": "The 18-case matrix and preview pass with exact IDs, durable upsert/tombstone, complete evidence, ordered alignment, and zero production cleanup."
       },
       {
         "taskId": "CSL-C3",
         "title": "Integrate every canonical write",
+        "status": "completed",
         "objective": "Automatically invoke the durable lifecycle after all successful batch/focused writes only.",
         "dependsOn": ["CSL-C2"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness"],
         "targetPaths": [".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"],
         "steps": [
-          "Route batch and every focused add/update/remove adapter through one post-write function using actual touched arrays.",
-          "Invalidate readiness immediately after canonical write success and before configuration/provider/store/queryability effects.",
-          "Never invoke semantic lifecycle for batch preview, any focused dry-run, failed validation, or failed canonical write.",
-          "Retain successful canonical JSON and attach Failed/Stale redacted evidence when semantic work fails.",
-          "Export createPersistentMutationEmbeddingLifecycle from the production target; remove production random runId, runId writes/queries, and cleanup calls from that factory while leaving frozen live-test adapters unchanged. The AST guard must resolve direct or alias exports and all transitive helper aliases."
+          "Treat all passing batch/focused write-adapter scenarios as the frozen regression baseline.",
+          "Preserve post-write actual touched arrays, first invalidation, canonical authority on semantic failure, inert preview/dry-run, exported persistent factory resolution, and no production cleanup while completing C4."
         ],
         "completionSignal": "All canonical write surfaces share readiness-first exact-touched behavior, preserve canonical authority on failure, and never leak preview/vector or cleanup effects."
       },
       {
         "taskId": "CSL-C4",
         "title": "Verify readiness on every query",
+        "status": "pending",
         "objective": "Make ordinary getSystemArchitecture(query) self-contained and fail-closed.",
         "dependsOn": ["CSL-C1", "CSL-C3"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
@@ -250,6 +244,7 @@
       {
         "taskId": "CSL-C5",
         "title": "Prove controlled and live evidence",
+        "status": "pending",
         "objective": "Finish deterministic acceptance and separately report protected live-release blockers.",
         "dependsOn": ["CSL-C1", "CSL-C2", "CSL-C3", "CSL-C4"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-05-NewProjectJourney", "ExplicitAcceptanceTestcase-SP-01-FullBackfill", "ExplicitAcceptanceTestcase-SP-02-PersistentProjection", "ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E", "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
