@@ -269,7 +269,7 @@
       "id": "grag-query-service",
       "name": "Intent Architecture Query Service",
       "type": "Application Service",
-      "description": "Sole typed Agent-facing MCP architecture read service. getSystemArchitecture({}) and omitted query return the complete canonical snapshot; every graph-tidy request is the same canonical bypass. Every ordinary query internally verifies persistent three-channel readiness on each invocation before provider/vector work and rejects non-Aligned state with fullSnapshotFallback:false. The three standalone semantic lifecycle tools are not public.",
+      "description": "Sole typed Agent-facing MCP architecture read service. getSystemArchitecture({}) and omitted query return the complete canonical snapshot; every graph-tidy request is the same canonical full-snapshot bypass. Ordinary semantic queries reject illegal response-shape controls before retrieval and, on success, return only canonical elements, relationships, and views as a full graph or structurally closed object-set subset; summaries, provenance wrappers, semantic index evidence, seeds, policy summaries, and derived business objects are not public success payloads. Every ordinary query internally verifies persistent three-channel readiness on each invocation before provider/vector work and rejects non-Aligned state with fullSnapshotFallback:false. The three standalone semantic lifecycle tools are not public.",
       "attributes": [
         {
           "name": "decisionTrace.DT-01",
@@ -304,6 +304,50 @@
           "value": "{\"description\":\"Select full-snapshot mode when no query fields are supplied.\",\"businessOutcome\":\"Complete canonical reading remains a stable service capability.\",\"observableBoundary\":\"The response contains complete canonical Elements, Relationships, and Views without semantic filtering.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-02\"}"
         },
         {
+          "name": "decisionTrace.BP-MCP-SEM-ROOT",
+          "value": "accepted|ordinary semantic retrieval returns only original intent architecture full graph or structurally closed canonical object-set subset; debug/evidence/derived output removed from public success."
+        },
+        {
+          "name": "decisionSource.BP-MCP-SEM",
+          "value": "D:\\Projects\\Argo\\.argo\\history\\decision-tree\\20260728-002100-mcp-semantic-query-contract-current-session.md"
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-COMPAT",
+          "value": "accepted|omitted-query and graph-tidy remain exact canonical full-snapshot reads, not debug/evidence modes."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-PAYLOAD",
+          "value": "accepted|successful ordinary semantic query returns only canonical Elements, Relationships, and Views collections; derived structures are forbidden."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-FIELDS",
+          "value": "accepted|partial means object-set subset only; every returned object deeply equals the canonical object for that id."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-ELEMENT",
+          "value": "accepted|element selection has no automatic neighbor, relationship, or View expansion unless another selected object requires closure."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-ACCEPTANCE",
+          "value": "accepted|explicit acceptance semantics mounted across grag-mode-validation, grag-query-service, grag-endpoint-closure, and grag-view-closure."
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-COMPAT",
+          "value": "{\"description\":\"Preserve omitted-query and graph-tidy as canonical full-snapshot reads.\",\"businessOutcome\":\"Graph-tidy and exact canonical consumers keep exhaustive intent visibility without being classified as debug/evidence modes.\",\"observableBoundary\":\"Omitted-query and graph-tidy, including anchored graph-tidy, return exact canonical full snapshots with zero semantic retrieval/debug/evidence side effects when no illegal response-shape controls are present.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-PAYLOAD",
+          "value": "{\"description\":\"Expose only canonical graph object collections for successful ordinary semantic query payloads.\",\"businessOutcome\":\"Agents consume architecture objects rather than summaries, retrieval internals, or derived diagnostics.\",\"observableBoundary\":\"Success payload contains only original canonical elements, relationships, and views object collections; businessObjects, semanticSeeds, hitReasons, policySummary, boundarySummary, semanticIndex, descriptionSummary, testCoverage, and equivalent derived structures are absent.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-FIELDS",
+          "value": "{\"description\":\"Treat partial semantic results as object-set selection, never field-level truncation or transformation.\",\"businessOutcome\":\"A returned architecture object is already the canonical object for that id.\",\"observableBoundary\":\"Every returned Element, Relationship, and View deeply equals its canonical SystemArchitecture.json object; selection may omit whole objects but never alter fields, names, descriptions, attributes, testcases, or membership values.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-ELEMENT",
+          "value": "{\"description\":\"Keep Element-only semantic hits minimal unless other selected objects require closure.\",\"businessOutcome\":\"Element matches do not explode into unrelated context.\",\"observableBoundary\":\"An Element selected without independently selected Relationships or Views returns only that canonical Element object and no adjacent relationships, endpoint neighbors, or owning Views by closure alone.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT\"}"
+        },
+        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runGraphQueryCompatibility.js; runCanonicalGraphFullSnapshot.js; exit code 0"
         },
@@ -326,6 +370,27 @@
           "type": "Acceptance Test",
           "Input": "A no-argument Intent Architecture Query Service request.",
           "acceptanceCriteria": "tests/explicit/entries/runCanonicalGraphFullSnapshot.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT",
+          "description": "Acceptor control point: call omitted-query and graph-tidy, including anchored graph-tidy, through getSystemArchitecture with no illegal response-shape controls. Observation point: each response is the exact canonical full snapshot and has zero semantic retrieval, debug, or evidence side effects.",
+          "type": "Acceptance Test",
+          "Input": "Omitted-query request, graph-tidy request, anchored graph-tidy request, canonical graph fixture, and semantic side-effect ledger.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#preserve-full-snapshot-read-modes"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
+          "description": "Acceptor control point: run ordinary semantic queries that match Element, Relationship, and View objects. Observation point: the success payload contains only canonical elements, relationships, and views collections; every returned object deeply equals the canonical object for the same id; derived summaries, provenance wrappers, semantic seeds, policy summaries, boundary summaries, semantic index evidence, description summaries, testCoverage, and businessObjects are absent.",
+          "type": "Acceptance Test",
+          "Input": "Ordinary semantic queries covering Element, Relationship, and View matches plus canonical SystemArchitecture.json comparison source.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT",
+          "description": "Acceptor control point: run an ordinary semantic query that selects an Element with many adjacent relationships and Views while no Relationship or View independently matches. Observation point: only the canonical Element object is returned, except for objects independently selected by the query; no adjacent Relationship, endpoint neighbor, or owning View appears by closure alone.",
+          "type": "Acceptance Test",
+          "Input": "Element-focused semantic query fixture with adjacent relationships and Views that do not independently match.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#element-hit-no-neighbor-expansion"
         }
       ]
     },
@@ -463,7 +528,7 @@
       "id": "grag-mode-validation",
       "name": "Query Mode and Purpose Validation",
       "type": "Application Function",
-      "description": "Validates full versus query invocation, declared lifecycle purpose, required intent text, optional anchors, audit subject, and index availability before semantic retrieval.",
+      "description": "Validates full versus query invocation, declared lifecycle purpose, required intent text, optional anchors, audit subject, index availability, and illegal response-shape/debug/evidence controls before semantic retrieval.",
       "attributes": [
         {
           "name": "decisionTrace.DT-03",
@@ -482,6 +547,14 @@
           "value": "{\"description\":\"Validate declared purpose and reject audit mode when subject is absent.\",\"businessOutcome\":\"Purpose policy selection is explicit and audit scope cannot be silently inferred.\",\"observableBoundary\":\"Implementation-design selects its declared policy; audit without subject returns a rejection.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-03\"}"
         },
         {
+          "name": "decisionTrace.BP-MCP-SEM-REQ",
+          "value": "accepted|reject responseProfile/detail/outputMode and equivalent debug/full/evidence controls before retrieval."
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-REQ",
+          "value": "{\"description\":\"Reject forbidden public query shape controls rather than ignoring or downgrading them.\",\"businessOutcome\":\"Public contract audits can prove no hidden debug/evidence mode survives in ordinary semantic retrieval.\",\"observableBoundary\":\"Requests containing responseProfile, detail, outputMode, debug, full, evidence, case variants, or combinations are rejected before seed retrieval and return neither canonical subset success nor debug/evidence structures.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ\"}"
+        },
+        {
           "name": "deliveryEvidence.W1",
           "value": "verified acceptance: runQueryPurposeValidation.js; exit code 0"
         },
@@ -497,6 +570,13 @@
           "type": "Acceptance Test",
           "Input": "Two equal intent texts with different declared purposes; audit request has no subject.",
           "acceptanceCriteria": "tests/explicit/entries/runQueryPurposeValidation.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
+          "description": "Acceptor control point: call ordinary getSystemArchitecture semantic query with responseProfile, detail, outputMode, debug, full, evidence, case variants, and combinations. Observation point: validation rejects each request as an illegal query contract before semantic retrieval, and the response contains no debug evidence, vector, queryTemplate, parameterContract, archimateSemantics, expandWith, or success canonical subset.",
+          "type": "Acceptance Test",
+          "Input": "Ordinary semantic query requests carrying forbidden response-shape/debug/evidence controls.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls"
         }
       ]
     },
@@ -889,7 +969,7 @@
       "id": "grag-endpoint-closure",
       "name": "Relationship Endpoint Closure",
       "type": "Application Function",
-      "description": "DT-13 structural endpoint closure: after W5 purpose closure selects a result range, every returned ArchitectureRelationship is accompanied by both canonical endpoint Elements from the same graph version. Endpoint Elements are included even when their text is not a semantic match, and invalid, missing, deleted, or cross-version endpoint references are reported as structural errors rather than hidden or silently dropped.",
+      "description": "DT-13 and BP-MCP-SEM-REL/BROKEN structural endpoint closure: after ordinary semantic selection or purpose closure selects a returned relationship, include that Relationship and both canonical endpoint Elements from the same graph version. Endpoint closure does not include endpoint neighbors, endpoint-owned Views, unrelated relationships, or other adjacent objects by closure alone. Missing, deleted, invalid, or cross-version endpoint references fail closed as structural errors rather than partial relationship success.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -898,6 +978,22 @@
         {
           "name": "functionalPoint.DT-13-endpoint-closure",
           "value": "{\"description\":\"Close every returned relationship over its canonical source and target endpoints with same-version proof and dangling-endpoint error handling.\",\"businessOutcome\":\"Consumers can understand every returned relationship without chasing missing endpoints, accepting cross-version joins, or inferring dangling references.\",\"observableBoundary\":\"For every ArchitectureRelationship in a semantic or purpose-closed result, the response includes the relationship object plus both source and target Element objects from the same canonical graph version. The relationship and both endpoints expose matching canonicalVersion evidence. Endpoints are included even when they were not semantic seeds or direct purpose-policy matches. Missing, deleted, invalid, or cross-version endpoint references are surfaced as named structural errors and are not hidden behind partial relationship output.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-13\"}"
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-REL",
+          "value": "accepted|selected Relationship returns both canonical endpoint Elements and no endpoint neighbors or Views by endpoint closure alone."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-BROKEN",
+          "value": "accepted|broken relationship endpoints fail closed; no partial relationship success, silent drop, or hidden missing endpoint."
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-REL",
+          "value": "{\"description\":\"Apply minimal endpoint closure for selected Relationships.\",\"businessOutcome\":\"Returned Relationship fragments are readable without expanding into unrelated neighborhoods.\",\"observableBoundary\":\"A selected Relationship returns the canonical relationship object and both source/target Element objects; endpoint neighbors, endpoint-owned Views, and unrelated relationships are excluded unless independently selected or required by selected View closure.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-REL\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-BROKEN-REL",
+          "value": "{\"description\":\"Fail closed when selected Relationship endpoint references cannot be resolved canonically.\",\"businessOutcome\":\"Consumers are not misled by partial or silently repaired relationship fragments.\",\"observableBoundary\":\"Missing, deleted, invalid, or cross-version source/target references produce a named structural failure and no successful subset response containing a partial Relationship.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL\"}"
         },
         {
           "name": "acceptanceApproval.DT-13",
@@ -927,6 +1023,20 @@
           "type": "Acceptance Test",
           "Input": "Approved relationship-seed query with one or both textually unmatched endpoints, plus dangling-endpoint and cross-version endpoint fixtures.",
           "acceptanceCriteria": "tests/explicit/entries/runRelationshipEndpointClosure.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
+          "description": "Acceptor control point: run an ordinary semantic query that selects a Relationship whose endpoints are not semantic matches. Observation point: the returned subset contains the canonical Relationship object plus both canonical endpoint Element objects and excludes endpoint neighbors, endpoint-owned Views, and unrelated relationships by endpoint closure alone.",
+          "type": "Acceptance Test",
+          "Input": "Relationship-focused semantic query fixture with source and target endpoints that do not independently match, plus adjacent non-endpoint graph objects.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#relationship-endpoint-closure"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
+          "description": "Acceptor control point: run ordinary semantic query against fixtures with a selected Relationship whose source or target reference is missing, deleted, invalid, or from a cross-version graph. Observation point: closure fails closed with a named structural failure and no partial successful subset response.",
+          "type": "Acceptance Test",
+          "Input": "Relationship selection fixtures with missing, deleted, invalid, and cross-version endpoint references.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-relationship-endpoint-rejection"
         }
       ]
     },
@@ -934,7 +1044,7 @@
       "id": "grag-view-closure",
       "name": "Complete View Closure",
       "type": "Application Function",
-      "description": "DT-14 structural View closure: every matched View returns complete View metadata, explicit members, in-View relationships, and relationship endpoints for that View only. Shared members do not cause implicit cascade into overlapping Views unless those other Views were independently matched or explicitly requested.",
+      "description": "DT-14 and BP-MCP-SEM-VIEW/NOCASCADE/BROKEN structural View closure: every selected View returns complete View metadata, explicit included Elements, explicit included Relationships, and both endpoint Elements for each included Relationship. Shared members do not cause implicit cascade into overlapping Views unless those Views independently match or are explicitly selected. Missing View members, included relationships, or in-View relationship endpoints fail closed rather than producing incomplete View success.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -943,6 +1053,30 @@
         {
           "name": "functionalPoint.DT-14-complete-view-closure",
           "value": "{\"description\":\"Return every matched View as a complete, non-cascading View object with metadata, members, relationships, and endpoints.\",\"businessOutcome\":\"Consumers can inspect a matched View as a coherent architecture projection without accidentally importing overlapping Views or losing metadata, members, internal relationships, or endpoints.\",\"observableBoundary\":\"When a View is selected by seed or purpose policy, the response includes that View's identifier, name, viewpoint binding/description metadata, parent viewpoint where present, included element ids, included relationship ids, member Element objects, member ArchitectureRelationship objects, and both endpoint Elements for each included relationship. Shared members do not pull in other Views unless those Views independently satisfy the query selection; no overlapping View cascade occurs by membership alone.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-14\"}"
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-VIEW",
+          "value": "accepted|selected View returns complete metadata, declared members, declared relationships, and endpoints for included relationships."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-NOCASCADE",
+          "value": "accepted|Views sharing members are excluded unless independently matched or explicitly selected."
+        },
+        {
+          "name": "decisionTrace.BP-MCP-SEM-BROKEN",
+          "value": "accepted|broken View member/reference closure fails closed; no incomplete View success or silent drop."
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-VIEW",
+          "value": "{\"description\":\"Apply complete non-cascading closure for selected Views.\",\"businessOutcome\":\"A returned View is a usable architecture projection rather than metadata without members.\",\"observableBoundary\":\"The selected View, all declared included Elements, all declared included Relationships, and endpoint Elements for each included Relationship are returned as canonical objects; unrelated overlapping Views are excluded unless independently matched or explicitly selected.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-NOCASCADE",
+          "value": "{\"description\":\"Prevent overlapping View cascade through shared members.\",\"businessOutcome\":\"Structural closure preserves semantic precision and does not leak unrelated concerns.\",\"observableBoundary\":\"Shared member objects may be returned through selected View closure, but a non-matched overlapping View is not returned merely because it shares an Element or Relationship.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE\"}"
+        },
+        {
+          "name": "functionalPoint.BP-MCP-SEM-BROKEN-VIEW",
+          "value": "{\"description\":\"Fail closed when selected View closure references cannot be resolved canonically.\",\"businessOutcome\":\"Consumers are not misled by incomplete View fragments.\",\"observableBoundary\":\"Missing declared View members, included relationships, or endpoints of in-View relationships produce a named structural failure and no successful subset response containing an incomplete View.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW\"}"
         },
         {
           "name": "acceptanceApproval.DT-14",
@@ -972,6 +1106,27 @@
           "type": "Acceptance Test",
           "Input": "Approved View query whose target overlaps unrelated Views, with fixtures for complete metadata, member lists, in-View relationships, endpoints, and overlapping-View non-cascade.",
           "acceptanceCriteria": "tests/explicit/entries/runCompleteViewClosure.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
+          "description": "Acceptor control point: run an ordinary semantic query that selects a View with declared members and included relationships whose endpoints are not semantic matches. Observation point: the response returns the selected canonical View object, all declared included Element objects, all declared included Relationship objects, and both endpoint Element objects for each included Relationship.",
+          "type": "Acceptance Test",
+          "Input": "View-focused semantic query fixture with declared Element members, declared Relationship members, and in-View relationship endpoints that do not independently match.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#view-membership-closure"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
+          "description": "Acceptor control point: run an ordinary semantic query that selects a View sharing members with another View that does not independently match. Observation point: shared member objects may appear as part of selected View closure, but the overlapping non-matched View is not returned by shared membership alone.",
+          "type": "Acceptance Test",
+          "Input": "Selected View fixture with an overlapping View sharing Elements or Relationships but not independently matching the query.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#no-overlapping-view-cascade"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
+          "description": "Acceptor control point: run ordinary semantic query against fixtures with a selected View whose declared Element member, included Relationship, or endpoint of an included Relationship is missing, deleted, invalid, or cross-version. Observation point: closure fails closed with a named structural failure and no partial successful subset response containing an incomplete View.",
+          "type": "Acceptance Test",
+          "Input": "View selection fixtures with missing member Elements, missing included Relationships, and broken endpoints on in-View Relationships.",
+          "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-view-reference-rejection"
         }
       ]
     },
@@ -2408,6 +2563,102 @@
           "value": "Delegated parent/orchestrator authorization dated 2026-07-27 for cross-cutting semantic lifecycle optimization and global handoff approval."
         }
       ]
+    },
+    {
+      "id": "bp-mcp-sem-wp-1-request-contract",
+      "name": "WP-1 MCP Semantic Request Contract Seal",
+      "type": "Work Package",
+      "description": "Deliver the public ordinary semantic query request contract that rejects response-shape, debug, full, and evidence controls before retrieval. This work package keeps omitted-query and graph-tidy compatibility outside the debug/evidence path.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-mode-validation; grag-query-service"
+        },
+        {
+          "name": "workPackageOrder",
+          "value": "1"
+        },
+        {
+          "name": "acceptanceMapping",
+          "value": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ -> tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls"
+        },
+        {
+          "name": "releaseGate",
+          "value": "All forbidden response-shape controls are rejected before semantic retrieval and cannot return debug/evidence structures or canonical subset success."
+        }
+      ]
+    },
+    {
+      "id": "bp-mcp-sem-wp-2-canonical-payload",
+      "name": "WP-2 MCP Semantic Canonical Payload",
+      "type": "Work Package",
+      "description": "Deliver canonical-only successful semantic query payloads: ordinary semantic success returns original elements, relationships, and views as whole-object full graph or object-set subset, with no summaries, provenance wrappers, seeds, policy summaries, semantic index evidence, field truncation, or derived objects.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-query-service; grag-canonical-graph"
+        },
+        {
+          "name": "workPackageOrder",
+          "value": "2"
+        },
+        {
+          "name": "acceptanceMapping",
+          "value": "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT; ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD; ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT -> tests/explicit/entries/runMcpSemanticQueryContract.js#preserve-full-snapshot-read-modes; #canonical-object-subset-only; #element-hit-no-neighbor-expansion"
+        },
+        {
+          "name": "releaseGate",
+          "value": "Full snapshot modes remain exact canonical reads; ordinary success payloads contain only canonical object collections and Element-only hits do not expand to neighbors."
+        }
+      ]
+    },
+    {
+      "id": "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+      "name": "WP-3 MCP Semantic Relationship Endpoint Closure",
+      "type": "Work Package",
+      "description": "Deliver minimal Relationship endpoint closure for ordinary semantic subsets: a selected Relationship returns both canonical endpoint Elements and no endpoint neighbors; broken endpoint references fail closed.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-endpoint-closure"
+        },
+        {
+          "name": "workPackageOrder",
+          "value": "3"
+        },
+        {
+          "name": "acceptanceMapping",
+          "value": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL; ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL -> tests/explicit/entries/runMcpSemanticQueryContract.js#relationship-endpoint-closure; #broken-relationship-endpoint-rejection"
+        },
+        {
+          "name": "releaseGate",
+          "value": "Every returned Relationship is endpoint-complete as canonical objects, and unresolved endpoint references reject partial success."
+        }
+      ]
+    },
+    {
+      "id": "bp-mcp-sem-wp-4-view-membership-closure",
+      "name": "WP-4 MCP Semantic View Membership Closure",
+      "type": "Work Package",
+      "description": "Deliver complete non-cascading View closure for ordinary semantic subsets: a selected View returns declared members, included relationships, and relationship endpoints; shared members do not cascade into overlapping Views; broken View references fail closed.",
+      "attributes": [
+        {
+          "name": "affectedElements",
+          "value": "grag-view-closure"
+        },
+        {
+          "name": "workPackageOrder",
+          "value": "4"
+        },
+        {
+          "name": "acceptanceMapping",
+          "value": "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW; ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE; ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW -> tests/explicit/entries/runMcpSemanticQueryContract.js#view-membership-closure; #no-overlapping-view-cascade; #broken-view-reference-rejection"
+        },
+        {
+          "name": "releaseGate",
+          "value": "Selected Views are member-complete and endpoint-complete, overlapping Views do not cascade by shared membership, and broken View references reject partial success."
+        }
+      ]
     }
   ],
   "relationships": [
@@ -2691,16 +2942,16 @@
       "target_id": "grag-endpoint-closure",
       "source_name": "Purpose Policy Graph Closure",
       "target_name": "Relationship Endpoint Closure",
-      "description": "After W5 purpose expansion selects relationships for a result range, endpoint closure must add both canonical endpoint Elements for every returned relationship without using semantic similarity as the endpoint inclusion decision.",
+      "description": "After semantic or purpose selection returns a relationship, endpoint closure must add only both canonical endpoint Elements for that returned relationship and must fail closed on unresolved endpoint references.",
       "statement": "Purpose Policy Graph Closure --(Triggering)--> Relationship Endpoint Closure",
       "attributes": [
         {
           "name": "decisionTrace",
-          "description": "DT-06,DT-13"
+          "description": "DT-06,DT-13,BP-MCP-SEM-REL,BP-MCP-SEM-BROKEN"
         },
         {
           "name": "directionalSemantics",
-          "description": "Purpose closure triggers endpoint completion; endpoint completion does not broaden or reselect the W5 purpose range."
+          "description": "Selection triggers endpoint completion; endpoint completion does not broaden to endpoint neighbors, endpoint-owned Views, unrelated relationships, or partial relationship success."
         }
       ]
     },
@@ -2712,16 +2963,16 @@
       "target_id": "grag-view-closure",
       "source_name": "Relationship Endpoint Closure",
       "target_name": "Complete View Closure",
-      "description": "Relationship endpoint coherence is preserved before matched Views are completed; complete View closure fills the selected View's members, relationships, and endpoints without cascading to overlapping Views.",
+      "description": "Relationship endpoint coherence remains an upstream prerequisite for complete selected-View closure; complete View closure fills selected View metadata, declared members, included relationships, and relationship endpoints without cascading to overlapping Views and fails closed on broken View references.",
       "statement": "Relationship Endpoint Closure --(Triggering)--> Complete View Closure",
       "attributes": [
         {
           "name": "decisionTrace",
-          "description": "DT-13,DT-14"
+          "description": "DT-13,DT-14,BP-MCP-SEM-VIEW,BP-MCP-SEM-NOCASCADE,BP-MCP-SEM-BROKEN"
         },
         {
           "name": "directionalSemantics",
-          "description": "Endpoint closure is an upstream structural prerequisite for coherent View closure; View membership overlap alone does not trigger additional View selection."
+          "description": "Endpoint closure supports View relationship coherence; View closure completes only selected Views and shared membership alone does not trigger additional View selection."
         }
       ]
     },
@@ -2839,12 +3090,16 @@
       "target_id": "grag-canonical-graph",
       "source_name": "Intent Architecture Query Service",
       "target_name": "Canonical Intent Graph",
-      "description": "The query service reads the canonical graph directly; no-argument invocation reads the complete snapshot and query invocation applies only explicitly selected behavior.",
+      "description": "The query service reads the canonical graph directly; omitted-query and graph-tidy invocations read the complete snapshot, while ordinary semantic success may select only whole canonical graph objects and must preserve deep object equality for each returned id.",
       "statement": "Intent Architecture Query Service --(Access)--> Canonical Intent Graph",
       "attributes": [
         {
           "name": "decisionTrace",
-          "description": "DT-01,DT-02"
+          "description": "DT-01,DT-02,BP-MCP-SEM-COMPAT,BP-MCP-SEM-PAYLOAD,BP-MCP-SEM-FIELDS"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "The service depends on canonical graph authority for both full snapshots and object-set subset equality; retrieval projections and derived summaries never redefine returned architecture objects."
         }
       ]
     },
@@ -2856,12 +3111,16 @@
       "target_id": "grag-query-service",
       "source_name": "Query Mode and Purpose Validation",
       "target_name": "Intent Architecture Query Service",
-      "description": "Mode and purpose validation realizes the service boundary that preserves no-argument reads and rejects invalid explicit-purpose requests.",
+      "description": "Mode, purpose, audit-subject, readiness, and response-shape validation realizes the service boundary that preserves full-snapshot compatibility and rejects invalid ordinary semantic requests before retrieval.",
       "statement": "Query Mode and Purpose Validation --(Realization)--> Intent Architecture Query Service",
       "attributes": [
         {
           "name": "decisionTrace",
-          "description": "DT-02,DT-03"
+          "description": "DT-02,DT-03,BP-MCP-SEM-REQ"
+        },
+        {
+          "name": "directionalSemantics",
+          "description": "Validation is an upstream realization of the query service contract; service success cannot bypass illegal field rejection."
         }
       ]
     },
@@ -3557,6 +3816,94 @@
           "description": "DT-16,DT-17"
         }
       ]
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp1-wp2",
+      "name": "WP-1 gates WP-2",
+      "type": "Triggering",
+      "source_id": "bp-mcp-sem-wp-1-request-contract",
+      "target_id": "bp-mcp-sem-wp-2-canonical-payload",
+      "source_name": "WP-1 MCP Semantic Request Contract Seal",
+      "target_name": "WP-2 MCP Semantic Canonical Payload",
+      "description": "Illegal response-shape controls must be rejected before canonical success payload behavior is accepted.",
+      "statement": "WP-1 MCP Semantic Request Contract Seal --(Triggering)--> WP-2 MCP Semantic Canonical Payload"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp2-wp3",
+      "name": "WP-2 gates WP-3",
+      "type": "Triggering",
+      "source_id": "bp-mcp-sem-wp-2-canonical-payload",
+      "target_id": "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+      "source_name": "WP-2 MCP Semantic Canonical Payload",
+      "target_name": "WP-3 MCP Semantic Relationship Endpoint Closure",
+      "description": "Relationship endpoint closure can only be accepted after closure-added objects are constrained to canonical deep-equal payload objects.",
+      "statement": "WP-2 MCP Semantic Canonical Payload --(Triggering)--> WP-3 MCP Semantic Relationship Endpoint Closure"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp3-wp4",
+      "name": "WP-3 gates WP-4",
+      "type": "Triggering",
+      "source_id": "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+      "target_id": "bp-mcp-sem-wp-4-view-membership-closure",
+      "source_name": "WP-3 MCP Semantic Relationship Endpoint Closure",
+      "target_name": "WP-4 MCP Semantic View Membership Closure",
+      "description": "View closure depends on endpoint closure because included View relationships must also return their endpoint Elements.",
+      "statement": "WP-3 MCP Semantic Relationship Endpoint Closure --(Triggering)--> WP-4 MCP Semantic View Membership Closure"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp1-mode-validation",
+      "name": "WP-1 realizes query validation seal",
+      "type": "Realization",
+      "source_id": "bp-mcp-sem-wp-1-request-contract",
+      "target_id": "grag-mode-validation",
+      "source_name": "WP-1 MCP Semantic Request Contract Seal",
+      "target_name": "Query Mode and Purpose Validation",
+      "description": "WP-1 realizes rejection of forbidden public query shape controls before retrieval.",
+      "statement": "WP-1 MCP Semantic Request Contract Seal --(Realization)--> Query Mode and Purpose Validation"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp2-query-service",
+      "name": "WP-2 realizes canonical payload service",
+      "type": "Realization",
+      "source_id": "bp-mcp-sem-wp-2-canonical-payload",
+      "target_id": "grag-query-service",
+      "source_name": "WP-2 MCP Semantic Canonical Payload",
+      "target_name": "Intent Architecture Query Service",
+      "description": "WP-2 realizes canonical-only success payload behavior for ordinary semantic query responses.",
+      "statement": "WP-2 MCP Semantic Canonical Payload --(Realization)--> Intent Architecture Query Service"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp2-canonical-graph",
+      "name": "WP-2 preserves canonical graph authority",
+      "type": "Association",
+      "source_id": "bp-mcp-sem-wp-2-canonical-payload",
+      "target_id": "grag-canonical-graph",
+      "source_name": "WP-2 MCP Semantic Canonical Payload",
+      "target_name": "Canonical Intent Graph",
+      "description": "WP-2 depends on the canonical graph as the sole source of successful payload objects; it does not mutate canonical authority.",
+      "statement": "WP-2 MCP Semantic Canonical Payload --(Association)--> Canonical Intent Graph"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp3-endpoint-closure",
+      "name": "WP-3 realizes endpoint closure",
+      "type": "Realization",
+      "source_id": "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+      "target_id": "grag-endpoint-closure",
+      "source_name": "WP-3 MCP Semantic Relationship Endpoint Closure",
+      "target_name": "Relationship Endpoint Closure",
+      "description": "WP-3 realizes minimal endpoint completion and broken-endpoint fail-closed semantics for selected Relationships.",
+      "statement": "WP-3 MCP Semantic Relationship Endpoint Closure --(Realization)--> Relationship Endpoint Closure"
+    },
+    {
+      "id": "bp-mcp-sem-rel-wp4-view-closure",
+      "name": "WP-4 realizes View closure",
+      "type": "Realization",
+      "source_id": "bp-mcp-sem-wp-4-view-membership-closure",
+      "target_id": "grag-view-closure",
+      "source_name": "WP-4 MCP Semantic View Membership Closure",
+      "target_name": "Complete View Closure",
+      "description": "WP-4 realizes complete non-cascading selected-View membership closure and broken-View-reference fail-closed semantics.",
+      "statement": "WP-4 MCP Semantic View Membership Closure --(Realization)--> Complete View Closure"
     }
   ],
   "views": [
@@ -3676,7 +4023,7 @@
       "view_name": "Graph RAG Seed and Closure Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: semantic relevance is separated from deterministic graph completeness; Purpose: deciding and handoff preparation; Scope: independent seed channels, threshold-all selection, deterministic purpose expansion, endpoint closure, View closure, and provenance; Rationale: this view captures the application dependency chain where W4 semantic seeds feed W5 parameterized purpose closure, and where mandatory range decisions are governed by ArchiMate semantics instead of further similarity or generated Cypher.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: ordinary semantic retrieval separates relevance selection from minimal deterministic structural closure while keeping returned content canonical; Purpose: deciding and handoff preparation; Scope: independent seed channels, deterministic purpose expansion, relationship endpoint closure, complete non-cascading View closure, canonical graph authority, and provenance; Rationale: this view is an Application Usage Viewpoint instance because it shows the application behavior dependency chain from semantic selection to required endpoint/View completion, with canonical object authority and without similarity-driven neighbor expansion.",
       "included_elements": [
         "grag-canonical-graph",
         "grag-seed-retrieval",
@@ -3852,7 +4199,7 @@
       "view_name": "Graph RAG Tidy Canonical Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: graph-tidy consumers must see complete canonical identity, referential integrity, View membership, and global invariants; Purpose: deciding and handoff preparation; Scope: graph-tidy purpose selection and complete canonical snapshot access; Rationale: this view isolates the graph-tidy full-read application usage boundary from semantic retrieval and request-validation concerns.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: graph-tidy and omitted-query consumers continue to receive exact canonical full snapshots and are not treated as debug/evidence response modes; Purpose: deciding and handoff preparation; Scope: graph-tidy purpose selection, query service full-read compatibility, canonical graph authority, and complete snapshot access; Rationale: this view is an Application Usage Viewpoint instance because it isolates the graph-tidy application usage path from ordinary semantic subset retrieval while preserving canonical authority and public compatibility.",
       "included_elements": [
         "grag-query-service",
         "grag-canonical-graph",
@@ -3918,7 +4265,7 @@
       "view_name": "Graph RAG Typed MCP Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: compatible full snapshots and typed optional query semantics for Agent consumers; Purpose: designing and deciding; Scope: consumer, process, MCP interface, query service, request, validation, and outcome; Rationale: this view isolates the affected application consumer contract.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: Agent-facing ARGO MCP architecture reads expose only canonical full snapshots or structurally closed canonical subsets through the public getSystemArchitecture usage path; Purpose: deciding and handoff preparation; Scope: consumer, process, MCP interface, query service, request data, validation, and observable coherent context; Rationale: this view is an Application Usage Viewpoint instance because it shows how the Agent-facing application interface and query service support business intent-context consumption while request validation constrains the public response contract.",
       "included_elements": [
         "grag-consumer-role",
         "grag-consumption-process",
@@ -4248,6 +4595,62 @@
         "semprod-rel-query-journey",
         "semprod-rel-ready-journey",
         "semprod-rel-journey-credentials"
+      ]
+    },
+    {
+      "view_id": "bp-mcp-sem-delivery-sequence",
+      "view_name": "MCP Semantic Query Contract Delivery Sequence",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: the four MCP semantic query contract work packages must execute in prerequisite order from request validation through canonical payload, relationship endpoint closure, and View membership closure; Purpose: deciding and handoff preparation; Scope: WP-1 through WP-4 delivery order and blocking dependencies; Rationale: this view instantiates the Implementation and Migration Viewpoint because it relates architecture-changing work packages to dependency order and release sequencing for accepted explicit acceptance semantics.",
+      "included_elements": [
+        "bp-mcp-sem-wp-1-request-contract",
+        "bp-mcp-sem-wp-2-canonical-payload",
+        "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+        "bp-mcp-sem-wp-4-view-membership-closure"
+      ],
+      "included_relationships": [
+        "bp-mcp-sem-rel-wp1-wp2",
+        "bp-mcp-sem-rel-wp2-wp3",
+        "bp-mcp-sem-rel-wp3-wp4"
+      ]
+    },
+    {
+      "view_id": "bp-mcp-sem-delivery-impact-query",
+      "view_name": "MCP Semantic Query Contract Delivery Impacts",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: request-contract and canonical-payload work packages have explicit impact links to validation, query service, and canonical graph authority; Purpose: handoff preparation; Scope: WP-1, WP-2, query validation, query service, canonical graph authority, and their realization/association links; Rationale: this view instantiates the Implementation and Migration Viewpoint by relating concrete work packages to affected architecture elements without modeling internal code tasks.",
+      "included_elements": [
+        "bp-mcp-sem-wp-1-request-contract",
+        "bp-mcp-sem-wp-2-canonical-payload",
+        "grag-mode-validation",
+        "grag-query-service",
+        "grag-canonical-graph"
+      ],
+      "included_relationships": [
+        "bp-mcp-sem-rel-wp1-wp2",
+        "bp-mcp-sem-rel-wp1-mode-validation",
+        "bp-mcp-sem-rel-wp2-query-service",
+        "bp-mcp-sem-rel-wp2-canonical-graph"
+      ]
+    },
+    {
+      "view_id": "bp-mcp-sem-delivery-impact-closure",
+      "view_name": "MCP Semantic Closure Delivery Impacts",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: relationship and View closure work packages realize the structural completion chain and inherit the endpoint-before-View dependency; Purpose: handoff preparation; Scope: WP-3, WP-4, purpose policy closure context, endpoint closure, complete View closure, and their realization/triggering links; Rationale: this view instantiates the Implementation and Migration Viewpoint because it ties delivery packages to affected closure elements and their prerequisite order.",
+      "included_elements": [
+        "bp-mcp-sem-wp-3-relationship-endpoint-closure",
+        "bp-mcp-sem-wp-4-view-membership-closure",
+        "grag-endpoint-closure",
+        "grag-view-closure"
+      ],
+      "included_relationships": [
+        "bp-mcp-sem-rel-wp3-wp4",
+        "bp-mcp-sem-rel-wp3-endpoint-closure",
+        "bp-mcp-sem-rel-wp4-view-closure"
       ]
     }
   ]
