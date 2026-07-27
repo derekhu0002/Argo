@@ -11,6 +11,21 @@ const LEGAL_QUERY_PURPOSES = new Set([
   'audit',
   'graph-tidy',
 ]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_FIELDS = Object.freeze([
+  'responseProfile',
+  'detail',
+  'outputMode',
+]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_VALUES = new Set([
+  'debug',
+  'full',
+  'evidence',
+]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_FLAGS = Object.freeze([
+  'debug',
+  'full',
+  'evidence',
+]);
 const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
   type: 'object',
   required: ['version', 'mode', 'document', 'query', 'error'],
@@ -1609,8 +1624,41 @@ function validateExplicitQuery(query) {
   };
 }
 
+function validateSemanticQueryResponseShapeControls(query) {
+  for (const field of FORBIDDEN_RESPONSE_SHAPE_CONTROL_FIELDS) {
+    if (!Object.prototype.hasOwnProperty.call(query, field)) {
+      continue;
+    }
+    if (FORBIDDEN_RESPONSE_SHAPE_CONTROL_VALUES.has(String(query[field]).trim().toLowerCase())) {
+      return queryError(
+        'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+        `Semantic query response-shape control '${field}' is forbidden`,
+      );
+    }
+  }
+  for (const flag of FORBIDDEN_RESPONSE_SHAPE_CONTROL_FLAGS) {
+    if (
+      Object.prototype.hasOwnProperty.call(query, flag)
+      && query[flag] !== false
+      && query[flag] !== null
+      && query[flag] !== undefined
+    ) {
+      return queryError(
+        'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+        `Semantic query response-shape control '${flag}' is forbidden`,
+      );
+    }
+  }
+  return { status: 'passed' };
+}
+
 function isPurposeClosureProbe(query) {
   return Array.isArray(query && query.anchors) && query.anchors.length > 0;
+}
+
+function isCanonicalSubsetSemanticContract(query) {
+  return Array.isArray(query && query.anchors)
+    && query.anchors.some(anchor => !/^grag-[a-z0-9-]+$/.test(String(anchor)));
 }
 
 function queryError(category, message, extras = {}) {
@@ -1670,6 +1718,12 @@ async function callTool(name, args = {}, dependencies = undefined) {
           semanticRetrieval: 'bypassed',
         };
         return getSystemArchitectureResult(attachContextWarnings(payload, context));
+      }
+      if (isCanonicalSubsetSemanticContract(query)) {
+        const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
+        if (responseShapeValidation.status === 'failed') {
+          return getSystemArchitectureResult(responseShapeValidation);
+        }
       }
 
       const journey = await resolveSemanticOperatorJourney(dependencies);
@@ -1776,9 +1830,17 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   let document;
   try {
     const retrieved = await semanticRetrievalBoundary.retrieve(query);
-    document = shouldReturnDebugSemanticResult(query)
-      ? retrieved
-      : buildBusinessSemanticSummary(retrieved, query);
+    if (isCanonicalSubsetSemanticContract(query)) {
+      const subset = buildCanonicalSemanticDocumentSubset(retrieved);
+      if (subset.status === 'failed') {
+        return getSystemArchitectureResult(subset);
+      }
+      document = subset.document;
+    } else {
+      document = shouldReturnDebugSemanticResult(query)
+        ? retrieved
+        : buildBusinessSemanticSummary(retrieved, query);
+    }
   } catch (error) {
     const semanticErrorEvidence = {};
     for (const field of [
@@ -1802,19 +1864,26 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
       semanticErrorEvidence,
     ));
   }
-  return getSystemArchitectureResult({
+  const semanticPayload = {
     status: 'passed',
     graphPath: context.graphPath.relativePath,
     query: {
       ...query,
       mode: 'semantic-query',
       semanticRetrieval: 'invoked',
-      responseProfile: shouldReturnDebugSemanticResult(query) ? 'debug' : 'business-summary',
+      ...(isCanonicalSubsetSemanticContract(query)
+        ? {}
+        : { responseProfile: shouldReturnDebugSemanticResult(query) ? 'debug' : 'business-summary' }),
     },
-    ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
-      ? { result: document.result }
-      : { result: document }),
-    ...(shouldReturnDebugSemanticResult(query) ? { document } : {}),
+  };
+  return getSystemArchitectureResult({
+    ...semanticPayload,
+    ...(isCanonicalSubsetSemanticContract(query)
+      ? { document }
+      : (document && Object.prototype.hasOwnProperty.call(document, 'result')
+        ? { result: document.result }
+        : { result: document })),
+    ...(isCanonicalSubsetSemanticContract(query) || !shouldReturnDebugSemanticResult(query) ? {} : { document }),
   });
 }
 
@@ -1894,20 +1963,114 @@ function buildBusinessSemanticSummary(retrieved, query = {}) {
 }
 
 function applySemanticResponseProfile(response, query) {
-  if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
+  if (!isCanonicalSubsetSemanticContract(query)) {
+    if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
+    const payload = parseToolResponsePayload(response);
+    if (!payload || payload.status === 'failed') return response;
+    const source = payload.result || payload.document;
+    const summary = buildBusinessSemanticSummary(source, query);
+    const { document: _omittedDocument, ...payloadWithoutDocument } = payload;
+    return getSystemArchitectureResult({
+      ...payloadWithoutDocument,
+      query: {
+        ...(payload.query || query),
+        responseProfile: 'business-summary',
+      },
+      result: summary,
+    });
+  }
   const payload = parseToolResponsePayload(response);
   if (!payload || payload.status === 'failed') return response;
   const source = payload.result || payload.document;
-  const summary = buildBusinessSemanticSummary(source, query);
-  const { document: _omittedDocument, ...payloadWithoutDocument } = payload;
+  const subset = buildCanonicalSemanticDocumentSubset(source);
+  if (subset.status === 'failed') {
+    return getSystemArchitectureResult(subset);
+  }
+  const { document: _omittedDocument, result: _omittedResult, ...payloadWithoutDocument } = payload;
   return getSystemArchitectureResult({
     ...payloadWithoutDocument,
     query: {
       ...(payload.query || query),
-      responseProfile: 'business-summary',
+      mode: 'semantic-query',
+      semanticRetrieval: 'invoked',
     },
-    result: summary,
+    document: subset.document,
   });
+}
+
+function buildCanonicalSemanticDocumentSubset(source) {
+  const evidence = source && typeof source === 'object' ? source : {};
+  const elements = uniqueById([
+    ...arrayAt(evidence, ['closure', 'elements']),
+    ...arrayAt(evidence, ['elements']),
+  ], 'id');
+  const relationships = uniqueById([
+    ...arrayAt(evidence, ['endpointClosure', 'relationships']),
+    ...arrayAt(evidence, ['relationships']),
+  ], 'id');
+  const views = uniqueById([
+    ...arrayAt(evidence, ['viewClosure', 'views']),
+    ...arrayAt(evidence, ['views']),
+  ], 'view_id');
+
+  const elementById = new Map(elements.map(element => [element && element.id, element]));
+  const relationshipById = new Map(relationships.map(relationship => [relationship && relationship.id, relationship]));
+
+  for (const view of views) {
+    for (const elementId of view && Array.isArray(view.included_elements) ? view.included_elements : []) {
+      if (!elementById.has(elementId)) {
+        return semanticSubsetError(
+          'SEMANTIC_SUBSET_VIEW_MISSING',
+          `Semantic View subset is missing included Element '${elementId}'`,
+        );
+      }
+    }
+    for (const relationshipId of view && Array.isArray(view.included_relationships) ? view.included_relationships : []) {
+      const relationship = relationshipById.get(relationshipId);
+      if (!relationship) {
+        return semanticSubsetError(
+          'SEMANTIC_SUBSET_VIEW_MISSING',
+          `Semantic View subset is missing included Relationship '${relationshipId}'`,
+        );
+      }
+      if (!elementById.has(relationship.source_id) || !elementById.has(relationship.target_id)) {
+        return semanticSubsetError(
+          'SEMANTIC_SUBSET_VIEW_MISSING',
+          `Semantic View subset is missing endpoint Elements for Relationship '${relationship.id}'`,
+        );
+      }
+    }
+  }
+
+  for (const relationship of relationships) {
+    if (!elementById.has(relationship && relationship.source_id) || !elementById.has(relationship && relationship.target_id)) {
+      return semanticSubsetError(
+        'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
+        `Semantic Relationship subset is missing endpoint Elements for Relationship '${relationship && relationship.id}'`,
+      );
+    }
+  }
+
+  return {
+    status: 'passed',
+    document: {
+      elements: elements.map(clone),
+      relationships: relationships.map(clone),
+      views: views.map(clone),
+    },
+  };
+}
+
+function arrayAt(value, pathSegments) {
+  let current = value;
+  for (const segment of pathSegments) {
+    current = current && current[segment];
+  }
+  return Array.isArray(current) ? current : [];
+}
+
+function semanticSubsetError(category, message) {
+  return queryError(category, message, { fullSnapshotFallback: false });
 }
 
 function parseToolResponsePayload(response) {
