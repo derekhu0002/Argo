@@ -1,3 +1,10 @@
+# Canonical lifecycle readiness-order correction (2026-07-27)
+
+- Coding safely stashed production WIP at `8abb9fb57f8a822fa133b5d9d2461b61a487f6ef`; ImplementationDesign did not inspect, apply, drop, or modify that stash or any production target.
+- The shared-store assertion incorrectly used an all-occurrences phase comparison: the maximum index of every durable read had to precede the minimum `init-aligned`, while a separate assertion required a durable read after alignment. That made the accepted post-init success reads impossible.
+- Frozen ordering now partitions by the first and final alignment. Exactly two System/unified failure reads must precede the first alignment and contain the Failed/Stale record; each resume/rerun alignment must have queryability then global coherence in its own segment; no exported read may occur between repeated init alignments; and exactly two restored reads must follow the final alignment and contain the transformed Aligned record.
+- Stable readiness identity, `recordId`, canonical version, increasing revision, exact pre/post snapshots, provider correlation, and all previous shared-store assertions remain unchanged. The correction removes only contradictory index aggregation and tightens the previously ambiguous repeated-alignment semantics.
+
 # Canonical lifecycle third audit correction (2026-07-27)
 
 - This correction removes the last seam-copy in incremental recovery evidence. Actual mutation lifecycle readiness writes, exported System and unified rejection reads, shipped `argo init` reconciliation, and restored System/unified success reads now use one filesystem-backed raw readiness record. The Harness does not reconstruct readiness from public mutation evidence.

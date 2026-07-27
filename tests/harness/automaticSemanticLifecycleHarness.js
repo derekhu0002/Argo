@@ -643,6 +643,11 @@ function assertSharedReadinessRecovery(recovery, prefix) {
   for (const read of recovery.rejection.readinessReads) {
     assert.deepStrictEqual(read.record, recovery.failureRecord, `${prefix}_REJECTION_DID_NOT_READ_FAILURE_RECORD`);
   }
+  assert.strictEqual(
+    recovery.rejection.readinessReads.length,
+    2,
+    `${prefix}_PRE_INIT_EXPORTED_READ_MATRIX_INCOMPLETE`,
+  );
   assert(recovery.alignedRecord, `${prefix}_SHARED_ALIGNED_RECORD_MISSING`);
   assert.strictEqual(recovery.alignedRecord.identity, recovery.failureRecord.identity, `${prefix}_READINESS_IDENTITY_CHANGED`);
   assert.strictEqual(recovery.alignedRecord.recordId, recovery.failureRecord.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
@@ -658,6 +663,11 @@ function assertSharedReadinessRecovery(recovery, prefix) {
   for (const read of recovery.success.readinessReads) {
     assert.deepStrictEqual(read.record, recovery.alignedRecord, `${prefix}_SUCCESS_DID_NOT_READ_TRANSFORMED_RECORD`);
   }
+  assert.strictEqual(
+    recovery.success.readinessReads.length,
+    2,
+    `${prefix}_POST_INIT_EXPORTED_READ_MATRIX_INCOMPLETE`,
+  );
   for (const outcome of recovery.success.outcomes) {
     assert(outcome.result && outcome.result.isError !== true, `${prefix}_${outcome.dispatcher}_QUERY_NOT_RESTORED`);
     assert.strictEqual(outcome.effects.readinessReads, 1, `${prefix}_${outcome.dispatcher}_SUCCESS_READINESS_COUNT`);
@@ -666,29 +676,73 @@ function assertSharedReadinessRecovery(recovery, prefix) {
   const operationKinds = recovery.storeOperations.map(operation => (
     operation.operation || operation.kind
   ));
-  assertPhaseBefore(
-    operationKinds,
-    ['durable-readiness-read'],
-    ['init-aligned'],
-    `${prefix}_FAILURE_READ_BEFORE_INIT_ALIGNMENT`,
+  const alignedIndexes = indexesOf(operationKinds, 'init-aligned');
+  const readIndexes = indexesOf(operationKinds, 'durable-readiness-read');
+  assert(alignedIndexes.length > 0, `${prefix}_INIT_DURABLE_ALIGNMENT_MISSING`);
+  const firstAlignedIndex = alignedIndexes[0];
+  const lastAlignedIndex = alignedIndexes.at(-1);
+  const preAlignmentReads = readIndexes.filter(index => index < firstAlignedIndex);
+  const postAlignmentReads = readIndexes.filter(index => index > lastAlignedIndex);
+  const readsDuringAlignment = readIndexes.filter(index => (
+    index > firstAlignedIndex && index < lastAlignedIndex
+  ));
+  assert.strictEqual(
+    preAlignmentReads.length,
+    recovery.rejection.readinessReads.length,
+    `${prefix}_PRE_INIT_FAILURE_READ_COUNT_CHANGED`,
   );
-  assertBefore(
-    operationKinds,
-    'durable-readiness-queryability',
-    'durable-readiness-global-coherence',
-    `${prefix}_INIT_QUERYABILITY_BEFORE_COHERENCE`,
+  assert.strictEqual(
+    postAlignmentReads.length,
+    recovery.success.readinessReads.length,
+    `${prefix}_POST_INIT_ALIGNED_READ_COUNT_CHANGED`,
   );
-  assertBefore(
-    operationKinds,
-    'durable-readiness-global-coherence',
-    'init-aligned',
-    `${prefix}_INIT_COHERENCE_BEFORE_DURABLE_ALIGNMENT`,
+  assert.deepStrictEqual(
+    readsDuringAlignment,
+    [],
+    `${prefix}_EXPORTED_READ_DURING_INIT_ALIGNMENT`,
   );
-  const alignedIndex = operationKinds.indexOf('init-aligned');
-  assert(
-    operationKinds.slice(alignedIndex + 1).includes('durable-readiness-read'),
-    `${prefix}_ALIGNED_RECORD_NOT_READ_AFTER_INIT`,
-  );
+  for (const index of preAlignmentReads) {
+    assert.deepStrictEqual(
+      recovery.storeOperations[index].record,
+      recovery.failureRecord,
+      `${prefix}_PRE_INIT_READ_NOT_FAILURE_RECORD`,
+    );
+  }
+  for (const index of postAlignmentReads) {
+    assert.deepStrictEqual(
+      recovery.storeOperations[index].record,
+      recovery.alignedRecord,
+      `${prefix}_POST_INIT_READ_NOT_ALIGNED_RECORD`,
+    );
+  }
+  let reconciliationStart = preAlignmentReads.length > 0
+    ? preAlignmentReads.at(-1) + 1
+    : 0;
+  for (const [alignmentNumber, alignedIndex] of alignedIndexes.entries()) {
+    const queryabilityIndex = operationKinds.indexOf(
+      'durable-readiness-queryability',
+      reconciliationStart,
+    );
+    const coherenceIndex = operationKinds.indexOf(
+      'durable-readiness-global-coherence',
+      queryabilityIndex + 1,
+    );
+    assert(
+      queryabilityIndex >= reconciliationStart && queryabilityIndex < alignedIndex,
+      `${prefix}_INIT_QUERYABILITY_NOT_BEFORE_ALIGNMENT:${alignmentNumber + 1}`,
+    );
+    assert(
+      coherenceIndex > queryabilityIndex && coherenceIndex < alignedIndex,
+      `${prefix}_INIT_COHERENCE_NOT_BEFORE_ALIGNMENT:${alignmentNumber + 1}`,
+    );
+    reconciliationStart = alignedIndex + 1;
+  }
+}
+
+function indexesOf(values, expected) {
+  return values
+    .map((value, index) => (value === expected ? index : -1))
+    .filter(index => index >= 0);
 }
 
 function canonicalContainsMutation(bytes, mutation) {
