@@ -145,9 +145,6 @@ const {
   createLiveEmbeddingProviderClient,
 } = require('./graph-rag/liveEmbeddingProviderClient.js');
 const {
-  createMutationEmbeddingVectorLifecycle,
-} = require('./graph-rag/mutationEmbeddingVectorLifecycle.js');
-const {
   DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
   recoverNeo4jSyncIfNeeded,
   syncArchitectureToNeo4j,
@@ -190,38 +187,6 @@ const TOOLS = [
       additionalProperties: false,
     },
     outputSchema: GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA,
-  },
-  {
-    name: 'startNewProjectSemanticJourney',
-    description: 'Initialize a workspace, complete canonical structural projection, and optionally start approved semantic backfill.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        automaticBackfillOptIn: { type: 'boolean' },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'backfillSystemArchitectureSemanticProjection',
-    description: 'Explicitly run the bounded production semantic projection backfill after same-version structural projection is complete.',
-    inputSchema: {
-      type: 'object',
-      required: ['explicitOptIn'],
-      properties: {
-        explicitOptIn: { type: 'boolean', const: true },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'verifySystemArchitectureSemanticReadiness',
-    description: 'Explicitly read persistent three-channel semantic readiness without provider or vector work.',
-    inputSchema: {
-      type: 'object',
-      properties: {},
-      additionalProperties: false,
-    },
   },
   {
     name: 'getIntentElementContext',
@@ -1023,6 +988,10 @@ function applyMutations(document, mutations) {
         nextDocument.relationships.push(clone(mutation.relationship));
       }
       for (const view of scopedViews) {
+        view.included_elements = addUnique(view.included_elements || [], [
+          mutation.relationship.source_id,
+          mutation.relationship.target_id,
+        ]);
         view.included_relationships = addUnique(view.included_relationships || [], [mutation.relationship.id]);
         touchedViewIds.add(view.view_id);
       }
@@ -1045,6 +1014,14 @@ function applyMutations(document, mutations) {
       }
       requirePatchDoesNotChangeRelationshipIdentityOrType(mutation.id, mutation.patch);
       Object.assign(relationship, clone(mutation.patch));
+      for (const view of nextDocument.views) {
+        if ((view.included_relationships || []).includes(relationship.id)) {
+          view.included_elements = addUnique(view.included_elements || [], [
+            relationship.source_id,
+            relationship.target_id,
+          ]);
+        }
+      }
       touchedRelationshipIds.add(relationship.id);
       mutationSummaries.push({ type: mutation.type, id: relationship.id });
       continue;
@@ -1115,6 +1092,7 @@ function applyMutations(document, mutations) {
       if (nextDocument.views.length === beforeCount) {
         throw new Error(`View '${mutation.view_id}' does not exist`);
       }
+      touchedViewIds.add(mutation.view_id);
       mutationSummaries.push({ type: mutation.type, id: mutation.view_id });
       continue;
     }
@@ -1256,8 +1234,6 @@ async function buildMutationResult(context, mutations, write) {
 
   writeGraph(context.graphPath.absolutePath, mutationResult.document);
   result.written = true;
-  const readinessAttestationStore = createDefaultReadinessAttestationStore(context.workspaceRoot);
-  await readinessAttestationStore.clear();
 
   if (shouldSyncCanonicalGraphToNeo4j(context.graphPath.relativePath)) {
     try {
@@ -1283,7 +1259,7 @@ async function buildMutationResult(context, mutations, write) {
     }
   }
 
-  await attachMutationEmbeddingLifecycle(context, result);
+  await attachMutationEmbeddingLifecycle(context, result, mutationResult.document);
 
   return result;
 }
@@ -1292,36 +1268,32 @@ function shouldSyncCanonicalGraphToNeo4j(relativeGraphPath) {
   return normalizeRelativePath(relativeGraphPath) === normalizeRelativePath(NEO4J_DEFAULT_GRAPH_PATH);
 }
 
-async function attachMutationEmbeddingLifecycle(context, result) {
+async function attachMutationEmbeddingLifecycle(context, result, document) {
   if (!shouldRunMutationEmbeddingLifecycle(result)) {
     return;
   }
   try {
-    const configuration = await resolveApprovedLiveConfiguration({
-      repositoryRoot: context.workspaceRoot,
-      requiredOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
-    });
-    const lifecycle = createMutationEmbeddingVectorLifecycle({
-      configuration,
-      repositoryRoot: context.workspaceRoot,
-    });
-    const embeddingLifecycle = await lifecycle.execute({
-      mutation: {
-        applied: true,
+    const lifecycle = require(
+      './graph-rag/mutationEmbeddingVectorLifecycle.js'
+    ).createPersistentMutationEmbeddingLifecycle();
+    const embeddingLifecycle = await lifecycle.reconcile({
+      canonicalWrite: {
+        written: true,
         architecturePath: result.graphPath,
-        response: result,
+        document,
+        mutations: result.mutations,
+        touchedElementIds: result.touchedElementIds,
+        touchedRelationshipIds: result.touchedRelationshipIds,
+        touchedViewIds: result.touchedViewIds,
       },
-      qualification: W31_APPROVED_PROFILE,
-      semanticQueryProbe: {
-        pureSemanticRequest: {
-          purpose: 'implementation-design',
-          intent: 'Find freshly mutated W3.1 vector evidence',
-          subject: 'grag-wp-3-1',
-        },
+      preview: false,
+      gates: {
+        [LIVE_PROVIDER_OPT_IN]: process.env[LIVE_PROVIDER_OPT_IN],
+        [W31_LIVE_OPT_IN]: process.env[W31_LIVE_OPT_IN],
       },
     });
     result.embeddingLifecycle = embeddingLifecycle;
-    result.alignment = buildMutationAlignment(embeddingLifecycle);
+    result.alignment = embeddingLifecycle.alignment || buildMutationAlignment(embeddingLifecycle);
   } catch (error) {
     result.embeddingLifecycle = buildMutationEmbeddingLifecycleFailure(error, result);
     result.alignment = buildMutationAlignment(result.embeddingLifecycle);
@@ -1673,44 +1645,6 @@ function getSystemArchitectureResult(payload) {
 }
 
 async function callTool(name, args = {}, dependencies = undefined) {
-  if (name === 'startNewProjectSemanticJourney') {
-    const journey = dependencies && dependencies.semanticOperatorJourney
-      ? dependencies.semanticOperatorJourney
-      : await createDefaultProductionSemanticOperatorJourney();
-    return toolResult(await journey.startNewProject({
-      ...args,
-      repositoryRoot: resolveWorkspaceRoot(),
-      approvedConfigurationRequest: {
-        repositoryRoot: resolveWorkspaceRoot(),
-        useCase: 'production-semantic-query',
-      },
-    }));
-  }
-
-  if (name === 'verifySystemArchitectureSemanticReadiness') {
-    const journey = dependencies && dependencies.semanticOperatorJourney
-      ? dependencies.semanticOperatorJourney
-      : await createDefaultProductionSemanticOperatorJourney();
-    return toolResult(await journey.verifyReadiness(args));
-  }
-
-  if (name === 'backfillSystemArchitectureSemanticProjection') {
-    const readinessAttestationStore = dependencies && dependencies.readinessAttestationStore
-      ? dependencies.readinessAttestationStore
-      : createDefaultReadinessAttestationStore(resolveWorkspaceRoot());
-    await readinessAttestationStore.clear();
-    const runtime = (dependencies && (
-      dependencies.productionGraphRagRuntime
-      || (dependencies.productionGraphRagDependencies
-        ? createProductionGraphRagRuntime(dependencies.productionGraphRagDependencies)
-        : undefined)
-    )) || await createDefaultProductionSemanticRuntime();
-    if (!runtime || typeof runtime.runSemanticBackfill !== 'function') {
-      throw new TypeError('productionGraphRagRuntime.runSemanticBackfill is required');
-    }
-    return toolResult(await runtime.runSemanticBackfill(args));
-  }
-
   if (name === 'getSystemArchitecture') {
     if (Object.prototype.hasOwnProperty.call(args, 'query')) {
       const validation = validateExplicitQuery(args.query);
@@ -1913,7 +1847,7 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
-    runSemanticBackfill: request => callTool('backfillSystemArchitectureSemanticProjection', request),
+    runSemanticBackfill: request => runtime.runSemanticBackfill(request),
     readSemanticReadiness: () => retrieval.readReadiness(),
     querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, {
       semanticRetrievalBoundary: retrieval,
@@ -1921,6 +1855,124 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
     }),
     readinessAttestationStore: readinessAttestationStore,
   });
+}
+
+function createDefaultCanonicalSemanticInitComposition() {
+  const repositoryRoot = resolveWorkspaceRoot();
+  let configurationEvidence;
+  return Object.freeze({
+    configurationBehavior: Object.freeze({
+      readGate(name) {
+        return process.env[name];
+      },
+      async resolve() {
+        configurationEvidence = await resolveApprovedLiveConfiguration({
+          repositoryRoot,
+          requiredOptIns: [LIVE_PROVIDER_OPT_IN, W31_LIVE_OPT_IN],
+        });
+        return configurationEvidence;
+      },
+    }),
+    productionGraphRagRuntime: Object.freeze({
+      async runSemanticBackfill(request) {
+        const runtime = await createDefaultProductionSemanticRuntime();
+        return runtime.runSemanticBackfill(request);
+      },
+    }),
+    finalReadiness: Object.freeze({
+      async verifyQueryability(backfill) {
+        if (!backfill || backfill.alignmentState !== 'Aligned') return false;
+        return withSemanticReadinessSession(configurationEvidence, async session => {
+          const result = await session.run([
+            'MATCH (semantic:ArgoProductionSemanticRecord)',
+            'RETURN semantic.channel AS channel, count(semantic) AS count',
+          ].join('\n'));
+          const counts = new Map(result.records.map(record => [
+            record.get('channel'),
+            neo4jIntegerValue(record.get('count')),
+          ]));
+          return ['Element', 'ArchitectureRelationship', 'View'].every(channel => {
+            const expected = backfill.channels
+              && backfill.channels[channel]
+              && backfill.channels[channel].total;
+            return expected === 0 || (counts.get(channel) || 0) > 0;
+          });
+        });
+      },
+      async verifyGlobalCoherence(backfill) {
+        return Boolean(
+          backfill
+          && backfill.alignmentState === 'Aligned'
+          && ['Element', 'ArchitectureRelationship', 'View'].every(channel => (
+            backfill.channels
+            && backfill.channels[channel]
+            && backfill.channels[channel].status === 'complete'
+            && backfill.channels[channel].canonicalVersion === backfill.canonicalVersion
+          )),
+        );
+      },
+      async recordAligned(evidence) {
+        return withSemanticReadinessSession(configurationEvidence, session => session.run([
+          'MERGE (readiness:ArgoProductionSemanticReadiness {identity: $identity})',
+          'SET readiness.state = $state,',
+          '    readiness.verified = $verified,',
+          '    readiness.canonicalVersion = $canonicalVersion,',
+          '    readiness.contentVersion = $contentVersion,',
+          '    readiness.indexVersion = $indexVersion,',
+          '    readiness.completedChannels = $completedChannels,',
+          '    readiness.missingChannels = $missingChannels,',
+          '    readiness.mismatchedChannels = $mismatchedChannels,',
+          '    readiness.fullSnapshotFallback = false,',
+          '    readiness.revision = coalesce(readiness.revision, 0) + 1,',
+          '    readiness.recordId = coalesce(readiness.recordId, $recordId)',
+          'RETURN properties(readiness) AS readiness',
+        ].join('\n'), {
+          identity: 'system-architecture-semantic-readiness',
+          recordId: crypto.randomUUID(),
+          state: evidence.state,
+          verified: evidence.verified,
+          canonicalVersion: evidence.canonicalVersion,
+          contentVersion: evidence.contentVersion,
+          indexVersion: evidence.indexVersion,
+          completedChannels: evidence.completedChannels,
+          missingChannels: evidence.missingChannels,
+          mismatchedChannels: evidence.mismatchedChannels,
+        }));
+      },
+    }),
+  });
+}
+
+async function withSemanticReadinessSession(configurationEvidence, callback) {
+  const configuration = configurationEvidence && configurationEvidence.configuration;
+  if (!configuration) {
+    const error = new Error('EXTERNAL_CREDENTIALS_REQUIRED');
+    error.category = 'EXTERNAL_CREDENTIALS_REQUIRED';
+    throw error;
+  }
+  const neo4j = require('neo4j-driver');
+  const driver = neo4j.driver(
+    configuration.neo4jDatabaseUrl,
+    neo4j.auth.basic(
+      configuration.neo4jDatabaseUsername,
+      configuration.neo4jDatabasePassword,
+    ),
+  );
+  const session = driver.session(
+    configuration.neo4jDatabase === undefined
+      ? undefined
+      : { database: configuration.neo4jDatabase },
+  );
+  try {
+    return await callback(session);
+  } finally {
+    await session.close();
+    await driver.close();
+  }
+}
+
+function neo4jIntegerValue(value) {
+  return value && typeof value.toNumber === 'function' ? value.toNumber() : Number(value);
 }
 
 async function createDefaultProductionSemanticRuntime() {
@@ -2238,6 +2290,7 @@ module.exports = {
   TOOLS,
   applyMutations,
   callTool,
+  createDefaultCanonicalSemanticInitComposition,
   createDefaultProductionSemanticOperatorJourney,
   handleRequest,
   loadContext,

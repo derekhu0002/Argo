@@ -1,12 +1,17 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const { AsyncLocalStorage } = require('node:async_hooks');
 
 const validatorMcp = require('./validator-mcp-server.js');
 const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
 const {
   semanticOperatorErrorResult,
 } = require('./graph-rag/semanticOperatorError.js');
+const {
+  runCanonicalSemanticInit,
+} = require('./graph-rag/semanticOperatorJourney.js');
+const canonicalSemanticInitStorage = new AsyncLocalStorage();
 
 const HANDOFF_FILES_TO_RESET = [
   ['.argo', 'temp', 'IntentToImplementationHandoff.json'],
@@ -32,9 +37,6 @@ const VALIDATOR_TOOL_NAMES = new Set([
   'runArchitectureTests',
 ]);
 const SYSTEM_ARCHITECTURE_TOOL_NAMES = new Set([
-  'startNewProjectSemanticJourney',
-  'backfillSystemArchitectureSemanticProjection',
-  'verifySystemArchitectureSemanticReadiness',
   'getSystemArchitecture',
   'getIntentElementContext',
   'previewSystemArchitectureMutation',
@@ -361,7 +363,19 @@ function resolveWorkspaceRoot() {
 
 async function callTool(name, args = {}, progressToken = null, dependencies = undefined) {
   if (name === 'initializeWorkspace') {
-    return toolResult(await initializeWorkspace(resolveWorkspaceRoot()));
+    const workspace = await initializeWorkspace(resolveWorkspaceRoot());
+    const composition = canonicalSemanticInitStorage.getStore()
+      || systemArchitectureMcp.createDefaultCanonicalSemanticInitComposition();
+    const semanticLifecycle = await runCanonicalSemanticInit(composition, {
+      repositoryRoot: resolveWorkspaceRoot(),
+      workspace,
+    });
+    return toolResult({
+      ...workspace,
+      semanticState: semanticLifecycle.state,
+      semanticLifecycle,
+      alignment: semanticLifecycle.alignment,
+    });
   }
   if (VALIDATOR_TOOL_NAMES.has(name)) {
     return validatorMcp.callTool(name, args, progressToken);
@@ -370,6 +384,13 @@ async function callTool(name, args = {}, progressToken = null, dependencies = un
     return systemArchitectureMcp.callTool(name, args, dependencies);
   }
   throw new Error(`Unknown tool: ${name}`);
+}
+
+async function withCanonicalSemanticInitTestComposition(composition, callback) {
+  if (!composition || typeof callback !== 'function') {
+    throw new TypeError('Canonical semantic init composition and callback are required');
+  }
+  return canonicalSemanticInitStorage.run(Object.freeze({ ...composition }), callback);
 }
 
 async function initializeWorkspace(workspaceRoot) {
@@ -573,4 +594,5 @@ module.exports = {
   handleRequest,
   initializeWorkspace,
   main,
+  withCanonicalSemanticInitTestComposition,
 };

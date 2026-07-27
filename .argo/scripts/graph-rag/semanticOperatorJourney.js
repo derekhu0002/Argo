@@ -1,15 +1,8 @@
-const OPERATOR_ACTIONS = Object.freeze({
-  backfillCommand: 'argo semantic backfill',
-  readinessCommand: 'argo semantic readiness',
-  queryCommand: 'argo semantic query',
-  backfillTool: 'backfillSystemArchitectureSemanticProjection',
-  readinessTool: 'verifySystemArchitectureSemanticReadiness',
-  queryTool: 'getSystemArchitecture',
-});
+const LIVE_PROVIDER_GATE = 'ARGO_LIVE_PROVIDER_E2E';
+const MUTATION_VECTOR_GATE = 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E';
 
 function createProductionSemanticOperatorJourney(dependencies) {
   assertDependencies(dependencies);
-  let readinessVerified = false;
 
   async function runBackfill(request, automatic) {
     const configurationRequest = request.approvedConfigurationRequest || request;
@@ -17,8 +10,6 @@ function createProductionSemanticOperatorJourney(dependencies) {
       dependencies.resolveApprovedConfiguration,
       configurationRequest,
     );
-    readinessVerified = false;
-    await dependencies.readinessAttestationStore.clear();
     const explicitOptIn = automatic
       ? request.automaticBackfillOptIn === true
       : request.explicitOptIn;
@@ -31,16 +22,13 @@ function createProductionSemanticOperatorJourney(dependencies) {
 
   return Object.freeze({
     async startNewProject(request = {}) {
-      await dependencies.readinessAttestationStore.clear();
       const workspace = await dependencies.initializeWorkspace(request);
       const structuralProjection = await dependencies.syncCanonicalStructuralProjection(request);
-      readinessVerified = false;
       const pending = {
         ...structuralProjection,
         workspace,
         semanticState: 'SemanticIndexPending',
-        actions: OPERATOR_ACTIONS,
-        guidance: 'Run semantic backfill, verify semantic readiness, then run the semantic query.',
+        guidance: 'Enable both canonical semantic gates with approved external configuration, then run argo init again.',
       };
       if (request.automaticBackfillOptIn !== true) {
         return Object.freeze(pending);
@@ -55,28 +43,13 @@ function createProductionSemanticOperatorJourney(dependencies) {
 
     async verifyReadiness(request = {}) {
       const readiness = await dependencies.readSemanticReadiness(request);
-      readinessVerified = readiness.verified === true;
       if (readiness.verified !== true) {
         throw readinessError(readiness);
       }
-      if (!readinessVerified) {
-        throw readinessError(readiness);
-      }
-      await dependencies.readinessAttestationStore.record({
-        ...readiness,
-        authorizationOperation: 'verifyReadiness',
-      });
       return readiness;
     },
 
     async query(request = {}) {
-      const attestation = await dependencies.readinessAttestationStore.read();
-      if (!attestation) throw readinessVerificationRequired();
-      const readiness = await dependencies.readSemanticReadiness();
-      if (!await dependencies.readinessAttestationStore.validate(attestation, readiness)) {
-        await dependencies.readinessAttestationStore.clear();
-        throw readinessAttestationStale(readiness);
-      }
       return dependencies.querySystemArchitecture({ query: request });
     },
 
@@ -99,12 +72,164 @@ function assertDependencies(dependencies) {
       throw new TypeError(`${name} is required`);
     }
   }
-  const store = dependencies && dependencies.readinessAttestationStore;
-  for (const name of ['record', 'read', 'clear', 'validate']) {
-    if (!store || typeof store[name] !== 'function') {
-      throw new TypeError(`readinessAttestationStore.${name} is required`);
+}
+
+async function runCanonicalSemanticInit(dependencies, request = {}) {
+  requireCanonicalInitDependencies(dependencies);
+  const providerGate = readGate(dependencies.configurationBehavior, LIVE_PROVIDER_GATE);
+  const mutationGate = readGate(dependencies.configurationBehavior, MUTATION_VECTOR_GATE);
+  const gateDecision = evaluateDualGate(providerGate, mutationGate);
+  if (gateDecision === 'disabled') {
+    return Object.freeze({
+      state: 'SemanticDisabled',
+      alignment: 'SemanticIndexPending',
+      fullSnapshotFallback: false,
+    });
+  }
+  if (gateDecision !== 'enabled') {
+    throw safeLifecycleError(
+      'SEMANTIC_LIFECYCLE_GATE_INVALID',
+      'Set both semantic lifecycle gates to exactly 1, or disable both.',
+    );
+  }
+
+  await resolveCanonicalConfiguration(dependencies.configurationBehavior, request);
+  const backfill = await dependencies.productionGraphRagRuntime.runSemanticBackfill({
+    ...request,
+    explicitOptIn: true,
+    automatic: true,
+  });
+  if (!backfill || backfill.alignmentState !== 'Aligned') {
+    throw safeLifecycleError(
+      'SEMANTIC_RECONCILIATION_INCOMPLETE',
+      'Repair the durable semantic reconciliation failure, then run argo init again.',
+    );
+  }
+  const queryable = await dependencies.finalReadiness.verifyQueryability(backfill);
+  if (queryable !== true) {
+    throw safeLifecycleError(
+      'SEMANTIC_QUERYABILITY_NOT_VERIFIED',
+      'Repair semantic vector queryability, then run argo init again.',
+    );
+  }
+  const coherent = await dependencies.finalReadiness.verifyGlobalCoherence(backfill);
+  if (coherent !== true) {
+    throw safeLifecycleError(
+      'SEMANTIC_GLOBAL_COHERENCE_NOT_VERIFIED',
+      'Repair semantic global coherence, then run argo init again.',
+    );
+  }
+  const contentVersion = backfill.contentVersion || backfill.canonicalVersion;
+  const indexVersion = backfill.indexVersion || backfill.canonicalVersion;
+  const alignedEvidence = Object.freeze({
+    state: 'Aligned',
+    verified: true,
+    canonicalVersion: backfill.canonicalVersion,
+    contentVersion,
+    indexVersion,
+    completedChannels: ['Element', 'ArchitectureRelationship', 'View'],
+    missingChannels: [],
+    mismatchedChannels: [],
+    fullSnapshotFallback: false,
+    channels: Object.freeze(Object.entries(backfill.channels || {}).map(([channel]) => (
+      Object.freeze({
+        channel,
+        state: 'Aligned',
+        canonicalVersion: backfill.canonicalVersion,
+        contentVersion,
+        indexVersion,
+      })
+    ))),
+  });
+  await dependencies.finalReadiness.recordAligned(alignedEvidence);
+  return Object.freeze({
+    state: 'Aligned',
+    alignment: 'Aligned',
+    backfill,
+    readiness: alignedEvidence,
+    fullSnapshotFallback: false,
+  });
+}
+
+function requireCanonicalInitDependencies(dependencies) {
+  if (!dependencies || !dependencies.configurationBehavior) {
+    throw new TypeError('configurationBehavior is required');
+  }
+  if (
+    !dependencies.productionGraphRagRuntime
+    || typeof dependencies.productionGraphRagRuntime.runSemanticBackfill !== 'function'
+  ) {
+    throw new TypeError('productionGraphRagRuntime.runSemanticBackfill is required');
+  }
+  for (const name of ['verifyQueryability', 'verifyGlobalCoherence', 'recordAligned']) {
+    if (!dependencies.finalReadiness || typeof dependencies.finalReadiness[name] !== 'function') {
+      throw new TypeError(`finalReadiness.${name} is required`);
     }
   }
+}
+
+function readGate(configurationBehavior, name) {
+  if (typeof configurationBehavior.readGate === 'function') {
+    return configurationBehavior.readGate(name);
+  }
+  if (configurationBehavior.gates && typeof configurationBehavior.gates === 'object') {
+    return configurationBehavior.gates[name];
+  }
+  return process.env[name];
+}
+
+function evaluateDualGate(providerGate, mutationGate) {
+  const providerDisabled = providerGate === undefined || providerGate === '';
+  const mutationDisabled = mutationGate === undefined || mutationGate === '';
+  if (providerDisabled && mutationDisabled) return 'disabled';
+  if (providerGate === '1' && mutationGate === '1') return 'enabled';
+  return 'invalid';
+}
+
+async function resolveCanonicalConfiguration(configurationBehavior, request) {
+  try {
+    if (typeof configurationBehavior.readExternalConfiguration === 'function') {
+      return await configurationBehavior.readExternalConfiguration(request);
+    }
+    if (configurationBehavior.state === 'valid-external-only') {
+      return configurationBehavior;
+    }
+    if (typeof configurationBehavior.resolve === 'function') {
+      return configurationBehavior.resolve(request);
+    }
+    throw safeLifecycleError(
+      'EXTERNAL_CREDENTIALS_REQUIRED',
+      'Provide approved external semantic configuration, then run argo init again.',
+    );
+  } catch (error) {
+    throw sanitizeLifecycleError(error);
+  }
+}
+
+function sanitizeLifecycleError(sourceError) {
+  const approvedCategories = new Set([
+    'APPROVED_SECRET_REQUIRED',
+    'SECRET_FILE_ACL_UNSAFE',
+    'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+    'EXTERNAL_CREDENTIALS_REQUIRED',
+    'EMBEDDING_QUALIFICATION_REQUIRED',
+    'EMBEDDING_CONFIGURATION_REQUIRED',
+  ]);
+  const category = approvedCategories.has(sourceError && sourceError.category)
+    ? sourceError.category
+    : 'APPROVED_CONFIGURATION_REJECTED';
+  return safeLifecycleError(
+    category,
+    'Correct approved external configuration and retry argo init.',
+  );
+}
+
+function safeLifecycleError(category, action) {
+  const error = new Error(category);
+  error.category = category;
+  error.action = action;
+  error.fullSnapshotFallback = false;
+  return error;
 }
 
 async function resolveConfigurationSafely(resolveApprovedConfiguration, request) {
@@ -146,22 +271,7 @@ function readinessError(readiness = {}) {
   return error;
 }
 
-function readinessVerificationRequired() {
-  const error = new Error('SEMANTIC_READINESS_VERIFICATION_REQUIRED');
-  error.category = 'SEMANTIC_READINESS_VERIFICATION_REQUIRED';
-  error.fullSnapshotFallback = false;
-  error.action = 'Run semantic readiness before semantic query';
-  return error;
-}
-
-function readinessAttestationStale(readiness = {}) {
-  const error = readinessError(readiness);
-  error.message = 'SEMANTIC_READINESS_ATTESTATION_STALE';
-  error.category = 'SEMANTIC_READINESS_ATTESTATION_STALE';
-  error.action = 'Run semantic readiness verification again before semantic query';
-  return error;
-}
-
 module.exports = {
   createProductionSemanticOperatorJourney,
+  runCanonicalSemanticInit,
 };
