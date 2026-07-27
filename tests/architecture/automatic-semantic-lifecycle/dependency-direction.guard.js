@@ -10,6 +10,7 @@ const allowedTargets = new Set([
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
 ]);
 
 // GIVEN the approved successor scope
@@ -27,7 +28,6 @@ assert.deepStrictEqual(
 );
 for (const forbidden of [
   'package.json',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
   '.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderClient.js',
@@ -47,6 +47,14 @@ assert(
 assert(
   targetPaths.includes('.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'),
   'SEMANTIC_LIFECYCLE_INCREMENTAL_BOUNDARY_NOT_AUTHORIZED',
+);
+assert(
+  targetPaths.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'),
+  'SEMANTIC_LIFECYCLE_UNIFIED_WP_P2_BOUNDARY_NOT_AUTHORIZED',
+);
+assert(
+  !handoff.frozenFiles.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'),
+  'SEMANTIC_LIFECYCLE_UNIFIED_WP_P2_TARGET_STILL_FROZEN',
 );
 
 function read(relativePath) {

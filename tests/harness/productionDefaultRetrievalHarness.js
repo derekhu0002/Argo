@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
@@ -26,6 +27,14 @@ const OVERLAPPING_VIEW_ID = 'semprod-wp2-vector-seed-closure';
 const ENDPOINT_RELATIONSHIP_ID = 'semprod-rel-default-query-service';
 const CONTENT_VERSION = 'content:wp-p2-aligned';
 const INDEX_VERSION = 'index:wp-p2-aligned';
+const UNIFIED_WP_P2_FAILURES = Object.freeze({
+  systemBypass: 'SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2',
+  unifiedBypass: 'SP03_UNIFIED_UNIFIED_READINESS_BYPASSED_WP_P2',
+  systemProvider: 'SP03_SYSTEM_WP_P2_PROVIDER_NOT_EXERCISED',
+  unifiedProvider: 'SP03_UNIFIED_WP_P2_PROVIDER_NOT_EXERCISED',
+  systemFailure: 'SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED',
+  unifiedFailure: 'SP04_UNIFIED_ACTIONABLE_FAILURE_EVIDENCE_CHANGED',
+});
 const APPROVED_PROFILE = Object.freeze({
   provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
   baseUrl: 'https://llm-clids9mqc5o1mbvb.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
@@ -595,6 +604,7 @@ function createRawProductionObservations({
   sourceFixture,
   readiness,
   readinessDriver = undefined,
+  sourceRoot = repoRoot,
   candidatesByChannel,
 }) {
   const ledger = [];
@@ -609,7 +619,7 @@ function createRawProductionObservations({
     ledger.push(event);
     return event;
   };
-  const source = createRawSourceFixture(sourceFixture, record);
+  const source = createRawSourceFixture(sourceFixture, record, sourceRoot);
   const queryVector = Object.freeze(Array.from({ length: 1024 }, (_, index) => (
     Number(((index + 1) / 2048).toFixed(8))
   )));
@@ -695,7 +705,7 @@ function createRawProductionObservations({
   });
 }
 
-function createRawSourceFixture(fixture, record) {
+function createRawSourceFixture(fixture, record, sourceRoot = repoRoot) {
   const marker = crypto.randomUUID();
   const approved = approvedSourceValues(marker);
   const processValues = fixture.source === 'file' ? {} : { ...approved };
@@ -718,7 +728,7 @@ function createRawSourceFixture(fixture, record) {
       : `mixed-legacy-${marker}`;
   }
   const sourceBehavior = {
-    expectedFilePath: path.join(repoRoot, '.argo', '.env'),
+    expectedFilePath: path.join(sourceRoot, '.argo', '.env'),
     readProcessKey(key) {
       record('credential-source-resolution', { source: 'process', key, operation: 'direct' });
       return fixture.sourceOperation ? undefined : processValues[key];
@@ -1721,6 +1731,259 @@ async function runExportedFreshReadinessPerQuery() {
   );
 }
 
+async function runExportedUnifiedReadinessThroughWpP2() {
+  const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-wp-p2-unified-'));
+  const graphPath = path.join(workspaceRoot, 'design', 'KG', 'SystemArchitecture.json');
+  fs.mkdirSync(path.dirname(graphPath), { recursive: true });
+  fs.writeFileSync(graphPath, `${JSON.stringify(canonicalSnapshot(), null, 2)}\n`, 'utf8');
+  const previousRoot = process.env.ARGO_REPO_ROOT;
+  process.env.ARGO_REPO_ROOT = workspaceRoot;
+  try {
+    const boundary = loadDefaultRetrievalBoundary('SP03_UNIFIED_WP_P2_BOUNDARY_MISSING');
+    const {
+      createProductionSemanticReadinessStore,
+    } = require(path.join(
+      repoRoot,
+      '.argo',
+      'scripts',
+      'graph-rag',
+      'mutationEmbeddingVectorLifecycle.js',
+    ));
+    const readinessStore = createProductionSemanticReadinessStore({ repositoryRoot: workspaceRoot });
+    const observations = createRawProductionObservations({
+      sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+      readiness: undefined,
+      sourceRoot: workspaceRoot,
+      candidatesByChannel: defaultCandidates(),
+    });
+    const composition = {
+      sourceBehavior: observations.sourceBehavior,
+      sourceAdapters: observations.sourceAdapters,
+      transport: observations.transport,
+      neo4jDriver: observations.neo4jDriver,
+    };
+    const system = require(systemArchitectureMcpPath);
+    const unified = require(unifiedMcpPath);
+    const outcomes = [];
+    const durableRecords = [];
+    const secretCanary = `wp-p2-secret-${crypto.randomUUID()}`;
+    await boundary.withDefaultSemanticRetrievalTestComposition(composition, async () => {
+      for (const [dispatcher, invoke] of [
+        ['system', args => system.callTool('getSystemArchitecture', args)],
+        ['unified', args => unified.callTool('getSystemArchitecture', args)],
+      ]) {
+        const aligned = readinessStore.recordAligned(unifiedAlignedReadiness());
+        durableRecords.push(aligned);
+        const beforeAligned = exportedObservationIndexes(observations);
+        const alignedResult = await invoke({
+          query: {
+            purpose: 'implementation-design',
+            intent: `${dispatcher} must traverse accepted WP-P2`,
+          },
+        });
+        outcomes.push(Object.freeze({
+          dispatcher,
+          phase: 'aligned',
+          result: alignedResult,
+          observation: exportedObservationSlice(observations, beforeAligned, defaultCandidates()),
+        }));
+
+        const failed = readinessStore.recordFailure(Object.freeze({
+          ...unifiedFailedReadiness(),
+          category: 'APPROVED_SECRET_REQUIRED',
+          message: 'Approved external semantic credential is required.',
+          action: 'Provide approved external semantic configuration, then retry.',
+          unsafeDiagnostic: secretCanary,
+        }));
+        durableRecords.push(failed);
+        const beforeFailed = exportedObservationIndexes(observations);
+        const failedResult = await invoke({
+          query: {
+            purpose: 'implementation-design',
+            intent: `${dispatcher} must preserve redacted durable failure evidence`,
+          },
+        });
+        outcomes.push(Object.freeze({
+          dispatcher,
+          phase: 'failed',
+          result: failedResult,
+          observation: exportedObservationSlice(observations, beforeFailed, defaultCandidates()),
+        }));
+      }
+    });
+    return Object.freeze({
+      outcomes: Object.freeze(outcomes),
+      durableRecords: Object.freeze(durableRecords),
+      secretCanary,
+    });
+  } finally {
+    if (previousRoot === undefined) delete process.env.ARGO_REPO_ROOT;
+    else process.env.ARGO_REPO_ROOT = previousRoot;
+    fs.rmSync(workspaceRoot, { recursive: true, force: true });
+  }
+}
+
+function unifiedAlignedReadiness() {
+  const readiness = alignedReadiness();
+  return Object.freeze({
+    ...readiness,
+    verified: true,
+    completedChannels: Object.freeze([...CHANNELS]),
+    missingChannels: Object.freeze([]),
+    mismatchedChannels: Object.freeze([]),
+    fullSnapshotFallback: false,
+    channels: Object.freeze(readiness.channels.map(channel => Object.freeze({
+      ...channel,
+      complete: true,
+      queryable: true,
+      coherent: true,
+      provider: APPROVED_PROFILE.provider,
+      model: APPROVED_PROFILE.model,
+      modelVersion: APPROVED_PROFILE.version,
+      dimensions: APPROVED_PROFILE.dimensions,
+    }))),
+  });
+}
+
+function unifiedFailedReadiness() {
+  const readiness = alignedReadiness();
+  return Object.freeze({
+    ...readiness,
+    state: 'Failed',
+    verified: false,
+    completedChannels: Object.freeze([]),
+    missingChannels: Object.freeze([...CHANNELS]),
+    mismatchedChannels: Object.freeze([]),
+    fullSnapshotFallback: false,
+    channels: Object.freeze(readiness.channels.map(channel => Object.freeze({
+      ...channel,
+      state: 'Failed',
+      complete: false,
+      queryable: false,
+      coherent: false,
+    }))),
+  });
+}
+
+function exportedObservationIndexes(observations) {
+  return Object.freeze({
+    operationLedger: observations.operationLedger().length,
+    providerRequests: observations.providerRequests().length,
+    providerResponses: observations.providerResponses().length,
+    readinessReads: observations.readinessReads().length,
+    vectorQueries: observations.vectorQueries().length,
+    vectorWindowResponses: observations.vectorWindowResponses().length,
+  });
+}
+
+function exportedObservationSlice(observations, before, expectedCandidates) {
+  return Object.freeze({
+    operationLedger: observations.operationLedger().slice(before.operationLedger),
+    providerRequests: observations.providerRequests().slice(before.providerRequests),
+    providerResponses: observations.providerResponses().slice(before.providerResponses),
+    readinessReads: observations.readinessReads().slice(before.readinessReads),
+    vectorQueries: observations.vectorQueries().slice(before.vectorQueries),
+    vectorWindowResponses: observations.vectorWindowResponses().slice(before.vectorWindowResponses),
+    expectedCandidates,
+  });
+}
+
+function assertExportedUnifiedReadinessThroughWpP2(observation) {
+  assert.strictEqual(observation.outcomes.length, 4, 'SP03_UNIFIED_WP_P2_ROUTER_PHASE_MATRIX_INCOMPLETE');
+  const recordIds = new Set(observation.durableRecords.map(record => record.recordId));
+  assert.strictEqual(recordIds.size, 1, 'SP03_UNIFIED_READINESS_RECORD_REPLACED');
+  assert.deepStrictEqual(
+    observation.durableRecords.map(record => record.revision),
+    [1, 2, 3, 4],
+    'SP03_UNIFIED_READINESS_REVISION_NOT_MONOTONIC',
+  );
+  for (const dispatcher of ['system', 'unified']) {
+    const aligned = observation.outcomes.find(item => (
+      item.dispatcher === dispatcher && item.phase === 'aligned'
+    ));
+    const alignedPayload = extractExportedToolPayload(aligned && aligned.result);
+    assert.strictEqual(
+      alignedPayload && alignedPayload.status,
+      'passed',
+      dispatcher === 'system'
+        ? UNIFIED_WP_P2_FAILURES.systemBypass
+        : UNIFIED_WP_P2_FAILURES.unifiedBypass,
+    );
+    const completeObservation = {
+      ...aligned.observation,
+      result: alignedPayload,
+    };
+    assert.strictEqual(
+      completeObservation.providerRequests.length,
+      1,
+      dispatcher === 'system'
+        ? UNIFIED_WP_P2_FAILURES.systemProvider
+        : UNIFIED_WP_P2_FAILURES.unifiedProvider,
+    );
+    assertRawPaginationCompleteness(completeObservation);
+    assertExactClosureAndVersions(completeObservation);
+  }
+}
+
+function assertExportedUnifiedActionableFailureEvidence(observation) {
+  for (const dispatcher of ['system', 'unified']) {
+    const failed = observation.outcomes.find(item => (
+      item.dispatcher === dispatcher && item.phase === 'failed'
+    ));
+    const failedPayload = extractExportedToolPayload(failed && failed.result);
+    assert.strictEqual(
+      failedPayload && failedPayload.status,
+      'failed',
+      `SP04_${dispatcher.toUpperCase()}_DURABLE_FAILURE_NOT_REJECTED`,
+    );
+    assert.deepStrictEqual(
+      failedPayload.error,
+      {
+        category: 'APPROVED_SECRET_REQUIRED',
+        message: 'Approved external semantic credential is required.',
+        action: 'Provide approved external semantic configuration, then retry.',
+        fullSnapshotFallback: false,
+        state: 'Failed',
+        canonicalVersion: canonicalVersion(),
+        contentVersion: CONTENT_VERSION,
+        indexVersion: INDEX_VERSION,
+        completedChannels: [],
+        missingChannels: [...CHANNELS],
+        mismatchedChannels: [],
+      },
+      dispatcher === 'system'
+        ? UNIFIED_WP_P2_FAILURES.systemFailure
+        : UNIFIED_WP_P2_FAILURES.unifiedFailure,
+    );
+    assert.strictEqual(
+      failed.observation.providerRequests.length,
+      0,
+      `SP04_${dispatcher.toUpperCase()}_FAILED_READINESS_PROVIDER_EFFECT`,
+    );
+    assert.strictEqual(
+      failed.observation.vectorQueries.length,
+      0,
+      `SP04_${dispatcher.toUpperCase()}_FAILED_READINESS_VECTOR_EFFECT`,
+    );
+  }
+  assert(
+    !JSON.stringify(observation.outcomes).includes(observation.secretCanary),
+    'SP04_UNIFIED_READINESS_SECRET_LEAK',
+  );
+}
+
+function extractExportedToolPayload(result) {
+  if (
+    result
+    && Array.isArray(result.content)
+    && result.content[0]
+    && typeof result.content[0].text === 'string'
+  ) {
+    return JSON.parse(result.content[0].text);
+  }
+  return result;
+}
+
 async function runExportedReadinessStateMatrix() {
   const requiredStates = new Set([
     'SemanticDisabled',
@@ -1865,6 +2128,8 @@ module.exports = {
   assertProductionQueryCredentialResolution,
   assertProductionQueryMixedLegacyRejections,
   assertReadinessMatrix,
+  assertExportedUnifiedActionableFailureEvidence,
+  assertExportedUnifiedReadinessThroughWpP2,
   assertZeroResultChannels,
   inspectFrozenRawEvidenceContract,
   runRawEvidenceAssertionSelfTests,
@@ -1877,6 +2142,7 @@ module.exports = {
   runExportedDurableReadinessStore,
   runExportedReadinessScenario,
   runExportedReadinessStateMatrix,
+  runExportedUnifiedReadinessThroughWpP2,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,
   runReadinessMatrix,

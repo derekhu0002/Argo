@@ -1,10 +1,12 @@
 const {
   assertAnchoredGraphTidyCompatibility,
+  assertExportedUnifiedActionableFailureEvidence,
   assertFullSnapshotCompatibility,
   runAnchoredGraphTidyCompatibilityControl,
   assertReadinessMatrix,
   runFullSnapshotCompatibilityControls,
   runReadinessMatrix,
+  runExportedUnifiedReadinessThroughWpP2,
 } = require('../../harness/productionDefaultRetrievalHarness.js');
 const {
   assertFreshReadinessPerQuery,
@@ -31,6 +33,11 @@ async function main() {
   // THEN each call freshly verifies persistent readiness before retrieval
   const freshReadiness = await observeFreshReadinessPerQuery();
   assertFreshReadinessPerQuery(freshReadiness, 'SP04');
+
+  // THEN stored redacted category/message/action survive both exported routers,
+  // while unknown diagnostic fields and secret canaries remain private
+  const exportedUnifiedReadiness = await runExportedUnifiedReadinessThroughWpP2();
+  assertExportedUnifiedActionableFailureEvidence(exportedUnifiedReadiness);
 }
 
 main().catch(error => {

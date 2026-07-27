@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-27T13:23:00+08:00",
+  "generatedAt": "2026-07-27T14:38:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Implement the accepted canonical semantic lifecycle without changing intent or frozen tests. The authoritative minimal Coding target set is exactly argo-mcp-server.js, systemarchitecture-mcp-server.js, semanticOperatorJourney.js, and mutationEmbeddingVectorLifecycle.js; accepted WP-P1 persistence/backfill/checkpoint/Neo4j adapters, WP-P2 retrieval, configuration, runtime, and provider boundaries are frozen inward dependencies. Canonical argo init privately composes preserved WP-P1 full reconciliation and WP-P2 readiness under exactly ARGO_LIVE_PROVIDER_E2E plus ARGO_W31_LIVE_MUTATION_VECTOR_E2E (no third flag); successful actual batch/focused MCP writes use readiness-first exact-touched durable upsert/tombstone; every exported System and unified getSystemArchitecture query freshly verifies persistent readiness without a supplied journey; getSystemArchitecture is the sole public read/query semantic surface. Frozen observations use independent raw-port effect ledgers and one filesystem-backed readiness record shared without re-fixturing across actual mutation failure, both exported query rejections, shipped init reconciliation, and both exported query successes. Stable readiness identity/recordId/canonicalVersion plus exact read snapshots and monotonic revision prove one durable record transforms from Failed/Stale to Aligned. Exactly two pre-init exported failure reads occur before the first alignment; each resume/rerun alignment has its own queryability then global-coherence predecessor; no exported read occurs between init alignments; and exactly two restored exported reads occur after the final alignment. The integration guard resolves the exact exported persistent factory through alias exports and delegated helpers; it remains intentionally RED with production factory export not resolved until Coding adds that production boundary, while five other guards pass. Credentials remain external-only, WP-P1/WP-P2 remain private, WP-P3 public exposure is retired, production runId cleanup is prohibited while existing cleanup remains test-only, deliveryStatus is runner-owned, and code-complete evidence remains distinct from live-release evidence. Final pre-coding argo.runArchitectureTests baseline: 43 total, 34 passed, 9 scoped expected failures, 0 missing criteria, 0 out-of-scope failures, and no additional deliveryStatus diff from the previously committed 28-element not_delivered baseline; refreshed records are design/KG/test-failure-records.json.",
+  "summary": "Complete the accepted canonical semantic lifecycle without changing intent or frozen tests. The authoritative minimal Coding target set is exactly argo-mcp-server.js, systemarchitecture-mcp-server.js, semanticOperatorJourney.js, mutationEmbeddingVectorLifecycle.js, and defaultSemanticRetrieval.js. The fifth target is narrowly authorized because the frozen WP-P2 reader hardcodes an obsolete readiness identity and exposes no production readiness-boundary input; Coding must make createDefaultSemanticRetrieval consume the unified production readinessBoundary while preserving its existing threshold filtering, expanding-window exhaustion, purpose closure, endpoint/View closure, provenance, and canonical completion. Both exported routers must delegate to this one WP-P2 algorithm; router-side provider/vector/closure duplication and production reliance on test-only composition are prohibited. Stored non-Aligned evidence preserves only redacted category/message/action plus exact state/version/channel fields and fullSnapshotFallback:false; unknown diagnostic fields and secret canaries remain private. Canonical init, actual writes, both routers, and later recovery continue to share one durable identity/recordId/canonicalVersion with monotonic revision. All prior exact dual gates ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E remain unchanged with no third flag; configuration and credentials remain external-only; WP-P1/WP-P2 stay private; WP-P3 public exposure remains retired; production cleanup is prohibited while cleanup remains test-only; deliveryStatus stays runner-owned; and code-complete remains distinct from live-release.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -68,20 +68,20 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
       "entryPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-      "controlPoint": "Invoke exported System and unified ordinary semantic queries across disabled, pending, partial, stale, failed, and repeatedly Aligned readiness without a supplied journey.",
-      "observationPoint": "Each call independently records one fresh readiness read and correlates zero or one provider request plus vector work; every non-Aligned state rejects with fullSnapshotFallback:false.",
+      "controlPoint": "Invoke exported System and unified ordinary semantic queries against alternating Aligned/Failed revisions of one unified production readiness record while the module-owned raw-port composition observes actual WP-P2 execution.",
+      "observationPoint": "Both routers traverse defaultSemanticRetrieval threshold filtering, expanding-window exhaustion, purpose closure, endpoint/View closure, provenance, and canonical completion; no router-side fixed-top-k substitute can pass.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-      "failureReason": "SP03_SYSTEM_SEMANTICDISABLED_READINESS_NOT_FRESH"
+      "failureReason": "SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
       "entryPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
-      "controlPoint": "Invoke repeated ordinary queries across persistent states and after later valid reconciliation without a public readiness command.",
-      "observationPoint": "Every query freshly verifies readiness; non-Aligned states reject exactly with fullSnapshotFallback:false; later reconciliation restores alignment.",
+      "controlPoint": "Invoke both exported routers after writing redacted Failed evidence containing category/message/action and an unknown secret-canary diagnostic to the unified durable record.",
+      "observationPoint": "Both routers preserve the exact actionable whitelist and state/version/channel evidence, reject before provider/vector work, and never expose the unknown diagnostic or secret canary.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runProductionSemanticReadinessGate.js",
-      "failureReason": "SP04_SYSTEM_SEMANTICDISABLED_READINESS_NOT_FRESH"
+      "failureReason": "SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-TS-00",
@@ -139,7 +139,7 @@
       "path": "tests/architecture/automatic-semantic-lifecycle/integration-control-points.guard.js",
       "kind": "KeyImplementationTraceabilityGuard",
       "controlPoint": "Parse frozen Harness and entrypoint ASTs and execute bypass counterfixtures.",
-      "observationPoint": "Reachable AST call graphs invoke shipped JSON-RPC argo init, production-reachable actual mutation adapter names, and exported System/unified queries. The guard resolves the exact exported persistent production factory through alias exports and transitive identifier/helper aliases; compliant alias export passes, unsafe alias export, aliased-helper/delegated cleanup, missing export, comments, and dead literals fail.",
+      "observationPoint": "Reachable AST call graphs invoke shipped init/write/query controls, resolve the persistent production factory, prohibit cleanup/runId behavior, require system composition to pass unified readinessBoundary into defaultSemanticRetrieval, and reject obsolete identity literals or router-side provider/vector algorithm duplication.",
       "expectedStatus": "failed"
     }
   ],
@@ -169,10 +169,16 @@
       "path": ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js",
       "failureSignal": "DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING",
       "nextAction": "Add the durable lifecycle plus module-owned callback-scoped controlled composition, then make every actual write adapter invoke it with actual touched arrays; reuse frozen WP-P1 store/configuration ports without runId/cleanup."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+      "path": ".argo/scripts/graph-rag/defaultSemanticRetrieval.js",
+      "failureSignal": "SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2 and SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED",
+      "nextAction": "Accept the unified production readinessBoundary in createDefaultSemanticRetrieval, remove the obsolete private readiness identity, preserve stored redacted category/message/action, and retain the existing WP-P2 threshold/window/closure/canonical algorithms unchanged."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Dependency-first, frozen tests read-only: C1 retires WP-P3 public exposure and creates exact two-gate private init; C2 builds durable incremental persistence over WP-P1; C3 integrates every successful write; C4 makes every ordinary query freshly verify WP-P2 readiness; C5 proves controlled code-complete evidence before optional protected live-release evidence. Preserve runner-owned deliveryStatus; no third flag, embedded/default credential, production runId cleanup, or test rewrite.",
+    "executionStrategy": "Dependency-first, frozen tests read-only: preserve completed C1-C3 behavior; C4 unifies readiness inside the accepted WP-P2 factory and removes router algorithm duplication; C5 proves controlled code-complete evidence before optional protected live-release evidence. Preserve runner-owned deliveryStatus; no third flag, embedded/default credential, production runId cleanup, test-only production composition, or test rewrite.",
     "tasks": [
       {
         "taskId": "CSL-C1",
@@ -230,12 +236,13 @@
         "objective": "Make ordinary getSystemArchitecture(query) self-contained and fail-closed.",
         "dependsOn": ["CSL-C1", "CSL-C3"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
-        "targetPaths": [".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js"],
+        "targetPaths": [".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"],
         "steps": [
-          "Run SP-03 and SP-04 through exported System and unified callTool with no supplied journey across disabled, pending, partial, stale, failed, and repeated Aligned controls; preserve the fresh-readiness RED.",
-          "On every ordinary exported query, consume the frozen WP-P2 readReadiness/retrieve boundary exactly once before provider/vector work; remove prior WP-P3 attestation/process-local authorization.",
-          "Propagate exact redacted readiness fields and literal false fullSnapshotFallback for every non-Aligned state; correlate each call with exactly one readiness read, zero provider/vector effects when rejected, and provider/vector execution when Aligned.",
-          "Retrieve only when complete Aligned; preserve credential/provider/vector/closure/canonical completion behavior.",
+          "Run SP-03 and SP-04 through exported System and unified callTool against alternating Aligned/Failed revisions of one unified durable record; preserve the exact new RED signals.",
+          "Extend createDefaultSemanticRetrieval dependencies with the production readinessBoundary and route both retrieve/readReadiness through the same private evaluator; remove the obsolete argo-production-semantic-index reader.",
+          "Delete router-side executeProductionSemanticQuery/queryProductionVectorChannels or equivalent duplication; both routers must delegate to defaultSemanticRetrieval and its existing threshold, expanding-window exhaustion, closure, provenance, and canonical completion.",
+          "Propagate only stored redacted category/message/action plus exact state/version/channel evidence and literal false fullSnapshotFallback for non-Aligned state; unknown diagnostics and canaries must not appear.",
+          "Correlate Aligned calls with actual WP-P2 provider/vector execution and Failed calls with zero provider/vector effects.",
           "Keep omitted query and all graph-tidy calls exact zero-semantic-work canonical bypasses."
         ],
         "completionSignal": "Consecutive ordinary queries each perform a fresh readiness read; non-Aligned rejects without fallback; canonical bypasses remain exact."
@@ -246,9 +253,9 @@
         "objective": "Finish deterministic acceptance and separately report protected live-release blockers.",
         "dependsOn": ["CSL-C1", "CSL-C2", "CSL-C3", "CSL-C4"],
         "relatedTestcases": ["ExplicitAcceptanceTestcase-SP-05-NewProjectJourney", "ExplicitAcceptanceTestcase-SP-01-FullBackfill", "ExplicitAcceptanceTestcase-SP-02-PersistentProjection", "ExplicitAcceptanceTestcase-DT-16", "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E", "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval", "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness", "ExplicitAcceptanceTestcase-TS-00"],
-        "targetPaths": [".argo/scripts/argo-mcp-server.js", ".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js"],
+        "targetPaths": [".argo/scripts/argo-mcp-server.js", ".argo/scripts/systemarchitecture-mcp-server.js", ".argo/scripts/graph-rag/semanticOperatorJourney.js", ".argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js", ".argo/scripts/graph-rag/defaultSemanticRetrieval.js"],
         "steps": [
-          "Run all eight frozen scoped entrypoints and six guards; fix only the four authoritative production targets.",
+          "Run all eight frozen scoped entrypoints and six guards; fix only the five authoritative production targets.",
           "Run the full architecture runner and preserve runner-owned records/status; separate scoped from baseline failures.",
           "Only when both gates and safe external credentials/Neo4j exist, run protected live W3.1 and record real provider, persistence, queryability, and coherence evidence.",
           "Otherwise report the precise environment blocker; controlled pass is code-complete only.",
@@ -298,9 +305,9 @@
   ],
   "openGaps": [
     "No unresolved implementation-design gaps or user decisions. Scope, interfaces, dependencies, frozen acceptance, failure signals, and completion evidence are explicit.",
-    "The integration-control-points guard is intentionally RED with `production factory export createPersistentMutationEmbeddingLifecycle not resolved`. Unlike the prior silent return, this is a frozen missing-production signal: Coding must export the factory, after which the same guard resolves direct/alias exports and rejects reachable cleanup/runId delegation.",
-    "Final correction runner command invoked unified argo.callTool('runArchitectureTests'), which executed .argo/scripts/runArchitectureTests.js against design/KG/SystemArchitecture.json: 43 total, 34 passed, 9 scoped failed, 0 missing criteria, and 0 out-of-scope failures. It refreshed design/KG/test-failure-records.json and produced no new SystemArchitecture.json deliveryStatus diff.",
-    "Runner-owned deliveryStatus baseline changed 28 elements from delivered to not_delivered: grag-consumer-role, grag-consumption-process, grag-query-service, grag-mode-validation, grag-seed-retrieval, grag-purpose-closure, grag-intent-decision-policy, grag-implementation-policy, grag-repair-policy, grag-audit-policy, grag-graph-tidy-policy, grag-endpoint-closure, grag-view-closure, grag-provenance, grag-semantic-index, grag-index-lifecycle, grag-mcp-interface, grag-native-retrieval-service, grag-embedding-qualification, grag-credential-boundary, grag-embedding-provider-adapter, grag-embedding-generation, grag-wp-3-1, semprod-backfill-control, semprod-persistent-projection-requirement, semprod-default-vector-retrieval, semprod-readiness-requirement, and semprod-operator-journey-process. These are pre-coding dependency cascades, not manual intent edits.",
+    "The integration-control-points guard is intentionally RED with `duplicates WP-P2 function executeProductionSemanticQuery`. Coding must pass the unified readinessBoundary into defaultSemanticRetrieval, remove obsolete identity `argo-production-semantic-index`, and delete router-side provider/vector/closure duplication; the guard's compliant and duplicate counterfixtures bind that requirement.",
+    "Final correction runner executes 43 mounted acceptance testcases: 41 pass and exactly SP-03/SP-04 fail with `SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2` and `SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED`; there are 0 missing criteria and 0 out-of-scope failures. Refreshed records are design/KG/test-failure-records.json.",
+    "Runner-owned deliveryStatus changed 18 elements from delivered to not_delivered as the expected SP-03/SP-04 dependency cascade: grag-consumer-role, grag-consumption-process, grag-query-service, grag-seed-retrieval, grag-purpose-closure, grag-intent-decision-policy, grag-implementation-policy, grag-repair-policy, grag-audit-policy, grag-graph-tidy-policy, grag-endpoint-closure, grag-view-closure, grag-provenance, grag-mcp-interface, grag-credential-boundary, semprod-default-vector-retrieval, semprod-readiness-requirement, and semprod-operator-journey-process. These are runner-owned test consequences, not manual intent edits.",
     "Live-release evidence is environment-gated, not a design gap: both existing exact gates, safe external-only credentials, a real qualified finite 1024-dimensional provider response, durable Neo4j records, vector queryability, and global coherence are required. Incoming evidence reports neo4jUri is required and unsafe Windows .argo/temp ACL; Coding must not fabricate evidence or weaken trust."
   ]
 }

@@ -32,6 +32,11 @@ for (const required of [
   'live-release',
   'authoritative minimal',
   'supersedes',
+  'defaultSemanticRetrieval.js',
+  'readinessBoundary',
+  'threshold filtering',
+  'window exhaustion',
+  'actionable redacted',
 ]) {
   assert(
     contractText.toLowerCase().includes(required.toLowerCase()),
@@ -50,6 +55,7 @@ assert.deepStrictEqual(
     '.argo/scripts/systemarchitecture-mcp-server.js',
     '.argo/scripts/graph-rag/semanticOperatorJourney.js',
     '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+    '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   ].sort(),
   'SEMANTIC_LIFECYCLE_ARCHITECTURE_TARGET_SET_CONFLICT',
 );

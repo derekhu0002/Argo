@@ -1,12 +1,15 @@
 const {
   assertCredentialSourceMatrix,
   assertDefaultVectorRetrieval,
+  assertExportedUnifiedActionableFailureEvidence,
+  assertExportedUnifiedReadinessThroughWpP2,
   assertFullSnapshotCompatibility,
   assertLegacyControlWordProductionGate,
   assertProductionQueryCredentialResolution,
   assertProductionQueryMixedLegacyRejections,
   assertZeroResultChannels,
   runDefaultMcpNeo4jVectorRetrieval,
+  runExportedUnifiedReadinessThroughWpP2,
   runCredentialSourceMatrix,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,
@@ -28,6 +31,7 @@ async function main() {
   const legacyControlWordGate = await runLegacyControlWordProductionGate();
   const productionQueryCredentials = await runProductionQueryCredentialResolution();
   const productionQueryMixedLegacySources = await runProductionQueryMixedLegacyRejections();
+  const exportedUnifiedReadiness = await runExportedUnifiedReadinessThroughWpP2();
 
   // WHEN typed semantic requests cross the shipped default MCP path without a
   // caller- or Harness-injected semantic retrieval boundary
@@ -37,6 +41,8 @@ async function main() {
   assertLegacyControlWordProductionGate(legacyControlWordGate);
   assertProductionQueryMixedLegacyRejections(productionQueryMixedLegacySources);
   assertProductionQueryCredentialResolution(productionQueryCredentials);
+  assertExportedUnifiedReadinessThroughWpP2(exportedUnifiedReadiness);
+  assertExportedUnifiedActionableFailureEvidence(exportedUnifiedReadiness);
 
   // THEN graph-tidy still bypasses embedding and retrieval for an exact canonical snapshot
   const compatibilityControls = await runFullSnapshotCompatibilityControls();

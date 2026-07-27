@@ -8,11 +8,53 @@ const automaticPath = 'tests/harness/automaticSemanticLifecycleHarness.js';
 const retrievalPath = 'tests/harness/productionDefaultRetrievalHarness.js';
 const backfillEntryPath = 'tests/explicit/entries/runProductionSemanticBackfill.js';
 const lifecyclePath = '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js';
+const systemPath = '.argo/scripts/systemarchitecture-mcp-server.js';
+const defaultRetrievalPath = '.argo/scripts/graph-rag/defaultSemanticRetrieval.js';
 
 // GIVEN the frozen successor entrypoints must exercise shipped outward controls
 // WHEN their AST call graphs are inspected
 // THEN direct private-factory substitutes cannot satisfy init, write, or query evidence
 assertIntegrationBindings(read(automaticPath), read(retrievalPath), read(backfillEntryPath), 'repository');
+assertWpP2ProductionReuse(read(systemPath), read(defaultRetrievalPath), 'repository');
+
+assert.doesNotThrow(
+  () => assertWpP2ProductionReuse(`
+    function createJourney(readinessStore) {
+      return createDefaultSemanticRetrieval({
+        canonicalGraph,
+        readinessBoundary: readinessStore,
+      });
+    }
+  `, `
+    function createDefaultSemanticRetrieval(dependencies) {
+      const readinessBoundary = dependencies.readinessBoundary;
+      return {
+        async retrieve() {
+          const readiness = await readinessBoundary.read();
+          return preservePublicFailureEvidence(readiness, ['category', 'message', 'action']);
+        },
+      };
+    }
+  `, 'compliant-wp-p2-reuse'),
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: compliant WP-P2 reuse rejected',
+);
+
+assert.throws(
+  () => assertWpP2ProductionReuse(`
+    function createJourney() {
+      return queryProductionVectorChannels();
+    }
+    function queryProductionVectorChannels() {
+      return 'CALL db.index.vector.queryNodes($indexName, $topK, $vector)';
+    }
+  `, `
+    function createDefaultSemanticRetrieval(dependencies) {
+      return dependencies.readinessBoundary;
+    }
+  `, 'duplicated-wp-p2'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: duplicate production WP-P2 algorithm passed',
+);
 
 const commentsOnly = [
   '// unifiedMcp.callTool("initializeWorkspace")',
@@ -192,6 +234,79 @@ function assertIntegrationBindings(automaticSource, retrievalSource, backfillSou
     hasRequireBinding(backfill, 'runProductionSemanticBackfill', '../../harness/productionSemanticPersistenceHarness.js'),
     `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} drops concrete WP-P1 composition`,
   );
+}
+
+function assertWpP2ProductionReuse(systemSource, defaultSource, label) {
+  const system = parse(systemSource, `${label}-system.js`);
+  const defaultRetrieval = parse(defaultSource, `${label}-default-retrieval.js`);
+  const duplicateNames = new Set([
+    'executeProductionSemanticQuery',
+    'queryProductionVectorChannels',
+  ]);
+  visit(system, node => {
+    if (
+      ts.isFunctionDeclaration(node)
+      && node.name
+      && duplicateNames.has(node.name.text)
+    ) {
+      assert.fail(
+        `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} duplicates WP-P2 function ${node.name.text}`,
+      );
+    }
+    if (
+      ts.isStringLiteral(node)
+      && node.text.includes('db.index.vector.queryNodes')
+    ) {
+      assert.fail(
+        `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} duplicates WP-P2 vector query`,
+      );
+    }
+  });
+  const productionCalls = [];
+  visit(system, node => {
+    if (
+      ts.isCallExpression(node)
+      && ts.isIdentifier(node.expression)
+      && node.expression.text === 'createDefaultSemanticRetrieval'
+    ) {
+      productionCalls.push(node);
+    }
+  });
+  assert(
+    productionCalls.some(call => (
+      call.arguments[0]
+      && ts.isObjectLiteralExpression(call.arguments[0])
+      && call.arguments[0].properties.some(property => propertyName(property.name) === 'readinessBoundary')
+    )),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not pass unified readinessBoundary into WP-P2`,
+  );
+  assert(
+    !hasStringLiteral(defaultRetrieval, 'argo-production-semantic-index'),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} retains obsolete WP-P2 readiness identity`,
+  );
+  const factory = functionNode(defaultRetrieval, 'createDefaultSemanticRetrieval');
+  assert(factory, `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} omits WP-P2 factory`);
+  for (const required of ['readinessBoundary', 'category', 'message', 'action']) {
+    assert(
+      hasPropertyName(factory, required),
+      `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} WP-P2 omits ${required}`,
+    );
+  }
+}
+
+function hasPropertyName(node, expected) {
+  let found = false;
+  visit(node, child => {
+    if (
+      (ts.isPropertyAccessExpression(child) && child.name.text === expected)
+      || (
+        (ts.isPropertyAssignment(child) || ts.isShorthandPropertyAssignment(child))
+        && propertyName(child.name) === expected
+      )
+      || (ts.isStringLiteral(child) && child.text === expected)
+    ) found = true;
+  });
+  return found;
 }
 
 function assertProductionReachableAdapterNames(automatic, label) {

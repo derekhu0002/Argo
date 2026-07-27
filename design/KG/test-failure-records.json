@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+    "testdescription": "Control point: invoke ordinary typed queries only through public getSystemArchitecture(query) against aligned, disabled, pending, partial, stale, failed, and mismatched durable states; invoke omitted-query and graph-tidy controls. Observation point: each ordinary query freshly verifies readiness before provider/vector work; non-Aligned states reject with fullSnapshotFallback:false; Aligned performs qualified embedding and independent exhaustive Element, ArchitectureRelationship, and View vector retrieval followed by deterministic closure and canonical completion; no public readiness tool, injected retrieval boundary, synthetic empty seeds, or fallback exists; omitted-query and graph-tidy perform zero semantic operations.",
+    "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "relatedIntentElementId": "semprod-default-vector-retrieval",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2\n\n'failed' !== 'passed'\n\n    at assertExportedUnifiedReadinessThroughWpP2 (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:1905:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:44:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2\n\n'failed' !== 'passed'\n\n    at assertExportedUnifiedReadinessThroughWpP2 (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:1905:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:44:3)"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
+    "testdescription": "Control point: after successful canonical mutation with injected provider, persistence, partial-channel, and queryability failures, invoke getSystemArchitecture(query) repeatedly in disabled, Pending, partial, Stale, Failed, unknown, version-mismatched, and Aligned states; then run valid resumable argo init reconciliation and repeat. Invoke no-argument and graph-tidy controls throughout. Observation point: every semantic query freshly reads persistent readiness before provider/vector work, each non-Aligned state rejects with exact redacted state/version/channel evidence and fullSnapshotFallback:false, canonical JSON remains authoritative, no false readiness occurs, later full three-channel reconciliation alone restores Aligned, and no-argument plus graph-tidy retain exact canonical bypass behavior.",
+    "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "relatedIntentElementId": "semprod-readiness-requirement",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runProductionSemanticReadinessGate.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED\n+ actual - expected\n\n  {\n-   action: 'Provide approved external semantic configuration, then retry.',\n    canonicalVersion: 'canonical:03b383ca32d6d48db5adcad359e0940a5b7c2b34878acd786123ba7abf89f3f3',\n+   category: 'Failed',\n+   completedChannels: [\n+     'Element',\n+     'ArchitectureRelationship',\n+     'View'\n+   ],\n-   category: 'APPROVED_SECRET_REQUIRED',\n-   completedChannels: [],\n    contentVersion: 'content:wp-p2-aligned',\n    fullSnapshotFallback: false,\n    indexVersion: 'index:wp-p2-aligned',\n+   message: 'Failed',\n+   mismatchedChannels: [\n-   message: 'Approved external semantic credential is required.',\n-   mismatchedChannels: [],\n-   missingChannels: [\n      'Element',\n      'ArchitectureRelationship',\n      'View'\n    ],\n+   missingChannels: [],\n    state: 'Failed'\n  }\n\n    at assertExportedUnifiedActionableFailureEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:1939:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:40:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED\n+ actual - expected\n\n  {\n-   action: 'Provide approved external semantic configuration, then retry.',\n    canonicalVersion: 'canonical:03b383ca32d6d48db5adcad359e0940a5b7c2b34878acd786123ba7abf89f3f3',\n+   category: 'Failed',\n+   completedChannels: [\n+     'Element',\n+     'ArchitectureRelationship',\n+     'View'\n+   ],\n-   category: 'APPROVED_SECRET_REQUIRED',\n-   completedChannels: [],\n    contentVersion: 'content:wp-p2-aligned',\n    fullSnapshotFallback: false,\n    indexVersion: 'index:wp-p2-aligned',\n+   message: 'Failed',\n+   mismatchedChannels: [\n-   message: 'Approved external semantic credential is required.',\n-   mismatchedChannels: [],\n-   missingChannels: [\n      'Element',\n      'ArchitectureRelationship',\n      'View'\n    ],\n+   missingChannels: [],\n    state: 'Failed'\n  }\n\n    at assertExportedUnifiedActionableFailureEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:1939:12)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:40:3)"
+  }
+]

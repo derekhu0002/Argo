@@ -1,3 +1,11 @@
+# Canonical lifecycle WP-P2 target-scope correction (2026-07-27)
+
+- Coding correctly identified that the frozen `defaultSemanticRetrieval.js` private reader still hardcodes obsolete readiness identity `argo-production-semantic-index` and exposes no production `readinessBoundary` dependency. The prior four-file authorization made compliant reuse of the unified durable record impossible without router-side algorithm duplication.
+- The authoritative minimal Coding target set is now five files: the prior four plus `.argo/scripts/graph-rag/defaultSemanticRetrieval.js`. Its authorization is narrow: accept/read the unified production readiness boundary, remove the obsolete identity, and preserve stored redacted category/message/action. Existing provider qualification, threshold filtering, expanding-window exhaustion, purpose closure, endpoint/View closure, provenance, canonical completion, and raw-port test composition remain frozen behavior.
+- New controlled acceptance alternates Aligned/Failed revisions under one production readiness `recordId` and invokes both exported System/unified routers. Aligned calls must exercise the real WP-P2 provider/vector windows and complete closure; Failed calls must preserve the exact actionable whitelist, perform zero provider/vector work, and exclude an unknown diagnostic secret canary.
+- The integration guard now rejects router-local `executeProductionSemanticQuery`, `queryProductionVectorChannels`, or Vector Index Cypher duplication, requires `createDefaultSemanticRetrieval({ readinessBoundary, ... })`, and rejects the obsolete readiness identity in WP-P2.
+- This is an ImplementationDesign scope correction only. No production behavior or intent semantics are changed; runner-owned delivery status and failure records will be refreshed from the new frozen RED entrypoints.
+
 # Canonical lifecycle readiness-order correction (2026-07-27)
 
 - Coding safely stashed production WIP at `8abb9fb57f8a822fa133b5d9d2461b61a487f6ef`; ImplementationDesign did not inspect, apply, drop, or modify that stash or any production target.

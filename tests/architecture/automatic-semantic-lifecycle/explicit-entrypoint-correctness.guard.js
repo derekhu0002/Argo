@@ -5,6 +5,7 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const harnessPath = 'tests/harness/automaticSemanticLifecycleHarness.js';
 const harness = read(harnessPath);
+const retrievalHarness = read('tests/harness/productionDefaultRetrievalHarness.js');
 const entrypoints = [
   'tests/explicit/entries/runNewProjectSemanticOperatorJourney.js',
   'tests/explicit/entries/runProductionSemanticBackfill.js',
@@ -72,6 +73,14 @@ for (const required of [
   'EXPORTED_READ_DURING_INIT_ALIGNMENT',
   'INIT_QUERYABILITY_NOT_BEFORE_ALIGNMENT',
   'INIT_COHERENCE_NOT_BEFORE_ALIGNMENT',
+  'SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2',
+  'SP03_UNIFIED_READINESS_RECORD_REPLACED',
+  'SP03_UNIFIED_READINESS_REVISION_NOT_MONOTONIC',
+  'SP03_SYSTEM_WP_P2_PROVIDER_NOT_EXERCISED',
+  'SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED',
+  'SP04_UNIFIED_ACTIONABLE_FAILURE_EVIDENCE_CHANGED',
+  'SP04_UNIFIED_READINESS_SECRET_LEAK',
+  'runExportedUnifiedReadinessThroughWpP2',
   'ACTUAL_TOUCHED_IDS_NOT_EXACT',
   'REMOVE_UPSERT_MAPPING_INVALID',
   'CANONICAL_WRITE_LOST',
@@ -81,7 +90,9 @@ for (const required of [
   'removeArchitectureView',
 ]) {
   assert(
-    harness.includes(required) || entrypoints.some(entryPath => read(entryPath).includes(required)),
+    harness.includes(required)
+      || retrievalHarness.includes(required)
+      || entrypoints.some(entryPath => read(entryPath).includes(required)),
     `SEMANTIC_LIFECYCLE_ASSERTION_NOT_FROZEN:${required}`,
   );
 }
