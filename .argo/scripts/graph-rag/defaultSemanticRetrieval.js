@@ -377,7 +377,9 @@ async function readPersistentReadiness(neo4jDriver, readinessBoundary) {
       throw safeError('SEMANTIC_READINESS_BOUNDARY_INVALID');
     }
     const readiness = await readinessBoundary.read();
-    if (readiness && readiness.state !== 'Unknown') return readiness;
+    if (readiness && readiness.state !== 'Unknown') {
+      return { readiness, requireQualification: true };
+    }
   }
   const result = await neo4jDriver.execute(Object.freeze({
     kind: 'semantic-readiness-read',
@@ -387,17 +389,20 @@ async function readPersistentReadiness(neo4jDriver, readinessBoundary) {
   const readiness = result && Array.isArray(result.records) ? result.records[0] : undefined;
   if (!readiness || typeof readiness !== 'object') {
     return {
-      state: 'Unknown',
-      canonicalVersion: null,
-      contentVersion: null,
-      indexVersion: null,
-      channels: [],
+      readiness: {
+        state: 'Unknown',
+        canonicalVersion: null,
+        contentVersion: null,
+        indexVersion: null,
+        channels: [],
+      },
+      requireQualification: false,
     };
   }
-  return readiness;
+  return { readiness, requireQualification: false };
 }
 
-function evaluatePersistentReadiness(readiness, canonicalGraph) {
+function evaluatePersistentReadiness(readiness, canonicalGraph, requireQualification = false) {
   const expectedCanonicalVersion = deriveCanonicalVersion(canonicalGraph);
   const records = new Map((Array.isArray(readiness.channels) ? readiness.channels : [])
     .map(record => [record.channel, record]));
@@ -413,8 +418,21 @@ function evaluatePersistentReadiness(readiness, canonicalGraph) {
       || record.canonicalVersion !== readiness.canonicalVersion
       || record.contentVersion !== readiness.contentVersion
       || record.indexVersion !== readiness.indexVersion
+      || (requireQualification && (
+        record.provider !== APPROVED_PROFILE.provider
+        || record.model !== APPROVED_PROFILE.model
+        || record.modelVersion !== APPROVED_PROFILE.version
+        || record.dimensions !== APPROVED_PROFILE.dimensions
+        || record.queryable !== true
+        || record.coherent !== true
+      ))
     ) {
       mismatchedChannels.push(channel.channel);
+    }
+  }
+  if (requireQualification && readiness.state === 'Aligned' && readiness.verified !== true) {
+    for (const channel of CHANNELS) {
+      if (!mismatchedChannels.includes(channel.channel)) mismatchedChannels.push(channel.channel);
     }
   }
   if (readiness.canonicalVersion !== expectedCanonicalVersion && missingChannels.length === 0) {
@@ -423,6 +441,7 @@ function evaluatePersistentReadiness(readiness, canonicalGraph) {
     }
   }
   const aligned = readiness.state === 'Aligned'
+    && (!requireQualification || readiness.verified === true)
     && readiness.canonicalVersion === expectedCanonicalVersion
     && missingChannels.length === 0
     && mismatchedChannels.length === 0;
@@ -432,12 +451,14 @@ function evaluatePersistentReadiness(readiness, canonicalGraph) {
     canonicalVersion: readiness.canonicalVersion,
     contentVersion: readiness.contentVersion,
     indexVersion: readiness.indexVersion,
-    completedChannels: aligned
-      ? CHANNELS.map(item => item.channel)
+    completedChannels: readiness.state === 'Aligned'
+      ? CHANNELS.map(item => item.channel).filter(channel => records.has(channel))
       : arrayEvidence(readiness.completedChannels),
-    missingChannels: aligned ? [] : arrayEvidence(readiness.missingChannels, missingChannels),
-    mismatchedChannels: aligned
-      ? []
+    missingChannels: readiness.state === 'Aligned'
+      ? missingChannels
+      : arrayEvidence(readiness.missingChannels, missingChannels),
+    mismatchedChannels: readiness.state === 'Aligned'
+      ? mismatchedChannels
       : arrayEvidence(readiness.mismatchedChannels, mismatchedChannels),
     ...publicFailureEvidence(readiness),
   };
@@ -450,8 +471,13 @@ function arrayEvidence(value, fallback = []) {
 }
 
 async function readAndEvaluatePersistentReadiness(composition, canonicalGraph, readinessBoundary) {
-  const readiness = await readPersistentReadiness(composition.neo4jDriver, readinessBoundary);
-  const alignment = evaluatePersistentReadiness(readiness, canonicalGraph);
+  const persistent = await readPersistentReadiness(composition.neo4jDriver, readinessBoundary);
+  const readiness = persistent.readiness;
+  const alignment = evaluatePersistentReadiness(
+    readiness,
+    canonicalGraph,
+    persistent.requireQualification,
+  );
   return { composition, readiness, alignment };
 }
 
@@ -762,7 +788,7 @@ function deriveCanonicalVersion(graph) {
 function semanticIndexNotAligned(alignment) {
   const error = safeError(alignment.category || 'SEMANTIC_INDEX_NOT_ALIGNED');
   error.message = alignment.message || `Semantic index is ${alignment.state}`;
-  if (alignment.action) error.action = alignment.action;
+  error.action = alignment.action || 'Run argo init to reconcile the semantic index.';
   error.fullSnapshotFallback = false;
   error.state = alignment.state;
   error.canonicalVersion = alignment.canonicalVersion;
