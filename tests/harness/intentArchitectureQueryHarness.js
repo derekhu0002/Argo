@@ -464,9 +464,12 @@ function assertUniqueCanonicalIdentities(graph, failureCategory) {
 
 async function invokeGetSystemArchitecture(args, probe) {
   process.env.ARGO_REPO_ROOT = repoRoot;
+  const callArgs = args && args.query && !Object.prototype.hasOwnProperty.call(args.query, 'responseProfile')
+    ? { ...args, query: { ...args.query, responseProfile: 'debug' } }
+    : args;
   const semanticRetrievalBoundary = probe
     ? probe.semanticRetrievalBoundary
-    : (args && args.query ? defaultDeterministicSemanticRetrievalBoundary : undefined);
+    : (callArgs && callArgs.query ? defaultDeterministicSemanticRetrievalBoundary : undefined);
   const testDependencies = semanticRetrievalBoundary
     ? {
       semanticOperatorJourney: createApprovedSemanticOperatorJourneyAdapter(
@@ -474,7 +477,7 @@ async function invokeGetSystemArchitecture(args, probe) {
       ),
     }
     : undefined;
-  const response = await callTool('getSystemArchitecture', args, null, testDependencies);
+  const response = await callTool('getSystemArchitecture', callArgs, null, testDependencies);
   assert(response && Array.isArray(response.content), 'QUERY_BOUNDARY_PROTOCOL_FAILURE: MCP response must contain content');
   return JSON.parse(response.content[0].text);
 }

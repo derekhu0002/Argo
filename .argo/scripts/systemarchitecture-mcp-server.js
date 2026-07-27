@@ -1671,7 +1671,7 @@ async function callTool(name, args = {}, dependencies = undefined) {
       }
 
       const journey = await resolveSemanticOperatorJourney(dependencies);
-      return journey.query(query);
+      return applySemanticResponseProfile(await journey.query(query), query);
     }
 
     const context = await loadContext(args);
@@ -1773,7 +1773,10 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   }
   let document;
   try {
-    document = await semanticRetrievalBoundary.retrieve(query);
+    const retrieved = await semanticRetrievalBoundary.retrieve(query);
+    document = shouldReturnDebugSemanticResult(query)
+      ? retrieved
+      : buildBusinessSemanticSummary(retrieved, query);
   } catch (error) {
     const semanticErrorEvidence = {};
     for (const field of [
@@ -1804,12 +1807,260 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
       ...query,
       mode: 'semantic-query',
       semanticRetrieval: 'invoked',
+      responseProfile: shouldReturnDebugSemanticResult(query) ? 'debug' : 'business-summary',
     },
     ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
       ? { result: document.result }
       : { result: document }),
     document,
   });
+}
+
+function shouldReturnDebugSemanticResult(query) {
+  return ['debug', 'full', 'evidence'].includes(String(
+    query && (query.responseProfile || query.detail || query.outputMode) || '',
+  ).toLowerCase());
+}
+
+function buildBusinessSemanticSummary(retrieved, query = {}) {
+  if (retrieved && retrieved.responseProfile === 'business-summary') return retrieved;
+  if (retrieved && retrieved.result && retrieved.result.responseProfile === 'business-summary') return retrieved.result;
+  const source = retrieved && typeof retrieved === 'object' ? retrieved : {};
+  const provenanceObjects = Array.isArray(source.provenance && source.provenance.objects)
+    ? source.provenance.objects
+    : [];
+  const hitReasonByKey = new Map(provenanceObjects.map(item => [
+    `${item.objectType}:${item.objectId}`,
+    {
+      firstInclusionReason: item.firstInclusionReason,
+      supplementaryReasons: Array.isArray(item.supplementaryReasons) ? [...item.supplementaryReasons] : [],
+    },
+  ]));
+  const seedLimit = businessSummaryLimit(query);
+  const semanticSeeds = summarizeSeeds(source.seedsByType, hitReasonByKey, seedLimit);
+  const elements = summarizeElements(source, hitReasonByKey, seedLimit * 2);
+  const relationships = summarizeRelationships(source, hitReasonByKey, seedLimit * 2);
+  const views = summarizeViews(source, hitReasonByKey, seedLimit);
+  const includedObjectIds = Object.freeze([
+    ...elements.map(item => item.id),
+    ...relationships.map(item => item.id),
+    ...views.map(item => item.id),
+  ]);
+  return Object.freeze({
+    responseProfile: 'business-summary',
+    purpose: query.purpose,
+    intent: query.intent,
+    semanticSeeds,
+    businessObjects: Object.freeze({
+      elements: Object.freeze(elements),
+      relationships: Object.freeze(relationships),
+      views: Object.freeze(views),
+    }),
+    hitReasons: Object.freeze(provenanceObjects.map(item => Object.freeze({
+      objectType: item.objectType,
+      objectId: item.objectId,
+      firstInclusionReason: item.firstInclusionReason,
+      supplementaryReasons: Object.freeze(Array.isArray(item.supplementaryReasons) ? item.supplementaryReasons : []),
+    }))),
+    policySummary: Object.freeze({
+      policyId: source.closurePolicy && source.closurePolicy.policyId,
+      purpose: source.closurePolicy && source.closurePolicy.category,
+      boundaryRationale: source.boundary && source.boundary.rationale,
+    }),
+    boundarySummary: Object.freeze({
+      includedObjectIds,
+      includedCount: includedObjectIds.length,
+      excluded: Object.freeze(Array.isArray(source.boundary && source.boundary.excluded) ? source.boundary.excluded : []),
+    }),
+    semanticIndex: Object.freeze({
+      canonicalVersion: source.canonicalVersion,
+      contentVersion: source.contentVersion,
+      indexVersion: source.indexVersion,
+      alignment: source.provenance && source.provenance.alignment && source.provenance.alignment.state,
+    }),
+    omittedByDefault: Object.freeze([
+      'embedding vectors',
+      'full provenance version evidence per object',
+      'queryTemplate',
+      'parameterContract',
+      'archimateSemantics',
+      'full element descriptions',
+      'full testcase bodies',
+    ]),
+    expandWith: 'Set query.responseProfile to "debug" to return the full semantic evidence payload.',
+  });
+}
+
+function applySemanticResponseProfile(response, query) {
+  if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
+  const payload = parseToolResponsePayload(response);
+  if (!payload || payload.status === 'failed') return response;
+  const source = payload.result || payload.document;
+  const summary = buildBusinessSemanticSummary(source, query);
+  return getSystemArchitectureResult({
+    ...payload,
+    query: {
+      ...(payload.query || query),
+      responseProfile: 'business-summary',
+    },
+    result: summary,
+    document: summary,
+  });
+}
+
+function parseToolResponsePayload(response) {
+  if (!response || typeof response !== 'object') return undefined;
+  if (response.content && Array.isArray(response.content) && response.content[0] && typeof response.content[0].text === 'string') {
+    try {
+      return JSON.parse(response.content[0].text);
+    } catch (_error) {
+      return undefined;
+    }
+  }
+  return response;
+}
+
+function normalizeSemanticToolResponse(response) {
+  if (response && response.content && Array.isArray(response.content)) return response;
+  const payload = response && typeof response === 'object'
+    ? response
+    : { status: 'failed', error: { category: 'SEMANTIC_RETRIEVAL_FAILED', message: 'Semantic retrieval failed' } };
+  return getSystemArchitectureResult(payload);
+}
+
+function businessSummaryLimit(query) {
+  const supplied = Number(query && (query.topN || query.limit || query.maxResults));
+  return Number.isInteger(supplied) && supplied > 0 ? Math.min(supplied, 50) : 8;
+}
+
+function summarizeSeeds(seedsByType = {}, hitReasonByKey, limit) {
+  return Object.freeze(Object.fromEntries(Object.entries(seedsByType).map(([type, seeds]) => [
+    type,
+    Object.freeze((Array.isArray(seeds) ? seeds : [])
+      .slice()
+      .sort((left, right) => Number(right.score || 0) - Number(left.score || 0))
+      .slice(0, limit)
+      .map(seed => {
+        const objectType = seed.objectType || seed.channel || inferObjectTypeFromSeedType(type);
+        const objectId = seed.id || seed.objectId || seed.canonicalIdentity;
+        const reasons = hitReasonByKey.get(`${objectType}:${objectId}`) || {};
+        return Object.freeze({
+          objectId,
+          objectType,
+          score: typeof seed.score === 'number' ? seed.score : undefined,
+          hitReason: reasons.firstInclusionReason || 'semantic-seed',
+          supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+        });
+      })),
+  ])));
+}
+
+function inferObjectTypeFromSeedType(type) {
+  if (type === 'relationships') return 'ArchitectureRelationship';
+  if (type === 'views') return 'View';
+  return 'Element';
+}
+
+function summarizeElements(source, hitReasonByKey, limit) {
+  return uniqueById([
+    ...(((source.closure && source.closure.elements) || [])),
+    ...((((source.viewClosure && source.viewClosure.views) || []).flatMap(view => view.memberElements || []))),
+    ...((((source.endpointClosure && source.endpointClosure.relationships) || []).flatMap(relationship => [relationship.source, relationship.target]).filter(Boolean))),
+  ], 'id').slice(0, limit).map(element => summarizeElement(element, hitReasonByKey));
+}
+
+function summarizeRelationships(source, hitReasonByKey, limit) {
+  return uniqueById([
+    ...(((source.endpointClosure && source.endpointClosure.relationships) || [])),
+    ...((((source.viewClosure && source.viewClosure.views) || []).flatMap(view => view.memberRelationships || []))),
+  ], 'id').slice(0, limit).map(relationship => summarizeRelationship(relationship, hitReasonByKey));
+}
+
+function summarizeViews(source, hitReasonByKey, limit) {
+  return uniqueById(((source.viewClosure && source.viewClosure.views) || []), 'view_id')
+    .slice(0, limit)
+    .map(view => summarizeView(view, hitReasonByKey));
+}
+
+function summarizeElement(element, hitReasonByKey) {
+  const attributes = attributesMap(element);
+  const reasons = hitReasonByKey.get(`Element:${element.id}`) || {};
+  return Object.freeze({
+    id: element.id,
+    name: element.name,
+    type: element.type,
+    descriptionSummary: summarizeText(element.description),
+    status: attributes.deliveryStatus || attributes.status,
+    functionalPoints: Object.freeze(Object.entries(attributes)
+      .filter(([name]) => name.startsWith('functionalPoint'))
+      .map(([, value]) => value)),
+    testCoverage: summarizeTestcases(element.testcases),
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function summarizeRelationship(relationship, hitReasonByKey) {
+  const reasons = hitReasonByKey.get(`ArchitectureRelationship:${relationship.id}`) || {};
+  return Object.freeze({
+    id: relationship.id,
+    name: relationship.name,
+    type: relationship.type,
+    source_id: relationship.source_id,
+    target_id: relationship.target_id,
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function summarizeView(view, hitReasonByKey) {
+  const reasons = hitReasonByKey.get(`View:${view.view_id}`) || {};
+  return Object.freeze({
+    view_id: view.view_id,
+    view_name: view.view_name || view.name,
+    descriptionSummary: summarizeText(view.description),
+    elementCount: Array.isArray(view.included_elements) ? view.included_elements.length : undefined,
+    relationshipCount: Array.isArray(view.included_relationships) ? view.included_relationships.length : undefined,
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function attributesMap(value = {}) {
+  const result = {};
+  for (const attribute of Array.isArray(value.attributes) ? value.attributes : []) {
+    if (attribute && typeof attribute.name === 'string') result[attribute.name] = attribute.value;
+  }
+  return result;
+}
+
+function summarizeTestcases(testcases) {
+  return Object.freeze((Array.isArray(testcases) ? testcases : []).map(testcase => {
+    if (typeof testcase === 'string') return { name: testcase };
+    return {
+      name: testcase.name || testcase.id || testcase.testcasename,
+      status: testcase.status,
+      coverage: testcase.coverage || testcase.coveragePoint || testcase.description,
+    };
+  }));
+}
+
+function summarizeText(text) {
+  if (typeof text !== 'string') return undefined;
+  const compact = text.replace(/\s+/g, ' ').trim();
+  return compact.length <= 180 ? compact : `${compact.slice(0, 177)}...`;
+}
+
+function uniqueById(items, idField) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const id = item && item[idField];
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    result.push(item);
+  }
+  return result;
 }
 
 async function createDefaultProductionSemanticOperatorJourney(options = {}) {
