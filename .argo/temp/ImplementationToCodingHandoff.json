@@ -1,0 +1,276 @@
+{
+  "stage": "implementation-to-coding",
+  "generatedAt": "2026-07-28T01:31:00+08:00",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "ImplementationDesign handoff for BP MCP semantic query contract WP-1 through WP-4. Coding is authorized to repair the public getSystemArchitecture semantic request contract, canonical subset payload mapping, Relationship endpoint closure, and non-cascading View membership closure while preserving full-snapshot compatibility.",
+  "implementationContracts": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md"
+  ],
+  "explicitEntrypoints": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
+      "controlPoint": "Public getSystemArchitecture ordinary semantic query carrying forbidden response-shape controls.",
+      "observationPoint": "Request fails before retrieval with QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN and no canonical subset or debug/evidence success.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=reject-response-shape-controls node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current response passes instead of failing closed for responseProfile=debug."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#preserve-full-snapshot-read-modes",
+      "controlPoint": "Omitted-query and graph-tidy getSystemArchitecture reads.",
+      "observationPoint": "Both read modes preserve exact canonical full snapshots; graph-tidy reports full-snapshot mode and semantic retrieval bypass.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=preserve-full-snapshot-read-modes node tests/explicit/entries/runMcpSemanticQueryContract.js"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
+      "controlPoint": "Successful ordinary semantic query returning Element, Relationship, and View objects.",
+      "observationPoint": "Payload exposes only canonical document object collections and omits derived semantic/business fields.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=canonical-object-subset-only node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#element-hit-no-neighbor-expansion",
+      "controlPoint": "Element-only ordinary semantic hit.",
+      "observationPoint": "Only the canonical matched Element is returned; no adjacent Relationships, endpoint neighbors, or owning Views are added.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=element-hit-no-neighbor-expansion node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#relationship-endpoint-closure",
+      "controlPoint": "Selected Relationship whose endpoints are not independent semantic hits.",
+      "observationPoint": "Canonical Relationship plus both endpoint Elements are returned without endpoint neighbors, endpoint-owned Views, or unrelated Relationships.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=relationship-endpoint-closure node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-relationship-endpoint-rejection",
+      "controlPoint": "Selected Relationship with unresolved endpoint references.",
+      "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_RELATIONSHIP_MISSING and no partial successful Relationship subset.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-relationship-endpoint-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current response passes instead of failing closed."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#view-membership-closure",
+      "controlPoint": "Selected View with declared Element members and included Relationships.",
+      "observationPoint": "Canonical View, member Elements, included Relationships, and endpoints for in-View Relationships are returned.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=view-membership-closure node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#no-overlapping-view-cascade",
+      "controlPoint": "Selected View sharing members with a non-matched overlapping View.",
+      "observationPoint": "Shared member objects may be returned, but the overlapping non-matched View is excluded.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=no-overlapping-view-cascade node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current response does not expose the required canonical document subset for the no-cascade assertion."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
+      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-view-reference-rejection",
+      "controlPoint": "Selected View with broken member or in-View Relationship references.",
+      "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_VIEW_MISSING and no incomplete View success.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-view-reference-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js",
+      "failureReason": "Expected RED: current response passes instead of failing closed."
+    }
+  ],
+  "criticalNonExplicitTests": [
+    {
+      "name": "MCP semantic query architecture boundary guard",
+      "path": "tests/architecture/mcp-semantic-query-contract/architecture-boundary.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Root and local contracts for WP-1 request validation, WP-2 canonical payload, WP-3 Relationship endpoint closure, and WP-4 View membership closure.",
+      "observationPoint": "Contracts keep request/payload mapping in the query boundary and closure semantics in the Graph RAG boundary.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "MCP semantic query dependency direction guard",
+      "path": "tests/architecture/mcp-semantic-query-contract/dependency-direction.guard.js",
+      "kind": "DependencyDirectionGuard",
+      "controlPoint": "Production query/retrieval modules and Coding target authorization.",
+      "observationPoint": "Production modules do not depend on tests, and frozen testcase assets are not Coding targets.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "MCP semantic query explicit entrypoint correctness guard",
+      "path": "tests/architecture/mcp-semantic-query-contract/explicit-entrypoint-correctness.guard.js",
+      "kind": "ExplicitEntrypointCorrectnessGuard",
+      "controlPoint": "The physicalized runMcpSemanticQueryContract.js entrypoint and its graph-mounted anchors.",
+      "observationPoint": "All approved anchors, expected failure categories, canonical-payload exclusions, and fragment execution controls are present.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "MCP semantic query implementation traceability guard",
+      "path": "tests/architecture/mcp-semantic-query-contract/implementation-traceability.guard.js",
+      "kind": "KeyImplementationTraceabilityGuard",
+      "controlPoint": "SystemArchitecture testcase mounts, root implements mappings, handoff explicit entrypoints, and frozenFiles.",
+      "observationPoint": "Graph, contracts, handoff, and physical entrypoint paths agree exactly for BP-MCP-SEM-REQ/COMPAT/PAYLOAD/ELEMENT/REL/BROKEN-REL/VIEW/NOCASCADE/BROKEN-VIEW.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "supportingNonExplicitTests": [
+    {
+      "name": "JavaScript fragment anchor executor support",
+      "path": ".argo/scripts/test-executors/default.js",
+      "kind": "SupportingNonExplicitTest",
+      "controlPoint": "Graph-mounted JavaScript acceptance criteria using file.js#anchor.",
+      "observationPoint": "The default executor strips the fragment for script execution and exposes it to the entrypoint through ARGO_TESTCASE_ANCHOR.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "codingTargets": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "reject-response-shape-controls returns status passed instead of QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN.",
+      "nextAction": "Reject responseProfile/detail/outputMode and debug/full/evidence variants before semantic retrieval or canonical subset mapping."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "canonical-object-subset-only and Element/Relationship/View positive cases expose result/business summary envelopes.",
+      "nextAction": "Map successful ordinary semantic query output to canonical document object subsets only, preserving full-snapshot compatibility."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "broken relationship endpoint fixtures pass instead of failing closed with SEMANTIC_SUBSET_RELATIONSHIP_MISSING.",
+      "nextAction": "Validate selected Relationship endpoint closure against canonical source/target object presence before returning a successful subset."
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "broken View member/reference fixtures pass instead of failing closed with SEMANTIC_SUBSET_VIEW_MISSING.",
+      "nextAction": "Validate selected View members, included Relationships, and in-View endpoints before returning a successful subset."
+    },
+    {
+      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
+      "failureSignal": "Public ordinary semantic subset mapping must preserve minimal Relationship endpoint closure and complete non-cascading View closure semantics without reopening default vector retrieval.",
+      "nextAction": "Implement the BP-MCP-SEM subset mapper and structural validation at the public query boundary; do not modify WP-P2 default retrieval behavior unless a later handoff explicitly authorizes it."
+    }
+  ],
+  "taskExecutionPlan": {
+    "executionStrategy": "Repair in dependency order: request validation first, canonical payload mapping second, relationship endpoint closure third, View membership closure fourth, then run the focused guards and full architecture baseline.",
+    "tasks": [
+      {
+        "taskId": "MCP-SEM-C1",
+        "title": "Seal semantic request shape controls",
+        "objective": "Make ordinary semantic query requests reject forbidden response-shape controls before retrieval.",
+        "dependsOn": [],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "Add validation for responseProfile, detail, outputMode, and debug/full/evidence variants in the getSystemArchitecture semantic-query request path.",
+          "Return stable failure category QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN before invoking semantic retrieval.",
+          "Verify preserve-full-snapshot-read-modes still passes for omitted-query and graph-tidy."
+        ],
+        "completionSignal": "reject-response-shape-controls fails only until the validation is implemented, and preserve-full-snapshot-read-modes remains passing."
+      },
+      {
+        "taskId": "MCP-SEM-C2",
+        "title": "Return canonical object subsets only",
+        "objective": "Map successful ordinary semantic responses to canonical document object subsets without derived fields or object transformation.",
+        "dependsOn": [
+          "MCP-SEM-C1"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "Replace successful semantic result envelope exposure with a document containing only elements, relationships, and views arrays.",
+          "Deep-copy or select canonical objects by id without dropping, renaming, or adding fields.",
+          "Keep Element-only hits minimal unless selected Relationship or selected View closure requires additional canonical objects."
+        ],
+        "completionSignal": "canonical-object-subset-only and element-hit-no-neighbor-expansion pass without regressing full-snapshot modes."
+      },
+      {
+        "taskId": "MCP-SEM-C3",
+        "title": "Close selected Relationship endpoints",
+        "objective": "Return both canonical endpoint Elements for selected Relationships and reject broken endpoint references.",
+        "dependsOn": [
+          "MCP-SEM-C2"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "For every selected Relationship, require source_id and target_id to resolve to canonical Element objects from the same selected graph.",
+          "Add only the Relationship and both endpoint Elements to the successful canonical subset; do not add endpoint neighbors or endpoint-owned Views.",
+          "Return SEMANTIC_SUBSET_RELATIONSHIP_MISSING for unresolved endpoint references before returning a successful subset."
+        ],
+        "completionSignal": "relationship-endpoint-closure and broken-relationship-endpoint-rejection pass."
+      },
+      {
+        "taskId": "MCP-SEM-C4",
+        "title": "Close selected View membership",
+        "objective": "Return complete selected View membership and reject broken View references without overlapping View cascade.",
+        "dependsOn": [
+          "MCP-SEM-C3"
+        ],
+        "relatedTestcases": [
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
+          "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW"
+        ],
+        "targetPaths": [
+          ".argo/scripts/systemarchitecture-mcp-server.js"
+        ],
+        "steps": [
+          "For every selected View, return its canonical View object, all declared included Elements, all declared included Relationships, and endpoints for each included Relationship.",
+          "Exclude overlapping Views that only share members unless they independently match or are explicitly selected.",
+          "Return SEMANTIC_SUBSET_VIEW_MISSING for unresolved member, included Relationship, or in-View endpoint references before returning a successful subset."
+        ],
+        "completionSignal": "view-membership-closure, no-overlapping-view-cascade, and broken-view-reference-rejection pass."
+      }
+    ]
+  },
+  "frozenFiles": [
+    "OVERALL_ARCHITECTURE.md",
+    ".argo/scripts/ARCHITECTURE.md",
+    ".argo/scripts/graph-rag/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    ".argo/scripts/test-executors/default.js",
+    ".argo/scripts/validateStageHandoff.js",
+    "tests/explicit/entries/runMcpSemanticQueryContract.js",
+    "tests/architecture/mcp-semantic-query-contract/architecture-boundary.guard.js",
+    "tests/architecture/mcp-semantic-query-contract/dependency-direction.guard.js",
+    "tests/architecture/mcp-semantic-query-contract/explicit-entrypoint-correctness.guard.js",
+    "tests/architecture/mcp-semantic-query-contract/implementation-traceability.guard.js"
+  ],
+  "openGaps": [
+    "No upstream intent graph change is requested.",
+    "The scoped WP-1 through WP-4 RED failures are BP-MCP-SEM-REQ, BP-MCP-SEM-PAYLOAD, BP-MCP-SEM-ELEMENT, BP-MCP-SEM-REL, BP-MCP-SEM-BROKEN-REL, BP-MCP-SEM-VIEW, BP-MCP-SEM-NOCASCADE, and BP-MCP-SEM-BROKEN-VIEW.",
+    "The full pre-coding runner baseline also contains inherited out-of-scope failures for ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval. They are recorded in design/KG/test-failure-records.json but are not Coding targets for this handoff."
+  ]
+}

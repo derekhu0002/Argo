@@ -384,7 +384,8 @@ function validateAcceptanceEntryReference(value, label, errors) {
 
 function normalizeEntrypointReference(value) {
     const [scriptPath] = String(value).split('::');
-    return scriptPath.replace(/\\/g, '/').replace(/^\.\//, '').trim();
+    const [pathWithoutFragment] = scriptPath.split('#');
+    return pathWithoutFragment.replace(/\\/g, '/').replace(/^\.\//, '').trim();
 }
 
 function requireString(object, key, errors, prefix) {
