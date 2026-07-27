@@ -343,7 +343,7 @@ function parseWindowsAcl(value) {
 }
 
 function grantsProtectedAccess(entry) {
-  return entry.permissions.some(permission => /^(?:F|M|R|RX|W|D|DC|WDAC|WO)$/.test(permission));
+  return entry.permissions.some(permission => /^(?:F|M|RX|R|W|D|DE|RC|WDAC|WO|S|AS|MA|GR|GW|GE|GA|RD|WD|AD|REA|WEA|X|DC|RA|WA)$/.test(permission));
 }
 
 function grantsRequiredIdentityAccess(entry) {
