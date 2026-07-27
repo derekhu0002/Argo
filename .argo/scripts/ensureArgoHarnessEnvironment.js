@@ -301,6 +301,7 @@ function formatSemanticLifecycleError(error) {
     category,
     action,
     message,
+    ...(typeof payload.field === 'string' ? { field: payload.field } : {}),
   };
 }
 

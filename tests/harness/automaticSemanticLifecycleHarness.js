@@ -133,6 +133,10 @@ async function observeAutomaticInitLifecycle() {
       ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
       createUnsafeConfiguration: true,
     }, effects),
+    unknownConfigurationKey: await runActualArgoInitScenario('unknown-configuration-key', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
   });
   let scenarios;
   let compositionMissing = true;
@@ -184,6 +188,7 @@ function assertAutomaticInitLifecycle(observation) {
     observation.malformedMutation,
     observation.missingConfiguration,
     observation.unsafeConfiguration,
+    observation.unknownConfigurationKey,
   ]) {
     assert(
       rejected.outcome.status === 'failed' || rejected.outcome.isError === true,
@@ -213,6 +218,18 @@ function assertAutomaticInitLifecycle(observation) {
           && externalRead.readiness
           && externalRead.readiness.state !== 'Aligned',
         `SP05_${rejected.name}_READINESS_NOT_INVALIDATED_BEFORE_EXTERNAL_CONFIG`,
+      );
+    }
+    if (rejected.name === 'unknown-configuration-key') {
+      assert.strictEqual(
+        failure.category,
+        'SECRET_FILE_UNKNOWN_KEY',
+        'SP05_UNKNOWN_CONFIGURATION_CATEGORY_NOT_PRESERVED',
+      );
+      assert.strictEqual(
+        failure.field,
+        'ARGO_EMBEDDING_CREDENTIAL',
+        'SP05_UNKNOWN_CONFIGURATION_FIELD_NOT_PRESERVED',
       );
     }
   }
@@ -1269,6 +1286,9 @@ function createActualInitEffects() {
           if (state.scenario.name === 'unsafe-configuration') {
             throw observedConfigurationDiagnostic('SECRET_FILE_ACL_UNSAFE');
           }
+          if (state.scenario.name === 'unknown-configuration-key') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_UNKNOWN_KEY', 'ARGO_EMBEDDING_CREDENTIAL');
+          }
           return externalConfigurationValues();
         },
       }),
@@ -1375,8 +1395,8 @@ function createActualInitEffects() {
     return readinessStore;
   }
 
-  function observedConfigurationDiagnostic(category) {
-    const error = rawDiagnosticError(category);
+  function observedConfigurationDiagnostic(category, field = undefined) {
+    const error = rawDiagnosticError(category, field);
     state.rawDiagnostics.push(Object.freeze(serializeDiagnostic(error)));
     return error;
   }
@@ -1942,11 +1962,12 @@ function toolNames(response) {
   return Object.freeze((((response || {}).result || {}).tools || []).map(tool => tool.name));
 }
 
-function rawDiagnosticError(category) {
+function rawDiagnosticError(category, field = undefined) {
   const error = new Error(`${category}: ${SECRET_CANARY}`);
   error.category = category;
   error.action = `Correct the external configuration containing ${SECRET_CANARY}`;
   error.secret = SECRET_CANARY;
+  if (field !== undefined) error.field = field;
   error.fullSnapshotFallback = false;
   return error;
 }

@@ -11,6 +11,7 @@ function semanticOperatorErrorPayload(error) {
     mismatchedChannels: Array.isArray(error.mismatchedChannels) ? [...error.mismatchedChannels] : [],
     fullSnapshotFallback: false,
     action: typeof error.action === 'string' ? error.action : 'Correct readiness and retry',
+    ...(typeof error.field === 'string' ? { field: error.field } : {}),
   });
 }
 

@@ -243,7 +243,11 @@ function sanitizeLifecycleError(sourceError) {
   const approvedCategories = new Set([
     'APPROVED_SECRET_REQUIRED',
     'SECRET_FILE_ACL_UNSAFE',
+    'SECRET_FILE_DUPLICATE_KEY',
+    'SECRET_FILE_UNKNOWN_KEY',
+    'SECRET_SOURCE_CONFLICT',
     'SECRET_SOURCE_PROVENANCE_PROHIBITED',
+    'LIVE_PROVIDER_CONFIGURATION_CONFLICT',
     'EXTERNAL_CREDENTIALS_REQUIRED',
     'EMBEDDING_QUALIFICATION_REQUIRED',
     'EMBEDDING_CONFIGURATION_REQUIRED',
@@ -254,11 +258,57 @@ function sanitizeLifecycleError(sourceError) {
     : (approvedCategories.has(sourceCategory)
       ? sourceCategory
       : 'EMBEDDING_CONFIGURATION_REQUIRED');
-  return safeLifecycleError(
+  const field = safeConfigurationField(sourceError && sourceError.field);
+  const error = safeLifecycleError(
     category,
-    'Correct approved external configuration and retry argo init.',
-    'Approved external semantic configuration was rejected.',
+    configurationAction(category, field),
+    configurationMessage(category, field),
   );
+  if (field) error.field = field;
+  return error;
+}
+
+function safeConfigurationField(field) {
+  if (typeof field !== 'string') return null;
+  return /^(ARGO|QWEN)_[A-Z0-9_]+$/.test(field) ? field : null;
+}
+
+function configurationMessage(category, field) {
+  if (category === 'SECRET_FILE_UNKNOWN_KEY') {
+    return field
+      ? `Approved semantic configuration contains unsupported key ${field}.`
+      : 'Approved semantic configuration contains an unsupported key.';
+  }
+  if (category === 'SECRET_FILE_DUPLICATE_KEY') {
+    return field
+      ? `Approved semantic configuration contains duplicate key ${field}.`
+      : 'Approved semantic configuration contains a duplicate key.';
+  }
+  if (category === 'SECRET_SOURCE_CONFLICT' || category === 'LIVE_PROVIDER_CONFIGURATION_CONFLICT') {
+    return field
+      ? `Approved semantic configuration has conflicting sources for ${field}.`
+      : 'Approved semantic configuration has conflicting sources.';
+  }
+  return 'Approved external semantic configuration was rejected.';
+}
+
+function configurationAction(category, field) {
+  if (category === 'SECRET_FILE_UNKNOWN_KEY') {
+    return field
+      ? `Remove or rename unsupported key ${field} in .argo/.env, then run argo init again.`
+      : 'Remove unsupported keys from .argo/.env, then run argo init again.';
+  }
+  if (category === 'SECRET_FILE_DUPLICATE_KEY') {
+    return field
+      ? `Keep exactly one ${field} entry in .argo/.env, then run argo init again.`
+      : 'Remove duplicate keys from .argo/.env, then run argo init again.';
+  }
+  if (category === 'SECRET_SOURCE_CONFLICT' || category === 'LIVE_PROVIDER_CONFIGURATION_CONFLICT') {
+    return field
+      ? `Make process environment and .argo/.env agree for ${field}, then run argo init again.`
+      : 'Resolve conflicting approved configuration sources, then run argo init again.';
+  }
+  return 'Correct approved external configuration and retry argo init.';
 }
 
 function safeLifecycleError(category, action, message = category) {
@@ -323,6 +373,7 @@ async function recordCanonicalInitFailure(finalReadiness, versions, error, state
     category: error.category || 'SEMANTIC_LIFECYCLE_FAILED',
     message: error.message || 'Semantic lifecycle failed.',
     action: error.action || 'Repair semantic readiness, then run argo init again.',
+    ...(typeof error.field === 'string' ? { field: error.field } : {}),
   });
   await finalReadiness.recordFailure(evidence);
   for (const [field, value] of Object.entries(evidence)) {
