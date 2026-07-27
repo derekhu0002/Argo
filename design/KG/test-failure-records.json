@@ -1,44 +1,5 @@
 [
   {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-16-SemanticIndex",
-    "testdescription": "Acceptor perspective control point: execute the DT-16 mutation matrix and inspect semantic-index records for each affected Element, ArchitectureRelationship, and View. Observation point: verify complete identity, channel, canonical/content/index version, approved model evidence, and non-Aligned state for partial persistence.",
-    "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js",
-    "relatedIntentElementId": "grag-semantic-index",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT16_system_QUERY_NOT_RESTORED\n    at assertSharedReadinessRecovery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:913:5)\n    at assertPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:857:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:69:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT16_system_QUERY_NOT_RESTORED\n    at assertSharedReadinessRecovery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:913:5)\n    at assertPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:857:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:69:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-DT-16",
-    "testdescription": "Control point: execute successful batch and each focused add, update, and remove path for Element, ArchitectureRelationship, and View, plus preview, both-disabled, half-enabled, unsafe or missing external configuration, provider failure, persistence failure, and queryability failure. Observation point: every successful canonical write invalidates readiness first and exposes exact touched IDs; preview has zero vector work; both-disabled remains explicit Pending or Stale with zero provider/vector calls; half-enabled and unsafe or missing configuration fail closed with redacted actionable evidence and zero provider/vector writes while any successful canonical JSON write remains authoritative; dual-gated success durably upserts or tombstones exact touched records across all three channels with complete canonical/content/index/provider/model/version/dimensions evidence and persists Aligned only after queryability and global coherence; failures retain canonical authority and Failed or Stale, semantic query rejects, and production performs no runId cleanup.",
-    "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js",
-    "relatedIntentElementId": "grag-index-lifecycle",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runMutationIndexLifecycle.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMutationIndexLifecycle.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: DT16_system_QUERY_NOT_RESTORED\n    at assertSharedReadinessRecovery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:913:5)\n    at assertPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:857:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:69:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: DT16_system_QUERY_NOT_RESTORED\n    at assertSharedReadinessRecovery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:913:5)\n    at assertPersistentIncrementalMatrix (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:857:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runMutationIndexLifecycle.js:69:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-TS-00",
-    "testdescription": "Control point: inspect MCP tools/list and invoke public call routing for getSystemArchitecture, startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness; invoke getSystemArchitecture with omitted query, typed semantic query, and graph-tidy including anchors. Observation point: only getSystemArchitecture remains publicly discoverable and routable for architecture read/query semantics; all three standalone lifecycle names are absent or unknown; omitted-query and every graph-tidy request return the exact canonical full snapshot with zero credentials/readiness/provider/vector work; ordinary query dispatch remains typed and governed.",
-    "acceptanceCriteria": "tests/explicit/entries/runTypedMcpQueryContract.js",
-    "relatedIntentElementId": "grag-mcp-interface",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runTypedMcpQueryContract.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runTypedMcpQueryContract.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: TS00_SYSTEM_ALIGNED_QUERY_REJECTED\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:541:11)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:52:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: TS00_SYSTEM_ALIGNED_QUERY_REJECTED\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:541:11)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runTypedMcpQueryContract.js:52:3) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}"
-  },
-  {
     "testcasename": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
     "testdescription": "Control point: execute actual canonical write paths with the exact dual-gate matrix and safe, unsafe, and missing external configuration; for both-enabled valid live composition, touch Element, ArchitectureRelationship, and View identities and inject provider, persistence, and queryability failures. Observation point: readiness invalidates first and exact touched IDs are returned; both-disabled produces explicit Pending or Stale and zero provider/vector work; half-enabled or unsafe/missing configuration fails closed with redacted action and zero provider/vector writes; both-enabled valid execution uses approved finite 1024-dimensional Qwen vectors, durably upserts or tombstones complete evidence, verifies all touched records through vector indexes, and reports Aligned only after global coherence; failures retain canonical authority, record Stale or Failed, and block semantic query; production performs no runId cleanup.",
     "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
@@ -47,22 +8,9 @@
     "resolvedScriptPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
     "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
     "exitCode": 1,
-    "failureError": "W31_system_QUERY_NOT_RESTORED",
+    "failureError": "W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE\n+ actual - expected\n\n+ []\n- [\n-   'ArchitectureRelationship',\n-   'Element',\n-   'View'\n- ]",
     "stdout": "",
-    "stderr": "W31_system_QUERY_NOT_RESTORED"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
-    "testdescription": "Control point: through controlled production composition, execute batch and focused add/update/remove mutations for Element, ArchitectureRelationship, and View, restart durable state, and run unrelated test-only live-E2E cleanup; separately exercise dual-gated live composition when the protected environment exists. Observation point: exact touched changed identities are durably upserted, exact removed identities are tombstoned, unchanged records survive restart, complete canonical/content/index/provider/model/version/dimensions/vector evidence remains subordinate to canonical JSON, production exposes no runId cleanup behavior, test-only cleanup cannot select production identities, disabled gates make zero vector calls, and partial vector failure records Failed or Stale for later init reconciliation.",
-    "acceptanceCriteria": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-    "relatedIntentElementId": "semprod-persistent-projection-requirement",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js",
-    "exitCode": 1,
-    "failureError": "SP02_system_QUERY_NOT_RESTORED",
-    "stdout": "",
-    "stderr": "SP02_system_QUERY_NOT_RESTORED"
+    "stderr": "W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE\n+ actual - expected\n\n+ []\n- [\n-   'ArchitectureRelationship',\n-   'Element',\n-   'View'\n- ]"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -76,18 +24,5 @@
     "failureError": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:882:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:803:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)",
     "stdout": "",
     "stderr": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:882:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:803:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)"
-  },
-  {
-    "testcasename": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
-    "testdescription": "Control point: after successful canonical mutation with injected provider, persistence, partial-channel, and queryability failures, invoke getSystemArchitecture(query) repeatedly in disabled, Pending, partial, Stale, Failed, unknown, version-mismatched, and Aligned states; then run valid resumable argo init reconciliation and repeat. Invoke no-argument and graph-tidy controls throughout. Observation point: every semantic query freshly reads persistent readiness before provider/vector work, each non-Aligned state rejects with exact redacted state/version/channel evidence and fullSnapshotFallback:false, canonical JSON remains authoritative, no false readiness occurs, later full three-channel reconciliation alone restores Aligned, and no-argument plus graph-tidy retain exact canonical bypass behavior.",
-    "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
-    "relatedIntentElementId": "semprod-readiness-requirement",
-    "status": "failed",
-    "resolvedScriptPath": "tests/explicit/entries/runProductionSemanticReadinessGate.js",
-    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runProductionSemanticReadinessGate.js",
-    "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_ALIGNED_QUERY_REJECTED\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:541:11)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:35:3)",
-    "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP04_SYSTEM_ALIGNED_QUERY_REJECTED\n    at assertFreshReadinessPerQuery (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:541:11)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runProductionSemanticReadinessGate.js:35:3)"
   }
 ]

@@ -1679,7 +1679,12 @@ function isCanonicalSubsetSemanticContract(query, options = {}) {
 function semanticContractOptions(args = {}, dependencies = undefined) {
   return {
     architecturePath: args.architecturePath,
-    defaultNoAnchorSubset: !dependencies || !!dependencies.canonicalSubsetForNoAnchor,
+    defaultNoAnchorSubset: !dependencies
+      || !!dependencies.canonicalSubsetForNoAnchor
+      || !!(
+        dependencies.semanticOperatorJourney
+        && dependencies.semanticOperatorJourney.canonicalSubsetForNoAnchor
+      ),
   };
 }
 
@@ -1862,7 +1867,7 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   try {
     const retrieved = await semanticRetrievalBoundary.retrieve(query);
     if (canonicalSubsetContract) {
-      const subset = buildCanonicalSemanticDocumentSubset(retrieved);
+      const subset = buildCanonicalSemanticDocumentSubset(retrieved, context.document);
       if (subset.status === 'failed') {
         return getSystemArchitectureResult(subset);
       }
@@ -2029,58 +2034,119 @@ function applySemanticResponseProfile(response, query, options = {}) {
   });
 }
 
-function buildCanonicalSemanticDocumentSubset(source) {
+function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefined) {
   const evidence = source && typeof source === 'object' ? source : {};
-  const elements = uniqueById([
+  const evidenceElements = uniqueById([
     ...arrayAt(evidence, ['closure', 'elements']),
     ...arrayAt(evidence, ['elements']),
   ], 'id');
-  const relationships = uniqueById([
+  const evidenceRelationships = uniqueById([
     ...arrayAt(evidence, ['endpointClosure', 'relationships']),
     ...arrayAt(evidence, ['relationships']),
   ], 'id');
-  const views = uniqueById([
+  const evidenceViews = uniqueById([
     ...arrayAt(evidence, ['viewClosure', 'views']),
     ...arrayAt(evidence, ['views']),
   ], 'view_id');
 
-  const elementById = new Map(elements.map(element => [element && element.id, element]));
-  const relationshipById = new Map(relationships.map(relationship => [relationship && relationship.id, relationship]));
+  const canonicalElements = Array.isArray(canonicalDocument && canonicalDocument.elements)
+    ? canonicalDocument.elements
+    : [];
+  const canonicalRelationships = Array.isArray(canonicalDocument && canonicalDocument.relationships)
+    ? canonicalDocument.relationships
+    : [];
+  const canonicalViews = Array.isArray(canonicalDocument && canonicalDocument.views)
+    ? canonicalDocument.views
+    : [];
 
-  for (const view of views) {
+  const canonicalElementById = new Map(canonicalElements.map(element => [element && element.id, element]));
+  const canonicalRelationshipById = new Map(canonicalRelationships.map(relationship => [relationship && relationship.id, relationship]));
+  const canonicalViewById = new Map(canonicalViews.map(view => [view && view.view_id, view]));
+  const evidenceElementById = new Map(evidenceElements.map(element => [element && element.id, element]));
+  const evidenceRelationshipById = new Map(evidenceRelationships.map(relationship => [relationship && relationship.id, relationship]));
+  const evidenceViewById = new Map(evidenceViews.map(view => [view && view.view_id, view]));
+
+  const elementIds = new Set(evidenceElements.map(element => element && element.id).filter(Boolean));
+  const relationshipIds = new Set(evidenceRelationships.map(relationship => relationship && relationship.id).filter(Boolean));
+  const viewIds = new Set(evidenceViews.map(view => view && view.view_id).filter(Boolean));
+
+  const selectElement = (elementId, category, message) => {
+    const element = canonicalElementById.get(elementId) || evidenceElementById.get(elementId);
+    if (!element) {
+      return semanticSubsetError(category, message);
+    }
+    elementIds.add(elementId);
+    return undefined;
+  };
+  const selectRelationship = (relationshipId, category, message) => {
+    const relationship = canonicalRelationshipById.get(relationshipId) || evidenceRelationshipById.get(relationshipId);
+    if (!relationship) {
+      return { error: semanticSubsetError(category, message) };
+    }
+    relationshipIds.add(relationshipId);
+    return { relationship };
+  };
+
+  for (const viewId of [...viewIds]) {
+    const view = canonicalViewById.get(viewId) || evidenceViewById.get(viewId);
     for (const elementId of view && Array.isArray(view.included_elements) ? view.included_elements : []) {
-      if (!elementById.has(elementId)) {
-        return semanticSubsetError(
-          'SEMANTIC_SUBSET_VIEW_MISSING',
-          `Semantic View subset is missing included Element '${elementId}'`,
-        );
+      const error = selectElement(
+        elementId,
+        'SEMANTIC_SUBSET_VIEW_MISSING',
+        `Semantic View subset is missing included Element '${elementId}'`,
+      );
+      if (error) {
+        return error;
       }
     }
     for (const relationshipId of view && Array.isArray(view.included_relationships) ? view.included_relationships : []) {
-      const relationship = relationshipById.get(relationshipId);
-      if (!relationship) {
-        return semanticSubsetError(
-          'SEMANTIC_SUBSET_VIEW_MISSING',
-          `Semantic View subset is missing included Relationship '${relationshipId}'`,
-        );
+      const selected = selectRelationship(
+        relationshipId,
+        'SEMANTIC_SUBSET_VIEW_MISSING',
+        `Semantic View subset is missing included Relationship '${relationshipId}'`,
+      );
+      if (selected.error) {
+        return selected.error;
       }
-      if (!elementById.has(relationship.source_id) || !elementById.has(relationship.target_id)) {
-        return semanticSubsetError(
+      const { relationship } = selected;
+      for (const endpointId of [relationship.source_id, relationship.target_id]) {
+        const error = selectElement(
+          endpointId,
           'SEMANTIC_SUBSET_VIEW_MISSING',
           `Semantic View subset is missing endpoint Elements for Relationship '${relationship.id}'`,
         );
+        if (error) {
+          return error;
+        }
       }
     }
   }
 
-  for (const relationship of relationships) {
-    if (!elementById.has(relationship && relationship.source_id) || !elementById.has(relationship && relationship.target_id)) {
-      return semanticSubsetError(
+  for (const relationshipId of [...relationshipIds]) {
+    const selected = selectRelationship(
+      relationshipId,
+      'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
+      `Semantic Relationship subset is missing canonical Relationship '${relationshipId}'`,
+    );
+    if (selected.error) {
+      return selected.error;
+    }
+    const { relationship } = selected;
+    for (const endpointId of [relationship && relationship.source_id, relationship && relationship.target_id]) {
+      const error = selectElement(
+        endpointId,
         'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
         `Semantic Relationship subset is missing endpoint Elements for Relationship '${relationship && relationship.id}'`,
       );
+      if (error) {
+        return error;
+      }
     }
   }
+
+  const elements = [...elementIds].map(id => canonicalElementById.get(id) || evidenceElementById.get(id));
+  const relationships = [...relationshipIds].map(id => canonicalRelationshipById.get(id) || evidenceRelationshipById.get(id));
+  const views = [...viewIds].map(id => canonicalViewById.get(id) || evidenceViewById.get(id));
 
   return {
     status: 'passed',
@@ -2275,7 +2341,7 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
     canonicalGraph,
     neo4jRetrievalBoundary: retrieval,
   });
-  return createProductionSemanticOperatorJourney({
+  const journey = createProductionSemanticOperatorJourney({
     initializeWorkspace: request => initializeWorkspace(request),
     syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
     resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
@@ -2285,6 +2351,10 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
       semanticRetrievalBoundary: retrieval,
       canonicalSubsetForNoAnchor: true,
     }),
+  });
+  return Object.freeze({
+    ...journey,
+    canonicalSubsetForNoAnchor: true,
   });
 }
 
