@@ -10,6 +10,7 @@ const qualificationGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag
 const canonicalAuthorityPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'canonicalProjectionAuthority.js');
 const nativeRetrievalPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'neo4jNativeRetrieval.js');
 const harnessEnvironmentPath = path.join(repoRoot, '.argo', 'scripts', 'ensureArgoHarnessEnvironment.js');
+const repositoryEnvironmentPath = path.join(repoRoot, '.argo', 'scripts', 'repositoryArgoEnvironment.js');
 const neo4jProjectionStorePath = path.join(repoRoot, '.argo', 'scripts', 'neo4j-system-architecture-store.js');
 
 function approvedEmbeddingQualification(overrides = {}) {
@@ -152,21 +153,23 @@ async function runProductionSemanticQuery(overrides = {}) {
 
 function inspectHarnessEnvironmentInitialization() {
   const source = fs.readFileSync(harnessEnvironmentPath, 'utf8');
+  const loaderSource = fs.readFileSync(repositoryEnvironmentPath, 'utf8');
   const projectionIndex = source.indexOf('ensureNeo4jProjection');
-  const envPathIndex = source.search(/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/);
-  const processAssignmentIndex = source.search(/process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*=/);
-  const precedenceEvidence = /process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*===\s*undefined|Object\.hasOwn\(\s*process\.env|hasOwnProperty\.call\(\s*process\.env/.test(source);
-  const rootEnvEvidence = /path\.join\([^)]*workspaceRoot[^)]*['"`]\.env['"`]\)|['"`]\.env['"`]\s*\)/.test(source)
-    && !/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/.test(source);
-  const alternateEnvEvidence = /config[\\/]\.env|\.env\.local|dotenv\.config\(\s*\)/.test(source);
-  const secretDiagnosticEvidence = collectMatches(source, /console\.(?:log|error|warn)\([^)]*(?:QWEN_KEY|ARGO_NEO4J_DATABASE_PASSWORD|process\.env|\.env)[^)]*\)/g);
+  const loaderCallIndex = source.indexOf('loadRepositoryArgoEnvironment(workspaceRoot)');
+  const envPathIndex = loaderSource.search(/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/);
+  const processAssignmentIndex = loaderSource.search(/process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*=/);
+  const precedenceEvidence = /process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*===\s*undefined|Object\.hasOwn\(\s*process\.env|hasOwnProperty\.call\(\s*process\.env/.test(loaderSource);
+  const rootEnvEvidence = /path\.join\([^)]*workspaceRoot[^)]*['"`]\.env['"`]\)|['"`]\.env['"`]\s*\)/.test(loaderSource)
+    && !/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/.test(loaderSource);
+  const alternateEnvEvidence = /config[\\/]\.env|\.env\.local|dotenv\.config\(\s*\)/.test(loaderSource);
+  const secretDiagnosticEvidence = collectMatches(`${source}\n${loaderSource}`, /console\.(?:log|error|warn)\([^)]*(?:QWEN_KEY|ARGO_NEO4J_DATABASE_PASSWORD|process\.env|\.env)[^)]*\)/g);
 
   return {
     loadsRepositoryEnvBeforeProjection: envPathIndex >= 0
       && processAssignmentIndex >= 0
       && projectionIndex >= 0
-      && envPathIndex < projectionIndex
-      && processAssignmentIndex < projectionIndex,
+      && loaderCallIndex >= 0
+      && loaderCallIndex < projectionIndex,
     exactRepositoryEnvPathOnly: envPathIndex >= 0 && !rootEnvEvidence && !alternateEnvEvidence,
     preservesProcessPrecedence: precedenceEvidence,
     secretDiagnostics: secretDiagnosticEvidence,

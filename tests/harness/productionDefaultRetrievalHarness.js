@@ -1810,7 +1810,7 @@ async function runExportedUnifiedReadinessThroughWpP2() {
           observation: exportedObservationSlice(observations, beforeFailed, defaultCandidates()),
         }));
       }
-    });
+    }, { useReadinessBoundary: true });
     return Object.freeze({
       outcomes: Object.freeze(outcomes),
       durableRecords: Object.freeze(durableRecords),

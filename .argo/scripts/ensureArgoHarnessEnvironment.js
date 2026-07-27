@@ -3,6 +3,10 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const argoMcp = require('./argo-mcp-server.js');
+const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
+const {
+  runCanonicalSemanticInit,
+} = require('./graph-rag/semanticOperatorJourney.js');
 const {
   DEFAULT_GRAPH_PATH,
   createDriver,
@@ -12,76 +16,15 @@ const {
   syncArchitectureToNeo4j,
   verifyArchitectureSync,
 } = require('./neo4j-system-architecture-store.js');
+const {
+  loadRepositoryArgoEnvironment,
+} = require('./repositoryArgoEnvironment.js');
 
 const REQUIRED_TOOL_NAMES = [
   'getSystemArchitecture',
   'applySystemArchitectureMutation',
   'validateSystemArchitecture',
 ];
-
-function loadRepositoryArgoEnvironment(workspaceRoot) {
-  const envPath = path.join(workspaceRoot, '.argo', '.env');
-  const result = {
-    status: 'missing',
-    path: normalizeRelativePath(path.relative(workspaceRoot, envPath)),
-    loadedBeforeProjection: true,
-    assignedCount: 0,
-    preservedProcessCount: 0,
-  };
-
-  if (!fs.existsSync(envPath)) {
-    return result;
-  }
-
-  const entries = parseRepositoryEnvFile(fs.readFileSync(envPath, 'utf8'));
-  for (const [key, value] of entries) {
-    if (process.env[key] === undefined) {
-      process.env[key] = value;
-      result.assignedCount += 1;
-    } else {
-      result.preservedProcessCount += 1;
-    }
-  }
-
-  result.status = 'loaded';
-  return result;
-}
-
-function parseRepositoryEnvFile(content) {
-  const entries = [];
-  for (const rawLine of String(content).split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) {
-      continue;
-    }
-
-    const separatorIndex = line.indexOf('=');
-    if (separatorIndex <= 0) {
-      continue;
-    }
-
-    const key = line.slice(0, separatorIndex).trim();
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
-      continue;
-    }
-
-    const value = parseRepositoryEnvValue(line.slice(separatorIndex + 1).trim());
-    entries.push([key, value]);
-  }
-  return entries;
-}
-
-function parseRepositoryEnvValue(value) {
-  if (value.length >= 2) {
-    const quote = value[0];
-    if ((quote === '"' || quote === "'") && value[value.length - 1] === quote) {
-      const inner = value.slice(1, -1);
-      return quote === '"' ? inner.replace(/\\n/g, '\n').replace(/\\r/g, '\r') : inner;
-    }
-  }
-  const commentIndex = value.search(/\s#/);
-  return commentIndex >= 0 ? value.slice(0, commentIndex).trimEnd() : value;
-}
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -101,6 +44,11 @@ async function main() {
     report.mcp = verifyArgoMcpServer({ workspaceRoot });
     report.systemArchitecture = await verifyCanonicalSystemArchitecture();
     report.neo4j = await ensureNeo4jProjection({ checkOnly: options.checkOnly });
+    report.semanticLifecycle = await ensureCanonicalSemanticLifecycle({
+      checkOnly: options.checkOnly,
+      workspaceRoot,
+      neo4j: report.neo4j,
+    });
   } catch (error) {
     report.status = 'failed';
     report.error = formatErrorForReport(error);
@@ -113,6 +61,9 @@ async function main() {
     report.status = 'failed';
   }
   if (report.neo4j && report.neo4j.status === 'failed') {
+    report.status = 'failed';
+  }
+  if (report.semanticLifecycle && report.semanticLifecycle.status === 'failed') {
     report.status = 'failed';
   }
 
@@ -144,6 +95,38 @@ function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
     || path.resolve(__dirname, '..', '..');
+}
+
+async function ensureCanonicalSemanticLifecycle({ checkOnly, workspaceRoot, neo4j }) {
+  if (checkOnly) {
+    return {
+      status: 'skipped',
+      reason: 'check-only',
+      fullSnapshotFallback: false,
+    };
+  }
+
+  try {
+    const semanticLifecycle = await runCanonicalSemanticInit(
+      systemArchitectureMcp.createDefaultCanonicalSemanticInitComposition(),
+      {
+        repositoryRoot: workspaceRoot,
+        neo4j,
+      },
+    );
+    return {
+      status: 'ok',
+      state: semanticLifecycle.state,
+      alignment: semanticLifecycle.alignment,
+      readiness: semanticLifecycle.readiness,
+      fullSnapshotFallback: semanticLifecycle.fullSnapshotFallback === true,
+    };
+  } catch (error) {
+    return {
+      status: 'failed',
+      ...formatSemanticLifecycleError(error),
+    };
+  }
 }
 
 function verifyArgoMcpServer({ workspaceRoot }) {
@@ -298,6 +281,26 @@ async function ensureNeo4jProjection({ checkOnly }) {
       counts: syncResult.counts,
     } : null,
     verification,
+  };
+}
+
+function formatSemanticLifecycleError(error) {
+  const payload = error && typeof error === 'object' ? error : {};
+  const category = typeof payload.category === 'string'
+    ? payload.category
+    : 'SEMANTIC_LIFECYCLE_INIT_FAILED';
+  const action = typeof payload.action === 'string'
+    ? payload.action
+    : 'Repair semantic lifecycle initialization, then run argo init again.';
+  const message = payload.safeSemanticLifecycleMessage === true && typeof payload.message === 'string'
+    ? payload.message
+    : (typeof payload.publicMessage === 'string'
+      ? payload.publicMessage
+      : 'Semantic lifecycle initialization failed.');
+  return {
+    category,
+    action,
+    message,
   };
 }
 

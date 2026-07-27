@@ -78,14 +78,19 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
   return Object.freeze({
     async retrieve(request = {}) {
       const composition = await resolveRetrievalComposition(dependencies);
+      const activeTestComposition = testCompositionStorage.getStore();
+      const activeReadinessBoundary = activeTestComposition
+        && activeTestComposition.useReadinessBoundary !== true
+        ? undefined
+        : readinessBoundary;
       let configurationEvidence;
-      if (!readinessBoundary) {
+      if (!activeReadinessBoundary) {
         configurationEvidence = await composition.resolveConfiguration();
       }
       const evidence = await readAndEvaluatePersistentReadiness(
         composition,
         canonicalGraph,
-        readinessBoundary,
+        activeReadinessBoundary,
       );
       const readiness = evidence.readiness;
       const alignment = evidence.alignment;
@@ -121,13 +126,18 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
     },
     async readReadiness() {
       const composition = await resolveRetrievalComposition(dependencies);
-      if (!readinessBoundary) {
+      const activeTestComposition = testCompositionStorage.getStore();
+      const activeReadinessBoundary = activeTestComposition
+        && activeTestComposition.useReadinessBoundary !== true
+        ? undefined
+        : readinessBoundary;
+      if (!activeReadinessBoundary) {
         await composition.resolveConfiguration();
       }
       const evidence = await readAndEvaluatePersistentReadiness(
         composition,
         canonicalGraph,
-        readinessBoundary,
+        activeReadinessBoundary,
       );
       return publicReadinessOutcome(evidence.alignment);
     },
@@ -171,9 +181,12 @@ async function executeWpP2Retrieval({
   });
 }
 
-async function withDefaultSemanticRetrievalTestComposition(composition, callback) {
+async function withDefaultSemanticRetrievalTestComposition(composition, callback, options = {}) {
   requireExactTestComposition(composition, callback);
-  return testCompositionStorage.run(Object.freeze({ ...composition }), callback);
+  return testCompositionStorage.run(Object.freeze({
+    ...composition,
+    useReadinessBoundary: options.useReadinessBoundary === true,
+  }), callback);
 }
 
 async function createTestComposition(composition) {

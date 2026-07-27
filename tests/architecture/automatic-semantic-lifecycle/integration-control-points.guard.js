@@ -10,12 +10,14 @@ const backfillEntryPath = 'tests/explicit/entries/runProductionSemanticBackfill.
 const lifecyclePath = '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js';
 const systemPath = '.argo/scripts/systemarchitecture-mcp-server.js';
 const defaultRetrievalPath = '.argo/scripts/graph-rag/defaultSemanticRetrieval.js';
+const harnessInitPath = '.argo/scripts/ensureArgoHarnessEnvironment.js';
 
 // GIVEN the frozen successor entrypoints must exercise shipped outward controls
 // WHEN their AST call graphs are inspected
 // THEN direct private-factory substitutes cannot satisfy init, write, or query evidence
 assertIntegrationBindings(read(automaticPath), read(retrievalPath), read(backfillEntryPath), 'repository');
 assertWpP2ProductionReuse(read(systemPath), read(defaultRetrievalPath), 'repository');
+assertHarnessInitOwnsSemanticLifecycle(read(harnessInitPath), harnessInitPath);
 
 assert.doesNotThrow(
   () => assertWpP2ProductionReuse(`
@@ -66,6 +68,18 @@ assert.throws(
   () => assertIntegrationBindings(commentsOnly, commentsOnly, commentsOnly, 'comments-only'),
   /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
   'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: comments-only bypass passed',
+);
+assert.throws(
+  () => assertHarnessInitOwnsSemanticLifecycle(`
+    async function main() {
+      report.mcp = verifyArgoMcpServer();
+      report.systemArchitecture = await verifyCanonicalSystemArchitecture();
+      report.neo4j = await ensureNeo4jProjection();
+      report.semanticLifecycle = { state: 'Aligned' };
+    }
+  `, 'synthetic-report-only'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: harness init report-only bypass passed',
 );
 
 assert.throws(
@@ -233,6 +247,28 @@ function assertIntegrationBindings(automaticSource, retrievalSource, backfillSou
   assert(
     hasRequireBinding(backfill, 'runProductionSemanticBackfill', '../../harness/productionSemanticPersistenceHarness.js'),
     `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} drops concrete WP-P1 composition`,
+  );
+}
+
+function assertHarnessInitOwnsSemanticLifecycle(source, label) {
+  const ast = parse(source, label);
+  const mainReachable = reachableFunctionNodes(ast, ['main']);
+  assert(
+    hasRequireBinding(ast, 'runCanonicalSemanticInit', './graph-rag/semanticOperatorJourney.js'),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not import canonical semantic init`,
+  );
+  assert(
+    hasRequireBinding(ast, 'createDefaultCanonicalSemanticInitComposition', './systemarchitecture-mcp-server.js')
+      || hasModuleRequireBinding(ast, 'systemArchitectureMcp', './systemarchitecture-mcp-server.js'),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not import default semantic init composition`,
+  );
+  assert(
+    mainReachable.some(node => hasIdentifierCall(node, 'runCanonicalSemanticInit')),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not run semantic lifecycle after projection init`,
+  );
+  assert(
+    mainReachable.some(node => hasPropertyAssignment(node, 'semanticLifecycle')),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not report semantic lifecycle`,
   );
 }
 
@@ -419,6 +455,43 @@ function hasRequireBinding(ast, exportedName, modulePath) {
       || stringArgument(node.initializer, 0) !== modulePath
     ) return;
     if (node.name.elements.some(element => element.name.text === exportedName)) found = true;
+  });
+  return found;
+}
+
+function hasModuleRequireBinding(ast, localName, modulePath) {
+  let found = false;
+  visit(ast, node => {
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.name.text === localName
+      && node.initializer
+      && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression)
+      && node.initializer.expression.text === 'require'
+      && stringArgument(node.initializer, 0) === modulePath
+    ) found = true;
+  });
+  return found;
+}
+
+function hasPropertyAssignment(ast, propertyName) {
+  let found = false;
+  visit(ast, node => {
+    if (
+      ts.isPropertyAssignment(node)
+      && (
+        (ts.isIdentifier(node.name) && node.name.text === propertyName)
+        || (ts.isStringLiteral(node.name) && node.name.text === propertyName)
+      )
+    ) found = true;
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isPropertyAccessExpression(node.left)
+      && node.left.name.text === propertyName
+    ) found = true;
   });
   return found;
 }

@@ -11,6 +11,9 @@ const {
 const {
   runCanonicalSemanticInit,
 } = require('./graph-rag/semanticOperatorJourney.js');
+const {
+  loadRepositoryArgoEnvironment,
+} = require('./repositoryArgoEnvironment.js');
 const canonicalSemanticInitStorage = new AsyncLocalStorage();
 
 const HANDOFF_FILES_TO_RESET = [
@@ -362,6 +365,7 @@ function resolveWorkspaceRoot() {
 }
 
 async function callTool(name, args = {}, progressToken = null, dependencies = undefined) {
+  loadRepositoryArgoEnvironment(resolveWorkspaceRoot());
   if (name === 'initializeWorkspace') {
     const workspace = await initializeWorkspace(resolveWorkspaceRoot());
     const composition = canonicalSemanticInitStorage.getStore()
