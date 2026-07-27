@@ -394,7 +394,7 @@ elseif (EVENT: Intent-to-implementation handoff received?) then (handoff)
   Validate implementation handoff
   [acts on: ImplementationToCodingHandoff];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh pre-coding deliveryStatus baseline
+  Run full architecture tests to refresh pre-coding deliveryStatus baseline. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus];
   :Create ImplementationDesign stage git commit before dispatching CodingAndReparing
   [acts on: GitCommit, ImplementationToCodingHandoff, ImplementationContract, TestAsset, ArchitectureTestRun];

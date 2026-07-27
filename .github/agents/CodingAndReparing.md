@@ -200,7 +200,7 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
   :Run the relevant existing entrypoints and update repair state
   [acts on: ExplicitTestcaseEntrypoint, TestFailureRecord, ArchitectureTestRun];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
   :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];
@@ -220,7 +220,7 @@ elseif (EVENT: Architecture test regression?) then (regression)
   :Modify the minimum contract-allowed implementation files and rerun affected tests
   [acts on: RepairTask, RepositoryArtifact, ProductionBehavior, ExplicitTestcaseEntrypoint];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
   :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];
