@@ -269,7 +269,7 @@
       "id": "grag-query-service",
       "name": "Intent Architecture Query Service",
       "type": "Application Service",
-      "description": "Typed Agent-facing MCP application service: preserves no-argument complete snapshots and supports optional typed structured query/results. MCP is the boundary, not the Graph RAG engine.",
+      "description": "Sole typed Agent-facing MCP architecture read service. getSystemArchitecture({}) and omitted query return the complete canonical snapshot; every graph-tidy request is the same canonical bypass. Every ordinary query internally verifies persistent three-channel readiness on each invocation before provider/vector work and rejects non-Aligned state with fullSnapshotFallback:false. The three standalone semantic lifecycle tools are not public.",
       "attributes": [
         {
           "name": "decisionTrace.DT-01",
@@ -1073,35 +1073,43 @@
       "id": "grag-index-lifecycle",
       "name": "All Mutation Index Lifecycle",
       "type": "Application Process",
-      "description": "After every successful canonical mutation, DT-16 extracts only affected Element, ArchitectureRelationship, and View records, triggers adapter-driven batched generation with retry/rate-limit/error isolation, persists complete version evidence, advances the index lifecycle version, and marks Aligned only after complete success; otherwise the index remains Updating, Stale, or Failed.",
+      "description": "After every successful canonical batch or focused Element, ArchitectureRelationship, or View add, update, or remove, invalidate persistent semantic readiness before downstream use and record exact touched IDs. Dry-run and preview perform zero vector work. Only when ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E are both exactly enabled may the production lifecycle generate, durably upsert or tombstone all three channels, verify queryability and global coherence, and then persist Aligned. Disabled flags leave explicit Pending or Stale evidence with no provider/vector effects; half-enabled, unsafe, missing, partial, or failed execution fails closed with redacted actionable evidence while canonical JSON remains authoritative and production performs no runId cleanup.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-16|accepted|all-mutations advance lifecycle version through affected-record incremental embedding generation"
+          "value": "DT-16|revised 2026-07-27|all batch and focused canonical writes invalidate readiness first and use exact touched IDs"
         },
         {
           "name": "embeddingGenerationDecision",
-          "value": "Node.js independent provider adapter calls the W2-qualified external service; parameterized Cypher persists vectors and metadata after canonical mutation success."
+          "value": "Production vector work requires ARGO_LIVE_PROVIDER_E2E=1 AND ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1 exactly; both disabled is structural-only; half-enabled or unsafe/missing external configuration fails closed before provider/vector writes."
         },
         {
           "name": "functionalPoint.DT-16-all-mutation-version-advance",
-          "value": "{\"description\":\"Advance lifecycle version evidence for every canonical mutation class before semantic queries can rely on the index.\",\"businessOutcome\":\"No canonical mutation can leave an apparently current semantic index without complete affected-record generation and persistence evidence.\",\"observableBoundary\":\"Create, update, delete, topology-only, nested semantic, and View-membership mutations move the lifecycle through Updating to Aligned only on complete success; failed or partial work is Stale or Failed.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-16\"}"
+          "value": "{\"description\":\"Invalidate readiness before every successful batch or focused Element, ArchitectureRelationship, and View add, update, or remove; track exact touched IDs and reconcile durable incremental semantic records under the dual gate.\",\"businessOutcome\":\"No canonical write can leave semantic readiness falsely aligned, and enabled writes become durably queryable without production cleanup.\",\"observableBoundary\":\"Preview performs zero vector work. Every successful write first invalidates readiness and returns exact touched IDs. With both ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E exactly 1, changed records upsert and removed records tombstone across all three channels with canonical/content/index/provider/model/version/dimensions evidence; alignment is persisted only after queryability and global coherence. Disabled flags leave Pending or Stale with zero provider/vector effects. Half-enabled, unsafe, missing, or failed execution fails closed with redacted actionable evidence, canonical JSON retained, no false readiness, and no production runId cleanup.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-DT-16\"}"
         },
         {
           "name": "acceptanceApproval.DT-16",
-          "value": "approvedByHuman=true|2026-07-25|chat delivery request: every mutation advances version evidence"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval for acceptance boundary B automatic persistent incremental indexing"
+        },
+        {
+          "name": "flagNamingDebt",
+          "value": "ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E retain E2E names as the production dual gate for compatibility with existing W3.1 controls; this naming debt is explicit and no third flag is authorized."
+        },
+        {
+          "name": "evidenceBoundary",
+          "value": "Code-complete may use controlled production composition to prove routing, exact touched IDs, zero-side-effect branches, durable adapter calls, tombstones, failure state, and no cleanup. Live release requires both exact gates, safe external credentials, real provider vectors, durable Neo4j persistence, and queryability evidence; unavailable live environment is reported, never fabricated."
         },
         {
           "name": "deliveryEvidence.W3",
-          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16|runMutationIndexLifecycle.js|exitCode=0|all mutation lifecycle and alignment transitions passed"
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-DT-16|runMutationIndexLifecycle.js|exitCode=0|historical baseline before lifecycle optimization"
         },
         {
           "name": "deliveryEvidence.W3.1",
-          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|one applySystemArchitectureMutation call automatically invoked lifecycle from actual touched IDs and returned embeddingLifecycle/alignment|exitCode=0"
+          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|one applySystemArchitectureMutation call automatically invoked lifecycle from actual touched IDs and returned embeddingLifecycle/alignment|exitCode=0|historical baseline"
         },
         {
           "name": "waveAcceptance.W3.1",
-          "value": "accepted|automatic mutation-triggered lifecycle integration passed"
+          "value": "accepted|historical W3.1 baseline; new lifecycle optimization requires revised B evidence"
         },
         {
           "name": "deliveryStatus",
@@ -1111,9 +1119,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-16",
-          "description": "Acceptor perspective control point: create, update, and delete each object category, including topology-only, semantic-content, and View-membership changes. Observation point: compare affected-record extraction, lifecycle state transitions, aligned-query disposition, and version movement.",
+          "description": "Control point: execute successful batch and each focused add, update, and remove path for Element, ArchitectureRelationship, and View, plus preview, both-disabled, half-enabled, unsafe or missing external configuration, provider failure, persistence failure, and queryability failure. Observation point: every successful canonical write invalidates readiness first and exposes exact touched IDs; preview has zero vector work; both-disabled remains explicit Pending or Stale with zero provider/vector calls; half-enabled and unsafe or missing configuration fail closed with redacted actionable evidence and zero writes; dual-gated success durably upserts or tombstones exact touched records across all three channels with complete canonical/content/index/provider/model/version/dimensions evidence and persists Aligned only after queryability and global coherence; failures retain canonical authority and Failed or Stale, semantic query rejects, and production performs no runId cleanup.",
           "type": "Acceptance Test",
-          "Input": "Nine mutation classes across Element, Relationship, and View plus nested semantic and membership updates.",
+          "Input": "Batch and focused add/update/remove matrices for all three channels; preview controls; exact dual-gate combinations; safe and unsafe external configuration; provider, persistence, and queryability failures; durable production store observations; semantic query controls.",
           "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
         }
       ]
@@ -1265,15 +1273,23 @@
       "id": "grag-mcp-interface",
       "name": "Typed Agent MCP Query Interface",
       "type": "Application Interface",
-      "description": "Typed Agent-facing boundary for compatible no-argument snapshots and optional structured query/results; not the Graph RAG engine.",
+      "description": "Sole public Agent-facing architecture read boundary. getSystemArchitecture preserves exact no-argument full snapshots and graph-tidy canonical bypass while optional structured queries use internal persistent readiness and semantic retrieval. startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness are absent from public tools/list and public call routing; their accepted WP-P1/WP-P2 capabilities may remain private composition only.",
       "attributes": [
         {
           "name": "functionalPoint.TS-00",
-          "value": "{\"description\":\"Expose compatible snapshots and typed optional queries.\",\"businessOutcome\":\"Agent compatibility and decidable query semantics.\",\"observableBoundary\":\"One MCP tool supports both modes.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-00\"}"
+          "value": "{\"description\":\"Expose only getSystemArchitecture for public read/query semantics while preserving exact no-argument and graph-tidy canonical reads.\",\"businessOutcome\":\"Agents have one unambiguous public architecture read surface and cannot invoke retired lifecycle controls directly.\",\"observableBoundary\":\"tools/list and public call routing contain getSystemArchitecture but omit startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness. getSystemArchitecture({}) returns the full snapshot; getSystemArchitecture(query) uses governed readiness; graph-tidy remains a zero-semantic-work full-snapshot bypass.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-TS-00\"}"
+        },
+        {
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: retire three standalone semantic lifecycle tools from public discovery and routing; keep only getSystemArchitecture for read/query semantics with no-argument and graph-tidy compatibility."
+        },
+        {
+          "name": "acceptanceApproval.TS-00",
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval for acceptance boundary D public surface and compatibility"
         },
         {
           "name": "deliveryEvidence.W1",
-          "value": "verified acceptance: runTypedMcpQueryContract.js; exit code 0"
+          "value": "verified historical W1 acceptance: runTypedMcpQueryContract.js; exit code 0; revised public-surface evidence required for this optimization"
         },
         {
           "name": "deliveryStatus",
@@ -1283,9 +1299,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-TS-00",
-          "description": "Control: invoke MCP without arguments and with typed query. Observe: compatible snapshot and typed query/result semantics.",
+          "description": "Control point: inspect MCP tools/list and invoke public call routing for getSystemArchitecture, startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness; invoke getSystemArchitecture with omitted query, typed semantic query, and graph-tidy including anchors. Observation point: only getSystemArchitecture remains publicly discoverable and routable for architecture read/query semantics; all three standalone lifecycle names are absent or unknown; omitted-query and every graph-tidy request return the exact canonical full snapshot with zero credentials/readiness/provider/vector work; ordinary query dispatch remains typed and governed.",
           "type": "Acceptance Test",
-          "Input": "No-argument and typed query requests.",
+          "Input": "MCP discovery and public routing calls for the retained and retired names; canonical graph fixture; omitted-query, ordinary typed query, graph-tidy, and anchored graph-tidy requests; semantic side-effect ledger.",
           "acceptanceCriteria": "tests/explicit/entries/runTypedMcpQueryContract.js"
         }
       ]
@@ -1899,7 +1915,7 @@
       "id": "grag-wp-3-1",
       "name": "W3.1 Mutation-Driven Live Vector Integration",
       "type": "Work Package",
-      "description": "W3.1 accepted: one applySystemArchitectureMutation write call automatically invokes the embedding lifecycle from actual touched Element, ArchitectureRelationship, and View IDs, returns embeddingLifecycle and alignment, persists and queries real approved Qwen vectors, and fails closed for provider, persistence, or query faults.",
+      "description": "W3.1 remains the live mutation-vector integration baseline but its two E2E-named flags are explicitly the production dual gate. Every canonical write invalidates readiness first and reports actual touched IDs. Both flags disabled is structural-only with zero provider/vector work; half-enabled or unsafe/missing external configuration fails closed; both exactly enabled permits approved durable generation, upsert/tombstone, queryability verification, and alignment. No third flag and no production runId cleanup.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -1907,31 +1923,31 @@
         },
         {
           "name": "integrationBoundary.W3.1",
-          "value": "Canonical mutation control point is one applySystemArchitectureMutation write call. On write success, the mutation tool itself automatically invokes the embedding lifecycle from actual touchedElementIds, touchedRelationshipIds, and touchedViewIds in the mutation result/response. Acceptance Harnesses must not manually instantiate or execute the lifecycle and must not supply preset expectedTouchedRecords."
+          "value": "Actual successful batch and focused canonical write paths invalidate readiness and forward their exact touchedElementIds, touchedRelationshipIds, and touchedViewIds. Acceptance must not fabricate expected records or manually invoke lifecycle after mutation."
         },
         {
           "name": "releaseSemantics.W3.1",
-          "value": "Complete automatic mutation-triggered extraction, real Qwen embedding generation, vector persistence, version evidence, and Neo4j vector-query observation are required before Aligned. The MCP mutation response must expose embeddingLifecycle and alignment. Provider failure, unapproved provider/model/dimensions, partial generation, partial persistence, vector-index write failure, or query verification failure marks Stale or Failed and prohibits pure semantic queries until restored to Aligned."
+          "value": "Only both exact production gates plus approved external configuration permit durable vector work. Complete metadata, upsert/tombstone, and Neo4j queryability/global coherence are required before Aligned. Any failure records Stale or Failed and blocks semantic query while canonical JSON remains authoritative."
         },
         {
           "name": "liveExecutionBoundary.W3.1",
-          "value": "Live provider and Neo4j vector E2E is explicit opt-in only in controlled local or protected CI. It may use only approved secret sources for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD; offline fakes and manual post-mutation lifecycle execution may support development but never count as live W3.1 delivery evidence."
+          "value": "ARGO_LIVE_PROVIDER_E2E=1 AND ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1 exactly are retained as the production dual gate. Both disabled is structural-only; half-enabled fails closed. The E2E naming is acknowledged compatibility debt; no third flag, default, embedded secret, or production runId cleanup is authorized."
         },
         {
           "name": "functionalPoint.W3-1-live-mutation-vector-e2e",
-          "value": "{\"description\":\"Prove a single applySystemArchitectureMutation write call automatically triggers the real embedding lifecycle and returns queryable Neo4j vector/alignment evidence for changed Element, ArchitectureRelationship, and View records.\",\"businessOutcome\":\"A successful architecture mutation becomes semantically searchable only when the mutation tool itself produces live Qwen-generated vector evidence that is persisted and queryable in Neo4j, while unsafe or incomplete states cannot serve stale semantic context.\",\"observableBoundary\":\"With explicit live opt-in, call applySystemArchitectureMutation exactly once for fixtures touching Element, ArchitectureRelationship, and View. Do not manually create or execute mutationEmbeddingVectorLifecycle and do not pass preset expectedTouchedRecords. Observe the mutation response's actual touchedElementIds, touchedRelationshipIds, and touchedViewIds; embeddingLifecycle evidence for real approved Qwen adapter invocation and finite 1024-dimensional vectors; Neo4j vector-index persistence with version/model evidence; successful vector query of all touched records; alignment=Aligned only after complete success; and Stale/Failed plus pure semantic query rejection after provider, persistence, or vector-query failure.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E\"}"
+          "value": "{\"description\":\"Prove the actual canonical mutation write path invokes durable exact-touched vector lifecycle only under the exact production dual gate and fails closed otherwise.\",\"businessOutcome\":\"Canonical writes never create unauthorized vector side effects or false readiness, while authorized live writes become queryable with complete evidence.\",\"observableBoundary\":\"A write reports exact touched IDs and invalidates readiness first. Both gates disabled produces Pending or Stale with zero provider/vector work. Half-enabled or unsafe/missing configuration fails closed with redacted action and zero provider/vector writes. Both exactly enabled uses approved external credentials and qualified finite 1024-dimensional vectors, durable upsert/tombstone, queryability verification, and Aligned only after global coherence. Failure leaves canonical JSON authoritative and semantic query closed. Production performs no runId cleanup.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E\"}"
         },
         {
           "name": "acceptanceApproval.W3-1",
-          "value": "approvedByHuman=true|2026-07-25|human corrected W3.1 acceptance: prior manual post-mutation lifecycle evidence is insufficient; accepted boundary requires single mutation tool call with automatic embeddingLifecycle and alignment response based on actual touched ids"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval extends W3.1 with production dual-gate, disabled/half-enabled, durable no-cleanup, and canonical-authority semantics"
         },
         {
           "name": "deliveryEvidence.W3.1",
-          "value": "2026-07-25|ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E|runApplyMutationEmbeddingVectorE2E.js|both live opt-ins|exitCode=0|single mutation call, automatic lifecycle, real 1024-dimensional Qwen vectors, persisted/queryable evidence, fail-closed matrix, and secret isolation passed"
+          "value": "2026-07-25 historical live baseline at be921fc; revised production dual-gate lifecycle requires new code-complete and live-release evidence and current blockers are not hidden"
         },
         {
           "name": "waveAcceptance.W3.1",
-          "value": "accepted|2026-07-25|W3.1 case passed; full runner 24/37 and remaining failures are DT-00, W4-W7, and TS-08"
+          "value": "historical accepted baseline; revised cross-cutting lifecycle scope is not claimed delivered by historical evidence"
         },
         {
           "name": "deliveryStatus",
@@ -1941,9 +1957,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
-          "description": "Acceptor control point: with explicit live opt-in, execute exactly one applySystemArchitectureMutation write call for cases that touch an Element, an ArchitectureRelationship, and a View. The Harness must not manually create or execute mutationEmbeddingVectorLifecycle after mutation and must not supply preset expectedTouchedRecords. Observation point: the MCP mutation response exposes actual touchedElementIds, touchedRelationshipIds, touchedViewIds, embeddingLifecycle, and alignment; the automatic lifecycle uses the approved qwen3.7-text-embedding profile and 1024 dimensions without leaking secrets; Neo4j persists vector rows with canonical/content/index/model version evidence; a vector query retrieves all changed records after complete success; alignment is Aligned only after the queryable-vector check passes; provider or persistence failures mark Stale or Failed and pure semantic queries are rejected until alignment is restored.",
+          "description": "Control point: execute actual canonical write paths with the exact dual-gate matrix and safe, unsafe, and missing external configuration; for both-enabled valid live composition, touch Element, ArchitectureRelationship, and View identities and inject provider, persistence, and queryability failures. Observation point: readiness invalidates first and exact touched IDs are returned; both-disabled produces explicit Pending or Stale and zero provider/vector work; half-enabled or unsafe/missing configuration fails closed with redacted action and zero provider/vector writes; both-enabled valid execution uses approved finite 1024-dimensional Qwen vectors, durably upserts or tombstones complete evidence, verifies all touched records through vector indexes, and reports Aligned only after global coherence; failures retain canonical authority, record Stale or Failed, and block semantic query; production performs no runId cleanup.",
           "type": "Acceptance Test",
-          "Input": "Controlled live opt-in with approved non-sensitive provider profile, approved secret-source policy for QWEN_KEY and ARGO_NEO4J_DATABASE_PASSWORD, disposable or protected Neo4j vector index, a single applySystemArchitectureMutation write call touching Element, ArchitectureRelationship, and View, and failure fixtures for provider, vector persistence, and vector-query verification.",
+          "Input": "Actual canonical write controls; exact dual-gate matrix; approved external provider/Neo4j configuration; unsafe and missing configuration; exact touched identities across three channels; provider, persistence, and queryability failures; durable store observations; semantic query rejection.",
           "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js"
         }
       ]
@@ -1952,7 +1968,7 @@
       "id": "semprod-goal",
       "name": "Production-Ready Semantic Retrieval for New Projects",
       "type": "Goal",
-      "description": "Newly initialized Argo projects can establish and use a durable, complete, version-aligned semantic retrieval projection after canonical structural synchronization, while canonical JSON remains authoritative and no-argument full snapshots remain backward compatible.",
+      "description": "Newly initialized and previously structural-only Argo projects can establish a durable, complete, version-aligned three-channel semantic projection through canonical argo init when the exact dual gate and safe external configuration permit it, while disabled and invalid states remain explicit and fail closed, canonical JSON stays authoritative, and getSystemArchitecture preserves full-snapshot compatibility.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -1968,7 +1984,7 @@
       "id": "semprod-operator-role",
       "name": "Argo Project Operator",
       "type": "Business Role",
-      "description": "Role accountable for initializing a project, observing structural and semantic readiness, explicitly starting backfill when automatic opt-in is absent, and verifying readiness before semantic use.",
+      "description": "Role accountable for invoking canonical argo init, observing explicit structural-only, blocked, reconciling, or aligned outcomes, remediating redacted external-configuration failures, and using getSystemArchitecture. The operator no longer orchestrates separate public start, backfill, or readiness tools.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-05",
@@ -1980,7 +1996,7 @@
       "id": "semprod-bootstrap-capability",
       "name": "Semantic Index Bootstrap and Operation",
       "type": "Capability",
-      "description": "Capability to create, resume, align, operate, and query the production semantic index for all canonical Element, ArchitectureRelationship, and View records without fake canonical mutations.",
+      "description": "Internal capability to initialize, invalidate, reconcile, resume, align, operate, and query the durable production semantic index for canonical Element, ArchitectureRelationship, and View records. It is composed through argo init and getSystemArchitecture rather than exposed as standalone lifecycle tools.",
       "attributes": [
         {
           "name": "decisionTrace",
@@ -1992,7 +2008,7 @@
       "id": "semprod-new-project-gap",
       "name": "New Project Production Semantic Gap",
       "type": "Gap",
-      "description": "After ordinary structural Neo4j synchronization, existing canonical records may lack production embeddings, durable vector records, aligned readiness evidence, and a real default MCP vector-retrieval boundary.",
+      "description": "The previous gap was addressed by WP-P1 durable persistence/backfill, WP-P2 retrieval/readiness, and WP-P3 operator exposure. The remaining lifecycle gap is duplicated public orchestration and mutation/readiness coupling: canonical init must own full reconciliation, every write must invalidate and incrementally reconcile exact touched IDs, and every query must verify persistent readiness.",
       "attributes": [
         {
           "name": "repositoryEvidence",
@@ -2024,39 +2040,43 @@
       "id": "semprod-backfill-control",
       "name": "Full Semantic Index Backfill Control",
       "type": "Application Process",
-      "description": "Explicit idempotent and resumable production control point after structural projection that independently enumerates every canonical Element, ArchitectureRelationship, and View record, invokes the externally credentialed qualified provider, upserts embeddings and complete canonical/content/index/provider/model/version/dimensions/vector metadata in bounded batches, checkpoints progress, isolates record failures, resumes without fake canonical mutations, permits idempotent reruns, and marks alignment only after all three channels complete.",
+      "description": "Private WP-P1 composition capability invoked by canonical argo init after same-version structural projection and readiness invalidation. It independently enumerates every canonical Element, ArchitectureRelationship, and View in bounded checkpointed batches, durably upserts complete semantic evidence, resumes without repeating completed identities, reruns idempotently, isolates failure, and withholds Aligned until all channels are queryable and globally coherent. It is not publicly discoverable or routable; production has no runId cleanup.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-01",
-          "value": "accepted|full three-channel backfill after structural projection"
+          "value": "revised 2026-07-27|public backfill control retired; private full reconciliation preserved under canonical init"
         },
         {
           "name": "executionPolicy",
-          "value": "Explicit command/tool is always available; automatic execution only under explicit configuration or operator opt-in."
+          "value": "Invoked only by canonical argo init after exact dual-gate and safe external-configuration validation; no standalone public command/tool and no inferred consent."
         },
         {
           "name": "progressEvidence",
-          "value": "Per-channel totals/completed counts, bounded-batch checkpoint cursor and canonical version, retries, isolated record failures, resume position, and final alignment disposition."
+          "value": "Durable per-channel totals, completed counts, cursor, canonical version, retries, isolated failures, resume position, queryability, global coherence, and final readiness disposition."
         },
         {
           "name": "rejectedBranches",
-          "value": "Fake canonical mutation; unbounded one-shot; infer ArchitectureRelationship/View completion from Element completion; partial-channel alignment; automatic backfill without explicit opt-in."
+          "value": "Public backfill exposure; fake canonical mutation; unbounded one-shot; repeated completed identities on resume; inferred channel completion; partial alignment; production runId cleanup."
         },
         {
           "name": "codingTargets",
-          "value": "systemarchitecture-mcp-server.js; productionGraphRagRuntime.js; new production backfill orchestration and MCP command/tool."
+          "value": "Preserve accepted WP-P1 backfill and durable adapters as private composition behind argo init; remove public discovery/routing only."
         },
         {
-          "name": "requirementSource.semprod-wp-persistence-backfill",
-          "value": "Human-approved WP-P1 requirement in stage session intent-semprod-wp-p1-20260726T2039+08 on 2026-07-26; approval is limited to SP-01/SP-02 and the five-element WP-P1 handoff scope."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: preserve WP-P1 durable persistence/backfill internals while retiring only public standalone exposure and composing full reconciliation into argo init."
         },
         {
           "name": "functionalPoint.SP-01-full-backfill",
-          "value": "{\"description\":\"Run an explicit idempotent and resumable full semantic backfill for every canonical Element, ArchitectureRelationship, and View after structural projection.\",\"businessOutcome\":\"A new or pre-existing canonical graph can obtain a complete production semantic projection without fake canonical mutation, unbounded execution, lost progress, or partial-channel readiness.\",\"observableBoundary\":\"With external credentials, bounded batches enumerate all three canonical channels independently; complete metadata and vectors are upserted; checkpoints survive interruption; record failures are isolated and observable; resume continues from checkpoint; rerun is idempotent; and Aligned is withheld until Element, ArchitectureRelationship, and View channels are all complete.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-01-FullBackfill\"}"
+          "value": "{\"description\":\"Provide private idempotent and resumable full three-channel semantic reconciliation for canonical init.\",\"businessOutcome\":\"Init can align new, existing, interrupted, or previously structural-only projects without exposing a separate public backfill control.\",\"observableBoundary\":\"The private composition enumerates all three canonical channels in bounded checkpointed batches, resumes without repeated completed identities, reruns idempotently, records isolated failures, performs no fake mutation or production cleanup, and reports Aligned only after complete durable queryability/global coherence. Public tools/list and routing do not expose it.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-01-FullBackfill\"}"
         },
         {
           "name": "acceptanceApproval.SP-01",
-          "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-01-FullBackfill boundary and globally approved the five-element WP-P1 handoff scope"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval refines SP-01 invocation from public tool to private canonical-init composition while preserving persistence semantics"
+        },
+        {
+          "name": "evidenceBoundary",
+          "value": "Controlled production composition proves code-complete without live claims. Live release needs both exact gates and real safe external provider/Neo4j evidence."
         },
         {
           "name": "deliveryStatus",
@@ -2066,9 +2086,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-01-FullBackfill",
-          "description": "Control point: after ordinary structural projection, invoke explicit production backfill with external credentials for pre-existing Element, ArchitectureRelationship, and View records; interrupt a bounded batch, inject isolated record failure, resume, and rerun. Observation point: all three channels are independently enumerated and complete; stable canonical identity and canonical/content/index/provider/model/version/dimensions/vector metadata are persisted; checkpoints, retries, and isolated failures are visible; resume does not restart completed work; rerun is idempotent; no fake canonical mutation occurs; and alignment waits for all channels.",
+          "description": "Control point: invoke canonical argo init into the private WP-P1 full-reconciliation composition after same-version structural projection; interrupt a bounded batch, inject isolated record failure, resume, rerun unchanged, and inspect public discovery/routing. Observation point: all three channels are independently enumerated, complete metadata and vectors are durably upserted, checkpoints survive, resume does not repeat completed provider/upsert identities, rerun is idempotent, failure remains non-Aligned, no fake canonical mutation or production cleanup occurs, readiness waits for queryability/global coherence, and no standalone public backfill tool exists.",
           "type": "Acceptance Test",
-          "Input": "Fresh-project and pre-existing three-channel canonical graph, bounded batches, interruption/retry and isolated-failure fixtures, external credentials, explicit opt-in, and idempotent rerun.",
+          "Input": "Fresh, existing, interrupted, and unchanged three-channel graphs; bounded batches; isolated failures; durable checkpoints; private init composition; public discovery/routing; dual-gated controlled production configuration.",
           "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticBackfill.js"
         }
       ]
@@ -2077,39 +2097,43 @@
       "id": "semprod-persistent-projection-requirement",
       "name": "Persistent Production Semantic Projection",
       "type": "Requirement",
-      "description": "Production semantic records use a separate durable persistence path across process and test runs and carry stable canonical identity, channel, canonical/content/index versions, qualified provider/model/version/dimensions, and vector; unchanged records survive restart and unrelated test-only cleanup, changed records are upserted, tombstones are deleted, production never performs runId cleanup, canonical JSON remains authority, and Neo4j remains only projection/index.",
+      "description": "Production semantic records use a separate durable persistence path with stable canonical identity across Element, ArchitectureRelationship, and View. Every successful batch or focused canonical write invalidates readiness first and, only under the exact dual gate, upserts changed records or tombstones removed records with complete canonical/content/index/provider/model/version/dimensions/vector evidence. Production never uses runId cleanup; existing live E2E cleanup remains test-only. Disabled gates leave explicit Pending or Stale state with zero provider/vector work. Partial failure preserves canonical JSON authority and records Failed or Stale for later init reconciliation.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-02",
-          "value": "accepted|durable versioned projection with upsert/tombstone lifecycle"
+          "value": "accepted|revised 2026-07-27|durable all-path upsert and tombstone lifecycle"
         },
         {
           "name": "rejectedBranches",
-          "value": "Production runId evidence records; production cleanup; volatile vectors; shared production/test cleanup path; projection overwrites canonical intent."
+          "value": "Production runId evidence records or cleanup; volatile vectors; shared production/test cleanup; inferred touched IDs; projection overwrites canonical intent; Aligned before queryability/global coherence."
         },
         {
           "name": "testOnlyBoundary",
-          "value": "Existing live E2E runId cleanup remains test-only evidence and must not be weakened; production requires a separate persistence path with no runId cleanup."
+          "value": "Existing live E2E runId cleanup remains test-only and unchanged; production store has no cleanup, clear, reset, truncate, or runId-delete behavior."
         },
         {
           "name": "codingTargets",
-          "value": "Split liveEmbeddingNeo4jBoundary test evidence from production store; production persistence adapter; mutation/backfill integration."
+          "value": "Existing WP-P1 durable adapters and stores remain internal composition capabilities; integrate exact touched-ID incremental upsert/tombstone without restoring a public backfill tool."
         },
         {
           "name": "authorityBoundary",
-          "value": "Canonical design/KG/SystemArchitecture.json remains authority; Neo4j remains subordinate projection/index and cannot mutate or redefine canonical intent."
+          "value": "Canonical design/KG/SystemArchitecture.json remains authoritative after every vector failure; Neo4j projection/index cannot mutate or redefine canonical intent."
         },
         {
-          "name": "requirementSource.semprod-wp-persistence-backfill",
-          "value": "Human-approved WP-P1 requirement in stage session intent-semprod-wp-p1-20260726T2039+08 on 2026-07-26; approval is limited to SP-01/SP-02 and the five-element WP-P1 handoff scope."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: automatic durable incremental indexing for every batch/focused Element, ArchitectureRelationship, and View add/update/remove path, exact touched IDs, no production cleanup, fail-closed failure state, later init reconciliation."
         },
         {
           "name": "functionalPoint.SP-02-persistent-projection",
-          "value": "{\"description\":\"Persist the production semantic projection durably and maintain it by stable-identity upsert and tombstone deletion without production runId cleanup.\",\"businessOutcome\":\"Production semantic evidence survives restart and unrelated test cleanup while remaining version-aligned with authoritative canonical JSON.\",\"observableBoundary\":\"After full backfill and restart, unchanged three-channel records and complete metadata remain; changing one canonical record upserts its stable identity with new content/index evidence; tombstoning another deletes its projection; unrelated live-E2E runId cleanup removes only test evidence; production uses a separate no-cleanup path; and Neo4j never mutates canonical JSON.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-02-PersistentProjection\"}"
+          "value": "{\"description\":\"Maintain durable production semantic projection by exact stable-identity upsert and tombstone across Element, ArchitectureRelationship, and View after successful canonical writes.\",\"businessOutcome\":\"Production semantic state survives restart, never uses temporary run cleanup, and cannot outrank canonical JSON.\",\"observableBoundary\":\"For every batch and focused mutation class, exact touched IDs drive changed-record upsert and removed-record tombstone with complete canonical/content/index/provider/model/version/dimensions metadata. Production has no runId cleanup. Disabled gates perform no vector work and remain pending or stale; vector failure preserves canonical authority and records Failed or Stale for later init reconciliation.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-02-PersistentProjection\"}"
         },
         {
           "name": "acceptanceApproval.SP-02",
-          "value": "approvedByHuman=true|2026-07-26|human partner explicitly approved the complete ExplicitAcceptanceTestcase-SP-02-PersistentProjection boundary and globally approved the five-element WP-P1 handoff scope"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval for acceptance boundary B durable incremental persistence; supersedes only public invocation assumptions and preserves WP-P1 internals"
+        },
+        {
+          "name": "evidenceBoundary",
+          "value": "Controlled production-composition tests can establish code-complete. Live release requires both E2E-named production gates exactly enabled, safe external credentials, real provider output, durable Neo4j persistence/queryability, and no fabricated evidence."
         },
         {
           "name": "deliveryStatus",
@@ -2119,9 +2143,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-02-PersistentProjection",
-          "description": "Control point: use the separate production persistence path to backfill all three channels, restart, update one canonical object, tombstone another, and run unrelated live-E2E runId cleanup. Observation point: unchanged stable-identity vectors and complete canonical/content/index/provider/model/version/dimensions/vector metadata survive restart and test-only cleanup; the changed record is upserted and version-aligned; the tombstone is deleted; no production runId cleanup occurs; canonical JSON remains authoritative; and Neo4j remains projection/index only.",
+          "description": "Control point: through controlled production composition, execute batch and focused add/update/remove mutations for Element, ArchitectureRelationship, and View, restart durable state, and run unrelated test-only live-E2E cleanup; separately exercise dual-gated live composition when the protected environment exists. Observation point: exact touched changed identities are durably upserted, exact removed identities are tombstoned, unchanged records survive restart, complete canonical/content/index/provider/model/version/dimensions/vector evidence remains subordinate to canonical JSON, production exposes no runId cleanup behavior, test-only cleanup cannot select production identities, disabled gates make zero vector calls, and partial vector failure records Failed or Stale for later init reconciliation.",
           "type": "Acceptance Test",
-          "Input": "Production three-channel records, restart, stable-identity update and tombstone mutations, separate production persistence path, and isolated existing test-only runId cleanup.",
+          "Input": "All batch/focused mutation paths across three channels, restart, stable identities, tombstones, disabled and dual-enabled gates, failure injection, durable adapter observations, isolated existing test-only cleanup, and canonical authority comparison.",
           "acceptanceCriteria": "tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js"
         }
       ]
@@ -2130,35 +2154,35 @@
       "id": "semprod-default-vector-retrieval",
       "name": "Default MCP Neo4j Vector Retrieval",
       "type": "Application Function",
-      "description": "Production default semantic boundary: embeds the query with the qualified profile, queries Neo4j Vector Index independently for Element, ArchitectureRelationship, and View using threshold-all correctness, permits zero results, then applies deterministic purpose/ArchiMate closure and canonical authority/version checks.",
+      "description": "Private WP-P2 semantic retrieval composed only behind getSystemArchitecture(query). Every ordinary query first performs fresh persistent readiness verification; only complete aligned Element, ArchitectureRelationship, and View canonical/content/index evidence may proceed to qualified embedding, independent Neo4j Vector Index retrieval, deterministic purpose/ArchiMate closure, and canonical completion. Disabled, pending, partial, stale, failed, or mismatched state rejects with fullSnapshotFallback:false. Omitted-query and graph-tidy remain exact zero-semantic-work full-snapshot bypasses.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-03",
-          "value": "accepted|replace synthetic empty default with production Neo4j vector adapter"
+          "value": "revised 2026-07-27|preserve WP-P2 retrieval internals behind sole public getSystemArchitecture query surface"
         },
         {
           "name": "correctnessBoundary",
-          "value": "No fixed top-k defines correctness; each Element, ArchitectureRelationship, and View channel independently returns every qualifying candidate, and zero results are valid."
+          "value": "Fresh readiness precedes provider and every vector query; each channel independently exhausts every qualifying candidate; fixed top-k is performance-only; zero results are valid."
         },
         {
           "name": "rejectedBranches",
-          "value": "Approved-test production default; empty-seed stub; Element-only retrieval; global channel rank; forced hits; snapshot fallback for semantic queries; test/default production credentials."
+          "value": "Public readiness tool; approved-test default; empty-seed stub; cached readiness; Element-only retrieval; global channel rank; forced hits; snapshot fallback for semantic query; test/default credentials."
         },
         {
           "name": "codingTargets",
-          "value": "systemarchitecture-mcp-server.js createDefaultSemanticRetrievalBoundary; productionGraphRagRuntime.js; production Neo4j vector adapter."
+          "value": "Preserve WP-P2 private retrieval/readiness internals and route only getSystemArchitecture(query) through them."
         },
         {
           "name": "functionalPoint.SP-03-default-vector-retrieval",
-          "value": "{\"description\":\"Route the default uninjected MCP semantic-query path through qualified query embedding and persistent Neo4j Vector Index retrieval, then deterministic purpose/ArchiMate and structural completion.\",\"businessOutcome\":\"Production Agents receive complete, canonical, purpose-coherent semantic context without test-only injection, synthetic empty seeds, or correctness truncation.\",\"observableBoundary\":\"With complete three-channel canonical/content/index alignment and external credentials, the default MCP path embeds the query with the approved profile; independently retrieves every qualifying Element, ArchitectureRelationship, and View candidate or a valid zero result per channel; treats fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure, relationship endpoint completion, selected View completion, ordered provenance, and canonical authority/version checks; graph-tidy remains a full-snapshot bypass.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval\"}"
+          "value": "{\"description\":\"Route every ordinary getSystemArchitecture(query) through fresh persistent readiness verification, qualified embedding, three independent vector channels, deterministic closure, and canonical completion.\",\"businessOutcome\":\"The sole public query path returns coherent semantic context only from currently aligned durable state.\",\"observableBoundary\":\"Every ordinary query verifies readiness first and rejects disabled, pending, partial, stale, failed, or mismatched state with fullSnapshotFallback:false. Aligned state embeds once, queries all three persistent indexes through exhaustion, and completes deterministic closure. Omitted query and graph-tidy bypass all semantic operations.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval\"}"
         },
         {
-          "name": "requirementSource.WP-P2",
-          "value": "Human-authorized 2026-07-26 work package semprod-wp-default-retrieval: replace the synthetic/empty production default path with qualified external-credential embedding plus persistent Neo4j Vector Index retrieval; preserve threshold-all correctness, canonical authority, deterministic closure, no-argument compatibility, and graph-tidy bypass."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: preserve WP-P2 retrieval/readiness internals, retire readiness public exposure, and verify durable readiness on every getSystemArchitecture(query)."
         },
         {
           "name": "acceptanceApproval.SP-03",
-          "value": "approvedByHuman=true|2026-07-26|parent authorization explicitly required mounting and formalizing ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval for WP-P2 with the complete stated boundary"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval refines SP-03 to sole public query surface with fresh readiness each time"
         },
         {
           "name": "deliveryStatus",
@@ -2168,9 +2192,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
-          "description": "Control point: invoke a typed semantic query through the shipped default uninjected MCP path against a complete aligned persistent production-like Neo4j vector projection using only approved external credentials, with independent above-threshold, below-threshold, zero-result, closure, endpoint, View, provenance, graph-tidy, and canonical-version fixtures. Observation point: the path performs qualified query embedding and real Neo4j Vector Index retrieval for Element, ArchitectureRelationship, and View independently; returns every qualifying candidate or a valid zero result per channel; uses fixed top-k only as a performance mechanism; applies deterministic purpose/ArchiMate closure plus endpoint/View/provenance completion; enforces canonical authority/version alignment; preserves graph-tidy full-snapshot bypass; and does not use a test-injected retrieval boundary, synthetic empty seeds, test/default credentials, or silent snapshot fallback.",
+          "description": "Control point: invoke ordinary typed queries only through public getSystemArchitecture(query) against aligned, disabled, pending, partial, stale, failed, and mismatched durable states; invoke omitted-query and graph-tidy controls. Observation point: each ordinary query freshly verifies readiness before provider/vector work; non-Aligned states reject with fullSnapshotFallback:false; Aligned performs qualified embedding and independent exhaustive Element, ArchitectureRelationship, and View vector retrieval followed by deterministic closure and canonical completion; no public readiness tool, injected retrieval boundary, synthetic empty seeds, or fallback exists; omitted-query and graph-tidy perform zero semantic operations.",
           "type": "Acceptance Test",
-          "Input": "Aligned persistent Element, ArchitectureRelationship, and View vector records with qualified and non-qualifying peers, unrelated zero-result queries, deterministic purpose/ArchiMate closure fixtures, endpoint/View/provenance fixtures, canonical version evidence, graph-tidy control, and approved externally supplied Neo4j/provider credentials.",
+          "Input": "Persistent readiness matrix; aligned three-channel vector peers including beyond initial windows and zero-result cases; purpose/closure fixtures; omitted-query and graph-tidy controls; operation ledger.",
           "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js"
         }
       ]
@@ -2179,35 +2203,39 @@
       "id": "semprod-readiness-requirement",
       "name": "Fail-Closed Semantic Index Readiness",
       "type": "Requirement",
-      "description": "Structural sync alone yields SemanticIndexPending. Pure semantic queries are rejected until canonical/content/index versions and all three channels align; no silent snapshot fallback occurs, while established no-argument canonical snapshots remain unchanged.",
+      "description": "Every getSystemArchitecture(query) invocation internally re-verifies persistent three-channel canonical/content/index readiness. Disabled, SemanticIndexPending, partial, stale, failed, unknown, version-mismatched, or channel-incomplete state rejects before provider/vector work with redacted actionable evidence and fullSnapshotFallback:false. Canonical writes remain authoritative when vector work fails; semantic query stays closed until a later valid dual-gated argo init performs full persistent reconciliation and proves global coherence. No-argument and graph-tidy requests remain exact canonical full-snapshot bypasses.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-04",
-          "value": "accepted|pending/aligned gate and fail-closed semantic query"
+          "value": "accepted|revised 2026-07-27|read persistent readiness on every query and fail closed until globally coherent"
         },
         {
           "name": "compatibilityBoundary",
-          "value": "No-argument getSystemArchitecture full snapshot remains exact; graph-tidy remains a full-snapshot bypass; readiness rejection applies only to pure semantic mode."
+          "value": "getSystemArchitecture({}) and omitted query return the exact full snapshot; every graph-tidy request bypasses credentials, readiness, provider, and vector work; all other query requests verify persistent readiness each time."
         },
         {
           "name": "rejectedBranches",
-          "value": "Warning-only stale query; silent snapshot fallback; structural-sync-equals-ready; partial channel alignment; failed-state semantic delivery; fullSnapshotFallback:true."
+          "value": "Cached or process-local readiness; warning-only stale query; silent snapshot fallback; structural-sync-equals-ready; partial channel alignment; failed-state semantic delivery; fullSnapshotFallback:true; query without a fresh persistent readiness read."
         },
         {
           "name": "codingTargets",
-          "value": "systemarchitecture-mcp-server.js query dispatch; productionGraphRagRuntime alignment; persistent alignment/version store."
+          "value": "Preserve WP-P2 private readiness/retrieval internals; route the sole public getSystemArchitecture(query) path through fresh persistent readiness verification and later argo init reconciliation."
         },
         {
           "name": "functionalPoint.SP-04-fail-closed-readiness",
-          "value": "{\"description\":\"Gate pure semantic retrieval on complete three-channel canonical/content/index readiness while preserving established full-snapshot modes.\",\"businessOutcome\":\"Agents never consume partial, stale, failed, or structurally-only semantic context and receive actionable evidence for remediation without losing compatible canonical reads.\",\"observableBoundary\":\"Structural-only projection reports SemanticIndexPending; partial, stale, failed, unknown, or version/channel-mismatched states reject pure semantic queries before retrieval with actionable state/version/channel evidence and fullSnapshotFallback:false; only complete Element, ArchitectureRelationship, and View canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests still return exact full canonical snapshots.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness\"}"
+          "value": "{\"description\":\"Verify persistent three-channel readiness on every getSystemArchitecture query and fail closed until canonical/content/index evidence is globally coherent.\",\"businessOutcome\":\"Agents never consume disabled, pending, partial, stale, failed, or falsely ready semantic context, while canonical snapshot compatibility remains intact.\",\"observableBoundary\":\"Every query re-reads readiness and rejects disabled, pending, partial, stale, failed, unknown, version-mismatched, or channel-incomplete state with redacted actionable evidence and fullSnapshotFallback:false before provider/vector work. A canonical write failure in vector projection leaves canonical JSON authoritative and semantic query closed; a later valid dual-gated argo init full reconciliation can restore Aligned.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness\"}"
         },
         {
-          "name": "requirementSource.WP-P2",
-          "value": "Human-authorized 2026-07-26 work package semprod-wp-default-retrieval: fail closed for structural-only pending, partial, stale, failed, unknown, or mismatched semantic index states; never silently fall back; preserve no-argument full snapshots and graph-tidy bypass."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: query verifies persistent readiness every time, rejects disabled/pending/partial/stale/failed without fallback, retains canonical authority after vector failure, and allows later init reconciliation."
         },
         {
           "name": "acceptanceApproval.SP-04",
-          "value": "approvedByHuman=true|2026-07-26|parent authorization explicitly required mounting and formalizing ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness for WP-P2 with pending, partial, stale, failed, aligned, and no-argument scenarios"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval for acceptance boundary C mutation partial failure and query fail-closed reconciliation"
+        },
+        {
+          "name": "evidenceBoundary",
+          "value": "Controlled production-composition tests may prove ordered readiness-before-provider/vector behavior and recovery. Live readiness evidence requires the exact dual gate, safe external configuration, durable real records, and queryability; current blocked live environment cannot be represented as Aligned."
         },
         {
           "name": "deliveryStatus",
@@ -2217,9 +2245,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness",
-          "description": "Control point: invoke the shipped default MCP boundary in structural-only SemanticIndexPending, partial-channel, stale-version, failed, unknown/mismatched, and complete aligned states, then invoke no-argument and graph-tidy controls. Observation point: every non-aligned pure semantic request rejects before retrieval with actionable state, canonical/content/index version, and missing-channel evidence plus fullSnapshotFallback:false; no silent snapshot fallback occurs; only complete Element, ArchitectureRelationship, and View canonical/content/index alignment enables semantic retrieval; no-argument and graph-tidy requests retain exact full canonical snapshots.",
+          "description": "Control point: after successful canonical mutation with injected provider, persistence, partial-channel, and queryability failures, invoke getSystemArchitecture(query) repeatedly in disabled, Pending, partial, Stale, Failed, unknown, version-mismatched, and Aligned states; then run valid resumable argo init reconciliation and repeat. Invoke no-argument and graph-tidy controls throughout. Observation point: every semantic query freshly reads persistent readiness before provider/vector work, each non-Aligned state rejects with exact redacted state/version/channel evidence and fullSnapshotFallback:false, canonical JSON remains authoritative, no false readiness occurs, later full three-channel reconciliation alone restores Aligned, and no-argument plus graph-tidy retain exact canonical bypass behavior.",
           "type": "Acceptance Test",
-          "Input": "Default-MCP scenarios for structural-only SemanticIndexPending, partial channel completion, stale canonical/content/index versions, failed and unknown/mismatched state, complete three-channel alignment, no-argument compatibility, and graph-tidy full-snapshot bypass.",
+          "Input": "Canonical mutation retained after vector failures; durable readiness states and channel/version mismatches; repeated semantic queries; valid resumable init reconciliation; no-argument and graph-tidy controls; side-effect ledger and redaction canaries.",
           "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js"
         }
       ]
@@ -2228,31 +2256,39 @@
       "id": "semprod-operator-journey-process",
       "name": "Establish Semantic Retrieval for New Project",
       "type": "Business Process",
-      "description": "Operator journey for a fresh project: argo init, canonical structural projection, semantic backfill, readiness verification, then semantic query. Both successful paths receive equivalent approved external Neo4j and embedding-provider configuration and differ only in explicit automatic-backfill opt-in. Without opt-in, structural completion reports actionable SemanticIndexPending, performs zero automatic start, and exposes explicit backfill and readiness operations; after explicit backfill invocation the operator verifies readiness before semantic query. With opt-in, orchestration may start backfill automatically only after approved configuration passes validation. Opted-in missing, unsafe, or unapproved configuration fails before automatic start, backfill, provider, or database effects with redacted actionable errors. No embedded credentials, implicit provider defaults, silent fallback, canonical-authority weakening, fail-open semantic query, or no-argument full-snapshot regression is permitted.",
+      "description": "Canonical argo init business process: initialize workspace and canonical structural projection, invalidate prior readiness, then internally compose full persistent semantic reconciliation and readiness recording. Both ARGO_LIVE_PROVIDER_E2E and ARGO_W31_LIVE_MUTATION_VECTOR_E2E exactly enabled plus safe complete external configuration permit idempotent/resumable three-channel provider/vector work. Both disabled is structural-only with explicit Disabled and SemanticIndexPending evidence and zero provider/vector effects. Half-enabled or unsafe/missing configuration fails closed with redacted actionable evidence, zero provider/vector writes, and no false readiness. Rerun can align a previously structural-only project. startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness are retired from public discovery/routing; private composition remains permitted.",
       "attributes": [
         {
           "name": "decisionTrace.SP-DT-05",
-          "value": "accepted|clear new-project journey"
+          "value": "superseded 2026-07-27|three-tool operator journey replaced by canonical argo init semantic lifecycle"
         },
         {
           "name": "automaticPolicy",
-          "value": "Automatic semantic backfill is disabled unless the operator explicitly opts in. Both successful paths use equivalent approved external configuration and vary only opt-in. Opt-in authorizes automatic start only after configuration provenance and safety validation; missing, unsafe, or unapproved configuration produces zero automatic start, backfill, provider, and database side effects."
+          "value": "ARGO_LIVE_PROVIDER_E2E=1 AND ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1 exactly is the sole production vector gate. Both disabled is structural-only; half-enabled or unsafe/missing external configuration fails closed. No third flag and no implicit opt-in."
         },
         {
           "name": "observableOutcomes",
-          "value": "No-opt-in with approved configuration: actionable SemanticIndexPending, zero automatic start, explicit backfill command/tool invocation, readiness verification, then semantic query. Opted-in with equivalent approved configuration: validated automatic start, bounded progress/checkpoint/failure/resume evidence, readiness verification, then semantic query. Opted-in missing/unsafe/unapproved configuration: redacted actionable failure and zero automatic start/backfill/provider/database effects. All paths preserve fail-closed query and exact no-argument full snapshots."
+          "value": "Enabled+valid: idempotent/resumable full three-channel reconciliation and durable readiness only after queryability/global coherence. Disabled: explicit Disabled/Pending evidence and zero provider/vector effects. Half-enabled or unsafe/missing: redacted actionable fail-closed evidence, zero provider/vector writes, no false readiness. Rerun may align a prior structural-only project."
         },
         {
           "name": "functionalPoint.SP-05-new-project-journey",
-          "value": "{\"description\":\"Expose a production-safe new-project journey from argo init through canonical structural projection, semantic backfill, readiness verification, and semantic query, with equivalent approved external configuration on both successful paths and explicit auto-start rejection controls.\",\"businessOutcome\":\"Operators can establish semantic retrieval without silent readiness claims, credential leakage, implicit provider behavior, fallback, or regression of accepted persistence, retrieval, readiness, canonical authority, and full-snapshot compatibility.\",\"observableBoundary\":\"The no-opt-in successful path uses approved external configuration, reports actionable SemanticIndexPending, performs zero automatic start, invokes explicit backfill and readiness operations, verifies readiness, then queries. The opted-in successful path differs only by opt-in and may auto-start after approved configuration validation. Opted-in missing, unsafe, or unapproved configuration fails with zero automatic start/backfill/provider/database side effects and redacted actionable errors. Semantic query remains rejected until verified alignment and no-argument full snapshots remain exact.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-05-NewProjectJourney\"}"
+          "value": "{\"description\":\"Run the canonical semantic projection lifecycle automatically inside argo init with explicit dual-gate, fail-closed, resumable three-channel semantics and no standalone public lifecycle tools.\",\"businessOutcome\":\"A project has one canonical initialization path that truthfully reports structural-only, blocked, reconciling, or aligned state and can later align without operator tool choreography.\",\"observableBoundary\":\"Both gates disabled completes structural-only initialization with explicit Disabled and SemanticIndexPending evidence and zero provider/vector side effects. Both exactly enabled plus valid external configuration runs idempotent/resumable full Element, ArchitectureRelationship, and View reconciliation and records readiness only after queryability/global coherence. Half-enabled or unsafe/missing configuration fails closed with redacted action and zero provider/vector writes. Rerun resumes or idempotently confirms alignment. The three former public lifecycle tools are absent.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-SP-05-NewProjectJourney\"}"
         },
         {
-          "name": "requirementSource.WP-P3",
-          "value": "Human-authorized WP-P3 requirement plus delegated independent-audit correction dated 2026-07-27: both successful fresh-project paths use equivalent approved external configuration and vary only explicit auto-backfill opt-in; no-opt-in proves pending, zero auto-start, explicit backfill/readiness, then query; opted-in missing/unsafe/unapproved controls prove zero automatic/backfill/provider/database effects and redacted actionable failure."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human requirement 2026-07-27: internalize startNewProjectSemanticJourney, backfillSystemArchitectureSemanticProjection, and verifySystemArchitectureSemanticReadiness into projection initialization invoked by argo init and retire all three public tools."
         },
         {
           "name": "acceptanceApproval.SP-05",
-          "value": "approvedByHuman=true|2026-07-27|delegated parent/orchestrator approved original SP-05 and explicitly required this independent-audit correction for equivalent successful-path configuration and opted-in missing/unsafe/unapproved zero-side-effect controls"
+          "value": "approvedByHuman=true|2026-07-27|delegated parent approval for acceptance boundary A canonical init automatic full semantic lifecycle"
+        },
+        {
+          "name": "flagNamingDebt",
+          "value": "The two E2E-named flags remain the production dual gate to preserve accepted W3.1 compatibility and avoid a third source of truth; naming is acknowledged debt, not evidence that production behavior is test-only."
+        },
+        {
+          "name": "evidenceBoundary",
+          "value": "Controlled production composition may prove code-complete for all gate/config/resume branches. Live release requires both exact gates, safe external credentials, real provider vectors, durable Neo4j persistence/queryability, and protected environment evidence; current unsafe temp ACL and unavailable neo4jUri remain explicit blockers."
         },
         {
           "name": "deliveryStatus",
@@ -2262,9 +2298,9 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
-          "description": "Control point: run two successful controlled fresh-project journeys from argo init through canonical structural projection with equivalent approved external Neo4j and embedding-provider configuration, differing only in automatic-backfill opt-in. In the no-opt-in journey, observe structural completion, invoke the exposed explicit backfill command/tool, inspect progress/checkpoint and controlled failure/resume evidence, invoke readiness verification, then semantic query. In the opted-in journey, permit orchestration to auto-start only after approved configuration validation, then verify readiness before query. Also run opted-in missing, unsafe, and unapproved configuration controls. In every fixture invoke the no-argument full-snapshot boundary and attempt semantic query before verified readiness. Observation point: the no-opt-in path reports actionable SemanticIndexPending, performs zero automatic start, requires explicit backfill invocation, verifies readiness, then permits semantic query only when aligned. The valid opted-in path auto-starts only after approved configuration validation. Every invalid opted-in control produces zero automatic start, backfill, provider, and database side effects and a redacted actionable failure containing no credential values or unsafe source contents. All non-aligned semantic queries fail closed; successful paths preserve canonical JSON authority and exact no-argument full snapshots; no path uses embedded credentials, implicit provider defaults, silent fallback, or weaker WP-P1/WP-P2 behavior.",
+          "description": "Control point: invoke canonical argo init for both gates exactly enabled with valid controlled production configuration, both disabled, each half-enabled combination, missing and unsafe external configuration, interrupted reconciliation resume, unchanged rerun, and rerun of a prior structural-only project; inspect public tools/list and routing. Observation point: enabled+valid runs full idempotent/resumable Element, ArchitectureRelationship, and View reconciliation and records readiness only after durable queryability/global coherence; disabled completes structural-only with explicit Disabled/Pending evidence and zero provider/vector effects; half-enabled or unsafe/missing fails closed with redacted action, zero provider/vector writes, and no false readiness; rerun resumes or aligns; canonical init semantics remain explicit; the three standalone lifecycle tools are absent publicly.",
           "type": "Acceptance Test",
-          "Input": "Two successful controlled fresh projects with equivalent approved external Neo4j and embedding-provider configuration differing only in explicit automatic-backfill opt-in; three additional opted-in projects with respectively missing, unsafe, and unapproved external configuration; canonical structural source; controlled progress/checkpoint/failure/resume fixtures; readiness states; semantic queries; side-effect ledgers; redaction canaries; and no-argument compatibility controls.",
+          "Input": "Fresh and structural-only projects; exact dual-gate matrix; safe, missing, and unsafe external configuration; interrupted checkpoints; unchanged rerun; durable three-channel observations; readiness records; public MCP discovery/routing; redaction canaries.",
           "acceptanceCriteria": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js"
         }
       ]
@@ -2273,23 +2309,23 @@
       "id": "semprod-ready-plateau",
       "name": "Production Semantic Retrieval Ready",
       "type": "Plateau",
-      "description": "Gated target state only: canonical structure exists; every canonical Element, ArchitectureRelationship, and View has aligned durable semantics; production backfill and resume boundaries are operable; default semantic query uses qualified external configuration and Neo4j Vector Index retrieval; readiness passes before query; canonical JSON remains authoritative; fail-closed behavior and compatible no-argument full snapshots remain intact. The plateau may be claimed only after SP-01 through SP-05 and compatibility/regression gates pass.",
+      "description": "Gated target state only: canonical JSON is authoritative; every canonical Element, ArchitectureRelationship, and View has durable queryable globally coherent semantic evidence; canonical argo init owns full idempotent/resumable reconciliation; every successful canonical write invalidates readiness and either remains explicit Pending or Stale without vector work or completes exact touched-ID upsert/tombstone under the production dual gate; every ordinary query freshly verifies readiness; only getSystemArchitecture remains public for read/query semantics.",
       "attributes": [
         {
           "name": "releaseGates",
-          "value": "SP-01 full backfill; SP-02 persistent projection lifecycle; SP-03 default three-channel threshold-all vector retrieval; SP-04 fail-closed readiness; SP-05 new-project operator journey; no-argument full-snapshot and canonical-authority compatibility; WP-P1/WP-P2 regressions; external-credential and redaction boundaries."
+          "value": "A init automatic lifecycle; B all batch/focused persistent incremental indexing; C partial-failure query fail-closed and later init recovery; D sole getSystemArchitecture public surface; preserved SP-01..SP-04 internals; canonical authority; external credential/redaction; no production cleanup."
         },
         {
           "name": "deliveryClaim",
-          "value": "Target only. Claiming this plateau requires passing SP-01..SP-05 plus compatibility/regression gates in the protected production-facing acceptance environment; graph validation, intent approval, or partial test success is not delivery evidence."
+          "value": "Code-complete requires controlled production-composition acceptance for A-D and protected regressions. Live release additionally requires both exact E2E-named production gates, safe external credentials, real provider vectors, durable Neo4j queryability/global coherence, and no blocked live evidence."
         },
         {
           "name": "releaseBoundary.WP-P3",
-          "value": "No embedded credentials, implicit provider defaults, silent fallback, readiness bypass, canonical JSON authority weakening, or regression of accepted WP-P1 persistence/backfill and WP-P2 retrieval/readiness behavior. deliveryStatus remains exclusively runner-owned."
+          "value": "WP-P3 public lifecycle exposure is retired. WP-P1 durable persistence/backfill and WP-P2 retrieval/readiness remain private. No third gate, embedded credentials, defaults, silent fallback, readiness bypass, canonical-authority weakening, or production runId cleanup. deliveryStatus remains runner-owned."
         },
         {
-          "name": "requirementSource.WP-P3",
-          "value": "Human-authorized 2026-07-27 semprod-wp-operator-release release semantics: plateau only after SP-01..SP-05 and compatibility/regression gates."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Human-authorized 2026-07-27 cross-cutting semantic lifecycle optimization and delegated A-D/global acceptance approval."
         }
       ]
     },
@@ -2297,7 +2333,7 @@
       "id": "semprod-wp-persistence-backfill",
       "name": "WP-P1 Persistent Projection and Full Backfill",
       "type": "Work Package",
-      "description": "Deliver production semantic record lifecycle and explicit bounded resumable three-channel backfill after structural projection.",
+      "description": "WP-P1 durable semantic persistence and bounded resumable full three-channel reconciliation remain accepted internal capabilities. Canonical argo init now composes them privately; the standalone public backfill tool is retired.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -2305,15 +2341,15 @@
         },
         {
           "name": "dependencies",
-          "value": "Canonical structural projection, qualified provider, external credentials."
+          "value": "Canonical structural projection, exact production dual gate, qualified provider, safe external credentials."
         },
         {
           "name": "codingTargets",
-          "value": "Production semantic store; backfill orchestrator; MCP command/tool; checkpoint/progress/failure evidence."
+          "value": "Preserve production semantic store, durable adapters, backfill orchestrator, checkpoints, progress, failure evidence, and no-cleanup policy as private init composition."
         },
         {
           "name": "acceptanceBoundary",
-          "value": "SP-01/SP-02 proposed; no delivery evidence."
+          "value": "SP-01 private full reconciliation plus SP-02 durable incremental persistence; prior public invocation semantics superseded with delegated approval."
         }
       ]
     },
@@ -2321,7 +2357,7 @@
       "id": "semprod-wp-default-retrieval",
       "name": "WP-P2 Default Vector Retrieval and Readiness",
       "type": "Work Package",
-      "description": "Replace synthetic/empty default with production Neo4j-vector retrieval and bind fail-closed readiness to persistent alignment.",
+      "description": "WP-P2 production Neo4j-vector retrieval and persistent readiness internals remain accepted private capabilities behind the sole public getSystemArchitecture(query) path; standalone readiness exposure is retired.",
       "attributes": [
         {
           "name": "affectedElements",
@@ -2329,15 +2365,15 @@
         },
         {
           "name": "dependencies",
-          "value": "WP-P1 durable aligned index."
+          "value": "WP-P1 durable projection plus fresh persistent readiness verification on every ordinary query."
         },
         {
           "name": "codingTargets",
-          "value": "Default boundary; Neo4j adapter; three-channel threshold-all; canonical checks; readiness dispatch."
+          "value": "Preserve default retrieval, readiness evaluator, Neo4j three-channel vector adapter, deterministic closure, and canonical checks behind getSystemArchitecture(query)."
         },
         {
           "name": "acceptanceBoundary",
-          "value": "SP-03/SP-04 plus compatibility regression; no delivery evidence."
+          "value": "SP-03/SP-04 plus TS-00 compatibility and public-surface regression; no standalone public readiness tool."
         }
       ]
     },
@@ -2345,31 +2381,31 @@
       "id": "semprod-wp-operator-release",
       "name": "WP-P3 Operator Journey and Production Release",
       "type": "Work Package",
-      "description": "WP-P3 exposes and documents the production new-project operator journey, formalizes SP-05, and authorizes the Production Semantic Retrieval Ready plateau only after SP-01 through SP-05 and all compatibility/regression, external-credential, canonical-authority, and fail-closed gates pass. It depends on accepted WP-P1/WP-P2 and protected live-environment evidence and does not itself claim delivery.",
+      "description": "WP-P3 is superseded as a public three-tool operator journey. Its retained scope is canonical lifecycle integration and release assurance: argo init privately composes WP-P1 full reconciliation and readiness recording, all canonical writes invalidate and incrementally reconcile exact touched IDs, and getSystemArchitecture is the sole public read/query surface. WP-P1/WP-P2 internals remain protected.",
       "attributes": [
         {
           "name": "affectedElements",
-          "value": "semprod-operator-journey-process; semprod-ready-plateau; grag-query-service; grag-credential-boundary"
+          "value": "semprod-operator-journey-process; semprod-backfill-control; semprod-persistent-projection-requirement; grag-index-lifecycle; semprod-default-vector-retrieval; semprod-readiness-requirement; grag-query-service; grag-mcp-interface; semprod-ready-plateau; grag-credential-boundary"
         },
         {
           "name": "dependencies",
-          "value": "Accepted WP-P1 at 40/40 and accepted WP-P2 at commit 56cfad2 with SP-03/SP-04 and full runner 42/42; protected live environment; approved external Neo4j and embedding-provider configuration."
+          "value": "Accepted WP-P1/WP-P2/WP-P3 baseline at commit be921fc with reported 43/43; exact production dual gate; safe external configuration; protected live environment for release evidence."
         },
         {
           "name": "releaseGates",
-          "value": "SP-01..SP-05; no-argument full-snapshot compatibility; canonical JSON authority; fail-closed semantic query; external credential provenance and redaction; WP-P1 persistence/backfill and WP-P2 retrieval/readiness regression gates."
+          "value": "A-D mounted acceptance; public tool retirement; init reconciliation; all mutation paths; fresh readiness per query; canonical/full-snapshot/graph-tidy compatibility; external credential/redaction; WP-P1/WP-P2 protected regressions."
         },
         {
           "name": "acceptanceBoundary",
-          "value": "SP-05 is mounted on semprod-operator-journey-process. WP-P3 remains not delivered until SP-05 and the inherited SP-01..SP-04 plus compatibility/regression gates pass; intent approval and graph validation are not pass evidence."
+          "value": "SP-05 now owns canonical init lifecycle A; DT-16 and SP-02 own B; SP-04 owns C; TS-00 owns D. Code-complete and live-release evidence are distinct."
         },
         {
           "name": "scopeBoundary.WP-P3",
-          "value": "Only operator journey and production release intent. No production implementation, no credential embedding/defaulting, no fallback, and no weakening of accepted WP-P1/WP-P2 behavior."
+          "value": "Retire only public exposure. Preserve private WP-P1 persistence/backfill, WP-P2 retrieval/readiness, live E2E test-only cleanup, canonical authority, and externally supplied credentials. No implementation claim."
         },
         {
-          "name": "requirementSource.WP-P3",
-          "value": "Delegated parent/orchestrator authorization dated 2026-07-27 for semprod-wp-operator-release."
+          "name": "requirementSource.semantic-lifecycle-optimization",
+          "value": "Delegated parent/orchestrator authorization dated 2026-07-27 for cross-cutting semantic lifecycle optimization and global handoff approval."
         }
       ]
     }
@@ -3227,13 +3263,13 @@
     },
     {
       "id": "semprod-rel-backfill-persistence",
-      "name": "Backfill realizes persistent projection requirement",
+      "name": "Internal reconciliation realizes persistent projection requirement",
       "type": "Realization",
       "source_id": "semprod-backfill-control",
       "target_id": "semprod-persistent-projection-requirement",
       "source_name": "Full Semantic Index Backfill Control",
       "target_name": "Persistent Production Semantic Projection",
-      "description": "Backfill realizes the initial durable projection by enumerating/upserting every canonical record with versioned evidence.",
+      "description": "Private canonical-init reconciliation realizes the initial durable projection through stable identities, complete evidence, checkpoints, no production cleanup, and three-channel completion.",
       "statement": "Full Semantic Index Backfill Control --(Realization)--> Persistent Production Semantic Projection"
     },
     {
@@ -3277,7 +3313,7 @@
       "target_id": "semprod-operator-journey-process",
       "source_name": "Argo Project Operator",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Operator owns explicit backfill initiation when auto opt-in is absent and readiness verification before semantic query.",
+      "description": "The operator invokes canonical argo init and observes explicit lifecycle outcomes; separate public start, backfill, and readiness operations are retired.",
       "statement": "Argo Project Operator --(Assignment)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3288,29 +3324,29 @@
       "target_id": "semprod-structural-projection",
       "source_name": "Establish Semantic Retrieval for New Project",
       "target_name": "Canonical Structural Neo4j Projection",
-      "description": "After argo init, the operator journey initiates ordinary canonical structural synchronization.",
+      "description": "Canonical argo init triggers ordinary canonical structural projection before any optional dual-gated semantic reconciliation.",
       "statement": "Establish Semantic Retrieval for New Project --(Triggering)--> Canonical Structural Neo4j Projection"
     },
     {
       "id": "semprod-rel-structural-backfill",
-      "name": "Structural projection precedes semantic backfill",
+      "name": "Structural projection precedes internal reconciliation",
       "type": "Triggering",
       "source_id": "semprod-structural-projection",
       "target_id": "semprod-backfill-control",
       "source_name": "Canonical Structural Neo4j Projection",
       "target_name": "Full Semantic Index Backfill Control",
-      "description": "Structural completion creates SemanticIndexPending and makes explicit/opted-in backfill actionable; it does not imply readiness.",
+      "description": "Same-version structural completion is a prerequisite for private full reconciliation. Disabled gates stop at explicit Pending with zero vector work; exact dual-enabled valid configuration may continue; this relation does not expose a public tool.",
       "statement": "Canonical Structural Neo4j Projection --(Triggering)--> Full Semantic Index Backfill Control"
     },
     {
       "id": "semprod-rel-backfill-journey",
-      "name": "Backfill serves operator journey",
+      "name": "Private reconciliation serves canonical init",
       "type": "Serving",
       "source_id": "semprod-backfill-control",
       "target_id": "semprod-operator-journey-process",
       "source_name": "Full Semantic Index Backfill Control",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Backfill serves the journey with progress, checkpoint, failure, resume, and alignment evidence.",
+      "description": "The private WP-P1 capability serves canonical init with durable progress, checkpoint, failure, resume, queryability, global coherence, and readiness evidence; it is not publicly routed.",
       "statement": "Full Semantic Index Backfill Control --(Serving)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3321,7 +3357,7 @@
       "target_id": "semprod-operator-journey-process",
       "source_name": "Intent Architecture Query Service",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Query service serves semantics only after readiness and preserves no-argument canonical snapshots during pending state.",
+      "description": "The sole public getSystemArchitecture service provides exact full snapshots or freshly readiness-gated semantic query after canonical init; no public readiness tool is required.",
       "statement": "Intent Architecture Query Service --(Serving)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3332,7 +3368,7 @@
       "target_id": "semprod-operator-journey-process",
       "source_name": "Production Semantic Retrieval Ready",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Non-directional Association: relates the verified production-ready target state to the completed operator-journey outcome for contextual traceability only; it does not encode causal direction, sequencing, activation, or delivery evidence.",
+      "description": "Non-directional context: the verified production-ready plateau relates to successful canonical init and write/query lifecycle outcomes but does not itself assert delivery or live evidence.",
       "statement": "Production Semantic Retrieval Ready --(Association)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3359,13 +3395,13 @@
     },
     {
       "id": "semprod-rel-wp2-wp3",
-      "name": "Default retrieval readiness precedes operator release",
+      "name": "Private retrieval readiness precedes lifecycle integration release",
       "type": "Triggering",
       "source_id": "semprod-wp-default-retrieval",
       "target_id": "semprod-wp-operator-release",
       "source_name": "WP-P2 Default Vector Retrieval and Readiness",
       "target_name": "WP-P3 Operator Journey and Production Release",
-      "description": "Operator release waits for production default retrieval and fail-closed readiness.",
+      "description": "Revised WP-P3 lifecycle integration depends on preserved WP-P2 private retrieval/readiness and does not retain standalone readiness exposure.",
       "statement": "WP-P2 Default Vector Retrieval and Readiness --(Triggering)--> WP-P3 Operator Journey and Production Release"
     },
     {
@@ -3392,24 +3428,24 @@
     },
     {
       "id": "semprod-rel-wp3-plateau",
-      "name": "WP-P3 establishes production-ready plateau",
+      "name": "WP-P3 lifecycle integration governs production-ready plateau",
       "type": "Realization",
       "source_id": "semprod-wp-operator-release",
       "target_id": "semprod-ready-plateau",
       "source_name": "WP-P3 Operator Journey and Production Release",
       "target_name": "Production Semantic Retrieval Ready",
-      "description": "WP-P3 establishes the target only after proposed production acceptance passes; this is intent, not delivery evidence.",
+      "description": "WP-P3 may establish the target only after A-D code-complete evidence and required live-release evidence; retirement of public lifecycle tools is intent, not delivery proof.",
       "statement": "WP-P3 Operator Journey and Production Release --(Realization)--> Production Semantic Retrieval Ready"
     },
     {
       "id": "semprod-rel-wp1-backfill",
-      "name": "WP-P1 realizes full backfill control",
+      "name": "WP-P1 realizes private full reconciliation",
       "type": "Realization",
       "source_id": "semprod-wp-persistence-backfill",
       "target_id": "semprod-backfill-control",
       "source_name": "WP-P1 Persistent Projection and Full Backfill",
       "target_name": "Full Semantic Index Backfill Control",
-      "description": "Directional semantics: WP-P1 delivers the explicit bounded, resumable, idempotent three-channel production backfill control; this relationship does not imply delivery evidence or human approval.",
+      "description": "WP-P1 supplies bounded resumable idempotent full reconciliation as a private capability composed by canonical init; public backfill exposure is retired.",
       "statement": "WP-P1 Persistent Projection and Full Backfill --(Realization)--> Full Semantic Index Backfill Control"
     },
     {
@@ -3475,7 +3511,7 @@
       "target_id": "semprod-readiness-requirement",
       "source_name": "Default MCP Neo4j Vector Retrieval",
       "target_name": "Fail-Closed Semantic Index Readiness",
-      "description": "Directional semantics: the default semantic path realizes readiness by rejecting pending, partial, stale, failed, unknown, or mismatched index states before retrieval with actionable evidence and fullSnapshotFallback:false, while preserving full-snapshot modes.",
+      "description": "The private WP-P2 path realizes readiness by freshly rejecting disabled, pending, partial, stale, failed, unknown, or mismatched persistent state on every getSystemArchitecture(query), with fullSnapshotFallback:false; full-snapshot bypasses remain.",
       "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> Fail-Closed Semantic Index Readiness"
     },
     {
@@ -3491,13 +3527,13 @@
     },
     {
       "id": "semprod-rel-wp3-journey",
-      "name": "WP-P3 realizes operator journey",
+      "name": "WP-P3 realizes canonical init lifecycle",
       "type": "Realization",
       "source_id": "semprod-wp-operator-release",
       "target_id": "semprod-operator-journey-process",
       "source_name": "WP-P3 Operator Journey and Production Release",
       "target_name": "Establish Semantic Retrieval for New Project",
-      "description": "Directional semantics: WP-P3 delivers the documented two-path operator journey and SP-05 boundary without claiming delivery before acceptance passes.",
+      "description": "WP-P3 now realizes canonical init lifecycle integration and release assurance, superseding its prior three-public-tool operator journey without weakening WP-P1/WP-P2 internals.",
       "statement": "WP-P3 Operator Journey and Production Release --(Realization)--> Establish Semantic Retrieval for New Project"
     },
     {
@@ -3508,7 +3544,7 @@
       "target_id": "grag-credential-boundary",
       "source_name": "Establish Semantic Retrieval for New Project",
       "target_name": "External Production Credential Boundary",
-      "description": "Non-directional policy association: the operator journey consumes already-accepted backfill and query services subject to the protected external credential boundary. This relationship records active compliance and traceability without claiming that SP-05 realizes, reopens, or controls delivery of the credential policy; actual runtime dependency remains through the existing services that serve the journey.",
+      "description": "Canonical init and ordinary semantic query obey the external credential constraint. Both-disabled performs no provider/vector work; exact dual-enabled execution requires safe external configuration; half-enabled or unsafe/missing state fails closed with redacted action.",
       "statement": "Establish Semantic Retrieval for New Project --(Association)--> External Production Credential Boundary"
     },
     {
@@ -3519,7 +3555,7 @@
       "target_id": "semprod-readiness-requirement",
       "source_name": "Establish Semantic Retrieval for New Project",
       "target_name": "Fail-Closed Semantic Index Readiness",
-      "description": "Non-directional policy association: the operator journey actively verifies and obeys the already-accepted fail-closed readiness boundary while consuming the existing Query Service. This relationship preserves requirement traceability without claiming that SP-05 realizes, reopens, or controls delivery of the protected WP-P2 readiness requirement; actual runtime dependency remains through the Query Service serving the journey.",
+      "description": "Canonical init persists readiness only after complete reconciliation queryability/global coherence, and getSystemArchitecture(query) re-reads persistent readiness every time; no separate public verification tool exists.",
       "statement": "Establish Semantic Retrieval for New Project --(Association)--> Fail-Closed Semantic Index Readiness"
     }
   ],
@@ -4050,7 +4086,7 @@
       "view_name": "Production Semantic Index Requirements Realization",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, and acceptors need SP-03/SP-04 to be realized by the shipped default semantic function, native vector projection, bootstrap capability, and external credential constraint without weakening canonical authority or full-snapshot compatibility; Purpose: designing; Scope: WP-P2 default retrieval and fail-closed readiness requirements over the accepted durable semantic index, including native retrieval, production bootstrap capability, and external production credentials, while WP-P3 remains excluded; Rationale: this view is a Requirements Realization Viewpoint instance because it traces the two mounted requirements to the motivation, capability, application, technology, data, and constraint elements that satisfy them.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, operators, and acceptors need A-D to realize one fail-closed canonical semantic lifecycle while WP-P1 persistence/backfill and WP-P2 retrieval/readiness remain private; Purpose: designing, deciding, and handoff preparation; Scope: exact dual-gated init reconciliation, durable all-path incremental indexing, persistent readiness per query, sole public getSystemArchitecture surface, canonical authority, and external credential constraint; Rationale: this view is a Requirements Realization Viewpoint instance because it traces the refined application/data/constraint elements that satisfy A-D and explicitly supersedes the former three-tool public journey.",
       "included_elements": [
         "grag-semantic-index",
         "semprod-goal",
@@ -4071,10 +4107,10 @@
     },
     {
       "view_id": "semprod-operator-journey",
-      "view_name": "New Project Semantic Retrieval Operator Journey",
+      "view_name": "Canonical Init Semantic Lifecycle Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need a complete, safe path from argo init through canonical structural projection, explicit or explicitly opted-in semantic backfill, readiness verification, and semantic query while retaining compatible full snapshots; Purpose: designing; Scope: seven-element new-project production journey from operator role through structural/backfill/readiness/query boundaries to the gated target plateau; Rationale: this focused Application Usage Viewpoint instance connects every included operational element. Existing Backfill and Query Services serve the journey and carry the accepted runtime dependencies; the journey actively observes the protected fail-closed readiness policy through a non-realizing Association, so SP-05 cannot reopen or regress WP-P2 delivery. Both successful paths use equivalent approved external configuration and differ only by opt-in; invalid opted-in configuration has zero automatic/backfill/provider/database effects; the plateau Association remains contextual and non-causal.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need one explicit safe path through argo init and getSystemArchitecture without separate public lifecycle choreography; Purpose: designing and handoff preparation; Scope: operator invocation, structural projection, private full reconciliation, fail-closed readiness, sole query service, and gated plateau; Rationale: this Application Usage Viewpoint instance shows how canonical init uses private WP-P1/WP-P2 capabilities and how getSystemArchitecture serves reads. Both gates disabled is structural-only with zero vector effects; exact dual-enabled valid configuration reconciles; half-enabled or unsafe/missing configuration fails closed; no standalone lifecycle tools are public.",
       "included_elements": [
         "grag-query-service",
         "semprod-operator-role",
@@ -4099,7 +4135,7 @@
       "view_name": "Production Semantic Completion Delivery Sequence",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: the production semantic gap must close through sequenced work packages whose dependencies match architecture dependencies and whose gates do not reuse test-only evidence; Purpose: deciding and handoff preparation; Scope: persistent projection/backfill, default retrieval/readiness, operator release, and target plateau; Rationale: this view exposes the gap, ordered work packages, affected requirements, and target plateau without marking new work delivered.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners need the accepted WP-P1/WP-P2 internals preserved while WP-P3 public exposure is explicitly superseded by canonical init, automatic mutation lifecycle, and sole-query-surface release gates; Purpose: deciding and handoff preparation; Scope: prior persistence/retrieval work packages, revised WP-P3 lifecycle integration, A-D evidence, and production-ready plateau; Rationale: this view records the migration from three public lifecycle tools to internal composition without erasing accepted work-package history or claiming live release evidence.",
       "included_elements": [
         "semprod-new-project-gap",
         "semprod-persistent-projection-requirement",
@@ -4123,7 +4159,7 @@
       "view_name": "WP-P1 Persistent Projection and Full Backfill",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need WP-P1 scope and dependencies to prove a separate durable production persistence path plus bounded resumable three-channel full backfill without reusing or weakening test-only cleanup evidence; Purpose: deciding, auditing, and handoff preparation; Scope: only semprod-wp-persistence-backfill and its five affected elements, with canonical structural projection as the upstream trigger; Rationale: this view binds the WP-P1 work package to the explicit backfill control, persistence requirement, existing delivered lifecycle/index/adapter boundaries, and structural prerequisite while excluding WP-P2 default retrieval and WP-P3 release work.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P1 durable persistence and bounded resumable full reconciliation preserved as private canonical-init capabilities with no production cleanup; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P1 and its five affected elements plus structural prerequisite, exact dual gate, and internal invocation; Rationale: this view binds accepted WP-P1 behavior to canonical init while explicitly retiring only standalone public backfill exposure and preserving test-only live E2E cleanup.",
       "included_elements": [
         "semprod-wp-persistence-backfill",
         "semprod-structural-projection",
@@ -4148,7 +4184,7 @@
       "view_name": "WP-P2 Default Retrieval and Readiness Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, runtime operators, and acceptors need the WP-P2 public MCP/readiness boundary, realization assignments, and external credential dependency to agree without authorizing WP-P3; Purpose: deciding; Scope: WP-P2 work package, semantic index, default retrieval, fail-closed readiness, query service, MCP interface, and external production credential constraint; Rationale: this view is an Implementation and Migration Viewpoint instance because it binds the authorized work package to its public application boundary, readiness requirement, and mandatory credential constraint while predecessor sequencing remains in semprod-delivery-sequence.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P2 retrieval/readiness preserved behind the sole public getSystemArchitecture boundary with fresh persistent readiness on every ordinary query; Purpose: deciding and handoff preparation; Scope: WP-P2, semantic index, default retrieval, fail-closed readiness, query service, MCP interface, and external credential constraint; Rationale: this view binds the accepted private WP-P2 capabilities to one public read/query interface and explicitly retires standalone readiness exposure while preserving no-argument and graph-tidy bypass.",
       "included_elements": [
         "semprod-wp-default-retrieval",
         "grag-semantic-index",
@@ -4195,10 +4231,10 @@
     },
     {
       "view_id": "semprod-wp3-operator-release-boundary",
-      "view_name": "WP-P3 Operator Journey and Release Boundary",
+      "view_name": "WP-P3 Canonical Lifecycle Integration Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the exact WP-P3 scope, protected credential policy, public query boundary, operator journey, and gated release plateau to agree without reopening WP-P1/WP-P2; Purpose: deciding; Scope: exactly semprod-wp-operator-release, semprod-operator-journey-process, semprod-ready-plateau, grag-query-service, and grag-credential-boundary; Rationale: this five-element focused decision view binds the work package to the affected business/application context and target plateau. The journey actively observes the already-accepted external credential policy through a non-realizing Association, while actual runtime dependency is carried by existing services; SP-05 therefore cannot make the protected credential boundary depend on the new RED.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the previous WP-P3 public operator journey superseded without weakening WP-P1/WP-P2 or inventing live evidence; Purpose: deciding and handoff preparation; Scope: WP-P3, canonical init lifecycle, production-ready plateau, sole query service, and external credential constraint; Rationale: this focused view records that WP-P3 now governs lifecycle integration and release assurance: three standalone public tools are retired, argo init owns reconciliation, writes invalidate readiness, and getSystemArchitecture remains the only public architecture read/query surface.",
       "included_elements": [
         "semprod-wp-operator-release",
         "semprod-operator-journey-process",

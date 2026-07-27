@@ -1,5 +1,34 @@
 # Intent Design Session Record
 
+## 2026-07-27 — Canonical Semantic Lifecycle Optimization Handoff
+
+- Persistent stage/session ID: `intent-semantic-lifecycle-optimization-20260727T1114+08`.
+- Baseline: `be921fc`, clean branch start, reported protected runner `43/43`; `.argo/temp` appeared empty through the initial glob but handoff validation later exposed a stale concatenated WP-P3 JSON object, which was removed only after the replacement rationale and new complete handoff were written.
+- Selected viewpoints: Requirements Realization Viewpoint for A-D traceability; Application Usage Viewpoint for operator use of canonical `argo init` and the sole public `getSystemArchitecture` service; Implementation and Migration Viewpoint for preserving WP-P1/WP-P2 internals while superseding WP-P3 public exposure. Six touched views carry explicit Viewpoint/Concern/Purpose/Scope/Rationale bindings.
+- Business decision: `startNewProjectSemanticJourney`, `backfillSystemArchitectureSemanticProjection`, and `verifySystemArchitectureSemanticReadiness` are internalized into canonical initialization or retained only as private capabilities; all three are retired from public discovery/routing. `getSystemArchitecture` remains the sole public architecture read/query boundary.
+- Dual gate: real provider/vector work is authorized only when `ARGO_LIVE_PROVIDER_E2E=1` and `ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1` exactly. Both disabled is structural-only with explicit Disabled/Pending evidence and zero provider/vector effects. Half-enabled or unsafe/missing external configuration fails closed with redacted action and zero provider/vector writes. The E2E names are explicit compatibility debt; no third flag is authorized.
+- Mutation lifecycle: every successful batch or focused Element/ArchitectureRelationship/View add/update/remove invalidates readiness first and records exact touched IDs. Dual-gated success durably upserts/tombstones complete evidence and becomes Aligned only after queryability/global coherence; disabled remains Pending/Stale; failure preserves canonical JSON and records Failed/Stale; preview has zero vector work; production has no runId cleanup.
+- Init/query lifecycle: `argo init` performs idempotent/resumable full three-channel reconciliation when dual-enabled and valid, and may align a previously structural-only project. Every ordinary `getSystemArchitecture(query)` freshly verifies persistent readiness and rejects disabled/pending/partial/stale/failed/mismatched state with `fullSnapshotFallback:false`; omitted-query and every graph-tidy request remain exact canonical bypasses.
+
+### Mounted coverage
+
+- A: `semprod-operator-journey-process` `functionalPoint.SP-05-new-project-journey` -> `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney`.
+- B: `grag-index-lifecycle` `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`; `semprod-persistent-projection-requirement` `functionalPoint.SP-02-persistent-projection` -> `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`; `grag-wp-3-1` `functionalPoint.W3-1-live-mutation-vector-e2e` -> `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E`.
+- C: `semprod-readiness-requirement` `functionalPoint.SP-04-fail-closed-readiness` -> `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`.
+- D: `grag-mcp-interface` `functionalPoint.TS-00` -> `ExplicitAcceptanceTestcase-TS-00`; unchanged `grag-query-service` DT-01/DT-02 functional points remain mapped to their mounted tests.
+- Preserved private internals: `semprod-backfill-control` SP-01 -> `ExplicitAcceptanceTestcase-SP-01-FullBackfill`; `semprod-default-vector-retrieval` SP-03 -> `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- All modified testcases have schema-compliant `acceptanceApproval.*` attributes recording delegated `approvedByHuman=true`. The handoff schema does not permit an `approvedByHuman` property, so delegated global approval is recorded in handoff notes.
+- Dependency exploration used `argo.getIntentElementContext` with depth 6 for all nine handoff elements. Unchanged delivered stop boundaries include canonical graph, mode validation, semantic index, credential boundary, and provider adapter with same-element mounted coverage and committed `be921fc` baseline evidence. Grouping/migration context and unchanged structural projection are evidence-backed exclusions; they have no new functional point or implementation acceptance behavior.
+
+### Mutation, validation, and evidence boundaries
+
+- All corrected previews passed at `61 elements / 87 relationships / 34 views`; stable names were retained after two no-write rename previews correctly failed on relationship label consistency.
+- All graph writes used Argo MCP mutation tools. `argo.validateSystemArchitecture` passed after the final mutation. `.argo/temp/IntentToImplementationHandoff.json` contains nine implementation-bearing intent elements, 23 relationship IDs, `openQuestions: []`, complete A-D coverage/evidence notes, and delegated global approval; `argo.validateStageHandoff(stage="intent-to-implementation")` passed.
+- Checklist self-audit: A1-A5 passed through MCP persistence, complete functional points, traversable relationships, and bound views; B1-B3 passed through exact mounted control/observation boundaries and delegated approvals; C1-C2 passed through depth-6 context exploration, same-element mappings, unchanged delivered boundaries, and evidence-backed exclusions; D1-D8 passed with no open questions; E1-E3 passed through the complete validated schema-compliant handoff and approval note; F1 is this record and F2 is the stage commit containing the graph, handoff, and this record.
+- Code-complete may be established with controlled production-composition tests for routing, dual-gate matrices, exact touched IDs, durable operations, zero-side-effect branches, no cleanup, failure/recovery, redaction, and regressions. Live release additionally requires both exact gates, safe external-only credentials, real qualified 1024-dimensional provider output, durable Neo4j persistence, vector queryability, and global coherence.
+- Live evidence remains blocked and was not invented: post-write Neo4j sync reports `neo4jUri is required for start`; the parent reported unsafe `.argo/temp` Windows ACL. Current apply evidence recorded zero real provider requests, `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`, `alignmentState=Failed`, semantic query rejection, and `fullSnapshotFallback:false` while retaining canonical JSON authority.
+- No implementation contracts, business code, test code, scripts, configuration, or ImplementationToCoding handoff were modified. No `deliveryStatus` attribute was added, removed, changed, reverted, or fabricated.
+
 ## 2026-07-26 — Approved WP-P1 Persistence and Backfill Handoff
 
 - Persistent stage/session ID: `intent-semprod-wp-p1-20260726T2039+08`.
