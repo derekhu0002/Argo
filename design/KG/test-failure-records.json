@@ -1,5 +1,31 @@
 [
   {
+    "testcasename": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
+    "testdescription": "Acceptor control point: run ordinary semantic queries that match Element, Relationship, and View objects. Observation point: the success payload contains only canonical elements, relationships, and views collections; every returned object deeply equals the canonical object for the same id; derived summaries, provenance wrappers, semantic seeds, policy summaries, boundary summaries, semantic index evidence, description summaries, testCoverage, and businessObjects are absent.",
+    "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
+    "relatedIntentElementId": "grag-query-service",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
+    "exitCode": 1,
+    "failureError": "EXPECTED_CONTRACT_FAILURES:\n- canonical-object-subset-only: canonical-object-subset-only no-anchor direct callTool must not expose a business-summary result envelope\n\ntrue !== false",
+    "stdout": "FAIL canonical-object-subset-only",
+    "stderr": "EXPECTED_CONTRACT_FAILURES:\n- canonical-object-subset-only: canonical-object-subset-only no-anchor direct callTool must not expose a business-summary result envelope\n\ntrue !== false"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
+    "testdescription": "Acceptor control point: call ordinary getSystemArchitecture semantic query with responseProfile, detail, outputMode, debug, full, evidence, case variants, and combinations. Observation point: validation rejects each request as an illegal query contract before semantic retrieval, and the response contains no debug evidence, vector, queryTemplate, parameterContract, archimateSemantics, expandWith, or success canonical subset.",
+    "acceptanceCriteria": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
+    "relatedIntentElementId": "grag-mode-validation",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
+    "executionCommand": "c:\\Users\\Administrator\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
+    "exitCode": 1,
+    "failureError": "EXPECTED_CONTRACT_FAILURES:\n- reject-response-shape-controls: reject-response-shape-controls no-anchor direct callTool must fail closed\n\n'passed' !== 'failed'",
+    "stdout": "FAIL reject-response-shape-controls",
+    "stderr": "EXPECTED_CONTRACT_FAILURES:\n- reject-response-shape-controls: reject-response-shape-controls no-anchor direct callTool must fail closed\n\n'passed' !== 'failed'"
+  },
+  {
     "testcasename": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
     "testdescription": "Control point: execute actual canonical write paths with the exact dual-gate matrix and safe, unsafe, and missing external configuration; for both-enabled valid live composition, touch Element, ArchitectureRelationship, and View identities and inject provider, persistence, and queryability failures. Observation point: readiness invalidates first and exact touched IDs are returned; both-disabled produces explicit Pending or Stale and zero provider/vector work; half-enabled or unsafe/missing configuration fails closed with redacted action and zero provider/vector writes; both-enabled valid execution uses approved finite 1024-dimensional Qwen vectors, durably upserts or tombstones complete evidence, verifies all touched records through vector indexes, and reports Aligned only after global coherence; failures retain canonical authority, record Stale or Failed, and block semantic query; production performs no runId cleanup.",
     "acceptanceCriteria": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",

@@ -6,7 +6,7 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 
 - `.argo/scripts/argo-mcp-server.js` owns transport-neutral tool registration, keeps canonical `initializeWorkspace`/argo init semantics explicit, privately invokes the canonical semantic lifecycle after initialization, and delegates `getSystemArchitecture` without interpreting query policy.
 - `.argo/scripts/systemarchitecture-mcp-server.js` owns the deep query and canonical-write orchestration module: request validation, mode selection, canonical full reads, per-call persistent semantic readiness, exact touched-ID mutation dispatch, and durable lifecycle outcome attachment.
-- The BP MCP semantic query contract adds request-shape validation and canonical subset response mapping to this module. Forbidden response-shape controls (`responseProfile`, `detail`, `outputMode`, and debug/full/evidence variants) must fail before retrieval with `QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN`; successful ordinary semantic payloads expose a `document` whose root contains only canonical `elements`, `relationships`, and `views` collections.
+- The BP MCP semantic query contract adds request-shape validation and canonical subset response mapping to this module. Forbidden response-shape controls (`responseProfile`, `detail`, `outputMode`, and debug/full/evidence variants) must fail before retrieval with `QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN` for ordinary semantic queries with or without anchors; successful ordinary semantic payloads expose a `document` whose root contains only canonical `elements`, `relationships`, and `views` collections without requiring `query.anchors` to activate the contract.
 - `design/KG/SystemArchitecture.json` remains the canonical read source; no query mode may rewrite it.
 - W6 semantic-query responses must expose the governing canonical graph version in query/result evidence and it must equal the canonical version or Harness-defined fingerprint of the same legacy graph read; missing or mismatched canonical-version evidence blocks coherent-result delivery even when the no-argument canonical read still succeeds.
 
@@ -51,4 +51,4 @@ The cumulative canonical lifecycle target set remains `argo-mcp-server.js`, `sys
 
 ## Owned tests
 
-Runtime behavior is accepted through the test-owned paths declared in `tests/ARCHITECTURE.md`. The BP MCP semantic query contract is accepted through `tests/explicit/entries/runMcpSemanticQueryContract.js` with graph-mounted `#anchor` fragments. This module owns no mutable test expectations.
+Runtime behavior is accepted through the test-owned paths declared in `tests/ARCHITECTURE.md`. The BP MCP semantic query contract is accepted through `tests/explicit/entries/runMcpSemanticQueryContract.js` with graph-mounted `#anchor` fragments that also exercise no-anchor public `callTool` and unified MCP handler subcases for request-shape rejection and canonical subset payloads. This module owns no mutable test expectations.

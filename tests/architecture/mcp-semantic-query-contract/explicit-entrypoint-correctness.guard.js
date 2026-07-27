@@ -40,6 +40,9 @@ for (const requiredSignal of [
   'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
   'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
   'SEMANTIC_SUBSET_VIEW_MISSING',
+  'invokeUnifiedMcpTool',
+  'no-anchor direct callTool',
+  'no-anchor unified MCP handler',
   'EXPECTED_CONTRACT_FAILURES',
   'MCP_SEMANTIC_QUERY_CONTRACT_OK',
   'fs.mkdirSync(path.dirname(absolutePath), { recursive: true })',
@@ -77,6 +80,24 @@ assert(
 assert(
   !source.includes('child_process'),
   'MCP_SEMANTIC_ENTRYPOINT_CORRECTNESS_GUARD: entrypoint must not expose process plumbing',
+);
+
+const rejectCaseStart = source.indexOf("name: 'reject-response-shape-controls'");
+const canonicalCaseStart = source.indexOf("name: 'canonical-object-subset-only'");
+const elementCaseStart = source.indexOf("name: 'element-hit-no-neighbor-expansion'");
+assert(
+  rejectCaseStart >= 0
+    && canonicalCaseStart > rejectCaseStart
+    && source.slice(rejectCaseStart, canonicalCaseStart).includes("responseProfile: 'debug'")
+    && !source.slice(rejectCaseStart, canonicalCaseStart).includes("anchors: ['public-no-anchor"),
+  'MCP_SEMANTIC_ENTRYPOINT_CORRECTNESS_GUARD: request-shape control must include a no-anchor public debug rejection case',
+);
+assert(
+  canonicalCaseStart >= 0
+    && elementCaseStart > canonicalCaseStart
+    && source.slice(canonicalCaseStart, elementCaseStart).includes('Return canonical semantic query objects only through the public no-anchor path')
+    && !source.slice(canonicalCaseStart, elementCaseStart).includes("anchors: ['public-no-anchor"),
+  'MCP_SEMANTIC_ENTRYPOINT_CORRECTNESS_GUARD: canonical payload control must include a no-anchor public subset case',
 );
 
 function read(relativePath) {

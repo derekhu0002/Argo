@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T01:31:00+08:00",
+  "generatedAt": "2026-07-28T02:19:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "ImplementationDesign handoff for BP MCP semantic query contract WP-1 through WP-4. Coding is authorized to repair the public getSystemArchitecture semantic request contract, canonical subset payload mapping, Relationship endpoint closure, and non-cascading View membership closure while preserving full-snapshot compatibility.",
+  "summary": "ImplementationDesign correction handoff for BP MCP semantic query contract WP-1 through WP-4. Coding is authorized to repair the real public no-anchor getSystemArchitecture semantic request contract and canonical subset payload mapping while preserving the already passing anchored subset, Relationship endpoint closure, View closure, and full-snapshot compatibility controls.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     ".argo/scripts/ARCHITECTURE.md",
@@ -13,11 +13,11 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
-      "controlPoint": "Public getSystemArchitecture ordinary semantic query carrying forbidden response-shape controls.",
-      "observationPoint": "Request fails before retrieval with QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN and no canonical subset or debug/evidence success.",
+      "controlPoint": "Public getSystemArchitecture ordinary semantic query carrying forbidden response-shape controls, including the no-anchor callTool and unified MCP tools/call paths.",
+      "observationPoint": "Anchored and no-anchor requests fail before retrieval with QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN and no canonical subset or debug/evidence success.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=reject-response-shape-controls node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current response passes instead of failing closed for responseProfile=debug."
+      "failureReason": "Expected RED: no-anchor public semantic query with responseProfile=debug still reaches legacy debug/business-summary behavior instead of failing closed."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT",
@@ -30,65 +30,59 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
-      "controlPoint": "Successful ordinary semantic query returning Element, Relationship, and View objects.",
-      "observationPoint": "Payload exposes only canonical document object collections and omits derived semantic/business fields.",
+      "controlPoint": "Successful ordinary semantic query returning Element, Relationship, and View objects, including the no-anchor callTool and unified MCP tools/call paths.",
+      "observationPoint": "Anchored and no-anchor success payloads expose only canonical document object collections and omit derived semantic/business fields.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=canonical-object-subset-only node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+      "failureReason": "Expected RED: no-anchor public semantic query still exposes legacy business-summary result fields instead of the canonical document subset."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#element-hit-no-neighbor-expansion",
       "controlPoint": "Element-only ordinary semantic hit.",
       "observationPoint": "Only the canonical matched Element is returned; no adjacent Relationships, endpoint neighbors, or owning Views are added.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=element-hit-no-neighbor-expansion node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=element-hit-no-neighbor-expansion node tests/explicit/entries/runMcpSemanticQueryContract.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#relationship-endpoint-closure",
       "controlPoint": "Selected Relationship whose endpoints are not independent semantic hits.",
       "observationPoint": "Canonical Relationship plus both endpoint Elements are returned without endpoint neighbors, endpoint-owned Views, or unrelated Relationships.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=relationship-endpoint-closure node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=relationship-endpoint-closure node tests/explicit/entries/runMcpSemanticQueryContract.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-relationship-endpoint-rejection",
       "controlPoint": "Selected Relationship with unresolved endpoint references.",
       "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_RELATIONSHIP_MISSING and no partial successful Relationship subset.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-relationship-endpoint-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current response passes instead of failing closed."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-relationship-endpoint-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#view-membership-closure",
       "controlPoint": "Selected View with declared Element members and included Relationships.",
       "observationPoint": "Canonical View, member Elements, included Relationships, and endpoints for in-View Relationships are returned.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=view-membership-closure node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current payload still exposes a business-summary result envelope."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=view-membership-closure node tests/explicit/entries/runMcpSemanticQueryContract.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#no-overlapping-view-cascade",
       "controlPoint": "Selected View sharing members with a non-matched overlapping View.",
       "observationPoint": "Shared member objects may be returned, but the overlapping non-matched View is excluded.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=no-overlapping-view-cascade node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current response does not expose the required canonical document subset for the no-cascade assertion."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=no-overlapping-view-cascade node tests/explicit/entries/runMcpSemanticQueryContract.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
       "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-view-reference-rejection",
       "controlPoint": "Selected View with broken member or in-View Relationship references.",
       "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_VIEW_MISSING and no incomplete View success.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-view-reference-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: current response passes instead of failing closed."
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-view-reference-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js"
     }
   ],
   "criticalNonExplicitTests": [
@@ -140,14 +134,14 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "reject-response-shape-controls returns status passed instead of QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN.",
-      "nextAction": "Reject responseProfile/detail/outputMode and debug/full/evidence variants before semantic retrieval or canonical subset mapping."
+      "failureSignal": "reject-response-shape-controls now fails only on the no-anchor public callTool/unified MCP subcases; the legacy debug path is still reachable without anchors.",
+      "nextAction": "Reject responseProfile/detail/outputMode and debug/full/evidence variants before semantic retrieval for every ordinary semantic query, not only anchor-activated contract fixtures."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "canonical-object-subset-only and Element/Relationship/View positive cases expose result/business summary envelopes.",
-      "nextAction": "Map successful ordinary semantic query output to canonical document object subsets only, preserving full-snapshot compatibility."
+      "failureSignal": "canonical-object-subset-only now fails only on the no-anchor public callTool/unified MCP subcases; legacy business-summary result fields are still returned without anchors.",
+      "nextAction": "Map every ordinary semantic query success to canonical document object subsets by default; do not require query.anchors to activate the canonical subset contract."
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
@@ -183,11 +177,11 @@
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Add validation for responseProfile, detail, outputMode, and debug/full/evidence variants in the getSystemArchitecture semantic-query request path.",
-          "Return stable failure category QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN before invoking semantic retrieval.",
+          "Add validation for responseProfile, detail, outputMode, and debug/full/evidence variants in the getSystemArchitecture semantic-query request path for both anchor and no-anchor ordinary queries.",
+          "Return stable failure category QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN before invoking semantic retrieval; the condition must not depend on query.anchors.",
           "Verify preserve-full-snapshot-read-modes still passes for omitted-query and graph-tidy."
         ],
-        "completionSignal": "reject-response-shape-controls fails only until the validation is implemented, and preserve-full-snapshot-read-modes remains passing."
+        "completionSignal": "reject-response-shape-controls passes for both anchor and no-anchor public callTool/unified MCP paths, and preserve-full-snapshot-read-modes remains passing."
       },
       {
         "taskId": "MCP-SEM-C2",
@@ -204,11 +198,11 @@
           ".argo/scripts/systemarchitecture-mcp-server.js"
         ],
         "steps": [
-          "Replace successful semantic result envelope exposure with a document containing only elements, relationships, and views arrays.",
+          "Replace successful semantic result envelope exposure with a document containing only elements, relationships, and views arrays for both anchor and no-anchor ordinary queries.",
           "Deep-copy or select canonical objects by id without dropping, renaming, or adding fields.",
           "Keep Element-only hits minimal unless selected Relationship or selected View closure requires additional canonical objects."
         ],
-        "completionSignal": "canonical-object-subset-only and element-hit-no-neighbor-expansion pass without regressing full-snapshot modes."
+        "completionSignal": "canonical-object-subset-only passes for both anchor and no-anchor public callTool/unified MCP paths, and element-hit-no-neighbor-expansion remains passing without regressing full-snapshot modes."
       },
       {
         "taskId": "MCP-SEM-C3",
@@ -270,7 +264,7 @@
   ],
   "openGaps": [
     "No upstream intent graph change is requested.",
-    "The scoped WP-1 through WP-4 RED failures are BP-MCP-SEM-REQ, BP-MCP-SEM-PAYLOAD, BP-MCP-SEM-ELEMENT, BP-MCP-SEM-REL, BP-MCP-SEM-BROKEN-REL, BP-MCP-SEM-VIEW, BP-MCP-SEM-NOCASCADE, and BP-MCP-SEM-BROKEN-VIEW.",
-    "The full pre-coding runner baseline also contains inherited out-of-scope failures for ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval. They are recorded in design/KG/test-failure-records.json but are not Coding targets for this handoff."
+    "The scoped correction RED failures are BP-MCP-SEM-REQ and BP-MCP-SEM-PAYLOAD through their no-anchor public callTool/unified MCP subcases; the previously delivered anchored Element, Relationship, View, no-cascade, broken-Relationship, broken-View, and compatibility controls remain frozen regression coverage.",
+    "The full pre-coding runner baseline may also contain inherited out-of-scope failures for ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval. They are recorded in design/KG/test-failure-records.json when present but are not Coding targets for this correction handoff."
   ]
 }

@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { callTool } = require('../../../.argo/scripts/systemarchitecture-mcp-server.js');
+const { handleRequest } = require('../../../.argo/scripts/argo-mcp-server.js');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
@@ -97,6 +98,44 @@ async function main() {
               `reject-response-shape-controls must emit QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN for ${field}=${value}`,
             );
           }
+          const noAnchorQuery = {
+            purpose: 'implementation-design',
+            intent: 'Reject response shape controls from public no-anchor semantic query consumers',
+            responseProfile: 'debug',
+          };
+          const noAnchorDependencies = createSemanticJourney({
+            architecturePath: fixture.architecturePath,
+            document: createSemanticEvidence({
+              seedsByType: {
+                elements: [seed('element-a')],
+              },
+              closureElements: ['element-a'],
+              returnedRelationships: [],
+              returnedViews: [],
+            }),
+          });
+          const noAnchorDirect = await invokeSemanticQuery(
+            noAnchorQuery,
+            noAnchorDependencies,
+            fixture.architecturePath,
+          );
+          assertFailClosed(
+            noAnchorDirect.payload,
+            'reject-response-shape-controls no-anchor direct callTool',
+            'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+          );
+          const noAnchorUnified = await invokeUnifiedMcpTool(
+            {
+              architecturePath: fixture.architecturePath,
+              query: noAnchorQuery,
+            },
+            noAnchorDependencies,
+          );
+          assertFailClosed(
+            noAnchorUnified.payload,
+            'reject-response-shape-controls no-anchor unified MCP handler',
+            'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+          );
         },
       },
       {
@@ -125,6 +164,48 @@ async function main() {
         );
         assertSemanticSuccess(payload, 'canonical-object-subset-only');
         assertCanonicalSuccessPayload(payload, canonicalDocument, 'canonical-object-subset-only');
+
+        const noAnchorDependencies = createSemanticJourney({
+          architecturePath: fixture.architecturePath,
+          document: createSemanticEvidence({
+            seedsByType: {
+              elements: [seed('element-a')],
+              relationships: [seed('rel-ab', 'ArchitectureRelationship')],
+              views: [seed('view-primary', 'View')],
+            },
+            closureElements: ['element-a', 'element-b', 'element-c'],
+            returnedRelationships: ['rel-ab', 'rel-bc'],
+            returnedViews: ['view-primary', 'view-overlap'],
+          }),
+        });
+        const noAnchorQuery = {
+          purpose: 'implementation-design',
+          intent: 'Return canonical semantic query objects only through the public no-anchor path',
+        };
+        const noAnchorDirect = await invokeSemanticQuery(
+          noAnchorQuery,
+          noAnchorDependencies,
+          fixture.architecturePath,
+        );
+        assertSemanticSuccess(noAnchorDirect.payload, 'canonical-object-subset-only no-anchor direct callTool');
+        assertCanonicalSuccessPayload(
+          noAnchorDirect.payload,
+          canonicalDocument,
+          'canonical-object-subset-only no-anchor direct callTool',
+        );
+        const noAnchorUnified = await invokeUnifiedMcpTool(
+          {
+            architecturePath: fixture.architecturePath,
+            query: noAnchorQuery,
+          },
+          noAnchorDependencies,
+        );
+        assertSemanticSuccess(noAnchorUnified.payload, 'canonical-object-subset-only no-anchor unified MCP handler');
+        assertCanonicalSuccessPayload(
+          noAnchorUnified.payload,
+          canonicalDocument,
+          'canonical-object-subset-only no-anchor unified MCP handler',
+        );
       },
       },
       {
@@ -613,6 +694,28 @@ async function invokeTool(args = {}, dependencies = undefined, architecturePath 
     response,
     payload,
     structured: response && response.structuredContent ? response.structuredContent : null,
+  };
+}
+
+async function invokeUnifiedMcpTool(args = {}, dependencies = undefined) {
+  const response = await handleRequest({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: {
+      name: 'getSystemArchitecture',
+      arguments: args,
+    },
+  }, dependencies);
+  assert(response && response.result, 'Unified MCP response must include result');
+  const payload = response.result && Array.isArray(response.result.content)
+    ? JSON.parse(response.result.content[0].text)
+    : response.result;
+  assert(payload && typeof payload === 'object', 'Unified MCP response payload must be an object');
+  return {
+    response,
+    payload,
+    structured: response.result && response.result.structuredContent ? response.result.structuredContent : null,
   };
 }
 
