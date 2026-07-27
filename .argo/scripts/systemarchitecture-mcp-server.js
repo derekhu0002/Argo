@@ -27,7 +27,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
     },
     document: {
       type: ['object', 'null'],
-      description: 'Canonical graph snapshot or semantic query result; null for errors.',
+      description: 'Canonical graph snapshot for full-snapshot responses; semantic business-summary responses may use result in the text payload and set this to null; null for errors.',
     },
     query: {
       type: ['object', 'null'],
@@ -77,7 +77,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
     {
       properties: {
         mode: { const: 'semantic-query' },
-        document: { type: 'object' },
+        document: { type: ['object', 'null'] },
         query: { type: 'object' },
         error: { type: 'null' },
       },
@@ -1639,7 +1639,7 @@ function getSystemArchitectureResult(payload) {
   return toolResult(payload, {
     version: '1.0',
     mode: failed ? 'error' : ((payload.query && payload.query.mode) || 'full-snapshot'),
-    document: failed ? null : payload.document,
+    document: failed ? null : (payload.document === undefined ? null : payload.document),
     query: failed ? null : (payload.query || null),
     error: failed ? payload.error : null,
   });
