@@ -21,6 +21,7 @@ disable-model-invocation: true
 - **MUST** 将该命令返回的 JSON 结果作为最终判断依据，而不是凭主观描述报告环境状态。
 - **MUST** 报告 `argo` MCP 是否通过、Neo4j 是否通过、初始同步是否完成、以及 `semanticLifecycle` 当前状态。
 - **MUST** 在脚本失败时直接转述失败阶段、错误摘要和报告路径，不要改用含糊描述。
+- **MUST NOT** 读取、打印或复述 `.argo/.env` 中的 secret 值；排查时只允许报告 key 是否存在、是否被 Git 跟踪/忽略、以及 ACL 主体。
 - **MUST NOT** 绕开脚本分别手工执行一堆无关命令来替代初始化工作流，除非你是在排查脚本自身失败。
 
 ## Workflow
@@ -59,7 +60,36 @@ node .argo/scripts/ensureArgoHarnessEnvironment.js --check-only
 - Neo4j initial sync / verification
 - semantic lifecycle init / readiness alignment
 
-### 3. Report Concisely
+### 3. Handle Semantic Credential File Blockers
+
+如果 `semanticLifecycle` 失败且 category 属于 secret/config 文件边界，先做安全诊断，不要读取 `.argo/.env` 内容：
+
+```powershell
+git ls-files -- ".argo/.env"
+git check-ignore -v ".argo/.env"
+icacls ".argo\.env"
+```
+
+处理规则：
+
+- `SECRET_FILE_TRACKED`: 将 `.argo/.env` 加入 `.gitignore`，执行 `git rm --cached -- ".argo/.env"`。这只移出 Git index，不删除本地 secret 文件。
+- `SECRET_FILE_NOT_IGNORED`: 将 `.argo/.env` 加入 `.gitignore`，再重跑 init。
+- `SECRET_FILE_ACL_UNSAFE`: 收紧 Windows ACL，只保留当前用户、Administrators、SYSTEM 可读写。
+
+Windows ACL 修复命令：
+
+```powershell
+$identity = whoami
+icacls ".argo\.env" /inheritance:r /grant:r "${identity}:F" "BUILTIN\Administrators:F" "NT AUTHORITY\SYSTEM:F" /remove:g "BUILTIN\Users" "Everyone" "Authenticated Users" "NT AUTHORITY\Authenticated Users"
+```
+
+修复后必须重跑：
+
+```powershell
+node .argo/scripts/ensureArgoHarnessEnvironment.js
+```
+
+### 4. Report Concisely
 
 输出应直接说明：
 
@@ -92,4 +122,4 @@ node .argo/scripts/ensureArgoHarnessEnvironment.js --check-only
 - `.argo/temp/argo-harness-init-report.json` 路径
 
 ### 5. Blocking Errors
-- 若失败，列出失败阶段和关键错误摘要
+- 若失败，列出失败阶段和关键错误摘要；如属于 credential file blocker，同时列出已检查的 Git tracking / ignore / ACL 状态
