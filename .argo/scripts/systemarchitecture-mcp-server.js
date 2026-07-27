@@ -1656,9 +1656,31 @@ function isPurposeClosureProbe(query) {
   return Array.isArray(query && query.anchors) && query.anchors.length > 0;
 }
 
-function isCanonicalSubsetSemanticContract(query) {
-  return Array.isArray(query && query.anchors)
-    && query.anchors.some(anchor => !/^grag-[a-z0-9-]+$/.test(String(anchor)));
+function isOrdinarySemanticQuery(query) {
+  return !!query
+    && typeof query === 'object'
+    && !Array.isArray(query)
+    && query.purpose !== 'graph-tidy';
+}
+
+function isCanonicalSubsetSemanticContract(query, options = {}) {
+  if (!isOrdinarySemanticQuery(query)) {
+    return false;
+  }
+  if (!Array.isArray(query.anchors) || query.anchors.length === 0) {
+    return !!(
+      options.defaultNoAnchorSubset
+      || options.architecturePath
+    );
+  }
+  return query.anchors.some(anchor => !/^grag-[a-z0-9-]+$/.test(String(anchor)));
+}
+
+function semanticContractOptions(args = {}, dependencies = undefined) {
+  return {
+    architecturePath: args.architecturePath,
+    defaultNoAnchorSubset: !dependencies || !!dependencies.canonicalSubsetForNoAnchor,
+  };
 }
 
 function queryError(category, message, extras = {}) {
@@ -1719,7 +1741,8 @@ async function callTool(name, args = {}, dependencies = undefined) {
         };
         return getSystemArchitectureResult(attachContextWarnings(payload, context));
       }
-      if (isCanonicalSubsetSemanticContract(query)) {
+      const contractOptions = semanticContractOptions(args, dependencies);
+      if (isCanonicalSubsetSemanticContract(query, contractOptions)) {
         const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
         if (responseShapeValidation.status === 'failed') {
           return getSystemArchitectureResult(responseShapeValidation);
@@ -1727,7 +1750,7 @@ async function callTool(name, args = {}, dependencies = undefined) {
       }
 
       const journey = await resolveSemanticOperatorJourney(dependencies);
-      return applySemanticResponseProfile(await journey.query(query), query);
+      return applySemanticResponseProfile(await journey.query(query), query, contractOptions);
     }
 
     const context = await loadContext(args);
@@ -1818,6 +1841,14 @@ async function resolveSemanticOperatorJourney(dependencies) {
 async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   const context = await loadContext(args);
   const query = args.query;
+  const contractOptions = semanticContractOptions(args, dependencies);
+  const canonicalSubsetContract = isCanonicalSubsetSemanticContract(query, contractOptions);
+  if (canonicalSubsetContract) {
+    const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
+    if (responseShapeValidation.status === 'failed') {
+      return getSystemArchitectureResult(responseShapeValidation);
+    }
+  }
   const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
     canonicalGraph: context.document,
   });
@@ -1830,7 +1861,7 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
   let document;
   try {
     const retrieved = await semanticRetrievalBoundary.retrieve(query);
-    if (isCanonicalSubsetSemanticContract(query)) {
+    if (canonicalSubsetContract) {
       const subset = buildCanonicalSemanticDocumentSubset(retrieved);
       if (subset.status === 'failed') {
         return getSystemArchitectureResult(subset);
@@ -1871,19 +1902,19 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
       ...query,
       mode: 'semantic-query',
       semanticRetrieval: 'invoked',
-      ...(isCanonicalSubsetSemanticContract(query)
+      ...(canonicalSubsetContract
         ? {}
         : { responseProfile: shouldReturnDebugSemanticResult(query) ? 'debug' : 'business-summary' }),
     },
   };
   return getSystemArchitectureResult({
     ...semanticPayload,
-    ...(isCanonicalSubsetSemanticContract(query)
+    ...(canonicalSubsetContract
       ? { document }
       : (document && Object.prototype.hasOwnProperty.call(document, 'result')
         ? { result: document.result }
         : { result: document })),
-    ...(isCanonicalSubsetSemanticContract(query) || !shouldReturnDebugSemanticResult(query) ? {} : { document }),
+    ...(canonicalSubsetContract || !shouldReturnDebugSemanticResult(query) ? {} : { document }),
   });
 }
 
@@ -1962,8 +1993,8 @@ function buildBusinessSemanticSummary(retrieved, query = {}) {
   });
 }
 
-function applySemanticResponseProfile(response, query) {
-  if (!isCanonicalSubsetSemanticContract(query)) {
+function applySemanticResponseProfile(response, query, options = {}) {
+  if (!isCanonicalSubsetSemanticContract(query, options)) {
     if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
     const payload = parseToolResponsePayload(response);
     if (!payload || payload.status === 'failed') return response;
@@ -2252,6 +2283,7 @@ async function createDefaultProductionSemanticOperatorJourney(options = {}) {
     readSemanticReadiness: () => retrieval.readReadiness(),
     querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, {
       semanticRetrievalBoundary: retrieval,
+      canonicalSubsetForNoAnchor: true,
     }),
   });
 }
@@ -2618,6 +2650,7 @@ async function handleRequest(request, dependencies = undefined) {
       ) {
         activeDependencies = {
           semanticOperatorJourney: await createDefaultProductionSemanticOperatorJourney(),
+          canonicalSubsetForNoAnchor: true,
         };
       }
       const result = await callTool(
