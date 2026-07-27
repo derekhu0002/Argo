@@ -29,6 +29,15 @@
 - Live evidence remains blocked and was not invented: post-write Neo4j sync reports `neo4jUri is required for start`; the parent reported unsafe `.argo/temp` Windows ACL. Current apply evidence recorded zero real provider requests, `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`, `alignmentState=Failed`, semantic query rejection, and `fullSnapshotFallback:false` while retaining canonical JSON authority.
 - No implementation contracts, business code, test code, scripts, configuration, or ImplementationToCoding handoff were modified. No `deliveryStatus` attribute was added, removed, changed, reverted, or fabricated.
 
+### Independent intent audit correction
+
+- The 2026-07-27 independent audit findings were accepted after verification against `.argo/rules/intent-architecture-viewpoints.md` and current graph semantics.
+- One-purpose view bindings: `semprod-requirements-realization=designing`, `semprod-operator-journey=designing`, `semprod-delivery-sequence=deciding`, `semprod-wp1-persistence-backfill=auditing`, `semprod-wp2-default-retrieval-readiness=auditing`, and `semprod-wp3-operator-release-boundary=deciding`. Existing Requirements Realization, Application Usage, and Implementation and Migration viewpoint assignments, concerns, scopes, and rationales remain explicit.
+- `ExplicitAcceptanceTestcase-DT-16` now states zero provider/vector writes for half-enabled or unsafe/missing configuration while preserving successful canonical JSON writes as authoritative.
+- `grag-rel-lifecycle-validation` was atomically removed and re-added as `Access` from `grag-mode-validation` to the `grag-semantic-index` readiness/version state. Every semantic query reads that state afresh; validation does not initiate the mutation lifecycle.
+- Corrected MCP previews passed at `61 elements / 87 relationships / 34 views`. Applies wrote only through the Argo MCP mutation boundary. Both applies retained zero real provider requests and reported the known `neo4jUri is required for start` structural-sync blocker plus fail-closed `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`; no live evidence is claimed.
+- The handoff was updated with exact correction evidence and retains `openQuestions: []`. No implementation artifacts or runner-owned `deliveryStatus` values were changed. A new non-amended IntentDesign correction commit is required.
+
 ## 2026-07-26 — Approved WP-P1 Persistence and Backfill Handoff
 
 - Persistent stage/session ID: `intent-semprod-wp-p1-20260726T2039+08`.

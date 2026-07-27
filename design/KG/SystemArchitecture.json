@@ -1119,7 +1119,7 @@
       "testcases": [
         {
           "name": "ExplicitAcceptanceTestcase-DT-16",
-          "description": "Control point: execute successful batch and each focused add, update, and remove path for Element, ArchitectureRelationship, and View, plus preview, both-disabled, half-enabled, unsafe or missing external configuration, provider failure, persistence failure, and queryability failure. Observation point: every successful canonical write invalidates readiness first and exposes exact touched IDs; preview has zero vector work; both-disabled remains explicit Pending or Stale with zero provider/vector calls; half-enabled and unsafe or missing configuration fail closed with redacted actionable evidence and zero writes; dual-gated success durably upserts or tombstones exact touched records across all three channels with complete canonical/content/index/provider/model/version/dimensions evidence and persists Aligned only after queryability and global coherence; failures retain canonical authority and Failed or Stale, semantic query rejects, and production performs no runId cleanup.",
+          "description": "Control point: execute successful batch and each focused add, update, and remove path for Element, ArchitectureRelationship, and View, plus preview, both-disabled, half-enabled, unsafe or missing external configuration, provider failure, persistence failure, and queryability failure. Observation point: every successful canonical write invalidates readiness first and exposes exact touched IDs; preview has zero vector work; both-disabled remains explicit Pending or Stale with zero provider/vector calls; half-enabled and unsafe or missing configuration fail closed with redacted actionable evidence and zero provider/vector writes while any successful canonical JSON write remains authoritative; dual-gated success durably upserts or tombstones exact touched records across all three channels with complete canonical/content/index/provider/model/version/dimensions evidence and persists Aligned only after queryability and global coherence; failures retain canonical authority and Failed or Stale, semantic query rejects, and production performs no runId cleanup.",
           "type": "Acceptance Test",
           "Input": "Batch and focused add/update/remove matrices for all three channels; preview controls; exact dual-gate combinations; safe and unsafe external configuration; provider, persistence, and queryability failures; durable production store observations; semantic query controls.",
           "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
@@ -2781,23 +2781,6 @@
       ]
     },
     {
-      "id": "grag-rel-lifecycle-validation",
-      "name": "Alignment state governs query validation",
-      "type": "Triggering",
-      "source_id": "grag-index-lifecycle",
-      "target_id": "grag-mode-validation",
-      "source_name": "All Mutation Index Lifecycle",
-      "target_name": "Query Mode and Purpose Validation",
-      "description": "Aligned, Updating, Stale, Failed, partial, or unknown version state determines whether pure semantic validation may proceed; only Aligned permits pure semantic retrieval.",
-      "statement": "All Mutation Index Lifecycle --(Triggering)--> Query Mode and Purpose Validation",
-      "attributes": [
-        {
-          "name": "decisionTrace",
-          "description": "DT-16,DT-17"
-        }
-      ]
-    },
-    {
       "id": "grag-rel-alignment-service",
       "name": "Alignment constraint governs query service",
       "type": "Association",
@@ -3557,6 +3540,23 @@
       "target_name": "Fail-Closed Semantic Index Readiness",
       "description": "Canonical init persists readiness only after complete reconciliation queryability/global coherence, and getSystemArchitecture(query) re-reads persistent readiness every time; no separate public verification tool exists.",
       "statement": "Establish Semantic Retrieval for New Project --(Association)--> Fail-Closed Semantic Index Readiness"
+    },
+    {
+      "id": "grag-rel-lifecycle-validation",
+      "name": "Query validation reads semantic index readiness",
+      "type": "Access",
+      "source_id": "grag-mode-validation",
+      "target_id": "grag-semantic-index",
+      "source_name": "Query Mode and Purpose Validation",
+      "target_name": "Semantic Retrieval Index",
+      "description": "Every semantic query reads persistent semantic-index readiness and version state afresh before retrieval; Aligned permits semantic retrieval, while Updating, Stale, Failed, Pending, partial, disabled, mismatched, or unknown state fails closed. Validation does not initiate the mutation lifecycle.",
+      "statement": "Query Mode and Purpose Validation --(Access)--> Semantic Retrieval Index",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-16,DT-17"
+        }
+      ]
     }
   ],
   "views": [
@@ -3776,8 +3776,8 @@
         "grag-rel-validation-seeds",
         "grag-rel-lifecycle-canonical",
         "grag-rel-lifecycle-index",
-        "grag-rel-lifecycle-validation",
-        "grag-rel-alignment-service"
+        "grag-rel-alignment-service",
+        "grag-rel-lifecycle-validation"
       ]
     },
     {
@@ -4086,7 +4086,7 @@
       "view_name": "Production Semantic Index Requirements Realization",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, operators, and acceptors need A-D to realize one fail-closed canonical semantic lifecycle while WP-P1 persistence/backfill and WP-P2 retrieval/readiness remain private; Purpose: designing, deciding, and handoff preparation; Scope: exact dual-gated init reconciliation, durable all-path incremental indexing, persistent readiness per query, sole public getSystemArchitecture surface, canonical authority, and external credential constraint; Rationale: this view is a Requirements Realization Viewpoint instance because it traces the refined application/data/constraint elements that satisfy A-D and explicitly supersedes the former three-tool public journey.",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: requirements owners, ICT architects, operators, and acceptors need A-D to realize one fail-closed canonical semantic lifecycle while WP-P1 persistence/backfill and WP-P2 retrieval/readiness remain private; Purpose: designing; Scope: exact dual-gated init reconciliation, durable all-path incremental indexing, persistent readiness per query, sole public getSystemArchitecture surface, canonical authority, and external credential constraint; Rationale: this view is a Requirements Realization Viewpoint instance because it designs traceability from A-D to the application, data, and constraint elements that realize them and explicitly supersedes the former three-tool public journey.",
       "included_elements": [
         "grag-semantic-index",
         "semprod-goal",
@@ -4110,7 +4110,7 @@
       "view_name": "Canonical Init Semantic Lifecycle Usage",
       "parent_element_id": "1210",
       "parent_element_name": "CapabilityRealizationViewpoint",
-      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need one explicit safe path through argo init and getSystemArchitecture without separate public lifecycle choreography; Purpose: designing and handoff preparation; Scope: operator invocation, structural projection, private full reconciliation, fail-closed readiness, sole query service, and gated plateau; Rationale: this Application Usage Viewpoint instance shows how canonical init uses private WP-P1/WP-P2 capabilities and how getSystemArchitecture serves reads. Both gates disabled is structural-only with zero vector effects; exact dual-enabled valid configuration reconciles; half-enabled or unsafe/missing configuration fails closed; no standalone lifecycle tools are public.",
+      "description": "Viewpoint: Application Usage Viewpoint; Concern: operators and application/process architects need one explicit safe path through argo init and getSystemArchitecture without separate public lifecycle choreography; Purpose: designing; Scope: operator invocation, structural projection, private full reconciliation, fail-closed readiness, sole query service, and gated plateau; Rationale: this Application Usage Viewpoint instance designs how canonical init uses private WP-P1/WP-P2 capabilities and how getSystemArchitecture serves reads. Both gates disabled is structural-only with zero vector effects; exact dual-enabled valid configuration reconciles; half-enabled or unsafe/missing configuration fails closed; no standalone lifecycle tools are public.",
       "included_elements": [
         "grag-query-service",
         "semprod-operator-role",
@@ -4135,7 +4135,7 @@
       "view_name": "Production Semantic Completion Delivery Sequence",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners need the accepted WP-P1/WP-P2 internals preserved while WP-P3 public exposure is explicitly superseded by canonical init, automatic mutation lifecycle, and sole-query-surface release gates; Purpose: deciding and handoff preparation; Scope: prior persistence/retrieval work packages, revised WP-P3 lifecycle integration, A-D evidence, and production-ready plateau; Rationale: this view records the migration from three public lifecycle tools to internal composition without erasing accepted work-package history or claiming live release evidence.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners need the accepted WP-P1/WP-P2 internals preserved while WP-P3 public exposure is explicitly superseded by canonical init, automatic mutation lifecycle, and sole-query-surface release gates; Purpose: deciding; Scope: prior persistence/retrieval work packages, revised WP-P3 lifecycle integration, A-D evidence, and production-ready plateau; Rationale: this view supports the migration decision from three public lifecycle tools to internal composition without erasing accepted work-package history or claiming live release evidence.",
       "included_elements": [
         "semprod-new-project-gap",
         "semprod-persistent-projection-requirement",
@@ -4159,7 +4159,7 @@
       "view_name": "WP-P1 Persistent Projection and Full Backfill",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P1 durable persistence and bounded resumable full reconciliation preserved as private canonical-init capabilities with no production cleanup; Purpose: deciding, auditing, and handoff preparation; Scope: WP-P1 and its five affected elements plus structural prerequisite, exact dual gate, and internal invocation; Rationale: this view binds accepted WP-P1 behavior to canonical init while explicitly retiring only standalone public backfill exposure and preserving test-only live E2E cleanup.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P1 durable persistence and bounded resumable full reconciliation preserved as private canonical-init capabilities with no production cleanup; Purpose: auditing; Scope: WP-P1 and its five affected elements plus structural prerequisite, exact dual gate, and internal invocation; Rationale: this view audits preservation of accepted WP-P1 behavior under canonical init while confirming only standalone public backfill exposure is retired and test-only live E2E cleanup remains test-only.",
       "included_elements": [
         "semprod-wp-persistence-backfill",
         "semprod-structural-projection",
@@ -4184,7 +4184,7 @@
       "view_name": "WP-P2 Default Retrieval and Readiness Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P2 retrieval/readiness preserved behind the sole public getSystemArchitecture boundary with fresh persistent readiness on every ordinary query; Purpose: deciding and handoff preparation; Scope: WP-P2, semantic index, default retrieval, fail-closed readiness, query service, MCP interface, and external credential constraint; Rationale: this view binds the accepted private WP-P2 capabilities to one public read/query interface and explicitly retires standalone readiness exposure while preserving no-argument and graph-tidy bypass.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, ICT architects, operators, and acceptors need WP-P2 retrieval/readiness preserved behind the sole public getSystemArchitecture boundary with fresh persistent readiness on every ordinary query; Purpose: auditing; Scope: WP-P2, semantic index, default retrieval, fail-closed readiness, query service, MCP interface, and external credential constraint; Rationale: this view audits preservation of accepted private WP-P2 capabilities behind one public read/query interface, including retirement of standalone readiness exposure and continuity of no-argument and graph-tidy bypass.",
       "included_elements": [
         "semprod-wp-default-retrieval",
         "grag-semantic-index",
@@ -4234,7 +4234,7 @@
       "view_name": "WP-P3 Canonical Lifecycle Integration Boundary",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the previous WP-P3 public operator journey superseded without weakening WP-P1/WP-P2 or inventing live evidence; Purpose: deciding and handoff preparation; Scope: WP-P3, canonical init lifecycle, production-ready plateau, sole query service, and external credential constraint; Rationale: this focused view records that WP-P3 now governs lifecycle integration and release assurance: three standalone public tools are retired, argo init owns reconciliation, writes invalidate readiness, and getSystemArchitecture remains the only public architecture read/query surface.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: delivery owners, operational managers, ICT architects, and acceptors need the previous WP-P3 public operator journey superseded without weakening WP-P1/WP-P2 or inventing live evidence; Purpose: deciding; Scope: WP-P3, canonical init lifecycle, production-ready plateau, sole query service, and external credential constraint; Rationale: this focused view supports the decision that WP-P3 now governs lifecycle integration and release assurance: three standalone public tools are retired, argo init owns reconciliation, writes invalidate readiness, and getSystemArchitecture remains the only public architecture read/query surface.",
       "included_elements": [
         "semprod-wp-operator-release",
         "semprod-operator-journey-process",
