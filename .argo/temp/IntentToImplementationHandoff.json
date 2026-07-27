@@ -11,8 +11,8 @@
     "grag-view-closure"
   ],
   "relationshipIds": [
-    "grag-rel-validation-query-service",
-    "grag-rel-query-canonical-graph",
+    "grag-rel-validation-service",
+    "grag-rel-query-canonical",
     "grag-rel-purpose-endpoints",
     "grag-rel-endpoints-views",
     "bp-mcp-sem-rel-wp1-wp2",
