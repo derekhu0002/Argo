@@ -72,6 +72,14 @@ const CREDENTIAL_SOURCE_CASES = Object.freeze([
 ]);
 const READINESS_CASES = Object.freeze([
   Object.freeze({
+    name: 'semantic-disabled',
+    state: 'SemanticDisabled',
+    missingChannels: CHANNELS,
+    mismatchedChannels: [],
+    contentVersion: null,
+    indexVersion: null,
+  }),
+  Object.freeze({
     name: 'structural-only-pending',
     state: 'SemanticIndexPending',
     missingChannels: CHANNELS,
@@ -1695,10 +1703,36 @@ function deepFreeze(value) {
 }
 
 async function runExportedFreshReadinessPerQuery() {
+  return runExportedReadinessScenario(
+    READINESS_CASES.find(item => item.state === 'Aligned'),
+    2,
+  );
+}
+
+async function runExportedReadinessStateMatrix() {
+  const requiredStates = new Set([
+    'SemanticDisabled',
+    'SemanticIndexPending',
+    'Partial',
+    'Stale',
+    'Failed',
+    'Aligned',
+  ]);
+  const scenarios = [];
+  for (const definition of READINESS_CASES.filter(item => requiredStates.has(item.state))) {
+    scenarios.push(await runExportedReadinessScenario(
+      definition,
+      definition.state === 'Aligned' ? 2 : 1,
+    ));
+  }
+  return Object.freeze(scenarios);
+}
+
+async function runExportedReadinessScenario(definition, repetitions = 1) {
   const boundary = loadDefaultRetrievalBoundary('SP04_FRESH_READINESS_BOUNDARY_MISSING');
   const observations = createRawProductionObservations({
     sourceFixture: CREDENTIAL_SOURCE_CASES[0],
-    readiness: alignedReadiness(),
+    readiness: readinessFixture(definition),
     candidatesByChannel: defaultCandidates(),
   });
   const composition = {
@@ -1710,39 +1744,87 @@ async function runExportedFreshReadinessPerQuery() {
   const system = require(systemArchitectureMcpPath);
   const unified = require(unifiedMcpPath);
   const outcomes = [];
+  const compatibility = [];
   await boundary.withDefaultSemanticRetrievalTestComposition(composition, async () => {
     for (const [dispatcher, invoke] of [
       ['system', args => system.callTool('getSystemArchitecture', args)],
       ['unified', args => unified.callTool('getSystemArchitecture', args)],
     ]) {
-      for (const intent of ['first fresh durable readiness read', 'second fresh durable readiness read']) {
-        try {
-          outcomes.push(Object.freeze({
+      for (let repetition = 0; repetition < repetitions; repetition += 1) {
+        const before = exportedEffectCounts(observations);
+        const outcome = await captureExportedQuery(() => invoke({
+          query: {
+            purpose: 'implementation-design',
+            intent: `${definition.name} exported readiness call ${repetition + 1}`,
+          },
+        }));
+        outcomes.push(Object.freeze({
+          dispatcher,
+          repetition,
+          ...outcome,
+          effects: exportedEffectDelta(before, exportedEffectCounts(observations)),
+        }));
+      }
+      if (definition.state === 'Aligned') {
+        for (const [mode, args] of [
+          ['omitted-query', {}],
+          ['graph-tidy', {
+            query: {
+              purpose: 'graph-tidy',
+              intent: 'Preserve canonical compatibility',
+              anchors: ['grag-purpose-closure'],
+            },
+          }],
+        ]) {
+          const before = exportedEffectCounts(observations);
+          const result = await invoke(args);
+          compatibility.push(Object.freeze({
             dispatcher,
-            result: await invoke({
-              query: {
-                purpose: 'implementation-design',
-                intent,
-              },
-            }),
-          }));
-        } catch (error) {
-          outcomes.push(Object.freeze({
-            dispatcher,
-            error: Object.freeze({
-              category: error && (error.category || error.message),
-              fullSnapshotFallback: error && error.fullSnapshotFallback,
-            }),
+            mode,
+            result,
+            effects: exportedEffectDelta(before, exportedEffectCounts(observations)),
           }));
         }
       }
     }
   });
   return Object.freeze({
+    name: definition.name,
+    readiness: readinessFixture(definition),
     outcomes: Object.freeze(outcomes),
+    compatibility: Object.freeze(compatibility),
     readinessReads: observations.readinessReads(),
+    providerRequests: observations.providerRequests(),
+    vectorQueries: observations.vectorQueries(),
     operationLedger: observations.operationLedger(),
   });
+}
+
+async function captureExportedQuery(invoke) {
+  try {
+    return Object.freeze({ result: await invoke(), error: null });
+  } catch (error) {
+    return Object.freeze({
+      result: null,
+      error: Object.freeze(Object.fromEntries(
+        Object.getOwnPropertyNames(error || {}).map(name => [name, error[name]]),
+      )),
+    });
+  }
+}
+
+function exportedEffectCounts(observations) {
+  return Object.freeze({
+    readinessReads: observations.readinessReads().length,
+    providerRequests: observations.providerRequests().length,
+    vectorQueries: observations.vectorQueries().length,
+  });
+}
+
+function exportedEffectDelta(before, after) {
+  return Object.freeze(Object.fromEntries(
+    Object.keys(before).map(key => [key, after[key] - before[key]]),
+  ));
 }
 
 module.exports = {
@@ -1763,6 +1845,8 @@ module.exports = {
   runProductionQueryMixedLegacyRejections,
   runDefaultMcpNeo4jVectorRetrieval,
   runExportedFreshReadinessPerQuery,
+  runExportedReadinessScenario,
+  runExportedReadinessStateMatrix,
   runFullSnapshotCompatibilityControls,
   runLegacyControlWordProductionGate,
   runReadinessMatrix,

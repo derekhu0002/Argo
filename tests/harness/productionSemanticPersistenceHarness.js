@@ -208,6 +208,7 @@ function createControlledPrivateBackfillComposition(options = {}) {
     fixture,
     runtime,
     observations,
+    finalReadiness: observations.finalReadiness(),
   });
 }
 
@@ -354,6 +355,7 @@ function createProductionCompositionObservations() {
   let maximumBatch = 0;
   let interruptionPending = true;
   let canonicalMutations = 0;
+  const finalReadinessEvents = [];
 
   return Object.freeze({
     canonicalSource(fixture) {
@@ -419,6 +421,21 @@ function createProductionCompositionObservations() {
         },
       });
     },
+    finalReadiness() {
+      return Object.freeze({
+        async verifyQueryability(evidence) {
+          finalReadinessEvents.push(Object.freeze({ kind: 'queryability-verified', phase, evidence }));
+          return true;
+        },
+        async verifyGlobalCoherence(evidence) {
+          finalReadinessEvents.push(Object.freeze({ kind: 'global-coherence-verified', phase, evidence }));
+          return true;
+        },
+        async recordAligned(evidence) {
+          finalReadinessEvents.push(Object.freeze({ kind: 'aligned-recorded', phase, evidence }));
+        },
+      });
+    },
     setPhase(value) {
       phase = value;
     },
@@ -451,6 +468,7 @@ function createProductionCompositionObservations() {
       .filter(operation => operation.kind.startsWith('semantic-record-')),
     durableCheckpointOperations: () => durable.operations()
       .filter(operation => operation.kind.startsWith('semantic-checkpoint-')),
+    finalReadinessEvents: () => Object.freeze([...finalReadinessEvents]),
   });
 }
 

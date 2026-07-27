@@ -50,7 +50,8 @@ async function main() {
   // a supplied journey or retrieval boundary
   const semanticQueries = await observeFreshReadinessPerQuery();
   assertFreshReadinessPerQuery(semanticQueries, 'TS00');
-  for (const observation of semanticQueries.outcomes) {
+  const alignedQueries = semanticQueries.find(item => item.readiness.state === 'Aligned');
+  for (const observation of alignedQueries.outcomes) {
     assert.strictEqual(
       observation.result.structuredContent.mode,
       'semantic-query',

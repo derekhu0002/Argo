@@ -17,6 +17,19 @@ const DUAL_GATES = Object.freeze([
   'ARGO_LIVE_PROVIDER_E2E',
   'ARGO_W31_LIVE_MUTATION_VECTOR_E2E',
 ]);
+const SECRET_CANARY = 'SEMANTIC-SECRET-CANARY';
+const MUTATION_FAILURE_SCENARIOS = Object.freeze([
+  'provider-only',
+  'mutation-only',
+  'malformed-provider',
+  'malformed-mutation',
+  'missing-configuration',
+  'unsafe-configuration',
+  'provider-failure',
+  'persistence-failure',
+  'queryability-failure',
+  'coherence-failure',
+]);
 
 async function observeSolePublicSemanticSurface() {
   const systemList = await systemMcp.handleRequest({
@@ -87,52 +100,66 @@ function assertSolePublicSemanticSurface(observation) {
 }
 
 async function observeAutomaticInitLifecycle() {
-  const bothDisabled = await runActualArgoInitScenario('both-disabled', {});
-  const halfEnabledProvider = await runActualArgoInitScenario('provider-only', {
-    ARGO_LIVE_PROVIDER_E2E: '1',
+  const effects = createActualInitEffects();
+  const executeScenarios = async () => Object.freeze({
+    bothDisabled: await runActualArgoInitScenario('both-disabled', {}, effects),
+    halfEnabledProvider: await runActualArgoInitScenario('provider-only', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+    }, effects),
+    halfEnabledMutation: await runActualArgoInitScenario('mutation-only', {
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    malformedProvider: await runActualArgoInitScenario('malformed-provider', {
+      ARGO_LIVE_PROVIDER_E2E: 'true',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    malformedMutation: await runActualArgoInitScenario('malformed-mutation', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'yes',
+    }, effects),
+    missingConfiguration: await runActualArgoInitScenario('missing-configuration', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    unsafeConfiguration: await runActualArgoInitScenario('unsafe-configuration', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+      createUnsafeConfiguration: true,
+    }, effects),
   });
-  const halfEnabledMutation = await runActualArgoInitScenario('mutation-only', {
-    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
-  });
-  const malformedProvider = await runActualArgoInitScenario('malformed-provider', {
-    ARGO_LIVE_PROVIDER_E2E: 'true',
-    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
-  });
-  const malformedMutation = await runActualArgoInitScenario('malformed-mutation', {
-    ARGO_LIVE_PROVIDER_E2E: '1',
-    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'yes',
-  });
-  const missingConfiguration = await runActualArgoInitScenario('missing-configuration', {
-    ARGO_LIVE_PROVIDER_E2E: '1',
-    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
-  });
-  const unsafeConfiguration = await runActualArgoInitScenario('unsafe-configuration', {
-    ARGO_LIVE_PROVIDER_E2E: '1',
-    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
-    createUnsafeConfiguration: true,
-  });
+  let scenarios;
+  let compositionMissing = true;
+  if (typeof unifiedMcp.withCanonicalSemanticInitTestComposition === 'function') {
+    compositionMissing = false;
+    await unifiedMcp.withCanonicalSemanticInitTestComposition(
+      effects.composition,
+      async () => { scenarios = await executeScenarios(); },
+    );
+  } else {
+    scenarios = await executeScenarios();
+  }
   const controlledEnabled = await runControlledEnabledArgoInitScenario();
   return Object.freeze({
-    bothDisabled,
-    halfEnabledProvider,
-    halfEnabledMutation,
-    malformedProvider,
-    malformedMutation,
-    missingConfiguration,
-    unsafeConfiguration,
+    ...scenarios,
+    compositionMissing,
     controlledEnabled,
   });
 }
 
 function assertAutomaticInitLifecycle(observation) {
   const disabled = observation.bothDisabled;
-  assert.strictEqual(disabled.invocation, 'argo-mcp-server.callTool:initializeWorkspace');
+  assert.strictEqual(disabled.invocation, 'argo-mcp-server.handleRequest:tools/call:initializeWorkspace');
   assert(
     ['SemanticDisabled', 'SemanticIndexPending'].includes(
       disabled.outcome.semanticState
         || (disabled.outcome.semanticLifecycle && disabled.outcome.semanticLifecycle.state),
     ),
     'SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING',
+  );
+  assert.strictEqual(
+    observation.compositionMissing,
+    false,
+    'SP05_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
   );
   assertZeroActualInitSemanticEffects(disabled, 'SP05_DISABLED');
 
@@ -151,8 +178,14 @@ function assertAutomaticInitLifecycle(observation) {
     const failure = rejected.outcome.error || rejected.outcome.semanticLifecycle || rejected.outcome;
     assert(failure.category, `SP05_${rejected.name}_CATEGORY_MISSING`);
     assert(failure.action, `SP05_${rejected.name}_ACTION_MISSING`);
-    assert(!JSON.stringify(rejected.outcome).includes('SEMANTIC-SECRET-CANARY'), `SP05_${rejected.name}_SECRET_LEAK`);
+    assert(!JSON.stringify(rejected.outcome).includes(SECRET_CANARY), `SP05_${rejected.name}_SECRET_LEAK`);
     assertZeroActualInitSemanticEffects(rejected, `SP05_${rejected.name}`);
+    if (['missing-configuration', 'unsafe-configuration'].includes(rejected.name)) {
+      assert(
+        rejected.effects.rawDiagnostics.some(item => JSON.stringify(item).includes(SECRET_CANARY)),
+        `SP05_${rejected.name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`,
+      );
+    }
   }
   assert.strictEqual(
     observation.controlledEnabled.boundaryMissing,
@@ -174,6 +207,14 @@ function assertAutomaticInitLifecycle(observation) {
     observation.controlledEnabled.writesAfterResume,
     'SP05_CONTROLLED_INIT_RERUN_NOT_IDEMPOTENT',
   );
+  const resumeReadiness = observation.controlledEnabled.finalReadinessEvents
+    .filter(item => item.phase === 'resume')
+    .map(item => item.kind);
+  assert.deepStrictEqual(
+    resumeReadiness,
+    ['queryability-verified', 'global-coherence-verified', 'aligned-recorded'],
+    'SP05_FINAL_READINESS_ORDER_INVALID',
+  );
 }
 
 function assertPrivateFullReconciliation(initObservation, publicSurface) {
@@ -188,8 +229,21 @@ function assertPrivateFullReconciliation(initObservation, publicSurface) {
   assert(route && route.routable === false, 'SP01_BACKFILL_PUBLIC_ROUTE_NOT_RETIRED');
   assert.strictEqual(
     initObservation.bothDisabled.invocation,
-    'argo-mcp-server.callTool:initializeWorkspace',
+    'argo-mcp-server.handleRequest:tools/call:initializeWorkspace',
     'SP01_CANONICAL_ARGO_INIT_PATH_NOT_EXERCISED',
+  );
+  assert.strictEqual(
+    initObservation.controlledEnabled.boundaryMissing,
+    false,
+    'SP01_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
+  );
+  const resumeReadiness = initObservation.controlledEnabled.finalReadinessEvents
+    .filter(item => item.phase === 'resume')
+    .map(item => item.kind);
+  assert.deepStrictEqual(
+    resumeReadiness,
+    ['queryability-verified', 'global-coherence-verified', 'aligned-recorded'],
+    'SP01_ALIGNMENT_BEFORE_QUERYABILITY_GLOBAL_COHERENCE',
   );
 }
 
@@ -197,31 +251,89 @@ const observeCanonicalArgoInitLifecycle = observeAutomaticInitLifecycle;
 
 async function observeFreshReadinessPerQuery() {
   const {
-    runExportedFreshReadinessPerQuery,
+    runExportedReadinessStateMatrix,
   } = require('./productionDefaultRetrievalHarness.js');
-  return runExportedFreshReadinessPerQuery();
+  return runExportedReadinessStateMatrix();
 }
 
-function assertFreshReadinessPerQuery(observation, prefix = 'SP04') {
-  assert.strictEqual(observation.outcomes.length, 4, `${prefix}_SYSTEM_UNIFIED_QUERY_MATRIX_INCOMPLETE`);
-  for (const dispatcher of ['system', 'unified']) {
-    const outcomes = observation.outcomes.filter(item => item.dispatcher === dispatcher);
-    assert.strictEqual(outcomes.length, 2, `${prefix}_${dispatcher.toUpperCase()}_QUERY_COUNT_CHANGED`);
-    assert(
-      outcomes.every(item => item.result && item.result.isError !== true),
-      `${prefix}_${dispatcher.toUpperCase()}_EXPORTED_QUERY_REQUIRES_INJECTED_JOURNEY`,
-    );
+function assertFreshReadinessPerQuery(matrix, prefix = 'SP04') {
+  const expectedStates = [
+    'SemanticDisabled',
+    'SemanticIndexPending',
+    'Partial',
+    'Stale',
+    'Failed',
+    'Aligned',
+  ];
+  assert.deepStrictEqual(
+    matrix.map(item => item.readiness.state),
+    expectedStates,
+    `${prefix}_SYSTEM_UNIFIED_READINESS_STATE_MATRIX_INCOMPLETE`,
+  );
+  const canonicalDocument = JSON.parse(fs.readFileSync(
+    path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    'utf8',
+  ));
+  for (const scenario of matrix) {
+    const aligned = scenario.readiness.state === 'Aligned';
+    const stateTag = scenario.readiness.state.toUpperCase();
+    for (const dispatcher of ['system', 'unified']) {
+      const outcomes = scenario.outcomes.filter(item => item.dispatcher === dispatcher);
+      assert.strictEqual(
+        outcomes.length,
+        aligned ? 2 : 1,
+        `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_QUERY_COUNT_CHANGED`,
+      );
+      for (const outcome of outcomes) {
+        assert.strictEqual(
+          outcome.effects.readinessReads,
+          1,
+          `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_READINESS_NOT_FRESH`,
+        );
+        assert.strictEqual(
+          outcome.effects.providerRequests,
+          aligned ? 1 : 0,
+          `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_PROVIDER_CORRELATION_CHANGED`,
+        );
+        if (aligned) {
+          assert(outcome.result && outcome.result.isError !== true, `${prefix}_${dispatcher.toUpperCase()}_ALIGNED_QUERY_REJECTED`);
+          assert(outcome.effects.vectorQueries > 0, `${prefix}_${dispatcher.toUpperCase()}_ALIGNED_VECTOR_QUERY_MISSING`);
+        } else {
+          const error = exportedPublicError(outcome);
+          assert(error && error.category, `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_PUBLIC_ERROR_MISSING`);
+          assert.strictEqual(
+            error.fullSnapshotFallback,
+            false,
+            `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_FULL_SNAPSHOT_FALLBACK`,
+          );
+          assert.strictEqual(outcome.effects.vectorQueries, 0, `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_VECTOR_QUERY_EFFECT`);
+        }
+      }
+    }
+    if (aligned) {
+      assert.strictEqual(scenario.compatibility.length, 4, `${prefix}_COMPATIBILITY_MATRIX_INCOMPLETE`);
+      for (const control of scenario.compatibility) {
+        const payload = extractToolPayload(control.result);
+        assert.deepStrictEqual(payload.document, canonicalDocument, `${prefix}_${control.dispatcher}_${control.mode}_CANONICAL_CHANGED`);
+        assert.deepStrictEqual(
+          control.effects,
+          { readinessReads: 0, providerRequests: 0, vectorQueries: 0 },
+          `${prefix}_${control.dispatcher}_${control.mode}_SEMANTIC_EFFECT`,
+        );
+      }
+    }
   }
-  assert.strictEqual(observation.readinessReads.length, 4, `${prefix}_READINESS_NOT_READ_EVERY_QUERY`);
-  for (let index = 0; index < observation.operationLedger.length; index += 1) {
-    const operation = observation.operationLedger[index];
-    if (operation.kind !== 'readiness-query') continue;
-    const nextProvider = observation.operationLedger.find(
-      item => item.sequence > operation.sequence && item.kind === 'provider-request',
-    );
-    assert(nextProvider, `${prefix}_ALIGNED_QUERY_NOT_RETRIEVED`);
-    assert(operation.sequence < nextProvider.sequence, `${prefix}_PROVIDER_BEFORE_READINESS`);
+}
+
+function exportedPublicError(outcome) {
+  if (outcome.result && outcome.result.structuredContent) {
+    return outcome.result.structuredContent.error;
   }
+  if (outcome.result && outcome.result.isError === true) {
+    const payload = extractToolPayload(outcome.result);
+    return (payload && payload.error) || payload;
+  }
+  return outcome.error;
 }
 
 function observePersistentIncrementalLifecycle(testcasePrefix) {
@@ -246,6 +358,7 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
   const mutationMatrix = buildMutationMatrix();
   const results = [];
   const scenarios = [];
+  const focusedDryRuns = [];
   await withTestComposition(effects.composition, async () => {
     for (const mutation of mutationMatrix) {
       effects.selectScenario({ name: mutation.kind });
@@ -259,6 +372,17 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
       { ARGO_LIVE_PROVIDER_E2E: '1', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' },
     );
     scenarios.push({ name: 'preview', observation: preview });
+    for (const mutation of mutationMatrix.filter(item => item.surface === 'focused')) {
+      const name = `dryrun-${mutation.kind}`;
+      effects.selectScenario({ name });
+      focusedDryRuns.push(Object.freeze({
+        name,
+        observation: await invokeActualMutationAdapter(
+          { ...mutation, preview: true },
+          enabledGates(),
+        ),
+      }));
+    }
     for (const scenario of [
       { name: 'disabled', gates: {} },
       { name: 'provider-only', gates: { ARGO_LIVE_PROVIDER_E2E: '1' } },
@@ -279,6 +403,31 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
       });
     }
   });
+  const {
+    runExportedReadinessScenario,
+  } = require('./productionDefaultRetrievalHarness.js');
+  const failureQueryRejections = [];
+  const recordedEffects = effects.snapshot();
+  for (const name of ['disabled', ...MUTATION_FAILURE_SCENARIOS]) {
+    const persisted = recordedEffects.failureRecords.find(item => item.scenario === name);
+    const scenario = scenarios.find(item => item.name === name);
+    const publicPayload = scenario && extractToolPayload(scenario.observation.result);
+    const evidence = (persisted && persisted.evidence)
+      || (publicPayload && publicPayload.alignment)
+      || {};
+    failureQueryRejections.push(Object.freeze({
+      name,
+      observation: await runExportedReadinessScenario({
+        name: `${name}-persisted-readiness`,
+        state: evidence.state === 'Pending' ? 'SemanticIndexPending' : (evidence.state || 'Failed'),
+        canonicalVersion: evidence.canonicalVersion,
+        contentVersion: evidence.contentVersion,
+        indexVersion: evidence.indexVersion,
+        missingChannels: evidence.missingChannels || [],
+        mismatchedChannels: evidence.mismatchedChannels || [],
+      }),
+    }));
+  }
   const failedCanonicalWrite = scenarios.find(item => item.name === 'persistence-failure');
   const laterInitRecovery = await runControlledEnabledArgoInitScenario(
     failedCanonicalWrite.observation.afterBytes,
@@ -287,6 +436,8 @@ async function runPersistentIncrementalMatrix(testcasePrefix) {
     mutationMatrix,
     results: Object.freeze(results),
     scenarios: Object.freeze(scenarios),
+    focusedDryRuns: Object.freeze(focusedDryRuns),
+    failureQueryRejections: Object.freeze(failureQueryRejections),
     laterInitRecovery,
     effects: effects.snapshot(),
   });
@@ -317,15 +468,33 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
     0,
     `${prefix}_PREVIEW_VECTOR_EFFECT`,
   );
+  assert.strictEqual(observation.focusedDryRuns.length, 9, `${prefix}_FOCUSED_DRYRUN_MATRIX_INCOMPLETE`);
+  for (const dryRun of observation.focusedDryRuns) {
+    assert.strictEqual(dryRun.observation.afterBytes, dryRun.observation.beforeBytes, `${prefix}_${dryRun.name}_CANONICAL_WRITE`);
+    assert.strictEqual(
+      observation.effects.operations.filter(item => item.scenario === dryRun.name).length,
+      0,
+      `${prefix}_${dryRun.name}_SEMANTIC_EFFECT`,
+    );
+  }
   assert.strictEqual(observation.effects.cleanupCalls, 0, `${prefix}_PRODUCTION_RUNID_CLEANUP_PROHIBITED`);
   assert.strictEqual(observation.effects.runIdRecords, 0, `${prefix}_PRODUCTION_RUNID_RECORD_PROHIBITED`);
   for (const lifecycle of observation.effects.lifecycleCalls) {
     if (lifecycle.preview) continue;
     const events = observation.effects.operations.filter(item => item.callId === lifecycle.callId);
     const kinds = events.map(item => item.kind);
-    assert(kinds.includes('readiness-invalidate'), `${prefix}_READINESS_INVALIDATION_MISSING`);
-    if (kinds.includes('provider-embed')) {
-      assertBefore(kinds, 'readiness-invalidate', 'provider-embed', `${prefix}_READINESS_NOT_INVALIDATED_FIRST`);
+    assert.strictEqual(kinds[0], 'readiness-invalidate', `${prefix}_READINESS_INVALIDATION_NOT_FIRST`);
+    for (const sideEffect of ['configuration-resolve', 'provider-embed', 'upsert-records', 'delete-tombstones']) {
+      if (kinds.includes(sideEffect)) {
+        assertBefore(kinds, 'readiness-invalidate', sideEffect, `${prefix}_READINESS_BEFORE_${sideEffect.toUpperCase()}`);
+      }
+    }
+    if (kinds.includes('readiness-aligned')) {
+      assertPhaseBefore(kinds, ['configuration-resolve'], ['provider-embed'], `${prefix}_CONFIGURATION_BEFORE_PROVIDER`);
+      assertPhaseBefore(kinds, ['provider-embed'], ['upsert-records', 'delete-tombstones'], `${prefix}_PROVIDER_BEFORE_PERSISTENCE`);
+      assertPhaseBefore(kinds, ['upsert-records', 'delete-tombstones'], ['queryability-verify'], `${prefix}_PERSISTENCE_BEFORE_QUERYABILITY`);
+      assertPhaseBefore(kinds, ['queryability-verify'], ['coherence-verify'], `${prefix}_QUERYABILITY_BEFORE_COHERENCE`);
+      assertPhaseBefore(kinds, ['coherence-verify'], ['readiness-aligned'], `${prefix}_COHERENCE_BEFORE_ALIGNMENT`);
     }
   }
   for (const result of observation.results) {
@@ -368,6 +537,70 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
       assert.notStrictEqual(payload.alignment && payload.alignment.state, 'Aligned', `${prefix}_${scenario.name}_FALSE_ALIGNMENT`);
     }
   }
+  for (const name of [
+    'disabled',
+    'provider-only',
+    'mutation-only',
+    'malformed-provider',
+    'malformed-mutation',
+    'missing-configuration',
+    'unsafe-configuration',
+  ]) {
+    const operations = observation.effects.operations.filter(item => item.scenario === name);
+    assert.strictEqual(
+      operations.filter(item => item.kind === 'provider-embed').length,
+      0,
+      `${prefix}_${name}_PROVIDER_WRITE`,
+    );
+    assert.strictEqual(
+      operations.filter(item => ['upsert-records', 'delete-tombstones'].includes(item.kind)).length,
+      0,
+      `${prefix}_${name}_VECTOR_WRITE`,
+    );
+  }
+  const disabledRejection = observation.failureQueryRejections.find(item => item.name === 'disabled');
+  assert(disabledRejection, `${prefix}_DISABLED_SUBSEQUENT_QUERY_NOT_RUN`);
+  for (const outcome of disabledRejection.observation.outcomes) {
+    const error = exportedPublicError(outcome);
+    assert(error && error.category, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
+    assert.strictEqual(error.fullSnapshotFallback, false, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_FALLBACK`);
+    assert.strictEqual(outcome.effects.providerRequests, 0, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_PROVIDER_EFFECT`);
+  }
+  for (const name of MUTATION_FAILURE_SCENARIOS) {
+    const scenario = observation.scenarios.find(item => item.name === name);
+    const payload = extractToolPayload(scenario.observation.result);
+    const evidence = (payload && payload.alignment) || {};
+    assert(['Failed', 'Stale'].includes(evidence.state), `${prefix}_${name}_FAILED_STATE_NOT_PUBLIC`);
+    assert(evidence.category, `${prefix}_${name}_PUBLIC_CATEGORY_MISSING`);
+    assert(evidence.action, `${prefix}_${name}_PUBLIC_ACTION_MISSING`);
+    assert.strictEqual(evidence.fullSnapshotFallback, false, `${prefix}_${name}_PUBLIC_FALLBACK_CHANGED`);
+    assert(!JSON.stringify(payload).includes(SECRET_CANARY), `${prefix}_${name}_PUBLIC_SECRET_LEAK`);
+    const persisted = observation.effects.failureRecords.find(item => item.scenario === name);
+    assert(persisted, `${prefix}_${name}_FAILED_STATE_NOT_PERSISTED`);
+    assert(['Failed', 'Stale'].includes(persisted.evidence.state), `${prefix}_${name}_PERSISTED_STATE_INVALID`);
+    const raw = observation.effects.rawDiagnostics.find(item => item.scenario === name);
+    if (['missing-configuration', 'unsafe-configuration', 'provider-failure', 'persistence-failure', 'queryability-failure', 'coherence-failure'].includes(name)) {
+      assert(raw && JSON.stringify(raw.diagnostic).includes(SECRET_CANARY), `${prefix}_${name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`);
+    }
+    const operations = observation.effects.operations.filter(item => item.scenario === name);
+    assert(
+      operations.some(item => item.kind === 'readiness-failed'),
+      `${prefix}_${name}_FAILURE_NOT_RECORDED_AFTER_EFFECT`,
+    );
+    assert.strictEqual(
+      operations.at(-1).kind,
+      'readiness-failed',
+      `${prefix}_${name}_FAILED_STATE_NOT_FINAL_EFFECT`,
+    );
+    const rejection = observation.failureQueryRejections.find(item => item.name === name);
+    assert(rejection, `${prefix}_${name}_SUBSEQUENT_QUERY_NOT_RUN`);
+    for (const outcome of rejection.observation.outcomes) {
+      const error = exportedPublicError(outcome);
+      assert(error && error.category, `${prefix}_${name}_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
+      assert.strictEqual(error.fullSnapshotFallback, false, `${prefix}_${name}_${outcome.dispatcher}_QUERY_FALLBACK`);
+      assert.strictEqual(outcome.effects.providerRequests, 0, `${prefix}_${name}_${outcome.dispatcher}_QUERY_PROVIDER_EFFECT`);
+    }
+  }
   assert.strictEqual(
     observation.laterInitRecovery.boundaryMissing,
     false,
@@ -391,7 +624,7 @@ function canonicalContainsMutation(bytes, mutation) {
   return document.views.some(item => item.view_id === mutation.id);
 }
 
-async function runActualArgoInitScenario(name, environment) {
+async function runActualArgoInitScenario(name, environment, effectObserver = undefined) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-canonical-init-'));
   const previous = captureEnvironment([
     'ARGO_REPO_ROOT',
@@ -402,6 +635,7 @@ async function runActualArgoInitScenario(name, environment) {
     'ARGO_NEO4J_DATABASE_PASSWORD',
   ]);
   try {
+    if (effectObserver) effectObserver.selectScenario({ name, environment });
     fs.writeFileSync(path.join(root, 'Argo.feap'), 'controlled argo init template');
     const graphDirectory = path.join(root, 'design', 'KG');
     fs.mkdirSync(graphDirectory, { recursive: true });
@@ -437,18 +671,28 @@ async function runActualArgoInitScenario(name, environment) {
     }
     let outcome;
     try {
-      outcome = extractToolPayload(await unifiedMcp.callTool('initializeWorkspace'));
+      const response = await unifiedMcp.handleRequest({
+        jsonrpc: '2.0',
+        id: `init-${name}`,
+        method: 'tools/call',
+        params: {
+          name: 'initializeWorkspace',
+          arguments: {},
+        },
+      });
+      outcome = extractToolPayload(response && response.result);
     } catch (error) {
       outcome = {
         status: 'failed',
-        error: observableSafeError(error),
+        error: serializeDiagnostic(error),
       };
     }
     return Object.freeze({
       name,
-      invocation: 'argo-mcp-server.callTool:initializeWorkspace',
+      invocation: 'argo-mcp-server.handleRequest:tools/call:initializeWorkspace',
       outcome: Object.freeze(outcome || {}),
       canonicalBytes: fs.readFileSync(graphPath, 'utf8'),
+      effects: effectObserver ? effectObserver.snapshotScenario(name) : undefined,
     });
   } finally {
     restoreEnvironment(previous);
@@ -479,6 +723,7 @@ async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) 
       state: 'valid-external-only',
     }),
     productionGraphRagRuntime: controlled.runtime,
+    finalReadiness: controlled.finalReadiness,
   }, async () => {
     const controlledEnvironment = {
       ...enabledGates(),
@@ -499,17 +744,115 @@ async function runControlledEnabledArgoInitScenario(canonicalBytes = undefined) 
     rerun,
     writesAfterResume,
     writesAfterRerun: controlled.observations.writeCount(),
+    finalReadinessEvents: controlled.observations.finalReadinessEvents(),
   });
 }
 
 function assertZeroActualInitSemanticEffects(observation, prefix) {
-  const evidence = observation.outcome.semanticLifecycle || observation.outcome.error || {};
+  assert(observation.effects, `${prefix}_INDEPENDENT_EFFECT_OBSERVATION_MISSING`);
   for (const field of ['providerCalls', 'vectorWrites']) {
     assert.strictEqual(
-      evidence[field] || 0,
+      typeof observation.effects[field],
+      'number',
+      `${prefix}_${field.toUpperCase()}_COUNT_MISSING`,
+    );
+    assert.strictEqual(
+      observation.effects[field],
       0,
       `${prefix}_${field.toUpperCase()}_EFFECT`,
     );
+  }
+}
+
+function createActualInitEffects() {
+  const {
+    createControlledPrivateBackfillComposition,
+  } = require('./productionSemanticPersistenceHarness.js');
+  const controlled = createControlledPrivateBackfillComposition({ interrupt: false });
+  const state = {
+    scenario: null,
+    starts: new Map(),
+    configurationOperations: [],
+    rawDiagnostics: [],
+    finalReadinessEvents: [],
+  };
+  const recordConfiguration = (kind, details = {}) => {
+    state.configurationOperations.push(Object.freeze({
+      scenario: state.scenario.name,
+      kind,
+      ...details,
+    }));
+  };
+  return {
+    composition: Object.freeze({
+      configurationBehavior: Object.freeze({
+        readGate(name) {
+          recordConfiguration('gate-read', { name });
+          return state.scenario.environment[name];
+        },
+        readExternalConfiguration() {
+          recordConfiguration('external-configuration-read');
+          if (state.scenario.name === 'missing-configuration') {
+            throw observedConfigurationDiagnostic('EXTERNAL_CREDENTIALS_REQUIRED');
+          }
+          if (state.scenario.name === 'unsafe-configuration') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_ACL_UNSAFE');
+          }
+          return externalConfigurationValues();
+        },
+      }),
+      productionGraphRagRuntime: controlled.runtime,
+      finalReadiness: Object.freeze({
+        async verifyQueryability() {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'queryability-verified',
+          }));
+          return true;
+        },
+        async verifyGlobalCoherence() {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'global-coherence-verified',
+          }));
+          return true;
+        },
+        async recordAligned(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'aligned-recorded',
+            evidence,
+          }));
+        },
+      }),
+    }),
+    selectScenario(scenario) {
+      state.scenario = scenario;
+      state.starts.set(scenario.name, {
+        providerCalls: controlled.observations.snapshot().providerCalls,
+        vectorWrites: controlled.observations.writeCount(),
+        configurationOperations: state.configurationOperations.length,
+        rawDiagnostics: state.rawDiagnostics.length,
+        finalReadinessEvents: state.finalReadinessEvents.length,
+      });
+    },
+    snapshotScenario(name) {
+      const start = state.starts.get(name);
+      const current = controlled.observations.snapshot();
+      return Object.freeze({
+        providerCalls: current.providerCalls - start.providerCalls,
+        vectorWrites: controlled.observations.writeCount() - start.vectorWrites,
+        configurationOperations: Object.freeze(state.configurationOperations.slice(start.configurationOperations)),
+        rawDiagnostics: Object.freeze(state.rawDiagnostics.slice(start.rawDiagnostics)),
+        finalReadinessEvents: Object.freeze(state.finalReadinessEvents.slice(start.finalReadinessEvents)),
+      });
+    },
+  };
+
+  function observedConfigurationDiagnostic(category) {
+    const error = rawDiagnosticError(category);
+    state.rawDiagnostics.push(Object.freeze(serializeDiagnostic(error)));
+    return error;
   }
 }
 
@@ -520,6 +863,8 @@ function createActualMutationEffects() {
     cleanupCalls: 0,
     runIdRecords: 0,
     records: [],
+    failureRecords: [],
+    rawDiagnostics: [],
   };
   let scenario = { name: 'matrix' };
   let sequence = 0;
@@ -548,33 +893,39 @@ function createActualMutationEffects() {
       },
       readiness: Object.freeze({
         async invalidate() { record('readiness-invalidate'); },
-        async recordAligned() { record('readiness-aligned'); },
-        async recordFailure() { record('readiness-failed'); },
+        async recordAligned(evidence) { record('readiness-aligned', { evidence }); },
+        async recordFailure(evidence) {
+          record('readiness-failed', { evidence });
+          state.failureRecords.push(Object.freeze({
+            scenario: scenario.name,
+            evidence: Object.freeze({ ...(evidence || {}) }),
+          }));
+        },
       }),
       configuration: Object.freeze({
         async resolve() {
           record('configuration-resolve');
-          if (scenario.configurationFailure) throw safeError(scenario.configurationFailure);
+          if (scenario.configurationFailure) throw observedRawDiagnostic(scenario.configurationFailure);
           return approvedConfiguration();
         },
       }),
       provider: Object.freeze({
         async embed() {
           record('provider-embed');
-          if (scenario.failAt === 'provider') throw safeError('PROVIDER_FAILED');
+          if (scenario.failAt === 'provider') throw observedRawDiagnostic('PROVIDER_FAILED');
           return Array.from({ length: 1024 }, (_, index) => index / 2048);
         },
       }),
       projectionStore: Object.freeze({
         async upsertRecords(records) {
           record('upsert-records', { caseKind: scenario.name, count: records.length });
-          if (scenario.failAt === 'persistence') throw safeError('PERSISTENCE_FAILED');
+          if (scenario.failAt === 'persistence') throw observedRawDiagnostic('PERSISTENCE_FAILED');
           state.records.push(...records);
           state.runIdRecords += records.filter(record => Object.hasOwn(record, 'runId')).length;
         },
         async deleteTombstones(records) {
           record('delete-tombstones', { caseKind: scenario.name, count: records.length });
-          if (scenario.failAt === 'persistence') throw safeError('PERSISTENCE_FAILED');
+          if (scenario.failAt === 'persistence') throw observedRawDiagnostic('PERSISTENCE_FAILED');
           state.records.push(...records);
           state.runIdRecords += records.filter(record => Object.hasOwn(record, 'runId')).length;
         },
@@ -584,13 +935,15 @@ function createActualMutationEffects() {
       queryability: Object.freeze({
         async verifyTouched() {
           record('queryability-verify');
-          return scenario.failAt !== 'queryability';
+          if (scenario.failAt === 'queryability') throw observedRawDiagnostic('QUERYABILITY_FAILED');
+          return true;
         },
       }),
       coherence: Object.freeze({
         async verifyGlobal() {
           record('coherence-verify');
-          return scenario.failAt !== 'coherence';
+          if (scenario.failAt === 'coherence') throw observedRawDiagnostic('GLOBAL_COHERENCE_FAILED');
+          return true;
         },
       }),
     }),
@@ -603,9 +956,20 @@ function createActualMutationEffects() {
         lifecycleCalls: Object.freeze([...state.lifecycleCalls]),
         operations: Object.freeze([...state.operations]),
         records: Object.freeze([...state.records]),
+        failureRecords: Object.freeze([...state.failureRecords]),
+        rawDiagnostics: Object.freeze([...state.rawDiagnostics]),
       });
     },
   };
+
+  function observedRawDiagnostic(category) {
+    const error = rawDiagnosticError(category);
+    state.rawDiagnostics.push(Object.freeze({
+      scenario: scenario.name,
+      diagnostic: Object.freeze(serializeDiagnostic(error)),
+    }));
+    return error;
+  }
 
 }
 
@@ -648,7 +1012,16 @@ async function invokeActualMutationAdapter(mutation, gates) {
     fs.writeFileSync(graphPath, JSON.stringify(document, null, 2));
     const beforeBytes = fs.readFileSync(graphPath, 'utf8');
     const invocation = buildActualMutationInvocation(mutation, document);
-    const result = await systemMcp.callTool(invocation.name, invocation.args);
+    const response = await systemMcp.handleRequest({
+      jsonrpc: '2.0',
+      id: `mutation-${mutation.kind}`,
+      method: 'tools/call',
+      params: {
+        name: invocation.name,
+        arguments: invocation.args,
+      },
+    });
+    const result = response && response.result;
     const afterBytes = fs.readFileSync(graphPath, 'utf8');
     return Object.freeze({
       mutation,
@@ -835,6 +1208,16 @@ function approvedConfiguration() {
   });
 }
 
+function externalConfigurationValues() {
+  return Object.freeze({
+    ...approvedConfiguration(),
+    neo4jDatabaseUrl: 'neo4j://controlled.invalid:7687',
+    neo4jDatabaseUsername: 'controlled-user',
+    neo4jDatabasePassword: 'controlled-password',
+    embeddingCredential: 'controlled-provider-key',
+  });
+}
+
 function enabledGates() {
   return {
     ARGO_LIVE_PROVIDER_E2E: '1',
@@ -872,15 +1255,34 @@ function assertBefore(events, first, second, category) {
   assert(firstIndex >= 0 && secondIndex > firstIndex, category);
 }
 
+function assertPhaseBefore(events, earlierKinds, laterKinds, category) {
+  const earlierIndexes = events
+    .map((kind, index) => (earlierKinds.includes(kind) ? index : -1))
+    .filter(index => index >= 0);
+  const laterIndexes = events
+    .map((kind, index) => (laterKinds.includes(kind) ? index : -1))
+    .filter(index => index >= 0);
+  assert(earlierIndexes.length > 0 && laterIndexes.length > 0, `${category}_PHASE_MISSING`);
+  assert(Math.max(...earlierIndexes) < Math.min(...laterIndexes), category);
+}
+
 function toolNames(response) {
   return Object.freeze((((response || {}).result || {}).tools || []).map(tool => tool.name));
 }
 
-function safeError(category) {
-  const error = new Error(`${category}: SEMANTIC-SECRET-CANARY`);
+function rawDiagnosticError(category) {
+  const error = new Error(`${category}: ${SECRET_CANARY}`);
   error.category = category;
-  error.action = 'Correct the external configuration and rerun argo init';
+  error.action = `Correct the external configuration containing ${SECRET_CANARY}`;
+  error.secret = SECRET_CANARY;
+  error.fullSnapshotFallback = false;
   return error;
+}
+
+function serializeDiagnostic(error) {
+  return Object.fromEntries(
+    Object.getOwnPropertyNames(error || {}).map(name => [name, error[name]]),
+  );
 }
 
 function extractToolPayload(result) {

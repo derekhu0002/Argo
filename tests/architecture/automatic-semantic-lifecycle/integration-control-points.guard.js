@@ -51,18 +51,96 @@ assert.throws(
   'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: direct lifecycle factory bypass passed',
 );
 
+const aliasedFactory = `
+const { createPersistentMutationEmbeddingLifecycle: buildLifecycle } = require('mutationEmbeddingVectorLifecycle.js');
+const indirect = buildLifecycle;
+indirect({});
+`;
+assert.throws(
+  () => assertNoPrivateFactoryInvocation(parse(aliasedFactory, 'aliased-factory.js'), 'aliased-factory'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: aliased private factory bypass passed',
+);
+
+const deadAdapterLiterals = `
+async function invokeActualMutationAdapter() { return systemMcp.callTool(invocation.name, invocation.args); }
+function buildActualMutationInvocation() { return { name: 'applySystemArchitectureMutation' }; }
+const unused = ['previewSystemArchitectureMutation', 'addArchitectureElement', 'updateArchitectureElement',
+'removeArchitectureElement', 'addArchitectureRelationship', 'updateArchitectureRelationship',
+'removeArchitectureRelationship', 'addArchitectureView', 'updateArchitectureView', 'removeArchitectureView'];
+`;
+assert.throws(
+  () => assertProductionReachableAdapterNames(
+    parse(deadAdapterLiterals, 'dead-adapter-literals.js'),
+    'dead-adapter-literals',
+  ),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: dead adapter literal bypass passed',
+);
+
+assert.throws(
+  () => assertPersistentLifecycleNoCleanup(`
+    const delegatedCleanup = store => store.cleanup();
+    const createPersistentMutationEmbeddingLifecycle = dependencies => ({
+      reconcile: () => delegatedCleanup(dependencies.projectionStore),
+    });
+    module.exports = { createPersistentMutationEmbeddingLifecycle };
+  `, 'delegated-arrow-cleanup.js'),
+  /SEMANTIC_LIFECYCLE_INTEGRATION_BINDING/,
+  'SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: delegated arrow cleanup bypass passed',
+);
+
 function assertIntegrationBindings(automaticSource, retrievalSource, backfillSource, label) {
   const automatic = parse(automaticSource, `${label}-automatic.js`);
   const retrieval = parse(retrievalSource, `${label}-retrieval.js`);
   const backfill = parse(backfillSource, `${label}-backfill.js`);
 
+  const automaticReachable = reachableFunctionNodes(automatic, [
+    'observeAutomaticInitLifecycle',
+    'runPersistentIncrementalMatrix',
+  ]);
   assert(
-    hasMemberCall(automatic, 'unifiedMcp', 'callTool', 'initializeWorkspace'),
+    hasToolsCallRequest(automaticReachable, 'unifiedMcp', 'initializeWorkspace'),
     `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not invoke shipped argo init`,
   );
   assert(
-    hasMemberCallWithMemberArgument(automatic, 'systemMcp', 'callTool', 'invocation', 'name'),
+    hasToolsCallMemberRequest(
+      automaticReachable,
+      'systemMcp',
+      'invocation',
+      'name',
+    ),
     `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} does not invoke actual mutation adapters`,
+  );
+  assertProductionReachableAdapterNames(automatic, label);
+  assertNoPrivateFactoryInvocation(automatic, label);
+  const retrievalReachable = reachableFunctionNodes(retrieval, [
+    'runExportedFreshReadinessPerQuery',
+    'runExportedReadinessStateMatrix',
+    'runExportedReadinessScenario',
+  ]);
+  for (const dispatcher of ['system', 'unified']) {
+    const calls = memberCallsInNodes(retrievalReachable, dispatcher, 'callTool').filter(call => (
+      stringArgument(call, 0) === 'getSystemArchitecture'
+    ));
+    assert(calls.length > 0, `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} omits ${dispatcher} query`);
+    assert(
+      calls.every(call => call.arguments.length === 2),
+      `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} injects a private ${dispatcher} query seam`,
+    );
+  }
+  assert(
+    hasRequireBinding(backfill, 'runProductionSemanticBackfill', '../../harness/productionSemanticPersistenceHarness.js'),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} drops concrete WP-P1 composition`,
+  );
+}
+
+function assertProductionReachableAdapterNames(automatic, label) {
+  const invocationBuilder = functionNode(automatic, 'buildActualMutationInvocation');
+  assert(invocationBuilder, `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} omits mutation invocation builder`);
+  assert(
+    returnsFocusedAdapterLookup(invocationBuilder),
+    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} focused adapter names are not production-reachable`,
   );
   for (const toolName of [
     'applySystemArchitectureMutation',
@@ -78,29 +156,10 @@ function assertIntegrationBindings(automaticSource, retrievalSource, backfillSou
     'removeArchitectureView',
   ]) {
     assert(
-      hasStringLiteral(automatic, toolName),
+      hasStringLiteral(invocationBuilder, toolName),
       `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} omits adapter ${toolName}`,
     );
   }
-  assert(
-    !hasIdentifierCall(automatic, 'createPersistentMutationEmbeddingLifecycle')
-      && !hasIdentifierCall(automatic, 'createProductionSemanticOperatorJourney'),
-    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} directly invokes a private lifecycle factory`,
-  );
-  for (const dispatcher of ['system', 'unified']) {
-    const calls = memberCalls(retrieval, dispatcher, 'callTool').filter(call => (
-      stringArgument(call, 0) === 'getSystemArchitecture'
-    ));
-    assert(calls.length > 0, `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} omits ${dispatcher} query`);
-    assert(
-      calls.every(call => call.arguments.length === 2),
-      `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} injects a private ${dispatcher} query seam`,
-    );
-  }
-  assert(
-    hasRequireBinding(backfill, 'runProductionSemanticBackfill', '../../harness/productionSemanticPersistenceHarness.js'),
-    `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} drops concrete WP-P1 composition`,
-  );
 }
 
 function parse(source, label) {
@@ -126,6 +185,10 @@ function memberCalls(ast, objectName, memberName) {
   return calls;
 }
 
+function memberCallsInNodes(nodes, objectName, memberName) {
+  return nodes.flatMap(node => memberCalls(node, objectName, memberName));
+}
+
 function hasMemberCall(ast, objectName, memberName, firstArgument) {
   return memberCalls(ast, objectName, memberName)
     .some(call => stringArgument(call, 0) === firstArgument);
@@ -139,6 +202,12 @@ function hasMemberCallWithMemberArgument(ast, objectName, memberName, argumentOb
       && argument.expression.text === argumentObject
       && argument.name.text === argumentMember;
   });
+}
+
+function hasMemberCallWithMemberArgumentInNodes(nodes, objectName, memberName, argumentObject, argumentMember) {
+  return nodes.some(node => (
+    hasMemberCallWithMemberArgument(node, objectName, memberName, argumentObject, argumentMember)
+  ));
 }
 
 function hasIdentifierCall(ast, name) {
@@ -180,24 +249,197 @@ function hasRequireBinding(ast, exportedName, modulePath) {
   return found;
 }
 
-function assertPersistentLifecycleNoCleanup(source, label) {
-  const ast = parse(source, label);
-  let factory;
+function functionNode(ast, name) {
+  let found;
   visit(ast, node => {
     if (
       ts.isFunctionDeclaration(node)
       && node.name
-      && node.name.text === 'createPersistentMutationEmbeddingLifecycle'
-    ) factory = node;
-  });
-  if (!factory) return;
-  visit(factory, node => {
+      && node.name.text === name
+    ) found = node;
     if (
-      (ts.isIdentifier(node) && node.text === 'runId')
-      || (ts.isPropertyAccessExpression(node) && ['cleanup', 'clear', 'truncate'].includes(node.name.text))
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.name.text === name
+      && node.initializer
+      && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+    ) found = node.initializer;
+  });
+  return found;
+}
+
+function reachableFunctionNodes(ast, roots) {
+  const functions = new Map();
+  visit(ast, node => {
+    if (ts.isFunctionDeclaration(node) && node.name) functions.set(node.name.text, node);
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.initializer
+      && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+    ) functions.set(node.name.text, node.initializer);
+  });
+  const reachable = [];
+  const pending = [...roots];
+  const seen = new Set();
+  while (pending.length > 0) {
+    const name = pending.pop();
+    if (seen.has(name) || !functions.has(name)) continue;
+    seen.add(name);
+    const node = functions.get(name);
+    reachable.push(node);
+    visit(node, child => {
+      if (ts.isCallExpression(child) && ts.isIdentifier(child.expression)) {
+        pending.push(child.expression.text);
+      }
+    });
+  }
+  return reachable;
+}
+
+function hasToolsCallRequest(nodes, dispatcher, toolName) {
+  return memberCallsInNodes(nodes, dispatcher, 'handleRequest').some(call => {
+    const request = call.arguments[0];
+    return objectContainsPropertyValue(request, 'method', 'tools/call')
+      && objectContainsNestedPropertyValue(request, 'params', 'name', toolName);
+  });
+}
+
+function hasToolsCallMemberRequest(nodes, dispatcher, argumentObject, argumentMember) {
+  return memberCallsInNodes(nodes, dispatcher, 'handleRequest').some(call => {
+    const request = call.arguments[0];
+    if (!objectContainsPropertyValue(request, 'method', 'tools/call')) return false;
+    if (!request || !ts.isObjectLiteralExpression(request)) return false;
+    const params = request.properties.find(property => (
+      ts.isPropertyAssignment(property) && property.name.getText() === 'params'
+    ));
+    if (!params || !ts.isObjectLiteralExpression(params.initializer)) return false;
+    const name = params.initializer.properties.find(property => (
+      ts.isPropertyAssignment(property) && property.name.getText() === 'name'
+    ));
+    return name
+      && ts.isPropertyAccessExpression(name.initializer)
+      && ts.isIdentifier(name.initializer.expression)
+      && name.initializer.expression.text === argumentObject
+      && name.initializer.name.text === argumentMember;
+  });
+}
+
+function objectContainsPropertyValue(node, propertyName, value) {
+  if (!node || !ts.isObjectLiteralExpression(node)) return false;
+  return node.properties.some(property => (
+    ts.isPropertyAssignment(property)
+    && property.name.getText().replaceAll(/['"]/g, '') === propertyName
+    && ts.isStringLiteral(property.initializer)
+    && property.initializer.text === value
+  ));
+}
+
+function objectContainsNestedPropertyValue(node, parentName, propertyName, value) {
+  if (!node || !ts.isObjectLiteralExpression(node)) return false;
+  const parent = node.properties.find(property => (
+    ts.isPropertyAssignment(property)
+    && property.name.getText().replaceAll(/['"]/g, '') === parentName
+  ));
+  return parent && objectContainsPropertyValue(parent.initializer, propertyName, value);
+}
+
+function returnsFocusedAdapterLookup(node) {
+  let found = false;
+  visit(node, child => {
+    if (!ts.isReturnStatement(child) || !child.expression || !ts.isObjectLiteralExpression(child.expression)) return;
+    for (const property of child.expression.properties) {
+      if (!ts.isPropertyAssignment(property) || property.name.getText() !== 'name') continue;
+      const text = property.initializer.getText();
+      if (
+        text.includes('focusedNames')
+        && text.includes('mutation.objectType')
+        && text.includes('mutation.operation')
+      ) found = true;
+    }
+  });
+  return found;
+}
+
+function assertNoPrivateFactoryInvocation(ast, label) {
+  const forbiddenExports = new Set([
+    'createPersistentMutationEmbeddingLifecycle',
+    'createProductionSemanticOperatorJourney',
+  ]);
+  const forbiddenLocals = new Set();
+  const moduleBindings = new Set();
+  visit(ast, node => {
+    if (!ts.isVariableDeclaration(node) || !node.initializer) return;
+    if (
+      ts.isObjectBindingPattern(node.name)
+      && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression)
+      && node.initializer.expression.text === 'require'
+    ) {
+      for (const element of node.name.elements) {
+        const exported = element.propertyName ? element.propertyName.text : element.name.text;
+        if (forbiddenExports.has(exported)) forbiddenLocals.add(element.name.text);
+      }
+    }
+    if (
+      ts.isIdentifier(node.name)
+      && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression)
+      && node.initializer.expression.text === 'require'
+      && node.initializer.arguments[0]
+      && /semanticOperatorJourney|mutationEmbeddingVectorLifecycle/.test(node.initializer.arguments[0].getText())
+    ) moduleBindings.add(node.name.text);
+  });
+  let changed = true;
+  while (changed) {
+    changed = false;
+    visit(ast, node => {
+      if (
+        ts.isVariableDeclaration(node)
+        && ts.isIdentifier(node.name)
+        && node.initializer
+        && ts.isIdentifier(node.initializer)
+        && forbiddenLocals.has(node.initializer.text)
+        && !forbiddenLocals.has(node.name.text)
+      ) {
+        forbiddenLocals.add(node.name.text);
+        changed = true;
+      }
+    });
+  }
+  visit(ast, node => {
+    if (!ts.isCallExpression(node)) return;
+    if (ts.isIdentifier(node.expression) && forbiddenLocals.has(node.expression.text)) {
+      assert.fail(`SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} invokes aliased private factory`);
+    }
+    if (
+      ts.isPropertyAccessExpression(node.expression)
+      && ts.isIdentifier(node.expression.expression)
+      && moduleBindings.has(node.expression.expression.text)
+      && forbiddenExports.has(node.expression.name.text)
+    ) {
+      assert.fail(`SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} invokes module private factory`);
+    }
+  });
+}
+
+function assertPersistentLifecycleNoCleanup(source, label) {
+  const ast = parse(source, label);
+  const factory = functionNode(ast, 'createPersistentMutationEmbeddingLifecycle');
+  if (!factory) return;
+  const reachable = reachableFunctionNodes(ast, ['createPersistentMutationEmbeddingLifecycle']);
+  for (const body of reachable) visit(body, node => {
+    const text = ts.isIdentifier(node) || ts.isStringLiteral(node)
+      ? node.text
+      : ts.isPropertyAccessExpression(node)
+        ? node.name.text
+        : '';
+    if (
+      /runId/i.test(text)
+      || /cleanup|clear|truncate|reset|deleteByRun/i.test(text)
     ) {
       assert.fail(
-        `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} persistent lifecycle contains production cleanup/runId`,
+        `SEMANTIC_LIFECYCLE_INTEGRATION_BINDING: ${label} persistent lifecycle reaches production cleanup/runId`,
       );
     }
   });
