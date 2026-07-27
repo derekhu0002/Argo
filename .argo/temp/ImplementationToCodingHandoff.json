@@ -142,27 +142,10 @@
       "path": ".argo/scripts/systemarchitecture-mcp-server.js",
       "failureSignal": "canonical-object-subset-only now fails only on the no-anchor public callTool/unified MCP subcases; legacy business-summary result fields are still returned without anchors.",
       "nextAction": "Map every ordinary semantic query success to canonical document object subsets by default; do not require query.anchors to activate the canonical subset contract."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "broken relationship endpoint fixtures pass instead of failing closed with SEMANTIC_SUBSET_RELATIONSHIP_MISSING.",
-      "nextAction": "Validate selected Relationship endpoint closure against canonical source/target object presence before returning a successful subset."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "broken View member/reference fixtures pass instead of failing closed with SEMANTIC_SUBSET_VIEW_MISSING.",
-      "nextAction": "Validate selected View members, included Relationships, and in-View endpoints before returning a successful subset."
-    },
-    {
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "Public ordinary semantic subset mapping must preserve minimal Relationship endpoint closure and complete non-cascading View closure semantics without reopening default vector retrieval.",
-      "nextAction": "Implement the BP-MCP-SEM subset mapper and structural validation at the public query boundary; do not modify WP-P2 default retrieval behavior unless a later handoff explicitly authorizes it."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair in dependency order: request validation first, canonical payload mapping second, relationship endpoint closure third, View membership closure fourth, then run the focused guards and full architecture baseline.",
+    "executionStrategy": "Repair only the currently failing no-anchor public-path contract: request validation first, canonical payload mapping second, then run the focused guards and all frozen BP-MCP-SEM explicit anchors as regression coverage.",
     "tasks": [
       {
         "taskId": "MCP-SEM-C1",
@@ -202,50 +185,7 @@
           "Deep-copy or select canonical objects by id without dropping, renaming, or adding fields.",
           "Keep Element-only hits minimal unless selected Relationship or selected View closure requires additional canonical objects."
         ],
-        "completionSignal": "canonical-object-subset-only passes for both anchor and no-anchor public callTool/unified MCP paths, and element-hit-no-neighbor-expansion remains passing without regressing full-snapshot modes."
-      },
-      {
-        "taskId": "MCP-SEM-C3",
-        "title": "Close selected Relationship endpoints",
-        "objective": "Return both canonical endpoint Elements for selected Relationships and reject broken endpoint references.",
-        "dependsOn": [
-          "MCP-SEM-C2"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "For every selected Relationship, require source_id and target_id to resolve to canonical Element objects from the same selected graph.",
-          "Add only the Relationship and both endpoint Elements to the successful canonical subset; do not add endpoint neighbors or endpoint-owned Views.",
-          "Return SEMANTIC_SUBSET_RELATIONSHIP_MISSING for unresolved endpoint references before returning a successful subset."
-        ],
-        "completionSignal": "relationship-endpoint-closure and broken-relationship-endpoint-rejection pass."
-      },
-      {
-        "taskId": "MCP-SEM-C4",
-        "title": "Close selected View membership",
-        "objective": "Return complete selected View membership and reject broken View references without overlapping View cascade.",
-        "dependsOn": [
-          "MCP-SEM-C3"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "For every selected View, return its canonical View object, all declared included Elements, all declared included Relationships, and endpoints for each included Relationship.",
-          "Exclude overlapping Views that only share members unless they independently match or are explicitly selected.",
-          "Return SEMANTIC_SUBSET_VIEW_MISSING for unresolved member, included Relationship, or in-View endpoint references before returning a successful subset."
-        ],
-        "completionSignal": "view-membership-closure, no-overlapping-view-cascade, and broken-view-reference-rejection pass."
+        "completionSignal": "canonical-object-subset-only passes for both anchor and no-anchor public callTool/unified MCP paths, and the Element, Relationship, View, no-cascade, broken-Relationship, broken-View, and full-snapshot anchors remain passing regression coverage."
       }
     ]
   },
