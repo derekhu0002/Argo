@@ -1275,7 +1275,9 @@ async function attachMutationEmbeddingLifecycle(context, result, document) {
   try {
     const lifecycle = require(
       './graph-rag/mutationEmbeddingVectorLifecycle.js'
-    ).createPersistentMutationEmbeddingLifecycle();
+    ).createPersistentMutationEmbeddingLifecycle({
+      repositoryRoot: resolveWorkspaceRoot(),
+    });
     const embeddingLifecycle = await lifecycle.reconcile({
       canonicalWrite: {
         written: true,

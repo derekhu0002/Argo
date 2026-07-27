@@ -5,6 +5,18 @@ const { AsyncLocalStorage } = require('node:async_hooks');
 
 const { createLiveEmbeddingIndexGate } = require('./liveEmbeddingIndexGate.js');
 const { createApprovedNeo4jBoundary } = require('./liveEmbeddingNeo4jBoundary.js');
+const {
+  resolveApprovedLiveConfiguration,
+} = require('./liveEmbeddingProviderConfig.js');
+const {
+  createLiveEmbeddingProviderClient,
+} = require('./liveEmbeddingProviderClient.js');
+const {
+  createProductionSemanticNeo4jAdapter,
+} = require('./semantic-persistence/productionSemanticNeo4jAdapter.js');
+const {
+  createProductionSemanticProjectionStore,
+} = require('./semantic-persistence/productionSemanticProjectionStore.js');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const CHANNEL_BY_TYPE = Object.freeze({
@@ -16,10 +28,13 @@ const persistentCompositionStorage = new AsyncLocalStorage();
 const PERSISTENT_CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
 
 function createPersistentMutationEmbeddingLifecycle(dependencies = {}) {
+  const productionDependencies = hasPersistentLifecyclePorts(dependencies)
+    ? dependencies
+    : createProductionPersistentLifecycleDependencies(dependencies);
   return Object.freeze({
     reconcile(input = {}) {
       const active = persistentCompositionStorage.getStore();
-      return persistentReconcile(active || dependencies, input);
+      return persistentReconcile(active || productionDependencies, input);
     },
   });
 }
@@ -29,6 +44,213 @@ async function withPersistentMutationEmbeddingLifecycleTestComposition(compositi
     throw new TypeError('Persistent mutation lifecycle composition and callback are required');
   }
   return persistentCompositionStorage.run(Object.freeze({ ...composition }), callback);
+}
+
+function hasPersistentLifecyclePorts(dependencies) {
+  return Boolean(
+    dependencies
+    && dependencies.readiness
+    && dependencies.configuration
+    && dependencies.provider
+    && dependencies.projectionStore
+    && dependencies.queryability
+    && dependencies.coherence,
+  );
+}
+
+function createProductionPersistentLifecycleDependencies(options = {}) {
+  const repositoryRoot = path.resolve(
+    options.repositoryRoot
+    || process.env.ARGO_REPO_ROOT
+    || process.env.WORKSPACE_FOLDER
+    || path.join(__dirname, '..', '..', '..'),
+  );
+  let pendingReadiness;
+  let resources;
+
+  async function requireResources() {
+    if (resources) return resources;
+    const configurationEvidence = await resolveApprovedLiveConfiguration({
+      repositoryRoot,
+      requiredOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+    });
+    const configuration = configurationEvidence.configuration;
+    const neo4j = require('neo4j-driver');
+    const driver = neo4j.driver(
+      configuration.neo4jDatabaseUrl,
+      neo4j.auth.basic(
+        configuration.neo4jDatabaseUsername,
+        configuration.neo4jDatabasePassword,
+      ),
+    );
+    const qualification = Object.freeze({
+      approvedByHuman: true,
+      provider: configuration.embeddingProvider,
+      model: configuration.embeddingModel,
+      version: configuration.embeddingModelVersion,
+      dimensions: configuration.embeddingDimensions,
+      source: 'explicit-human-approval',
+    });
+    const storeConfiguration = Object.freeze({
+      ...configuration,
+      embeddingCredential: configuration.qwenKey,
+    });
+    const persistenceAdapter = createProductionSemanticNeo4jAdapter({
+      driver,
+      configuration: storeConfiguration,
+    });
+    const projectionStore = createProductionSemanticProjectionStore({
+      persistenceAdapter,
+      canonicalAuthority: Object.freeze({
+        assertProjectionOnly() {
+          return Object.freeze({
+            authority: 'canonical-json',
+            projectionRole: 'subordinate-projection-index',
+          });
+        },
+      }),
+      configuration: storeConfiguration,
+      qualification,
+    });
+    const provider = createLiveEmbeddingProviderClient({
+      configuration,
+      transport: Object.freeze({
+        request(url, requestOptions) {
+          if (typeof global.fetch !== 'function') {
+            throw safePersistentError(
+              'LIVE_PROVIDER_TRANSPORT_UNAVAILABLE',
+              'Provide the approved HTTPS embedding transport, then run argo init.',
+            );
+          }
+          return global.fetch(url, requestOptions);
+        },
+      }),
+    });
+    resources = Object.freeze({
+      configuration,
+      driver,
+      projectionStore,
+      provider,
+    });
+    if (pendingReadiness) {
+      await writeProductionReadiness(resources, pendingReadiness);
+    }
+    return resources;
+  }
+
+  return Object.freeze({
+    readiness: Object.freeze({
+      async invalidate(evidence) {
+        pendingReadiness = Object.freeze({ ...evidence });
+        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+      },
+      async recordAligned(evidence) {
+        pendingReadiness = Object.freeze({ ...evidence });
+        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+      },
+      async recordFailure(evidence) {
+        pendingReadiness = Object.freeze({ ...evidence });
+        if (resources) await writeProductionReadiness(resources, pendingReadiness);
+      },
+    }),
+    configuration: Object.freeze({
+      async resolve() {
+        const active = await requireResources();
+        return active.configuration;
+      },
+    }),
+    provider: Object.freeze({
+      async embed(content) {
+        const active = await requireResources();
+        return active.provider.embed(JSON.stringify(content));
+      },
+    }),
+    projectionStore: Object.freeze({
+      async upsertRecords(records) {
+        const active = await requireResources();
+        return active.projectionStore.upsertRecords(records);
+      },
+      async deleteTombstones(tombstones) {
+        const active = await requireResources();
+        return active.projectionStore.deleteTombstones(tombstones);
+      },
+      async readRecords() {
+        const active = await requireResources();
+        return active.projectionStore.readRecords();
+      },
+      async close() {
+        if (resources) await resources.projectionStore.close();
+      },
+    }),
+    queryability: Object.freeze({
+      async verifyTouched({ records, tombstones }) {
+        const active = await requireResources();
+        const persisted = await active.projectionStore.readRecords();
+        const byIdentity = new Map(persisted.map(record => [record.canonicalIdentity, record]));
+        return records.every(record => {
+          const stored = byIdentity.get(record.canonicalIdentity);
+          return stored
+            && stored.canonicalVersion === record.canonicalVersion
+            && stored.contentVersion === record.contentVersion
+            && stored.indexVersion === record.indexVersion
+            && Array.isArray(stored.vector)
+            && stored.vector.length === record.dimensions;
+        }) && tombstones.every(tombstone => !byIdentity.has(tombstone.canonicalIdentity));
+      },
+    }),
+    coherence: Object.freeze({
+      async verifyGlobal({ canonicalWrite }) {
+        const active = await requireResources();
+        const persisted = await active.projectionStore.readRecords();
+        const expectedVersion = persistentVersions(canonicalWrite).canonicalVersion;
+        const channels = new Set(persisted.map(record => record.channel));
+        return PERSISTENT_CHANNELS.every(channel => channels.has(channel))
+          && persisted.every(record => record.canonicalVersion === expectedVersion);
+      },
+    }),
+  });
+}
+
+async function writeProductionReadiness(resources, evidence) {
+  const session = resources.driver.session(
+    resources.configuration.neo4jDatabase === undefined
+      ? undefined
+      : { database: resources.configuration.neo4jDatabase },
+  );
+  try {
+    await session.run([
+      'MERGE (readiness:ArgoProductionSemanticReadiness {identity: $identity})',
+      'SET readiness.state = $state,',
+      '    readiness.verified = $verified,',
+      '    readiness.canonicalVersion = $canonicalVersion,',
+      '    readiness.contentVersion = $contentVersion,',
+      '    readiness.indexVersion = $indexVersion,',
+      '    readiness.completedChannels = $completedChannels,',
+      '    readiness.missingChannels = $missingChannels,',
+      '    readiness.mismatchedChannels = $mismatchedChannels,',
+      '    readiness.fullSnapshotFallback = false,',
+      '    readiness.category = $category,',
+      '    readiness.action = $action,',
+      '    readiness.revision = coalesce(readiness.revision, 0) + 1,',
+      '    readiness.recordId = coalesce(readiness.recordId, $recordId)',
+      'RETURN properties(readiness) AS readiness',
+    ].join('\n'), {
+      identity: 'argo-production-semantic-index',
+      recordId: crypto.randomUUID(),
+      state: evidence.state || 'Stale',
+      verified: evidence.verified === true,
+      canonicalVersion: evidence.canonicalVersion || '',
+      contentVersion: evidence.contentVersion || '',
+      indexVersion: evidence.indexVersion || '',
+      completedChannels: evidence.completedChannels || [],
+      missingChannels: evidence.missingChannels || [...PERSISTENT_CHANNELS],
+      mismatchedChannels: evidence.mismatchedChannels || [],
+      category: evidence.category || 'SEMANTIC_INDEX_NOT_ALIGNED',
+      action: evidence.action || 'Run argo init to reconcile the semantic index.',
+    });
+  } finally {
+    await session.close();
+  }
 }
 
 async function persistentReconcile(dependencies, input) {
