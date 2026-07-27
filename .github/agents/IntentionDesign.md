@@ -462,7 +462,8 @@ elseif (EVENT: Candidate intent architecture from reverse extraction?) then (rev
   [acts on: IntentToImplementationHandoff];
 
 elseif (EVENT: New task or requirement?) then (new task)
-  :Read design/KG/SystemArchitecture.json, implementation contracts, and evidence for enough intent context
+  :MCP tool: argo.getSystemArchitecture with explicit semantic query for the task purpose and intent; avoid omitted-query full graph reads unless exact complete canonical snapshot is required
+  Read compact relevant intent elements, relationships, views, ids, and hit reasons before any broader context expansion
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
   if (Task is anchored to an intent element?) then (yes)
     :MCP tool: argo.getIntentElementContext

@@ -129,20 +129,22 @@ const TOOLS = [
   },
   {
     name: 'getSystemArchitecture',
-    description: 'Start here. read-only tool for inspecting current elements, relationships, views, and ids before planning mutations. Use before preview or focused mutation tools.',
+    description: 'Start here, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
     inputSchema: {
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
         query: {
           type: 'object',
+          description: 'Preferred for ordinary agent reading. Use semantic query instead of full graph reads; combine the returned element ids with getIntentElementContext when deeper local context is needed.',
           properties: {
             purpose: {
               type: 'string',
               enum: ['intent-decision', 'implementation-design', 'coding-repair', 'audit', 'graph-tidy'],
+              description: 'Declared reading purpose. Use intent-decision, implementation-design, coding-repair, or audit for semantic retrieval; graph-tidy intentionally bypasses semantic retrieval and may return a full snapshot.',
             },
-            intent: { type: 'string' },
-            subject: { type: 'string' },
+            intent: { type: 'string', description: 'Natural-language intent for semantic retrieval, for example "summarize business features for high-risk audit".' },
+            subject: { type: 'string', description: 'Required for audit; optional anchor/focus id for other semantic purposes.' },
           },
           additionalProperties: true,
         },

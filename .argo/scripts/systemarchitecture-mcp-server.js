@@ -163,20 +163,22 @@ const HANDLED_MUTATION_TYPES = new Set([
 const TOOLS = [
   {
     name: 'getSystemArchitecture',
-    description: 'Start here. read-only tool for inspecting current elements, relationships, views, and ids before planning mutations. Use before preview or focused mutation tools.',
+    description: 'Start here, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
     inputSchema: {
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
         query: {
           type: 'object',
+          description: 'Preferred for ordinary agent reading. Use semantic query instead of full graph reads; combine the returned element ids with getIntentElementContext when deeper local context is needed.',
           properties: {
             purpose: {
               type: 'string',
               enum: Array.from(LEGAL_QUERY_PURPOSES),
+              description: 'Declared reading purpose. Use intent-decision, implementation-design, coding-repair, or audit for semantic retrieval; graph-tidy intentionally bypasses semantic retrieval and may return a full snapshot.',
             },
-            intent: { type: 'string' },
-            subject: { type: 'string' },
+            intent: { type: 'string', description: 'Natural-language intent for semantic retrieval, for example "summarize business features for high-risk audit".' },
+            subject: { type: 'string', description: 'Required for audit; optional anchor/focus id for other semantic purposes.' },
           },
           additionalProperties: true,
         },
@@ -1379,14 +1381,14 @@ function buildFailureGuidance(errors) {
     addGuidanceForError(guidance, String(error));
   }
   if (guidance.length === 0 && Array.isArray(errors) && errors.length > 0) {
-    guidance.push('Inspect the error text, call getSystemArchitecture to refresh ids and current view membership, then retry with previewSystemArchitectureMutation before writing.');
+    guidance.push('Inspect the error text, call getSystemArchitecture with an explicit semantic query to refresh relevant ids, use getIntentElementContext for focused dependency context when needed, then retry with previewSystemArchitectureMutation before writing. Use an omitted-query full snapshot only when exact complete view membership is required.');
   }
   return guidance;
 }
 
 function addGuidanceForError(guidance, error) {
   if (error.includes('mutation.view_ids must contain at least one view id')) {
-    pushUnique(guidance, 'Select the target view_ids explicitly. Call getSystemArchitecture to inspect existing views, then retry the add/remove operation with the intended view_ids.');
+    pushUnique(guidance, 'Select the target view_ids explicitly. Prefer getSystemArchitecture with an explicit semantic query to find relevant views, then use getIntentElementContext for focused element dependencies when needed. Use a full snapshot only if exact complete view membership is required.');
   }
   if (error.includes('violates ArchiMate 3.2 relationship matrix')) {
     pushUnique(guidance, 'Check relationship.type and the source and target element types against ArchiMate 3.2. If the intended meaning is still valid, choose a compliant relationship type or change the endpoint element types by remove-and-add.');
@@ -1407,7 +1409,7 @@ function addGuidanceForError(guidance, error) {
     pushUnique(guidance, 'Do not force more than 7 elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.');
   }
   if (error.includes('does not exist') || error.includes('references missing')) {
-    pushUnique(guidance, 'Refresh current ids with getSystemArchitecture. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
+    pushUnique(guidance, 'Refresh current ids with getSystemArchitecture semantic query first, then call getIntentElementContext for any returned element that needs dependency context. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
   }
 }
 

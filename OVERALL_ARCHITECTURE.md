@@ -3,7 +3,7 @@
 ## Root rules
 
 1. Production dependencies point from the unified MCP gateway to the intent-query boundary and from that boundary to canonical graph persistence; production code never depends on `tests/`.
-2. `getSystemArchitecture` remains the single public reading interface. An omitted `query` preserves the legacy complete canonical response; an explicit `query` selects purpose-aware behavior.
+2. `getSystemArchitecture` remains the single public reading interface. Agent-facing prompts should prefer an explicit semantic `query` for ordinary reading and use returned element ids with `getIntentElementContext` for focused follow-up context. An omitted `query` preserves the legacy complete canonical response only for cases that explicitly require an exact full snapshot.
 3. Canonical JSON is authoritative. Semantic retrieval may derive context but cannot replace, mutate, or silently truncate a required full snapshot.
 4. Test Harness code may invoke public production boundaries and read approved fixtures; explicit entrypoints use Harness methods and do not expose MCP, filesystem, or process plumbing.
 5. Explicit entrypoints and critical guardrails listed in the implementation handoff are frozen during Coding/Repair.
