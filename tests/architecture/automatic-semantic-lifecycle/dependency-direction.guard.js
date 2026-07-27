@@ -6,11 +6,8 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const targetPaths = handoff.codingTargets.map(target => target.path);
 const allowedTargets = new Set([
-  '.argo/scripts/argo-mcp-server.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
   '.argo/scripts/graph-rag/semanticOperatorJourney.js',
-  '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
 ]);
 
 // GIVEN the approved successor scope
@@ -45,17 +42,19 @@ assert(
   'SEMANTIC_LIFECYCLE_CANONICAL_WRITE_ORCHESTRATOR_NOT_AUTHORIZED',
 );
 assert(
-  targetPaths.includes('.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'),
-  'SEMANTIC_LIFECYCLE_INCREMENTAL_BOUNDARY_NOT_AUTHORIZED',
+  targetPaths.includes('.argo/scripts/graph-rag/semanticOperatorJourney.js'),
+  'SEMANTIC_LIFECYCLE_INIT_TRANSITION_BOUNDARY_NOT_AUTHORIZED',
 );
-assert(
-  targetPaths.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'),
-  'SEMANTIC_LIFECYCLE_UNIFIED_WP_P2_BOUNDARY_NOT_AUTHORIZED',
-);
-assert(
-  !handoff.frozenFiles.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'),
-  'SEMANTIC_LIFECYCLE_UNIFIED_WP_P2_TARGET_STILL_FROZEN',
-);
+for (const frozenProduction of [
+  '.argo/scripts/argo-mcp-server.js',
+  '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+]) {
+  assert(
+    handoff.frozenFiles.includes(frozenProduction),
+    `SEMANTIC_LIFECYCLE_COMPLETED_PRODUCTION_NOT_FROZEN:${frozenProduction}`,
+  );
+}
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

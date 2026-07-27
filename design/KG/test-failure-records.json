@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-SP-05-NewProjectJourney",
+    "testdescription": "Control point: invoke canonical argo init for both gates exactly enabled with valid controlled production configuration, both disabled, each half-enabled combination, missing and unsafe external configuration, interrupted reconciliation resume, unchanged rerun, and rerun of a prior structural-only project; inspect public tools/list and routing. Observation point: enabled+valid runs full idempotent/resumable Element, ArchitectureRelationship, and View reconciliation and records readiness only after durable queryability/global coherence; disabled completes structural-only with explicit Disabled/Pending evidence and zero provider/vector effects; half-enabled or unsafe/missing fails closed with redacted action, zero provider/vector writes, and no false readiness; rerun resumes or aligns; canonical init semantics remain explicit; the three standalone lifecycle tools are absent publicly.",
+    "acceptanceCriteria": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
+    "relatedIntentElementId": "semprod-operator-journey-process",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
+    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runNewProjectSemanticOperatorJourney.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:253:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:167:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED\n    at assertDurableInitTransition (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:253:3)\n    at assertAutomaticInitLifecycle (D:\\Projects\\Argo\\tests\\harness\\automaticSemanticLifecycleHarness.js:167:3)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runNewProjectSemanticOperatorJourney.js:14:3)"
+  }
+]

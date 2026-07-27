@@ -51,11 +51,8 @@ assert(
 assert.deepStrictEqual(
   handoff.codingTargets.map(target => target.path).sort(),
   [
-    '.argo/scripts/argo-mcp-server.js',
     '.argo/scripts/systemarchitecture-mcp-server.js',
     '.argo/scripts/graph-rag/semanticOperatorJourney.js',
-    '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
-    '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   ].sort(),
   'SEMANTIC_LIFECYCLE_ARCHITECTURE_TARGET_SET_CONFLICT',
 );
@@ -78,14 +75,13 @@ const failedEntrypoints = handoff.explicitEntrypoints.filter(
 );
 assert.strictEqual(
   passingEntrypoints.size,
-  6,
+  7,
   'SEMANTIC_LIFECYCLE_HANDOFF_PASSING_ENTRYPOINT_BASELINE_STALE',
 );
 assert.deepStrictEqual(
   failedEntrypoints.map(entry => entry.testcaseName).sort(),
   [
-    'ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval',
-    'ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness',
+    'ExplicitAcceptanceTestcase-SP-05-NewProjectJourney',
   ],
   'SEMANTIC_LIFECYCLE_HANDOFF_EXPECTED_RED_SET_STALE',
 );
@@ -98,8 +94,7 @@ assert(
 assert.deepStrictEqual(
   failedEntrypoints.map(entry => entry.failureReason),
   [
-    'SP03_SYSTEM_UNIFIED_READINESS_BYPASSED_WP_P2',
-    'SP04_SYSTEM_ACTIONABLE_FAILURE_EVIDENCE_CHANGED',
+    'SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED',
   ],
   'SEMANTIC_LIFECYCLE_HANDOFF_EXPECTED_RED_SIGNAL_STALE',
 );
@@ -109,56 +104,33 @@ const integrationGuard = handoff.criticalNonExplicitTests.find(
 );
 assert.strictEqual(
   integrationGuard && integrationGuard.expectedStatus,
-  'failed',
-  'SEMANTIC_LIFECYCLE_HANDOFF_INTEGRATION_RED_NOT_RECORDED',
+  'passed',
+  'SEMANTIC_LIFECYCLE_HANDOFF_INTEGRATION_STATUS_STALE',
 );
 assert(
   handoff.criticalNonExplicitTests
-    .filter(test => test !== integrationGuard)
     .every(test => test.expectedStatus === 'passed'),
-  'SEMANTIC_LIFECYCLE_HANDOFF_NON_INTEGRATION_GUARD_NOT_GREEN',
+  'SEMANTIC_LIFECYCLE_HANDOFF_GUARD_NOT_GREEN',
 );
 
-const completedTargetPaths = new Set([
-  '.argo/scripts/argo-mcp-server.js',
-  '.argo/scripts/graph-rag/semanticOperatorJourney.js',
-  '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
-]);
-for (const target of handoff.codingTargets.filter(item => completedTargetPaths.has(item.path))) {
+for (const target of handoff.codingTargets) {
   assert(
-    target.failureSignal.startsWith('REGRESSION_ONLY:'),
-    `SEMANTIC_LIFECYCLE_HANDOFF_COMPLETED_TARGET_SIGNAL_NOT_REGRESSION_ONLY:${target.path}`,
+    target.failureSignal.includes('SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED'),
+    `SEMANTIC_LIFECYCLE_HANDOFF_TARGET_SIGNAL_STALE:${target.path}`,
   );
   assert(
-    target.nextAction.startsWith('No completed C'),
-    `SEMANTIC_LIFECYCLE_HANDOFF_COMPLETED_TARGET_REIMPLEMENTATION_DIRECTIVE:${target.path}`,
+    target.nextAction.includes('same durable record'),
+    `SEMANTIC_LIFECYCLE_HANDOFF_TARGET_ACTION_STALE:${target.path}`,
   );
 }
-const obsoleteFailureSignals = [
-  'SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING',
-  'SP01_BACKFILL_TOOL_NOT_PRIVATE',
-  'SP02_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING',
-  'DT16_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING',
-  'W31_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING',
-  'TS00_SYSTEM_SEMANTICDISABLED_READINESS_NOT_FRESH',
-];
-const codingAuthorization = JSON.stringify(handoff.codingTargets);
-for (const obsolete of obsoleteFailureSignals) {
-  assert(
-    !codingAuthorization.includes(obsolete),
-    `SEMANTIC_LIFECYCLE_HANDOFF_OBSOLETE_TARGET_FAILURE_SIGNAL:${obsolete}`,
-  );
-}
-for (const task of handoff.taskExecutionPlan.tasks.filter(item => (
-  ['CSL-C1', 'CSL-C2', 'CSL-C3'].includes(item.taskId)
-))) {
-  assert.strictEqual(task.status, 'completed', `SEMANTIC_LIFECYCLE_HANDOFF_TASK_STATUS_STALE:${task.taskId}`);
-  assert(
-    !JSON.stringify(task).includes('preserve current RED')
-      && !JSON.stringify(task).includes('preserve actual-adapter controlled-composition RED'),
-    `SEMANTIC_LIFECYCLE_HANDOFF_TASK_RETAINS_OBSOLETE_RED:${task.taskId}`,
-  );
-}
+const correctionTask = handoff.taskExecutionPlan.tasks.find(
+  task => task.taskId === 'CSL-C6',
+);
+assert.strictEqual(
+  correctionTask && correctionTask.status,
+  'pending',
+  'SEMANTIC_LIFECYCLE_HANDOFF_SP05_CORRECTION_TASK_MISSING',
+);
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');

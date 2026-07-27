@@ -1,3 +1,12 @@
+# Canonical init durable-transition correction (2026-07-27)
+
+- Final IntentionDesign audit found that SP-05 began each gate/configuration scenario without prior durable authorization, so a stale production `Aligned` record could survive disabled or failed `argo init` even though all prior controlled tests passed.
+- Frozen SP-05 now seeds a complete verified Aligned record before every isolated disabled/invalid/configuration scenario and before the interruption/resume/rerun chain. The shipped `initializeWorkspace` call must transform the same identity, `recordId`, and canonical version at a monotonically higher revision before every outcome.
+- Both-disabled must durably become SemanticIndexPending/disabled. Half-enabled, malformed, missing/unsafe external configuration, and reconciliation failure must durably become actionable redacted Failed/Stale, with zero provider/vector effects on every invalid/configuration path and no surviving prior Aligned authorization.
+- Enabled work is observed at the backfill boundary and must already see invalidated readiness before provider/vector work. Interruption records Failed/Stale; resume and rerun invalidate again; verified Aligned is written on the same record only after queryability and global coherence. Existing checkpoint resume/no-replay and idempotent rerun assertions remain.
+- This correction authorizes only `.argo/scripts/systemarchitecture-mcp-server.js` and `.argo/scripts/graph-rag/semanticOperatorJourney.js`. Gateway, mutation lifecycle, WP-P2 retrieval, WP-P1 persistence/runtime, configuration, provider, contracts, intent, and all frozen acceptance files remain unchanged Coding dependencies.
+- Final pre-coding evidence is 42/43 with exactly SP-05 RED at `SP05_DISABLED_DURABLE_READINESS_NOT_FAIL_CLOSED`; seven unique scoped entrypoints and all six lifecycle guards pass. The runner wrote one failure record and changed only `semprod-operator-journey-process` from delivered to not_delivered.
+
 # Canonical lifecycle handoff-baseline correction (2026-07-27)
 
 - Independent audit found the handoff still described the pre-implementation nine-RED baseline after Coding had completed C1-C3. Fresh evidence is 41/43: six unique scoped entrypoints pass, and only SP-03/SP-04 remain expected RED. Five lifecycle guards pass; `integration-control-points.guard.js` is intentionally RED on router-side WP-P2 duplication.

@@ -139,6 +139,7 @@ async function observeAutomaticInitLifecycle() {
   } else {
     scenarios = await executeScenarios();
   }
+  effects.dispose();
   const controlledEnabled = await runControlledEnabledArgoInitScenario();
   return Object.freeze({
     ...scenarios,
@@ -163,6 +164,12 @@ function assertAutomaticInitLifecycle(observation) {
     'SP05_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
   );
   assertZeroActualInitSemanticEffects(disabled, 'SP05_DISABLED');
+  assertDurableInitTransition(
+    disabled,
+    ['SemanticIndexPending', 'SemanticDisabled'],
+    false,
+    'SP05_DISABLED',
+  );
 
   for (const rejected of [
     observation.halfEnabledProvider,
@@ -181,10 +188,25 @@ function assertAutomaticInitLifecycle(observation) {
     assert(failure.action, `SP05_${rejected.name}_ACTION_MISSING`);
     assert(!JSON.stringify(rejected.outcome).includes(SECRET_CANARY), `SP05_${rejected.name}_SECRET_LEAK`);
     assertZeroActualInitSemanticEffects(rejected, `SP05_${rejected.name}`);
+    assertDurableInitTransition(
+      rejected,
+      ['Failed', 'Stale'],
+      true,
+      `SP05_${rejected.name}`,
+    );
     if (['missing-configuration', 'unsafe-configuration'].includes(rejected.name)) {
       assert(
         rejected.effects.rawDiagnostics.some(item => JSON.stringify(item).includes(SECRET_CANARY)),
         `SP05_${rejected.name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`,
+      );
+      const externalRead = rejected.effects.configurationOperations.find(
+        operation => operation.kind === 'external-configuration-read',
+      );
+      assert(
+        externalRead
+          && externalRead.readiness
+          && externalRead.readiness.state !== 'Aligned',
+        `SP05_${rejected.name}_READINESS_NOT_INVALIDATED_BEFORE_EXTERNAL_CONFIG`,
       );
     }
   }
@@ -216,6 +238,149 @@ function assertAutomaticInitLifecycle(observation) {
     ['queryability-verified', 'global-coherence-verified', 'aligned-recorded'],
     'SP05_FINAL_READINESS_ORDER_INVALID',
   );
+  assertControlledDurableInitRecovery(observation.controlledEnabled);
+}
+
+function assertDurableInitTransition(observation, expectedStates, failureExpected, prefix) {
+  const before = observation.effects && observation.effects.seededReadiness;
+  const after = observation.effects && observation.effects.durableReadiness;
+  const writeOperations = (observation.effects && observation.effects.readinessOperations || [])
+    .filter(operation => operation.kind === 'durable-readiness-write');
+  assert(before, `${prefix}_PREEXISTING_ALIGNED_READINESS_NOT_SEEDED`);
+  assert.strictEqual(before.state, 'Aligned', `${prefix}_PREEXISTING_READINESS_NOT_ALIGNED`);
+  assert.strictEqual(before.verified, true, `${prefix}_PREEXISTING_READINESS_NOT_VERIFIED`);
+  assert(after, `${prefix}_DURABLE_READINESS_OUTCOME_MISSING`);
+  assert(expectedStates.includes(after.state), `${prefix}_DURABLE_READINESS_NOT_FAIL_CLOSED`);
+  assert.strictEqual(after.identity, before.identity, `${prefix}_READINESS_IDENTITY_REPLACED`);
+  assert.strictEqual(after.recordId, before.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+  assert.strictEqual(
+    after.canonicalVersion,
+    before.canonicalVersion,
+    `${prefix}_READINESS_CANONICAL_VERSION_CHANGED`,
+  );
+  assert(after.revision > before.revision, `${prefix}_READINESS_REVISION_NOT_MONOTONIC`);
+  assert.strictEqual(
+    writeOperations[0] && writeOperations[0].operation,
+    'seed-aligned',
+    `${prefix}_PREEXISTING_ALIGNED_WRITE_NOT_OBSERVED`,
+  );
+  assert.strictEqual(
+    writeOperations[1] && writeOperations[1].operation,
+    'init-invalidated',
+    `${prefix}_READINESS_NOT_INVALIDATED_BEFORE_OUTCOME`,
+  );
+  if (failureExpected) {
+    assert.strictEqual(
+      writeOperations[writeOperations.length - 1]
+        && writeOperations[writeOperations.length - 1].operation,
+      'init-failed',
+      `${prefix}_DURABLE_FAILURE_NOT_RECORDED`,
+    );
+    for (const field of ['category', 'message', 'action']) {
+      assert(after[field], `${prefix}_DURABLE_FAILURE_${field.toUpperCase()}_MISSING`);
+    }
+    assert(!JSON.stringify(after).includes(SECRET_CANARY), `${prefix}_DURABLE_FAILURE_SECRET_LEAK`);
+  } else {
+    assert.strictEqual(
+      writeOperations.length,
+      2,
+      `${prefix}_DISABLED_READINESS_TRANSITION_CHANGED`,
+    );
+  }
+  assert.notStrictEqual(after.state, 'Aligned', `${prefix}_STALE_PRIOR_ALIGNED_SURVIVED`);
+  assertMonotonicSameReadinessRecord(writeOperations, prefix);
+}
+
+function assertControlledDurableInitRecovery(observation) {
+  const writeOperations = observation.readinessOperations
+    .filter(operation => operation.kind === 'durable-readiness-write');
+  assert.strictEqual(
+    observation.seededReadiness.state,
+    'Aligned',
+    'SP05_CONTROLLED_PREEXISTING_ALIGNED_READINESS_NOT_SEEDED',
+  );
+  assert.deepStrictEqual(
+    writeOperations.map(operation => operation.operation),
+    [
+      'seed-aligned',
+      'init-invalidated',
+      'init-failed',
+      'init-invalidated',
+      'init-aligned',
+      'init-invalidated',
+      'init-aligned',
+    ],
+    'SP05_CONTROLLED_DURABLE_TRANSITION_SEQUENCE_INVALID',
+  );
+  assertMonotonicSameReadinessRecord(writeOperations, 'SP05_CONTROLLED');
+  assert.strictEqual(
+    observation.readinessAtBackfillStart.length,
+    3,
+    'SP05_CONTROLLED_BACKFILL_ATTEMPT_COUNT_CHANGED',
+  );
+  for (const readiness of observation.readinessAtBackfillStart) {
+    assert(
+      readiness && readiness.state !== 'Aligned' && readiness.verified !== true,
+      'SP05_CONTROLLED_READINESS_NOT_INVALIDATED_BEFORE_PROVIDER_VECTOR',
+    );
+  }
+  const interruptionFailure = writeOperations[2].after;
+  assert(
+    ['Failed', 'Stale'].includes(interruptionFailure.state),
+    'SP05_CONTROLLED_RECONCILIATION_FAILURE_NOT_DURABLE',
+  );
+  assert.notStrictEqual(
+    interruptionFailure.state,
+    'Aligned',
+    'SP05_CONTROLLED_STALE_PRIOR_ALIGNED_SURVIVED_FAILURE',
+  );
+  assert.strictEqual(
+    observation.durableReadiness.state,
+    'Aligned',
+    'SP05_CONTROLLED_FINAL_READINESS_NOT_ALIGNED',
+  );
+  assert.strictEqual(
+    observation.durableReadiness.verified,
+    true,
+    'SP05_CONTROLLED_FINAL_READINESS_NOT_VERIFIED',
+  );
+  const operationKinds = observation.readinessOperations.map(operation => operation.kind);
+  const alignedIndexes = indexesOf(operationKinds, 'durable-readiness-write')
+    .filter(index => observation.readinessOperations[index].operation === 'init-aligned');
+  for (const alignedIndex of alignedIndexes) {
+    const priorKinds = operationKinds.slice(0, alignedIndex);
+    assert(
+      priorKinds.lastIndexOf('durable-readiness-queryability')
+        > priorKinds.lastIndexOf('durable-readiness-write'),
+      'SP05_CONTROLLED_ALIGNED_BEFORE_QUERYABILITY',
+    );
+    assert(
+      priorKinds.lastIndexOf('durable-readiness-global-coherence')
+        > priorKinds.lastIndexOf('durable-readiness-queryability'),
+      'SP05_CONTROLLED_ALIGNED_BEFORE_GLOBAL_COHERENCE',
+    );
+  }
+}
+
+function assertMonotonicSameReadinessRecord(writeOperations, prefix) {
+  assert(writeOperations.length > 1, `${prefix}_DURABLE_READINESS_TRANSITIONS_MISSING`);
+  const first = writeOperations[0].after;
+  for (let index = 0; index < writeOperations.length; index += 1) {
+    const record = writeOperations[index].after;
+    assert.strictEqual(record.identity, first.identity, `${prefix}_READINESS_IDENTITY_REPLACED`);
+    assert.strictEqual(record.recordId, first.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+    assert.strictEqual(
+      record.canonicalVersion,
+      first.canonicalVersion,
+      `${prefix}_READINESS_CANONICAL_VERSION_CHANGED`,
+    );
+    if (index > 0) {
+      assert(
+        record.revision > writeOperations[index - 1].after.revision,
+        `${prefix}_READINESS_REVISION_NOT_MONOTONIC`,
+      );
+    }
+  }
 }
 
 function assertPrivateFullReconciliation(initObservation, publicSurface) {
@@ -913,6 +1078,26 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
       version: canonicalDocumentVersion(JSON.parse(canonicalBytes)),
     },
   } : {});
+  const ownsReadinessStore = !options.readinessStore;
+  const readinessStore = options.readinessStore || createSharedDurableReadinessStore();
+  const seededReadiness = ownsReadinessStore
+    ? seedDurableAlignedReadiness(
+      readinessStore,
+      canonicalBytes
+        ? canonicalDocumentVersion(JSON.parse(canonicalBytes))
+        : canonicalDocumentVersion(JSON.parse(fs.readFileSync(
+          path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+          'utf8',
+        ))),
+    )
+    : readinessStore.inspect();
+  const readinessAtBackfillStart = [];
+  const observedRuntime = Object.freeze({
+    async runSemanticBackfill(request) {
+      readinessAtBackfillStart.push(readinessStore.inspect());
+      return controlled.runtime.runSemanticBackfill(request);
+    },
+  });
   let interruption;
   let resumed;
   let rerun;
@@ -922,10 +1107,8 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
       gates: enabledGates(),
       state: 'valid-external-only',
     }),
-    productionGraphRagRuntime: controlled.runtime,
-    finalReadiness: options.readinessStore
-      ? options.readinessStore.createInitFinalReadiness(controlled.finalReadiness)
-      : controlled.finalReadiness,
+    productionGraphRagRuntime: observedRuntime,
+    finalReadiness: readinessStore.createInitFinalReadiness(controlled.finalReadiness),
   }, async () => {
     const controlledEnvironment = {
       ...enabledGates(),
@@ -940,7 +1123,7 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
     controlled.observations.setPhase('rerun');
     rerun = (await runActualArgoInitScenario('controlled-rerun', controlledEnvironment)).outcome;
   });
-  return Object.freeze({
+  const observation = Object.freeze({
     boundaryMissing: false,
     interruption,
     resumed,
@@ -948,7 +1131,13 @@ async function runControlledEnabledArgoInitScenario(input = undefined) {
     writesAfterResume,
     writesAfterRerun: controlled.observations.writeCount(),
     finalReadinessEvents: controlled.observations.finalReadinessEvents(),
+    seededReadiness,
+    durableReadiness: readinessStore.inspect(),
+    readinessOperations: readinessStore.operations(),
+    readinessAtBackfillStart: Object.freeze([...readinessAtBackfillStart]),
   });
+  if (ownsReadinessStore) readinessStore.dispose();
+  return observation;
 }
 
 function canonicalDocumentVersion(document) {
@@ -985,14 +1174,19 @@ function createActualInitEffects() {
   const state = {
     scenario: null,
     starts: new Map(),
+    readinessStores: new Map(),
     configurationOperations: [],
     rawDiagnostics: [],
     finalReadinessEvents: [],
   };
   const recordConfiguration = (kind, details = {}) => {
+    const readinessStore = state.scenario
+      ? state.readinessStores.get(state.scenario.name)
+      : undefined;
     state.configurationOperations.push(Object.freeze({
       scenario: state.scenario.name,
       kind,
+      readiness: readinessStore ? readinessStore.inspect() : null,
       ...details,
     }));
   };
@@ -1016,6 +1210,30 @@ function createActualInitEffects() {
       }),
       productionGraphRagRuntime: controlled.runtime,
       finalReadiness: Object.freeze({
+        async invalidate(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'readiness-invalidated',
+            evidence,
+          }));
+          return activeReadinessStore().write(
+            'init-invalidated',
+            evidence,
+            state.scenario.name,
+          );
+        },
+        async recordFailure(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'failure-recorded',
+            evidence,
+          }));
+          return activeReadinessStore().write(
+            'init-failed',
+            evidence,
+            state.scenario.name,
+          );
+        },
         async verifyQueryability() {
           state.finalReadinessEvents.push(Object.freeze({
             scenario: state.scenario.name,
@@ -1036,11 +1254,26 @@ function createActualInitEffects() {
             kind: 'aligned-recorded',
             evidence,
           }));
+          return activeReadinessStore().write(
+            'init-aligned',
+            evidence,
+            state.scenario.name,
+          );
         },
       }),
     }),
     selectScenario(scenario) {
       state.scenario = scenario;
+      const readinessStore = createSharedDurableReadinessStore();
+      const canonicalDocument = JSON.parse(
+        scenario.environment.canonicalBytes
+          || fs.readFileSync(path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'), 'utf8'),
+      );
+      seedDurableAlignedReadiness(
+        readinessStore,
+        canonicalDocumentVersion(canonicalDocument),
+      );
+      state.readinessStores.set(scenario.name, readinessStore);
       state.starts.set(scenario.name, {
         providerCalls: controlled.observations.snapshot().providerCalls,
         vectorWrites: controlled.observations.writeCount(),
@@ -1052,15 +1285,31 @@ function createActualInitEffects() {
     snapshotScenario(name) {
       const start = state.starts.get(name);
       const current = controlled.observations.snapshot();
+      const readinessStore = state.readinessStores.get(name);
+      const readinessOperations = readinessStore.operations();
       return Object.freeze({
         providerCalls: current.providerCalls - start.providerCalls,
         vectorWrites: controlled.observations.writeCount() - start.vectorWrites,
         configurationOperations: Object.freeze(state.configurationOperations.slice(start.configurationOperations)),
         rawDiagnostics: Object.freeze(state.rawDiagnostics.slice(start.rawDiagnostics)),
         finalReadinessEvents: Object.freeze(state.finalReadinessEvents.slice(start.finalReadinessEvents)),
+        seededReadiness: readinessOperations[0] && readinessOperations[0].after,
+        durableReadiness: readinessStore.inspect(),
+        readinessOperations,
       });
     },
+    dispose() {
+      for (const readinessStore of state.readinessStores.values()) {
+        readinessStore.dispose();
+      }
+    },
   };
+
+  function activeReadinessStore() {
+    const readinessStore = state.readinessStores.get(state.scenario && state.scenario.name);
+    assert(readinessStore, 'SP05_ACTIVE_DURABLE_READINESS_STORE_MISSING');
+    return readinessStore;
+  }
 
   function observedConfigurationDiagnostic(category) {
     const error = rawDiagnosticError(category);
@@ -1271,6 +1520,12 @@ function createSharedDurableReadinessStore() {
     },
     createInitFinalReadiness(baseFinalReadiness) {
       return Object.freeze({
+        async invalidate(evidence) {
+          return write('init-invalidated', evidence, 'argo-init');
+        },
+        async recordFailure(evidence) {
+          return write('init-failed', evidence, 'argo-init');
+        },
         async verifyQueryability(evidence) {
           operations.push(Object.freeze({
             kind: 'durable-readiness-queryability',
@@ -1297,6 +1552,33 @@ function createSharedDurableReadinessStore() {
       fs.rmSync(directory, { recursive: true, force: true });
     },
   });
+}
+
+function seedDurableAlignedReadiness(readinessStore, canonicalVersion) {
+  return readinessStore.write('seed-aligned', Object.freeze({
+    state: 'Aligned',
+    verified: true,
+    canonicalVersion,
+    contentVersion: `content:${canonicalVersion}`,
+    indexVersion: `index:${canonicalVersion}`,
+    completedChannels: Object.freeze([...REQUIRED_CHANNELS]),
+    missingChannels: Object.freeze([]),
+    mismatchedChannels: Object.freeze([]),
+    fullSnapshotFallback: false,
+    channels: Object.freeze(REQUIRED_CHANNELS.map(channel => Object.freeze({
+      channel,
+      state: 'Aligned',
+      canonicalVersion,
+      contentVersion: `content:${canonicalVersion}`,
+      indexVersion: `index:${canonicalVersion}`,
+      provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
+      model: 'qwen3.7-text-embedding',
+      modelVersion: 'qualification-2026-07-25',
+      dimensions: 1024,
+      queryable: true,
+      coherent: true,
+    }))),
+  }), 'pre-existing-readiness');
 }
 
 function buildMutationMatrix() {
