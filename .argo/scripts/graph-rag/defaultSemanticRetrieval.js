@@ -77,10 +77,7 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
   const readinessBoundary = dependencies.readinessBoundary;
   return Object.freeze({
     async retrieve(request = {}) {
-      const activeTestComposition = testCompositionStorage.getStore();
-      const composition = activeTestComposition
-        ? await createTestComposition(activeTestComposition)
-        : await createProductionComposition(dependencies);
+      const composition = await resolveRetrievalComposition(dependencies);
       let configurationEvidence;
       if (!readinessBoundary) {
         configurationEvidence = await composition.resolveConfiguration();
@@ -103,35 +100,27 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
       if (!configurationEvidence) {
         configurationEvidence = await composition.resolveConfiguration();
       }
-
-      const provider = createLiveEmbeddingProviderClient({
-        configuration: configurationEvidence.configuration,
-        transport: composition.transport,
-      });
-      const vector = await provider.embed(request.intent);
-      requireQualifiedVector(vector);
-      const seedsByType = {};
-      for (const channel of CHANNELS) {
-        seedsByType[channel.key] = await exhaustChannel({
-          channel,
-          neo4jDriver: composition.neo4jDriver,
-          vector,
-        });
-      }
-
-      return completeSemanticResult({
+      return executeWpP2Retrieval({
+        composition,
         request,
         canonicalGraph,
         readiness,
-        seedsByType,
+        configurationEvidence,
+      });
+    },
+    async probeQueryability(request = {}, readiness = {}) {
+      const composition = await resolveRetrievalComposition(dependencies);
+      const configurationEvidence = await composition.resolveConfiguration();
+      return executeWpP2Retrieval({
+        composition,
+        request,
+        canonicalGraph,
+        readiness,
         configurationEvidence,
       });
     },
     async readReadiness() {
-      const activeTestComposition = testCompositionStorage.getStore();
-      const composition = activeTestComposition
-        ? await createTestComposition(activeTestComposition)
-        : await createProductionComposition(dependencies);
+      const composition = await resolveRetrievalComposition(dependencies);
       if (!readinessBoundary) {
         await composition.resolveConfiguration();
       }
@@ -142,6 +131,43 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
       );
       return publicReadinessOutcome(evidence.alignment);
     },
+  });
+}
+
+async function resolveRetrievalComposition(dependencies) {
+  const activeTestComposition = testCompositionStorage.getStore();
+  return activeTestComposition
+    ? createTestComposition(activeTestComposition)
+    : createProductionComposition(dependencies);
+}
+
+async function executeWpP2Retrieval({
+  composition,
+  request,
+  canonicalGraph,
+  readiness,
+  configurationEvidence,
+}) {
+  const provider = createLiveEmbeddingProviderClient({
+    configuration: configurationEvidence.configuration,
+    transport: composition.transport,
+  });
+  const vector = await provider.embed(request.intent);
+  requireQualifiedVector(vector);
+  const seedsByType = {};
+  for (const channel of CHANNELS) {
+    seedsByType[channel.key] = await exhaustChannel({
+      channel,
+      neo4jDriver: composition.neo4jDriver,
+      vector,
+    });
+  }
+  return completeSemanticResult({
+    request,
+    canonicalGraph,
+    readiness,
+    seedsByType,
+    configurationEvidence,
   });
 }
 

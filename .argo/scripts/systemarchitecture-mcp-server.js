@@ -1870,34 +1870,18 @@ function createDefaultCanonicalSemanticInitComposition() {
         if (!backfill || backfill.alignmentState !== 'Aligned') return false;
         const contentVersion = backfill.contentVersion || backfill.canonicalVersion;
         const indexVersion = backfill.indexVersion || backfill.canonicalVersion;
-        const readiness = Object.freeze({
-          state: 'Aligned',
-          verified: true,
-          canonicalVersion: backfill.canonicalVersion,
-          contentVersion,
-          indexVersion,
-          channels: Object.freeze(['Element', 'ArchitectureRelationship', 'View'].map(
-            channel => Object.freeze({
-              channel,
-              state: 'Aligned',
-              canonicalVersion: backfill.canonicalVersion,
-              contentVersion,
-              indexVersion,
-            }),
-          )),
-        });
         const retrieval = createDefaultSemanticRetrieval({
           canonicalGraph,
           repositoryRoot,
-          readinessBoundary: Object.freeze({
-            read() {
-              return readiness;
-            },
-          }),
         });
-        await retrieval.retrieve(Object.freeze({
+        await retrieval.probeQueryability(Object.freeze({
           purpose: 'implementation-design',
           intent: 'verify system architecture semantic queryability',
+        }), Object.freeze({
+          state: 'QueryabilityProbe',
+          canonicalVersion: backfill.canonicalVersion,
+          contentVersion,
+          indexVersion,
         }));
         return true;
       },
