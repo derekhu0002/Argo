@@ -998,3 +998,27 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
 - Checklist self-audit: A1-A5 satisfied by persisted/validated graph and viewpoint-bound views; B1-B2 satisfied by same-element mounted testcase mappings above; B3/D7 require parent acceptance of newly mounted BP-MCP-SEM boundaries before downstream dispatch; C1-C2 recorded through dependency contexts and delivered reused boundaries; D8/E3 remain an orchestration gate because the handoff schema has no `approvedByHuman` field; E1-E2 satisfied; F1 recorded here and F2 requires the IntentDesign stage commit.
 - Open business questions: none. Dispatch blocker: parent/global approval is still required before ImplementationDesign consumes the handoff.
+
+## 2026-07-28 — WP5 Documentation Link and Fact Verification Handoff
+
+- Selected viewpoint: Implementation and Migration Viewpoint for WP5 delivery closure, with existing Requirements Realization views carrying fact-source priority and root-contract truthfulness.
+- Stakeholder concern: business acceptors and downstream ImplementationDesign need final verification of the refreshed documentation system after WP1-WP4 without redefining DOC-01 through DOC-04 or inventing repository authorities.
+- Modeling purpose: intent-to-implementation handoff preparation.
+- Graph mutation decision: no mutation required. Existing graph scope already contains `docsys-wp-link-fact-verification`, `docsys-fact-source-priority-requirement`, `docsys-root-contract-gap`, `docsys-business-acceptance-requirement`, DOC-01 through DOC-04 mounted acceptance semantics, and the WP4 -> WP5 -> ready plateau relationships.
+- Root-contract evidence: parent orchestration verified the earlier `../OVERALL_ARCHITECTURE.md` Glob result was outside `D:\Projects\Argo`; WP5 must not claim `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists if absent.
+- Global approval evidence: parent orchestrator authorized WP5 human approval gates and necessary stage commits. The handoff schema has no `approvedByHuman` field, so approval is recorded in `.argo/temp/IntentToImplementationHandoff.json` notes.
+
+### Coverage matrix
+
+- `docsys-root-readme-entry` — root README adoption-router boundary -> `ExplicitAcceptanceTestcase-DOC-01` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router`.
+- `docsys-contributor-governance-entry` — contributor safe-change governance-router boundary -> `ExplicitAcceptanceTestcase-DOC-02` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router`.
+- `docsys-stable-design-reference` — deep MCP/validator/design routing without root README overload -> `ExplicitAcceptanceTestcase-DOC-03` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing`.
+- `docsys-content-boundary-requirement` — stable design/domain/marketing/notes placement boundary -> `ExplicitAcceptanceTestcase-DOC-04` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement`.
+
+### Handoff boundary
+
+- ImplementationDesign scope: verify `README.md`, `CONTRIBUTING.md`, `design/README.md`, and stable design references they route to for link correctness, fact-source routing, root-contract truthfulness, and DOC-01 through DOC-04 acceptance semantics.
+- Validator repair: initial handoff validation rejected context-only ids (`docsys-wp-link-fact-verification`, `docsys-fact-source-priority-requirement`, `docsys-root-contract-gap`, `docsys-business-acceptance-requirement`, `docsys-doc-refresh-ready-plateau`, `docsys-wp-design-navigation`, `docsys-documentation-router-service`) because they do not have same-element mounted Acceptance Tests. The validated handoff narrows `intentElementIds` to the four DOC-owned tested elements and keeps WP5/fact-priority/root-contract semantics as contextual notes.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- IntentDesign does not authorize code, explicit testcase, implementation contract, or documentation implementation edits in this stage.
+- Open business questions and adequacy blockers: none.
