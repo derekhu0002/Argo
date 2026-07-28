@@ -34,6 +34,10 @@ const prohibitedInlineDeepSpecFragments = [
   'neo4jUri is required for start',
 ];
 
+const prohibitedRootContractAuthorityFragments = [
+  'OVERALL_ARCHITECTURE.md',
+];
+
 function main() {
   // GIVEN an internal maintainer prepares to change MCP, validator, tests, or docs.
   assert.ok(
@@ -48,6 +52,7 @@ function main() {
 
   // THEN the guide routes to authority, exposes safe boundaries, and avoids deep spec duplication.
   assertNoDeepSpecDuplication(contributorGuide);
+  assertNoRootContractAuthority(contributorGuide);
 }
 
 function assertRequiredContributorGovernance(contributorGuide) {
@@ -74,6 +79,17 @@ function assertNoDeepSpecDuplication(contributorGuide) {
     inlineDetails,
     [],
     `CONTRIBUTOR_GOVERNANCE_INLINE_DEEP_SPEC: route these details to design references instead of duplicating them in CONTRIBUTING.md: ${inlineDetails.join(', ')}`,
+  );
+}
+
+function assertNoRootContractAuthority(contributorGuide) {
+  const rootContractMentions = prohibitedRootContractAuthorityFragments.filter((fragment) =>
+    contributorGuide.includes(fragment),
+  );
+  assert.deepStrictEqual(
+    rootContractMentions,
+    [],
+    `CONTRIBUTOR_GOVERNANCE_ROOT_CONTRACT_AUTHORITY: WP3 CONTRIBUTING.md must not reintroduce root OVERALL_ARCHITECTURE.md as an active authority, dependency, or required reference: ${rootContractMentions.join(', ')}`,
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T14:24:00+08:00",
+  "generatedAt": "2026-07-28T14:33:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
   "summary": "Corrective WP3 ImplementationDesign handoff for docsys-wp-contributor-entrypoint / Contributor Governance Entrypoint Work. CodingAndReparing is authorized to create the root-level CONTRIBUTING.md contributor/governance entrypoint for internal maintainers, satisfying DOC-02 by explaining fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, documentation maintenance rules, and forbidden shortcuts. The guide must link to stable references rather than duplicate deep design specs. WP3 must not invent or depend on a root OVERALL_ARCHITECTURE.md contract; absent root-contract evidence is an honest documentation gap outside this WP3 Coding target.",
   "implementationContracts": [
@@ -23,7 +23,7 @@
       "path": "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
       "kind": "ArchitectureBoundaryGuard",
       "controlPoint": "Coding creates or edits the root-level CONTRIBUTING.md contributor/governance entrypoint.",
-      "observationPoint": "CONTRIBUTING.md exposes fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, stable reference links, documentation maintenance rules, and forbidden shortcuts without duplicating deep design specifications inline.",
+      "observationPoint": "CONTRIBUTING.md exposes fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, stable reference links, documentation maintenance rules, and forbidden shortcuts without duplicating deep design specifications inline or reintroducing root OVERALL_ARCHITECTURE.md as active WP3 authority.",
       "expectedStatus": "failed"
     }
   ],
@@ -33,7 +33,7 @@
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
       "path": "CONTRIBUTING.md",
-      "failureSignal": "CONTRIBUTOR_ENTRYPOINT_MISSING until root-level CONTRIBUTING.md exists; after creation, missing required cues fail as CONTRIBUTOR_ENTRYPOINT_CONTENT_MISSING, CONTRIBUTOR_ENTRYPOINT_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_CONTENT_MISSING, CONTRIBUTOR_GOVERNANCE_REFERENCE_MISSING, or CONTRIBUTOR_GOVERNANCE_INLINE_DEEP_SPEC.",
+      "failureSignal": "CONTRIBUTOR_ENTRYPOINT_MISSING until root-level CONTRIBUTING.md exists; after creation, missing required cues fail as CONTRIBUTOR_ENTRYPOINT_CONTENT_MISSING, CONTRIBUTOR_ENTRYPOINT_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_CONTENT_MISSING, CONTRIBUTOR_GOVERNANCE_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_INLINE_DEEP_SPEC, or CONTRIBUTOR_GOVERNANCE_ROOT_CONTRACT_AUTHORITY.",
       "nextAction": "Create root-level CONTRIBUTING.md only. Do not edit intent graph, contracts, explicit entrypoints, guardrails, README.md, or deep design specs unless a runner-owned status refresh changes them. Satisfy DOC-02 and the contributor governance guard by writing a concise maintainer guide that links to stable references."
     }
   ],
@@ -59,7 +59,7 @@
           "List validation commands from package.json, including npm run validate:system-architecture, npm run validate:handoff, npm run validate:handoff:implementation, npm run test:argo, and the explicit DOC-02 command ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
           "Explain explicit testcase and frozen-file boundaries: Coding may edit CONTRIBUTING.md, while tests/explicit/entries/runDocumentationInformationArchitectureDecision.js, tests/architecture/documentation/contributor-governance-entrypoint.guard.js, tests/ARCHITECTURE.md, design/KG/SystemArchitecture.json, and .argo/temp/ImplementationToCodingHandoff.json are frozen.",
           "Link to design/README.md, design/argo-harness/README.md, design/mcp/意图架构 MCP 功能列表.md, design/validator/intent-architecture-mcp-validation.md, tests/ARCHITECTURE.md, and package.json where relevant.",
-          "Name forbidden shortcuts: editing design/KG/SystemArchitecture.json directly during Coding, widening Coding scope beyond CONTRIBUTING.md, modifying frozen explicit tests/guards to pass, manually setting deliveryStatus, inventing absent contracts, copying deep design specs inline, or bypassing package.json validation commands.",
+          "Name forbidden shortcuts: editing design/KG/SystemArchitecture.json directly during Coding, widening Coding scope beyond CONTRIBUTING.md, modifying frozen explicit tests/guards to pass, manually setting deliveryStatus, inventing absent contracts, mentioning OVERALL_ARCHITECTURE.md as WP3 authority/dependency/reference, copying deep design specs inline, or bypassing package.json validation commands.",
           "Run ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js and node tests/architecture/documentation/contributor-governance-entrypoint.guard.js; then run npm run validate:handoff:implementation and npm run test:argo to refresh runner-owned records."
         ],
         "completionSignal": "CONTRIBUTING.md exists, DOC-02 and contributor-governance-entrypoint.guard.js pass, handoff validation passes, and the full architecture runner records WP3 status without unauthorized edits outside runner-owned status/failure records."
@@ -84,6 +84,6 @@
     "CONTRIBUTING.md is intentionally absent before Coding and is the only non-runner Coding target.",
     "DOC-02 and the contributor governance guard are expected to fail with CONTRIBUTOR_ENTRYPOINT_MISSING until Coding creates the guide.",
     "No intent graph mutation is required from ImplementationDesign; current intent context already designates root-level CONTRIBUTING.md for WP3.",
-    "WP3 does not use root OVERALL_ARCHITECTURE.md as a contributor-governance authority. If a checkout lacks that file, Coding must state the gap honestly and continue to implement only root CONTRIBUTING.md."
+    "WP3 does not use root OVERALL_ARCHITECTURE.md as a contributor-governance authority. The contributor-governance guard rejects any OVERALL_ARCHITECTURE.md mention in CONTRIBUTING.md so Coding cannot reintroduce it as active WP3 authority or dependency."
   ]
 }
