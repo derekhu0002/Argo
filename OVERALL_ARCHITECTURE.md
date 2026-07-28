@@ -53,6 +53,8 @@
 | Default Semantic Retrieval Composition | `.argo/scripts/graph-rag/defaultSemanticRetrieval.js` | Own externally configured query embedding, persistent readiness, independent three-channel Neo4j Vector Index retrieval, and delegation into deterministic closure and canonical completion for the uninjected MCP path. | `createDefaultSemanticRetrieval(dependencies)` returning `retrieve(request)` and read-only `readReadiness()` over one shared private readiness path; module-owned raw transport/driver test composition |
 | Canonical Semantic Lifecycle Composition | `.argo/scripts/graph-rag/semanticOperatorJourney.js` | Privately compose canonical argo init, dual-gated full reconciliation, structural-only disabled outcomes, fail-closed configuration, recovery, and per-query persistent readiness over accepted WP-P1/WP-P2 ports. | Internal `createProductionSemanticOperatorJourney(dependencies)` consumed by argo init and `getSystemArchitecture`; no standalone public lifecycle tools |
 | Root Documentation Entry | `README.md` | Own the concise adopter-facing product entry and router while delegating stable design, MCP, validator, lifecycle, contributor-governance, and domain-extension details to their authoritative references. | Root repository README |
+| Contributor Governance Entry | `CONTRIBUTING.md` | Own maintainer-facing fact-source priority, safe change surfaces, validation routing, frozen-file policy, documentation maintenance rules, and forbidden shortcuts without duplicating deep design specifications. | Root contributor guide |
+| Stable Design Documentation Map | `design/README.md` | Own stable design navigation, fact-source governance, research/domain/marketing boundaries, and routing to MCP, validator, HARNESS, schema, domain, and marketing authorities. | Design documentation navigation |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails. | Frozen Node.js entry scripts |
 
@@ -113,5 +115,8 @@
 | Root Documentation Entry / adoption router | `docsys-root-readme-entry` | direct |
 | Root Documentation Entry / stable design routing | `docsys-stable-design-reference` | direct |
 | Root Documentation Entry / content boundary discipline | `docsys-content-boundary-requirement` | indirect |
+| Contributor Governance Entry / safe-change router | `docsys-contributor-governance-entry` | direct |
+| Stable Design Documentation Map / stable reference routing | `docsys-stable-design-reference` | direct |
+| Stable Design Documentation Map / content boundary discipline | `docsys-content-boundary-requirement` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.

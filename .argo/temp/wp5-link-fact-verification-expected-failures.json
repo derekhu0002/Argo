@@ -1,0 +1,83 @@
+{
+  "workPackageId": "docsys-wp-link-fact-verification",
+  "generatedAt": "2026-07-28T15:37:00+08:00",
+  "classification": "verification-only-passing-baseline",
+  "inScope": {
+    "explicitAcceptance": [
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
+        "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router",
+        "status": "passed"
+      },
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
+        "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router",
+        "status": "passed"
+      },
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
+        "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing",
+        "status": "passed"
+      },
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
+        "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement",
+        "status": "passed"
+      }
+    ],
+    "criticalNonExplicitTests": [
+      {
+        "path": "tests/architecture/documentation/root-readme-reduction.guard.js",
+        "status": "passed"
+      },
+      {
+        "path": "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
+        "status": "passed"
+      },
+      {
+        "path": "tests/architecture/documentation/design-navigation.guard.js",
+        "status": "passed"
+      }
+    ],
+    "linkVerification": {
+      "paths": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "design/README.md"
+      ],
+      "status": "passed",
+      "failureSignal": "DOC_LINK_FAILURES"
+    },
+    "rootContractTruthfulness": {
+      "path": "OVERALL_ARCHITECTURE.md",
+      "status": "passed",
+      "note": "Root contract exists and is referenced as an existing implementation contract; WP5 did not invent an absent authority."
+    }
+  },
+  "expectedFailures": [],
+  "outOfScopeFailures": {
+    "source": "design/KG/test-failure-records.json",
+    "baselineCommand": "argo.runArchitectureTests architecturePath=design/KG/SystemArchitecture.json",
+    "summary": {
+      "total": 56,
+      "passed": 54,
+      "failedOrMissing": 2,
+      "missingAcceptanceCriteria": 0
+    },
+    "failures": [
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E",
+        "entryPath": "tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js",
+        "failureSignal": "W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE",
+        "classification": "out-of-scope for WP5 documentation verification"
+      },
+      {
+        "testcaseName": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
+        "entryPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+        "failureSignal": "SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH",
+        "classification": "out-of-scope for WP5 documentation verification"
+      }
+    ],
+    "note": "Full architecture runner failures outside DOC-01 through DOC-04 and documentation guards are not repair targets for WP5."
+  }
+}
