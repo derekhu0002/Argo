@@ -401,6 +401,43 @@ async function main() {
       },
       },
       {
+      name: 'production-nested-closure-evidence',
+      run: async () => {
+        const { payload } = await invokeSemanticQuery(
+          {
+            purpose: 'implementation-design',
+            intent: 'Accept production structural closure evidence nested inside relationships and views',
+            anchors: ['production-nested-closure-evidence'],
+          },
+          createSemanticJourney({
+            architecturePath: fixture.architecturePath,
+            document: createSemanticEvidence({
+              seedsByType: {
+                views: [seed('view-primary', 'View')],
+              },
+              closureElements: [],
+              rawClosureElements: [qualifiedClosureNoise('View:view-overlap')],
+              returnedRelationships: [],
+              returnedViews: [],
+              nestedEndpointRelationships: [relationshipWithEndpoints('rel-ab')],
+              nestedViews: [viewWithMembers('view-primary')],
+            }),
+          }),
+          fixture.architecturePath,
+        );
+        assertSemanticSuccess(payload, 'production-nested-closure-evidence');
+        assertCanonicalSuccessPayload(
+          payload,
+          {
+            elements: [canonicalElement('element-a'), canonicalElement('element-b')],
+            relationships: [canonicalRelationship('rel-ab')],
+            views: [canonicalView('view-primary')],
+          },
+          'production-nested-closure-evidence',
+        );
+      },
+      },
+      {
       name: 'preserve-full-snapshot-read-modes',
       run: async () => {
         const noQuery = await invokeTool({}, undefined, fixture.architecturePath);
@@ -526,6 +563,32 @@ function syntheticPolicyElement() {
   });
 }
 
+function relationshipWithEndpoints(id) {
+  const relationship = canonicalRelationship(id);
+  return Object.freeze({
+    ...relationship,
+    source: canonicalElement(relationship.source_id),
+    target: canonicalElement(relationship.target_id),
+  });
+}
+
+function viewWithMembers(viewId) {
+  const view = canonicalView(viewId);
+  return Object.freeze({
+    ...view,
+    memberElements: Object.freeze((view.included_elements || []).map(canonicalElement)),
+    memberRelationships: Object.freeze((view.included_relationships || []).map(relationshipWithEndpoints)),
+  });
+}
+
+function qualifiedClosureNoise(id) {
+  return Object.freeze({
+    id,
+    name: id,
+    type: 'Application Function',
+  });
+}
+
 function seed(id, objectType = 'Element', score = 0.99) {
   return Object.freeze({ id, objectType, score });
 }
@@ -553,9 +616,12 @@ function createSemanticJourney({ architecturePath, document }) {
 function createSemanticEvidence({
   seedsByType,
   closureElements,
+  rawClosureElements = [],
   nonCanonicalClosureElements = [],
   returnedRelationships,
   returnedViews,
+  nestedEndpointRelationships = [],
+  nestedViews = [],
 }) {
   const provenanceObjects = [];
   for (const item of seedsByType.elements || []) {
@@ -614,14 +680,21 @@ function createSemanticEvidence({
     closure: Object.freeze({
       elements: Object.freeze([
         ...closureElements.map(canonicalElement),
+        ...rawClosureElements,
         ...nonCanonicalClosureElements,
       ]),
     }),
     endpointClosure: Object.freeze({
-      relationships: Object.freeze(returnedRelationships.map(canonicalRelationship)),
+      relationships: Object.freeze([
+        ...returnedRelationships.map(canonicalRelationship),
+        ...nestedEndpointRelationships,
+      ]),
     }),
     viewClosure: Object.freeze({
-      views: Object.freeze(returnedViews.map(canonicalView)),
+      views: Object.freeze([
+        ...returnedViews.map(canonicalView),
+        ...nestedViews,
+      ]),
       overlappingViewCascade: false,
     }),
     provenance: Object.freeze({

@@ -2041,16 +2041,27 @@ function applySemanticResponseProfile(response, query, options = {}) {
 
 function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefined) {
   const evidence = source && typeof source === 'object' ? source : {};
+  const endpointClosureRelationships = arrayAt(evidence, ['endpointClosure', 'relationships']);
+  const viewClosureViews = arrayAt(evidence, ['viewClosure', 'views']);
+  const viewMemberRelationships = viewClosureViews.flatMap(view => (
+    Array.isArray(view && view.memberRelationships) ? view.memberRelationships : []
+  ));
   const evidenceElements = uniqueById([
     ...arrayAt(evidence, ['closure', 'elements']),
     ...arrayAt(evidence, ['elements']),
+    ...endpointClosureRelationships.flatMap(relationship => [relationship && relationship.source, relationship && relationship.target]),
+    ...viewClosureViews.flatMap(view => (
+      Array.isArray(view && view.memberElements) ? view.memberElements : []
+    )),
+    ...viewMemberRelationships.flatMap(relationship => [relationship && relationship.source, relationship && relationship.target]),
   ], 'id');
   const evidenceRelationships = uniqueById([
-    ...arrayAt(evidence, ['endpointClosure', 'relationships']),
+    ...endpointClosureRelationships,
     ...arrayAt(evidence, ['relationships']),
+    ...viewMemberRelationships,
   ], 'id');
   const evidenceViews = uniqueById([
-    ...arrayAt(evidence, ['viewClosure', 'views']),
+    ...viewClosureViews,
     ...arrayAt(evidence, ['views']),
   ], 'view_id');
 
@@ -2067,19 +2078,20 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
   const canonicalElementById = new Map(canonicalElements.map(element => [element && element.id, element]));
   const canonicalRelationshipById = new Map(canonicalRelationships.map(relationship => [relationship && relationship.id, relationship]));
   const canonicalViewById = new Map(canonicalViews.map(view => [view && view.view_id, view]));
-  const evidenceCandidates = [
-    ...evidenceElements.map(item => classifyCanonicalSubsetCandidate(item, 'Element')),
-    ...evidenceRelationships.map(item => classifyCanonicalSubsetCandidate(item, 'ArchitectureRelationship')),
-    ...evidenceViews.map(item => classifyCanonicalSubsetCandidate(item, 'View')),
-  ].filter(Boolean);
-  const evidenceElementById = new Map(evidenceCandidates
-    .filter(candidate => candidate.kind === 'Element')
+  const evidenceElementCandidates = evidenceElements
+    .map(item => classifyCanonicalSubsetCandidate(item, 'Element'))
+    .filter(candidate => candidate && candidate.kind === 'Element');
+  const evidenceRelationshipCandidates = evidenceRelationships
+    .map(item => classifyCanonicalSubsetCandidate(item, 'ArchitectureRelationship'))
+    .filter(candidate => candidate && candidate.kind === 'ArchitectureRelationship');
+  const evidenceViewCandidates = evidenceViews
+    .map(item => classifyCanonicalSubsetCandidate(item, 'View'))
+    .filter(candidate => candidate && candidate.kind === 'View');
+  const evidenceElementById = new Map(evidenceElementCandidates
     .map(candidate => [candidate.id, candidate.item]));
-  const evidenceRelationshipById = new Map(evidenceCandidates
-    .filter(candidate => candidate.kind === 'ArchitectureRelationship')
+  const evidenceRelationshipById = new Map(evidenceRelationshipCandidates
     .map(candidate => [candidate.id, candidate.item]));
-  const evidenceViewById = new Map(evidenceCandidates
-    .filter(candidate => candidate.kind === 'View')
+  const evidenceViewById = new Map(evidenceViewCandidates
     .map(candidate => [candidate.id, candidate.item]));
 
   const elementIds = new Set([...evidenceElementById.keys()].filter(id => canonicalElementById.has(id)));
