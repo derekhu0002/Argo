@@ -83,10 +83,7 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
         && activeTestComposition.useReadinessBoundary !== true
         ? undefined
         : readinessBoundary;
-      let configurationEvidence;
-      if (!activeReadinessBoundary) {
-        configurationEvidence = await composition.resolveConfiguration();
-      }
+      let configurationEvidence = await composition.resolveConfiguration();
       const evidence = await readAndEvaluatePersistentReadiness(
         composition,
         canonicalGraph,
@@ -101,9 +98,6 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
           message: alignment.message,
           action: alignment.action,
         });
-      }
-      if (!configurationEvidence) {
-        configurationEvidence = await composition.resolveConfiguration();
       }
       return executeWpP2Retrieval({
         composition,
@@ -131,9 +125,7 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
         && activeTestComposition.useReadinessBoundary !== true
         ? undefined
         : readinessBoundary;
-      if (!activeReadinessBoundary) {
-        await composition.resolveConfiguration();
-      }
+      await composition.resolveConfiguration();
       const evidence = await readAndEvaluatePersistentReadiness(
         composition,
         canonicalGraph,
