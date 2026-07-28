@@ -59,36 +59,14 @@ flowchart LR
     E -->|GAP 回流| G
 ```
 
-精准管理由六个机制共同实现：
+精准管理由四个约束共同实现：
 
-1. **图谱化，而不是依赖聊天记忆**
-   需求、目标、能力、约束、依赖和显性 testcase 被内化到 `SystemArchitecture.json`。跨会话的长期事实从自然语言历史中抽离，避免 Agent 每次重新猜测系统意图。
+- **事实精准**：长期事实进入 `SystemArchitecture.json`、实现契约、handoff 和冻结测试，而不是停留在聊天记忆里。
+- **范围精准**：当前任务围绕架构 focus、依赖子图和 viewpoint 获取上下文。
+- **权限精准**：不同阶段只修改自己拥有的产物，越权内容通过 handoff 或 GAP 回流处理。
+- **时机精准**：MCP validator、架构测试和双层验收用执行证据刷新上下文。
 
-2. **按架构相关性提取，而不是全仓库灌入**
-   Agent 以当前 architecture element 为 focus，通过 `getIntentElementContext` 获取必要的上游依赖、下游影响和关联邻居。Viewpoint 把大图切成面向单一关注点的小视图，使上下文范围由架构语义决定，而不是由关键词搜索或文件距离决定。
-
-3. **按阶段压缩，而不是让每个 Agent 理解全部世界**
-   `IntentionDesign`、`ImplementationDesign` 和 `CodingAndReparing` 只拥有本阶段需要的本体、契约和权限。阶段 handoff 将上游结论压缩成结构化输入；下层通过 ID 追踪上层事实，但不能越权修改它。
-
-4. **按依赖切分任务，而不是让单次会话吞下整个需求**
-   `/task-tidy` 将决策映射到架构元素和依赖关系，生成 Sequential Gravity Chain 与 G 估算。人类按依赖顺序逐个提交小范围，使每轮上下文保持高信噪比。
-
-5. **把知识、规则与环境按需挂载，而不是永久混入 Prompt**
-   Viewpoint 通过 `modelingSkillPaths` 挂载建模 Skill；领域模板按场景组合知识库、编码规范、测试环境和观察工具。Agent 只在触发对应工作时加载它们。
-
-6. **用执行证据刷新上下文，而不是让错误结论继续传播**
-   Schema、MCP validator、冻结测试、失败记录和双层验收共同判断当前上下文是否可信。发现 GAP 时回到意图设计、实现设计或编码阶段修正，确保错误不会作为“既定事实”传给下一阶段。
-
-因此，ARGO 的“精准”同时包含四层含义：
-
-| 精准维度 | 回答的问题 | 工程实现 |
-| --- | --- | --- |
-| 事实精准 | 哪些信息具有权威性？ | 图谱、实现契约、handoff、冻结测试的事实源优先级 |
-| 范围精准 | 当前任务真正需要哪些信息？ | focus element、依赖子图、viewpoint、G 切分 |
-| 权限精准 | 当前 Agent 能读什么、改什么？ | 分层本体、阶段职责、只读/可写边界 |
-| 时机精准 | 何时加载、验证和更新信息？ | Skill 按需加载、阶段门禁、测试反馈与 GAP 回流 |
-
-这种方式直接提高公式中的 `C`、`P` 和 `E`，增强 `B`，同时降低上下文噪声与任务颗粒度 `G`。更完整的机制说明见[意图架构设计](design/intent-architecture/README.md)、[HARNESS 工程流程](design/argo-harness/README.md)和[基于架构依赖的任务编排方法论](notes/ai-engineering/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD)。
+更完整的机制说明见[意图架构设计](design/intent-architecture/README.md)、[HARNESS 工程流程](design/argo-harness/README.md)和[基于架构依赖的任务编排方法论](notes/ai-engineering/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD)。
 
 ## 一次交付如何运行
 
@@ -117,19 +95,13 @@ Agent 与 Skill 的完整分工见[Agent 与 Skill 设计](design/argo-harness/a
 
 ### 部署
 
-平台 bundle 必须与统一 `.argo/` 目录一起复制到目标工作区根目录：
+平台 bundle 必须与统一 `.argo/` 目录一起复制到目标工作区根目录，并确认目标平台能发现名为 `argo` 的 MCP 服务：
 
 | 版本 | 适用环境 | 部署内容 | 主入口 |
 | --- | --- | --- | --- |
 | [Cursor 版](.cursor/) | Cursor | `.cursor/` + `.argo/` | `/business-partner`、`/orchestrating` |
 | [Copilot 版](.github/) | GitHub Copilot | `.github/` + `.argo/` | `BusinessPartner`、`Orchestrator` |
 | [OpenCode 版](.opencode/) | OpenCode | `.opencode/` + `.argo/` | `BusinessPartner`、`Orchestrator`、`/argoinit`、`/argotest` |
-
-三平台都注册名为 `argo` 的 MCP 服务，入口为：
-
-```text
-node ${workspaceFolder}/.argo/scripts/argo-mcp-server.js
-```
 
 部署后确认：
 
@@ -138,50 +110,7 @@ node ${workspaceFolder}/.argo/scripts/argo-mcp-server.js
 3. `validateSystemArchitecture` 可执行；
 4. 当前工作使用正确的 Agent 或 Skill 入口。
 
-MCP 的工具参数、写入副作用和推荐调用顺序见[意图架构 MCP 功能列表](design/mcp/意图架构%20MCP%20功能列表.md)。
-
-### Production Semantic Operator Journey
-
-新项目的语义操作链固定为：工作区初始化、规范结构投影、显式语义回填、持久化就绪验证、语义查询。规范 JSON 始终是权威源；Neo4j 只保存从属投影和索引。`semantic:snapshot` 与无参数 `getSystemArchitecture` 始终返回完整的 `{ status, graphPath, document }` 快照。
-
-生产配置只能来自直接进程环境或仓库内受保护的 `.argo/.env`。该文件必须被 Git 忽略、未跟踪、是非重解析普通文件，并通过当前身份可读且无宽泛主体读取权限的 Windows ACL 检查。必须显式提供这些键，不能使用默认值、别名或回退值：
-
-```text
-ARGO_EMBEDDING_BASE_URL
-ARGO_EMBEDDING_MODEL
-ARGO_EMBEDDING_PROVIDER
-ARGO_EMBEDDING_MODEL_VERSION
-ARGO_EMBEDDING_DIMENSIONS
-ARGO_NEO4J_DATABASE_URL
-ARGO_NEO4J_DATABASE_USERNAME
-ARGO_NEO4J_DATABASE_PASSWORD
-QWEN_KEY
-```
-
-默认流程不自动回填：
-
-```text
-npm run semantic:init
-npm run semantic:backfill -- --explicit-opt-in
-npm run semantic:readiness
-npm run semantic:query -- --request-json "{\"purpose\":\"implementation-design\",\"intent\":\"Find the required architecture context\"}"
-npm run semantic:snapshot
-```
-
-`semantic:init` 完成结构投影后返回可操作的 `SemanticIndexPending`，且不会自动启动提供方或数据库写入。显式回填必须由操作者传入 `--explicit-opt-in`；恢复时使用 `npm run semantic:backfill -- --explicit-opt-in --resume`。只有 `semantic:readiness` 显式确认三个通道并通过受限、原子替换写入不含密钥的本地就绪记录后，后续独立进程中的 `semantic:query` 才能执行。该记录采用与规范 JSON 权威一致的“同一操作系统用户 + 本地工作区”信任边界：文件所有者、文件及父目录 ACL/权限、链接/重解析点和完整性必须通过检查；支持的平台还会同步父目录，Windows 则显式验证同目录原子重命名回退。摘要只检测损坏与规范字节漂移，并不是签名。初始化、回填、规范图变更或任一规范/内容/索引/通道漂移都会使记录失效；未就绪、记录不可信或记录过期时查询关闭失败且 `fullSnapshotFallback` 为 `false`。
-
-需要自动回填时，显式运行 `npm run semantic:init -- --automatic-backfill`。系统先验证批准的外部配置，验证通过后才可能启动回填、提供方调用和数据库写入。缺失、不安全、冲突或未批准的配置在任何这些副作用之前被拒绝；修正安全配置后重试，不要改用内嵌值或回退配置。
-
-对应 MCP 工具顺序为：
-
-```text
-startNewProjectSemanticJourney
-backfillSystemArchitectureSemanticProjection
-verifySystemArchitectureSemanticReadiness
-getSystemArchitecture
-```
-
-仓库验收使用受控组合边界验证顺序、错误脱敏、检查点恢复和规范快照不变性。当前环境没有可用的 live Neo4j（`neo4jUri is required for start`），因此这些确定性结果不是实时提供方或数据库证明，也不声明 `semprod-ready-plateau` 已交付。
+MCP 工具参数、写入副作用、validator 规则、生产语义生命周期、凭据边界和命令级操作说明由稳定设计资料维护：见[意图架构 MCP 功能列表](design/mcp/意图架构%20MCP%20功能列表.md)和[MCP 校验机制](design/validator/intent-architecture-mcp-validation.md)。根 README 只负责帮助新读者选入口，不复制这些深层运行细节。
 
 ### 选择正确入口
 
