@@ -1,108 +1,91 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T13:52:00+08:00",
+  "generatedAt": "2026-07-28T14:17:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP2 ImplementationDesign handoff for docsys-wp-root-readme-reduction, refreshed against IntentDesign commit c19d161b2bbb39a0bd22bb7e54323b7264857041 and current code reality. README.md is already reduced to a concise adoption/product entry and router while retaining positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment checks, entry selection, and curated next links. CodingAndReparing is authorized only to verify and preserve this README boundary, repairing README.md if a regression is found. Deep semantic operator, MCP, validator, credential, command, and lifecycle detail must remain routed to stable design references instead of duplicated inline. WP3 contributor governance, WP4 design navigation calibration, WP5 link/fact verification, CONTRIBUTING.md creation, and any invented root implementation contract are out of scope.",
+  "summary": "WP3 ImplementationDesign handoff for docsys-wp-contributor-entrypoint / Contributor Governance Entrypoint Work. CodingAndReparing is authorized to create the root-level CONTRIBUTING.md contributor/governance entrypoint for internal maintainers, satisfying DOC-02 by explaining fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, documentation maintenance rules, and forbidden shortcuts. The guide must link to stable references rather than duplicate deep design specs. Root OVERALL_ARCHITECTURE.md exists in current repository evidence and is used as the root implementation contract; if a future checkout lacks it, Coding must state that honestly rather than inventing it.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md",
-    "design/architecture.md"
+    "tests/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
-      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router",
-      "controlPoint": "First-time external reader opens only README.md.",
-      "observationPoint": "The root README remains an adoption router that communicates ARGO positioning, problem, three core components, and correct next document selection without inline semantic lifecycle internals.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-01-root-readme-adoption-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
-      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing",
-      "controlPoint": "Reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details.",
-      "observationPoint": "The reader is routed to design/mcp and design/validator references while root README avoids duplicating deep MCP, validator, semantic query, mutation, and lifecycle specification.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
-      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement",
-      "controlPoint": "Maintainer evaluates whether detailed documentation belongs in root README, design, notes, marketing, or domain references.",
-      "observationPoint": "Root README summarizes and links, design owns stable specs, notes own research, domain-specific docs own domain extension, and contributor governance remains a later WP.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router",
+      "controlPoint": "Contributor prepares to change MCP, validator, tests, or docs from repository root.",
+      "observationPoint": "Before editing, the contributor can identify the authoritative file, allowed edit surface, validation/test command, explicit testcase and frozen-file boundary, documentation maintenance rule, and forbidden shortcuts.",
+      "initialExecutionStatus": "failed",
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
+      "failureReason": "CONTRIBUTOR_ENTRYPOINT_MISSING: root-level CONTRIBUTING.md does not exist yet; this is the intended WP3 Coding RED signal."
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "WP2 root README reduction guard",
-      "path": "tests/architecture/documentation/root-readme-reduction.guard.js",
+      "name": "WP3 contributor governance entrypoint guard",
+      "path": "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Coding edits README.md for WP2 root README noise reduction.",
-      "observationPoint": "README.md retains adoption/product entry content and curated design links, and rejects inline deep semantic operator, credential, MCP lifecycle command, and live-environment details.",
-      "expectedStatus": "passed"
+      "controlPoint": "Coding creates or edits the root-level CONTRIBUTING.md contributor/governance entrypoint.",
+      "observationPoint": "CONTRIBUTING.md exposes fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, stable reference links, documentation maintenance rules, and forbidden shortcuts without duplicating deep design specifications inline.",
+      "expectedStatus": "failed"
     }
   ],
   "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
-      "path": "README.md",
-      "failureSignal": "REGRESSION_ONLY_ROOT_README_ROUTER: current README.md passes DOC-01, DOC-03, DOC-04, and the root README reduction guard; any later failure means README.md regressed by losing adoption content, curated routes, or by reintroducing inline deep semantic lifecycle detail.",
-      "nextAction": "Do not broaden scope or edit frozen contracts/tests. Rerun DOC-01/DOC-03/DOC-04 plus tests/architecture/documentation/root-readme-reduction.guard.js; edit only README.md if one of those WP2 checks regresses."
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
+      "path": "CONTRIBUTING.md",
+      "failureSignal": "CONTRIBUTOR_ENTRYPOINT_MISSING until root-level CONTRIBUTING.md exists; after creation, missing required cues fail as CONTRIBUTOR_ENTRYPOINT_CONTENT_MISSING, CONTRIBUTOR_ENTRYPOINT_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_CONTENT_MISSING, CONTRIBUTOR_GOVERNANCE_REFERENCE_MISSING, or CONTRIBUTOR_GOVERNANCE_INLINE_DEEP_SPEC.",
+      "nextAction": "Create root-level CONTRIBUTING.md only. Do not edit intent graph, contracts, explicit entrypoints, guardrails, README.md, or deep design specs unless a runner-owned status refresh changes them. Satisfy DOC-02 and the contributor governance guard by writing a concise maintainer guide that links to stable references."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Perform a documentation-only verification of the root README reduction already present in current code reality. Keep the root README as a concise product/adoption router. Do not create CONTRIBUTING.md, do not change design navigation, do not edit SystemArchitecture.json, do not edit frozen tests/contracts, and do not implement semantic operator or MCP behavior. Treat DOC-01, DOC-03, DOC-04, and the README reduction guard as the concrete Coding checks; repair only README.md if they regress.",
+    "executionStrategy": "Documentation-only Coding scope. Create the missing root CONTRIBUTING.md as an internal maintainer governance router. Preserve stage boundaries and frozen files, route deep detail to stable design references, and use package.json scripts as the command authority. Runner-owned deliveryStatus/test-failure-record refreshes are allowed only as a consequence of validation/test execution.",
     "tasks": [
       {
-        "taskId": "DOCSYS-WP2-C1",
-        "title": "Verify root README reduction boundary",
-        "objective": "Preserve the reduced root README.md router by verifying that deep semantic operator, MCP lifecycle, credential, live-environment, and command detail stays routed to stable design references while adoption/product content and next-link selection remain present.",
+        "taskId": "DOCSYS-WP3-C1",
+        "title": "Create contributor governance entrypoint",
+        "objective": "Add root CONTRIBUTING.md so an internal maintainer can identify the authoritative file, allowed edit surface, validation/test command, explicit testcase/frozen-file boundary, documentation maintenance rule, and forbidden shortcuts before changing MCP, validator, tests, or docs.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DOC-01",
-          "ExplicitAcceptanceTestcase-DOC-03",
-          "ExplicitAcceptanceTestcase-DOC-04"
+          "ExplicitAcceptanceTestcase-DOC-02"
         ],
         "targetPaths": [
-          "README.md"
+          "CONTRIBUTING.md"
         ],
         "steps": [
-          "Keep ARGO positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment check, entry selection, and curated next links in README.md.",
-          "Confirm README.md does not contain the inline Production Semantic Operator Journey, explicit credential-key list, semantic:* command sequence, MCP lifecycle tool sequence, or live Neo4j caveat; if any reappears, replace it with concise routing text to stable design references.",
-          "Keep links to design/README.md, design/mcp/意图架构 MCP 功能列表.md, and design/validator/intent-architecture-mcp-validation.md so readers can reach deep details without root README duplication.",
-          "Do not create CONTRIBUTING.md, do not invent or rename OVERALL_ARCHITECTURE.md, do not perform the full contributor guide or design navigation work package, and do not change intent graph or implementation behavior.",
-          "Rerun ARGO_TESTCASE_ANCHOR=doc-01-root-readme-adoption-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
-          "Rerun ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
-          "Rerun ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
-          "Rerun node tests/architecture/documentation/root-readme-reduction.guard.js and require it to pass."
+          "Create root-level CONTRIBUTING.md and keep it concise; do not duplicate deep MCP, validator, harness, or semantic lifecycle specifications inline.",
+          "Explain fact-source priority: design/KG/SystemArchitecture.json for intent, OVERALL_ARCHITECTURE.md and tests/ARCHITECTURE.md for implementation/test contracts, .argo/temp/ImplementationToCodingHandoff.json for current Coding scope, package.json for runnable scripts, and design references for deep documentation.",
+          "Explain safe change surfaces for maintainers changing MCP, validator, tests, or docs, with CONTRIBUTING.md as the entrypoint and target Coding scope limited to this file under WP3.",
+          "Explain stage boundaries: IntentDesign owns intent graph changes, ImplementationDesign owns contracts/testcase entrypoints/handoff artifacts, CodingAndReparing owns only approved Coding targets, and required intent graph changes become ImplementationToIntentTraceProposal rather than direct Coding edits.",
+          "List validation commands from package.json, including npm run validate:system-architecture, npm run validate:handoff, npm run validate:handoff:implementation, npm run test:argo, and the explicit DOC-02 command ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
+          "Explain explicit testcase and frozen-file boundaries: Coding may edit CONTRIBUTING.md, while tests/explicit/entries/runDocumentationInformationArchitectureDecision.js, tests/architecture/documentation/contributor-governance-entrypoint.guard.js, OVERALL_ARCHITECTURE.md, tests/ARCHITECTURE.md, design/KG/SystemArchitecture.json, and .argo/temp/ImplementationToCodingHandoff.json are frozen.",
+          "Link to design/README.md, design/argo-harness/README.md, design/mcp/意图架构 MCP 功能列表.md, design/validator/intent-architecture-mcp-validation.md, tests/ARCHITECTURE.md, and package.json where relevant.",
+          "Name forbidden shortcuts: editing design/KG/SystemArchitecture.json directly during Coding, widening Coding scope beyond CONTRIBUTING.md, modifying frozen explicit tests/guards to pass, manually setting deliveryStatus, inventing absent contracts, copying deep design specs inline, or bypassing package.json validation commands.",
+          "Run ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js and node tests/architecture/documentation/contributor-governance-entrypoint.guard.js; then run npm run validate:handoff:implementation and npm run test:argo to refresh runner-owned records."
         ],
-        "completionSignal": "README.md remains concise, routes deep details to stable design references, DOC-01/DOC-03/DOC-04 pass, and root-readme-reduction.guard.js passes with no ROOT_README_INLINE_SEMANTIC_LIFECYCLE_DETAIL failure."
+        "completionSignal": "CONTRIBUTING.md exists, DOC-02 and contributor-governance-entrypoint.guard.js pass, handoff validation passes, and the full architecture runner records WP3 status without unauthorized edits outside runner-owned status/failure records."
       }
     ]
   },
   "frozenFiles": [
     "OVERALL_ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
-    "design/architecture.md",
     "design/KG/SystemArchitecture.json",
     "design/KG/test-failure-records.json",
     ".argo/temp/IntentToImplementationHandoff.json",
     ".argo/temp/ImplementationToCodingHandoff.json",
-    ".argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md",
     "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
-    "tests/architecture/documentation/root-readme-reduction.guard.js",
+    "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
     "design/README.md",
+    "design/argo-harness/README.md",
     "design/mcp/意图架构 MCP 功能列表.md",
-    "design/validator/intent-architecture-mcp-validation.md"
+    "design/validator/intent-architecture-mcp-validation.md",
+    "package.json"
   ],
   "openGaps": [
-    "Current README.md already passes the README reduction guard; CodingAndReparing should treat WP2 as verification-only unless README.md regresses.",
-    "Contributor governance should eventually become root-level CONTRIBUTING.md, but WP2 does not authorize creating it.",
-    "WP2 does not authorize the full design navigation work package, design/README calibration, or link/fact verification beyond retaining curated route links already needed by README.md.",
-    "Root OVERALL_ARCHITECTURE.md already exists in this repository and is referenced as an implementation contract; this handoff does not invent a root contract file."
+    "CONTRIBUTING.md is intentionally absent before Coding and is the only non-runner Coding target.",
+    "DOC-02 and the contributor governance guard are expected to fail with CONTRIBUTOR_ENTRYPOINT_MISSING until Coding creates the guide.",
+    "No intent graph mutation is required from ImplementationDesign; current intent context already designates root-level CONTRIBUTING.md for WP3.",
+    "Current repository evidence includes OVERALL_ARCHITECTURE.md; future absent-root-contract evidence must be reported honestly rather than invented."
   ]
 }

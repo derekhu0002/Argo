@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
+const contributorGuidePath = path.join(repoRoot, 'CONTRIBUTING.md');
 const decisionTreePath = path.join(
   repoRoot,
   '.argo',
@@ -63,6 +64,7 @@ const CASES = new Map([
           'openPackagingDecision',
           'Root-level CONTRIBUTING.md is recommended',
         );
+        assertContributorEntrypoint();
       },
     },
   ],
@@ -184,6 +186,52 @@ function assertAttributeIncludes(graph, elementId, attributeName, expectedFragme
 function assertDecisionEvidence(decisionTree, expectedFragments) {
   for (const fragment of expectedFragments) {
     assert.ok(decisionTree.includes(fragment), `decision tree must include: ${fragment}`);
+  }
+}
+
+function assertContributorEntrypoint() {
+  assert.ok(
+    fs.existsSync(contributorGuidePath),
+    'CONTRIBUTOR_ENTRYPOINT_MISSING: create root-level CONTRIBUTING.md for DOC-02 contributor governance',
+  );
+
+  const contributorGuide = fs.readFileSync(contributorGuidePath, 'utf8');
+  const requiredFragments = [
+    'design/KG/SystemArchitecture.json',
+    '.argo/temp/ImplementationToCodingHandoff.json',
+    'fact-source priority',
+    'safe change surfaces',
+    'stage boundaries',
+    'npm run validate:system-architecture',
+    'npm run validate:handoff',
+    'npm run test:argo',
+    'ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router',
+    'tests/explicit/entries/runDocumentationInformationArchitectureDecision.js',
+    'frozen files',
+    'documentation maintenance',
+    'forbidden shortcuts',
+  ];
+
+  for (const fragment of requiredFragments) {
+    assert.ok(
+      contributorGuide.includes(fragment),
+      `CONTRIBUTOR_ENTRYPOINT_CONTENT_MISSING: CONTRIBUTING.md must include ${fragment}`,
+    );
+  }
+
+  const requiredReferenceLinks = [
+    /\]\(design\/README\.md\)/,
+    /\]\(design\/argo-harness\/README\.md\)/,
+    /\]\(design\/mcp\/[^)]+\)/,
+    /\]\(design\/validator\/intent-architecture-mcp-validation\.md\)/,
+    /\]\(tests\/ARCHITECTURE\.md\)/,
+  ];
+
+  for (const linkPattern of requiredReferenceLinks) {
+    assert.ok(
+      linkPattern.test(contributorGuide),
+      `CONTRIBUTOR_ENTRYPOINT_REFERENCE_MISSING: CONTRIBUTING.md must link ${linkPattern}`,
+    );
   }
 }
 

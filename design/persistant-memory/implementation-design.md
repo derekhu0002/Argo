@@ -1,3 +1,10 @@
+# Documentation contributor governance WP3 handoff (2026-07-28)
+
+- Materialized `.argo/temp/ImplementationToCodingHandoff.json` for `docsys-wp-contributor-entrypoint` only. Coding scope is narrowed to creating root `CONTRIBUTING.md`; runner-owned `deliveryStatus` and `design/KG/test-failure-records.json` refreshes are allowed only as validation side effects.
+- Updated `OVERALL_ARCHITECTURE.md` to declare `CONTRIBUTING.md` as the Contributor Governance Entry mapped directly to `docsys-contributor-governance-entry`, and updated `tests/ARCHITECTURE.md` to own DOC-02 plus `tests/architecture/documentation/contributor-governance-entrypoint.guard.js`.
+- Strengthened `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router` to observe the physical contributor guide. Both DOC-02 and the new guard intentionally RED before Coding with `CONTRIBUTOR_ENTRYPOINT_MISSING`.
+- `argo.validateStageHandoff(stage=implementation-to-coding)` passed. No intent graph mutation or `ImplementationToIntentTraceProposal.json` is required because the validated intent context already designates root-level `CONTRIBUTING.md` for WP3. Current repository evidence includes root `OVERALL_ARCHITECTURE.md`; future absent-root-contract evidence must be stated honestly rather than invented.
+
 # Documentation README reduction WP2 handoff (2026-07-28)
 
 - Refreshed validated `docsys-wp-root-readme-reduction` intent handoff from IntentDesign commit `c19d161b2bbb39a0bd22bb7e54323b7264857041`. Scope remains WP2 only: keep root `README.md` as a concise adoption/product entry and router while retaining positioning, problem framing, certainty formula, three components, high-level delivery flow, quick start/deployment checks, entry selection, and curated next links.
