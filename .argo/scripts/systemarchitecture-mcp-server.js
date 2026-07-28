@@ -2062,13 +2062,24 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
   const canonicalElementById = new Map(canonicalElements.map(element => [element && element.id, element]));
   const canonicalRelationshipById = new Map(canonicalRelationships.map(relationship => [relationship && relationship.id, relationship]));
   const canonicalViewById = new Map(canonicalViews.map(view => [view && view.view_id, view]));
-  const evidenceElementById = new Map(evidenceElements.map(element => [element && element.id, element]));
-  const evidenceRelationshipById = new Map(evidenceRelationships.map(relationship => [relationship && relationship.id, relationship]));
-  const evidenceViewById = new Map(evidenceViews.map(view => [view && view.view_id, view]));
+  const evidenceCandidates = [
+    ...evidenceElements.map(item => classifyCanonicalSubsetCandidate(item, 'Element')),
+    ...evidenceRelationships.map(item => classifyCanonicalSubsetCandidate(item, 'ArchitectureRelationship')),
+    ...evidenceViews.map(item => classifyCanonicalSubsetCandidate(item, 'View')),
+  ].filter(Boolean);
+  const evidenceElementById = new Map(evidenceCandidates
+    .filter(candidate => candidate.kind === 'Element')
+    .map(candidate => [candidate.id, candidate.item]));
+  const evidenceRelationshipById = new Map(evidenceCandidates
+    .filter(candidate => candidate.kind === 'ArchitectureRelationship')
+    .map(candidate => [candidate.id, candidate.item]));
+  const evidenceViewById = new Map(evidenceCandidates
+    .filter(candidate => candidate.kind === 'View')
+    .map(candidate => [candidate.id, candidate.item]));
 
-  const elementIds = new Set(evidenceElements.map(element => element && element.id).filter(Boolean));
-  const relationshipIds = new Set(evidenceRelationships.map(relationship => relationship && relationship.id).filter(Boolean));
-  const viewIds = new Set(evidenceViews.map(view => view && view.view_id).filter(Boolean));
+  const elementIds = new Set([...evidenceElementById.keys()]);
+  const relationshipIds = new Set([...evidenceRelationshipById.keys()]);
+  const viewIds = new Set([...evidenceViewById.keys()]);
 
   const selectElement = (elementId, category, message) => {
     const element = canonicalElementById.get(elementId) || evidenceElementById.get(elementId);
@@ -2156,6 +2167,50 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
       views: views.map(clone),
     },
   };
+}
+
+function classifyCanonicalSubsetCandidate(item, fallbackKind) {
+  if (!item || typeof item !== 'object') return undefined;
+  const rawId = item.id || item.view_id || item.objectId || item.canonicalIdentity;
+  if (!rawId) return undefined;
+  const qualified = parseSemanticQualifiedId(rawId);
+  if (qualified) {
+    return { ...qualified, item };
+  }
+  return {
+    kind: normalizeSemanticObjectKind(item.objectType || item.channel || fallbackKind),
+    id: String(rawId),
+    item,
+  };
+}
+
+function parseSemanticQualifiedId(rawId) {
+  const text = String(rawId);
+  for (const [prefix, kind] of [
+    ['ArchitectureRelationship:', 'ArchitectureRelationship'],
+    ['Relationship:', 'ArchitectureRelationship'],
+    ['View:', 'View'],
+    ['Element:', 'Element'],
+  ]) {
+    if (text.startsWith(prefix)) {
+      return {
+        kind,
+        id: text.slice(prefix.length),
+      };
+    }
+  }
+  return undefined;
+}
+
+function normalizeSemanticObjectKind(value) {
+  const kind = String(value || '').toLowerCase();
+  if (kind === 'architecturerelationship' || kind === 'relationship' || kind === 'relationships') {
+    return 'ArchitectureRelationship';
+  }
+  if (kind === 'view' || kind === 'views') {
+    return 'View';
+  }
+  return 'Element';
 }
 
 function arrayAt(value, pathSegments) {
