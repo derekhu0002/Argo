@@ -1,31 +1,37 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-28T14:14:00+08:00",
+  "generatedAt": "2026-07-28T15:05:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP3 docsys-wp-contributor-entrypoint is ready for ImplementationDesign. The intent graph now closes the contributor filename residual for this package: the contributor/governance entrypoint is root-level CONTRIBUTING.md, governed by DOC-02, and should expose fact-source priority, allowed edit surfaces, stage boundaries, validation/test commands, explicit testcase/frozen-file boundaries, and documentation maintenance rules without duplicating deep design specifications.",
+  "summary": "WP4 docsys-wp-design-navigation is ready for ImplementationDesign. Calibrate design/README.md as the stable design/system map and fact-source governance entry for the dual-entry documentation system: it should route readers to architecture, HARNESS flow, agent/skill design, usage scenarios, intent architecture, MCP, validator, schema/EA mapping, domain templates, marketing comparison, and research boundaries without duplicating deep content.",
   "intentElementIds": [
-    "docsys-contributor-governance-entry"
+    "docsys-stable-design-reference",
+    "docsys-content-boundary-requirement"
   ],
   "relationshipIds": [
-    "docsys-rel-contributor-entry-routes-contributor",
-    "docsys-rel-acceptance-governs-contributor",
-    "docsys-rel-filename-gap-qualifies-contributor",
-    "docsys-rel-filename-gap-blocks-contrib-wp",
-    "docsys-rel-wp-root-triggers-contrib",
-    "docsys-rel-wp-contrib-triggers-design"
+    "docsys-rel-design-reference-routes-maintainer",
+    "docsys-rel-design-docs-realize-priority",
+    "docsys-rel-acceptance-governs-design-routing",
+    "docsys-rel-boundary-refines-priority",
+    "docsys-rel-router-realizes-boundary",
+    "docsys-rel-notes-obey-boundary",
+    "docsys-rel-domain-docs-obey-boundary",
+    "docsys-rel-root-contract-gap-qualifies-priority",
+    "docsys-rel-acceptance-governs-content-placement",
+    "docsys-rel-wp-contrib-triggers-design",
+    "docsys-rel-wp-design-triggers-verification"
   ],
   "openQuestions": [],
   "notes": [
-    "Work package scope: docsys-wp-contributor-entrypoint / Contributor Governance Entrypoint Work, third step in docsys-wp-information-architecture -> docsys-wp-root-readme-reduction -> docsys-wp-contributor-entrypoint -> docsys-wp-design-navigation -> docsys-wp-link-fact-verification.",
-    "Intent graph mutation was required and completed because the prior graph still modeled the contributor filename as open residual coordination, while the host-approved execution decision designates root-level CONTRIBUTING.md for WP3. argo.previewSystemArchitectureMutation passed; argo.applySystemArchitectureMutation wrote the focused repair; argo.validateSystemArchitecture passed.",
-    "Mutation scope was limited to contributor/governance entrypoint intent and delivery coordination: docsys-contributor-governance-entry, docsys-contributor-filename-gap, docsys-wp-contributor-entrypoint, docsys-rel-contributor-entry-routes-contributor, docsys-rel-filename-gap-qualifies-contributor, docsys-rel-filename-gap-blocks-contrib-wp, and view docsys-residual-coordination. No implementation, code, test, script, contract, README, or CONTRIBUTING.md file was edited by IntentionDesign.",
-    "Viewpoint frame: Requirements Realization Viewpoint for the contributor/governance requirement and accepted root CONTRIBUTING.md realization boundary; Implementation and Migration Viewpoint for the closed filename coordination record and WP3 delivery sequencing. Existing affected views remain viewpoint-bound.",
-    "Coverage proof: docsys-contributor-governance-entry has same-element mounted ExplicitAcceptanceTestcase-DOC-02. DOC-02 control point is that a contributor prepares to change MCP, validator, tests, or docs; DOC-02 observation point is that before editing the contributor identifies the authoritative file, allowed edit surface, validation/test command, and forbidden shortcuts. The WP3 mutation kept the frozen DOC-02 openPackagingDecision attribute for testcase compatibility while making its value explicit that root-level CONTRIBUTING.md is now approved for WP3 implementation.",
-    "Acceptance evidence: direct DOC-02 verification passed via ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js. The refreshed full argo.runArchitectureTests run reported DOC-01, DOC-02, DOC-03, and DOC-04 passed, and refreshed docsys-contributor-governance-entry deliveryStatus from not_delivered back to delivered.",
-    "Full-run residual failures are outside WP3 scope and unchanged as implementation/semantic-delivery work: ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval. They are not used as DOC-02 coverage evidence.",
-    "ImplementationDesign boundary: create root-level CONTRIBUTING.md as the contributor/governance entrypoint. It should link to stable references where appropriate, including design/README.md, design/argo-harness/README.md, design/mcp/意图架构 MCP 功能列表.md, design/validator/intent-architecture-mcp-validation.md, tests/ARCHITECTURE.md, and package.json scripts, without copying deep design specifications inline.",
-    "Contributor content acceptance boundary: explain fact-source priority, safe change surfaces, IntentDesign/ImplementationDesign/Coding stage boundaries, validation commands, explicit testcase and frozen-file boundaries, forbidden shortcuts, and documentation maintenance rules before a maintainer edits MCP, validator, tests, or docs.",
-    "Root implementation contract handling: do not invent or claim a root OVERALL_ARCHITECTURE.md if direct repository evidence shows it is absent. If current implementation evidence shows such a file exists, refer to it truthfully as implementation-contract evidence; otherwise state the gap honestly and route to observed stable contracts such as tests/ARCHITECTURE.md.",
-    "Global handoff approval: the human pre-authorized approval gates and necessary stage commits for this orchestrated task. The handoff schema has additionalProperties=false and no approvedByHuman field, so global handoff approval is recorded here in notes."
+    "Work package scope: docsys-wp-design-navigation / Design Navigation Calibration Work, fourth step in docsys-wp-information-architecture -> docsys-wp-root-readme-reduction -> docsys-wp-contributor-entrypoint -> docsys-wp-design-navigation -> docsys-wp-link-fact-verification. WP1, WP2, and WP3 are accepted prerequisites; root CONTRIBUTING.md now exists.",
+    "Intent graph mutation was not required for WP4. Existing graph context already captures the accepted dual-entry documentation system, stable design reference authority, content-boundary governance, DOC-03 deep-reference routing, DOC-04 placement governance, and the vertical trigger from contributor entrypoint work to design navigation work and then link/fact-source verification.",
+    "Viewpoint frame: Outcome Realization Viewpoint for docsys-entrypoint-routing, Requirements Realization Viewpoint for docsys-fact-source-core and docsys-authority-layer-boundaries, and Implementation and Migration Viewpoint for docsys-acceptance-core and docsys-vertical-delivery-chain. The affected views already carry explicit Viewpoint/Concern/Purpose/Scope/Rationale bindings.",
+    "Coverage proof for docsys-stable-design-reference: the element is delivered and has same-element mounted ExplicitAcceptanceTestcase-DOC-03. DOC-03 control point is that a reader searches from root README for getSystemArchitecture, semantic query, MCP, or mutation validation details; observation point is that the reader lands on design/mcp and design/validator references, with no duplicated deep specification in root README. The acceptance entrypoint is tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing.",
+    "Coverage proof for docsys-content-boundary-requirement: the element is delivered and has same-element mounted ExplicitAcceptanceTestcase-DOC-04. DOC-04 control point is that a maintainer adds a domain template, market comparison, research note, or stable design content; observation point is that the maintainer can decide whether content belongs in design/specific-domain, design/marketing, notes, or stable design docs. The acceptance entrypoint is tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement.",
+    "Acceptance evidence: argo.validateSystemArchitecture passed. argo.runArchitectureTests reported DOC-03 and DOC-04 passed, alongside DOC-01 and DOC-02 passed. The full architecture test run remains red only because of unrelated non-documentation failures ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval; those failures are not used as WP4 coverage evidence.",
+    "MCP retrieval note: ordinary semantic getSystemArchitecture query was blocked by SEMANTIC_LIFECYCLE_FAILED with missing Element, ArchitectureRelationship, and View channels. IntentionDesign did not run initializeWorkspace because the tool description says it resets handoff artifacts. Graph-tidy full snapshot and getIntentElementContext reads were used instead for focused intent evidence.",
+    "ImplementationDesign boundary: update design/README.md as the stable design/system map and governance router. It should link or route to design/architecture.md, design/argo-harness/README.md, design/argo-harness/agents-and-skills.md, design/argo-harness/usage-scenarios/README.md, design/intent-architecture/README.md, design/mcp/意图架构 MCP 功能列表.md, design/validator/intent-architecture-mcp-validation.md, design/schema-ea-mapping.md, design/specific-domain/README.md, design/marketing/solution-comparison-argo-openspec-superpower-ecc.md, and notes/ research boundaries without copying deep specifications inline.",
+    "Dual-entry coherence boundary: keep root README as the quiet adoption/product router, root CONTRIBUTING.md as the contributor/governance entrypoint, and design/README.md as the stable design navigation and fact-source governance entry. design/README.md may mention this split but should not duplicate root README positioning or CONTRIBUTING.md operational detail.",
+    "Root implementation contract handling: do not invent or claim root OVERALL_ARCHITECTURE.md if direct repository evidence shows it is absent. If current implementation evidence shows such a file exists, refer to it truthfully; otherwise keep the fact-source wording honest and route to observed stable contracts such as tests/ARCHITECTURE.md.",
+    "Global handoff approval: the human pre-authorized approval gates and necessary stage commits for this orchestrated WP4 task. The handoff schema has additionalProperties=false and no approvedByHuman field, so global handoff approval is recorded here in notes."
   ]
 }
