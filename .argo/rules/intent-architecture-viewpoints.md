@@ -13,6 +13,8 @@ Before modeling elements, relationships, views, or acceptance testcases, state:
 
 Every Architecture View is an instantiation of exactly one Architecture Viewpoint. A View is not a free-standing canvas.
 
+Before any ARGO MCP write to `SystemArchitecture.json`, keep the pre-write guide short and limited to these gates: declare Viewpoint/Concern/Purpose, read target elements and views, bind new elements or relationships with `view_ids`, keep relationship source/target elements present in the same view, choose an ArchiMate-valid relationship type, and preview before apply. Do not include the full JSON schema, full ArchiMate matrix, MCP internals, test entrypoints, code details, or the complete failure guidance map in this pre-write guide.
+
 ## View Binding
 
 Every new or modified Architecture View MUST explicitly say which Architecture Viewpoint it instantiates. Preserve the binding in the view `description` and, when schema permits, in approved metadata or attributes.
