@@ -2777,6 +2777,10 @@
         {
           "name": "contentBoundary",
           "value": "Summarizes and routes; does not own stable architecture or contributor governance facts."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2785,7 +2789,7 @@
           "description": "Control point: first-time external reader opens only README.md. Observation point: within five minutes, the reader states ARGO's positioning, problem, three core components, and correct next document.",
           "type": "Acceptance Test",
           "Input": "Refreshed root README presented as the only starting document to a first-time reader.",
-          "acceptanceCriteria": "Business acceptance intent DOC-01: fast product understanding and next-link selection without following deep references."
+          "acceptanceCriteria": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router"
         }
       ]
     },
@@ -2810,6 +2814,10 @@
         {
           "name": "acceptanceObservationPoint",
           "value": "A visible contributor entrypoint points to fact sources, validation, tests, and forbidden shortcuts."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2818,7 +2826,7 @@
           "description": "Control point: contributor prepares to change MCP, validator, tests, or docs. Observation point: before editing, the contributor identifies the authoritative file, allowed edit surface, validation/test command, and forbidden shortcuts.",
           "type": "Acceptance Test",
           "Input": "Contributor/governance entrypoint plus linked fact-source, validation, and test boundary documentation.",
-          "acceptanceCriteria": "Business acceptance intent DOC-02: contributor can identify safe change boundaries before editing."
+          "acceptanceCriteria": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router"
         }
       ]
     },
@@ -2835,6 +2843,10 @@
         {
           "name": "authorityScope",
           "value": "Stable design explanations and architecture maintenance references live in design/ and are linked rather than duplicated in root README."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2843,7 +2855,7 @@
           "description": "Control point: reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details. Observation point: reader lands on design/mcp and design/validator references, with no duplicated deep specification in root README.",
           "type": "Acceptance Test",
           "Input": "Root README links and stable design documentation references for MCP and validator details.",
-          "acceptanceCriteria": "Business acceptance intent DOC-03: deep architecture details are reachable through design references without root README overload."
+          "acceptanceCriteria": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing"
         }
       ]
     },
@@ -2912,6 +2924,10 @@
         {
           "name": "acceptanceObservationPoint",
           "value": "Stable facts appear once as authority and are referenced elsewhere by links."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2920,7 +2936,7 @@
           "description": "Control point: maintainer adds a domain template, market comparison, or research note. Observation point: maintainer can decide whether content belongs in design/specific-domain, design/marketing, notes, or stable design docs.",
           "type": "Acceptance Test",
           "Input": "Documentation placement rules and existing design/specific-domain, design/marketing, notes, and stable design references.",
-          "acceptanceCriteria": "Business acceptance intent DOC-04: maintainers place new research or domain content in the correct authority layer."
+          "acceptanceCriteria": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement"
         }
       ]
     },

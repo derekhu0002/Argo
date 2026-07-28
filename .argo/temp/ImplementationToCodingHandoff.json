@@ -1,210 +1,103 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T02:19:00+08:00",
+  "generatedAt": "2026-07-28T13:07:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "ImplementationDesign correction handoff for BP MCP semantic query contract WP-1 through WP-4. Coding is authorized to repair the real public no-anchor getSystemArchitecture semantic request contract and canonical subset payload mapping while preserving the already passing anchored subset, Relationship endpoint closure, View closure, and full-snapshot compatibility controls.",
+  "summary": "WP1-only ImplementationDesign handoff for docsys-wp-information-architecture. The accepted documentation information architecture decision is already expressed by the intent graph and decision-tree evidence, so CodingAndReparing is not authorized to edit README.md, create CONTRIBUTING.md, change design navigation, or perform link/fact verification for this handoff. The only downstream action is no-op verification/acceptance of WP1; after acceptance, WP2 root README reduction is the next delivery package.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
-    ".argo/scripts/ARCHITECTURE.md",
-    ".argo/scripts/graph-rag/ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md"
+    "tests/ARCHITECTURE.md",
+    "design/architecture.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls",
-      "controlPoint": "Public getSystemArchitecture ordinary semantic query carrying forbidden response-shape controls, including the no-anchor callTool and unified MCP tools/call paths.",
-      "observationPoint": "Anchored and no-anchor requests fail before retrieval with QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN and no canonical subset or debug/evidence success.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=reject-response-shape-controls node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: no-anchor public semantic query with responseProfile=debug still reaches legacy debug/business-summary behavior instead of failing closed."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#preserve-full-snapshot-read-modes",
-      "controlPoint": "Omitted-query and graph-tidy getSystemArchitecture reads.",
-      "observationPoint": "Both read modes preserve exact canonical full snapshots; graph-tidy reports full-snapshot mode and semantic retrieval bypass.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router",
+      "controlPoint": "First-time external reader opens only README.md.",
+      "observationPoint": "The graph preserves the quieter root README adoption-router decision: positioning, problem, three core components, curated deep links, and no inline semantic lifecycle internals.",
       "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=preserve-full-snapshot-read-modes node tests/explicit/entries/runMcpSemanticQueryContract.js"
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-01-root-readme-adoption-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#canonical-object-subset-only",
-      "controlPoint": "Successful ordinary semantic query returning Element, Relationship, and View objects, including the no-anchor callTool and unified MCP tools/call paths.",
-      "observationPoint": "Anchored and no-anchor success payloads expose only canonical document object collections and omit derived semantic/business fields.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=canonical-object-subset-only node tests/explicit/entries/runMcpSemanticQueryContract.js",
-      "failureReason": "Expected RED: no-anchor public semantic query still exposes legacy business-summary result fields instead of the canonical document subset."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#element-hit-no-neighbor-expansion",
-      "controlPoint": "Element-only ordinary semantic hit.",
-      "observationPoint": "Only the canonical matched Element is returned; no adjacent Relationships, endpoint neighbors, or owning Views are added.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router",
+      "controlPoint": "Contributor prepares to change MCP, validator, tests, or docs.",
+      "observationPoint": "The graph preserves contributor governance routing, including fact-source priority, allowed edit surfaces, validation commands, test boundaries, forbidden shortcuts, and residual root-level CONTRIBUTING.md filename coordination.",
       "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=element-hit-no-neighbor-expansion node tests/explicit/entries/runMcpSemanticQueryContract.js"
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REL",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#relationship-endpoint-closure",
-      "controlPoint": "Selected Relationship whose endpoints are not independent semantic hits.",
-      "observationPoint": "Canonical Relationship plus both endpoint Elements are returned without endpoint neighbors, endpoint-owned Views, or unrelated Relationships.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing",
+      "controlPoint": "Reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details.",
+      "observationPoint": "The graph and repository references preserve design/mcp and design/validator as stable deep-detail authorities without duplicating their specification into root README.",
       "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=relationship-endpoint-closure node tests/explicit/entries/runMcpSemanticQueryContract.js"
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-relationship-endpoint-rejection",
-      "controlPoint": "Selected Relationship with unresolved endpoint references.",
-      "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_RELATIONSHIP_MISSING and no partial successful Relationship subset.",
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement",
+      "controlPoint": "Maintainer adds a domain template, market comparison, research note, or stable design note.",
+      "observationPoint": "The graph preserves single-source documentation layer boundaries: root summarizes and links, contributor entry governs changes, design owns stable specs, notes own research, and domain-specific docs own domain extension.",
       "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-relationship-endpoint-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#view-membership-closure",
-      "controlPoint": "Selected View with declared Element members and included Relationships.",
-      "observationPoint": "Canonical View, member Elements, included Relationships, and endpoints for in-View Relationships are returned.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=view-membership-closure node tests/explicit/entries/runMcpSemanticQueryContract.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#no-overlapping-view-cascade",
-      "controlPoint": "Selected View sharing members with a non-matched overlapping View.",
-      "observationPoint": "Shared member objects may be returned, but the overlapping non-matched View is excluded.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=no-overlapping-view-cascade node tests/explicit/entries/runMcpSemanticQueryContract.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW",
-      "entryPath": "tests/explicit/entries/runMcpSemanticQueryContract.js#broken-view-reference-rejection",
-      "controlPoint": "Selected View with broken member or in-View Relationship references.",
-      "observationPoint": "Closure fails closed with SEMANTIC_SUBSET_VIEW_MISSING and no incomplete View success.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=broken-view-reference-rejection node tests/explicit/entries/runMcpSemanticQueryContract.js"
+      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     }
   ],
-  "criticalNonExplicitTests": [
-    {
-      "name": "MCP semantic query architecture boundary guard",
-      "path": "tests/architecture/mcp-semantic-query-contract/architecture-boundary.guard.js",
-      "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Root and local contracts for WP-1 request validation, WP-2 canonical payload, WP-3 Relationship endpoint closure, and WP-4 View membership closure.",
-      "observationPoint": "Contracts keep request/payload mapping in the query boundary and closure semantics in the Graph RAG boundary.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "MCP semantic query dependency direction guard",
-      "path": "tests/architecture/mcp-semantic-query-contract/dependency-direction.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "Production query/retrieval modules and Coding target authorization.",
-      "observationPoint": "Production modules do not depend on tests, and frozen testcase assets are not Coding targets.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "MCP semantic query explicit entrypoint correctness guard",
-      "path": "tests/architecture/mcp-semantic-query-contract/explicit-entrypoint-correctness.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "The physicalized runMcpSemanticQueryContract.js entrypoint and its graph-mounted anchors.",
-      "observationPoint": "All approved anchors, expected failure categories, canonical-payload exclusions, and fragment execution controls are present.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "MCP semantic query implementation traceability guard",
-      "path": "tests/architecture/mcp-semantic-query-contract/implementation-traceability.guard.js",
-      "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "SystemArchitecture testcase mounts, root implements mappings, handoff explicit entrypoints, and frozenFiles.",
-      "observationPoint": "Graph, contracts, handoff, and physical entrypoint paths agree exactly for BP-MCP-SEM-REQ/COMPAT/PAYLOAD/ELEMENT/REL/BROKEN-REL/VIEW/NOCASCADE/BROKEN-VIEW.",
-      "expectedStatus": "passed"
-    }
-  ],
-  "supportingNonExplicitTests": [
-    {
-      "name": "JavaScript fragment anchor executor support",
-      "path": ".argo/scripts/test-executors/default.js",
-      "kind": "SupportingNonExplicitTest",
-      "controlPoint": "Graph-mounted JavaScript acceptance criteria using file.js#anchor.",
-      "observationPoint": "The default executor strips the fragment for script execution and exposes it to the entrypoint through ARGO_TESTCASE_ANCHOR.",
-      "expectedStatus": "passed"
-    }
-  ],
+  "criticalNonExplicitTests": [],
+  "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "reject-response-shape-controls now fails only on the no-anchor public callTool/unified MCP subcases; the legacy debug path is still reachable without anchors.",
-      "nextAction": "Reject responseProfile/detail/outputMode and debug/full/evidence variants before semantic retrieval for every ordinary semantic query, not only anchor-activated contract fixtures."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
-      "path": ".argo/scripts/systemarchitecture-mcp-server.js",
-      "failureSignal": "canonical-object-subset-only now fails only on the no-anchor public callTool/unified MCP subcases; legacy business-summary result fields are still returned without anchors.",
-      "nextAction": "Map every ordinary semantic query success to canonical document object subsets by default; do not require query.anchors to activate the canonical subset contract."
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
+      "failureSignal": "NO_CODING_FAILURE_FOR_WP1_DECISION_ONLY: DOC-01 through DOC-04 are expected to pass as information-architecture verification, not by changing production code or documentation prose.",
+      "nextAction": "Run the WP1 documentation information architecture entrypoint and handoff validation. If they pass, mark WP1 ready for acceptance and proceed to WP2 root README reduction in a separate authorized handoff."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Repair only the currently failing no-anchor public-path contract: request validation first, canonical payload mapping second, then run the focused guards and all frozen BP-MCP-SEM explicit anchors as regression coverage.",
+    "executionStrategy": "No Coding/Repair implementation is authorized for WP1. Verify the already-modeled information architecture decision and preserve downstream scope boundaries; README reduction, contributor entrypoint creation, design navigation calibration, and link/fact verification remain WP2-WP5.",
     "tasks": [
       {
-        "taskId": "MCP-SEM-C1",
-        "title": "Seal semantic request shape controls",
-        "objective": "Make ordinary semantic query requests reject forbidden response-shape controls before retrieval.",
+        "taskId": "DOCSYS-WP1-NOOP-VERIFY",
+        "title": "Verify documentation information architecture decision",
+        "objective": "Confirm that the accepted dual-entry documentation information architecture is physically testable and that no downstream documentation edit is needed for WP1.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ",
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT"
+          "ExplicitAcceptanceTestcase-DOC-01",
+          "ExplicitAcceptanceTestcase-DOC-02",
+          "ExplicitAcceptanceTestcase-DOC-03",
+          "ExplicitAcceptanceTestcase-DOC-04"
         ],
         "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
+          "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
+          "design/KG/SystemArchitecture.json",
+          ".argo/temp/ImplementationToCodingHandoff.json"
         ],
         "steps": [
-          "Add validation for responseProfile, detail, outputMode, and debug/full/evidence variants in the getSystemArchitecture semantic-query request path for both anchor and no-anchor ordinary queries.",
-          "Return stable failure category QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN before invoking semantic retrieval; the condition must not depend on query.anchors.",
-          "Verify preserve-full-snapshot-read-modes still passes for omitted-query and graph-tidy."
+          "Run node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js to verify all four DOC anchors.",
+          "Validate .argo/temp/ImplementationToCodingHandoff.json with validateStageHandoff(stage=\"implementation-to-coding\").",
+          "Do not edit README.md, create CONTRIBUTING.md, change design navigation, or perform link/fact verification under this WP1 handoff.",
+          "After WP1 acceptance, request or dispatch the separate WP2 handoff for docsys-wp-root-readme-reduction."
         ],
-        "completionSignal": "reject-response-shape-controls passes for both anchor and no-anchor public callTool/unified MCP paths, and preserve-full-snapshot-read-modes remains passing."
-      },
-      {
-        "taskId": "MCP-SEM-C2",
-        "title": "Return canonical object subsets only",
-        "objective": "Map successful ordinary semantic responses to canonical document object subsets without derived fields or object transformation.",
-        "dependsOn": [
-          "MCP-SEM-C1"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD",
-          "ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT"
-        ],
-        "targetPaths": [
-          ".argo/scripts/systemarchitecture-mcp-server.js"
-        ],
-        "steps": [
-          "Replace successful semantic result envelope exposure with a document containing only elements, relationships, and views arrays for both anchor and no-anchor ordinary queries.",
-          "Deep-copy or select canonical objects by id without dropping, renaming, or adding fields.",
-          "Keep Element-only hits minimal unless selected Relationship or selected View closure requires additional canonical objects."
-        ],
-        "completionSignal": "canonical-object-subset-only passes for both anchor and no-anchor public callTool/unified MCP paths, and the Element, Relationship, View, no-cascade, broken-Relationship, broken-View, and full-snapshot anchors remain passing regression coverage."
+        "completionSignal": "All DOC-01 through DOC-04 WP1 anchors pass, implementation-to-coding handoff validation passes, and no Coding/Repair production or prose target is authorized."
       }
     ]
   },
   "frozenFiles": [
     "OVERALL_ARCHITECTURE.md",
-    ".argo/scripts/ARCHITECTURE.md",
-    ".argo/scripts/graph-rag/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
-    ".argo/scripts/test-executors/default.js",
-    ".argo/scripts/validateStageHandoff.js",
-    "tests/explicit/entries/runMcpSemanticQueryContract.js",
-    "tests/architecture/mcp-semantic-query-contract/architecture-boundary.guard.js",
-    "tests/architecture/mcp-semantic-query-contract/dependency-direction.guard.js",
-    "tests/architecture/mcp-semantic-query-contract/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/mcp-semantic-query-contract/implementation-traceability.guard.js"
+    "design/architecture.md",
+    "design/KG/SystemArchitecture.json",
+    "design/KG/test-failure-records.json",
+    ".argo/temp/IntentToImplementationHandoff.json",
+    ".argo/temp/ImplementationToCodingHandoff.json",
+    ".argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md",
+    "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
+    "README.md",
+    "design/README.md"
   ],
   "openGaps": [
-    "No upstream intent graph change is requested.",
-    "The scoped correction RED failures are BP-MCP-SEM-REQ and BP-MCP-SEM-PAYLOAD through their no-anchor public callTool/unified MCP subcases; the previously delivered anchored Element, Relationship, View, no-cascade, broken-Relationship, broken-View, and compatibility controls remain frozen regression coverage.",
-    "The full pre-coding runner baseline may also contain inherited out-of-scope failures for ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval. They are recorded in design/KG/test-failure-records.json when present but are not Coding targets for this correction handoff."
+    "WP1 has no Coding/Repair behavior target because the information architecture decision is already represented in the graph and verified by the new DOC physicalized entrypoint.",
+    "The accepted residual contributor filename decision remains: root-level CONTRIBUTING.md is recommended unless implementation evidence blocks it, but creation belongs to WP3, not WP1.",
+    "The root OVERALL_ARCHITECTURE.md exists in this repository and is referenced as an implementation contract; no root contract file is invented by this handoff.",
+    "WP2 docsys-wp-root-readme-reduction is the next package after WP1 acceptance; WP3 contributor entrypoint, WP4 design navigation, and WP5 link/fact verification remain out of scope."
   ]
 }

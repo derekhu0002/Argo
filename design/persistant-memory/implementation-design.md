@@ -1,3 +1,10 @@
+# Documentation IA WP1 handoff (2026-07-28)
+
+- WP1 `docsys-wp-information-architecture` is ImplementationDesign no-op verification scope: the accepted dual-entry information architecture is already represented in `design/KG/SystemArchitecture.json` and the decision tree, so Coding/Repair is not authorized to edit `README.md`, create `CONTRIBUTING.md`, change design navigation, or run link/fact verification under this handoff.
+- Physicalized DOC-01 through DOC-04 at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js` with four anchors. The graph testcase `acceptanceCriteria` values now point to executable paths; business semantics, element/view counts, and delivery order remain unchanged.
+- `tests/ARCHITECTURE.md` owns the new documentation information architecture entrypoint. `.argo/temp/ImplementationToCodingHandoff.json` freezes the no-coding task plan, expected failure records path, and WP2-next boundary.
+- Residual risk is downstream only: root-level `CONTRIBUTING.md` remains the recommended WP3 filename unless later implementation evidence blocks it. `OVERALL_ARCHITECTURE.md` exists and is referenced honestly; no root contract was invented.
+
 # Canonical init durable-transition correction (2026-07-27)
 
 - Independent follow-up audit found reconciliation failure asserted only Failed/Stale. SP-05 now injects a dedicated raw reconciliation secret canary at the controlled runtime boundary, preserves the unsanitized diagnostic only in a private observer, and requires exact `SEMANTIC_RECONCILIATION_FAILED` category, safe message, and actionable remediation in both durable same-record evidence and exported init error. Public fallback is literal false; all durable/public serialization is scanned for zero canary leakage.
