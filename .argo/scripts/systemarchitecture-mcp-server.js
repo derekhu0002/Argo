@@ -1679,6 +1679,7 @@ function isCanonicalSubsetSemanticContract(query, options = {}) {
 function semanticContractOptions(args = {}, dependencies = undefined) {
   return {
     architecturePath: args.architecturePath,
+    canonicalDocument: args.canonicalDocument,
     defaultNoAnchorSubset: !dependencies
       || !!dependencies.canonicalSubsetForNoAnchor
       || !!(
@@ -1746,7 +1747,11 @@ async function callTool(name, args = {}, dependencies = undefined) {
         };
         return getSystemArchitectureResult(attachContextWarnings(payload, context));
       }
-      const contractOptions = semanticContractOptions(args, dependencies);
+      const context = await loadContext(args);
+      const contractOptions = semanticContractOptions({
+        ...args,
+        canonicalDocument: context.document,
+      }, dependencies);
       if (isCanonicalSubsetSemanticContract(query, contractOptions)) {
         const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
         if (responseShapeValidation.status === 'failed') {
@@ -2018,7 +2023,7 @@ function applySemanticResponseProfile(response, query, options = {}) {
   const payload = parseToolResponsePayload(response);
   if (!payload || payload.status === 'failed') return response;
   const source = payload.result || payload.document;
-  const subset = buildCanonicalSemanticDocumentSubset(source);
+  const subset = buildCanonicalSemanticDocumentSubset(source, options.canonicalDocument);
   if (subset.status === 'failed') {
     return getSystemArchitectureResult(subset);
   }
@@ -2077,12 +2082,15 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
     .filter(candidate => candidate.kind === 'View')
     .map(candidate => [candidate.id, candidate.item]));
 
-  const elementIds = new Set([...evidenceElementById.keys()]);
+  const elementIds = new Set([...evidenceElementById.keys()].filter(id => canonicalElementById.has(id)));
   const relationshipIds = new Set([...evidenceRelationshipById.keys()]);
   const viewIds = new Set([...evidenceViewById.keys()]);
 
   const selectElement = (elementId, category, message) => {
-    const element = canonicalElementById.get(elementId) || evidenceElementById.get(elementId);
+    if (!evidenceElementById.has(elementId)) {
+      return semanticSubsetError(category, message);
+    }
+    const element = canonicalElementById.get(elementId);
     if (!element) {
       return semanticSubsetError(category, message);
     }
@@ -2090,7 +2098,10 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
     return undefined;
   };
   const selectRelationship = (relationshipId, category, message) => {
-    const relationship = canonicalRelationshipById.get(relationshipId) || evidenceRelationshipById.get(relationshipId);
+    if (!evidenceRelationshipById.has(relationshipId)) {
+      return { error: semanticSubsetError(category, message) };
+    }
+    const relationship = canonicalRelationshipById.get(relationshipId);
     if (!relationship) {
       return { error: semanticSubsetError(category, message) };
     }
@@ -2099,7 +2110,11 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
   };
 
   for (const viewId of [...viewIds]) {
-    const view = canonicalViewById.get(viewId) || evidenceViewById.get(viewId);
+    const view = canonicalViewById.get(viewId);
+    if (!view) {
+      viewIds.delete(viewId);
+      continue;
+    }
     for (const elementId of view && Array.isArray(view.included_elements) ? view.included_elements : []) {
       const error = selectElement(
         elementId,
@@ -2155,9 +2170,15 @@ function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefi
     }
   }
 
-  const elements = [...elementIds].map(id => canonicalElementById.get(id) || evidenceElementById.get(id));
-  const relationships = [...relationshipIds].map(id => canonicalRelationshipById.get(id) || evidenceRelationshipById.get(id));
-  const views = [...viewIds].map(id => canonicalViewById.get(id) || evidenceViewById.get(id));
+  const elements = [...elementIds]
+    .map(id => canonicalElementById.get(id))
+    .filter(Boolean);
+  const relationships = [...relationshipIds]
+    .map(id => canonicalRelationshipById.get(id))
+    .filter(Boolean);
+  const views = [...viewIds]
+    .map(id => canonicalViewById.get(id))
+    .filter(Boolean);
 
   return {
     status: 'passed',

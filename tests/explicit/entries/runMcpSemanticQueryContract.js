@@ -156,6 +156,7 @@ async function main() {
                 views: [seed('view-primary', 'View')],
               },
               closureElements: ['element-a', 'element-b', 'element-c'],
+              nonCanonicalClosureElements: [syntheticPolicyElement()],
               returnedRelationships: ['rel-ab', 'rel-bc'],
               returnedViews: ['view-primary', 'view-overlap'],
             }),
@@ -174,6 +175,7 @@ async function main() {
               views: [seed('view-primary', 'View')],
             },
             closureElements: ['element-a', 'element-b', 'element-c'],
+            nonCanonicalClosureElements: [syntheticPolicyElement()],
             returnedRelationships: ['rel-ab', 'rel-bc'],
             returnedViews: ['view-primary', 'view-overlap'],
           }),
@@ -515,6 +517,15 @@ function canonicalView(viewId) {
   return canonicalGraph.views.find(view => view.view_id === viewId);
 }
 
+function syntheticPolicyElement() {
+  return Object.freeze({
+    id: 'grag-intent-decision-policy',
+    name: 'grag-intent-decision-policy',
+    type: 'Application Function',
+    firstInclusionReason: 'declared-purpose-policy',
+  });
+}
+
 function seed(id, objectType = 'Element', score = 0.99) {
   return Object.freeze({ id, objectType, score });
 }
@@ -542,6 +553,7 @@ function createSemanticJourney({ architecturePath, document }) {
 function createSemanticEvidence({
   seedsByType,
   closureElements,
+  nonCanonicalClosureElements = [],
   returnedRelationships,
   returnedViews,
 }) {
@@ -558,6 +570,11 @@ function createSemanticEvidence({
   for (const id of closureElements) {
     if (!provenanceObjects.some(item => item.objectType === 'Element' && item.objectId === id)) {
       provenanceObjects.push(provenance('Element', id, 'purpose-policy-closure'));
+    }
+  }
+  for (const item of nonCanonicalClosureElements) {
+    if (!provenanceObjects.some(record => record.objectType === 'Element' && record.objectId === item.id)) {
+      provenanceObjects.push(provenance('Element', item.id, item.firstInclusionReason || 'purpose-policy-closure'));
     }
   }
   for (const id of returnedRelationships) {
@@ -587,6 +604,7 @@ function createSemanticEvidence({
     boundary: Object.freeze({
       included: Object.freeze([
         ...closureElements,
+        ...nonCanonicalClosureElements.map(item => item.id),
         ...returnedRelationships,
         ...returnedViews,
       ]),
@@ -594,7 +612,10 @@ function createSemanticEvidence({
       rationale: 'Return the canonical contract subset only.',
     }),
     closure: Object.freeze({
-      elements: Object.freeze(closureElements.map(canonicalElement)),
+      elements: Object.freeze([
+        ...closureElements.map(canonicalElement),
+        ...nonCanonicalClosureElements,
+      ]),
     }),
     endpointClosure: Object.freeze({
       relationships: Object.freeze(returnedRelationships.map(canonicalRelationship)),
