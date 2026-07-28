@@ -64,6 +64,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
           properties: {
             category: { type: 'string' },
             message: { type: 'string' },
+            action: { type: 'string' },
             fullSnapshotFallback: { type: 'boolean' },
             state: { type: ['string', 'null'] },
             canonicalVersion: { type: ['string', 'null'] },
