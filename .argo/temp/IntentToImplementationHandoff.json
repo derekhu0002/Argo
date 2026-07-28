@@ -1,8 +1,8 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-07-28T13:22:00+08:00",
+  "generatedAt": "2026-07-28T13:39:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP2 handoff for docsys-wp-root-readme-reduction. ImplementationDesign should prepare the root README reduction as a concise adoption/product entry and router: retain positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment check, entry selection, and curated next links, while routing deep semantic operator, MCP, validator, and lifecycle detail to stable design references instead of expanding it inline.",
+  "summary": "WP2 docsys-wp-root-readme-reduction is ready for ImplementationDesign. Existing intent architecture already covers the accepted quieter root README adoption entry, stable design reference routing, and documentation layer content boundary; no SystemArchitecture mutation is required. ImplementationDesign should reduce README.md into a concise adoption/product router and must not implement the full contributor guide, the design navigation WP, or invent a root OVERALL_ARCHITECTURE.md if absent.",
   "intentElementIds": [
     "docsys-root-readme-entry",
     "docsys-stable-design-reference",
@@ -10,28 +10,27 @@
   ],
   "relationshipIds": [
     "docsys-rel-root-readme-routes-reader",
-    "docsys-rel-design-reference-routes-maintainer",
     "docsys-rel-root-readme-obeys-noise",
     "docsys-rel-acceptance-governs-root-readme",
+    "docsys-rel-design-reference-routes-maintainer",
+    "docsys-rel-design-docs-realize-priority",
     "docsys-rel-acceptance-governs-design-routing",
+    "docsys-rel-boundary-refines-priority",
+    "docsys-rel-router-realizes-boundary",
     "docsys-rel-acceptance-governs-content-placement",
     "docsys-rel-wp-info-triggers-root",
     "docsys-rel-wp-root-triggers-contrib"
   ],
   "openQuestions": [],
   "notes": [
-    "Scope package: docsys-wp-root-readme-reduction (Root README Noise Reduction Work), deliveryOrder=2. Its graph description says this second delivery step refreshes root README as a concise product/adoption router with curated links and no duplicated semantic lifecycle specification.",
-    "Prerequisite evidence: WP1 docsys-wp-information-architecture was accepted by the human partner and reported commits 89c93bf, 7196713493af171d94e0b8993fcea247a6cc7724, and 3d49ac45a95b62f50145b965d99078c15ea13eef. The graph relationship docsys-rel-wp-info-triggers-root expresses WP1 before WP2.",
-    "Selected viewpoint frame: Outcome Realization for reader routing, Requirements Realization for root README noise/content-boundary constraints, and Implementation and Migration for the accepted vertical delivery chain. Existing views are already bound with Viewpoint/Concern/Purpose/Scope/Rationale descriptions, so no view repair or SystemArchitecture mutation was required.",
-    "Decision evidence: .argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md records DT-DOC-ENTRYPOINT-README as accepted: keep root README concise with positioning, problem, certainty formula, three components, main flow, quick start/deployment, entry selection, and curated deep links.",
-    "Acceptance boundary DOC-01: docsys-root-readme-entry has mounted ExplicitAcceptanceTestcase-DOC-01. Control point: first-time external reader opens only README.md. Observation point: within five minutes the reader states ARGO positioning, problem, three core components, and correct next document.",
-    "Acceptance boundary DOC-03: docsys-stable-design-reference has mounted ExplicitAcceptanceTestcase-DOC-03. Control point: reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details. Observation point: reader lands on design/mcp and design/validator references without duplicated deep specification in root README.",
-    "Boundary guard DOC-04: docsys-content-boundary-requirement has mounted ExplicitAcceptanceTestcase-DOC-04. It is included only to preserve single-source content ownership while reducing README noise; it does not authorize the full design navigation WP.",
-    "Coverage proof for WP2 scope: docsys-root-readme-entry maps the root README adoption-router functional boundary to DOC-01; docsys-stable-design-reference maps deep MCP/validator routing to DOC-03; docsys-content-boundary-requirement maps single-source placement discipline to DOC-04. All are same-element mounted Acceptance Test testcases already present in the graph; no testcase was added or modified in this session.",
-    "Pass evidence: argo.runArchitectureTests reported DOC-01, DOC-02, DOC-03, and DOC-04 passed. The same run had two unrelated failures outside WP2 scope: ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval.",
-    "ImplementationDesign boundary: WP2 may plan README.md reduction only. Do not implement the full contributor guide or design navigation work package; a minimal routing stub/link is allowed only if needed to keep the README entry selection coherent.",
-    "Residual execution guidance carried from the accepted decision tree: contributor governance should eventually be root-level CONTRIBUTING.md, but WP2 should not implement that full WP. Root OVERALL_ARCHITECTURE.md must not be invented if absent; README wording must avoid claiming it exists.",
-    "Stage boundary: this handoff authorizes ImplementationDesign planning for WP2 only. It does not authorize Coding/Repair edits, CONTRIBUTING.md creation, design/README calibration, or link/fact verification closure.",
-    "Global handoff approval: the user authorized approval gates and necessary stage git commits for this orchestrated delivery. The handoff schema has additionalProperties=false and no approvedByHuman field, so global approval is recorded here in notes rather than as a non-schema field."
+    "Work package scope: docsys-wp-root-readme-reduction / Root README Noise Reduction Work, second step in docsys-wp-information-architecture -> docsys-wp-root-readme-reduction -> docsys-wp-contributor-entrypoint -> docsys-wp-design-navigation -> docsys-wp-link-fact-verification.",
+    "Adequacy decision: no graph mutation was required. MCP getIntentElementContext passed for docsys-root-readme-entry, docsys-stable-design-reference, and docsys-content-boundary-requirement; argo.validateSystemArchitecture passed for design/KG/SystemArchitecture.json.",
+    "Coverage proof: docsys-root-readme-entry has same-element mounted ExplicitAcceptanceTestcase-DOC-01 covering first-time root README adoption comprehension; docsys-stable-design-reference has same-element mounted ExplicitAcceptanceTestcase-DOC-03 covering deep MCP/validator routing without README overload; docsys-content-boundary-requirement has same-element mounted ExplicitAcceptanceTestcase-DOC-04 covering single-source placement discipline.",
+    "Acceptance test evidence: argo.runArchitectureTests reported DOC-01, DOC-02, DOC-03, and DOC-04 passed. The same full run reported two unrelated failures outside WP2 scope: ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E and ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval.",
+    "Explicit acceptance boundaries for WP2: DOC-01 control point is a first-time external reader opening only README.md; observation point is that within five minutes the reader can state ARGO positioning, problem, three core components, and the correct next document. DOC-03 control point is a reader searching from root README for getSystemArchitecture, semantic query, or mutation validation details; observation point is landing on design/mcp and design/validator references without duplicated deep specification in root README. DOC-04 control point is a maintainer placing domain, marketing, research, or stable design content; observation point is correct placement in design/specific-domain, design/marketing, notes, or stable design docs.",
+    "ImplementationDesign boundary: README.md should retain positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment check, entry selection, and curated next links while routing deep semantic operator, MCP, and lifecycle detail to stable design references.",
+    "Do not implement the full contributor guide or design navigation work package in WP2. A minimal link stub is allowed only if needed to keep README routing coherent. Contributor governance should eventually be root-level CONTRIBUTING.md unless later implementation evidence blocks it.",
+    "Do not claim or invent root OVERALL_ARCHITECTURE.md if absent; represent the root implementation contract gap honestly as residual coordination for later work.",
+    "Human approval: the human pre-authorized approval gates and necessary stage commits for this orchestrated task. The handoff schema has additionalProperties=false and no approvedByHuman field, so global handoff approval is recorded here in notes."
   ]
 }
