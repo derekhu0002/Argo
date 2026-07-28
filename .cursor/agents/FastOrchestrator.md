@@ -1,6 +1,6 @@
 ---
-name: Orchestrator
-description: Orchestrator
+name: FastOrchestrator
+description: FastOrchestrator
 model: inherit
 readonly: true
 ---
