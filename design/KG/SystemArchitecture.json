@@ -2797,23 +2797,27 @@
       "id": "docsys-contributor-governance-entry",
       "name": "Contributor Governance Entrypoint",
       "type": "Requirement",
-      "description": "Internal contributor path must expose fact-source priority, allowed edit surfaces, validation commands, test boundaries, and documentation maintenance rules from a visible top-level or explicitly designated entrypoint; exact filename remains residual coordination.",
+      "description": "Internal contributor path is the root-level CONTRIBUTING.md entrypoint and must expose fact-source priority, allowed edit surfaces, validation commands, test boundaries, and documentation maintenance rules without duplicating deep design specifications.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-DOC-AUDIENCE-INT|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy with open filename"
+          "value": "DT-DOC-AUDIENCE-INT|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy; WP3 host-approved root CONTRIBUTING.md execution decision"
         },
         {
           "name": "openPackagingDecision",
-          "value": "Root-level CONTRIBUTING.md is recommended but not confirmed as an accepted fact."
+          "value": "Root-level CONTRIBUTING.md is recommended and now approved for WP3 contributor/governance entrypoint implementation; this attribute remains to preserve the frozen DOC-02 acceptance boundary."
+        },
+        {
+          "name": "contributorEntrypointPath",
+          "value": "CONTRIBUTING.md"
         },
         {
           "name": "acceptanceControlPoint",
-          "value": "Acceptor looks for how to safely contribute from repository root."
+          "value": "Contributor prepares to change MCP, validator, tests, or docs from repository root."
         },
         {
           "name": "acceptanceObservationPoint",
-          "value": "A visible contributor entrypoint points to fact sources, validation, tests, and forbidden shortcuts."
+          "value": "Before editing, the contributor identifies the authoritative file, allowed edit surface, validation/test command, explicit testcase/frozen-file boundary, documentation maintenance rule, and forbidden shortcuts."
         },
         {
           "name": "deliveryStatus",
@@ -3016,23 +3020,23 @@
       "id": "docsys-contributor-filename-gap",
       "name": "Contributor Entrypoint Filename Coordination Gap",
       "type": "Gap",
-      "description": "Open residual coordination: exact contributor/governance filename is not accepted yet. Root-level CONTRIBUTING.md is recommended, but an explicit alternative may be chosen before final documentation edits.",
+      "description": "Resolved residual coordination: the WP3 host-approved execution decision designates root-level CONTRIBUTING.md as the contributor/governance entrypoint. This closes the filename question for contributor-entry implementation while preserving the separate root implementation contract existence question for truthful documentation wording.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-DOC-RESIDUAL-CONTRIB-FILENAME|DT-DOC-ENTRYPOINT-CONTRIB|open residual"
+          "value": "DT-DOC-RESIDUAL-CONTRIB-FILENAME|DT-DOC-ENTRYPOINT-CONTRIB|resolved for WP3 by host-approved execution decision"
         },
         {
           "name": "integrationDisposition",
-          "value": "Graph-persisted as residual coordination, not as an accepted filename fact."
+          "value": "Closed for WP3: implement root-level CONTRIBUTING.md unless direct repository evidence makes that impossible; do not use this historical gap to reopen filename choice."
         },
         {
           "name": "acceptanceControlPoint",
-          "value": "Acceptor reviews proposed file placement."
+          "value": "Acceptor reviews proposed contributor entry placement."
         },
         {
           "name": "acceptanceObservationPoint",
-          "value": "Human confirms root CONTRIBUTING.md or an explicit alternative."
+          "value": "Root-level CONTRIBUTING.md is the designated contributor/governance entrypoint."
         }
       ]
     },
@@ -3088,15 +3092,19 @@
       "id": "docsys-wp-contributor-entrypoint",
       "name": "Contributor Governance Entrypoint Work",
       "type": "Work Package",
-      "description": "Third delivery step: create or designate the contributor/governance entrypoint after confirming or explicitly handling filename coordination.",
+      "description": "Third delivery step: create the root-level CONTRIBUTING.md contributor/governance entrypoint with fact-source priority, safe edit surfaces, stage boundaries, validation commands, explicit testcase/frozen-file boundaries, and documentation maintenance rules.",
       "attributes": [
         {
           "name": "decisionTrace",
-          "value": "DT-DOC-VERTICAL|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy with open filename"
+          "value": "DT-DOC-VERTICAL|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy; root CONTRIBUTING.md approved for WP3 execution"
         },
         {
           "name": "deliveryOrder",
           "value": "3"
+        },
+        {
+          "name": "approvedEntrypointPath",
+          "value": "CONTRIBUTING.md"
         }
       ]
     },
@@ -4453,7 +4461,7 @@
       "target_id": "docsys-dual-entry-outcome",
       "source_name": "Contributor Governance Entrypoint",
       "target_name": "Reader Routes to Correct Documentation Authority",
-      "description": "Directional business semantics: contributor governance entrypoint contributes the internal safe-change path while exact filename remains unresolved.",
+      "description": "Directional business semantics: the root-level CONTRIBUTING.md contributor governance entrypoint contributes the internal safe-change path to the reader-routing outcome.",
       "statement": "Contributor Governance Entrypoint --(Association)--> Reader Routes to Correct Documentation Authority",
       "attributes": [
         {
@@ -4691,7 +4699,7 @@
       "target_id": "docsys-contributor-governance-entry",
       "source_name": "Contributor Entrypoint Filename Coordination Gap",
       "target_name": "Contributor Governance Entrypoint",
-      "description": "Directional business semantics: open filename gap qualifies contributor entrypoint implementation without overturning accepted dual-entry strategy.",
+      "description": "Directional business semantics: the resolved filename decision qualifies the contributor entrypoint as root-level CONTRIBUTING.md without overturning the accepted dual-entry strategy.",
       "statement": "Contributor Entrypoint Filename Coordination Gap --(Association)--> Contributor Governance Entrypoint",
       "attributes": [
         {
@@ -4810,7 +4818,7 @@
       "target_id": "docsys-wp-contributor-entrypoint",
       "source_name": "Contributor Entrypoint Filename Coordination Gap",
       "target_name": "Contributor Governance Entrypoint Work",
-      "description": "Directional business semantics: unresolved filename coordination gates final contributor entrypoint packaging but does not block graph integration of accepted dual-entry strategy.",
+      "description": "Directional business semantics: the resolved filename decision scopes WP3 implementation to root-level CONTRIBUTING.md and no longer blocks contributor entrypoint packaging.",
       "statement": "Contributor Entrypoint Filename Coordination Gap --(Association)--> Contributor Governance Entrypoint Work",
       "attributes": [
         {
@@ -5698,7 +5706,7 @@
       "view_name": "README Documentation Residual Coordination",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: unresolved contributor filename and root implementation contract existence must remain visible without being promoted to accepted facts; Purpose: deciding and handoff preparation; Scope: residual gaps, contributor entrypoint requirement, fact-source priority, and gated delivery work; Rationale: this view is an AcceptanceDelivery instance because it shows residual blockers and the delivery areas they qualify.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: resolved contributor filename decision and root implementation contract existence must remain visible without promoting absent files to accepted facts; Purpose: deciding and handoff preparation; Scope: contributor filename decision record, contributor entrypoint requirement, and contributor delivery work, while the separate root-contract evidence question remains outside WP3 implementation scope; Rationale: this view is an AcceptanceDelivery instance because it shows residual/closed coordination decisions and the delivery areas they qualify.",
       "included_elements": [
         "docsys-contributor-filename-gap",
         "docsys-root-contract-gap",
