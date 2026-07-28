@@ -1,9 +1,9 @@
-# Documentation contributor governance WP3 handoff (2026-07-28)
+# Documentation contributor governance WP3 corrective handoff (2026-07-28)
 
 - Materialized `.argo/temp/ImplementationToCodingHandoff.json` for `docsys-wp-contributor-entrypoint` only. Coding scope is narrowed to creating root `CONTRIBUTING.md`; runner-owned `deliveryStatus` and `design/KG/test-failure-records.json` refreshes are allowed only as validation side effects.
-- Updated `OVERALL_ARCHITECTURE.md` to declare `CONTRIBUTING.md` as the Contributor Governance Entry mapped directly to `docsys-contributor-governance-entry`, and updated `tests/ARCHITECTURE.md` to own DOC-02 plus `tests/architecture/documentation/contributor-governance-entrypoint.guard.js`.
+- Corrective repair removed the WP3 root `OVERALL_ARCHITECTURE.md` dependency and restored that file to its pre-WP3 content. WP3 uses `tests/ARCHITECTURE.md` for DOC-02 test ownership and treats absent root-contract evidence as an honest gap outside the contributor guide Coding target.
 - Strengthened `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router` to observe the physical contributor guide. Both DOC-02 and the new guard intentionally RED before Coding with `CONTRIBUTOR_ENTRYPOINT_MISSING`.
-- `argo.validateStageHandoff(stage=implementation-to-coding)` passed. No intent graph mutation or `ImplementationToIntentTraceProposal.json` is required because the validated intent context already designates root-level `CONTRIBUTING.md` for WP3. Current repository evidence includes root `OVERALL_ARCHITECTURE.md`; future absent-root-contract evidence must be stated honestly rather than invented.
+- No intent graph mutation or `ImplementationToIntentTraceProposal.json` is required because the validated intent context already designates root-level `CONTRIBUTING.md` for WP3. The corrective handoff does not claim root `OVERALL_ARCHITECTURE.md` as WP3 authority and does not require Coding to create, edit, or reference it.
 
 # Documentation README reduction WP2 handoff (2026-07-28)
 
