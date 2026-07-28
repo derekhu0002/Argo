@@ -1005,7 +1005,7 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - Stakeholder concern: business acceptors and downstream ImplementationDesign need final verification of the refreshed documentation system after WP1-WP4 without redefining DOC-01 through DOC-04 or inventing repository authorities.
 - Modeling purpose: intent-to-implementation handoff preparation.
 - Graph mutation decision: no mutation required. Existing graph scope already contains `docsys-wp-link-fact-verification`, `docsys-fact-source-priority-requirement`, `docsys-root-contract-gap`, `docsys-business-acceptance-requirement`, DOC-01 through DOC-04 mounted acceptance semantics, and the WP4 -> WP5 -> ready plateau relationships.
-- Root-contract evidence: parent orchestration verified the earlier `../OVERALL_ARCHITECTURE.md` Glob result was outside `D:\Projects\Argo`; WP5 must not claim `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists if absent.
+- Root-contract evidence: superseded by the corrective iteration below. This stage initially treated the root contract as absent based on parent evidence, but later repository evidence confirmed `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists.
 - Global approval evidence: parent orchestrator authorized WP5 human approval gates and necessary stage commits. The handoff schema has no `approvedByHuman` field, so approval is recorded in `.argo/temp/IntentToImplementationHandoff.json` notes.
 
 ### Coverage matrix
@@ -1022,3 +1022,9 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
 - IntentDesign does not authorize code, explicit testcase, implementation contract, or documentation implementation edits in this stage.
 - Open business questions and adequacy blockers: none.
+
+### Corrective iteration
+
+- Corrective parent evidence: `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists and was readable; a direct read in this stage confirms it is the root implementation architecture contract.
+- Repaired WP5 constraint: ImplementationDesign should verify documentation routes to existing authoritative sources truthfully, including `OVERALL_ARCHITECTURE.md` where appropriate, and does not invent absent authorities.
+- Graph mutation decision remains unchanged: no mutation required. Existing intent semantics already cover fact-source truthfulness; only the handoff wording and stage memory needed correction.
