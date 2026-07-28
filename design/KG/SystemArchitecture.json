@@ -2659,6 +2659,462 @@
           "value": "Selected Views are member-complete and endpoint-complete, overlapping Views do not cascade by shared membership, and broken View references reject partial success."
         }
       ]
+    },
+    {
+      "id": "docsys-reader-stakeholders",
+      "name": "Documentation Reader and Acceptor Stakeholders",
+      "type": "Stakeholder",
+      "description": "External readers, adopters, contributors, architecture maintainers, and business acceptors who rely on refreshed top-level documentation entrypoints.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-AUDIENCE|DT-DOC-AUDIENCE-EXT|DT-DOC-AUDIENCE-INT|DT-DOC-AUDIENCE-ARCH"
+        },
+        {
+          "name": "evidenceSource",
+          "value": "BusinessPartner conversation; README.md; design/README.md; design architecture references"
+        }
+      ]
+    },
+    {
+      "id": "docsys-dual-entry-goal",
+      "name": "Dual Documentation Entrypoint Clarity",
+      "type": "Goal",
+      "description": "Refresh documentation so root README is the external/new-reader router, contributor/governance entry is the internal change-discipline router, and stable design facts remain in design/.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ROOT|accepted"
+        },
+        {
+          "name": "humanDecision",
+          "value": "Dual entrypoints with root README noise reduction."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor gives a new reader and a contributor only the refreshed top-level documentation entrypoints."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Each reader chooses the correct next document and states the relevant authoritative fact source within five minutes."
+        }
+      ]
+    },
+    {
+      "id": "docsys-dual-entry-outcome",
+      "name": "Reader Routes to Correct Documentation Authority",
+      "type": "Outcome",
+      "description": "First-time readers, adopters, contributors, and architecture maintainers each reach the correct documentation path without reading unrelated deep implementation or semantic lifecycle details first.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ROOT|DT-DOC-AUDIENCE|accepted"
+        },
+        {
+          "name": "businessRationale",
+          "value": "Reader navigation and fact-source clarity define success."
+        }
+      ]
+    },
+    {
+      "id": "docsys-reader-routing-capability",
+      "name": "Documentation Reader Routing Capability",
+      "type": "Capability",
+      "description": "Route adoption understanding, contribution governance, stable design reference, research/reference, and domain extension concerns through distinct documentation entrypoints and links.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-AUDIENCE|DT-DOC-ENTRYPOINTS|DT-DOC-HORIZONTAL|accepted"
+        },
+        {
+          "name": "horizontalConcerns",
+          "value": "Product/adoption entry; contribution governance; stable design reference; research/reference; domain extension."
+        }
+      ]
+    },
+    {
+      "id": "docsys-documentation-router-service",
+      "name": "Top-Level Documentation Routing Service",
+      "type": "Application Service",
+      "description": "Reader-facing documentation navigation behavior: root README routes adoption decisions, contributor/governance entry routes safe change discipline, design/README routes stable architecture references, and notes remain research.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ENTRYPOINTS|DT-DOC-AUDIENCE-EXT|DT-DOC-AUDIENCE-INT|DT-DOC-AUDIENCE-ARCH|accepted"
+        },
+        {
+          "name": "authorityBoundary",
+          "value": "Routes to authoritative documents rather than duplicating deep facts in root README."
+        }
+      ]
+    },
+    {
+      "id": "docsys-reader-routing-process",
+      "name": "Select Documentation Path by Reader Intent",
+      "type": "Business Process",
+      "description": "Repository reader decides whether they are evaluating/adopting, contributing/governing, maintaining architecture, researching, or extending a domain and follows the matching entrypoint.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-AUDIENCE|DT-DOC-ENTRYPOINTS|accepted"
+        },
+        {
+          "name": "readerTasks",
+          "value": "Understand value; judge fit; execute safe operations; govern facts."
+        }
+      ]
+    },
+    {
+      "id": "docsys-root-readme-entry",
+      "name": "Quieter Root README Adoption Entry",
+      "type": "Representation",
+      "description": "Root README keeps positioning, problem, certainty formula, three components, main flow, quick start/deployment, entry selection, and curated deep links, without inline semantic lifecycle internals.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ENTRYPOINT-README|DT-DOC-AUDIENCE-EXT|accepted"
+        },
+        {
+          "name": "contentBoundary",
+          "value": "Summarizes and routes; does not own stable architecture or contributor governance facts."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DOC-01",
+          "description": "Control point: first-time external reader opens only README.md. Observation point: within five minutes, the reader states ARGO's positioning, problem, three core components, and correct next document.",
+          "type": "Acceptance Test",
+          "Input": "Refreshed root README presented as the only starting document to a first-time reader.",
+          "acceptanceCriteria": "Business acceptance intent DOC-01: fast product understanding and next-link selection without following deep references."
+        }
+      ]
+    },
+    {
+      "id": "docsys-contributor-governance-entry",
+      "name": "Contributor Governance Entrypoint",
+      "type": "Requirement",
+      "description": "Internal contributor path must expose fact-source priority, allowed edit surfaces, validation commands, test boundaries, and documentation maintenance rules from a visible top-level or explicitly designated entrypoint; exact filename remains residual coordination.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-AUDIENCE-INT|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy with open filename"
+        },
+        {
+          "name": "openPackagingDecision",
+          "value": "Root-level CONTRIBUTING.md is recommended but not confirmed as an accepted fact."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor looks for how to safely contribute from repository root."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "A visible contributor entrypoint points to fact sources, validation, tests, and forbidden shortcuts."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DOC-02",
+          "description": "Control point: contributor prepares to change MCP, validator, tests, or docs. Observation point: before editing, the contributor identifies the authoritative file, allowed edit surface, validation/test command, and forbidden shortcuts.",
+          "type": "Acceptance Test",
+          "Input": "Contributor/governance entrypoint plus linked fact-source, validation, and test boundary documentation.",
+          "acceptanceCriteria": "Business acceptance intent DOC-02: contributor can identify safe change boundaries before editing."
+        }
+      ]
+    },
+    {
+      "id": "docsys-stable-design-reference",
+      "name": "Stable Design Documentation Reference",
+      "type": "Data Object",
+      "description": "design/ documentation remains the stable reference home for architecture maintenance details including intent graph rules, MCP operations, validation, stage handoff, design navigation, marketing comparison, and domain templates.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-AUDIENCE-ARCH|DT-DOC-CONTENT-BOUNDARY|DT-DOC-FACTS|accepted"
+        },
+        {
+          "name": "authorityScope",
+          "value": "Stable design explanations and architecture maintenance references live in design/ and are linked rather than duplicated in root README."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DOC-03",
+          "description": "Control point: reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details. Observation point: reader lands on design/mcp and design/validator references, with no duplicated deep specification in root README.",
+          "type": "Acceptance Test",
+          "Input": "Root README links and stable design documentation references for MCP and validator details.",
+          "acceptanceCriteria": "Business acceptance intent DOC-03: deep architecture details are reachable through design references without root README overload."
+        }
+      ]
+    },
+    {
+      "id": "docsys-research-notes-reference",
+      "name": "Research Notes Reference",
+      "type": "Data Object",
+      "description": "notes/ content remains research/reference material and does not become authoritative stable design unless promoted through the documented fact-source process.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-CONTENT-BOUNDARY|DT-DOC-FACTS|DT-DOC-HORIZONTAL|accepted"
+        },
+        {
+          "name": "authorityScope",
+          "value": "Research only; referenced but not treated as stable design authority."
+        }
+      ]
+    },
+    {
+      "id": "docsys-domain-extension-reference",
+      "name": "Domain Extension Documentation Reference",
+      "type": "Data Object",
+      "description": "design/specific-domain and related domain templates own domain-extension documentation without copying domain details into generic harness documentation.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-CONTENT-BOUNDARY|DT-DOC-HORIZONTAL|accepted"
+        },
+        {
+          "name": "authorityScope",
+          "value": "Specific-domain extension documentation and templates."
+        }
+      ]
+    },
+    {
+      "id": "docsys-fact-source-principle",
+      "name": "Single-Source Documentation Authority",
+      "type": "Principle",
+      "description": "Stable documentation facts appear once in their authoritative layer and are referenced elsewhere by links rather than duplicated across README, contributor guidance, design, notes, or domain templates.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-CONTENT-BOUNDARY|DT-DOC-FACTS|accepted"
+        },
+        {
+          "name": "priority",
+          "value": "Intent graph for business intent and acceptance; design/ for stable explanations; implementation contracts/code/tests for realized behavior and quality evidence; notes for research only."
+        }
+      ]
+    },
+    {
+      "id": "docsys-content-boundary-requirement",
+      "name": "Documentation Layer Content Boundary",
+      "type": "Requirement",
+      "description": "Root README summarizes and links; contributor entry governs changes; design owns stable specs; notes own research; domain-specific documentation owns domain extension.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-CONTENT-BOUNDARY|accepted"
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor compares duplicated claims across README, design, and notes."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Stable facts appear once as authority and are referenced elsewhere by links."
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-DOC-04",
+          "description": "Control point: maintainer adds a domain template, market comparison, or research note. Observation point: maintainer can decide whether content belongs in design/specific-domain, design/marketing, notes, or stable design docs.",
+          "type": "Acceptance Test",
+          "Input": "Documentation placement rules and existing design/specific-domain, design/marketing, notes, and stable design references.",
+          "acceptanceCriteria": "Business acceptance intent DOC-04: maintainers place new research or domain content in the correct authority layer."
+        }
+      ]
+    },
+    {
+      "id": "docsys-fact-source-priority-requirement",
+      "name": "Documentation Fact Source Priority",
+      "type": "Requirement",
+      "description": "Claims in refreshed documentation must point to the correct authority and must not let current prose override canonical architecture, stable design docs, implementation contracts/code/tests, or research-only notes boundaries.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-FACTS|accepted"
+        },
+        {
+          "name": "priorityOrder",
+          "value": "Intent graph: business intent and acceptance semantics; design/: stable design explanations; implementation contracts/code/tests: realized behavior and quality evidence; notes/: research only."
+        }
+      ]
+    },
+    {
+      "id": "docsys-root-readme-noise-constraint",
+      "name": "Root README Noise Reduction Constraint",
+      "type": "Constraint",
+      "description": "Root README must not become the full operating manual or duplicate semantic lifecycle internals; it gives enough context for next-link selection and sends deep references to stable destinations.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ENTRYPOINT-README|accepted"
+        },
+        {
+          "name": "riskControlled",
+          "value": "Prevents product narrative from being buried by detailed semantic operator constraints."
+        }
+      ]
+    },
+    {
+      "id": "docsys-root-contract-gap",
+      "name": "Root Implementation Contract Existence Gap",
+      "type": "Gap",
+      "description": "Open residual coordination: documentation must not claim a root OVERALL_ARCHITECTURE.md exists until human or ImplementationDesign confirms whether to create, restore, or adjust references.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-FACTS-ROOT-CONTRACT|DT-DOC-RESIDUAL-ROOT-CONTRACT|open residual"
+        },
+        {
+          "name": "integrationDisposition",
+          "value": "Graph-persisted as residual coordination, not as an accepted existence fact."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor asks for root implementation contract guidance."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Documentation links to an existing root contract or records the gap without pretending it exists."
+        }
+      ]
+    },
+    {
+      "id": "docsys-business-acceptance-requirement",
+      "name": "Documentation Refresh Business Acceptance Semantics",
+      "type": "Requirement",
+      "description": "Business acceptance is measured by observable reader outcomes for DOC-01 through DOC-04: adoption comprehension, contributor safety, deep-reference routing, and content-placement governance.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ACCEPTANCE|accepted"
+        },
+        {
+          "name": "acceptanceScenarios",
+          "value": "DOC-01 root README comprehension; DOC-02 contributor safe boundaries; DOC-03 deep-reference routing; DOC-04 content placement."
+        }
+      ]
+    },
+    {
+      "id": "docsys-contributor-filename-gap",
+      "name": "Contributor Entrypoint Filename Coordination Gap",
+      "type": "Gap",
+      "description": "Open residual coordination: exact contributor/governance filename is not accepted yet. Root-level CONTRIBUTING.md is recommended, but an explicit alternative may be chosen before final documentation edits.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-RESIDUAL-CONTRIB-FILENAME|DT-DOC-ENTRYPOINT-CONTRIB|open residual"
+        },
+        {
+          "name": "integrationDisposition",
+          "value": "Graph-persisted as residual coordination, not as an accepted filename fact."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor reviews proposed file placement."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Human confirms root CONTRIBUTING.md or an explicit alternative."
+        }
+      ]
+    },
+    {
+      "id": "docsys-doc-refresh-ready-plateau",
+      "name": "Documentation Refresh Ready Plateau",
+      "type": "Plateau",
+      "description": "Target documentation state after accepted dual-entry routing, root README noise reduction, contributor governance routing, stable design navigation, link/fact-source verification, and explicit handling of residual coordination.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-ROOT|DT-DOC-VERTICAL|DT-DOC-ACCEPTANCE|accepted"
+        },
+        {
+          "name": "readinessBoundary",
+          "value": "Residual contributor filename and root contract existence must be resolved or explicitly represented before final wording claims them as facts."
+        }
+      ]
+    },
+    {
+      "id": "docsys-wp-information-architecture",
+      "name": "Documentation Information Architecture Decision",
+      "type": "Work Package",
+      "description": "First delivery step: preserve accepted dual entrypoints, authority layers, horizontal concerns, and reader-task routing before rewriting prose.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-VERTICAL|DT-DOC-ROOT|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "docsys-wp-root-readme-reduction",
+      "name": "Root README Noise Reduction Work",
+      "type": "Work Package",
+      "description": "Second delivery step: refresh root README as a concise product/adoption router with curated links and no duplicated semantic lifecycle specification.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-VERTICAL|DT-DOC-ENTRYPOINT-README|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "id": "docsys-wp-contributor-entrypoint",
+      "name": "Contributor Governance Entrypoint Work",
+      "type": "Work Package",
+      "description": "Third delivery step: create or designate the contributor/governance entrypoint after confirming or explicitly handling filename coordination.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-VERTICAL|DT-DOC-ENTRYPOINT-CONTRIB|accepted strategy with open filename"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "id": "docsys-wp-design-navigation",
+      "name": "Design Navigation Calibration Work",
+      "type": "Work Package",
+      "description": "Fourth delivery step: calibrate design/README and related design references so maintainers reach MCP, validator, intent graph, handoff, domain, and marketing references without root README duplication.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-VERTICAL|DT-DOC-AUDIENCE-ARCH|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "id": "docsys-wp-link-fact-verification",
+      "name": "Link and Fact Source Verification Work",
+      "type": "Work Package",
+      "description": "Fifth delivery step: verify links, fact-source priority, missing root contract truthfulness, and DOC-01 through DOC-04 observable acceptance before closing the refresh.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-DOC-VERTICAL|DT-DOC-FACTS|DT-DOC-ACCEPTANCE|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "5"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -3904,6 +4360,465 @@
       "target_name": "Complete View Closure",
       "description": "WP-4 realizes complete non-cascading selected-View membership closure and broken-View-reference fail-closed semantics.",
       "statement": "WP-4 MCP Semantic View Membership Closure --(Realization)--> Complete View Closure"
+    },
+    {
+      "id": "docsys-rel-stakeholders-drive-goal",
+      "name": "Readers drive dual entrypoint clarity",
+      "type": "Association",
+      "source_id": "docsys-reader-stakeholders",
+      "target_id": "docsys-dual-entry-goal",
+      "source_name": "Documentation Reader and Acceptor Stakeholders",
+      "target_name": "Dual Documentation Entrypoint Clarity",
+      "description": "Directional business semantics: reader and acceptor needs define the dual-entrypoint clarity goal.",
+      "statement": "Documentation Reader and Acceptor Stakeholders --(Association)--> Dual Documentation Entrypoint Clarity",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE -> DT-DOC-ROOT"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-capability-produces-outcome",
+      "name": "Routing capability produces reader authority outcome",
+      "type": "Association",
+      "source_id": "docsys-reader-routing-capability",
+      "target_id": "docsys-dual-entry-outcome",
+      "source_name": "Documentation Reader Routing Capability",
+      "target_name": "Reader Routes to Correct Documentation Authority",
+      "description": "Directional business semantics: reader-routing capability produces the observable reader outcome of reaching the correct authority path.",
+      "statement": "Documentation Reader Routing Capability --(Association)--> Reader Routes to Correct Documentation Authority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE,DT-DOC-ENTRYPOINTS,DT-DOC-HORIZONTAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-service-supports-routing",
+      "name": "Documentation router supports reader path selection",
+      "type": "Serving",
+      "source_id": "docsys-documentation-router-service",
+      "target_id": "docsys-reader-routing-process",
+      "source_name": "Top-Level Documentation Routing Service",
+      "target_name": "Select Documentation Path by Reader Intent",
+      "description": "The top-level documentation routing service supports selecting the correct path by reader intent.",
+      "statement": "Top-Level Documentation Routing Service --(Serving)--> Select Documentation Path by Reader Intent",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ENTRYPOINTS"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-root-readme-routes-reader",
+      "name": "Root README routes adoption readers",
+      "type": "Association",
+      "source_id": "docsys-root-readme-entry",
+      "target_id": "docsys-dual-entry-outcome",
+      "source_name": "Quieter Root README Adoption Entry",
+      "target_name": "Reader Routes to Correct Documentation Authority",
+      "description": "Directional business semantics: quieter root README contributes the external/adoption path to reader-routing outcome.",
+      "statement": "Quieter Root README Adoption Entry --(Association)--> Reader Routes to Correct Documentation Authority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE-EXT,DT-DOC-ENTRYPOINT-README"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-contributor-entry-routes-contributor",
+      "name": "Contributor entry routes internal readers",
+      "type": "Association",
+      "source_id": "docsys-contributor-governance-entry",
+      "target_id": "docsys-dual-entry-outcome",
+      "source_name": "Contributor Governance Entrypoint",
+      "target_name": "Reader Routes to Correct Documentation Authority",
+      "description": "Directional business semantics: contributor governance entrypoint contributes the internal safe-change path while exact filename remains unresolved.",
+      "statement": "Contributor Governance Entrypoint --(Association)--> Reader Routes to Correct Documentation Authority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE-INT,DT-DOC-ENTRYPOINT-CONTRIB"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-design-reference-routes-maintainer",
+      "name": "Design reference routes architecture maintainers",
+      "type": "Association",
+      "source_id": "docsys-stable-design-reference",
+      "target_id": "docsys-dual-entry-outcome",
+      "source_name": "Stable Design Documentation Reference",
+      "target_name": "Reader Routes to Correct Documentation Authority",
+      "description": "Directional business semantics: stable design references route architecture maintainers to MCP, validator, intent graph, and handoff details instead of duplicating them in root README.",
+      "statement": "Stable Design Documentation Reference --(Association)--> Reader Routes to Correct Documentation Authority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE-ARCH,DT-DOC-FACTS"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-principle-guides-priority",
+      "name": "Single-source principle guides fact priority",
+      "type": "Influence",
+      "source_id": "docsys-fact-source-principle",
+      "target_id": "docsys-fact-source-priority-requirement",
+      "source_name": "Single-Source Documentation Authority",
+      "target_name": "Documentation Fact Source Priority",
+      "description": "Principle positively influences fact-source priority by preventing duplicated or stale authorities.",
+      "statement": "Single-Source Documentation Authority --(Influence)--> Documentation Fact Source Priority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-CONTENT-BOUNDARY -> DT-DOC-FACTS"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-boundary-refines-priority",
+      "name": "Content boundary refines fact priority",
+      "type": "Association",
+      "source_id": "docsys-content-boundary-requirement",
+      "target_id": "docsys-fact-source-priority-requirement",
+      "source_name": "Documentation Layer Content Boundary",
+      "target_name": "Documentation Fact Source Priority",
+      "description": "Directional business semantics: content layer boundaries refine how source priority applies across documentation layers.",
+      "statement": "Documentation Layer Content Boundary --(Association)--> Documentation Fact Source Priority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-CONTENT-BOUNDARY -> DT-DOC-FACTS"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-router-realizes-boundary",
+      "name": "Router realizes content boundary",
+      "type": "Association",
+      "source_id": "docsys-documentation-router-service",
+      "target_id": "docsys-content-boundary-requirement",
+      "source_name": "Top-Level Documentation Routing Service",
+      "target_name": "Documentation Layer Content Boundary",
+      "description": "Directional business semantics: top-level routing implements the content boundary by linking to authoritative layers instead of copying facts.",
+      "statement": "Top-Level Documentation Routing Service --(Association)--> Documentation Layer Content Boundary",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ENTRYPOINTS,DT-DOC-CONTENT-BOUNDARY"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-root-readme-obeys-noise",
+      "name": "Root README constrained against overload",
+      "type": "Association",
+      "source_id": "docsys-root-readme-entry",
+      "target_id": "docsys-root-readme-noise-constraint",
+      "source_name": "Quieter Root README Adoption Entry",
+      "target_name": "Root README Noise Reduction Constraint",
+      "description": "Directional business semantics: root README content must obey noise reduction to remain an adoption router.",
+      "statement": "Quieter Root README Adoption Entry --(Association)--> Root README Noise Reduction Constraint",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ENTRYPOINT-README"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-design-docs-realize-priority",
+      "name": "Design docs carry stable authority",
+      "type": "Association",
+      "source_id": "docsys-stable-design-reference",
+      "target_id": "docsys-fact-source-priority-requirement",
+      "source_name": "Stable Design Documentation Reference",
+      "target_name": "Documentation Fact Source Priority",
+      "description": "Directional business semantics: design/ documentation satisfies the stable design explanation tier in fact-source priority.",
+      "statement": "Stable Design Documentation Reference --(Association)--> Documentation Fact Source Priority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-AUDIENCE-ARCH,DT-DOC-FACTS"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-notes-obey-boundary",
+      "name": "Notes remain research authority",
+      "type": "Association",
+      "source_id": "docsys-research-notes-reference",
+      "target_id": "docsys-content-boundary-requirement",
+      "source_name": "Research Notes Reference",
+      "target_name": "Documentation Layer Content Boundary",
+      "description": "Directional business semantics: notes/ stays within research-only layer and does not override stable design authority.",
+      "statement": "Research Notes Reference --(Association)--> Documentation Layer Content Boundary",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-CONTENT-BOUNDARY,DT-DOC-HORIZONTAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-domain-docs-obey-boundary",
+      "name": "Domain docs remain extension authority",
+      "type": "Association",
+      "source_id": "docsys-domain-extension-reference",
+      "target_id": "docsys-content-boundary-requirement",
+      "source_name": "Domain Extension Documentation Reference",
+      "target_name": "Documentation Layer Content Boundary",
+      "description": "Directional business semantics: specific-domain documentation owns domain-extension facts without copying them into generic documentation layers.",
+      "statement": "Domain Extension Documentation Reference --(Association)--> Documentation Layer Content Boundary",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-CONTENT-BOUNDARY,DT-DOC-HORIZONTAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-root-contract-gap-qualifies-priority",
+      "name": "Root contract gap qualifies fact priority",
+      "type": "Association",
+      "source_id": "docsys-root-contract-gap",
+      "target_id": "docsys-fact-source-priority-requirement",
+      "source_name": "Root Implementation Contract Existence Gap",
+      "target_name": "Documentation Fact Source Priority",
+      "description": "Directional business semantics: open root contract existence gap qualifies wording so refresh does not claim a missing root OVERALL_ARCHITECTURE.md as accepted fact.",
+      "statement": "Root Implementation Contract Existence Gap --(Association)--> Documentation Fact Source Priority",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-FACTS-ROOT-CONTRACT,DT-DOC-RESIDUAL-ROOT-CONTRACT"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-acceptance-governs-root-readme",
+      "name": "Acceptance governs root README comprehension",
+      "type": "Association",
+      "source_id": "docsys-business-acceptance-requirement",
+      "target_id": "docsys-root-readme-entry",
+      "source_name": "Documentation Refresh Business Acceptance Semantics",
+      "target_name": "Quieter Root README Adoption Entry",
+      "description": "Directional business semantics: DOC-01 acceptance semantics govern the root README adoption entry boundary.",
+      "statement": "Documentation Refresh Business Acceptance Semantics --(Association)--> Quieter Root README Adoption Entry",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ACCEPTANCE,ExplicitAcceptanceTestcase-DOC-01"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-acceptance-governs-contributor",
+      "name": "Acceptance governs contributor safety",
+      "type": "Association",
+      "source_id": "docsys-business-acceptance-requirement",
+      "target_id": "docsys-contributor-governance-entry",
+      "source_name": "Documentation Refresh Business Acceptance Semantics",
+      "target_name": "Contributor Governance Entrypoint",
+      "description": "Directional business semantics: DOC-02 acceptance semantics govern the contributor safe-change entry boundary.",
+      "statement": "Documentation Refresh Business Acceptance Semantics --(Association)--> Contributor Governance Entrypoint",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ACCEPTANCE,ExplicitAcceptanceTestcase-DOC-02"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-acceptance-governs-design-routing",
+      "name": "Acceptance governs design reference routing",
+      "type": "Association",
+      "source_id": "docsys-business-acceptance-requirement",
+      "target_id": "docsys-stable-design-reference",
+      "source_name": "Documentation Refresh Business Acceptance Semantics",
+      "target_name": "Stable Design Documentation Reference",
+      "description": "Directional business semantics: DOC-03 acceptance semantics govern routing to design/mcp and design/validator instead of root README duplication.",
+      "statement": "Documentation Refresh Business Acceptance Semantics --(Association)--> Stable Design Documentation Reference",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ACCEPTANCE,ExplicitAcceptanceTestcase-DOC-03"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-acceptance-governs-content-placement",
+      "name": "Acceptance governs content placement",
+      "type": "Association",
+      "source_id": "docsys-business-acceptance-requirement",
+      "target_id": "docsys-content-boundary-requirement",
+      "source_name": "Documentation Refresh Business Acceptance Semantics",
+      "target_name": "Documentation Layer Content Boundary",
+      "description": "Directional business semantics: DOC-04 acceptance semantics govern future placement of domain templates, market comparisons, research notes, and stable design docs.",
+      "statement": "Documentation Refresh Business Acceptance Semantics --(Association)--> Documentation Layer Content Boundary",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ACCEPTANCE,ExplicitAcceptanceTestcase-DOC-04"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-filename-gap-qualifies-contributor",
+      "name": "Filename gap qualifies contributor entry",
+      "type": "Association",
+      "source_id": "docsys-contributor-filename-gap",
+      "target_id": "docsys-contributor-governance-entry",
+      "source_name": "Contributor Entrypoint Filename Coordination Gap",
+      "target_name": "Contributor Governance Entrypoint",
+      "description": "Directional business semantics: open filename gap qualifies contributor entrypoint implementation without overturning accepted dual-entry strategy.",
+      "statement": "Contributor Entrypoint Filename Coordination Gap --(Association)--> Contributor Governance Entrypoint",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-RESIDUAL-CONTRIB-FILENAME -> DT-DOC-ENTRYPOINT-CONTRIB"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-acceptance-realizes-plateau",
+      "name": "Acceptance semantics qualify ready plateau",
+      "type": "Association",
+      "source_id": "docsys-business-acceptance-requirement",
+      "target_id": "docsys-doc-refresh-ready-plateau",
+      "source_name": "Documentation Refresh Business Acceptance Semantics",
+      "target_name": "Documentation Refresh Ready Plateau",
+      "description": "Directional business semantics: DOC-01 through DOC-04 acceptance semantics qualify whether the documentation refresh target plateau can be treated as ready.",
+      "statement": "Documentation Refresh Business Acceptance Semantics --(Association)--> Documentation Refresh Ready Plateau",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-ACCEPTANCE -> DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-wp-info-triggers-root",
+      "name": "Information architecture precedes root README work",
+      "type": "Triggering",
+      "source_id": "docsys-wp-information-architecture",
+      "target_id": "docsys-wp-root-readme-reduction",
+      "source_name": "Documentation Information Architecture Decision",
+      "target_name": "Root README Noise Reduction Work",
+      "description": "Accepted vertical dependency: information architecture must be settled before root README noise reduction edits.",
+      "statement": "Documentation Information Architecture Decision --(Triggering)--> Root README Noise Reduction Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-wp-root-triggers-contrib",
+      "name": "Root README routing precedes contributor entry work",
+      "type": "Triggering",
+      "source_id": "docsys-wp-root-readme-reduction",
+      "target_id": "docsys-wp-contributor-entrypoint",
+      "source_name": "Root README Noise Reduction Work",
+      "target_name": "Contributor Governance Entrypoint Work",
+      "description": "Accepted vertical dependency: root README routing establishes dual-entry link target before contributor entrypoint implementation closes.",
+      "statement": "Root README Noise Reduction Work --(Triggering)--> Contributor Governance Entrypoint Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-wp-contrib-triggers-design",
+      "name": "Contributor entry precedes design navigation calibration",
+      "type": "Triggering",
+      "source_id": "docsys-wp-contributor-entrypoint",
+      "target_id": "docsys-wp-design-navigation",
+      "source_name": "Contributor Governance Entrypoint Work",
+      "target_name": "Design Navigation Calibration Work",
+      "description": "Accepted vertical dependency: contributor guidance depends on fact-source decisions and must be coordinated before final design navigation calibration.",
+      "statement": "Contributor Governance Entrypoint Work --(Triggering)--> Design Navigation Calibration Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-wp-design-triggers-verification",
+      "name": "Design navigation precedes link verification",
+      "type": "Triggering",
+      "source_id": "docsys-wp-design-navigation",
+      "target_id": "docsys-wp-link-fact-verification",
+      "source_name": "Design Navigation Calibration Work",
+      "target_name": "Link and Fact Source Verification Work",
+      "description": "Accepted vertical dependency: stable destinations must be calibrated before final link and fact-source verification.",
+      "statement": "Design Navigation Calibration Work --(Triggering)--> Link and Fact Source Verification Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-verification-realizes-ready",
+      "name": "Verification qualifies refresh readiness",
+      "type": "Association",
+      "source_id": "docsys-wp-link-fact-verification",
+      "target_id": "docsys-doc-refresh-ready-plateau",
+      "source_name": "Link and Fact Source Verification Work",
+      "target_name": "Documentation Refresh Ready Plateau",
+      "description": "Directional business semantics: link and fact-source verification qualifies whether refreshed documentation can enter ready plateau.",
+      "statement": "Link and Fact Source Verification Work --(Association)--> Documentation Refresh Ready Plateau",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-VERTICAL,DT-DOC-ACCEPTANCE"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-filename-gap-blocks-contrib-wp",
+      "name": "Filename coordination gates contributor work",
+      "type": "Association",
+      "source_id": "docsys-contributor-filename-gap",
+      "target_id": "docsys-wp-contributor-entrypoint",
+      "source_name": "Contributor Entrypoint Filename Coordination Gap",
+      "target_name": "Contributor Governance Entrypoint Work",
+      "description": "Directional business semantics: unresolved filename coordination gates final contributor entrypoint packaging but does not block graph integration of accepted dual-entry strategy.",
+      "statement": "Contributor Entrypoint Filename Coordination Gap --(Association)--> Contributor Governance Entrypoint Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-RESIDUAL-CONTRIB-FILENAME,DT-DOC-VERTICAL"
+        }
+      ]
+    },
+    {
+      "id": "docsys-rel-root-contract-gap-blocks-verification",
+      "name": "Root contract gap gates fact verification",
+      "type": "Association",
+      "source_id": "docsys-root-contract-gap",
+      "target_id": "docsys-wp-link-fact-verification",
+      "source_name": "Root Implementation Contract Existence Gap",
+      "target_name": "Link and Fact Source Verification Work",
+      "description": "Directional business semantics: unresolved root contract existence gates exact contributor wording and final fact-source verification but does not block root README noise reduction.",
+      "statement": "Root Implementation Contract Existence Gap --(Association)--> Link and Fact Source Verification Work",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "description": "DT-DOC-RESIDUAL-ROOT-CONTRACT,DT-DOC-FACTS-ROOT-CONTRACT,DT-DOC-VERTICAL"
+        }
+      ]
     }
   ],
   "views": [
@@ -4651,6 +5566,158 @@
         "bp-mcp-sem-rel-wp3-wp4",
         "bp-mcp-sem-rel-wp3-endpoint-closure",
         "bp-mcp-sem-rel-wp4-view-closure"
+      ]
+    },
+    {
+      "view_id": "docsys-reader-outcome-core",
+      "view_name": "README Documentation Reader Outcome Core",
+      "parent_element_id": "1208",
+      "parent_element_name": "OutcomeCapabilityViewpoint",
+      "description": "Viewpoint: Outcome Realization Viewpoint; Concern: dual documentation entrypoints must produce observable reader routing outcomes; Purpose: deciding and handoff preparation; Scope: root goal, reader stakeholders, routing capability, routing service, routing process, and root README adoption entry; Rationale: this view is an Outcome Realization instance because it starts from the reader-routing outcome and shows the capability and behavior that produce it.",
+      "included_elements": [
+        "docsys-reader-stakeholders",
+        "docsys-dual-entry-goal",
+        "docsys-dual-entry-outcome",
+        "docsys-reader-routing-capability",
+        "docsys-documentation-router-service",
+        "docsys-reader-routing-process",
+        "docsys-root-readme-entry"
+      ],
+      "included_relationships": [
+        "docsys-rel-stakeholders-drive-goal",
+        "docsys-rel-capability-produces-outcome",
+        "docsys-rel-service-supports-routing",
+        "docsys-rel-root-readme-routes-reader"
+      ]
+    },
+    {
+      "view_id": "docsys-entrypoint-routing",
+      "view_name": "README Documentation Entrypoint Routing",
+      "parent_element_id": "1208",
+      "parent_element_name": "OutcomeCapabilityViewpoint",
+      "description": "Viewpoint: Outcome Realization Viewpoint; Concern: product, contributor, and architecture-maintainer paths must land on the correct entrypoint without duplicating authority; Purpose: deciding and handoff preparation; Scope: root README, contributor governance entry, stable design reference, routing service, routing process, and the reader-routing outcome; Rationale: this view is an Outcome Realization instance because it shows the distinct entrypoint contributions to the same business reader-routing outcome.",
+      "included_elements": [
+        "docsys-dual-entry-outcome",
+        "docsys-documentation-router-service",
+        "docsys-reader-routing-process",
+        "docsys-root-readme-entry",
+        "docsys-contributor-governance-entry",
+        "docsys-stable-design-reference"
+      ],
+      "included_relationships": [
+        "docsys-rel-service-supports-routing",
+        "docsys-rel-root-readme-routes-reader",
+        "docsys-rel-contributor-entry-routes-contributor",
+        "docsys-rel-design-reference-routes-maintainer"
+      ]
+    },
+    {
+      "view_id": "docsys-fact-source-core",
+      "view_name": "README Documentation Fact Source Core",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: refreshed documentation must maintain single-source authority and root README noise reduction; Purpose: deciding and handoff preparation; Scope: fact-source principle, priority requirement, content boundary, root README constraint, stable design reference, and routing service; Rationale: this view is a Requirements Realization instance because it binds documentation requirements and constraints to the documentation references and routing service that satisfy them.",
+      "included_elements": [
+        "docsys-documentation-router-service",
+        "docsys-root-readme-entry",
+        "docsys-stable-design-reference",
+        "docsys-fact-source-principle",
+        "docsys-content-boundary-requirement",
+        "docsys-fact-source-priority-requirement",
+        "docsys-root-readme-noise-constraint"
+      ],
+      "included_relationships": [
+        "docsys-rel-principle-guides-priority",
+        "docsys-rel-boundary-refines-priority",
+        "docsys-rel-router-realizes-boundary",
+        "docsys-rel-root-readme-obeys-noise",
+        "docsys-rel-design-docs-realize-priority"
+      ]
+    },
+    {
+      "view_id": "docsys-authority-layer-boundaries",
+      "view_name": "README Documentation Authority Layer Boundaries",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: design, notes, domain, and missing root-contract facts must stay in the correct authority layer; Purpose: deciding and handoff preparation; Scope: content boundary, fact-source priority, stable design, research notes, domain extension docs, and open root-contract gap; Rationale: this view is a Requirements Realization instance because it traces authority-layer requirements to concrete documentation data objects and the residual root-contract gap.",
+      "included_elements": [
+        "docsys-content-boundary-requirement",
+        "docsys-fact-source-priority-requirement",
+        "docsys-stable-design-reference",
+        "docsys-research-notes-reference",
+        "docsys-domain-extension-reference",
+        "docsys-root-contract-gap"
+      ],
+      "included_relationships": [
+        "docsys-rel-design-docs-realize-priority",
+        "docsys-rel-notes-obey-boundary",
+        "docsys-rel-domain-docs-obey-boundary",
+        "docsys-rel-root-contract-gap-qualifies-priority"
+      ]
+    },
+    {
+      "view_id": "docsys-acceptance-core",
+      "view_name": "README Documentation Acceptance Core",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: business acceptors need observable DOC-01 through DOC-04 outcomes for the documentation refresh; Purpose: deciding and handoff preparation; Scope: acceptance requirement, root README, contributor entry, stable design reference, content boundary, and ready plateau; Rationale: this view is an AcceptanceDelivery instance because it captures business control points and observation points that qualify readiness.",
+      "included_elements": [
+        "docsys-root-readme-entry",
+        "docsys-contributor-governance-entry",
+        "docsys-stable-design-reference",
+        "docsys-content-boundary-requirement",
+        "docsys-business-acceptance-requirement",
+        "docsys-doc-refresh-ready-plateau"
+      ],
+      "included_relationships": [
+        "docsys-rel-acceptance-governs-root-readme",
+        "docsys-rel-acceptance-governs-contributor",
+        "docsys-rel-acceptance-governs-design-routing",
+        "docsys-rel-acceptance-governs-content-placement",
+        "docsys-rel-acceptance-realizes-plateau"
+      ]
+    },
+    {
+      "view_id": "docsys-residual-coordination",
+      "view_name": "README Documentation Residual Coordination",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: unresolved contributor filename and root implementation contract existence must remain visible without being promoted to accepted facts; Purpose: deciding and handoff preparation; Scope: residual gaps, contributor entrypoint requirement, fact-source priority, and gated delivery work; Rationale: this view is an AcceptanceDelivery instance because it shows residual blockers and the delivery areas they qualify.",
+      "included_elements": [
+        "docsys-contributor-filename-gap",
+        "docsys-root-contract-gap",
+        "docsys-contributor-governance-entry",
+        "docsys-fact-source-priority-requirement",
+        "docsys-wp-contributor-entrypoint",
+        "docsys-wp-link-fact-verification"
+      ],
+      "included_relationships": [
+        "docsys-rel-filename-gap-qualifies-contributor",
+        "docsys-rel-root-contract-gap-qualifies-priority",
+        "docsys-rel-filename-gap-blocks-contrib-wp",
+        "docsys-rel-root-contract-gap-blocks-verification"
+      ]
+    },
+    {
+      "view_id": "docsys-vertical-delivery-chain",
+      "view_name": "README Documentation Vertical Delivery Chain",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: documentation refresh work must follow the accepted dependency order; Purpose: deciding and handoff preparation; Scope: information architecture, root README noise reduction, contributor entrypoint, design navigation calibration, link/fact-source verification, and ready plateau; Rationale: this view is an AcceptanceDelivery instance because it shows the accepted delivery dependency chain and readiness qualifier.",
+      "included_elements": [
+        "docsys-wp-information-architecture",
+        "docsys-wp-root-readme-reduction",
+        "docsys-wp-contributor-entrypoint",
+        "docsys-wp-design-navigation",
+        "docsys-wp-link-fact-verification",
+        "docsys-doc-refresh-ready-plateau"
+      ],
+      "included_relationships": [
+        "docsys-rel-wp-info-triggers-root",
+        "docsys-rel-wp-root-triggers-contrib",
+        "docsys-rel-wp-contrib-triggers-design",
+        "docsys-rel-wp-design-triggers-verification",
+        "docsys-rel-verification-realizes-ready"
       ]
     }
   ]
