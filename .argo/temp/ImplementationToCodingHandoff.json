@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T13:07:00+08:00",
+  "generatedAt": "2026-07-28T13:28:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "WP1-only ImplementationDesign handoff for docsys-wp-information-architecture. The accepted documentation information architecture decision is already expressed by the intent graph and decision-tree evidence, so CodingAndReparing is not authorized to edit README.md, create CONTRIBUTING.md, change design navigation, or perform link/fact verification for this handoff. The only downstream action is no-op verification/acceptance of WP1; after acceptance, WP2 root README reduction is the next delivery package.",
+  "summary": "WP2 ImplementationDesign handoff for docsys-wp-root-readme-reduction. CodingAndReparing is authorized to reduce root README.md into a concise adoption/product entry and router while retaining positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment checks, entry selection, and curated next links. Deep semantic operator, MCP, validator, credential, command, and lifecycle detail must be routed to stable design references instead of duplicated inline. WP3 contributor governance, WP4 design navigation calibration, WP5 link/fact verification, CONTRIBUTING.md creation, and any invented root implementation contract are out of scope.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
@@ -13,71 +13,74 @@
       "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
       "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router",
       "controlPoint": "First-time external reader opens only README.md.",
-      "observationPoint": "The graph preserves the quieter root README adoption-router decision: positioning, problem, three core components, curated deep links, and no inline semantic lifecycle internals.",
+      "observationPoint": "The root README remains an adoption router that communicates ARGO positioning, problem, three core components, and correct next document selection without inline semantic lifecycle internals.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-01-root-readme-adoption-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
-      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router",
-      "controlPoint": "Contributor prepares to change MCP, validator, tests, or docs.",
-      "observationPoint": "The graph preserves contributor governance routing, including fact-source priority, allowed edit surfaces, validation commands, test boundaries, forbidden shortcuts, and residual root-level CONTRIBUTING.md filename coordination.",
-      "initialExecutionStatus": "passed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
       "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing",
       "controlPoint": "Reader searches from root README for getSystemArchitecture, semantic query, or mutation validation details.",
-      "observationPoint": "The graph and repository references preserve design/mcp and design/validator as stable deep-detail authorities without duplicating their specification into root README.",
+      "observationPoint": "The reader is routed to design/mcp and design/validator references while root README avoids duplicating deep MCP, validator, semantic query, mutation, and lifecycle specification.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     },
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
       "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement",
-      "controlPoint": "Maintainer adds a domain template, market comparison, research note, or stable design note.",
-      "observationPoint": "The graph preserves single-source documentation layer boundaries: root summarizes and links, contributor entry governs changes, design owns stable specs, notes own research, and domain-specific docs own domain extension.",
+      "controlPoint": "Maintainer evaluates whether detailed documentation belongs in root README, design, notes, marketing, or domain references.",
+      "observationPoint": "Root README summarizes and links, design owns stable specs, notes own research, domain-specific docs own domain extension, and contributor governance remains a later WP.",
       "initialExecutionStatus": "passed",
       "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js"
     }
   ],
-  "criticalNonExplicitTests": [],
+  "criticalNonExplicitTests": [
+    {
+      "name": "WP2 root README reduction guard",
+      "path": "tests/architecture/documentation/root-readme-reduction.guard.js",
+      "kind": "ArchitectureBoundaryGuard",
+      "controlPoint": "Coding edits README.md for WP2 root README noise reduction.",
+      "observationPoint": "README.md retains adoption/product entry content and curated design links, and rejects inline deep semantic operator, credential, MCP lifecycle command, and live-environment details.",
+      "expectedStatus": "failed"
+    }
+  ],
   "supportingNonExplicitTests": [],
   "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
   "codingTargets": [
     {
       "testcaseName": "ExplicitAcceptanceTestcase-DOC-01",
-      "failureSignal": "NO_CODING_FAILURE_FOR_WP1_DECISION_ONLY: DOC-01 through DOC-04 are expected to pass as information-architecture verification, not by changing production code or documentation prose.",
-      "nextAction": "Run the WP1 documentation information architecture entrypoint and handoff validation. If they pass, mark WP1 ready for acceptance and proceed to WP2 root README reduction in a separate authorized handoff."
+      "path": "README.md",
+      "failureSignal": "ROOT_README_INLINE_SEMANTIC_LIFECYCLE_DETAIL: current README.md still contains deep semantic operator, credential, command, and lifecycle details that must be routed to design/mcp or design/validator references.",
+      "nextAction": "Edit only README.md to remove inline deep lifecycle detail while preserving required adoption content and curated links, then rerun DOC-01/DOC-03/DOC-04 plus tests/architecture/documentation/root-readme-reduction.guard.js."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "No Coding/Repair implementation is authorized for WP1. Verify the already-modeled information architecture decision and preserve downstream scope boundaries; README reduction, contributor entrypoint creation, design navigation calibration, and link/fact verification remain WP2-WP5.",
+    "executionStrategy": "Make a documentation-only README.md reduction. Keep the root README as a concise product/adoption router. Do not create CONTRIBUTING.md, do not change design navigation, do not edit SystemArchitecture.json, do not edit frozen tests/contracts, and do not implement semantic operator or MCP behavior. Treat the README guard RED as the concrete Coding repair target while the DOC explicit entrypoints preserve intent-mounted acceptance anchors.",
     "tasks": [
       {
-        "taskId": "DOCSYS-WP1-NOOP-VERIFY",
-        "title": "Verify documentation information architecture decision",
-        "objective": "Confirm that the accepted dual-entry documentation information architecture is physically testable and that no downstream documentation edit is needed for WP1.",
+        "taskId": "DOCSYS-WP2-C1",
+        "title": "Reduce root README inline semantic detail",
+        "objective": "Remove or route deep semantic operator, MCP lifecycle, credential, live-environment, and command detail from root README.md while preserving adoption/product content and next-link selection.",
         "dependsOn": [],
         "relatedTestcases": [
           "ExplicitAcceptanceTestcase-DOC-01",
-          "ExplicitAcceptanceTestcase-DOC-02",
           "ExplicitAcceptanceTestcase-DOC-03",
           "ExplicitAcceptanceTestcase-DOC-04"
         ],
         "targetPaths": [
-          "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
-          "design/KG/SystemArchitecture.json",
-          ".argo/temp/ImplementationToCodingHandoff.json"
+          "README.md"
         ],
         "steps": [
-          "Run node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js to verify all four DOC anchors.",
-          "Validate .argo/temp/ImplementationToCodingHandoff.json with validateStageHandoff(stage=\"implementation-to-coding\").",
-          "Do not edit README.md, create CONTRIBUTING.md, change design navigation, or perform link/fact verification under this WP1 handoff.",
-          "After WP1 acceptance, request or dispatch the separate WP2 handoff for docsys-wp-root-readme-reduction."
+          "Keep ARGO positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment check, entry selection, and curated next links in README.md.",
+          "Replace the inline Production Semantic Operator Journey, explicit credential-key list, semantic:* command sequence, MCP lifecycle tool sequence, and live Neo4j caveat with concise routing text to stable design references.",
+          "Keep links to design/README.md, design/mcp/意图架构 MCP 功能列表.md, and design/validator/intent-architecture-mcp-validation.md so readers can reach deep details without root README duplication.",
+          "Do not create CONTRIBUTING.md, do not invent or rename OVERALL_ARCHITECTURE.md, do not perform the full contributor guide or design navigation work package, and do not change intent graph or implementation behavior.",
+          "Rerun ARGO_TESTCASE_ANCHOR=doc-01-root-readme-adoption-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
+          "Rerun ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
+          "Rerun ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
+          "Rerun node tests/architecture/documentation/root-readme-reduction.guard.js and require it to pass."
         ],
-        "completionSignal": "All DOC-01 through DOC-04 WP1 anchors pass, implementation-to-coding handoff validation passes, and no Coding/Repair production or prose target is authorized."
+        "completionSignal": "README.md is concise, routes deep details to stable design references, DOC-01/DOC-03/DOC-04 pass, and root-readme-reduction.guard.js passes with no ROOT_README_INLINE_SEMANTIC_LIFECYCLE_DETAIL failure."
       }
     ]
   },
@@ -91,13 +94,15 @@
     ".argo/temp/ImplementationToCodingHandoff.json",
     ".argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md",
     "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
-    "README.md",
-    "design/README.md"
+    "tests/architecture/documentation/root-readme-reduction.guard.js",
+    "design/README.md",
+    "design/mcp/意图架构 MCP 功能列表.md",
+    "design/validator/intent-architecture-mcp-validation.md"
   ],
   "openGaps": [
-    "WP1 has no Coding/Repair behavior target because the information architecture decision is already represented in the graph and verified by the new DOC physicalized entrypoint.",
-    "The accepted residual contributor filename decision remains: root-level CONTRIBUTING.md is recommended unless implementation evidence blocks it, but creation belongs to WP3, not WP1.",
-    "The root OVERALL_ARCHITECTURE.md exists in this repository and is referenced as an implementation contract; no root contract file is invented by this handoff.",
-    "WP2 docsys-wp-root-readme-reduction is the next package after WP1 acceptance; WP3 contributor entrypoint, WP4 design navigation, and WP5 link/fact verification remain out of scope."
+    "The README reduction guard is intentionally RED before Coding because the current root README still duplicates deep semantic operator lifecycle, credential, command, and live-environment detail inline.",
+    "Contributor governance should eventually become root-level CONTRIBUTING.md, but WP2 does not authorize creating it.",
+    "WP2 does not authorize the full design navigation work package, design/README calibration, or link/fact verification beyond retaining curated route links already needed by README.md.",
+    "Root OVERALL_ARCHITECTURE.md already exists in this repository and is referenced as an implementation contract; this handoff does not invent a root contract file."
   ]
 }
