@@ -1,89 +1,110 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-07-28T14:33:00+08:00",
+  "generatedAt": "2026-07-28T15:00:03.3159718+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrective WP3 ImplementationDesign handoff for docsys-wp-contributor-entrypoint / Contributor Governance Entrypoint Work. CodingAndReparing is authorized to create the root-level CONTRIBUTING.md contributor/governance entrypoint for internal maintainers, satisfying DOC-02 by explaining fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, documentation maintenance rules, and forbidden shortcuts. The guide must link to stable references rather than duplicate deep design specs. WP3 must not invent or depend on a root OVERALL_ARCHITECTURE.md contract; absent root-contract evidence is an honest documentation gap outside this WP3 Coding target.",
+  "summary": "WP4 docsys-wp-design-navigation authorizes CodingAndReparing to calibrate only design/README.md as the stable design/system map and fact-source governance entry. The handoff preserves the dual-entry split: root README remains the adoption/product router, CONTRIBUTING.md remains the contributor/governance entrypoint, and design/README.md must route to architecture, harness flow, agent/skill design, usage scenarios, intent architecture, MCP, validator, schema/EA mapping, specific-domain templates, marketing comparison, and research boundaries without duplicating deep content.",
   "implementationContracts": [
     "tests/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
-      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router",
-      "controlPoint": "Contributor prepares to change MCP, validator, tests, or docs from repository root.",
-      "observationPoint": "Before editing, the contributor can identify the authoritative file, allowed edit surface, validation/test command, explicit testcase and frozen-file boundary, documentation maintenance rule, and forbidden shortcuts.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
-      "failureReason": "CONTRIBUTOR_ENTRYPOINT_MISSING: root-level CONTRIBUTING.md does not exist yet; this is the intended WP3 Coding RED signal."
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing",
+      "controlPoint": "reader searches from root README for getSystemArchitecture, semantic query, MCP, or mutation validation details",
+      "observationPoint": "reader lands on design/mcp and design/validator stable references with no duplicated deep specification in root README",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "cmd /c \"set ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing&& node tests\\explicit\\entries\\runDocumentationInformationArchitectureDecision.js\""
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
+      "entryPath": "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement",
+      "controlPoint": "maintainer adds a domain template, market comparison, research note, or stable design content",
+      "observationPoint": "maintainer can decide whether content belongs in design/specific-domain, design/marketing, notes, or stable design docs",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "cmd /c \"set ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement&& node tests\\explicit\\entries\\runDocumentationInformationArchitectureDecision.js\""
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "WP3 contributor governance entrypoint guard",
-      "path": "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
+      "name": "WP4 Design Navigation Calibration Guard",
+      "path": "tests/architecture/documentation/design-navigation.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Coding creates or edits the root-level CONTRIBUTING.md contributor/governance entrypoint.",
-      "observationPoint": "CONTRIBUTING.md exposes fact-source priority, safe change surfaces, stage boundaries, validation commands, explicit testcase and frozen-file boundaries, stable reference links, documentation maintenance rules, and forbidden shortcuts without duplicating deep design specifications inline or reintroducing root OVERALL_ARCHITECTURE.md as active WP3 authority.",
+      "controlPoint": "reader or maintainer uses design/README.md after root README and CONTRIBUTING.md exist",
+      "observationPoint": "design/README.md routes to all stable design authorities, root entrypoints, notes/research boundaries, domain templates, and marketing comparison while avoiding deep MCP/validator/lifecycle duplication",
       "expectedStatus": "failed"
     }
   ],
-  "supportingNonExplicitTests": [],
-  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "supportingNonExplicitTests": [
+    {
+      "name": "WP2 Root README Reduction Guard",
+      "path": "tests/architecture/documentation/root-readme-reduction.guard.js",
+      "kind": "SupportingDocumentationBoundaryGuard",
+      "controlPoint": "first-time adopter uses README.md as the product entry",
+      "observationPoint": "root README stays concise and routes deep references to design authorities",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "WP3 Contributor Governance Entrypoint Guard",
+      "path": "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
+      "kind": "SupportingDocumentationBoundaryGuard",
+      "controlPoint": "internal maintainer prepares to change MCP, validator, tests, or docs",
+      "observationPoint": "CONTRIBUTING.md exposes fact-source priority, safe change surfaces, stage boundaries, validation commands, frozen-file policy, and stable reference links",
+      "expectedStatus": "passed"
+    }
+  ],
+  "expectedFailureRecordsPath": ".argo/temp/wp4-design-navigation-expected-failures.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-DOC-02",
-      "path": "CONTRIBUTING.md",
-      "failureSignal": "CONTRIBUTOR_ENTRYPOINT_MISSING until root-level CONTRIBUTING.md exists; after creation, missing required cues fail as CONTRIBUTOR_ENTRYPOINT_CONTENT_MISSING, CONTRIBUTOR_ENTRYPOINT_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_CONTENT_MISSING, CONTRIBUTOR_GOVERNANCE_REFERENCE_MISSING, CONTRIBUTOR_GOVERNANCE_INLINE_DEEP_SPEC, or CONTRIBUTOR_GOVERNANCE_ROOT_CONTRACT_AUTHORITY.",
-      "nextAction": "Create root-level CONTRIBUTING.md only. Do not edit intent graph, contracts, explicit entrypoints, guardrails, README.md, or deep design specs unless a runner-owned status refresh changes them. Satisfy DOC-02 and the contributor governance guard by writing a concise maintainer guide that links to stable references."
+      "testcaseName": "WP4 Design Navigation Guard",
+      "path": "design/README.md",
+      "failureSignal": "DESIGN_NAVIGATION_ROUTE_MISSING: design/README.md must link the root README product entry authority",
+      "nextAction": "Update design/README.md as the stable design/system map and fact-source governance entry, linking the root README and CONTRIBUTING.md dual entrypoints plus all stable design authorities without copying deep content inline."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Documentation-only Coding scope. Create the missing root CONTRIBUTING.md as an internal maintainer governance router. Preserve stage boundaries and frozen files, route deep detail to stable design references, and use package.json scripts as the command authority. Runner-owned deliveryStatus/test-failure-record refreshes are allowed only as a consequence of validation/test execution.",
+    "executionStrategy": "Single documentation calibration task. Edit only design/README.md, run the frozen DOC-03/DOC-04 anchors and documentation guards, then run the full architecture test baseline without touching unrelated dirty files.",
     "tasks": [
       {
-        "taskId": "DOCSYS-WP3-C1",
-        "title": "Create contributor governance entrypoint",
-        "objective": "Add root CONTRIBUTING.md so an internal maintainer can identify the authoritative file, allowed edit surface, validation/test command, explicit testcase/frozen-file boundary, documentation maintenance rule, and forbidden shortcuts before changing MCP, validator, tests, or docs.",
+        "taskId": "WP4-C1",
+        "title": "Calibrate design navigation map",
+        "objective": "Make design/README.md the stable design/system map and fact-source governance entry that coherently complements root README and CONTRIBUTING.md.",
         "dependsOn": [],
         "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-DOC-02"
+          "ExplicitAcceptanceTestcase-DOC-03",
+          "ExplicitAcceptanceTestcase-DOC-04",
+          "WP4 Design Navigation Guard"
         ],
         "targetPaths": [
-          "CONTRIBUTING.md"
+          "design/README.md"
         ],
         "steps": [
-          "Create root-level CONTRIBUTING.md and keep it concise; do not duplicate deep MCP, validator, harness, or semantic lifecycle specifications inline.",
-          "Explain fact-source priority: design/KG/SystemArchitecture.json for intent, tests/ARCHITECTURE.md for DOC-02 test ownership, .argo/temp/ImplementationToCodingHandoff.json for current Coding scope, package.json for runnable scripts, and design references for deep documentation.",
-          "Explain safe change surfaces for maintainers changing MCP, validator, tests, or docs, with CONTRIBUTING.md as the entrypoint and target Coding scope limited to this file under WP3.",
-          "Explain stage boundaries: IntentDesign owns intent graph changes, ImplementationDesign owns contracts/testcase entrypoints/handoff artifacts, CodingAndReparing owns only approved Coding targets, and required intent graph changes become ImplementationToIntentTraceProposal rather than direct Coding edits.",
-          "List validation commands from package.json, including npm run validate:system-architecture, npm run validate:handoff, npm run validate:handoff:implementation, npm run test:argo, and the explicit DOC-02 command ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js.",
-          "Explain explicit testcase and frozen-file boundaries: Coding may edit CONTRIBUTING.md, while tests/explicit/entries/runDocumentationInformationArchitectureDecision.js, tests/architecture/documentation/contributor-governance-entrypoint.guard.js, tests/ARCHITECTURE.md, design/KG/SystemArchitecture.json, and .argo/temp/ImplementationToCodingHandoff.json are frozen.",
-          "Link to design/README.md, design/argo-harness/README.md, design/mcp/意图架构 MCP 功能列表.md, design/validator/intent-architecture-mcp-validation.md, tests/ARCHITECTURE.md, and package.json where relevant.",
-          "Name forbidden shortcuts: editing design/KG/SystemArchitecture.json directly during Coding, widening Coding scope beyond CONTRIBUTING.md, modifying frozen explicit tests/guards to pass, manually setting deliveryStatus, inventing absent contracts, mentioning OVERALL_ARCHITECTURE.md as WP3 authority/dependency/reference, copying deep design specs inline, or bypassing package.json validation commands.",
-          "Run ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js and node tests/architecture/documentation/contributor-governance-entrypoint.guard.js; then run npm run validate:handoff:implementation and npm run test:argo to refresh runner-owned records."
+          "Preserve design/README.md as a router and governance entry rather than a deep content duplicate.",
+          "Add coherent routes to root README and CONTRIBUTING.md to reflect the dual-entry documentation system.",
+          "Route architecture, harness flow, agent/skill design, usage scenarios, intent architecture, MCP, validator, schema/EA mapping, specific-domain templates, marketing comparison, and notes/research boundaries.",
+          "Keep fact-source priority honest: intent graph for intent semantics, design/ for stable design explanations, tests/ARCHITECTURE.md for test ownership, handoff JSON for current Coding scope, notes/ for research, and no invented root OVERALL_ARCHITECTURE.md authority.",
+          "Run the frozen DOC-03/DOC-04 anchors plus tests/architecture/documentation/design-navigation.guard.js, then run npm run test:argo."
         ],
-        "completionSignal": "CONTRIBUTING.md exists, DOC-02 and contributor-governance-entrypoint.guard.js pass, handoff validation passes, and the full architecture runner records WP3 status without unauthorized edits outside runner-owned status/failure records."
+        "completionSignal": "DOC-03 and DOC-04 remain passed, tests/architecture/documentation/design-navigation.guard.js passes, and full architecture tests show no new WP4 regression beyond unrelated pre-existing failures."
       }
     ]
   },
   "frozenFiles": [
+    "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
+    "tests/architecture/documentation/design-navigation.guard.js",
+    "tests/architecture/documentation/root-readme-reduction.guard.js",
+    "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
     "tests/ARCHITECTURE.md",
     "design/KG/SystemArchitecture.json",
-    "design/KG/test-failure-records.json",
     ".argo/temp/IntentToImplementationHandoff.json",
     ".argo/temp/ImplementationToCodingHandoff.json",
-    "tests/explicit/entries/runDocumentationInformationArchitectureDecision.js",
-    "tests/architecture/documentation/contributor-governance-entrypoint.guard.js",
-    "design/README.md",
-    "design/argo-harness/README.md",
-    "design/mcp/意图架构 MCP 功能列表.md",
-    "design/validator/intent-architecture-mcp-validation.md",
+    ".argo/temp/wp4-design-navigation-expected-failures.json",
+    "README.md",
+    "CONTRIBUTING.md",
     "package.json"
   ],
   "openGaps": [
-    "CONTRIBUTING.md is intentionally absent before Coding and is the only non-runner Coding target.",
-    "DOC-02 and the contributor governance guard are expected to fail with CONTRIBUTOR_ENTRYPOINT_MISSING until Coding creates the guide.",
-    "No intent graph mutation is required from ImplementationDesign; current intent context already designates root-level CONTRIBUTING.md for WP3.",
-    "WP3 does not use root OVERALL_ARCHITECTURE.md as a contributor-governance authority. The contributor-governance guard rejects any OVERALL_ARCHITECTURE.md mention in CONTRIBUTING.md so Coding cannot reintroduce it as active WP3 authority or dependency."
+    "Pre-coding WP4 guard is intentionally RED until Coding updates design/README.md.",
+    "The unrelated dirty file .argo/scripts/systemarchitecture-mcp-server.js is outside this handoff and must remain untouched.",
+    "No root OVERALL_ARCHITECTURE.md was observed or invented; WP4 fact-source wording must remain honest about observed contracts."
   ]
 }

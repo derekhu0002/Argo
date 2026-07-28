@@ -1,0 +1,43 @@
+{
+  "stage": "implementation-to-coding",
+  "workPackage": "docsys-wp-design-navigation",
+  "generatedAt": "2026-07-28T15:00:03.3159718+08:00",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "baselineIntentCommit": "7c23cbd0955a73577e00757d5c7c3a99fc857295",
+  "representativeEntrypointRuns": [
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-03",
+      "command": "cmd /c \"set ARGO_TESTCASE_ANCHOR=doc-03-stable-design-reference-routing&& node tests\\explicit\\entries\\runDocumentationInformationArchitectureDecision.js\"",
+      "status": "passed",
+      "controlPoint": "reader searches from root README for MCP or validator details",
+      "observationPoint": "reader lands on stable design/mcp and design/validator authority without root README duplication"
+    },
+    {
+      "testcaseName": "ExplicitAcceptanceTestcase-DOC-04",
+      "command": "cmd /c \"set ARGO_TESTCASE_ANCHOR=doc-04-content-boundary-placement&& node tests\\explicit\\entries\\runDocumentationInformationArchitectureDecision.js\"",
+      "status": "passed",
+      "controlPoint": "maintainer adds domain, marketing, research, or stable design content",
+      "observationPoint": "maintainer can decide the correct documentation authority layer"
+    },
+    {
+      "testcaseName": "WP4 Design Navigation Guard",
+      "command": "node tests\\architecture\\documentation\\design-navigation.guard.js",
+      "status": "expected_failure",
+      "failureSignal": "DESIGN_NAVIGATION_ROUTE_MISSING: design/README.md must link the root README product entry authority",
+      "controlPoint": "reader or maintainer uses design/README.md after root README and CONTRIBUTING exist",
+      "observationPoint": "design/README.md routes to design authorities, root README, CONTRIBUTING.md, notes, domain templates, marketing comparison, MCP, validator, schema/EA mapping, and harness references without deep duplication"
+    }
+  ],
+  "codingTargets": [
+    {
+      "path": "design/README.md",
+      "failureSignal": "DESIGN_NAVIGATION_ROUTE_MISSING",
+      "nextAction": "Calibrate design/README.md as the stable design/system map and fact-source governance entry while preserving root README and CONTRIBUTING.md as separate entrypoints."
+    }
+  ],
+  "outOfScopeNotes": [
+    ".argo/scripts/systemarchitecture-mcp-server.js is dirty outside WP4 and must not be modified, staged, committed, reverted, or used as Coding evidence.",
+    "Do not invent root OVERALL_ARCHITECTURE.md if absent.",
+    "Do not edit frozen explicit testcase or architecture guard files during Coding."
+  ]
+}

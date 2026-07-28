@@ -1,3 +1,10 @@
+# Documentation design navigation WP4 handoff (2026-07-28)
+
+- Materialized `.argo/temp/ImplementationToCodingHandoff.json` for `docsys-wp-design-navigation` from IntentDesign commit `7c23cbd0955a73577e00757d5c7c3a99fc857295`. Scope is only `design/README.md`; root `README.md` remains the adoption/product router, root `CONTRIBUTING.md` remains the contributor/governance entrypoint, and `design/README.md` must become the stable design/system map plus fact-source governance entry.
+- Added frozen critical guard `tests/architecture/documentation/design-navigation.guard.js` and registered it in `tests/ARCHITECTURE.md` as the WP4 `ArchitectureBoundaryGuard`. DOC-03 and DOC-04 passed directly; the WP4 guard is intentionally RED before Coding with `DESIGN_NAVIGATION_ROUTE_MISSING` because `design/README.md` does not yet link the root product/governance entries.
+- Wrote `.argo/temp/wp4-design-navigation-expected-failures.json` as the Coding repair signal. Coding is authorized to edit only `design/README.md`; explicit DOC entrypoints, documentation guards, `tests/ARCHITECTURE.md`, `design/KG/SystemArchitecture.json`, root README, CONTRIBUTING, package scripts, and handoff artifacts are frozen.
+- No root `OVERALL_ARCHITECTURE.md` was observed or invented. `.argo/scripts/systemarchitecture-mcp-server.js` has an unrelated dirty change and remains outside WP4 staging, committing, and evidence.
+
 # Documentation contributor governance WP3 corrective handoff (2026-07-28)
 
 - Materialized `.argo/temp/ImplementationToCodingHandoff.json` for `docsys-wp-contributor-entrypoint` only. Coding scope is narrowed to creating root `CONTRIBUTING.md`; runner-owned `deliveryStatus` and `design/KG/test-failure-records.json` refreshes are allowed only as validation side effects.
