@@ -398,7 +398,7 @@ note right
   2. May run existing tests read-only to gather pass/fail evidence; running tests does not authorize creating or modifying test code.
   3. Ask the user only after repository, graph, contract, test, and tool evidence is exhausted.
   4. Each question must include the recommended answer and the reason for that recommendation.
-  5. User-facing responses begin with "Derek".
+  5. User-facing responses begin with "[IntentDesign]".
   6. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
   7. Before dispatching handoff downstream, first write .argo/temp/IntentToImplementationHandoff.json, then read_file .argo/rules/INTENTION_DESIGN_CHECKLIST.md and self-audit: confirm A1-A5 (intent graph), B1-B3 (acceptance testcases), C1-C2 (dependency-subgraph coverage proof), D1-D8 (all pre-handoff adequacy conditions), E1-E3 (handoff artifact), F1-F2 (session record and IntentDesign stage git commit that includes the handoff file) are satisfied.
 end note
