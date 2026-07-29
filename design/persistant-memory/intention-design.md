@@ -1028,3 +1028,10 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - Corrective parent evidence: `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists and was readable; a direct read in this stage confirms it is the root implementation architecture contract.
 - Repaired WP5 constraint: ImplementationDesign should verify documentation routes to existing authoritative sources truthfully, including `OVERALL_ARCHITECTURE.md` where appropriate, and does not invent absent authorities.
 - Graph mutation decision remains unchanged: no mutation required. Existing intent semantics already cover fact-source truthfulness; only the handoff wording and stage memory needed correction.
+
+## 2026-07-29 — BP-AUTOALIGN Pressure Repair Final Intent Audit
+
+- Audit result: PASS for accepted BP-AUTOALIGN intent, subject to the operational restart blocker on the already-running Cursor ARGO MCP server. The repair preserves canonical content for embedding while stripping nested `content` before Neo4j projection upsert, so write-side lifecycle can reach Aligned instead of failing on non-primitive Neo4j node properties.
+- Evidence reviewed: `design/KG/SystemArchitecture.json` contains BP-AUTOALIGN write completion, query auto-alignment, Agent-unaware lifecycle ownership, stable diagnostics, and rejected silent full-snapshot fallback semantics with mounted explicit acceptance cases; `.argo/temp/ImplementationToCodingHandoff.json`, `tests/ARCHITECTURE.md`, and `design/persistant-memory/implementation-design.md` record the updated support regressions and out-of-scope SP-03-only runner gap.
+- Evidence run in this audit: `node tests/supporting/bp-autoalign-incremental-record-primitive-properties.test.js` passed; `npm run validate:system-architecture` passed; `argo.validateStageHandoff(stage="implementation-to-coding")` passed.
+- Parent return condition: FastOrchestrator may return the repair as intent-satisfied, but must restart the current long-lived ARGO MCP server before repeating real `CallMcpTool updateArchitectureElement` pressure because the observed old Failed lifecycle is consistent with stale Node module cache rather than current code.

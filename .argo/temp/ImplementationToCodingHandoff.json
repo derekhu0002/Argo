@@ -128,6 +128,22 @@
                                            "expectedStatus":  "must-pass-after-coding",
                                            "controlPoint":  "Mutation index lifecycle is run through graph-mounted BP-AUTOALIGN write paths.",
                                            "observationPoint":  "Governed writes expose business completion only after complete semantic lifecycle alignment and diagnostic non-completion on lifecycle failure."
+                                       },
+                                       {
+                                           "name":  "Incremental primitive-property projection regression",
+                                           "path":  "tests/supporting/bp-autoalign-incremental-record-primitive-properties.test.js",
+                                           "guardrailPurpose":  "Protect the write-side incremental lifecycle from persisting nested canonical content into Neo4j projection properties.",
+                                           "expectedStatus":  "must-pass-after-coding",
+                                           "controlPoint":  "A governed incremental write embeds full canonical content while the production projection store receives touched records.",
+                                           "observationPoint":  "The lifecycle reaches Aligned and every persisted Neo4j record property is primitive or a primitive array, with no nested content property stored."
+                                       },
+                                       {
+                                           "name":  "Fresh MCP BP-AUTOALIGN pressure regression",
+                                           "path":  "tests/supporting/bp-autoalign-fresh-mcp-pressure.test.js",
+                                           "guardrailPurpose":  "Protect fresh-process public MCP write/query/restore pressure behavior for BP-AUTOALIGN.",
+                                           "expectedStatus":  "must-pass-after-coding",
+                                           "controlPoint":  "Repeated fresh-process updateArchitectureElement writes, ordinary semantic queries, and restore writes through the public Argo MCP wrapper.",
+                                           "observationPoint":  "Each write and restore is businessComplete true with Aligned lifecycle/readiness evidence, and each query returns passed results containing the pressure token."
                                        }
                                    ],
     "expectedFailureRecordsPath":  ".argo/temp/bp-autoalign-expected-failures.json",
@@ -267,6 +283,8 @@
                         ".argo/scripts/graph-rag/semantic-persistence/productionSemanticProjectionStore.js",
                         ".argo/scripts/graph-rag/semantic-persistence/productionSemanticNeo4jAdapter.js",
                         ".argo/scripts/graph-rag/semantic-persistence/productionSemanticCheckpointStore.js",
+                        "tests/supporting/bp-autoalign-incremental-record-primitive-properties.test.js",
+                        "tests/supporting/bp-autoalign-fresh-mcp-pressure.test.js",
                         ".argo/temp/bp-autoalign-expected-failures.json",
                         ".argo/temp/ImplementationToCodingHandoff.json"
                     ],

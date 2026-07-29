@@ -350,8 +350,9 @@ async function persistentReconcile(dependencies, input) {
         objectId: item.objectId,
         channel: item.channel,
       });
+      const { content, ...persistableItem } = item;
       records.push(Object.freeze({
-        ...item,
+        ...persistableItem,
         vector: requirePersistentVector(vector, item.dimensions),
       }));
     }
