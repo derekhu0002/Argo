@@ -179,7 +179,7 @@ const HANDLED_MUTATION_TYPES = new Set([
 const TOOLS = [
   {
     name: 'getSystemArchitecture',
-    description: 'Start here, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
+    description: 'Start here for read-only intent architecture access, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1713,6 +1713,28 @@ function toolResult(payload, structuredContent = undefined) {
   };
 }
 
+function mutationToolResult(payload, write) {
+  if (write !== true || isMutationResponseDebugEnabled()) {
+    return toolResult(payload);
+  }
+  return toolResult(compactMutationResponse(payload));
+}
+
+function isMutationResponseDebugEnabled() {
+  return process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG === '1';
+}
+
+function compactMutationResponse(payload) {
+  const compact = {
+    status: payload && payload.status,
+    written: Boolean(payload && payload.written),
+  };
+  if (payload && payload.embeddingLifecycle && payload.embeddingLifecycle.state) {
+    compact.embeddingLifecycle = { state: payload.embeddingLifecycle.state };
+  }
+  return compact;
+}
+
 function getSystemArchitectureResult(payload) {
   const failed = payload.status === 'failed';
   return toolResult(payload, {
@@ -1794,52 +1816,61 @@ async function callTool(name, args = {}, dependencies = undefined) {
 
   if (name === 'applySystemArchitectureMutation') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, true), context));
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, true), context), true);
   }
 
   if (name === 'addArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'updateArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'addArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'updateArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'addArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addView', view: args.view }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addView', view: args.view }], write), context), write);
   }
 
   if (name === 'updateArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], write), context), write);
   }
 
   throw new Error(`Unknown tool: ${name}`);

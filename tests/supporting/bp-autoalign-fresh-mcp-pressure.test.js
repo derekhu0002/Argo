@@ -8,6 +8,7 @@ const TARGET_ID = 'bp-autoalign-goal';
 const ORIGINAL_DESCRIPTION = 'Accepted BusinessPartner SMART problem: intent-architecture writes are not business-successful until embedding generation, durable semantic projection, touched-record queryability, global coherence, and readiness alignment complete for Element, ArchitectureRelationship, and View channels; ordinary semantic queries automatically align and retry once when readiness is unaligned; Agent workflows do not depend on manual lifecycle command awareness.';
 
 async function main() {
+  process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG = '1';
   const rounds = Number.parseInt(process.env.BP_AUTOALIGN_PRESSURE_ROUNDS || '5', 10);
   assert(Number.isInteger(rounds) && rounds > 0, 'BP_AUTOALIGN_PRESSURE_ROUNDS_INVALID');
 

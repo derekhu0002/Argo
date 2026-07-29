@@ -1771,9 +1771,10 @@ function buildMutationMatrix() {
 
 async function invokeActualMutationAdapter(mutation, gates) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-actual-mutation-'));
-  const previous = captureEnvironment(['ARGO_REPO_ROOT', ...DUAL_GATES]);
+  const previous = captureEnvironment(['ARGO_REPO_ROOT', 'ARGO_MCP_MUTATION_RESPONSE_DEBUG', ...DUAL_GATES]);
   try {
     process.env.ARGO_REPO_ROOT = root;
+    process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG = '1';
     for (const gate of DUAL_GATES) delete process.env[gate];
     for (const [name, value] of Object.entries(gates || {})) process.env[name] = value;
     const graphDirectory = path.join(root, 'design', 'KG');
