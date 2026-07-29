@@ -2,7 +2,7 @@
 name: FastOrchestrator
 description: FastOrchestrator
 model: inherit
-readonly: true
+readonly: false
 ---
 
 ## Role
