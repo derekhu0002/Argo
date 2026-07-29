@@ -3139,6 +3139,191 @@
           "value": "5"
         }
       ]
+    },
+    {
+      "id": "bp-autoalign-goal",
+      "name": "Business-Reliable Semantic Lifecycle Completion",
+      "type": "Goal",
+      "description": "Accepted BusinessPartner SMART problem: intent-architecture writes are not business-successful until embedding generation, durable semantic projection, touched-record queryability, global coherence, and readiness alignment complete for Element, ArchitectureRelationship, and View channels; ordinary semantic queries automatically align and retry once when readiness is unaligned; Agent workflows do not depend on manual lifecycle command awareness.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-ROOT",
+          "value": "accepted|SMART problem definition from task prompt; source markdown under .argo/temp/decision-tree was not present in workspace, so the provided accepted decision tree is used as integration source."
+        },
+        {
+          "name": "horizontalConcerns",
+          "value": "write completion semantics; query recovery semantics; automation ownership; failure diagnostics"
+        },
+        {
+          "name": "verticalDependency",
+          "value": "secure credential/config readiness -> canonical write or query request -> embedding generation -> durable semantic projection -> touched-record queryability -> global coherence -> readiness Aligned -> write success or query result"
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-write-completion",
+      "name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "type": "Requirement",
+      "description": "Accepted branch A2: a governed intent-architecture write is business-complete only after the canonical JSON write and semantic index Aligned evidence are both complete for Element, ArchitectureRelationship, and View channels. Canonical JSON write alone (A1) remains current/rejected behavior; async catch-up after reported success (A3) is rejected because it violates aligned success.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-A2",
+          "value": "accepted|write success means CanonicalWrittenAndSemanticAligned"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-A1",
+          "value": "rejected|canonical JSON write alone is current behavior and insufficient for business completion"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-A3",
+          "value": "rejected|async semantic catch-up after success violates required aligned success"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-WRITE-ALIGNED",
+          "description": "Control point: business acceptor submits a legal intent-architecture write through the governed write entry. Observation point: the success response proves Element, ArchitectureRelationship, and View semantic readiness are Aligned and a following ordinary semantic query succeeds without unaligned rejection.",
+          "type": "Acceptance Test",
+          "Input": "Legal governed intent-architecture write touching Element, ArchitectureRelationship, and View channels, followed by an ordinary semantic query.",
+          "acceptanceCriteria": "business-semantics: write success requires CanonicalWrittenAndSemanticAligned evidence before ordinary query succeeds."
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-WRITE-FAILURE-NOT-COMPLETE",
+          "description": "Control point: business acceptor submits a legal write while embedding provider, projection persistence, queryability, or coherence fails. Observation point: operation is not reported as business-complete and exposes stable diagnostic category/action while preserving no secret leakage.",
+          "type": "Acceptance Test",
+          "Input": "Legal governed write with injected embedding provider, durable projection, queryability, or global coherence failure.",
+          "acceptanceCriteria": "business-semantics: canonical authority may remain, but business completion is withheld and diagnostic output is stable and secret-safe."
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-query-recovery",
+      "name": "Script-Owned Query Auto-Alignment",
+      "type": "Requirement",
+      "description": "Accepted branch B2: an ordinary semantic query that detects Failed, Stale, Pending, partial, version/channel-mismatched, or otherwise unaligned semantic readiness must trigger automatic script-owned alignment and retry the original query once. Direct fail (B1) is current/rejected behavior for ordinary operation; silent full-snapshot fallback (B3) is rejected because it hides semantic drift.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-B2",
+          "value": "accepted|automatic script-owned alignment then retry original ordinary semantic query once"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-B1",
+          "value": "rejected|direct fail is current behavior and insufficient for ordinary operation"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-B3",
+          "value": "rejected|silent full-snapshot fallback hides semantic drift"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-QUERY-AUTOALIGN",
+          "description": "Control point: business acceptor issues an ordinary semantic query while readiness is Failed, Stale, Pending, partial, or version/channel mismatched. Observation point: automatic script-owned alignment runs first, the original query is retried once, and success returns semantic results only after Aligned.",
+          "type": "Acceptance Test",
+          "Input": "Ordinary semantic query under every unaligned readiness class with an alignment-capable environment.",
+          "acceptanceCriteria": "business-semantics: alignment is script-owned, retry count is one, and success is semantic-only after Aligned."
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-QUERY-FAILS-CLOSED",
+          "description": "Control point: business acceptor issues an ordinary semantic query while readiness is unaligned and automatic alignment cannot complete. Observation point: response is a stable business-diagnostic failure with no silent full-snapshot fallback.",
+          "type": "Acceptance Test",
+          "Input": "Ordinary semantic query under unaligned readiness with provider, persistence, queryability, coherence, or safe-configuration failure during automatic alignment.",
+          "acceptanceCriteria": "business-semantics: failure is closed, diagnostic, redacted, and fullSnapshotFallback remains false."
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-automation-boundary",
+      "name": "Script-Owned Semantic Lifecycle Boundary",
+      "type": "Constraint",
+      "description": "Accepted branch C2: semantic lifecycle enforcement belongs to the MCP/script boundary, not to Agent prompt reminders or human manual init/backfill/readiness choreography during ordinary operation. Agent prompt/manual reminder (C1) and human manual lifecycle action (C3) are rejected as ordinary-operation dependencies.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-C2",
+          "value": "accepted|MCP/script boundary enforcement owns lifecycle alignment"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-C1",
+          "value": "rejected|Agent prompt/manual reminder is not a reliable business control"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-C3",
+          "value": "rejected|human manual init/backfill/readiness is not required for ordinary operation"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-AGENT-UNAWARE",
+          "description": "Control point: Agent performs normal read/write through standard MCP/script surfaces. Observation point: no Agent-visible requirement to call init/backfill/readiness appears in the accepted workflow; lifecycle actions are script/MCP owned.",
+          "type": "Acceptance Test",
+          "Input": "Normal Agent read and write workflows through public MCP/script surfaces.",
+          "acceptanceCriteria": "business-semantics: standard workflows expose no manual lifecycle-command dependency."
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-diagnostic-requirement",
+      "name": "Stable Secret-Safe Lifecycle Diagnostics",
+      "type": "Requirement",
+      "description": "Failures in write alignment or query auto-alignment must expose stable business-diagnostic category/action evidence while preserving canonical authority and never leaking raw secrets. Diagnostic behavior applies to embedding provider, projection persistence, queryability, global coherence, readiness mismatch, and unsafe or missing configuration failures.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-DIAGNOSTICS",
+          "value": "accepted|failure must expose stable business-diagnostic evidence without raw secrets"
+        },
+        {
+          "name": "rejectedBranch.BP-AUTOALIGN-FALLBACK",
+          "value": "silent full-snapshot fallback and secret-bearing diagnostics are rejected recovery behavior"
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-rejected-branches",
+      "name": "Rejected Manual and Fallback Lifecycle Choices",
+      "type": "Assessment",
+      "description": "Rejected-branch rationale preserving future design constraints: A1 canonical-only success, A3 async semantic catch-up after reported success, B1 direct ordinary-query fail, B3 silent full-snapshot fallback, C1 Agent prompt/manual reminder, and C3 human manual lifecycle choreography are all rejected for ordinary business operation.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-A1",
+          "value": "rejected|canonical JSON write alone is not business completion"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-A3",
+          "value": "rejected|async catch-up later contradicts aligned success semantics"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-B1",
+          "value": "rejected|direct fail preserves current pain and manual awareness dependency"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-B3",
+          "value": "rejected|silent full-snapshot fallback hides semantic drift"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-C1",
+          "value": "rejected|prompt/manual reminder is not enforceable business reliability"
+        },
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-C3",
+          "value": "rejected|human manual init/backfill/readiness is not ordinary-operation automation"
+        }
+      ]
+    },
+    {
+      "id": "bp-autoalign-reliable-response",
+      "name": "Business-Reliable Intent Architecture Response",
+      "type": "Outcome",
+      "description": "Externally observable outcome: successful writes and ordinary semantic queries are reported only when canonical graph state and semantic projection readiness are business-aligned; failed alignment produces stable secret-safe diagnostics rather than false completion, stale results, manual Agent instructions, or silent full-snapshot fallback.",
+      "attributes": [
+        {
+          "name": "decisionTrace.BP-AUTOALIGN-OUTCOME",
+          "value": "accepted|combines write aligned success, query automatic alignment/retry, script-owned lifecycle, and diagnostic fail-closed behavior"
+        },
+        {
+          "name": "mappedLayers",
+          "value": "Motivation: goal/requirements/constraint/assessment; Strategy: outcome; Application: query service, lifecycle process, retrieval function, embedding generation; Data: canonical graph and semantic index; Business: acceptor control points and Agent/operator ordinary workflows."
+        }
+      ]
     }
   ],
   "relationships": [
@@ -4843,6 +5028,204 @@
           "description": "DT-DOC-RESIDUAL-ROOT-CONTRACT,DT-DOC-FACTS-ROOT-CONTRACT,DT-DOC-VERTICAL"
         }
       ]
+    },
+    {
+      "id": "bp-autoalign-rel-write-goal",
+      "name": "Aligned write requirement advances business reliability",
+      "type": "Influence",
+      "source_id": "bp-autoalign-write-completion",
+      "target_id": "bp-autoalign-goal",
+      "source_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "target_name": "Business-Reliable Semantic Lifecycle Completion",
+      "description": "Directional business semantics: requiring aligned write success advances the overall business reliability goal by preventing false completion before semantic readiness.",
+      "statement": "CanonicalWrittenAndSemanticAligned Write Success --(Influence)--> Business-Reliable Semantic Lifecycle Completion"
+    },
+    {
+      "id": "bp-autoalign-rel-query-goal",
+      "name": "Auto-alignment requirement advances business reliability",
+      "type": "Influence",
+      "source_id": "bp-autoalign-query-recovery",
+      "target_id": "bp-autoalign-goal",
+      "source_name": "Script-Owned Query Auto-Alignment",
+      "target_name": "Business-Reliable Semantic Lifecycle Completion",
+      "description": "Directional business semantics: automatic script-owned alignment and one retry advance the goal by removing ordinary Agent/manual readiness dependency.",
+      "statement": "Script-Owned Query Auto-Alignment --(Influence)--> Business-Reliable Semantic Lifecycle Completion"
+    },
+    {
+      "id": "bp-autoalign-rel-automation-goal",
+      "name": "Script boundary protects reliability goal",
+      "type": "Influence",
+      "source_id": "bp-autoalign-automation-boundary",
+      "target_id": "bp-autoalign-goal",
+      "source_name": "Script-Owned Semantic Lifecycle Boundary",
+      "target_name": "Business-Reliable Semantic Lifecycle Completion",
+      "description": "Directional business semantics: enforcing lifecycle ownership at the MCP/script boundary protects the reliability goal from prompt-memory and human-manual-operation failure modes.",
+      "statement": "Script-Owned Semantic Lifecycle Boundary --(Influence)--> Business-Reliable Semantic Lifecycle Completion"
+    },
+    {
+      "id": "bp-autoalign-rel-diagnostic-goal",
+      "name": "Diagnostics protect reliability goal",
+      "type": "Influence",
+      "source_id": "bp-autoalign-diagnostic-requirement",
+      "target_id": "bp-autoalign-goal",
+      "source_name": "Stable Secret-Safe Lifecycle Diagnostics",
+      "target_name": "Business-Reliable Semantic Lifecycle Completion",
+      "description": "Directional business semantics: stable redacted diagnostics protect the goal by making failures actionable without false success or secret leakage.",
+      "statement": "Stable Secret-Safe Lifecycle Diagnostics --(Influence)--> Business-Reliable Semantic Lifecycle Completion"
+    },
+    {
+      "id": "bp-autoalign-rel-rejected-diagnostics",
+      "name": "Rejected choices constrain diagnostics",
+      "type": "Influence",
+      "source_id": "bp-autoalign-rejected-branches",
+      "target_id": "bp-autoalign-diagnostic-requirement",
+      "source_name": "Rejected Manual and Fallback Lifecycle Choices",
+      "target_name": "Stable Secret-Safe Lifecycle Diagnostics",
+      "description": "Directional business semantics: rejected fallback and manual branches strengthen the diagnostic requirement because recovery must fail closed with stable evidence instead of hiding drift or requiring manual command awareness.",
+      "statement": "Rejected Manual and Fallback Lifecycle Choices --(Influence)--> Stable Secret-Safe Lifecycle Diagnostics"
+    },
+    {
+      "id": "bp-autoalign-rel-goal-outcome",
+      "name": "Reliability goal shapes observable response outcome",
+      "type": "Influence",
+      "source_id": "bp-autoalign-goal",
+      "target_id": "bp-autoalign-reliable-response",
+      "source_name": "Business-Reliable Semantic Lifecycle Completion",
+      "target_name": "Business-Reliable Intent Architecture Response",
+      "description": "Directional business semantics: the goal shapes the externally observable write/query response outcome that acceptors inspect.",
+      "statement": "Business-Reliable Semantic Lifecycle Completion --(Influence)--> Business-Reliable Intent Architecture Response"
+    },
+    {
+      "id": "bp-autoalign-rel-query-diagnostics",
+      "name": "Query recovery depends on diagnostics",
+      "type": "Association",
+      "source_id": "bp-autoalign-query-recovery",
+      "target_id": "bp-autoalign-diagnostic-requirement",
+      "source_name": "Script-Owned Query Auto-Alignment",
+      "target_name": "Stable Secret-Safe Lifecycle Diagnostics",
+      "description": "Association semantics: query auto-alignment success and failure share stable diagnostic categories/actions with write alignment failure while preserving no silent full-snapshot fallback.",
+      "statement": "Script-Owned Query Auto-Alignment --(Association)--> Stable Secret-Safe Lifecycle Diagnostics"
+    },
+    {
+      "id": "bp-autoalign-rel-write-diagnostics",
+      "name": "Write completion depends on diagnostics",
+      "type": "Association",
+      "source_id": "bp-autoalign-write-completion",
+      "target_id": "bp-autoalign-diagnostic-requirement",
+      "source_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "target_name": "Stable Secret-Safe Lifecycle Diagnostics",
+      "description": "Association semantics: aligned write success and write-alignment failure share secret-safe diagnostic behavior so failures do not masquerade as business completion.",
+      "statement": "CanonicalWrittenAndSemanticAligned Write Success --(Association)--> Stable Secret-Safe Lifecycle Diagnostics"
+    },
+    {
+      "id": "bp-autoalign-rel-lifecycle-write",
+      "name": "Index lifecycle realizes aligned write success",
+      "type": "Realization",
+      "source_id": "grag-index-lifecycle",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "All Mutation Index Lifecycle",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "The mutation index lifecycle realizes the write-completion requirement by invalidating readiness, generating/persisting exact touched records, verifying queryability/global coherence, and withholding Aligned on failure.",
+      "statement": "All Mutation Index Lifecycle --(Realization)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-embedding-write",
+      "name": "Embedding generation realizes aligned write success",
+      "type": "Realization",
+      "source_id": "grag-embedding-generation",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "Incremental Embedding Generation",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "Incremental embedding generation realizes the write-completion requirement for touched Element, ArchitectureRelationship, and View records before business success can be reported.",
+      "statement": "Incremental Embedding Generation --(Realization)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-index-write",
+      "name": "Semantic index realizes aligned write success",
+      "type": "Realization",
+      "source_id": "grag-semantic-index",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "Semantic Retrieval Index",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "The durable semantic index realizes aligned write success only when all three channels are queryable, version-consistent, globally coherent, and Aligned.",
+      "statement": "Semantic Retrieval Index --(Realization)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-readiness-write",
+      "name": "Readiness protects write completion",
+      "type": "Influence",
+      "source_id": "semprod-readiness-requirement",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "Fail-Closed Semantic Index Readiness",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "Directional business semantics: fail-closed readiness prevents business write completion when alignment is failed, stale, partial, pending, or mismatched.",
+      "statement": "Fail-Closed Semantic Index Readiness --(Influence)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-credentials-write",
+      "name": "Credential boundary precedes aligned lifecycle success",
+      "type": "Influence",
+      "source_id": "grag-credential-boundary",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "External Production Credential Boundary",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "Directional business semantics: secure credential and configuration readiness is a prerequisite influence on any provider/vector lifecycle that can report aligned write success.",
+      "statement": "External Production Credential Boundary --(Influence)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-canonical-write-context",
+      "name": "Canonical graph context for aligned write",
+      "type": "Association",
+      "source_id": "grag-canonical-graph",
+      "target_id": "bp-autoalign-write-completion",
+      "source_name": "Canonical Intent Graph",
+      "target_name": "CanonicalWrittenAndSemanticAligned Write Success",
+      "description": "Context semantics: canonical JSON remains authoritative but no longer alone sufficient for business write completion under this accepted decision.",
+      "statement": "Canonical Intent Graph --(Association)--> CanonicalWrittenAndSemanticAligned Write Success"
+    },
+    {
+      "id": "bp-autoalign-rel-default-query",
+      "name": "Default retrieval realizes query auto-alignment",
+      "type": "Realization",
+      "source_id": "semprod-default-vector-retrieval",
+      "target_id": "bp-autoalign-query-recovery",
+      "source_name": "Default MCP Neo4j Vector Retrieval",
+      "target_name": "Script-Owned Query Auto-Alignment",
+      "description": "The private default retrieval path realizes ordinary-query recovery by owning readiness detection, automatic script-owned alignment, one original-query retry, and fail-closed diagnostics when alignment cannot complete.",
+      "statement": "Default MCP Neo4j Vector Retrieval --(Realization)--> Script-Owned Query Auto-Alignment"
+    },
+    {
+      "id": "bp-autoalign-rel-query-service-recovery",
+      "name": "Query service realizes auto-aligned ordinary query",
+      "type": "Realization",
+      "source_id": "grag-query-service",
+      "target_id": "bp-autoalign-query-recovery",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Script-Owned Query Auto-Alignment",
+      "description": "The public query service realizes the requirement by keeping ordinary semantic query recovery behind the service boundary rather than exposing lifecycle commands to Agents.",
+      "statement": "Intent Architecture Query Service --(Realization)--> Script-Owned Query Auto-Alignment"
+    },
+    {
+      "id": "bp-autoalign-rel-query-service-automation",
+      "name": "Query service realizes script-owned lifecycle boundary",
+      "type": "Realization",
+      "source_id": "grag-query-service",
+      "target_id": "bp-autoalign-automation-boundary",
+      "source_name": "Intent Architecture Query Service",
+      "target_name": "Script-Owned Semantic Lifecycle Boundary",
+      "description": "The query service realizes the automation boundary by providing the standard public surface while lifecycle alignment remains script/MCP owned.",
+      "statement": "Intent Architecture Query Service --(Realization)--> Script-Owned Semantic Lifecycle Boundary"
+    },
+    {
+      "id": "bp-autoalign-rel-readiness-query",
+      "name": "Readiness gates query recovery",
+      "type": "Influence",
+      "source_id": "semprod-readiness-requirement",
+      "target_id": "bp-autoalign-query-recovery",
+      "source_name": "Fail-Closed Semantic Index Readiness",
+      "target_name": "Script-Owned Query Auto-Alignment",
+      "description": "Directional business semantics: readiness state determines whether ordinary query recovery runs automatic alignment, retries once, succeeds after Aligned, or fails closed with diagnostic evidence.",
+      "statement": "Fail-Closed Semantic Index Readiness --(Influence)--> Script-Owned Query Auto-Alignment"
     }
   ],
   "views": [
@@ -5742,6 +6125,78 @@
         "docsys-rel-wp-contrib-triggers-design",
         "docsys-rel-wp-design-triggers-verification",
         "docsys-rel-verification-realizes-ready"
+      ]
+    },
+    {
+      "view_id": "bp-autoalign-requirements-realization",
+      "view_name": "Business Reliable Semantic Lifecycle Requirements",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: Operators and downstream agents need intent-architecture writes and ordinary semantic queries to be business-reliable without Agent-visible manual embedding/readiness actions; Purpose: handoff preparation and business requirement integration; Scope: accepted write completion, query recovery, automation ownership, diagnostic requirements, rejected branch rationale, and externally observable business response outcome; Rationale: this view is an instance of the Requirements Realization Viewpoint because it traces accepted BusinessPartner motivation decisions into requirements, constraints, assessment, and outcome semantics before implementation design.",
+      "included_elements": [
+        "bp-autoalign-goal",
+        "bp-autoalign-write-completion",
+        "bp-autoalign-query-recovery",
+        "bp-autoalign-automation-boundary",
+        "bp-autoalign-diagnostic-requirement",
+        "bp-autoalign-rejected-branches",
+        "bp-autoalign-reliable-response"
+      ],
+      "included_relationships": [
+        "bp-autoalign-rel-write-goal",
+        "bp-autoalign-rel-query-goal",
+        "bp-autoalign-rel-automation-goal",
+        "bp-autoalign-rel-diagnostic-goal",
+        "bp-autoalign-rel-rejected-diagnostics",
+        "bp-autoalign-rel-goal-outcome",
+        "bp-autoalign-rel-query-diagnostics",
+        "bp-autoalign-rel-write-diagnostics"
+      ]
+    },
+    {
+      "view_id": "bp-autoalign-write-requirements-chain",
+      "view_name": "Aligned Write Completion Requirements Chain",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: Operators and downstream agents need intent-architecture write success to be withheld until semantic readiness is aligned for Element, ArchitectureRelationship, and View channels; Purpose: handoff preparation and business requirement integration; Scope: secure credential/config readiness, canonical graph authority, mutation lifecycle, embedding generation, durable semantic index, fail-closed readiness, and aligned write completion; Rationale: this view is an instance of the Requirements Realization Viewpoint because it maps the accepted write-completion requirement to existing application and data elements that realize or constrain it.",
+      "included_elements": [
+        "bp-autoalign-write-completion",
+        "grag-index-lifecycle",
+        "grag-embedding-generation",
+        "grag-semantic-index",
+        "semprod-readiness-requirement",
+        "grag-credential-boundary",
+        "grag-canonical-graph"
+      ],
+      "included_relationships": [
+        "bp-autoalign-rel-lifecycle-write",
+        "bp-autoalign-rel-embedding-write",
+        "bp-autoalign-rel-index-write",
+        "bp-autoalign-rel-readiness-write",
+        "bp-autoalign-rel-credentials-write",
+        "bp-autoalign-rel-canonical-write-context"
+      ]
+    },
+    {
+      "view_id": "bp-autoalign-query-recovery-chain",
+      "view_name": "Query Auto-Alignment Requirements Chain",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Requirements Realization Viewpoint; Concern: Operators and downstream agents need ordinary semantic queries to recover from unaligned readiness automatically without Agent-owned lifecycle command awareness; Purpose: handoff preparation and business requirement integration; Scope: query service, private default retrieval, durable semantic index, fail-closed readiness, automatic script-owned alignment, retry-once semantics, automation boundary, and stable diagnostics; Rationale: this view is an instance of the Requirements Realization Viewpoint because it traces accepted query recovery and automation ownership requirements to the existing application service/function and data readiness elements that realize them.",
+      "included_elements": [
+        "bp-autoalign-query-recovery",
+        "bp-autoalign-automation-boundary",
+        "bp-autoalign-diagnostic-requirement",
+        "semprod-default-vector-retrieval",
+        "grag-query-service",
+        "semprod-readiness-requirement"
+      ],
+      "included_relationships": [
+        "bp-autoalign-rel-query-diagnostics",
+        "bp-autoalign-rel-default-query",
+        "bp-autoalign-rel-query-service-recovery",
+        "bp-autoalign-rel-query-service-automation",
+        "bp-autoalign-rel-readiness-query"
       ]
     }
   ]
