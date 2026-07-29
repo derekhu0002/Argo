@@ -4,6 +4,7 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..');
 const {
   createPersistentMutationEmbeddingLifecycle,
+  isIncrementalProjectionGloballyCoherent,
   withPersistentMutationEmbeddingLifecycleTestComposition,
 } = require(path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'mutationEmbeddingVectorLifecycle.js'));
 const {
@@ -14,6 +15,7 @@ const {
 } = require(path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'semantic-persistence', 'productionSemanticProjectionStore.js'));
 
 async function main() {
+  verifiesIncrementalCoherenceAllowsUnchangedPriorRecords();
   const observedWrites = [];
   const projectionStore = createProductionSemanticProjectionStore({
     persistenceAdapter: createProductionSemanticNeo4jAdapter({
@@ -99,6 +101,78 @@ async function main() {
     readinessEvents.some(([kind]) => kind === 'aligned'),
     'BP_AUTOALIGN_INCREMENTAL_PRIMITIVE_PROPERTIES_READINESS_NOT_ALIGNED',
   );
+}
+
+function verifiesIncrementalCoherenceAllowsUnchangedPriorRecords() {
+  const canonicalWrite = {
+    written: true,
+    architecturePath: 'design/KG/SystemArchitecture.json',
+    document: {
+      name: 'Incremental Coherence Graph',
+      elements: [
+        { id: 'bp-autoalign-goal', name: 'Goal', type: 'Goal' },
+        { id: 'bp-autoalign-service', name: 'Service', type: 'Application Service' },
+      ],
+      relationships: [
+        {
+          id: 'bp-autoalign-rel',
+          name: 'Serving',
+          type: 'Serving',
+          source_id: 'bp-autoalign-service',
+          target_id: 'bp-autoalign-goal',
+        },
+      ],
+      views: [
+        {
+          view_id: 'bp-autoalign-view',
+          view_name: 'Autoalign View',
+          included_elements: ['bp-autoalign-goal', 'bp-autoalign-service'],
+          included_relationships: ['bp-autoalign-rel'],
+        },
+      ],
+    },
+    mutations: [{ type: 'updateElement', id: 'bp-autoalign-goal' }],
+    touchedElementIds: ['bp-autoalign-goal'],
+    touchedRelationshipIds: [],
+    touchedViewIds: [],
+  };
+  const currentVersion = 'canonical:incremental-current';
+  const priorVersion = 'canonical:incremental-prior';
+  const persisted = [
+    semanticRecord('Element:bp-autoalign-goal', 'Element', currentVersion),
+    semanticRecord('Element:bp-autoalign-service', 'Element', priorVersion),
+    semanticRecord('ArchitectureRelationship:bp-autoalign-rel', 'ArchitectureRelationship', priorVersion),
+    semanticRecord('View:bp-autoalign-view', 'View', priorVersion),
+  ];
+
+  assert.strictEqual(
+    isIncrementalProjectionGloballyCoherent(persisted, canonicalWrite, currentVersion),
+    true,
+    'BP_AUTOALIGN_INCREMENTAL_COHERENCE_REJECTED_UNCHANGED_RECORDS',
+  );
+  assert.strictEqual(
+    isIncrementalProjectionGloballyCoherent(
+      [semanticRecord('Element:bp-autoalign-goal', 'Element', priorVersion), ...persisted.slice(1)],
+      canonicalWrite,
+      currentVersion,
+    ),
+    false,
+    'BP_AUTOALIGN_INCREMENTAL_COHERENCE_ACCEPTED_STALE_TOUCHED_RECORD',
+  );
+  assert.strictEqual(
+    isIncrementalProjectionGloballyCoherent(persisted.filter(record => record.channel !== 'View'), canonicalWrite, currentVersion),
+    false,
+    'BP_AUTOALIGN_INCREMENTAL_COHERENCE_ACCEPTED_MISSING_CHANNEL',
+  );
+}
+
+function semanticRecord(canonicalIdentity, channel, canonicalVersion) {
+  return {
+    canonicalIdentity,
+    objectId: canonicalIdentity.split(':')[1],
+    channel,
+    canonicalVersion,
+  };
 }
 
 function createPrimitiveOnlyDriver(observedWrites) {

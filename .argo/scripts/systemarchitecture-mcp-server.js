@@ -1323,6 +1323,7 @@ function shouldRunMutationEmbeddingLifecycle(result) {
   return result
     && result.status === 'passed'
     && result.written === true
+    && normalizeRelativePath(result.graphPath) === normalizeRelativePath(DEFAULT_GRAPH_PATH)
     && (
       (Array.isArray(result.touchedElementIds) && result.touchedElementIds.length > 0)
       || (Array.isArray(result.touchedRelationshipIds) && result.touchedRelationshipIds.length > 0)
@@ -2936,6 +2937,7 @@ module.exports = {
   TOOLS,
   applyMutations,
   callTool,
+  compactMutationResponse,
   createDefaultCanonicalSemanticInitComposition,
   createDefaultProductionSemanticOperatorJourney,
   handleRequest,

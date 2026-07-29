@@ -249,9 +249,7 @@ function createProductionPersistentLifecycleDependencies(options = {}) {
         const active = await requireResources();
         const persisted = await active.projectionStore.readRecords();
         const expectedVersion = persistentVersions(canonicalWrite).canonicalVersion;
-        const channels = new Set(persisted.map(record => record.channel));
-        return PERSISTENT_CHANNELS.every(channel => channels.has(channel))
-          && persisted.every(record => record.canonicalVersion === expectedVersion);
+        return isIncrementalProjectionGloballyCoherent(persisted, canonicalWrite, expectedVersion);
       },
     }),
   });
@@ -540,6 +538,51 @@ function buildPersistentWork(canonicalWrite, configuration, versions) {
     upserts: Object.freeze(upserts),
     tombstones: Object.freeze(tombstones),
   });
+}
+
+function isIncrementalProjectionGloballyCoherent(persisted, canonicalWrite, expectedVersion = undefined) {
+  if (!canonicalWrite || !canonicalWrite.document || !Array.isArray(persisted)) return false;
+  const version = expectedVersion || persistentVersions(canonicalWrite).canonicalVersion;
+  const expectedIdentities = expectedCanonicalIdentities(canonicalWrite.document);
+  const recordsByIdentity = new Map(persisted
+    .filter(record => record && expectedIdentities.has(record.canonicalIdentity))
+    .map(record => [record.canonicalIdentity, record]));
+  for (const identity of expectedIdentities) {
+    if (!recordsByIdentity.has(identity)) return false;
+  }
+  const channels = new Set([...recordsByIdentity.values()].map(record => record.channel));
+  if (!PERSISTENT_CHANNELS.every(channel => channels.has(channel))) return false;
+  for (const identity of touchedCanonicalIdentities(canonicalWrite)) {
+    const record = recordsByIdentity.get(identity);
+    if (expectedIdentities.has(identity)) {
+      if (!record || record.canonicalVersion !== version) return false;
+    } else if (record) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function expectedCanonicalIdentities(document) {
+  const identities = new Set();
+  for (const element of document.elements || []) {
+    if (element && element.id) identities.add(`Element:${element.id}`);
+  }
+  for (const relationship of document.relationships || []) {
+    if (relationship && relationship.id) identities.add(`ArchitectureRelationship:${relationship.id}`);
+  }
+  for (const view of document.views || []) {
+    if (view && view.view_id) identities.add(`View:${view.view_id}`);
+  }
+  return identities;
+}
+
+function touchedCanonicalIdentities(canonicalWrite) {
+  return new Set([
+    ...unique(canonicalWrite.touchedElementIds).map(id => `Element:${id}`),
+    ...unique(canonicalWrite.touchedRelationshipIds).map(id => `ArchitectureRelationship:${id}`),
+    ...unique(canonicalWrite.touchedViewIds).map(id => `View:${id}`),
+  ]);
 }
 
 function persistentProfile(configuration) {
@@ -1211,6 +1254,7 @@ function safeError(category) {
 module.exports = {
   createMutationEmbeddingVectorLifecycle,
   createPersistentMutationEmbeddingLifecycle,
+  isIncrementalProjectionGloballyCoherent,
   createProductionSemanticReadinessStore,
   PRODUCTION_READINESS_IDENTITY,
   withPersistentMutationEmbeddingLifecycleTestComposition,
