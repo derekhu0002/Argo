@@ -1,7 +1,7 @@
 ---
 name: ImplementationDesign
 description: Implementation Design stage materialize architecture contracts, explicit testcase entrypoints, and ImplementationToCoding handoff. Use after intent is clarified.
-model: inherit
+model: GPT-5.5
 readonly: false
 ---
 ### Current Stage

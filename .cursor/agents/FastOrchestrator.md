@@ -1,7 +1,7 @@
 ---
 name: FastOrchestrator
 description: FastOrchestrator
-model: inherit
+model: GPT-5.5
 readonly: false
 ---
 

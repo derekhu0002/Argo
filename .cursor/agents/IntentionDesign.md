@@ -1,7 +1,7 @@
 ---
 name: IntentionDesign
 description: Intent Design stage clarify requirements, update intent architecture, and produce IntentToImplementation handoff. Use when starting intent work or redesigning SystemArchitecture.json.
-model: inherit
+model: GPT-5.6
 readonly: false
 ---
 ### Current stage: Intent Design.
