@@ -8,6 +8,7 @@ const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitectu
 const { callTool } = require('../../../.argo/scripts/argo-mcp-server.js');
 const {
   assertFreshReadinessPerQuery,
+  assertBusinessAgentUnawareWorkflow,
   assertSolePublicSemanticSurface,
   observeFreshReadinessPerQuery,
   observeSolePublicSemanticSurface,
@@ -80,6 +81,10 @@ async function main() {
   // THEN getSystemArchitecture is the sole architecture read/query semantic surface
   const publicSurface = await observeSolePublicSemanticSurface();
   assertSolePublicSemanticSurface(publicSurface);
+
+  // THEN BP-AUTOALIGN keeps lifecycle work inside MCP/script boundaries; normal
+  // Agent read/write paths must not require manual init/backfill/readiness calls.
+  assertBusinessAgentUnawareWorkflow(publicSurface, semanticQueries);
 }
 
 function readListedGetSystemArchitectureTool() {

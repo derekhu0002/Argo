@@ -3,9 +3,11 @@ const {
   assertExportedUnifiedActionableFailureEvidence,
   assertFullSnapshotCompatibility,
   runAnchoredGraphTidyCompatibilityControl,
-  assertReadinessMatrix,
+  assertBusinessQueryAutoAlignment,
+  assertBusinessQueryFailsClosed,
+  runBusinessQueryAlignmentFailureFixtures,
+  runBusinessQueryAutoAlignmentFixtures,
   runFullSnapshotCompatibilityControls,
-  runReadinessMatrix,
   runExportedUnifiedReadinessThroughWpP2,
 } = require('../../harness/productionDefaultRetrievalHarness.js');
 const {
@@ -16,12 +18,17 @@ const {
 async function main() {
   // GIVEN persistent structural-only SemanticIndexPending, partial, stale, failed,
   // unknown, version/channel-mismatched, and complete three-channel aligned states
-  const readinessOutcomes = await runReadinessMatrix();
+  const recoverableAutoAlignment = await runBusinessQueryAutoAlignmentFixtures();
+  const unrecoverableAlignmentFailure = await runBusinessQueryAlignmentFailureFixtures();
 
-  // WHEN pure semantic requests cross the shipped default uninjected MCP boundary
-  // THEN every non-aligned state fails before provider/vector work with actionable
-  // version/channel evidence and fullSnapshotFallback:false; only Aligned retrieves
-  assertReadinessMatrix(readinessOutcomes);
+  // WHEN ordinary semantic requests cross the shipped default uninjected MCP
+  // boundary with unaligned readiness
+  // THEN script-owned alignment runs, the original query is retried once, and
+  // unrecoverable alignment failures stay diagnostic with fullSnapshotFallback:false
+  assertSplitBusinessQueryRecovery(
+    recoverableAutoAlignment,
+    unrecoverableAlignmentFailure,
+  );
 
   // THEN no-argument and graph-tidy requests remain exact full-snapshot bypasses
   const compatibilityControls = await runFullSnapshotCompatibilityControls();
@@ -44,3 +51,20 @@ main().catch(error => {
   console.error(error && error.stack ? error.stack : error);
   process.exit(1);
 });
+
+function assertSplitBusinessQueryRecovery(recoverableAutoAlignment, unrecoverableAlignmentFailure) {
+  const failures = [];
+  for (const [label, assertion] of [
+    ['recoverable', () => assertBusinessQueryAutoAlignment(recoverableAutoAlignment)],
+    ['unrecoverable', () => assertBusinessQueryFailsClosed(unrecoverableAlignmentFailure)],
+  ]) {
+    try {
+      assertion();
+    } catch (error) {
+      failures.push(`${label}: ${error && error.message ? error.message : error}`);
+    }
+  }
+  if (failures.length > 0) {
+    throw new Error(`BP_AUTOALIGN_QUERY_RECOVERY_SPLIT_FAILED\n${failures.join('\n')}`);
+  }
+}

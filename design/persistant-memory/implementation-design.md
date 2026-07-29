@@ -557,3 +557,38 @@
 - Post-delivery verification exposed an ImplementationDesign gap: the accepted BP-MCP-SEM tests proved anchor-activated and injected fixture paths, while real public ordinary `getSystemArchitecture(query)` calls without `query.anchors` still returned legacy business-summary/debug responses.
 - The corrected design keeps the intent semantics unchanged and strengthens implementation contracts, `runMcpSemanticQueryContract.js`, the explicit-entrypoint correctness guard, and `.argo/temp/ImplementationToCodingHandoff.json` so WP-1/WP-2 apply to no-anchor public `callTool` and unified MCP `tools/call` paths.
 - Revised expected RED scope is only `reject-response-shape-controls` and `canonical-object-subset-only` through their no-anchor public subcases. The previously delivered compatibility, Element, Relationship endpoint, broken Relationship, View membership, no-cascade, and broken View anchors remain passing frozen regression coverage. Coding remains limited to `.argo/scripts/systemarchitecture-mcp-server.js`; no intent trace proposal is needed.
+
+## 2026-07-29 BP-AUTOALIGN implementation design
+
+- Consumed accepted BP-AUTOALIGN intent graph scope for `bp-autoalign-write-completion`, `bp-autoalign-query-recovery`, `bp-autoalign-automation-boundary`, and `bp-autoalign-diagnostic-requirement`; no upstream intent trace proposal is required because acceptanceCriteria already point at graph-mounted implementation entry scripts.
+- Revised root and local contracts to supersede direct unaligned ordinary-query failure: governed writes are business-complete only after embedding generation, durable semantic projection, touched Element/ArchitectureRelationship/View queryability, global coherence, and readiness Aligned; ordinary semantic queries must auto-align and retry once; unrecoverable alignment fails closed with `fullSnapshotFallback:false`.
+- Materialized `tests/explicit/entries/runBusinessReliableSemanticLifecycle.js` plus BP assertions in `automaticSemanticLifecycleHarness.js` and `productionDefaultRetrievalHarness.js`. Graph-mounted scripts `runMutationIndexLifecycle.js`, `runProductionSemanticReadinessGate.js`, and `runTypedMcpQueryContract.js` now expose the accepted RED signals while matching intent graph acceptanceCriteria.
+- Wrote `.argo/temp/ImplementationToCodingHandoff.json` and `.argo/temp/bp-autoalign-expected-failures.json`. `validateStageHandoff(stage=implementation-to-coding)` passed through both local script and MCP after graph-path alignment.
+- Pre-coding full runner baseline is `61 total / 50 passed / 11 failed / 0 missing acceptanceCriteria`; BP-AUTOALIGN failures are expected REDs. Inherited out-of-scope failures remain W3.1 touched-record extraction and SP-03 approved-source attribution. Runner-owned deliveryStatus changes are preserved in `design/KG/SystemArchitecture.json`.
+
+## 2026-07-29 BP-AUTOALIGN testcase-design audit correction
+
+- IntentDesign audit found the query tests conflated recoverable auto-alignment and unrecoverable alignment failure by asserting both outcomes against the same `runReadinessMatrix()` output. The corrected design adds separate recoverable and unrecoverable BP fixtures in `productionDefaultRetrievalHarness.js`.
+- Recoverable fixtures now require exactly one observable `semantic-auto-alignment-attempt`, preservation of the original query, exactly one retry after successful alignment, two readiness reads total, and provider/vector work only after alignment. The current RED signal is `BP_AUTOALIGN_RECOVERABLE_ALIGNMENT_NOT_ATTEMPTED:semantic-disabled`.
+- Unrecoverable fixtures now require exactly one failed alignment attempt, preserved original query evidence, `SEMANTIC_AUTO_ALIGNMENT_FAILED`, `fullSnapshotFallback:false`, and zero provider/vector work after failed alignment. The current RED signal is `BP_AUTOALIGN_UNRECOVERABLE_ALIGNMENT_NOT_ATTEMPTED:semantic-disabled`.
+- Updated `.argo/temp/ImplementationToCodingHandoff.json`, `.argo/temp/bp-autoalign-expected-failures.json`, `tests/ARCHITECTURE.md`, and both BP query entrypoint paths. `validateStageHandoff(stage=implementation-to-coding)` passes by script and MCP after the correction.
+
+## 2026-07-29 BP-AUTOALIGN CodingAndReparing blocker correction
+
+- Classified the reported Agent-unaware and SP04 failures as an ImplementationDesign test/handoff gap, not a Coding bug: the production code was returning accepted BP-AUTOALIGN auto-alignment diagnostics, while SP04 still froze pre-BP `APPROVED_SECRET_REQUIRED` evidence and Agent-unaware still required provider work for every non-Aligned state.
+- Repaired `productionDefaultRetrievalHarness.js` so SP04 unified failure evidence uses an unrecoverable script-owned alignment fixture, expects `SEMANTIC_AUTO_ALIGNMENT_FAILED`, verifies one alignment attempt, and preserves `fullSnapshotFallback:false` with no secret leakage.
+- Repaired `automaticSemanticLifecycleHarness.js` so Agent-unaware accepts stable script-owned auto-alignment failure diagnostics when alignment cannot complete, while still rejecting old manual/direct-readiness behavior and fallback.
+- Updated `.argo/temp/ImplementationToCodingHandoff.json` and `.argo/temp/bp-autoalign-expected-failures.json`: all five BP-AUTOALIGN entrypoints now have current status `passed` and no BP expected failures remain. Full runner baseline after correction is `61 total / 60 passed / 1 failed / 0 missing acceptanceCriteria`; the only remaining failure is out-of-scope `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+
+## 2026-07-29 BP-AUTOALIGN handoff critical guard correction
+
+- Classified the critical guard failures as an ImplementationDesign handoff/frozen-set completeness gap. The old guards assumed `codingTargets[].path`, previous CSL/SP-05 entrypoint sets, and frozen WP-P2 `defaultSemanticRetrieval.js`; BP-AUTOALIGN correctly uses grouped `targetPaths[]` and reopens default retrieval for query auto-alignment.
+- Updated the five affected critical guards to normalize `path` and `targetPaths`, require the exact BP-AUTOALIGN authorized production target set, freeze unrelated provider/runtime/persistence boundaries, and trace only the five BP-AUTOALIGN explicit entrypoints.
+- Cleaned `.argo/temp/ImplementationToCodingHandoff.json`: removed stale passing-entry `failureReason` fields, froze the non-BP production boundaries, preserved runner-owned `deliveryStatus`, and replaced stale BP open gaps with the remaining out-of-scope SP-03 failure.
+- Affected critical guards now pass individually, and `validateStageHandoff(stage=implementation-to-coding)` passes. Full runner was not rerun because these changes are handoff/guard metadata and do not alter graph-mounted acceptance evidence or deliveryStatus.
+
+## 2026-07-29 BP-AUTOALIGN Coding delivery audit
+
+- Audited CodingAndReparing final evidence against `.argo/temp/ImplementationToCodingHandoff.json` and the accepted BP-AUTOALIGN implementation contract. Expected failures are empty, all five explicit BP entrypoints are marked passed, six critical guards are scoped to BP-AUTOALIGN, and `design/KG/test-failure-records.json` contains only the out-of-scope SP-03 attribution failure.
+- Fresh focused audit commands passed: `runBusinessReliableSemanticLifecycle.js`, `runMutationIndexLifecycle.js`, `runProductionSemanticReadinessGate.js`, `runTypedMcpQueryContract.js`, all six handoff critical guards, and `validateStageHandoff(stage=implementation-to-coding)`.
+- Audit result is PASS for BP-AUTOALIGN handoff-scoped delivery. Final IntentDesign delivery audit may proceed; remaining SP-03 default vector retrieval failure is outside the BP-AUTOALIGN handoff scope.

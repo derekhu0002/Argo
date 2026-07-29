@@ -378,6 +378,57 @@ async function runReadinessMatrix() {
   return Object.freeze(outcomes);
 }
 
+async function runBusinessQueryAutoAlignmentFixtures() {
+  const outcomes = [];
+  for (const definition of READINESS_CASES.filter(item => !item.expectedAccepted)) {
+    const query = {
+      purpose: 'implementation-design',
+      intent: `BP-AUTOALIGN recoverable readiness fixture ${definition.name}`,
+    };
+    const observation = await runDefaultSemanticScenario({
+      sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+      readiness: readinessFixture(definition),
+      candidatesByChannel: defaultCandidates(),
+      alignmentBehavior: {
+        mode: 'recoverable',
+        resultingReadiness: alignedReadiness(),
+      },
+      missingBoundaryCategory: 'BP_AUTOALIGN_DEFAULT_READINESS_BOUNDARY_MISSING',
+      query,
+    });
+    outcomes.push(Object.freeze({ definition, query, observation }));
+  }
+  return Object.freeze(outcomes);
+}
+
+async function runBusinessQueryAlignmentFailureFixtures() {
+  const outcomes = [];
+  for (const definition of READINESS_CASES.filter(item => !item.expectedAccepted)) {
+    const query = {
+      purpose: 'implementation-design',
+      intent: `BP-AUTOALIGN unrecoverable readiness fixture ${definition.name}`,
+    };
+    const observation = await runDefaultSemanticScenario({
+      sourceFixture: CREDENTIAL_SOURCE_CASES[0],
+      readiness: readinessFixture(definition),
+      candidatesByChannel: defaultCandidates(),
+      alignmentBehavior: {
+        mode: 'unrecoverable',
+        failure: {
+          category: 'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+          message: 'Semantic automatic alignment failed before retry.',
+          action: 'Repair semantic lifecycle alignment, then retry the original query.',
+          fullSnapshotFallback: false,
+        },
+      },
+      missingBoundaryCategory: 'BP_AUTOALIGN_DEFAULT_READINESS_BOUNDARY_MISSING',
+      query,
+    });
+    outcomes.push(Object.freeze({ definition, query, observation }));
+  }
+  return Object.freeze(outcomes);
+}
+
 async function runFullSnapshotCompatibilityControls() {
   const before = canonicalSnapshot();
   const noArgument = await callDefaultGetSystemArchitecture({});
@@ -563,6 +614,7 @@ async function runDefaultSemanticScenario({
   readiness,
   candidatesByChannel,
   query,
+  alignmentBehavior = undefined,
   missingBoundaryCategory = 'SP03_DEFAULT_VECTOR_RETRIEVAL_BOUNDARY_MISSING',
 }) {
   const boundary = loadDefaultRetrievalBoundary(missingBoundaryCategory);
@@ -574,6 +626,7 @@ async function runDefaultSemanticScenario({
   const observations = createRawProductionObservations({
     sourceFixture,
     readiness,
+    alignmentBehavior,
     candidatesByChannel,
   });
   const composition = {
@@ -593,10 +646,12 @@ async function runDefaultSemanticScenario({
     providerRequests: observations.providerRequests(),
     providerResponses: observations.providerResponses(),
     readinessReads: observations.readinessReads(),
+    alignmentAttempts: observations.alignmentAttempts(),
     vectorQueries: observations.vectorQueries(),
     vectorWindowResponses: observations.vectorWindowResponses(),
     expectedCandidates: candidatesByChannel,
     sourceFixture,
+    query,
   });
 }
 
@@ -604,6 +659,7 @@ function createRawProductionObservations({
   sourceFixture,
   readiness,
   readinessDriver = undefined,
+  alignmentBehavior = undefined,
   sourceRoot = repoRoot,
   candidatesByChannel,
 }) {
@@ -611,8 +667,10 @@ function createRawProductionObservations({
   const providerCalls = [];
   const providerResponseVectors = [];
   const readinessOperations = [];
+  const alignmentOperations = [];
   const vectorOperations = [];
   const vectorResponses = [];
+  let currentReadiness = readiness;
   let sequence = 0;
   const record = (kind, detail = {}) => {
     const event = Object.freeze({ sequence: ++sequence, kind, ...detail });
@@ -645,13 +703,34 @@ function createRawProductionObservations({
         const event = record('semantic-readiness-read');
         const result = readinessDriver
           ? await readinessDriver.execute(operation)
-          : { records: [readiness] };
+          : { records: [currentReadiness] };
         readinessOperations.push(Object.freeze({
           sequence: event.sequence,
           ...freezeOperation(operation),
           record: result && result.records && result.records[0],
         }));
         return result;
+      }
+      if (operation && operation.kind === 'semantic-auto-alignment-attempt') {
+        const event = record('semantic-auto-alignment-attempt');
+        const frozenOperation = Object.freeze({
+          sequence: event.sequence,
+          ...freezeOperation(operation),
+        });
+        alignmentOperations.push(frozenOperation);
+        if (!alignmentBehavior) {
+          throw new Error('BP_AUTOALIGN_ALIGNMENT_BEHAVIOR_MISSING');
+        }
+        if (alignmentBehavior.mode === 'unrecoverable') {
+          const failure = new Error(alignmentBehavior.failure.category);
+          Object.assign(failure, alignmentBehavior.failure);
+          throw failure;
+        }
+        currentReadiness = alignmentBehavior.resultingReadiness;
+        return {
+          status: 'aligned',
+          readiness: currentReadiness,
+        };
       }
       if (operation && operation.kind === 'semantic-vector-window-query') {
         const event = record('semantic-vector-window-query', {
@@ -700,6 +779,7 @@ function createRawProductionObservations({
     providerRequests: () => Object.freeze([...providerCalls]),
     providerResponses: () => Object.freeze([...providerResponseVectors]),
     readinessReads: () => Object.freeze([...readinessOperations]),
+    alignmentAttempts: () => Object.freeze([...alignmentOperations]),
     vectorQueries: () => Object.freeze([...vectorOperations]),
     vectorWindowResponses: () => Object.freeze([...vectorResponses]),
   });
@@ -1311,6 +1391,88 @@ function assertReadinessMatrix(outcomes) {
   }
 }
 
+function assertBusinessQueryAutoAlignment(outcomes) {
+  assert(outcomes.length > 0, 'BP_AUTOALIGN_RECOVERABLE_FIXTURES_EMPTY');
+  for (const { definition, observation } of outcomes) {
+    assert.strictEqual(
+      observation.alignmentAttempts.length,
+      1,
+      `BP_AUTOALIGN_RECOVERABLE_ALIGNMENT_NOT_ATTEMPTED:${definition.name}`,
+    );
+    assert.deepStrictEqual(
+      observation.alignmentAttempts[0].originalQuery,
+      observation.query,
+      `BP_AUTOALIGN_RECOVERABLE_ORIGINAL_QUERY_NOT_PRESERVED:${definition.name}`,
+    );
+    assert.strictEqual(
+      observation.result && observation.result.status,
+      'passed',
+      `BP_AUTOALIGN_QUERY_NOT_RETRIED_AFTER_ALIGNMENT:${definition.name}`,
+    );
+    assert.strictEqual(
+      observation.result && observation.result.error,
+      undefined,
+      `BP_AUTOALIGN_QUERY_RETURNED_ERROR_AFTER_ALIGNMENT:${definition.name}`,
+    );
+    assert(
+      observation.readinessReads.length === 2,
+      `BP_AUTOALIGN_QUERY_RETRY_COUNT_NOT_EXACT:${definition.name}`,
+    );
+    assert.strictEqual(
+      observation.providerRequests.length,
+      1,
+      `BP_AUTOALIGN_QUERY_PROVIDER_NOT_REACHED_AFTER_ALIGNMENT:${definition.name}`,
+    );
+    assert(
+      observation.vectorQueries.length >= CHANNELS.length,
+      `BP_AUTOALIGN_QUERY_VECTOR_NOT_REACHED_AFTER_ALIGNMENT:${definition.name}`,
+    );
+    assert(
+      observation.providerRequests[0].sequence > observation.alignmentAttempts[0].sequence,
+      `BP_AUTOALIGN_QUERY_PROVIDER_BEFORE_ALIGNMENT:${definition.name}`,
+    );
+  }
+}
+
+function assertBusinessQueryFailsClosed(outcomes) {
+  assert(outcomes.length > 0, 'BP_AUTOALIGN_UNRECOVERABLE_FIXTURES_EMPTY');
+  for (const { definition, observation } of outcomes) {
+    assert.strictEqual(
+      observation.alignmentAttempts.length,
+      1,
+      `BP_AUTOALIGN_UNRECOVERABLE_ALIGNMENT_NOT_ATTEMPTED:${definition.name}`,
+    );
+    assert.deepStrictEqual(
+      observation.alignmentAttempts[0].originalQuery,
+      observation.query,
+      `BP_AUTOALIGN_UNRECOVERABLE_ORIGINAL_QUERY_NOT_PRESERVED:${definition.name}`,
+    );
+    const error = observation.result && observation.result.error;
+    assert.strictEqual(observation.result && observation.result.status, 'failed', `BP_AUTOALIGN_UNRECOVERABLE_QUERY_ACCEPTED:${definition.name}`);
+    assert.strictEqual(
+      error && error.category,
+      'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+      `BP_AUTOALIGN_UNRECOVERABLE_CATEGORY_UNSTABLE:${definition.name}`,
+    );
+    assert.strictEqual(
+      error && error.fullSnapshotFallback,
+      false,
+      `BP_AUTOALIGN_UNRECOVERABLE_SNAPSHOT_FALLBACK:${definition.name}`,
+    );
+    assert(error && error.action, `BP_AUTOALIGN_UNRECOVERABLE_ACTION_MISSING:${definition.name}`);
+    assert.strictEqual(
+      observation.providerRequests.length,
+      0,
+      `BP_AUTOALIGN_UNRECOVERABLE_REACHED_PROVIDER:${definition.name}`,
+    );
+    assert.strictEqual(
+      observation.vectorQueries.length,
+      0,
+      `BP_AUTOALIGN_UNRECOVERABLE_REACHED_VECTOR:${definition.name}`,
+    );
+  }
+}
+
 function assertReadinessBeforeProviderAndVector(observation, prefix) {
   assertReadinessBeforeProviderAndVectorCounts(observation, prefix, 6);
 }
@@ -1754,6 +1916,15 @@ async function runExportedUnifiedReadinessThroughWpP2() {
       sourceFixture: CREDENTIAL_SOURCE_CASES[0],
       readiness: undefined,
       sourceRoot: workspaceRoot,
+      alignmentBehavior: {
+        mode: 'unrecoverable',
+        failure: {
+          category: 'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+          message: 'Semantic automatic alignment failed before retry.',
+          action: 'Repair semantic lifecycle alignment, then retry the original query.',
+          fullSnapshotFallback: false,
+        },
+      },
       candidatesByChannel: defaultCandidates(),
     });
     const composition = {
@@ -1871,6 +2042,7 @@ function exportedObservationIndexes(observations) {
     providerRequests: observations.providerRequests().length,
     providerResponses: observations.providerResponses().length,
     readinessReads: observations.readinessReads().length,
+    alignmentAttempts: observations.alignmentAttempts().length,
     vectorQueries: observations.vectorQueries().length,
     vectorWindowResponses: observations.vectorWindowResponses().length,
   });
@@ -1882,6 +2054,7 @@ function exportedObservationSlice(observations, before, expectedCandidates) {
     providerRequests: observations.providerRequests().slice(before.providerRequests),
     providerResponses: observations.providerResponses().slice(before.providerResponses),
     readinessReads: observations.readinessReads().slice(before.readinessReads),
+    alignmentAttempts: observations.alignmentAttempts().slice(before.alignmentAttempts),
     vectorQueries: observations.vectorQueries().slice(before.vectorQueries),
     vectorWindowResponses: observations.vectorWindowResponses().slice(before.vectorWindowResponses),
     expectedCandidates,
@@ -1936,24 +2109,30 @@ function assertExportedUnifiedActionableFailureEvidence(observation) {
       'failed',
       `SP04_${dispatcher.toUpperCase()}_DURABLE_FAILURE_NOT_REJECTED`,
     );
+    const expectedError = {
+      category: 'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+      message: 'Semantic automatic alignment failed before retry.',
+      action: 'Repair semantic lifecycle alignment, then retry the original query.',
+      fullSnapshotFallback: false,
+      state: 'Failed',
+      canonicalVersion: canonicalVersion(),
+      contentVersion: CONTENT_VERSION,
+      indexVersion: INDEX_VERSION,
+      completedChannels: [],
+      missingChannels: [...CHANNELS],
+      mismatchedChannels: [],
+    };
     assert.deepStrictEqual(
       failedPayload.error,
-      {
-        category: 'APPROVED_SECRET_REQUIRED',
-        message: 'Approved external semantic credential is required.',
-        action: 'Provide approved external semantic configuration, then retry.',
-        fullSnapshotFallback: false,
-        state: 'Failed',
-        canonicalVersion: canonicalVersion(),
-        contentVersion: CONTENT_VERSION,
-        indexVersion: INDEX_VERSION,
-        completedChannels: [],
-        missingChannels: [...CHANNELS],
-        mismatchedChannels: [],
-      },
+      expectedError,
       dispatcher === 'system'
         ? UNIFIED_WP_P2_FAILURES.systemFailure
         : UNIFIED_WP_P2_FAILURES.unifiedFailure,
+    );
+    assert.strictEqual(
+      failed.observation.alignmentAttempts.length,
+      1,
+      `SP04_${dispatcher.toUpperCase()}_AUTO_ALIGNMENT_NOT_ATTEMPTED`,
     );
     assert.strictEqual(
       failed.observation.providerRequests.length,
@@ -2121,6 +2300,8 @@ function exportedEffectDelta(before, after) {
 
 module.exports = {
   assertAnchoredGraphTidyCompatibility,
+  assertBusinessQueryAutoAlignment,
+  assertBusinessQueryFailsClosed,
   assertCredentialSourceMatrix,
   assertDefaultVectorRetrieval,
   assertFullSnapshotCompatibility,
@@ -2134,6 +2315,8 @@ module.exports = {
   inspectFrozenRawEvidenceContract,
   runRawEvidenceAssertionSelfTests,
   runAnchoredGraphTidyCompatibilityControl,
+  runBusinessQueryAlignmentFailureFixtures,
+  runBusinessQueryAutoAlignmentFixtures,
   runCredentialSourceMatrix,
   runProductionQueryCredentialResolution,
   runProductionQueryMixedLegacyRejections,

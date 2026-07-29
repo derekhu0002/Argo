@@ -1311,9 +1311,11 @@ async function attachMutationEmbeddingLifecycle(context, result, document) {
     });
     result.embeddingLifecycle = embeddingLifecycle;
     result.alignment = embeddingLifecycle.alignment || buildMutationAlignment(embeddingLifecycle);
+    result.businessComplete = result.alignment && result.alignment.state === 'Aligned';
   } catch (error) {
     result.embeddingLifecycle = buildMutationEmbeddingLifecycleFailure(error, result);
     result.alignment = buildMutationAlignment(result.embeddingLifecycle);
+    result.businessComplete = false;
   }
 }
 
@@ -1900,6 +1902,13 @@ async function executeSemanticSystemArchitectureQuery(args, dependencies) {
         semanticErrorEvidence[field] = error[field];
       }
     }
+    if (
+      error
+      && error.category === 'SEMANTIC_AUTO_ALIGNMENT_FAILED'
+      && typeof semanticErrorEvidence.action !== 'string'
+    ) {
+      semanticErrorEvidence.action = 'Repair semantic lifecycle alignment, then retry the original query.';
+    }
     return getSystemArchitectureResult(queryError(
       error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
       error && error.message ? error.message : 'Semantic retrieval failed',
@@ -2008,7 +2017,10 @@ function applySemanticResponseProfile(response, query, options = {}) {
   if (!isCanonicalSubsetSemanticContract(query, options)) {
     if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
     const payload = parseToolResponsePayload(response);
-    if (!payload || payload.status === 'failed') return response;
+    if (!payload) return response;
+    if (payload.status === 'failed') {
+      return normalizeFailedSemanticResponse(payload, response);
+    }
     const source = payload.result || payload.document;
     const summary = buildBusinessSemanticSummary(source, query);
     const { document: _omittedDocument, ...payloadWithoutDocument } = payload;
@@ -2022,7 +2034,10 @@ function applySemanticResponseProfile(response, query, options = {}) {
     });
   }
   const payload = parseToolResponsePayload(response);
-  if (!payload || payload.status === 'failed') return response;
+  if (!payload) return response;
+  if (payload.status === 'failed') {
+    return normalizeFailedSemanticResponse(payload, response);
+  }
   const source = payload.result || payload.document;
   const subset = buildCanonicalSemanticDocumentSubset(source, options.canonicalDocument);
   if (subset.status === 'failed') {
@@ -2037,6 +2052,20 @@ function applySemanticResponseProfile(response, query, options = {}) {
       semanticRetrieval: 'invoked',
     },
     document: subset.document,
+  });
+}
+
+function normalizeFailedSemanticResponse(payload, fallbackResponse) {
+  const error = payload && payload.error;
+  if (!error || error.category !== 'SEMANTIC_AUTO_ALIGNMENT_FAILED' || typeof error.action === 'string') {
+    return fallbackResponse;
+  }
+  return getSystemArchitectureResult({
+    ...payload,
+    error: {
+      ...error,
+      action: 'Repair semantic lifecycle alignment, then retry the original query.',
+    },
   });
 }
 

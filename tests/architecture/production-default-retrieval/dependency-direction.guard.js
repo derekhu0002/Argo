@@ -4,16 +4,29 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+const allowedTargets = new Set([
+  '.argo/scripts/argo-mcp-server.js',
+  '.argo/scripts/systemarchitecture-mcp-server.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+  '.argo/scripts/graph-rag/semanticOperatorJourney.js',
+]);
 const protectedBoundaries = new Set([
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/liveEmbeddingProviderClient.js',
+  '.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js',
   '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ]);
 
 // GIVEN the approved WP-P2 implementation dependency direction
 // WHEN Coding targets and present production sources are inspected
 // THEN changes stay inside the MCP composition and Graph RAG inward boundary
-const authorizedTargetPaths = (handoff.codingTargets || []).map(target => target.path).sort();
+const authorizedTargetPaths = normalizedTargetPaths(handoff).sort();
+assert.deepStrictEqual(
+  authorizedTargetPaths,
+  [...allowedTargets].sort(),
+  'WP_P2_DEPENDENCY_DIRECTION_GUARD: BP target set changed',
+);
 assert.deepStrictEqual(
   authorizedTargetPaths.filter(target => (handoff.frozenFiles || []).includes(target)),
   [],
@@ -26,6 +39,10 @@ for (const protectedBoundary of protectedBoundaries) {
     `WP_P2_DEPENDENCY_DIRECTION_GUARD: accepted WP-P2 boundary is not frozen ${protectedBoundary}`,
   );
 }
+assert(
+  authorizedTargetPaths.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'),
+  'WP_P2_DEPENDENCY_DIRECTION_GUARD: BP query recovery target missing',
+);
 
 for (const relativePath of protectedBoundaries) {
   const absolutePath = path.join(repoRoot, ...relativePath.split('/'));
@@ -58,4 +75,15 @@ for (const dependencyRule of [
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');
+}
+
+function normalizedTargetPaths(handoff) {
+  return [
+    ...new Set(
+      (handoff.codingTargets || []).flatMap(target => {
+        if (target.path) return [target.path];
+        return target.targetPaths || [];
+      }),
+    ),
+  ];
 }

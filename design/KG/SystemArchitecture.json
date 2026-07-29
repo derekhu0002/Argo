@@ -1268,7 +1268,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -1988,7 +1988,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2037,7 +2037,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2106,7 +2106,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2235,7 +2235,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -2292,7 +2292,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "not_delivered"
+          "value": "delivered"
         }
       ],
       "testcases": [
@@ -3177,6 +3177,10 @@
         {
           "name": "decisionTrace.BP-AUTOALIGN-A3",
           "value": "rejected|async semantic catch-up after success violates required aligned success"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3185,14 +3189,14 @@
           "description": "Control point: business acceptor submits a legal intent-architecture write through the governed write entry. Observation point: the success response proves Element, ArchitectureRelationship, and View semantic readiness are Aligned and a following ordinary semantic query succeeds without unaligned rejection.",
           "type": "Acceptance Test",
           "Input": "Legal governed intent-architecture write touching Element, ArchitectureRelationship, and View channels, followed by an ordinary semantic query.",
-          "acceptanceCriteria": "business-semantics: write success requires CanonicalWrittenAndSemanticAligned evidence before ordinary query succeeds."
+          "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-WRITE-FAILURE-NOT-COMPLETE",
           "description": "Control point: business acceptor submits a legal write while embedding provider, projection persistence, queryability, or coherence fails. Observation point: operation is not reported as business-complete and exposes stable diagnostic category/action while preserving no secret leakage.",
           "type": "Acceptance Test",
           "Input": "Legal governed write with injected embedding provider, durable projection, queryability, or global coherence failure.",
-          "acceptanceCriteria": "business-semantics: canonical authority may remain, but business completion is withheld and diagnostic output is stable and secret-safe."
+          "acceptanceCriteria": "tests/explicit/entries/runMutationIndexLifecycle.js"
         }
       ]
     },
@@ -3213,6 +3217,10 @@
         {
           "name": "decisionTrace.BP-AUTOALIGN-B3",
           "value": "rejected|silent full-snapshot fallback hides semantic drift"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3221,14 +3229,14 @@
           "description": "Control point: business acceptor issues an ordinary semantic query while readiness is Failed, Stale, Pending, partial, or version/channel mismatched. Observation point: automatic script-owned alignment runs first, the original query is retried once, and success returns semantic results only after Aligned.",
           "type": "Acceptance Test",
           "Input": "Ordinary semantic query under every unaligned readiness class with an alignment-capable environment.",
-          "acceptanceCriteria": "business-semantics: alignment is script-owned, retry count is one, and success is semantic-only after Aligned."
+          "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js"
         },
         {
           "name": "ExplicitAcceptanceTestcase-BP-AUTOALIGN-QUERY-FAILS-CLOSED",
           "description": "Control point: business acceptor issues an ordinary semantic query while readiness is unaligned and automatic alignment cannot complete. Observation point: response is a stable business-diagnostic failure with no silent full-snapshot fallback.",
           "type": "Acceptance Test",
           "Input": "Ordinary semantic query under unaligned readiness with provider, persistence, queryability, coherence, or safe-configuration failure during automatic alignment.",
-          "acceptanceCriteria": "business-semantics: failure is closed, diagnostic, redacted, and fullSnapshotFallback remains false."
+          "acceptanceCriteria": "tests/explicit/entries/runProductionSemanticReadinessGate.js"
         }
       ]
     },
@@ -3249,6 +3257,10 @@
         {
           "name": "decisionTrace.BP-AUTOALIGN-C3",
           "value": "rejected|human manual init/backfill/readiness is not required for ordinary operation"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3257,7 +3269,7 @@
           "description": "Control point: Agent performs normal read/write through standard MCP/script surfaces. Observation point: no Agent-visible requirement to call init/backfill/readiness appears in the accepted workflow; lifecycle actions are script/MCP owned.",
           "type": "Acceptance Test",
           "Input": "Normal Agent read and write workflows through public MCP/script surfaces.",
-          "acceptanceCriteria": "business-semantics: standard workflows expose no manual lifecycle-command dependency."
+          "acceptanceCriteria": "tests/explicit/entries/runTypedMcpQueryContract.js"
         }
       ]
     },

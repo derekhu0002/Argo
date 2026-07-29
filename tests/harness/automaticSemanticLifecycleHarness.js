@@ -857,6 +857,70 @@ function assertPersistentIncrementalMatrix(observation, prefix) {
   assertSharedReadinessRecovery(observation.sharedReadinessRecovery, prefix);
 }
 
+function assertBusinessReliableWriteCompletion(observation) {
+  assertPersistentIncrementalMatrix(observation, 'BP_AUTOALIGN_WRITE');
+  for (const result of observation.results) {
+    const payload = extractToolPayload(result.result);
+    assert.strictEqual(payload.written, true, `BP_AUTOALIGN_WRITE_CANONICAL_NOT_WRITTEN:${result.mutation.kind}`);
+    assert.strictEqual(
+      payload.businessComplete,
+      true,
+      `BP_AUTOALIGN_WRITE_SUCCESS_NOT_BUSINESS_COMPLETE:${result.mutation.kind}`,
+    );
+    assert.strictEqual(
+      payload.alignment && payload.alignment.state,
+      'Aligned',
+      `BP_AUTOALIGN_WRITE_SUCCESS_NOT_ALIGNED:${result.mutation.kind}`,
+    );
+  }
+  for (const name of MUTATION_FAILURE_SCENARIOS) {
+    const scenario = observation.scenarios.find(item => item.name === name);
+    const payload = extractToolPayload(scenario.observation.result);
+    assert.strictEqual(
+      payload.businessComplete,
+      false,
+      `BP_AUTOALIGN_WRITE_FAILURE_REPORTED_COMPLETE:${name}`,
+    );
+    const diagnostic = (payload && (payload.error || payload.alignment)) || {};
+    assert(diagnostic.category, `BP_AUTOALIGN_WRITE_FAILURE_CATEGORY_MISSING:${name}`);
+    assert(diagnostic.action, `BP_AUTOALIGN_WRITE_FAILURE_ACTION_MISSING:${name}`);
+    assert.strictEqual(
+      diagnostic.fullSnapshotFallback,
+      false,
+      `BP_AUTOALIGN_WRITE_FAILURE_SNAPSHOT_FALLBACK:${name}`,
+    );
+    assert(!JSON.stringify(payload).includes(SECRET_CANARY), `BP_AUTOALIGN_WRITE_FAILURE_SECRET_LEAK:${name}`);
+  }
+}
+
+function assertBusinessAgentUnawareWorkflow(publicSurface, semanticQueries) {
+  assertSolePublicSemanticSurface(publicSurface);
+  for (const scenario of semanticQueries.filter(item => item.readiness.state !== 'Aligned')) {
+    for (const outcome of scenario.outcomes) {
+      const error = exportedPublicError(outcome);
+      if (outcome.result && outcome.result.isError === true) {
+        assert.strictEqual(
+          error && error.category,
+          'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+          `BP_AUTOALIGN_AGENT_REQUIRED_MANUAL_ALIGNMENT:${scenario.readiness.state}:${outcome.dispatcher}`,
+        );
+        assert.strictEqual(
+          error && error.fullSnapshotFallback,
+          false,
+          `BP_AUTOALIGN_AGENT_SNAPSHOT_FALLBACK:${scenario.readiness.state}:${outcome.dispatcher}`,
+        );
+        assert(error && error.action, `BP_AUTOALIGN_AGENT_ACTION_MISSING:${scenario.readiness.state}:${outcome.dispatcher}`);
+        continue;
+      }
+      assert.strictEqual(
+        outcome.effects.providerRequests,
+        1,
+        `BP_AUTOALIGN_AGENT_QUERY_DID_NOT_AUTO_ALIGN:${scenario.readiness.state}:${outcome.dispatcher}`,
+      );
+    }
+  }
+}
+
 function assertDurableQueryReadSameRecord(queryEvidence, prefix) {
   assert(queryEvidence.recordBefore, `${prefix}_DURABLE_RECORD_BEFORE_QUERY_MISSING`);
   assert.deepStrictEqual(
@@ -2026,6 +2090,8 @@ function restoreEnvironment(previous) {
 
 module.exports = {
   assertAutomaticInitLifecycle,
+  assertBusinessAgentUnawareWorkflow,
+  assertBusinessReliableWriteCompletion,
   assertFreshReadinessPerQuery,
   assertPrivateFullReconciliation,
   assertPersistentIncrementalMatrix,

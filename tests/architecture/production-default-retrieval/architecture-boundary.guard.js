@@ -7,8 +7,15 @@ const root = read('OVERALL_ARCHITECTURE.md');
 const local = read('.argo/scripts/graph-rag/ARCHITECTURE.md');
 const tests = read('tests/ARCHITECTURE.md');
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+const AUTHORIZED_TARGETS = [
+  '.argo/scripts/argo-mcp-server.js',
+  '.argo/scripts/systemarchitecture-mcp-server.js',
+  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
+  '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js',
+  '.argo/scripts/graph-rag/semanticOperatorJourney.js',
+];
 
-// GIVEN the approved seven-element WP-P2 stable boundary and frozen exclusions
+// GIVEN the approved BP-AUTOALIGN query-recovery boundary and frozen exclusions
 // WHEN root/local/test contracts and Coding authorization are inspected
 // THEN the uninjected default retrieval and fail-closed readiness contracts are explicit
 for (const required of [
@@ -18,42 +25,16 @@ for (const required of [
   'SemanticIndexPending',
   'fullSnapshotFallback: false',
   'Element, ArchitectureRelationship, and View',
-  'ready-made environment',
-  'zero-read success is forbidden',
-  'directly read and attribute',
-  'mixed valid-canonical-plus-any-legacy-alias',
-  'Legacy inspection is mandatory',
-  'never be attributed, selected',
-  'test/default',
-  'explicit content-version mismatch',
-  'explicit index-version mismatch',
-  'single ordered ledger',
-  'windowExhausted',
-  'qualifying peers beyond the initial',
-  'argo_production_semantic_element_vector',
-  'argo_production_semantic_relationship_vector',
-  'argo_production_semantic_view_vector',
-  'db.index.vector.queryNodes($indexName, $topK, $vector)',
-  'unmodified raw provider vector',
-  'all-zero result',
-  'Fixed top-k may optimize',
-  'w5.implementation-design.v1',
-  'exact ArchiMate Realization direction',
-  'endpoint source/target objects',
-  'complete selected View metadata',
-  'parent viewpoint',
-  'versioned member and relationship endpoint objects',
-  'unique first-inclusion provenance for every returned object',
-  'overlapping-View exclusion',
   'canonical/content/index versions',
-  'approved-test profiles',
-  'synthetic empty seeds',
-  'production-semantic-query',
-  'without E2E-only opt-ins',
+  'ordinary semantic queries',
+  'aligns automatically',
+  'one retry',
+  'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+  'script-owned',
+  'zero provider/vector work',
+  'silent full-snapshot fallback',
   'including anchored graph-tidy',
   'zero semantic operations',
-  'SP-05/WP-P3',
-  'runDefaultMcpNeo4jVectorRetrieval.js',
   'runProductionSemanticReadinessGate.js',
 ]) {
   assert(
@@ -68,17 +49,25 @@ const authorization = JSON.stringify({
   taskExecutionPlan: handoff.taskExecutionPlan,
   openGaps: handoff.openGaps,
 });
+const targetPaths = normalizedTargetPaths(handoff);
+assert.deepStrictEqual(
+  targetPaths.sort(),
+  AUTHORIZED_TARGETS.sort(),
+  'WP_P2_ARCHITECTURE_BOUNDARY_GUARD: BP target set changed',
+);
 for (const protectedBoundary of [
-  '.argo/scripts/graph-rag/defaultSemanticRetrieval.js',
   '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js',
+  '.argo/scripts/graph-rag/liveEmbeddingProviderClient.js',
+  '.argo/scripts/graph-rag/liveEmbeddingNeo4jBoundary.js',
   '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ]) {
   assert(
-    !handoff.codingTargets.some(target => target.path === protectedBoundary)
+    !targetPaths.includes(protectedBoundary)
       && handoff.frozenFiles.includes(protectedBoundary),
     `WP_P2_ARCHITECTURE_BOUNDARY_GUARD: accepted WP-P2 boundary changed authorization ${protectedBoundary}`,
   );
 }
+assert(targetPaths.includes('.argo/scripts/graph-rag/defaultSemanticRetrieval.js'), 'WP_P2_ARCHITECTURE_BOUNDARY_GUARD: BP query recovery target missing');
 assert(!/deliveryStatus/.test(JSON.stringify(handoff.codingTargets)), 'WP_P2_ARCHITECTURE_BOUNDARY_GUARD: manual deliveryStatus target is forbidden');
 assert(
   /runner-owned deliveryStatus/i.test(handoff.taskExecutionPlan.executionStrategy),
@@ -87,4 +76,15 @@ assert(
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, ...relativePath.split('/')), 'utf8');
+}
+
+function normalizedTargetPaths(handoff) {
+  return [
+    ...new Set(
+      (handoff.codingTargets || []).flatMap(target => {
+        if (target.path) return [target.path];
+        return target.targetPaths || [];
+      }),
+    ),
+  ];
 }

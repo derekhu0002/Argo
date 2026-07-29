@@ -6,29 +6,22 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graph = JSON.parse(read('design/KG/SystemArchitecture.json'));
 const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
 const expected = new Map([
-  ['ExplicitAcceptanceTestcase-SP-05-NewProjectJourney', 'tests/explicit/entries/runNewProjectSemanticOperatorJourney.js'],
-  ['ExplicitAcceptanceTestcase-SP-01-FullBackfill', 'tests/explicit/entries/runProductionSemanticBackfill.js'],
-  ['ExplicitAcceptanceTestcase-SP-02-PersistentProjection', 'tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js'],
-  ['ExplicitAcceptanceTestcase-DT-16', 'tests/explicit/entries/runMutationIndexLifecycle.js'],
-  ['ExplicitAcceptanceTestcase-DT-16-SemanticIndex', 'tests/explicit/entries/runMutationIndexLifecycle.js'],
-  ['ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E', 'tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js'],
-  ['ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval', 'tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js'],
-  ['ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness', 'tests/explicit/entries/runProductionSemanticReadinessGate.js'],
-  ['ExplicitAcceptanceTestcase-TS-00', 'tests/explicit/entries/runTypedMcpQueryContract.js'],
+  ['ExplicitAcceptanceTestcase-BP-AUTOALIGN-WRITE-ALIGNED', 'tests/explicit/entries/runMutationIndexLifecycle.js'],
+  ['ExplicitAcceptanceTestcase-BP-AUTOALIGN-WRITE-FAILURE-NOT-COMPLETE', 'tests/explicit/entries/runMutationIndexLifecycle.js'],
+  ['ExplicitAcceptanceTestcase-BP-AUTOALIGN-QUERY-AUTOALIGN', 'tests/explicit/entries/runProductionSemanticReadinessGate.js'],
+  ['ExplicitAcceptanceTestcase-BP-AUTOALIGN-QUERY-FAILS-CLOSED', 'tests/explicit/entries/runProductionSemanticReadinessGate.js'],
+  ['ExplicitAcceptanceTestcase-BP-AUTOALIGN-AGENT-UNAWARE', 'tests/explicit/entries/runTypedMcpQueryContract.js'],
 ]);
 const intentIds = new Set([
-  'semprod-operator-journey-process',
-  'semprod-backfill-control',
-  'semprod-persistent-projection-requirement',
-  'grag-index-lifecycle',
-  'grag-wp-3-1',
-  'semprod-default-vector-retrieval',
-  'semprod-readiness-requirement',
-  'grag-query-service',
-  'grag-mcp-interface',
+  'bp-autoalign-goal',
+  'bp-autoalign-write-completion',
+  'bp-autoalign-query-recovery',
+  'bp-autoalign-automation-boundary',
+  'bp-autoalign-diagnostic-requirement',
+  'bp-autoalign-reliable-response',
 ]);
 
-// GIVEN accepted intent mappings
+// GIVEN accepted BP-AUTOALIGN intent mappings
 // WHEN graph testcase paths and the handoff are inspected
 // THEN every scoped testcase has one exact frozen physical entrypoint
 const graphCases = new Map();

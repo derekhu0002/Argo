@@ -1,6 +1,7 @@
 const assert = require('node:assert');
 const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
 const {
+  assertBusinessReliableWriteCompletion,
   assertPersistentIncrementalMatrix,
   runPersistentIncrementalMatrix,
 } = require('../../harness/automaticSemanticLifecycleHarness.js');
@@ -67,6 +68,12 @@ async function main() {
   // THEN readiness invalidates first, exact touched IDs upsert/tombstone without runId
   // cleanup, and alignment waits for queryability plus global coherence
   assertPersistentIncrementalMatrix(persistentIncremental, 'DT16');
+
+  // THEN BP-AUTOALIGN write success is not business-complete until embedding
+  // generation, durable projection, touched queryability, global coherence, and
+  // three-channel readiness alignment complete; lifecycle failures are diagnostic
+  // business failures, not successful write completion.
+  assertBusinessReliableWriteCompletion(persistentIncremental);
 }
 
 main().catch(error => {

@@ -84,26 +84,31 @@ function createDefaultSemanticRetrieval(dependencies = {}) {
         ? undefined
         : readinessBoundary;
       let configurationEvidence = await composition.resolveConfiguration();
-      const evidence = await readAndEvaluatePersistentReadiness(
+      let evidence = await readAndEvaluatePersistentReadiness(
         composition,
         canonicalGraph,
         activeReadinessBoundary,
       );
-      const readiness = evidence.readiness;
-      const alignment = evidence.alignment;
-      if (!alignment.aligned) {
-        throw semanticIndexNotAligned({
-          ...alignment,
-          category: alignment.category,
-          message: alignment.message,
-          action: alignment.action,
+      if (!evidence.alignment.aligned) {
+        await attemptAutomaticAlignment({
+          composition,
+          request,
+          alignment: evidence.alignment,
         });
+        evidence = await readAndEvaluatePersistentReadiness(
+          composition,
+          canonicalGraph,
+          activeReadinessBoundary,
+        );
+        if (!evidence.alignment.aligned) {
+          throw semanticAutomaticAlignmentFailed(evidence.alignment);
+        }
       }
       return executeWpP2Retrieval({
         composition,
         request,
         canonicalGraph,
-        readiness,
+        readiness: evidence.readiness,
         configurationEvidence,
       });
     },
@@ -226,6 +231,9 @@ async function createProductionComposition(dependencies) {
 }
 
 async function executeProductionNeo4jOperation(configuration, operation) {
+  if (operation && operation.kind === 'semantic-auto-alignment-attempt') {
+    return runScriptOwnedSemanticAlignment(operation);
+  }
   const neo4j = require('neo4j-driver');
   const driver = neo4j.driver(
     configuration.neo4jDatabaseUrl,
@@ -266,6 +274,55 @@ async function executeProductionNeo4jOperation(configuration, operation) {
     await session.close();
     await driver.close();
   }
+}
+
+async function attemptAutomaticAlignment({ composition, request, alignment }) {
+  try {
+    const result = await composition.neo4jDriver.execute(Object.freeze({
+      kind: 'semantic-auto-alignment-attempt',
+      originalQuery: clone(request),
+      observedReadiness: Object.freeze({
+        state: alignment.state,
+        canonicalVersion: alignment.canonicalVersion,
+        contentVersion: alignment.contentVersion,
+        indexVersion: alignment.indexVersion,
+        completedChannels: alignment.completedChannels,
+        missingChannels: alignment.missingChannels,
+        mismatchedChannels: alignment.mismatchedChannels,
+        fullSnapshotFallback: false,
+      }),
+    }));
+    if (!result || result.status !== 'aligned') {
+      throw semanticAutomaticAlignmentFailed(alignment);
+    }
+    return result;
+  } catch (error) {
+    throw semanticAutomaticAlignmentFailed(alignment, error);
+  }
+}
+
+function runScriptOwnedSemanticAlignment(operation) {
+  const childProcess = require('node:child_process');
+  const repositoryRoot = process.env.ARGO_REPO_ROOT
+    || process.env.WORKSPACE_FOLDER
+    || path.resolve(__dirname, '..', '..', '..');
+  const scriptPath = path.join(repositoryRoot, '.argo', 'scripts', 'ensureArgoHarnessEnvironment.js');
+  const result = childProcess.spawnSync(process.execPath, [scriptPath], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+    env: process.env,
+  });
+  if (result.status === 0) {
+    return Object.freeze({
+      status: 'aligned',
+      originalQuery: operation && operation.originalQuery,
+    });
+  }
+  const error = safeError('SEMANTIC_AUTO_ALIGNMENT_FAILED');
+  error.message = 'Semantic automatic alignment failed before retry.';
+  error.action = 'Repair semantic lifecycle alignment, then retry the original query.';
+  error.fullSnapshotFallback = false;
+  return Promise.reject(error);
 }
 
 async function resolveRawTestConfiguration(sourceBehavior, sourceAdapters) {
@@ -830,6 +887,25 @@ function semanticIndexNotAligned(alignment) {
   error.completedChannels = alignment.completedChannels;
   error.missingChannels = alignment.missingChannels;
   error.mismatchedChannels = alignment.mismatchedChannels;
+  return error;
+}
+
+function semanticAutomaticAlignmentFailed(alignment, sourceError) {
+  const error = safeError('SEMANTIC_AUTO_ALIGNMENT_FAILED');
+  error.message = sourceError && sourceError.message
+    ? sourceError.message
+    : 'Semantic automatic alignment failed before retry.';
+  error.action = sourceError && typeof sourceError.action === 'string'
+    ? sourceError.action
+    : 'Repair semantic lifecycle alignment, then retry the original query.';
+  error.fullSnapshotFallback = false;
+  error.state = alignment && alignment.state;
+  error.canonicalVersion = alignment && alignment.canonicalVersion;
+  error.contentVersion = alignment && alignment.contentVersion;
+  error.indexVersion = alignment && alignment.indexVersion;
+  error.completedChannels = alignment && alignment.completedChannels;
+  error.missingChannels = alignment && alignment.missingChannels;
+  error.mismatchedChannels = alignment && alignment.mismatchedChannels;
   return error;
 }
 
