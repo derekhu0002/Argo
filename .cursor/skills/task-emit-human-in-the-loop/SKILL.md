@@ -26,7 +26,10 @@ disable-model-invocation: true
 
 ## Workflow
 
-1. 识别本次涉及的架构元素与已有验收用例，按以下结构输出WorkPackage：
+1. 识别本次涉及的架构元素与已有验收用例。
+2. 按可独立交付、可独立验收的粒度整理 `WorkPackage`。
+3. 为每个架构元素填写交付范围，以及可选的测试用例挂载信息。
+4. 按以下结构输出全部 `WorkPackage`：
 
 ```md
 ## WorkPackage 1
@@ -50,13 +53,7 @@ disable-model-invocation: true
 		- <testcase-id>: <testcase-name>
 ```
 
-如果一个任务包包含多个架构元素，则在同一个 `WorkPackage` 下为每个架构元素重复同样的结构，并分别填写各自的交付范围与测试用例。
-
-如果只有一个任务包，则只输出一个 `WorkPackage` 块；如果有多个任务包，则按 `WorkPackage 1`、`WorkPackage 2`、`WorkPackage 3` 依次编号。
-
-2. 按可独立交付、可独立验收的粒度整理 `WorkPackage`。
-3. 为每个架构元素填写交付范围，以及可选的测试用例挂载信息。
-4. 按约定结构输出全部 `WorkPackage`。
+如果一个任务包包含多个架构元素，则在同一个 `WorkPackage` 下为每个架构元素重复同样的结构，并分别填写各自的交付范围与测试用例。如果只有一个任务包，则只输出一个 `WorkPackage` 块；如果有多个任务包，则按 `WorkPackage 1`、`WorkPackage 2`、`WorkPackage 3` 依次编号。
 5. 在全部 `WorkPackage` 输出完成后，将 `WorkPackage`按依赖顺序Handoff给不同的`/FastOrchestrator`。Handoff必须严格按以下结构输出：
 
 ```md
