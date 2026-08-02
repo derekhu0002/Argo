@@ -13,12 +13,31 @@ const requiredIntentIds = [
   'grag-graph-tidy-policy',
   'grag-consumer-role',
   'grag-consumption-process',
+  'grag-purpose-closure',
+  'grag-intent-decision-policy',
+  'grag-implementation-policy',
+  'grag-repair-policy',
+  'grag-audit-policy',
+  'grag-coherent-context',
+  'grag-endpoint-closure',
+  'grag-view-closure',
+  'grag-provenance',
 ];
 const requiredEntrypoints = new Set([
   'tests/explicit/entries/runGraphQueryCompatibility.js',
   'tests/explicit/entries/runCanonicalGraphFullSnapshot.js',
+  'tests/explicit/entries/runCanonicalProjectionAuthority.js',
   'tests/explicit/entries/runQueryPurposeValidation.js',
   'tests/explicit/entries/runGraphTidyFullSnapshot.js',
+  'tests/explicit/entries/runPurposePolicyClosure.js',
+  'tests/explicit/entries/runIntentDecisionClosure.js',
+  'tests/explicit/entries/runImplementationDesignClosure.js',
+  'tests/explicit/entries/runCodingRepairClosure.js',
+  'tests/explicit/entries/runAuditProofClosure.js',
+  'tests/explicit/entries/runCoherentIntentReading.js',
+  'tests/explicit/entries/runRelationshipEndpointClosure.js',
+  'tests/explicit/entries/runCompleteViewClosure.js',
+  'tests/explicit/entries/runFirstInclusionProvenance.js',
 ]);
 
 // GIVEN the seven intent anchors, root contract, and mounted testcases
@@ -38,7 +57,7 @@ const mountedEntrypoints = new Set(
 assert.deepStrictEqual(
   mountedEntrypoints,
   requiredEntrypoints,
-  'IMPLEMENTATION_TRACEABILITY_GUARD: mounted testcase paths must match the four frozen entrypoints',
+  'IMPLEMENTATION_TRACEABILITY_GUARD: mounted testcase paths must match the frozen W5/W6 entrypoints',
 );
 for (const entryPath of requiredEntrypoints) {
   assert(

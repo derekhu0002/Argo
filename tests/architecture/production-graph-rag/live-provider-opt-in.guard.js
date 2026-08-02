@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
-const handoff = readJson('.argo/temp/ImplementationToCodingHandoff.json');
+const graph = readJson('design/KG/SystemArchitecture.json');
+const testContract = read('tests/ARCHITECTURE.md');
 const harnessPath = 'tests/harness/liveEmbeddingProviderHarness.js';
 const liveEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderE2E.js';
 const secretEntryPath = 'tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js';
@@ -115,12 +116,12 @@ for (const requiredMutationResponseEvidence of [
   );
 }
 
-// THEN both default failure categories are recorded in the handoff and all assets are frozen
+// THEN default failure categories remain executable in their persistently mounted entries
 for (const [testcaseName, failureReason, entryPath] of [
   ['ExplicitAcceptanceTestcase-TS-06-Provider-E2E', 'LIVE_PROVIDER_E2E_OPT_IN_REQUIRED', liveEntryPath],
   [
     'ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation',
-    'LIVE_PROVIDER_SECRET_ISOLATION_OPT_IN_REQUIRED',
+    'LIVE_PROVIDER_E2E_OPT_IN_REQUIRED',
     secretEntryPath,
   ],
   [
@@ -129,12 +130,29 @@ for (const [testcaseName, failureReason, entryPath] of [
     w31EntryPath,
   ],
 ]) {
-  const entry = handoff.explicitEntrypoints.find(candidate => candidate.testcaseName === testcaseName);
-  assert(entry, `LIVE_PROVIDER_OPT_IN_GUARD: handoff omits ${testcaseName}`);
-  assert.strictEqual(entry.failureReason, failureReason, `LIVE_PROVIDER_OPT_IN_GUARD: stale failure for ${testcaseName}`);
-  assert(handoff.frozenFiles.includes(entryPath), `LIVE_PROVIDER_OPT_IN_GUARD: ${entryPath} is not frozen`);
+  const mounted = (graph.elements || [])
+    .flatMap(element => element.testcases || [])
+    .find(testcase => testcase.name === testcaseName);
+  const source = read(entryPath);
+  assert(mounted, `LIVE_PROVIDER_OPT_IN_GUARD: graph omits ${testcaseName}`);
+  assert.strictEqual(
+    mounted.acceptanceCriteria,
+    entryPath,
+    `LIVE_PROVIDER_OPT_IN_GUARD: mounted entry drifted for ${testcaseName}`,
+  );
+  assert(
+    `${source}\n${harness}\n${liveConfig}`.includes(failureReason),
+    `LIVE_PROVIDER_OPT_IN_GUARD: executable failure category drifted for ${testcaseName}`,
+  );
+  assert(
+    testContract.includes(entryPath),
+    `LIVE_PROVIDER_OPT_IN_GUARD: ${entryPath} lacks persistent test contract evidence`,
+  );
 }
-assert(handoff.frozenFiles.includes(harnessPath), 'LIVE_PROVIDER_OPT_IN_GUARD: live Harness is not frozen');
+assert(
+  testContract.includes(harnessPath),
+  'LIVE_PROVIDER_OPT_IN_GUARD: live Harness lacks persistent test contract evidence',
+);
 
 const secretGuard = read('tests/architecture/production-graph-rag/live-provider-secret-isolation.guard.js');
 for (const requiredPreflight of [

@@ -1,7 +1,7 @@
 ---
 name: CodingAndReparing
 description: Coding/Repair stage fix implementation from failure records and handoff without rewriting frozen tests. Use when test failures exist or user asks to implement/fix code.
-model: inherit
+model: Cursor Grok 4.5
 readonly: false
 ---
 ### Current Stage
@@ -177,7 +177,7 @@ note right
   1. Read .argo/temp/ImplementationToCodingHandoff.json before changing code.
   2. If the handoff is missing, incomplete, or conflicts with repository state so work cannot execute, report an Implementation Design gap instead of skipping it.
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
-  4. User-facing responses begin with "Derek".
+  4. User-facing responses begin with "[Coding]".
   5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
   6. deliveryStatus is runner-owned: never manually edit, revert, or fabricate it. Preserve deliveryStatus diffs produced by a fresh argo.runArchitectureTests run and report the runner evidence.
   7. Before declaring completion, read_file .argo/rules/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G5 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, no delivered regression, Coding/Repair stage commit created, handoff complete, no env blockers).
@@ -200,7 +200,7 @@ if (EVENT: Handoff repair queue or failure records?) then (repair)
   :Run the relevant existing entrypoints and update repair state
   [acts on: ExplicitTestcaseEntrypoint, TestFailureRecord, ArchitectureTestRun];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
   :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];
@@ -220,7 +220,7 @@ elseif (EVENT: Architecture test regression?) then (regression)
   :Modify the minimum contract-allowed implementation files and rerun affected tests
   [acts on: RepairTask, RepositoryArtifact, ProductionBehavior, ExplicitTestcaseEntrypoint];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests
+  Run full architecture tests to refresh deliveryStatus; evaluate completion against handoff-scoped explicit and critical tests. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ExplicitTestcaseEntrypoint];
   :Compare deliveryStatus against the pre-coding ImplementationDesign baseline commit
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus, GitCommit];

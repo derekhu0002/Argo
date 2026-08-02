@@ -64,7 +64,7 @@ function getCommandPreview(acceptanceCriteria) {
     const ext = path.extname(parsed.scriptRelativePath).toLowerCase();
     switch (ext) {
         case '.js': case '.cjs': case '.mjs':
-            return formatCommand(process.execPath, [parsed.scriptRelativePath]);
+            return formatCommand(process.execPath, [parsed.displayPath || parsed.scriptRelativePath]);
         case '.py':
             return formatCommand('python', [parsed.scriptRelativePath]);
         case '.ps1':
@@ -95,7 +95,9 @@ async function execute(acceptanceCriteria, workspaceRoot) {
     const ext = path.extname(scriptPath).toLowerCase();
     switch (ext) {
         case '.js': case '.cjs': case '.mjs':
-            return runCommand(process.execPath, [scriptPath], workspaceRoot);
+            return runCommand(process.execPath, [scriptPath], workspaceRoot, parsed.fragment
+                ? { ARGO_TESTCASE_ANCHOR: parsed.fragment }
+                : undefined);
         case '.py':
             return runCommand(PYTHON_EXECUTABLE, [scriptPath], workspaceRoot);
         case '.ps1':
@@ -110,9 +112,14 @@ async function execute(acceptanceCriteria, workspaceRoot) {
 // --- Internal helpers ---
 
 function parseCriteria(value) {
-    const [scriptRelativePath, ...selectorParts] = value.split('::');
+    const [pathAndFragment, ...selectorParts] = value.split('::');
+    const hashIndex = pathAndFragment.indexOf('#');
+    const scriptRelativePath = hashIndex >= 0 ? pathAndFragment.slice(0, hashIndex) : pathAndFragment;
+    const fragment = hashIndex >= 0 ? pathAndFragment.slice(hashIndex + 1).trim() : undefined;
     return {
         scriptRelativePath: normalizePath(scriptRelativePath),
+        displayPath: normalizePath(pathAndFragment),
+        fragment,
         selector: selectorParts.length > 0 ? selectorParts.join('::').trim() : undefined,
     };
 }
@@ -127,13 +134,14 @@ async function runPythonPytestNodeId(criteria, cwd) {
     return runCommand(PYTHON_EXECUTABLE, ['-m', 'pytest', buildPytestNodeId(criteria)], cwd);
 }
 
-async function runCommand(command, args, cwd) {
+async function runCommand(command, args, cwd, extraEnv = undefined) {
     try {
         const { stdout, stderr } = await execFileAsync(command, args, {
             cwd,
             windowsHide: true,
             maxBuffer: 1024 * 1024 * 10,
             timeout: TEST_TIMEOUT_MS,
+            env: extraEnv ? { ...process.env, ...extraEnv } : process.env,
         });
         return { exitCode: 0, stdout: stdout.trim(), stderr: stderr.trim() };
     } catch (error) {

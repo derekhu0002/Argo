@@ -11,7 +11,7 @@
 >
 > ⚠️ **范围限定**：仅要求 `ImplementationToCodingHandoff.json` 中 `explicitEntrypoints` 和 `criticalNonExplicitTests` 列出的测试通过。其他测试（不属于本 handoff 交付范围的旧测试、未来迭代测试、非本模块测试）即使失败也不阻塞当前阶段完成。
 >
-> `argo.runArchitectureTests` 仍必须全量运行，用于刷新整个意图图谱的 `deliveryStatus` 并生成/更新 failure records。非 handoff scope 的剩余失败必须报告为 out-of-scope remaining failures，但不阻塞本轮 CodingAndReparing 完成。
+> `argo.runArchitectureTests` 仍必须全量运行，用于刷新整个意图图谱的 `deliveryStatus` 并生成/更新 failure records。若 MCP 调用超时，直接运行 `node .argo/scripts/runArchitectureTests.js`。非 handoff scope 的剩余失败必须报告为 out-of-scope remaining failures，但不阻塞本轮 CodingAndReparing 完成。
 >
 > `deliveryStatus` 是 runner-owned 字段：CodingAndReparing 不得手动编辑、回滚或伪造；但 `argo.runArchitectureTests` 自动产生的 `deliveryStatus` diff 是合法副作用。验收时必须保留带有新鲜 runner 证据的 `deliveryStatus` 变更。
 

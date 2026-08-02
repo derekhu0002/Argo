@@ -35,10 +35,13 @@ const APPROVED_SOURCE_FIXTURES = Object.freeze([
   { name: 'matching-dual', expectedStatus: 'accepted', file: true, process: true, expectedSource: 'process' },
   { name: 'qwen-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'QWEN_KEY' },
   { name: 'database-password-conflict', expectedCategory: 'SECRET_SOURCE_CONFLICT', file: true, process: true, conflictKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
+  { name: 'legacy-neo4j-alias-only', expectedCategory: 'SECRET_SOURCE_PROVENANCE_PROHIBITED', process: true, legacyNeo4jAliasOnly: true },
   { name: 'missing-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', process: true, omitKey: 'QWEN_KEY' },
   { name: 'blank-secret', expectedCategory: 'APPROVED_SECRET_REQUIRED', process: true, blankKey: 'ARGO_NEO4J_DATABASE_PASSWORD' },
   { name: 'duplicate-key', expectedCategory: 'SECRET_FILE_DUPLICATE_KEY', file: true, duplicateKey: 'QWEN_KEY' },
   { name: 'unknown-secret', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'OTHER_API_TOKEN' },
+  { name: 'runtime-neo4j-uri-field-key', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'neo4jUri' },
+  { name: 'runtime-embedding-credential-field-key', expectedCategory: 'SECRET_FILE_UNKNOWN_KEY', file: true, unknownKey: 'embeddingCredential' },
   { name: 'root-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: '.env' },
   { name: 'alternate-file', expectedCategory: 'SECRET_FILE_PATH_PROHIBITED', file: true, relativePath: 'config/.env' },
   { name: 'tracked-file', expectedCategory: 'SECRET_FILE_TRACKED', file: true, tracked: true },
@@ -566,6 +569,24 @@ function mutateFixtureValues(processValues, fileEntries, fixture) {
     const index = fileIndex(fixture.conflictKey);
     if (index >= 0) fileEntries[index][1] = `${fileEntries[index][1]}-different`;
   }
+  if (fixture.legacyNeo4jAliasOnly) {
+    const legacyMappings = {
+      ARGO_NEO4J_DATABASE_URL: 'ARGO_NEO4J_URI',
+      ARGO_NEO4J_DATABASE_USERNAME: 'ARGO_NEO4J_USERNAME',
+      ARGO_NEO4J_DATABASE_PASSWORD: 'ARGO_NEO4J_PASSWORD',
+    };
+    for (const [canonicalKey, legacyKey] of Object.entries(legacyMappings)) {
+      if (Object.hasOwn(processValues, canonicalKey)) {
+        processValues[legacyKey] = processValues[canonicalKey];
+        delete processValues[canonicalKey];
+      }
+      const index = fileIndex(canonicalKey);
+      if (index >= 0) {
+        const [, value] = fileEntries[index];
+        fileEntries.splice(index, 1, [legacyKey, value]);
+      }
+    }
+  }
 }
 
 function loadApprovedConfigurationBoundary() {
@@ -891,7 +912,9 @@ function normalizedFixtureConfigurationMatches(result, values) {
     qwenKey: values.QWEN_KEY,
   };
   return result.configuration
-    && Object.keys(expected).length === Object.keys(result.configuration).length
+    && Object.keys(expected).length + 1 === Object.keys(result.configuration).length
+    && typeof result.configuration.neo4jDatabase === 'string'
+    && result.configuration.neo4jDatabase.trim().length > 0
     && Object.entries(expected).every(([key, value]) => result.configuration[key] === value);
 }
 

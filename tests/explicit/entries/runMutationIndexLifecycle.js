@@ -1,5 +1,10 @@
 const assert = require('node:assert');
 const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
+const {
+  assertBusinessReliableWriteCompletion,
+  assertPersistentIncrementalMatrix,
+  runPersistentIncrementalMatrix,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
   // GIVEN every canonical mutation class across graph object categories and semantic-index evidence
@@ -56,6 +61,19 @@ async function main() {
       assert(record[field] !== undefined && record[field] !== '', `DT16_INDEX_EVIDENCE_FIELD_MISSING:${field}`);
     }
   }
+
+  // WHEN batch and focused canonical writes cross the durable incremental lifecycle
+  const persistentIncremental = await runPersistentIncrementalMatrix('DT16');
+
+  // THEN readiness invalidates first, exact touched IDs upsert/tombstone without runId
+  // cleanup, and alignment waits for queryability plus global coherence
+  assertPersistentIncrementalMatrix(persistentIncremental, 'DT16');
+
+  // THEN BP-AUTOALIGN write success is not business-complete until embedding
+  // generation, durable projection, touched queryability, global coherence, and
+  // three-channel readiness alignment complete; lifecycle failures are diagnostic
+  // business failures, not successful write completion.
+  assertBusinessReliableWriteCompletion(persistentIncremental);
 }
 
 main().catch(error => {

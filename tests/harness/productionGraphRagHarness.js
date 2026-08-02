@@ -9,6 +9,9 @@ const externalConfigPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 
 const qualificationGatePath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'embeddingQualificationGate.js');
 const canonicalAuthorityPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'canonicalProjectionAuthority.js');
 const nativeRetrievalPath = path.join(repoRoot, '.argo', 'scripts', 'graph-rag', 'neo4jNativeRetrieval.js');
+const harnessEnvironmentPath = path.join(repoRoot, '.argo', 'scripts', 'ensureArgoHarnessEnvironment.js');
+const repositoryEnvironmentPath = path.join(repoRoot, '.argo', 'scripts', 'repositoryArgoEnvironment.js');
+const neo4jProjectionStorePath = path.join(repoRoot, '.argo', 'scripts', 'neo4j-system-architecture-store.js');
 
 function approvedEmbeddingQualification(overrides = {}) {
   return {
@@ -37,6 +40,33 @@ function canonicalGraphFixture() {
     elements: [{ id: 'approved-element', name: 'Approved Intent' }],
     relationships: [],
     views: [],
+  };
+}
+
+function phase1BusinessBenchmarkFixture() {
+  const purposes = [
+    'intent-decision',
+    'implementation-design',
+    'coding-repair',
+    'audit',
+    'graph-tidy',
+  ];
+  return {
+    benchmarkId: 'w7-phase1-five-purpose-business-benchmark',
+    purposes: purposes.map((purpose, index) => ({
+      purpose,
+      mandatoryKeySeedIds: [`${purpose}-key-seed`],
+      recalledKeySeedIds: [`${purpose}-key-seed`],
+      expectedClosureIds: [`${purpose}-closure`],
+      observedClosureIds: [`${purpose}-closure`],
+      observedResultIds: [`${purpose}-phase1-result`],
+      resultCardinality: 1,
+      unrelatedQueryId: `${purpose}-unrelated-control`,
+      unrelatedForcedHits: 0,
+      minimumPrecisionEvidenceName: `precision.${purpose}`,
+      precision: Number((0.91 - (index * 0.01)).toFixed(2)),
+      ordinal: index + 1,
+    })),
   };
 }
 
@@ -119,6 +149,31 @@ async function runProductionSemanticQuery(overrides = {}) {
     ...overrides,
   });
   return runtime.querySemantic({ intent: 'Find approved production intent' });
+}
+
+function inspectHarnessEnvironmentInitialization() {
+  const source = fs.readFileSync(harnessEnvironmentPath, 'utf8');
+  const loaderSource = fs.readFileSync(repositoryEnvironmentPath, 'utf8');
+  const projectionIndex = source.indexOf('ensureNeo4jProjection');
+  const loaderCallIndex = source.indexOf('loadRepositoryArgoEnvironment(workspaceRoot)');
+  const envPathIndex = loaderSource.search(/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/);
+  const processAssignmentIndex = loaderSource.search(/process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*=/);
+  const precedenceEvidence = /process\.env(?:\[[^\]]+\]|\.[A-Za-z_$][\w$]*)\s*===\s*undefined|Object\.hasOwn\(\s*process\.env|hasOwnProperty\.call\(\s*process\.env/.test(loaderSource);
+  const rootEnvEvidence = /path\.join\([^)]*workspaceRoot[^)]*['"`]\.env['"`]\)|['"`]\.env['"`]\s*\)/.test(loaderSource)
+    && !/\.argo['"`]\s*,\s*['"`]\.env|\.argo\/\.env/.test(loaderSource);
+  const alternateEnvEvidence = /config[\\/]\.env|\.env\.local|dotenv\.config\(\s*\)/.test(loaderSource);
+  const secretDiagnosticEvidence = collectMatches(`${source}\n${loaderSource}`, /console\.(?:log|error|warn)\([^)]*(?:QWEN_KEY|ARGO_NEO4J_DATABASE_PASSWORD|process\.env|\.env)[^)]*\)/g);
+
+  return {
+    loadsRepositoryEnvBeforeProjection: envPathIndex >= 0
+      && processAssignmentIndex >= 0
+      && projectionIndex >= 0
+      && loaderCallIndex >= 0
+      && loaderCallIndex < projectionIndex,
+    exactRepositoryEnvPathOnly: envPathIndex >= 0 && !rootEnvEvidence && !alternateEnvEvidence,
+    preservesProcessPrecedence: precedenceEvidence,
+    secretDiagnostics: secretDiagnosticEvidence,
+  };
 }
 
 async function evaluateCredentialConfiguration(configuration, operation) {
@@ -217,6 +272,91 @@ function inspectCredentialSourceBoundary() {
   return { hardcodedDefaults, fallbackCredentials, cypherCredentialLeaks };
 }
 
+function evaluateNeo4jProjectionEnvironmentScenarios() {
+  const canonical = {
+    ARGO_NEO4J_DATABASE_URL: 'neo4j://canonical.invalid:7687',
+    ARGO_NEO4J_DATABASE_USERNAME: 'canonical-user',
+    ARGO_NEO4J_DATABASE_PASSWORD: 'canonical-password-canary',
+  };
+  const legacy = {
+    ARGO_NEO4J_URI: 'neo4j://legacy.invalid:7687',
+    ARGO_NEO4J_USERNAME: 'legacy-user',
+    ARGO_NEO4J_PASSWORD: 'legacy-password-canary',
+  };
+  return {
+    canonicalOnly: captureNeo4jProjectionConfig({
+      environment: canonical,
+      expectedPassword: canonical.ARGO_NEO4J_DATABASE_PASSWORD,
+    }),
+    legacyOnly: captureNeo4jProjectionConfig({
+      environment: legacy,
+      expectedPassword: legacy.ARGO_NEO4J_PASSWORD,
+    }),
+    canonicalWithLegacyConflict: captureNeo4jProjectionConfig({
+      environment: { ...canonical, ...legacy },
+      expectedPassword: canonical.ARGO_NEO4J_DATABASE_PASSWORD,
+    }),
+  };
+}
+
+function captureNeo4jProjectionConfig({ environment, expectedPassword }) {
+  const keys = [
+    'ARGO_NEO4J_DATABASE_URL',
+    'ARGO_NEO4J_DATABASE_USERNAME',
+    'ARGO_NEO4J_DATABASE_PASSWORD',
+    'ARGO_NEO4J_URI',
+    'ARGO_NEO4J_USERNAME',
+    'ARGO_NEO4J_PASSWORD',
+    'QWEN_KEY',
+    'ARGO_EMBEDDING_CREDENTIAL',
+  ];
+  return withTemporaryEnvironment({
+    ...environment,
+    QWEN_KEY: 'synthetic-qwen-key',
+  }, keys, () => {
+    try {
+      delete require.cache[require.resolve(neo4jProjectionStorePath)];
+      const boundary = require(neo4jProjectionStorePath);
+      const config = boundary.getNeo4jConfig();
+      return {
+        status: 'accepted',
+        uri: config.uri,
+        username: config.username,
+        passwordMatchesExpected: config.password === expectedPassword,
+        database: config.database,
+      };
+    } catch (error) {
+      return blockedOutcome(error && error.category, {
+        field: error && error.field,
+      });
+    } finally {
+      delete require.cache[require.resolve(neo4jProjectionStorePath)];
+    }
+  });
+}
+
+function withTemporaryEnvironment(environment, keys, action) {
+  const previous = new Map(keys.map(key => [key, process.env[key]]));
+  for (const key of keys) {
+    if (Object.hasOwn(environment, key)) {
+      process.env[key] = environment[key];
+    } else {
+      delete process.env[key];
+    }
+  }
+  try {
+    return action();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
 function inspectCredentialSourceText(source) {
   const credentialName = String.raw`(?:neo4jUri|neo4jUsername|neo4jPassword|embeddingCredential|embeddingApiKey|apiKey|providerCredential)`;
   const credentialReference = String.raw`(?:[A-Za-z_$][\w$]*\s*\.\s*)?${credentialName}`;
@@ -253,13 +393,62 @@ function inspectCredentialSourceText(source) {
 }
 
 async function evaluateSevenWaveDelivery(completedWaves) {
+  const request = Array.isArray(completedWaves)
+    ? { completedWaves }
+    : { ...(completedWaves || {}) };
   const runtime = createRuntime({
     configuration: externalProductionConfiguration(),
     embeddingQualification: approvedEmbeddingQualification(),
     canonicalGraph: canonicalGraphFixture(),
     neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
   });
-  return captureBusinessOutcome(() => runtime.evaluateDeliverySequence({ completedWaves }));
+  if (typeof runtime.evaluateDeliverySequence !== 'function') {
+    return blockedOutcome('TS08_DELIVERY_SEQUENCE_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluateDeliverySequence(request));
+}
+
+async function evaluatePhase1QualityBenchmark(request = {}) {
+  const runtime = createRuntime({
+    configuration: externalProductionConfiguration(),
+    embeddingQualification: approvedEmbeddingQualification(),
+    canonicalGraph: canonicalGraphFixture(),
+    neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
+    seedCorpus: request.seedCorpus,
+  });
+  if (typeof runtime.evaluatePhase1QualityBenchmark !== 'function') {
+    return blockedOutcome('DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluatePhase1QualityBenchmark({
+    benchmark: request.benchmark || phase1BusinessBenchmarkFixture(),
+    prerequisiteEvidence: request.prerequisiteEvidence || acceptedWaveEvidence(),
+  }));
+}
+
+async function evaluateCapacityEvidence(request = {}) {
+  const runtime = createRuntime({
+    configuration: externalProductionConfiguration(),
+    embeddingQualification: approvedEmbeddingQualification(),
+    canonicalGraph: canonicalGraphFixture(),
+    neo4jRetrievalBoundary: alignedNativeRetrievalBoundary(),
+  });
+  if (typeof runtime.evaluateCapacityEvidence !== 'function') {
+    return blockedOutcome('DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING');
+  }
+  return captureBusinessOutcome(() => runtime.evaluateCapacityEvidence({
+    purposes: request.purposes || PURPOSE_CATEGORIES,
+    qualityEvidence: request.qualityEvidence,
+  }));
+}
+
+function acceptedWaveEvidence() {
+  return {
+    W2: 'accepted',
+    W3: 'accepted',
+    W4: 'accepted',
+    W5: 'accepted',
+    W6: 'accepted',
+  };
 }
 
 async function runEmbeddingProviderLifecycle() {
@@ -438,6 +627,16 @@ async function captureBusinessOutcome(action) {
   }
 }
 
+function blockedOutcome(category, extra = {}) {
+  return {
+    status: 'blocked',
+    error: {
+      category,
+      ...extra,
+    },
+  };
+}
+
 module.exports = {
   alignedNativeRetrievalBoundary,
   approvedEmbeddingQualification,
@@ -446,12 +645,17 @@ module.exports = {
   canonicalGraphFixture,
   conflictingNativeRetrievalBoundary,
   createNativeRetrievalProbe,
+  evaluateCapacityEvidence,
   evaluateCredentialConfiguration,
   evaluateEmbeddingQualification,
+  evaluatePhase1QualityBenchmark,
   evaluateSevenWaveDelivery,
+  evaluateNeo4jProjectionEnvironmentScenarios,
   externalProductionConfiguration,
+  inspectHarnessEnvironmentInitialization,
   inspectCredentialSourceBoundary,
   inspectCredentialSourceText,
+  phase1BusinessBenchmarkFixture,
   queryWithConflictingProjection,
   runEmbeddingProviderLifecycle,
   runNativeRetrievalRequest,

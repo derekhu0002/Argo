@@ -1,0 +1,2105 @@
+const assert = require('node:assert');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+const repoRoot = path.resolve(__dirname, '..', '..');
+const systemMcp = require(path.join(repoRoot, '.argo', 'scripts', 'systemarchitecture-mcp-server.js'));
+const unifiedMcp = require(path.join(repoRoot, '.argo', 'scripts', 'argo-mcp-server.js'));
+
+const RETIRED_PUBLIC_TOOLS = Object.freeze([
+  'startNewProjectSemanticJourney',
+  'backfillSystemArchitectureSemanticProjection',
+  'verifySystemArchitectureSemanticReadiness',
+]);
+const REQUIRED_CHANNELS = Object.freeze(['Element', 'ArchitectureRelationship', 'View']);
+const DUAL_GATES = Object.freeze([
+  'ARGO_LIVE_PROVIDER_E2E',
+  'ARGO_W31_LIVE_MUTATION_VECTOR_E2E',
+]);
+const SECRET_CANARY = 'SEMANTIC-SECRET-CANARY';
+const RECONCILIATION_SECRET_CANARY = 'SEMANTIC-RECONCILIATION-SECRET-CANARY';
+const RECONCILIATION_SAFE_ERROR = Object.freeze({
+  category: 'SEMANTIC_RECONCILIATION_FAILED',
+  message: 'Semantic reconciliation failed before readiness could be verified.',
+  action: 'Repair the durable semantic reconciliation failure, then run argo init again.',
+});
+const MUTATION_FAILURE_SCENARIOS = Object.freeze([
+  'provider-only',
+  'mutation-only',
+  'malformed-provider',
+  'malformed-mutation',
+  'missing-configuration',
+  'unsafe-configuration',
+  'provider-failure',
+  'persistence-failure',
+  'queryability-failure',
+  'coherence-failure',
+]);
+
+async function observeSolePublicSemanticSurface() {
+  const systemList = await systemMcp.handleRequest({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/list',
+    params: {},
+  });
+  const unifiedList = await unifiedMcp.handleRequest({
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'tools/list',
+    params: {},
+  });
+  const retiredRoutes = [];
+  const inertJourney = Object.freeze({
+    async startNewProject() { return { status: 'unexpected-public-route' }; },
+    async verifyReadiness() { return { status: 'unexpected-public-route' }; },
+  });
+  const inertDependencies = Object.freeze({
+    semanticOperatorJourney: inertJourney,
+    productionGraphRagRuntime: Object.freeze({
+      async runSemanticBackfill() { return { status: 'unexpected-public-route' }; },
+    }),
+    readinessAttestationStore: Object.freeze({
+      async clear() {},
+    }),
+  });
+  for (const name of RETIRED_PUBLIC_TOOLS) {
+    for (const [dispatcher, invoke] of [
+      ['system', () => systemMcp.callTool(name, {}, inertDependencies)],
+      ['unified', () => unifiedMcp.callTool(name, {}, null, inertDependencies)],
+    ]) {
+      try {
+        await invoke();
+        retiredRoutes.push({ dispatcher, name, routable: true });
+      } catch (error) {
+        retiredRoutes.push({
+          dispatcher,
+          name,
+          routable: false,
+          category: error && (error.category || error.message),
+        });
+      }
+    }
+  }
+  return Object.freeze({
+    systemToolNames: toolNames(systemList),
+    unifiedToolNames: toolNames(unifiedList),
+    retiredRoutes: Object.freeze(retiredRoutes),
+  });
+}
+
+function assertSolePublicSemanticSurface(observation) {
+  for (const names of [observation.systemToolNames, observation.unifiedToolNames]) {
+    assert(names.includes('getSystemArchitecture'), 'TS00_GET_SYSTEM_ARCHITECTURE_NOT_PUBLIC');
+    for (const retired of RETIRED_PUBLIC_TOOLS) {
+      assert(!names.includes(retired), `TS00_RETIRED_LIFECYCLE_TOOL_PUBLIC:${retired}`);
+    }
+  }
+  for (const route of observation.retiredRoutes) {
+    assert.strictEqual(
+      route.routable,
+      false,
+      `TS00_RETIRED_LIFECYCLE_TOOL_ROUTABLE:${route.name}`,
+    );
+  }
+}
+
+async function observeAutomaticInitLifecycle() {
+  const effects = createActualInitEffects();
+  const executeScenarios = async () => Object.freeze({
+    bothDisabled: await runActualArgoInitScenario('both-disabled', {}, effects),
+    halfEnabledProvider: await runActualArgoInitScenario('provider-only', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+    }, effects),
+    halfEnabledMutation: await runActualArgoInitScenario('mutation-only', {
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    malformedProvider: await runActualArgoInitScenario('malformed-provider', {
+      ARGO_LIVE_PROVIDER_E2E: 'true',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    malformedMutation: await runActualArgoInitScenario('malformed-mutation', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'yes',
+    }, effects),
+    missingConfiguration: await runActualArgoInitScenario('missing-configuration', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    unsafeConfiguration: await runActualArgoInitScenario('unsafe-configuration', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+      createUnsafeConfiguration: true,
+    }, effects),
+    unknownConfigurationKey: await runActualArgoInitScenario('unknown-configuration-key', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+    trackedConfigurationFile: await runActualArgoInitScenario('tracked-configuration-file', {
+      ARGO_LIVE_PROVIDER_E2E: '1',
+      ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+    }, effects),
+  });
+  let scenarios;
+  let compositionMissing = true;
+  if (typeof unifiedMcp.withCanonicalSemanticInitTestComposition === 'function') {
+    compositionMissing = false;
+    await unifiedMcp.withCanonicalSemanticInitTestComposition(
+      effects.composition,
+      async () => { scenarios = await executeScenarios(); },
+    );
+  } else {
+    scenarios = await executeScenarios();
+  }
+  effects.dispose();
+  const controlledEnabled = await runControlledEnabledArgoInitScenario();
+  return Object.freeze({
+    ...scenarios,
+    compositionMissing,
+    controlledEnabled,
+  });
+}
+
+function assertAutomaticInitLifecycle(observation) {
+  const disabled = observation.bothDisabled;
+  assert.strictEqual(disabled.invocation, 'argo-mcp-server.handleRequest:tools/call:initializeWorkspace');
+  assert(
+    ['SemanticDisabled', 'SemanticIndexPending'].includes(
+      disabled.outcome.semanticState
+        || (disabled.outcome.semanticLifecycle && disabled.outcome.semanticLifecycle.state),
+    ),
+    'SP05_CANONICAL_ARGO_INIT_LIFECYCLE_MISSING',
+  );
+  assert.strictEqual(
+    observation.compositionMissing,
+    false,
+    'SP05_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
+  );
+  assertZeroActualInitSemanticEffects(disabled, 'SP05_DISABLED');
+  assertDurableInitTransition(
+    disabled,
+    ['SemanticIndexPending', 'SemanticDisabled'],
+    false,
+    'SP05_DISABLED',
+  );
+
+  for (const rejected of [
+    observation.halfEnabledProvider,
+    observation.halfEnabledMutation,
+    observation.malformedProvider,
+    observation.malformedMutation,
+    observation.missingConfiguration,
+    observation.unsafeConfiguration,
+    observation.unknownConfigurationKey,
+    observation.trackedConfigurationFile,
+  ]) {
+    assert(
+      rejected.outcome.status === 'failed' || rejected.outcome.isError === true,
+      `SP05_${rejected.name}_NOT_FAIL_CLOSED`,
+    );
+    const failure = rejected.outcome.error || rejected.outcome.semanticLifecycle || rejected.outcome;
+    assert(failure.category, `SP05_${rejected.name}_CATEGORY_MISSING`);
+    assert(failure.action, `SP05_${rejected.name}_ACTION_MISSING`);
+    assert(!JSON.stringify(rejected.outcome).includes(SECRET_CANARY), `SP05_${rejected.name}_SECRET_LEAK`);
+    assertZeroActualInitSemanticEffects(rejected, `SP05_${rejected.name}`);
+    assertDurableInitTransition(
+      rejected,
+      ['Failed', 'Stale'],
+      true,
+      `SP05_${rejected.name}`,
+    );
+    if (['missing-configuration', 'unsafe-configuration'].includes(rejected.name)) {
+      assert(
+        rejected.effects.rawDiagnostics.some(item => JSON.stringify(item).includes(SECRET_CANARY)),
+        `SP05_${rejected.name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`,
+      );
+      const externalRead = rejected.effects.configurationOperations.find(
+        operation => operation.kind === 'external-configuration-read',
+      );
+      assert(
+        externalRead
+          && externalRead.readiness
+          && externalRead.readiness.state !== 'Aligned',
+        `SP05_${rejected.name}_READINESS_NOT_INVALIDATED_BEFORE_EXTERNAL_CONFIG`,
+      );
+    }
+    if (rejected.name === 'unknown-configuration-key') {
+      assert.strictEqual(
+        failure.category,
+        'SECRET_FILE_UNKNOWN_KEY',
+        'SP05_UNKNOWN_CONFIGURATION_CATEGORY_NOT_PRESERVED',
+      );
+      assert.strictEqual(
+        failure.field,
+        'ARGO_EMBEDDING_CREDENTIAL',
+        'SP05_UNKNOWN_CONFIGURATION_FIELD_NOT_PRESERVED',
+      );
+    }
+    if (rejected.name === 'tracked-configuration-file') {
+      assert.strictEqual(
+        failure.category,
+        'SECRET_FILE_TRACKED',
+        'SP05_TRACKED_CONFIGURATION_CATEGORY_NOT_PRESERVED',
+      );
+    }
+  }
+  assert.strictEqual(
+    observation.controlledEnabled.boundaryMissing,
+    false,
+    'SP05_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
+  );
+  assert.strictEqual(
+    observation.controlledEnabled.interruption.status,
+    'failed',
+    'SP05_CONTROLLED_INTERRUPTION_NOT_OBSERVED',
+  );
+  assert.strictEqual(
+    observation.controlledEnabled.resumed.alignment,
+    'Aligned',
+    'SP05_CONTROLLED_INIT_NOT_RECOVERED',
+  );
+  assert.strictEqual(
+    observation.controlledEnabled.writesAfterRerun,
+    observation.controlledEnabled.writesAfterResume,
+    'SP05_CONTROLLED_INIT_RERUN_NOT_IDEMPOTENT',
+  );
+  const resumeReadiness = observation.controlledEnabled.finalReadinessEvents
+    .filter(item => item.phase === 'resume')
+    .map(item => item.kind);
+  assert.deepStrictEqual(
+    resumeReadiness,
+    ['queryability-verified', 'global-coherence-verified', 'aligned-recorded'],
+    'SP05_FINAL_READINESS_ORDER_INVALID',
+  );
+  assertControlledDurableInitRecovery(observation.controlledEnabled);
+}
+
+function assertDurableInitTransition(observation, expectedStates, failureExpected, prefix) {
+  const before = observation.effects && observation.effects.seededReadiness;
+  const after = observation.effects && observation.effects.durableReadiness;
+  const writeOperations = (observation.effects && observation.effects.readinessOperations || [])
+    .filter(operation => operation.kind === 'durable-readiness-write');
+  assert(before, `${prefix}_PREEXISTING_ALIGNED_READINESS_NOT_SEEDED`);
+  assert.strictEqual(before.state, 'Aligned', `${prefix}_PREEXISTING_READINESS_NOT_ALIGNED`);
+  assert.strictEqual(before.verified, true, `${prefix}_PREEXISTING_READINESS_NOT_VERIFIED`);
+  assert(after, `${prefix}_DURABLE_READINESS_OUTCOME_MISSING`);
+  assert(expectedStates.includes(after.state), `${prefix}_DURABLE_READINESS_NOT_FAIL_CLOSED`);
+  assert.strictEqual(after.identity, before.identity, `${prefix}_READINESS_IDENTITY_REPLACED`);
+  assert.strictEqual(after.recordId, before.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+  assert.strictEqual(
+    after.canonicalVersion,
+    before.canonicalVersion,
+    `${prefix}_READINESS_CANONICAL_VERSION_CHANGED`,
+  );
+  assert(after.revision > before.revision, `${prefix}_READINESS_REVISION_NOT_MONOTONIC`);
+  assert.strictEqual(
+    writeOperations[0] && writeOperations[0].operation,
+    'seed-aligned',
+    `${prefix}_PREEXISTING_ALIGNED_WRITE_NOT_OBSERVED`,
+  );
+  assert.strictEqual(
+    writeOperations[1] && writeOperations[1].operation,
+    'init-invalidated',
+    `${prefix}_READINESS_NOT_INVALIDATED_BEFORE_OUTCOME`,
+  );
+  if (failureExpected) {
+    assert.strictEqual(
+      writeOperations[writeOperations.length - 1]
+        && writeOperations[writeOperations.length - 1].operation,
+      'init-failed',
+      `${prefix}_DURABLE_FAILURE_NOT_RECORDED`,
+    );
+    for (const field of ['category', 'message', 'action']) {
+      assert(after[field], `${prefix}_DURABLE_FAILURE_${field.toUpperCase()}_MISSING`);
+    }
+    assert(!JSON.stringify(after).includes(SECRET_CANARY), `${prefix}_DURABLE_FAILURE_SECRET_LEAK`);
+  } else {
+    assert.strictEqual(
+      writeOperations.length,
+      2,
+      `${prefix}_DISABLED_READINESS_TRANSITION_CHANGED`,
+    );
+  }
+  assert.notStrictEqual(after.state, 'Aligned', `${prefix}_STALE_PRIOR_ALIGNED_SURVIVED`);
+  assertMonotonicSameReadinessRecord(writeOperations, prefix);
+}
+
+function assertControlledDurableInitRecovery(observation) {
+  const writeOperations = observation.readinessOperations
+    .filter(operation => operation.kind === 'durable-readiness-write');
+  assert.strictEqual(
+    observation.seededReadiness.state,
+    'Aligned',
+    'SP05_CONTROLLED_PREEXISTING_ALIGNED_READINESS_NOT_SEEDED',
+  );
+  assert.deepStrictEqual(
+    writeOperations.map(operation => operation.operation),
+    [
+      'seed-aligned',
+      'init-invalidated',
+      'init-failed',
+      'init-invalidated',
+      'init-aligned',
+      'init-invalidated',
+      'init-aligned',
+    ],
+    'SP05_CONTROLLED_DURABLE_TRANSITION_SEQUENCE_INVALID',
+  );
+  assertMonotonicSameReadinessRecord(writeOperations, 'SP05_CONTROLLED');
+  assert.strictEqual(
+    observation.readinessAtBackfillStart.length,
+    3,
+    'SP05_CONTROLLED_BACKFILL_ATTEMPT_COUNT_CHANGED',
+  );
+  for (const readiness of observation.readinessAtBackfillStart) {
+    assert(
+      readiness && readiness.state !== 'Aligned' && readiness.verified !== true,
+      'SP05_CONTROLLED_READINESS_NOT_INVALIDATED_BEFORE_PROVIDER_VECTOR',
+    );
+  }
+  const interruptionFailure = writeOperations[2].after;
+  assert(
+    ['Failed', 'Stale'].includes(interruptionFailure.state),
+    'SP05_CONTROLLED_RECONCILIATION_FAILURE_NOT_DURABLE',
+  );
+  assert.notStrictEqual(
+    interruptionFailure.state,
+    'Aligned',
+    'SP05_CONTROLLED_STALE_PRIOR_ALIGNED_SURVIVED_FAILURE',
+  );
+  assert.strictEqual(
+    observation.rawReconciliationDiagnostics.length,
+    1,
+    'SP05_CONTROLLED_RAW_RECONCILIATION_DIAGNOSTIC_NOT_OBSERVED',
+  );
+  assert(
+    JSON.stringify(observation.rawReconciliationDiagnostics)
+      .includes(RECONCILIATION_SECRET_CANARY),
+    'SP05_CONTROLLED_RAW_RECONCILIATION_CANARY_NOT_OBSERVED',
+  );
+  assertExactActionableReconciliationFailure(
+    interruptionFailure,
+    'SP05_CONTROLLED_DURABLE_RECONCILIATION_FAILURE',
+  );
+  const publicFailure = observation.interruption
+    && observation.interruption.error;
+  assertExactActionableReconciliationFailure(
+    publicFailure,
+    'SP05_CONTROLLED_PUBLIC_RECONCILIATION_FAILURE',
+  );
+  assert.strictEqual(
+    publicFailure.fullSnapshotFallback,
+    false,
+    'SP05_CONTROLLED_PUBLIC_RECONCILIATION_FALLBACK_CHANGED',
+  );
+  for (const [kind, evidence] of [
+    ['DURABLE', interruptionFailure],
+    ['PUBLIC', observation.interruption],
+  ]) {
+    assert(
+      !JSON.stringify(evidence).includes(RECONCILIATION_SECRET_CANARY),
+      `SP05_CONTROLLED_${kind}_RECONCILIATION_SECRET_LEAK`,
+    );
+  }
+  assert.strictEqual(
+    observation.durableReadiness.state,
+    'Aligned',
+    'SP05_CONTROLLED_FINAL_READINESS_NOT_ALIGNED',
+  );
+  assert.strictEqual(
+    observation.durableReadiness.verified,
+    true,
+    'SP05_CONTROLLED_FINAL_READINESS_NOT_VERIFIED',
+  );
+  const operationKinds = observation.readinessOperations.map(operation => operation.kind);
+  const alignedIndexes = indexesOf(operationKinds, 'durable-readiness-write')
+    .filter(index => observation.readinessOperations[index].operation === 'init-aligned');
+  for (const alignedIndex of alignedIndexes) {
+    const priorKinds = operationKinds.slice(0, alignedIndex);
+    assert(
+      priorKinds.lastIndexOf('durable-readiness-queryability')
+        > priorKinds.lastIndexOf('durable-readiness-write'),
+      'SP05_CONTROLLED_ALIGNED_BEFORE_QUERYABILITY',
+    );
+    assert(
+      priorKinds.lastIndexOf('durable-readiness-global-coherence')
+        > priorKinds.lastIndexOf('durable-readiness-queryability'),
+      'SP05_CONTROLLED_ALIGNED_BEFORE_GLOBAL_COHERENCE',
+    );
+  }
+}
+
+function assertExactActionableReconciliationFailure(evidence, prefix) {
+  assert(evidence && typeof evidence === 'object', `${prefix}_EVIDENCE_MISSING`);
+  for (const [field, expected] of Object.entries(RECONCILIATION_SAFE_ERROR)) {
+    assert.strictEqual(evidence[field], expected, `${prefix}_${field.toUpperCase()}_CHANGED`);
+  }
+}
+
+function assertMonotonicSameReadinessRecord(writeOperations, prefix) {
+  assert(writeOperations.length > 1, `${prefix}_DURABLE_READINESS_TRANSITIONS_MISSING`);
+  const first = writeOperations[0].after;
+  for (let index = 0; index < writeOperations.length; index += 1) {
+    const record = writeOperations[index].after;
+    assert.strictEqual(record.identity, first.identity, `${prefix}_READINESS_IDENTITY_REPLACED`);
+    assert.strictEqual(record.recordId, first.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+    assert.strictEqual(
+      record.canonicalVersion,
+      first.canonicalVersion,
+      `${prefix}_READINESS_CANONICAL_VERSION_CHANGED`,
+    );
+    if (index > 0) {
+      assert(
+        record.revision > writeOperations[index - 1].after.revision,
+        `${prefix}_READINESS_REVISION_NOT_MONOTONIC`,
+      );
+    }
+  }
+}
+
+function assertPrivateFullReconciliation(initObservation, publicSurface) {
+  assert.strictEqual(
+    publicSurface.unifiedToolNames.includes('backfillSystemArchitectureSemanticProjection'),
+    false,
+    'SP01_BACKFILL_TOOL_NOT_PRIVATE',
+  );
+  const route = publicSurface.retiredRoutes.find(
+    item => item.name === 'backfillSystemArchitectureSemanticProjection',
+  );
+  assert(route && route.routable === false, 'SP01_BACKFILL_PUBLIC_ROUTE_NOT_RETIRED');
+  assert.strictEqual(
+    initObservation.bothDisabled.invocation,
+    'argo-mcp-server.handleRequest:tools/call:initializeWorkspace',
+    'SP01_CANONICAL_ARGO_INIT_PATH_NOT_EXERCISED',
+  );
+  assert.strictEqual(
+    initObservation.controlledEnabled.boundaryMissing,
+    false,
+    'SP01_CANONICAL_INIT_TEST_COMPOSITION_MISSING',
+  );
+  const resumeReadiness = initObservation.controlledEnabled.finalReadinessEvents
+    .filter(item => item.phase === 'resume')
+    .map(item => item.kind);
+  assert.deepStrictEqual(
+    resumeReadiness,
+    ['queryability-verified', 'global-coherence-verified', 'aligned-recorded'],
+    'SP01_ALIGNMENT_BEFORE_QUERYABILITY_GLOBAL_COHERENCE',
+  );
+}
+
+const observeCanonicalArgoInitLifecycle = observeAutomaticInitLifecycle;
+
+async function observeFreshReadinessPerQuery() {
+  const {
+    runExportedReadinessStateMatrix,
+  } = require('./productionDefaultRetrievalHarness.js');
+  return runExportedReadinessStateMatrix();
+}
+
+function assertFreshReadinessPerQuery(matrix, prefix = 'SP04') {
+  const expectedStates = [
+    'SemanticDisabled',
+    'SemanticIndexPending',
+    'Partial',
+    'Stale',
+    'Failed',
+    'Aligned',
+  ];
+  assert.deepStrictEqual(
+    matrix.map(item => item.readiness.state),
+    expectedStates,
+    `${prefix}_SYSTEM_UNIFIED_READINESS_STATE_MATRIX_INCOMPLETE`,
+  );
+  const canonicalDocument = JSON.parse(fs.readFileSync(
+    path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    'utf8',
+  ));
+  for (const scenario of matrix) {
+    const aligned = scenario.readiness.state === 'Aligned';
+    const stateTag = scenario.readiness.state.toUpperCase();
+    for (const dispatcher of ['system', 'unified']) {
+      const outcomes = scenario.outcomes.filter(item => item.dispatcher === dispatcher);
+      assert.strictEqual(
+        outcomes.length,
+        aligned ? 2 : 1,
+        `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_QUERY_COUNT_CHANGED`,
+      );
+      for (const outcome of outcomes) {
+        assert.strictEqual(
+          outcome.effects.readinessReads,
+          1,
+          `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_READINESS_NOT_FRESH`,
+        );
+        assert.strictEqual(
+          outcome.effects.providerRequests,
+          aligned ? 1 : 0,
+          `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_PROVIDER_CORRELATION_CHANGED`,
+        );
+        if (aligned) {
+          assert(outcome.result && outcome.result.isError !== true, `${prefix}_${dispatcher.toUpperCase()}_ALIGNED_QUERY_REJECTED`);
+          assert(outcome.effects.vectorQueries > 0, `${prefix}_${dispatcher.toUpperCase()}_ALIGNED_VECTOR_QUERY_MISSING`);
+        } else {
+          const error = exportedPublicError(outcome);
+          assert(error && error.category, `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_PUBLIC_ERROR_MISSING`);
+          assert.strictEqual(
+            error.fullSnapshotFallback,
+            false,
+            `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_FULL_SNAPSHOT_FALLBACK`,
+          );
+          assert.strictEqual(outcome.effects.vectorQueries, 0, `${prefix}_${dispatcher.toUpperCase()}_${stateTag}_VECTOR_QUERY_EFFECT`);
+        }
+      }
+    }
+    if (aligned) {
+      assert.strictEqual(scenario.compatibility.length, 4, `${prefix}_COMPATIBILITY_MATRIX_INCOMPLETE`);
+      for (const control of scenario.compatibility) {
+        const payload = extractToolPayload(control.result);
+        assert.deepStrictEqual(payload.document, canonicalDocument, `${prefix}_${control.dispatcher}_${control.mode}_CANONICAL_CHANGED`);
+        assert.deepStrictEqual(
+          control.effects,
+          { readinessReads: 0, providerRequests: 0, vectorQueries: 0 },
+          `${prefix}_${control.dispatcher}_${control.mode}_SEMANTIC_EFFECT`,
+        );
+      }
+    }
+  }
+}
+
+function exportedPublicError(outcome) {
+  if (outcome.result && outcome.result.structuredContent) {
+    return outcome.result.structuredContent.error;
+  }
+  if (outcome.result && outcome.result.isError === true) {
+    const payload = extractToolPayload(outcome.result);
+    return (payload && payload.error) || payload;
+  }
+  return outcome.error;
+}
+
+function observePersistentIncrementalLifecycle(testcasePrefix) {
+  const modulePath = path.join(
+    repoRoot,
+    '.argo',
+    'scripts',
+    'graph-rag',
+    'mutationEmbeddingVectorLifecycle.js',
+  );
+  delete require.cache[require.resolve(modulePath)];
+  const loaded = require(modulePath);
+  if (typeof loaded.withPersistentMutationEmbeddingLifecycleTestComposition !== 'function') {
+    throw new Error(`${testcasePrefix}_ACTUAL_MUTATION_TEST_COMPOSITION_MISSING`);
+  }
+  return loaded.withPersistentMutationEmbeddingLifecycleTestComposition;
+}
+
+async function runPersistentIncrementalMatrix(testcasePrefix) {
+  const withTestComposition = observePersistentIncrementalLifecycle(testcasePrefix);
+  const effects = createActualMutationEffects();
+  const mutationMatrix = buildMutationMatrix();
+  const results = [];
+  const scenarios = [];
+  const focusedDryRuns = [];
+  const failureQueryRejections = [];
+  await withTestComposition(effects.composition, async () => {
+    for (const mutation of mutationMatrix) {
+      effects.selectScenario({ name: mutation.kind });
+      results.push(await invokeActualMutationAdapter(mutation, {
+        ARGO_LIVE_PROVIDER_E2E: '1',
+        ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+      }));
+    }
+    const preview = await invokeActualMutationAdapter(
+      { ...mutationMatrix[0], preview: true },
+      { ARGO_LIVE_PROVIDER_E2E: '1', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' },
+    );
+    scenarios.push({ name: 'preview', observation: preview });
+    for (const mutation of mutationMatrix.filter(item => item.surface === 'focused')) {
+      const name = `dryrun-${mutation.kind}`;
+      effects.selectScenario({ name });
+      focusedDryRuns.push(Object.freeze({
+        name,
+        observation: await invokeActualMutationAdapter(
+          { ...mutation, preview: true },
+          enabledGates(),
+        ),
+      }));
+    }
+    for (const scenario of [
+      { name: 'disabled', gates: {} },
+      { name: 'provider-only', gates: { ARGO_LIVE_PROVIDER_E2E: '1' } },
+      { name: 'mutation-only', gates: { ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' } },
+      { name: 'malformed-provider', gates: { ARGO_LIVE_PROVIDER_E2E: 'true', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' } },
+      { name: 'malformed-mutation', gates: { ARGO_LIVE_PROVIDER_E2E: '1', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: 'yes' } },
+      { name: 'missing-configuration', gates: { ARGO_LIVE_PROVIDER_E2E: '1', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' }, configurationFailure: 'EXTERNAL_CREDENTIALS_REQUIRED' },
+      { name: 'unsafe-configuration', gates: { ARGO_LIVE_PROVIDER_E2E: '1', ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1' }, configurationFailure: 'SECRET_FILE_ACL_UNSAFE' },
+      { name: 'provider-failure', gates: enabledGates(), failAt: 'provider' },
+      { name: 'persistence-failure', gates: enabledGates(), failAt: 'persistence' },
+      { name: 'queryability-failure', gates: enabledGates(), failAt: 'queryability' },
+      { name: 'coherence-failure', gates: enabledGates(), failAt: 'coherence' },
+    ]) {
+      effects.selectScenario(scenario);
+      const mutationObservation = await invokeActualMutationAdapter(mutationMatrix[7], scenario.gates);
+      scenarios.push({
+        name: scenario.name,
+        observation: mutationObservation,
+      });
+      if (scenario.name === 'disabled' || MUTATION_FAILURE_SCENARIOS.includes(scenario.name)) {
+        failureQueryRejections.push(Object.freeze({
+          name: scenario.name,
+          ...await observeSharedStoreQueryAtCanonicalBytes(
+            mutationObservation.afterBytes,
+            effects.readinessStore,
+          ),
+        }));
+      }
+    }
+  });
+  const failedCanonicalWrite = scenarios.find(item => item.name === 'coherence-failure');
+  const sharedReadinessRecovery = await runSharedReadinessRecoveryChain(
+    failedCanonicalWrite.observation.afterBytes,
+    effects.readinessStore,
+  );
+  const effectSnapshot = effects.snapshot();
+  effects.readinessStore.dispose();
+  return Object.freeze({
+    mutationMatrix,
+    results: Object.freeze(results),
+    scenarios: Object.freeze(scenarios),
+    focusedDryRuns: Object.freeze(focusedDryRuns),
+    failureQueryRejections: Object.freeze(failureQueryRejections),
+    laterInitRecovery: sharedReadinessRecovery.init,
+    sharedReadinessRecovery,
+    effects: effectSnapshot,
+  });
+}
+
+function assertPersistentIncrementalMatrix(observation, prefix) {
+  assert.strictEqual(observation.results.length, 18, `${prefix}_MUTATION_MATRIX_INCOMPLETE`);
+  for (let index = 0; index < observation.results.length; index += 1) {
+    const expected = observation.mutationMatrix[index];
+    const result = extractToolPayload(observation.results[index].result);
+    assert.strictEqual(result.written, true, `${prefix}_CANONICAL_WRITE_NOT_APPLIED:${expected.kind}`);
+    assert.deepStrictEqual(
+      {
+        touchedElementIds: result.touchedElementIds,
+        touchedRelationshipIds: result.touchedRelationshipIds,
+        touchedViewIds: result.touchedViewIds,
+      },
+      expected.expectedTouchedIds,
+      `${prefix}_ACTUAL_TOUCHED_IDS_NOT_EXACT:${expected.kind}`,
+    );
+    assert.strictEqual(result.alignment && result.alignment.state, 'Aligned', `${prefix}_ALIGNED_BEFORE_COMPLETE:${expected.kind}`);
+  }
+  assert.strictEqual(observation.effects.lifecycleCalls.length, 29, `${prefix}_ACTUAL_ADAPTER_LIFECYCLE_CALL_COUNT_CHANGED`);
+  const preview = observation.scenarios.find(item => item.name === 'preview');
+  assert.strictEqual(preview.observation.afterBytes, preview.observation.beforeBytes, `${prefix}_PREVIEW_CANONICAL_WRITE`);
+  assert.strictEqual(
+    observation.effects.operations.filter(item => item.scenario === 'preview').length,
+    0,
+    `${prefix}_PREVIEW_VECTOR_EFFECT`,
+  );
+  assert.strictEqual(observation.focusedDryRuns.length, 9, `${prefix}_FOCUSED_DRYRUN_MATRIX_INCOMPLETE`);
+  for (const dryRun of observation.focusedDryRuns) {
+    assert.strictEqual(dryRun.observation.afterBytes, dryRun.observation.beforeBytes, `${prefix}_${dryRun.name}_CANONICAL_WRITE`);
+    assert.strictEqual(
+      observation.effects.operations.filter(item => item.scenario === dryRun.name).length,
+      0,
+      `${prefix}_${dryRun.name}_SEMANTIC_EFFECT`,
+    );
+  }
+  assert.strictEqual(observation.effects.cleanupCalls, 0, `${prefix}_PRODUCTION_RUNID_CLEANUP_PROHIBITED`);
+  assert.strictEqual(observation.effects.runIdRecords, 0, `${prefix}_PRODUCTION_RUNID_RECORD_PROHIBITED`);
+  for (const lifecycle of observation.effects.lifecycleCalls) {
+    if (lifecycle.preview) continue;
+    const events = observation.effects.operations.filter(item => item.callId === lifecycle.callId);
+    const kinds = events.map(item => item.kind);
+    assert.strictEqual(kinds[0], 'readiness-invalidate', `${prefix}_READINESS_INVALIDATION_NOT_FIRST`);
+    for (const sideEffect of ['configuration-resolve', 'provider-embed', 'upsert-records', 'delete-tombstones']) {
+      if (kinds.includes(sideEffect)) {
+        assertBefore(kinds, 'readiness-invalidate', sideEffect, `${prefix}_READINESS_BEFORE_${sideEffect.toUpperCase()}`);
+      }
+    }
+    if (kinds.includes('readiness-aligned')) {
+      assertPhaseBefore(kinds, ['configuration-resolve'], ['provider-embed'], `${prefix}_CONFIGURATION_BEFORE_PROVIDER`);
+      assertPhaseBefore(kinds, ['provider-embed'], ['upsert-records', 'delete-tombstones'], `${prefix}_PROVIDER_BEFORE_PERSISTENCE`);
+      assertPhaseBefore(kinds, ['upsert-records', 'delete-tombstones'], ['queryability-verify'], `${prefix}_PERSISTENCE_BEFORE_QUERYABILITY`);
+      assertPhaseBefore(kinds, ['queryability-verify'], ['coherence-verify'], `${prefix}_QUERYABILITY_BEFORE_COHERENCE`);
+      assertPhaseBefore(kinds, ['coherence-verify'], ['readiness-aligned'], `${prefix}_COHERENCE_BEFORE_ALIGNMENT`);
+    }
+  }
+  for (const result of observation.results) {
+    const expected = result.mutation;
+    const operations = observation.effects.operations.filter(item => item.caseKind === expected.kind);
+    const writes = operations.filter(item => ['upsert-records', 'delete-tombstones'].includes(item.kind));
+    assert(writes.length > 0, `${prefix}_PERSISTENCE_NOT_EXERCISED:${expected.kind}`);
+    assert(
+      expected.operation === 'remove'
+        ? writes.every(item => item.kind === 'delete-tombstones')
+        : writes.every(item => item.kind === 'upsert-records'),
+      `${prefix}_REMOVE_UPSERT_MAPPING_INVALID:${expected.kind}`,
+    );
+  }
+  for (const record of observation.effects.records) {
+    for (const field of [
+      'objectId',
+      'channel',
+      'canonicalVersion',
+      'contentVersion',
+      'indexVersion',
+      'provider',
+      'model',
+      'modelVersion',
+      'dimensions',
+    ]) {
+      assert(record[field] !== undefined && record[field] !== '', `${prefix}_EVIDENCE_FIELD_MISSING:${field}`);
+    }
+  }
+  for (const scenario of observation.scenarios.filter(item => item.name !== 'preview')) {
+    const payload = extractToolPayload(scenario.observation.result);
+    assert.strictEqual(scenario.observation.afterBytes !== scenario.observation.beforeBytes, true, `${prefix}_${scenario.name}_CANONICAL_WRITE_LOST`);
+    assert(
+      canonicalContainsMutation(scenario.observation.afterBytes, scenario.observation.mutation),
+      `${prefix}_${scenario.name}_CANONICAL_BYTES_NOT_AUTHORITATIVE`,
+    );
+    if (['disabled'].includes(scenario.name)) {
+      assert(['Pending', 'Stale', 'SemanticIndexPending'].includes(payload.alignment && payload.alignment.state), `${prefix}_DISABLED_STATE_MISSING`);
+    } else if (scenario.name !== 'preview') {
+      assert.notStrictEqual(payload.alignment && payload.alignment.state, 'Aligned', `${prefix}_${scenario.name}_FALSE_ALIGNMENT`);
+    }
+  }
+  for (const name of [
+    'disabled',
+    'provider-only',
+    'mutation-only',
+    'malformed-provider',
+    'malformed-mutation',
+    'missing-configuration',
+    'unsafe-configuration',
+  ]) {
+    const operations = observation.effects.operations.filter(item => item.scenario === name);
+    assert.strictEqual(
+      operations.filter(item => item.kind === 'provider-embed').length,
+      0,
+      `${prefix}_${name}_PROVIDER_WRITE`,
+    );
+    assert.strictEqual(
+      operations.filter(item => ['upsert-records', 'delete-tombstones'].includes(item.kind)).length,
+      0,
+      `${prefix}_${name}_VECTOR_WRITE`,
+    );
+  }
+  const disabledRejection = observation.failureQueryRejections.find(item => item.name === 'disabled');
+  assert(disabledRejection, `${prefix}_DISABLED_SUBSEQUENT_QUERY_NOT_RUN`);
+  assertDurableQueryReadSameRecord(disabledRejection, `${prefix}_DISABLED`);
+  for (const outcome of disabledRejection.observation.outcomes) {
+    const error = exportedPublicError(outcome);
+    assert(error && error.category, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
+    assert.strictEqual(error.fullSnapshotFallback, false, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_FALLBACK`);
+    assert.strictEqual(outcome.effects.providerRequests, 0, `${prefix}_DISABLED_${outcome.dispatcher}_QUERY_PROVIDER_EFFECT`);
+  }
+  for (const name of MUTATION_FAILURE_SCENARIOS) {
+    const scenario = observation.scenarios.find(item => item.name === name);
+    const payload = extractToolPayload(scenario.observation.result);
+    const evidence = (payload && payload.alignment) || {};
+    assert(['Failed', 'Stale'].includes(evidence.state), `${prefix}_${name}_FAILED_STATE_NOT_PUBLIC`);
+    assert(evidence.category, `${prefix}_${name}_PUBLIC_CATEGORY_MISSING`);
+    assert(evidence.action, `${prefix}_${name}_PUBLIC_ACTION_MISSING`);
+    assert.strictEqual(evidence.fullSnapshotFallback, false, `${prefix}_${name}_PUBLIC_FALLBACK_CHANGED`);
+    assert(!JSON.stringify(payload).includes(SECRET_CANARY), `${prefix}_${name}_PUBLIC_SECRET_LEAK`);
+    const persisted = observation.effects.failureRecords.find(item => item.scenario === name);
+    assert(persisted, `${prefix}_${name}_FAILED_STATE_NOT_PERSISTED`);
+    assert(['Failed', 'Stale'].includes(persisted.evidence.state), `${prefix}_${name}_PERSISTED_STATE_INVALID`);
+    const durableWrite = observation.effects.readinessOperations.find(operation => (
+      operation.operation === 'mutation-failed' && operation.source === name
+    ));
+    assert(durableWrite, `${prefix}_${name}_DURABLE_FAILURE_WRITE_MISSING`);
+    assert.deepStrictEqual(
+      durableWrite.after,
+      persisted.evidence,
+      `${prefix}_${name}_FAILURE_LEDGER_NOT_STORE_RECORD`,
+    );
+    const raw = observation.effects.rawDiagnostics.find(item => item.scenario === name);
+    if (['missing-configuration', 'unsafe-configuration', 'provider-failure', 'persistence-failure', 'queryability-failure', 'coherence-failure'].includes(name)) {
+      assert(raw && JSON.stringify(raw.diagnostic).includes(SECRET_CANARY), `${prefix}_${name}_UNSANITIZED_DIAGNOSTIC_NOT_OBSERVED`);
+    }
+    const operations = observation.effects.operations.filter(item => item.scenario === name);
+    assert(
+      operations.some(item => item.kind === 'readiness-failed'),
+      `${prefix}_${name}_FAILURE_NOT_RECORDED_AFTER_EFFECT`,
+    );
+    assert.strictEqual(
+      operations.at(-1).kind,
+      'readiness-failed',
+      `${prefix}_${name}_FAILED_STATE_NOT_FINAL_EFFECT`,
+    );
+    const rejection = observation.failureQueryRejections.find(item => item.name === name);
+    assert(rejection, `${prefix}_${name}_SUBSEQUENT_QUERY_NOT_RUN`);
+    assertDurableQueryReadSameRecord(rejection, `${prefix}_${name}`);
+    for (const outcome of rejection.observation.outcomes) {
+      const error = exportedPublicError(outcome);
+      assert(error && error.category, `${prefix}_${name}_${outcome.dispatcher}_QUERY_REJECTION_MISSING`);
+      assert.strictEqual(error.fullSnapshotFallback, false, `${prefix}_${name}_${outcome.dispatcher}_QUERY_FALLBACK`);
+      assert.strictEqual(outcome.effects.providerRequests, 0, `${prefix}_${name}_${outcome.dispatcher}_QUERY_PROVIDER_EFFECT`);
+    }
+  }
+  assert.strictEqual(
+    observation.laterInitRecovery.boundaryMissing,
+    false,
+    `${prefix}_LATER_INIT_RECOVERY_COMPOSITION_MISSING`,
+  );
+  assert.strictEqual(
+    observation.laterInitRecovery.resumed.alignment,
+    'Aligned',
+    `${prefix}_LATER_INIT_DID_NOT_RESTORE_ALIGNMENT`,
+  );
+  assertSharedReadinessRecovery(observation.sharedReadinessRecovery, prefix);
+}
+
+function assertBusinessReliableWriteCompletion(observation) {
+  assertPersistentIncrementalMatrix(observation, 'BP_AUTOALIGN_WRITE');
+  for (const result of observation.results) {
+    const payload = extractToolPayload(result.result);
+    assert.strictEqual(payload.written, true, `BP_AUTOALIGN_WRITE_CANONICAL_NOT_WRITTEN:${result.mutation.kind}`);
+    assert.strictEqual(
+      payload.businessComplete,
+      true,
+      `BP_AUTOALIGN_WRITE_SUCCESS_NOT_BUSINESS_COMPLETE:${result.mutation.kind}`,
+    );
+    assert.strictEqual(
+      payload.alignment && payload.alignment.state,
+      'Aligned',
+      `BP_AUTOALIGN_WRITE_SUCCESS_NOT_ALIGNED:${result.mutation.kind}`,
+    );
+  }
+  for (const name of MUTATION_FAILURE_SCENARIOS) {
+    const scenario = observation.scenarios.find(item => item.name === name);
+    const payload = extractToolPayload(scenario.observation.result);
+    assert.strictEqual(
+      payload.businessComplete,
+      false,
+      `BP_AUTOALIGN_WRITE_FAILURE_REPORTED_COMPLETE:${name}`,
+    );
+    const diagnostic = (payload && (payload.error || payload.alignment)) || {};
+    assert(diagnostic.category, `BP_AUTOALIGN_WRITE_FAILURE_CATEGORY_MISSING:${name}`);
+    assert(diagnostic.action, `BP_AUTOALIGN_WRITE_FAILURE_ACTION_MISSING:${name}`);
+    assert.strictEqual(
+      diagnostic.fullSnapshotFallback,
+      false,
+      `BP_AUTOALIGN_WRITE_FAILURE_SNAPSHOT_FALLBACK:${name}`,
+    );
+    assert(!JSON.stringify(payload).includes(SECRET_CANARY), `BP_AUTOALIGN_WRITE_FAILURE_SECRET_LEAK:${name}`);
+  }
+}
+
+function assertBusinessAgentUnawareWorkflow(publicSurface, semanticQueries) {
+  assertSolePublicSemanticSurface(publicSurface);
+  for (const scenario of semanticQueries.filter(item => item.readiness.state !== 'Aligned')) {
+    for (const outcome of scenario.outcomes) {
+      const error = exportedPublicError(outcome);
+      if (outcome.result && outcome.result.isError === true) {
+        assert.strictEqual(
+          error && error.category,
+          'SEMANTIC_AUTO_ALIGNMENT_FAILED',
+          `BP_AUTOALIGN_AGENT_REQUIRED_MANUAL_ALIGNMENT:${scenario.readiness.state}:${outcome.dispatcher}`,
+        );
+        assert.strictEqual(
+          error && error.fullSnapshotFallback,
+          false,
+          `BP_AUTOALIGN_AGENT_SNAPSHOT_FALLBACK:${scenario.readiness.state}:${outcome.dispatcher}`,
+        );
+        assert(error && error.action, `BP_AUTOALIGN_AGENT_ACTION_MISSING:${scenario.readiness.state}:${outcome.dispatcher}`);
+        continue;
+      }
+      assert.strictEqual(
+        outcome.effects.providerRequests,
+        1,
+        `BP_AUTOALIGN_AGENT_QUERY_DID_NOT_AUTO_ALIGN:${scenario.readiness.state}:${outcome.dispatcher}`,
+      );
+    }
+  }
+}
+
+function assertDurableQueryReadSameRecord(queryEvidence, prefix) {
+  assert(queryEvidence.recordBefore, `${prefix}_DURABLE_RECORD_BEFORE_QUERY_MISSING`);
+  assert.deepStrictEqual(
+    queryEvidence.recordAfter,
+    queryEvidence.recordBefore,
+    `${prefix}_DURABLE_RECORD_CHANGED_DURING_QUERY`,
+  );
+  assert.strictEqual(queryEvidence.storeOperations.length, 2, `${prefix}_DURABLE_QUERY_READ_COUNT_CHANGED`);
+  for (const operation of queryEvidence.storeOperations) {
+    assert.strictEqual(operation.kind, 'durable-readiness-read', `${prefix}_NON_READ_STORE_OPERATION_DURING_QUERY`);
+    assert.deepStrictEqual(operation.record, queryEvidence.recordBefore, `${prefix}_QUERY_DID_NOT_READ_WRITTEN_RECORD`);
+  }
+  for (const read of queryEvidence.observation.readinessReads) {
+    assert.deepStrictEqual(read.record, queryEvidence.recordBefore, `${prefix}_ROUTER_READ_DIFFERENT_RECORD`);
+  }
+}
+
+function assertSharedReadinessRecovery(recovery, prefix) {
+  assert(recovery && recovery.failureRecord, `${prefix}_SHARED_FAILURE_RECORD_MISSING`);
+  assert.deepStrictEqual(
+    recovery.recordBeforeInit,
+    recovery.failureRecord,
+    `${prefix}_FAILURE_RECORD_REFIXTURED_BEFORE_INIT`,
+  );
+  for (const read of recovery.rejection.readinessReads) {
+    assert.deepStrictEqual(read.record, recovery.failureRecord, `${prefix}_REJECTION_DID_NOT_READ_FAILURE_RECORD`);
+  }
+  assert.strictEqual(
+    recovery.rejection.readinessReads.length,
+    2,
+    `${prefix}_PRE_INIT_EXPORTED_READ_MATRIX_INCOMPLETE`,
+  );
+  assert(recovery.alignedRecord, `${prefix}_SHARED_ALIGNED_RECORD_MISSING`);
+  assert.strictEqual(recovery.alignedRecord.identity, recovery.failureRecord.identity, `${prefix}_READINESS_IDENTITY_CHANGED`);
+  assert.strictEqual(recovery.alignedRecord.recordId, recovery.failureRecord.recordId, `${prefix}_READINESS_RECORD_REPLACED`);
+  assert.strictEqual(recovery.alignedRecord.canonicalVersion, recovery.failureRecord.canonicalVersion, `${prefix}_CANONICAL_VERSION_CHANGED_DURING_RECOVERY`);
+  assert(recovery.alignedRecord.revision > recovery.failureRecord.revision, `${prefix}_READINESS_REVISION_NOT_ADVANCED`);
+  assert.strictEqual(recovery.alignedRecord.state, 'Aligned', `${prefix}_DURABLE_RECORD_NOT_ALIGNED`);
+  for (const field of ['canonicalVersion', 'contentVersion', 'indexVersion']) {
+    assert(
+      typeof recovery.alignedRecord[field] === 'string' && recovery.alignedRecord[field].length > 0,
+      `${prefix}_ALIGNED_VERSION_MISSING:${field}`,
+    );
+  }
+  for (const read of recovery.success.readinessReads) {
+    assert.deepStrictEqual(read.record, recovery.alignedRecord, `${prefix}_SUCCESS_DID_NOT_READ_TRANSFORMED_RECORD`);
+  }
+  assert.strictEqual(
+    recovery.success.readinessReads.length,
+    2,
+    `${prefix}_POST_INIT_EXPORTED_READ_MATRIX_INCOMPLETE`,
+  );
+  for (const outcome of recovery.success.outcomes) {
+    assert(outcome.result && outcome.result.isError !== true, `${prefix}_${outcome.dispatcher}_QUERY_NOT_RESTORED`);
+    assert.strictEqual(outcome.effects.readinessReads, 1, `${prefix}_${outcome.dispatcher}_SUCCESS_READINESS_COUNT`);
+    assert.strictEqual(outcome.effects.providerRequests, 1, `${prefix}_${outcome.dispatcher}_SUCCESS_PROVIDER_COUNT`);
+  }
+  const operationKinds = recovery.storeOperations.map(operation => (
+    operation.operation || operation.kind
+  ));
+  const alignedIndexes = indexesOf(operationKinds, 'init-aligned');
+  const readIndexes = indexesOf(operationKinds, 'durable-readiness-read');
+  assert(alignedIndexes.length > 0, `${prefix}_INIT_DURABLE_ALIGNMENT_MISSING`);
+  const firstAlignedIndex = alignedIndexes[0];
+  const lastAlignedIndex = alignedIndexes.at(-1);
+  const preAlignmentReads = readIndexes.filter(index => index < firstAlignedIndex);
+  const postAlignmentReads = readIndexes.filter(index => index > lastAlignedIndex);
+  const readsDuringAlignment = readIndexes.filter(index => (
+    index > firstAlignedIndex && index < lastAlignedIndex
+  ));
+  assert.strictEqual(
+    preAlignmentReads.length,
+    recovery.rejection.readinessReads.length,
+    `${prefix}_PRE_INIT_FAILURE_READ_COUNT_CHANGED`,
+  );
+  assert.strictEqual(
+    postAlignmentReads.length,
+    recovery.success.readinessReads.length,
+    `${prefix}_POST_INIT_ALIGNED_READ_COUNT_CHANGED`,
+  );
+  assert.deepStrictEqual(
+    readsDuringAlignment,
+    [],
+    `${prefix}_EXPORTED_READ_DURING_INIT_ALIGNMENT`,
+  );
+  for (const index of preAlignmentReads) {
+    assert.deepStrictEqual(
+      recovery.storeOperations[index].record,
+      recovery.failureRecord,
+      `${prefix}_PRE_INIT_READ_NOT_FAILURE_RECORD`,
+    );
+  }
+  for (const index of postAlignmentReads) {
+    assert.deepStrictEqual(
+      recovery.storeOperations[index].record,
+      recovery.alignedRecord,
+      `${prefix}_POST_INIT_READ_NOT_ALIGNED_RECORD`,
+    );
+  }
+  let reconciliationStart = preAlignmentReads.length > 0
+    ? preAlignmentReads.at(-1) + 1
+    : 0;
+  for (const [alignmentNumber, alignedIndex] of alignedIndexes.entries()) {
+    const queryabilityIndex = operationKinds.indexOf(
+      'durable-readiness-queryability',
+      reconciliationStart,
+    );
+    const coherenceIndex = operationKinds.indexOf(
+      'durable-readiness-global-coherence',
+      queryabilityIndex + 1,
+    );
+    assert(
+      queryabilityIndex >= reconciliationStart && queryabilityIndex < alignedIndex,
+      `${prefix}_INIT_QUERYABILITY_NOT_BEFORE_ALIGNMENT:${alignmentNumber + 1}`,
+    );
+    assert(
+      coherenceIndex > queryabilityIndex && coherenceIndex < alignedIndex,
+      `${prefix}_INIT_COHERENCE_NOT_BEFORE_ALIGNMENT:${alignmentNumber + 1}`,
+    );
+    reconciliationStart = alignedIndex + 1;
+  }
+}
+
+function indexesOf(values, expected) {
+  return values
+    .map((value, index) => (value === expected ? index : -1))
+    .filter(index => index >= 0);
+}
+
+function canonicalContainsMutation(bytes, mutation) {
+  const document = JSON.parse(bytes);
+  if (mutation.objectType === 'Element') {
+    return document.elements.some(item => item.id === mutation.id);
+  }
+  if (mutation.objectType === 'ArchitectureRelationship') {
+    return document.relationships.some(item => item.id === mutation.id);
+  }
+  return document.views.some(item => item.view_id === mutation.id);
+}
+
+async function observeSharedStoreQueryAtCanonicalBytes(canonicalBytes, readinessStore) {
+  const {
+    runExportedDurableReadinessStore,
+  } = require('./productionDefaultRetrievalHarness.js');
+  return withCanonicalBytesWorkspace(canonicalBytes, async () => {
+    const recordBefore = readinessStore.inspect();
+    const operationStart = readinessStore.operations().length;
+    const observation = await runExportedDurableReadinessStore(readinessStore);
+    return Object.freeze({
+      recordBefore,
+      observation,
+      recordAfter: readinessStore.inspect(),
+      storeOperations: Object.freeze(readinessStore.operations().slice(operationStart)),
+    });
+  });
+}
+
+async function runSharedReadinessRecoveryChain(canonicalBytes, readinessStore) {
+  const {
+    runExportedDurableReadinessStore,
+  } = require('./productionDefaultRetrievalHarness.js');
+  return withCanonicalBytesWorkspace(canonicalBytes, async workspaceRoot => {
+    const failureRecord = readinessStore.inspect();
+    const operationStart = readinessStore.operations().length;
+    const rejection = await runExportedDurableReadinessStore(readinessStore);
+    const recordBeforeInit = readinessStore.inspect();
+    const init = await runControlledEnabledArgoInitScenario({
+      canonicalBytes,
+      workspaceRoot,
+      readinessStore,
+    });
+    const alignedRecord = readinessStore.inspect();
+    const success = await runExportedDurableReadinessStore(readinessStore);
+    return Object.freeze({
+      failureRecord,
+      rejection,
+      recordBeforeInit,
+      init,
+      alignedRecord,
+      success,
+      storeOperations: Object.freeze(readinessStore.operations().slice(operationStart)),
+    });
+  });
+}
+
+async function withCanonicalBytesWorkspace(canonicalBytes, callback) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-shared-readiness-workspace-'));
+  const previous = captureEnvironment(['ARGO_REPO_ROOT']);
+  try {
+    process.env.ARGO_REPO_ROOT = root;
+    fs.writeFileSync(path.join(root, 'Argo.feap'), 'shared readiness lifecycle template');
+    const graphDirectory = path.join(root, 'design', 'KG');
+    fs.mkdirSync(graphDirectory, { recursive: true });
+    fs.writeFileSync(path.join(graphDirectory, 'SystemArchitecture.json'), canonicalBytes);
+    return await callback(root);
+  } finally {
+    restoreEnvironment(previous);
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+async function runActualArgoInitScenario(name, environment, effectObserver = undefined) {
+  const ownsRoot = !(environment && environment.workspaceRoot);
+  const root = ownsRoot
+    ? fs.mkdtempSync(path.join(os.tmpdir(), 'argo-canonical-init-'))
+    : environment.workspaceRoot;
+  const previous = captureEnvironment([
+    'ARGO_REPO_ROOT',
+    ...DUAL_GATES,
+    'QWEN_KEY',
+    'ARGO_NEO4J_DATABASE_URL',
+    'ARGO_NEO4J_DATABASE_USERNAME',
+    'ARGO_NEO4J_DATABASE_PASSWORD',
+  ]);
+  try {
+    if (effectObserver) effectObserver.selectScenario({ name, environment });
+    fs.writeFileSync(path.join(root, 'Argo.feap'), 'controlled argo init template');
+    const graphDirectory = path.join(root, 'design', 'KG');
+    fs.mkdirSync(graphDirectory, { recursive: true });
+    const graphPath = path.join(graphDirectory, 'SystemArchitecture.json');
+    if (environment && environment.canonicalBytes) {
+      fs.writeFileSync(graphPath, environment.canonicalBytes);
+    } else {
+      fs.copyFileSync(
+        path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+        graphPath,
+      );
+    }
+    process.env.ARGO_REPO_ROOT = root;
+    for (const key of DUAL_GATES) delete process.env[key];
+    for (const key of [
+      'QWEN_KEY',
+      'ARGO_NEO4J_DATABASE_URL',
+      'ARGO_NEO4J_DATABASE_USERNAME',
+      'ARGO_NEO4J_DATABASE_PASSWORD',
+    ]) delete process.env[key];
+    for (const [key, value] of Object.entries(environment || {})) {
+      if (!['createUnsafeConfiguration', 'canonicalBytes', 'workspaceRoot'].includes(key)) process.env[key] = value;
+    }
+    if (environment && environment.createUnsafeConfiguration) {
+      const argoDirectory = path.join(root, '.argo');
+      fs.mkdirSync(argoDirectory, { recursive: true });
+      fs.writeFileSync(path.join(argoDirectory, '.env'), [
+        'QWEN_KEY=SEMANTIC-SECRET-CANARY',
+        'ARGO_NEO4J_DATABASE_URL=neo4j://unsafe.invalid:7687',
+        'ARGO_NEO4J_DATABASE_USERNAME=unsafe',
+        'ARGO_NEO4J_DATABASE_PASSWORD=SEMANTIC-SECRET-CANARY',
+      ].join('\n'));
+    }
+    let outcome;
+    try {
+      const response = await unifiedMcp.handleRequest({
+        jsonrpc: '2.0',
+        id: `init-${name}`,
+        method: 'tools/call',
+        params: {
+          name: 'initializeWorkspace',
+          arguments: {},
+        },
+      });
+      outcome = extractToolPayload(response && response.result);
+    } catch (error) {
+      outcome = {
+        status: 'failed',
+        error: serializeDiagnostic(error),
+      };
+    }
+    return Object.freeze({
+      name,
+      invocation: 'argo-mcp-server.handleRequest:tools/call:initializeWorkspace',
+      outcome: Object.freeze(outcome || {}),
+      canonicalBytes: fs.readFileSync(graphPath, 'utf8'),
+      effects: effectObserver ? effectObserver.snapshotScenario(name) : undefined,
+    });
+  } finally {
+    restoreEnvironment(previous);
+    if (ownsRoot) fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+async function runControlledEnabledArgoInitScenario(input = undefined) {
+  const options = typeof input === 'string'
+    ? { canonicalBytes: input }
+    : (input || {});
+  const canonicalBytes = options.canonicalBytes;
+  if (typeof unifiedMcp.withCanonicalSemanticInitTestComposition !== 'function') {
+    return Object.freeze({ boundaryMissing: true });
+  }
+  const {
+    createControlledPrivateBackfillComposition,
+  } = require('./productionSemanticPersistenceHarness.js');
+  const controlled = createControlledPrivateBackfillComposition(canonicalBytes ? {
+    fixture: {
+      ...JSON.parse(canonicalBytes),
+      version: canonicalDocumentVersion(JSON.parse(canonicalBytes)),
+    },
+  } : {});
+  const ownsReadinessStore = !options.readinessStore;
+  const readinessStore = options.readinessStore || createSharedDurableReadinessStore();
+  const seededReadiness = ownsReadinessStore
+    ? seedDurableAlignedReadiness(
+      readinessStore,
+      canonicalBytes
+        ? canonicalDocumentVersion(JSON.parse(canonicalBytes))
+        : canonicalDocumentVersion(JSON.parse(fs.readFileSync(
+          path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+          'utf8',
+        ))),
+    )
+    : readinessStore.inspect();
+  const readinessAtBackfillStart = [];
+  const rawReconciliationDiagnostics = [];
+  let rawReconciliationCanaryPending = true;
+  const observedRuntime = Object.freeze({
+    async runSemanticBackfill(request) {
+      readinessAtBackfillStart.push(readinessStore.inspect());
+      try {
+        return await controlled.runtime.runSemanticBackfill(request);
+      } catch (sourceError) {
+        if (!rawReconciliationCanaryPending) throw sourceError;
+        rawReconciliationCanaryPending = false;
+        const rawError = new Error(
+          `Raw reconciliation transport failed: ${RECONCILIATION_SECRET_CANARY}`,
+          { cause: sourceError },
+        );
+        rawError.category = 'RAW_RECONCILIATION_TRANSPORT_FAILURE';
+        rawError.action = `Inspect transport secret ${RECONCILIATION_SECRET_CANARY}`;
+        rawError.secret = RECONCILIATION_SECRET_CANARY;
+        rawReconciliationDiagnostics.push(Object.freeze(serializeDiagnostic(rawError)));
+        throw rawError;
+      }
+    },
+  });
+  let interruption;
+  let resumed;
+  let rerun;
+  let writesAfterResume;
+  await unifiedMcp.withCanonicalSemanticInitTestComposition({
+    configurationBehavior: Object.freeze({
+      gates: enabledGates(),
+      state: 'valid-external-only',
+    }),
+    productionGraphRagRuntime: observedRuntime,
+    finalReadiness: readinessStore.createInitFinalReadiness(controlled.finalReadiness),
+  }, async () => {
+    const controlledEnvironment = {
+      ...enabledGates(),
+      ...(canonicalBytes ? { canonicalBytes } : {}),
+      ...(options.workspaceRoot ? { workspaceRoot: options.workspaceRoot } : {}),
+    };
+    interruption = (await runActualArgoInitScenario('controlled-interruption', controlledEnvironment)).outcome;
+    controlled.observations.releaseInterruption();
+    controlled.observations.setPhase('resume');
+    resumed = (await runActualArgoInitScenario('controlled-resume', controlledEnvironment)).outcome;
+    writesAfterResume = controlled.observations.writeCount();
+    controlled.observations.setPhase('rerun');
+    rerun = (await runActualArgoInitScenario('controlled-rerun', controlledEnvironment)).outcome;
+  });
+  const observation = Object.freeze({
+    boundaryMissing: false,
+    interruption,
+    resumed,
+    rerun,
+    writesAfterResume,
+    writesAfterRerun: controlled.observations.writeCount(),
+    finalReadinessEvents: controlled.observations.finalReadinessEvents(),
+    seededReadiness,
+    durableReadiness: readinessStore.inspect(),
+    readinessOperations: readinessStore.operations(),
+    readinessAtBackfillStart: Object.freeze([...readinessAtBackfillStart]),
+    rawReconciliationDiagnostics: Object.freeze([...rawReconciliationDiagnostics]),
+  });
+  if (ownsReadinessStore) readinessStore.dispose();
+  return observation;
+}
+
+function canonicalDocumentVersion(document) {
+  const identity = {
+    name: document.name || 'System',
+    elements: (document.elements || []).map(element => element.id).sort(),
+    relationships: (document.relationships || []).map(relationship => relationship.id).sort(),
+    views: (document.views || []).map(view => view.view_id).sort(),
+  };
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`;
+}
+
+function assertZeroActualInitSemanticEffects(observation, prefix) {
+  assert(observation.effects, `${prefix}_INDEPENDENT_EFFECT_OBSERVATION_MISSING`);
+  for (const field of ['providerCalls', 'vectorWrites']) {
+    assert.strictEqual(
+      typeof observation.effects[field],
+      'number',
+      `${prefix}_${field.toUpperCase()}_COUNT_MISSING`,
+    );
+    assert.strictEqual(
+      observation.effects[field],
+      0,
+      `${prefix}_${field.toUpperCase()}_EFFECT`,
+    );
+  }
+}
+
+function createActualInitEffects() {
+  const {
+    createControlledPrivateBackfillComposition,
+  } = require('./productionSemanticPersistenceHarness.js');
+  const controlled = createControlledPrivateBackfillComposition({ interrupt: false });
+  const state = {
+    scenario: null,
+    starts: new Map(),
+    readinessStores: new Map(),
+    configurationOperations: [],
+    rawDiagnostics: [],
+    finalReadinessEvents: [],
+  };
+  const recordConfiguration = (kind, details = {}) => {
+    const readinessStore = state.scenario
+      ? state.readinessStores.get(state.scenario.name)
+      : undefined;
+    state.configurationOperations.push(Object.freeze({
+      scenario: state.scenario.name,
+      kind,
+      readiness: readinessStore ? readinessStore.inspect() : null,
+      ...details,
+    }));
+  };
+  return {
+    composition: Object.freeze({
+      configurationBehavior: Object.freeze({
+        readGate(name) {
+          recordConfiguration('gate-read', { name });
+          return state.scenario.environment[name];
+        },
+        readExternalConfiguration() {
+          recordConfiguration('external-configuration-read');
+          if (state.scenario.name === 'missing-configuration') {
+            throw observedConfigurationDiagnostic('EXTERNAL_CREDENTIALS_REQUIRED');
+          }
+          if (state.scenario.name === 'unsafe-configuration') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_ACL_UNSAFE');
+          }
+          if (state.scenario.name === 'unknown-configuration-key') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_UNKNOWN_KEY', 'ARGO_EMBEDDING_CREDENTIAL');
+          }
+          if (state.scenario.name === 'tracked-configuration-file') {
+            throw observedConfigurationDiagnostic('SECRET_FILE_TRACKED');
+          }
+          return externalConfigurationValues();
+        },
+      }),
+      productionGraphRagRuntime: controlled.runtime,
+      finalReadiness: Object.freeze({
+        async invalidate(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'readiness-invalidated',
+            evidence,
+          }));
+          return activeReadinessStore().write(
+            'init-invalidated',
+            evidence,
+            state.scenario.name,
+          );
+        },
+        async recordFailure(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'failure-recorded',
+            evidence,
+          }));
+          return activeReadinessStore().write(
+            'init-failed',
+            evidence,
+            state.scenario.name,
+          );
+        },
+        async verifyQueryability() {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'queryability-verified',
+          }));
+          return true;
+        },
+        async verifyGlobalCoherence() {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'global-coherence-verified',
+          }));
+          return true;
+        },
+        async recordAligned(evidence) {
+          state.finalReadinessEvents.push(Object.freeze({
+            scenario: state.scenario.name,
+            kind: 'aligned-recorded',
+            evidence,
+          }));
+          return activeReadinessStore().write(
+            'init-aligned',
+            evidence,
+            state.scenario.name,
+          );
+        },
+      }),
+    }),
+    selectScenario(scenario) {
+      state.scenario = scenario;
+      const readinessStore = createSharedDurableReadinessStore();
+      const canonicalDocument = JSON.parse(
+        scenario.environment.canonicalBytes
+          || fs.readFileSync(path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'), 'utf8'),
+      );
+      seedDurableAlignedReadiness(
+        readinessStore,
+        canonicalDocumentVersion(canonicalDocument),
+      );
+      state.readinessStores.set(scenario.name, readinessStore);
+      state.starts.set(scenario.name, {
+        providerCalls: controlled.observations.snapshot().providerCalls,
+        vectorWrites: controlled.observations.writeCount(),
+        configurationOperations: state.configurationOperations.length,
+        rawDiagnostics: state.rawDiagnostics.length,
+        finalReadinessEvents: state.finalReadinessEvents.length,
+      });
+    },
+    snapshotScenario(name) {
+      const start = state.starts.get(name);
+      const current = controlled.observations.snapshot();
+      const readinessStore = state.readinessStores.get(name);
+      const readinessOperations = readinessStore.operations();
+      return Object.freeze({
+        providerCalls: current.providerCalls - start.providerCalls,
+        vectorWrites: controlled.observations.writeCount() - start.vectorWrites,
+        configurationOperations: Object.freeze(state.configurationOperations.slice(start.configurationOperations)),
+        rawDiagnostics: Object.freeze(state.rawDiagnostics.slice(start.rawDiagnostics)),
+        finalReadinessEvents: Object.freeze(state.finalReadinessEvents.slice(start.finalReadinessEvents)),
+        seededReadiness: readinessOperations[0] && readinessOperations[0].after,
+        durableReadiness: readinessStore.inspect(),
+        readinessOperations,
+      });
+    },
+    dispose() {
+      for (const readinessStore of state.readinessStores.values()) {
+        readinessStore.dispose();
+      }
+    },
+  };
+
+  function activeReadinessStore() {
+    const readinessStore = state.readinessStores.get(state.scenario && state.scenario.name);
+    assert(readinessStore, 'SP05_ACTIVE_DURABLE_READINESS_STORE_MISSING');
+    return readinessStore;
+  }
+
+  function observedConfigurationDiagnostic(category, field = undefined) {
+    const error = rawDiagnosticError(category, field);
+    state.rawDiagnostics.push(Object.freeze(serializeDiagnostic(error)));
+    return error;
+  }
+}
+
+function createActualMutationEffects() {
+  const readinessStore = createSharedDurableReadinessStore();
+  const state = {
+    lifecycleCalls: [],
+    operations: [],
+    cleanupCalls: 0,
+    runIdRecords: 0,
+    records: [],
+    failureRecords: [],
+    rawDiagnostics: [],
+  };
+  let scenario = { name: 'matrix' };
+  let sequence = 0;
+  let activeCallId = 0;
+  const record = (kind, details = {}) => {
+    state.operations.push(Object.freeze({
+      sequence: ++sequence,
+      kind,
+      scenario: scenario.name,
+      callId: activeCallId,
+      ...details,
+    }));
+  };
+  return {
+    composition: Object.freeze({
+      observeLifecycleInput(input) {
+        activeCallId += 1;
+        state.lifecycleCalls.push(Object.freeze({
+          callId: activeCallId,
+          scenario: scenario.name,
+          preview: input && input.preview === true,
+          touchedElementIds: [...((input && input.canonicalWrite && input.canonicalWrite.touchedElementIds) || [])],
+          touchedRelationshipIds: [...((input && input.canonicalWrite && input.canonicalWrite.touchedRelationshipIds) || [])],
+          touchedViewIds: [...((input && input.canonicalWrite && input.canonicalWrite.touchedViewIds) || [])],
+        }));
+      },
+      readiness: Object.freeze({
+        async invalidate(evidence) {
+          record('readiness-invalidate');
+          readinessStore.write('mutation-invalidate', {
+            ...(evidence || {}),
+            state: (evidence && evidence.state) || 'Stale',
+          }, scenario.name);
+        },
+        async recordAligned(evidence) {
+          record('readiness-aligned', { evidence });
+          readinessStore.write('mutation-aligned', evidence, scenario.name);
+        },
+        async recordFailure(evidence) {
+          record('readiness-failed', { evidence });
+          const durableRecord = readinessStore.write('mutation-failed', evidence, scenario.name);
+          state.failureRecords.push(Object.freeze({
+            scenario: scenario.name,
+            evidence: durableRecord,
+          }));
+        },
+      }),
+      configuration: Object.freeze({
+        async resolve() {
+          record('configuration-resolve');
+          if (scenario.configurationFailure) throw observedRawDiagnostic(scenario.configurationFailure);
+          return approvedConfiguration();
+        },
+      }),
+      provider: Object.freeze({
+        async embed() {
+          record('provider-embed');
+          if (scenario.failAt === 'provider') throw observedRawDiagnostic('PROVIDER_FAILED');
+          return Array.from({ length: 1024 }, (_, index) => index / 2048);
+        },
+      }),
+      projectionStore: Object.freeze({
+        async upsertRecords(records) {
+          record('upsert-records', { caseKind: scenario.name, count: records.length });
+          if (scenario.failAt === 'persistence') throw observedRawDiagnostic('PERSISTENCE_FAILED');
+          state.records.push(...records);
+          state.runIdRecords += records.filter(record => Object.hasOwn(record, 'runId')).length;
+        },
+        async deleteTombstones(records) {
+          record('delete-tombstones', { caseKind: scenario.name, count: records.length });
+          if (scenario.failAt === 'persistence') throw observedRawDiagnostic('PERSISTENCE_FAILED');
+          state.records.push(...records);
+          state.runIdRecords += records.filter(record => Object.hasOwn(record, 'runId')).length;
+        },
+        async readRecords() { return [...state.records]; },
+        async close() {},
+      }),
+      queryability: Object.freeze({
+        async verifyTouched() {
+          record('queryability-verify');
+          if (scenario.failAt === 'queryability') throw observedRawDiagnostic('QUERYABILITY_FAILED');
+          return true;
+        },
+      }),
+      coherence: Object.freeze({
+        async verifyGlobal() {
+          record('coherence-verify');
+          if (scenario.failAt === 'coherence') throw observedRawDiagnostic('GLOBAL_COHERENCE_FAILED');
+          return true;
+        },
+      }),
+    }),
+    selectScenario(next) {
+      scenario = next;
+    },
+    readinessStore,
+    snapshot() {
+      return Object.freeze({
+        ...state,
+        lifecycleCalls: Object.freeze([...state.lifecycleCalls]),
+        operations: Object.freeze([...state.operations]),
+        records: Object.freeze([...state.records]),
+        failureRecords: Object.freeze([...state.failureRecords]),
+        rawDiagnostics: Object.freeze([...state.rawDiagnostics]),
+        readinessOperations: readinessStore.operations(),
+      });
+    },
+  };
+
+  function observedRawDiagnostic(category) {
+    const error = rawDiagnosticError(category);
+    state.rawDiagnostics.push(Object.freeze({
+      scenario: scenario.name,
+      diagnostic: Object.freeze(serializeDiagnostic(error)),
+    }));
+    return error;
+  }
+
+}
+
+function createSharedDurableReadinessStore() {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-durable-readiness-'));
+  const filePath = path.join(directory, 'readiness.json');
+  const identity = 'system-architecture-semantic-readiness';
+  const recordId = crypto.randomUUID();
+  const operations = [];
+  let revision = 0;
+
+  const inspect = () => {
+    if (!fs.existsSync(filePath)) return null;
+    return Object.freeze(JSON.parse(fs.readFileSync(filePath, 'utf8')));
+  };
+  const snapshot = record => Object.freeze({
+    ...(record || {}),
+    channels: Object.freeze([...(record && record.channels ? record.channels : [])].map(
+      channel => Object.freeze({ ...channel }),
+    )),
+  });
+  const digest = record => crypto.createHash('sha256')
+    .update(JSON.stringify(record))
+    .digest('hex');
+  const write = (kind, evidence, source) => {
+    assert(evidence && typeof evidence === 'object', `DURABLE_READINESS_EVIDENCE_REQUIRED:${kind}`);
+    const before = inspect();
+    const record = snapshot({
+      ...evidence,
+      identity,
+      recordId,
+      revision: ++revision,
+    });
+    const temporaryPath = `${filePath}.${revision}.tmp`;
+    fs.writeFileSync(temporaryPath, JSON.stringify(record));
+    fs.renameSync(temporaryPath, filePath);
+    operations.push(Object.freeze({
+      kind: 'durable-readiness-write',
+      operation: kind,
+      source,
+      before,
+      after: record,
+      digest: digest(record),
+    }));
+    return record;
+  };
+  const read = source => {
+    const record = inspect();
+    operations.push(Object.freeze({
+      kind: 'durable-readiness-read',
+      source,
+      record,
+      digest: record && digest(record),
+    }));
+    return record;
+  };
+
+  return Object.freeze({
+    identity,
+    recordId,
+    write,
+    inspect,
+    operations: () => Object.freeze([...operations]),
+    neo4jDriver() {
+      return Object.freeze({
+        async execute(operation) {
+          assert.strictEqual(operation && operation.kind, 'semantic-readiness-read', 'DURABLE_READINESS_READ_OPERATION_CHANGED');
+          const record = read('exported-query');
+          return { records: record ? [record] : [] };
+        },
+        async close() {},
+      });
+    },
+    createInitFinalReadiness(baseFinalReadiness) {
+      return Object.freeze({
+        async invalidate(evidence) {
+          return write('init-invalidated', evidence, 'argo-init');
+        },
+        async recordFailure(evidence) {
+          return write('init-failed', evidence, 'argo-init');
+        },
+        async verifyQueryability(evidence) {
+          operations.push(Object.freeze({
+            kind: 'durable-readiness-queryability',
+            source: 'argo-init',
+            record: inspect(),
+          }));
+          return baseFinalReadiness.verifyQueryability(evidence);
+        },
+        async verifyGlobalCoherence(evidence) {
+          operations.push(Object.freeze({
+            kind: 'durable-readiness-global-coherence',
+            source: 'argo-init',
+            record: inspect(),
+          }));
+          return baseFinalReadiness.verifyGlobalCoherence(evidence);
+        },
+        async recordAligned(evidence) {
+          await baseFinalReadiness.recordAligned(evidence);
+          return write('init-aligned', evidence, 'argo-init');
+        },
+      });
+    },
+    dispose() {
+      fs.rmSync(directory, { recursive: true, force: true });
+    },
+  });
+}
+
+function seedDurableAlignedReadiness(readinessStore, canonicalVersion) {
+  return readinessStore.write('seed-aligned', Object.freeze({
+    state: 'Aligned',
+    verified: true,
+    canonicalVersion,
+    contentVersion: `content:${canonicalVersion}`,
+    indexVersion: `index:${canonicalVersion}`,
+    completedChannels: Object.freeze([...REQUIRED_CHANNELS]),
+    missingChannels: Object.freeze([]),
+    mismatchedChannels: Object.freeze([]),
+    fullSnapshotFallback: false,
+    channels: Object.freeze(REQUIRED_CHANNELS.map(channel => Object.freeze({
+      channel,
+      state: 'Aligned',
+      canonicalVersion,
+      contentVersion: `content:${canonicalVersion}`,
+      indexVersion: `index:${canonicalVersion}`,
+      provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
+      model: 'qwen3.7-text-embedding',
+      modelVersion: 'qualification-2026-07-25',
+      dimensions: 1024,
+      queryable: true,
+      coherent: true,
+    }))),
+  }), 'pre-existing-readiness');
+}
+
+function buildMutationMatrix() {
+  const matrix = [];
+  for (const objectType of REQUIRED_CHANNELS) {
+    for (const operation of ['add', 'update', 'remove']) {
+      for (const surface of ['batch', 'focused']) {
+        const id = `${objectType.toLowerCase()}-${operation}-${surface}`;
+        matrix.push(Object.freeze({
+          kind: `${surface}-${operation}-${objectType}`,
+          surface,
+          operation,
+          objectType,
+          id,
+          expectedTouchedIds: Object.freeze({
+            touchedElementIds: objectType === 'Element' ? [id] : [],
+            touchedRelationshipIds: objectType === 'ArchitectureRelationship' ? [id] : [],
+            touchedViewIds: objectType === 'View' ? [id] : [],
+          }),
+          canonicalVersion: `canonical:${objectType}:${operation}:${surface}`,
+        }));
+      }
+    }
+  }
+  return Object.freeze(matrix);
+}
+
+async function invokeActualMutationAdapter(mutation, gates) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'argo-actual-mutation-'));
+  const previous = captureEnvironment(['ARGO_REPO_ROOT', 'ARGO_MCP_MUTATION_RESPONSE_DEBUG', ...DUAL_GATES]);
+  try {
+    process.env.ARGO_REPO_ROOT = root;
+    process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG = '1';
+    for (const gate of DUAL_GATES) delete process.env[gate];
+    for (const [name, value] of Object.entries(gates || {})) process.env[name] = value;
+    const graphDirectory = path.join(root, 'design', 'KG');
+    fs.mkdirSync(graphDirectory, { recursive: true });
+    const document = createMutationDocument(mutation);
+    const graphPath = path.join(graphDirectory, 'SystemArchitecture.json');
+    fs.writeFileSync(graphPath, JSON.stringify(document, null, 2));
+    const beforeBytes = fs.readFileSync(graphPath, 'utf8');
+    const invocation = buildActualMutationInvocation(mutation, document);
+    const response = await systemMcp.handleRequest({
+      jsonrpc: '2.0',
+      id: `mutation-${mutation.kind}`,
+      method: 'tools/call',
+      params: {
+        name: invocation.name,
+        arguments: invocation.args,
+      },
+    });
+    const result = response && response.result;
+    const afterBytes = fs.readFileSync(graphPath, 'utf8');
+    return Object.freeze({
+      mutation,
+      invocation: Object.freeze(invocation),
+      result,
+      beforeBytes,
+      afterBytes,
+    });
+  } finally {
+    restoreEnvironment(previous);
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function createMutationDocument(mutation) {
+  const document = JSON.parse(fs.readFileSync(
+    path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json'),
+    'utf8',
+  ));
+  const primaryView = document.views[0];
+  const secondaryView = document.views[1];
+  if (mutation.operation !== 'add') {
+    if (mutation.objectType === 'Element') {
+      const fixture = {
+        ...document.elements[0],
+        id: mutation.id,
+        name: `Lifecycle ${mutation.id}`,
+        attributes: [],
+        testcases: [],
+      };
+      document.elements.push(fixture);
+      primaryView.included_elements = [...(primaryView.included_elements || []), mutation.id];
+      if (mutation.operation === 'remove' && secondaryView) {
+        secondaryView.included_elements = (secondaryView.included_elements || []).filter(id => id !== mutation.id);
+      }
+    } else if (mutation.objectType === 'ArchitectureRelationship') {
+      const fixture = {
+        ...document.relationships[0],
+        id: mutation.id,
+        source_id: document.elements[0].id,
+        target_id: document.elements[1].id,
+      };
+      document.relationships.push(fixture);
+      primaryView.included_relationships = [...(primaryView.included_relationships || []), mutation.id];
+    } else {
+      document.views.push({
+        ...document.views[0],
+        view_id: mutation.id,
+        view_name: `Lifecycle ${mutation.id}`,
+        included_elements: [],
+        included_relationships: [],
+      });
+    }
+  }
+  if (mutation.objectType === 'Element' && mutation.operation === 'remove') {
+    mutation.expectedTouchedIds.touchedViewIds.splice(
+      0,
+      mutation.expectedTouchedIds.touchedViewIds.length,
+      ...document.views.map(view => view.view_id),
+    );
+  } else if (
+    (mutation.objectType === 'Element' || mutation.objectType === 'ArchitectureRelationship')
+    && mutation.operation === 'add'
+  ) {
+    mutation.expectedTouchedIds.touchedViewIds.splice(
+      0,
+      mutation.expectedTouchedIds.touchedViewIds.length,
+      primaryView.view_id,
+    );
+  } else if (mutation.objectType === 'ArchitectureRelationship' && mutation.operation === 'remove') {
+    mutation.expectedTouchedIds.touchedViewIds.splice(
+      0,
+      mutation.expectedTouchedIds.touchedViewIds.length,
+      primaryView.view_id,
+    );
+  }
+  return document;
+}
+
+function buildActualMutationInvocation(mutation, document) {
+  const primaryViewId = document.views[0].view_id;
+  const baseArgs = { architecturePath: 'design/KG/SystemArchitecture.json' };
+  let specification;
+  if (mutation.objectType === 'Element') {
+    if (mutation.operation === 'add') {
+      specification = {
+        type: 'addElement',
+        element: {
+          ...document.elements[0],
+          id: mutation.id,
+          name: `Lifecycle ${mutation.id}`,
+          attributes: [],
+          testcases: [],
+        },
+        view_ids: [primaryViewId],
+      };
+    } else if (mutation.operation === 'update') {
+      specification = { type: 'updateElement', id: mutation.id, patch: { name: `Updated ${mutation.id}` } };
+    } else {
+      specification = { type: 'removeElement', id: mutation.id };
+    }
+  } else if (mutation.objectType === 'ArchitectureRelationship') {
+    if (mutation.operation === 'add') {
+      specification = {
+        type: 'addRelationship',
+        relationship: {
+          ...document.relationships[0],
+          id: mutation.id,
+          source_id: document.elements[0].id,
+          target_id: document.elements[1].id,
+        },
+        view_ids: [primaryViewId],
+      };
+    } else if (mutation.operation === 'update') {
+      specification = { type: 'updateRelationship', id: mutation.id, patch: { name: `Updated ${mutation.id}` } };
+    } else {
+      specification = { type: 'removeRelationship', id: mutation.id, view_ids: [primaryViewId] };
+    }
+  } else if (mutation.operation === 'add') {
+    specification = {
+      type: 'addView',
+      view: {
+        ...document.views[0],
+        view_id: mutation.id,
+        view_name: `Lifecycle ${mutation.id}`,
+        included_elements: [],
+        included_relationships: [],
+      },
+    };
+  } else if (mutation.operation === 'update') {
+    specification = { type: 'updateView', view_id: mutation.id, patch: { view_name: `Updated ${mutation.id}` } };
+  } else {
+    specification = { type: 'removeView', view_id: mutation.id };
+  }
+  if (mutation.surface === 'batch') {
+    return {
+      name: mutation.preview ? 'previewSystemArchitectureMutation' : 'applySystemArchitectureMutation',
+      args: { ...baseArgs, mutations: [specification] },
+    };
+  }
+  const focusedNames = {
+    Element: {
+      add: 'addArchitectureElement',
+      update: 'updateArchitectureElement',
+      remove: 'removeArchitectureElement',
+    },
+    ArchitectureRelationship: {
+      add: 'addArchitectureRelationship',
+      update: 'updateArchitectureRelationship',
+      remove: 'removeArchitectureRelationship',
+    },
+    View: {
+      add: 'addArchitectureView',
+      update: 'updateArchitectureView',
+      remove: 'removeArchitectureView',
+    },
+  };
+  const args = { ...baseArgs, dryRun: mutation.preview === true };
+  if (mutation.objectType === 'Element') {
+    if (mutation.operation === 'add') Object.assign(args, { element: specification.element, view_ids: specification.view_ids });
+    else if (mutation.operation === 'update') Object.assign(args, { id: specification.id, patch: specification.patch });
+    else Object.assign(args, { id: specification.id });
+  } else if (mutation.objectType === 'ArchitectureRelationship') {
+    if (mutation.operation === 'add') Object.assign(args, { relationship: specification.relationship, view_ids: specification.view_ids });
+    else if (mutation.operation === 'update') Object.assign(args, { id: specification.id, patch: specification.patch });
+    else Object.assign(args, { id: specification.id, view_ids: specification.view_ids });
+  } else if (mutation.operation === 'add') Object.assign(args, { view: specification.view });
+  else if (mutation.operation === 'update') Object.assign(args, { view_id: specification.view_id, patch: specification.patch });
+  else Object.assign(args, { view_id: specification.view_id });
+  return {
+    name: focusedNames[mutation.objectType][mutation.operation],
+    args,
+  };
+}
+
+function approvedConfiguration() {
+  return Object.freeze({
+    provider: 'alibaba-cloud-model-studio-openai-compatible-cn-beijing',
+    model: 'qwen3.7-text-embedding',
+    modelVersion: 'qualification-2026-07-25',
+    dimensions: 1024,
+    externalCredentialsOnly: true,
+    secretCanary: undefined,
+  });
+}
+
+function externalConfigurationValues() {
+  return Object.freeze({
+    ...approvedConfiguration(),
+    neo4jDatabaseUrl: 'neo4j://controlled.invalid:7687',
+    neo4jDatabaseUsername: 'controlled-user',
+    neo4jDatabasePassword: 'controlled-password',
+    embeddingCredential: 'controlled-provider-key',
+  });
+}
+
+function enabledGates() {
+  return {
+    ARGO_LIVE_PROVIDER_E2E: '1',
+    ARGO_W31_LIVE_MUTATION_VECTOR_E2E: '1',
+  };
+}
+
+function alignedReadiness() {
+  return Object.freeze({
+    state: 'Aligned',
+    verified: true,
+    canonicalVersion: 'canonical:v1',
+    contentVersion: 'content:v1',
+    indexVersion: 'index:v1',
+    completedChannels: [...REQUIRED_CHANNELS],
+    missingChannels: [],
+    mismatchedChannels: [],
+    fullSnapshotFallback: false,
+  });
+}
+
+function assertZeroSemanticEffects(effects, prefix) {
+  assert.strictEqual(effects.backfillCalls, 0, `${prefix}_BACKFILL_EFFECT`);
+  assertZeroProviderVectorWrites(effects, prefix);
+}
+
+function assertZeroProviderVectorWrites(effects, prefix) {
+  assert.strictEqual(effects.providerCalls, 0, `${prefix}_PROVIDER_EFFECT`);
+  assert.strictEqual(effects.vectorWrites, 0, `${prefix}_VECTOR_WRITE`);
+}
+
+function assertBefore(events, first, second, category) {
+  const firstIndex = events.indexOf(first);
+  const secondIndex = events.indexOf(second);
+  assert(firstIndex >= 0 && secondIndex > firstIndex, category);
+}
+
+function assertPhaseBefore(events, earlierKinds, laterKinds, category) {
+  const earlierIndexes = events
+    .map((kind, index) => (earlierKinds.includes(kind) ? index : -1))
+    .filter(index => index >= 0);
+  const laterIndexes = events
+    .map((kind, index) => (laterKinds.includes(kind) ? index : -1))
+    .filter(index => index >= 0);
+  assert(earlierIndexes.length > 0 && laterIndexes.length > 0, `${category}_PHASE_MISSING`);
+  assert(Math.max(...earlierIndexes) < Math.min(...laterIndexes), category);
+}
+
+function toolNames(response) {
+  return Object.freeze((((response || {}).result || {}).tools || []).map(tool => tool.name));
+}
+
+function rawDiagnosticError(category, field = undefined) {
+  const error = new Error(`${category}: ${SECRET_CANARY}`);
+  error.category = category;
+  error.action = `Correct the external configuration containing ${SECRET_CANARY}`;
+  error.secret = SECRET_CANARY;
+  if (field !== undefined) error.field = field;
+  error.fullSnapshotFallback = false;
+  return error;
+}
+
+function serializeDiagnostic(error) {
+  return Object.fromEntries(
+    Object.getOwnPropertyNames(error || {}).map(name => [name, error[name]]),
+  );
+}
+
+function extractToolPayload(result) {
+  if (!result || !Array.isArray(result.content) || !result.content[0]) return result;
+  try {
+    return JSON.parse(result.content[0].text);
+  } catch {
+    return result;
+  }
+}
+
+function observableSafeError(error) {
+  return {
+    category: error && (error.category || error.message),
+    action: error && error.action,
+    fullSnapshotFallback: error && error.fullSnapshotFallback,
+  };
+}
+
+function captureEnvironment(names) {
+  return Object.fromEntries(names.map(name => [
+    name,
+    Object.prototype.hasOwnProperty.call(process.env, name) ? process.env[name] : undefined,
+  ]));
+}
+
+function restoreEnvironment(previous) {
+  for (const [name, value] of Object.entries(previous)) {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
+}
+
+module.exports = {
+  assertAutomaticInitLifecycle,
+  assertBusinessAgentUnawareWorkflow,
+  assertBusinessReliableWriteCompletion,
+  assertFreshReadinessPerQuery,
+  assertPrivateFullReconciliation,
+  assertPersistentIncrementalMatrix,
+  assertSolePublicSemanticSurface,
+  observeAutomaticInitLifecycle,
+  observeCanonicalArgoInitLifecycle,
+  observeFreshReadinessPerQuery,
+  observeSolePublicSemanticSurface,
+  runPersistentIncrementalMatrix,
+};

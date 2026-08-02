@@ -10,27 +10,55 @@ const isW3IndexLifecycleHandoff = /W3 Index Lifecycle|Exact-Threshold|DT-05|DT-1
 const isW31MutationVectorHandoff = /W3\.1|Mutation-Driven Live Vector|MutationEmbeddingVector|runApplyMutationEmbeddingVectorE2E|createMutationEmbeddingVectorLifecycle/i.test(
   `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''} ${JSON.stringify(handoff.explicitEntrypoints || [])}`,
 );
+const handoffAuthorizationText = JSON.stringify({
+  summary: handoff.summary,
+  explicitEntrypoints: handoff.explicitEntrypoints,
+  codingTargets: handoff.codingTargets,
+  taskExecutionPlan: handoff.taskExecutionPlan,
+});
 const isTs09InScope = /TS-09|TS09|EmbeddingProviderAdapter|EmbeddingGeneration|generateAffectedEmbeddings/i.test(
+  handoffAuthorizationText,
+);
+const isW7BusinessAcceptanceHandoff = /W7 Phase 1|W7-C1|W7-C2|evaluatePhase1QualityBenchmark|evaluateDeliverySequence/i.test(
+  handoffAuthorizationText,
+)
+  && /ExplicitAcceptanceTestcase-DT-18/.test(handoffAuthorizationText)
+  && /ExplicitAcceptanceTestcase-TS-08/.test(handoffAuthorizationText);
+const isDt19InScope = /ExplicitAcceptanceTestcase-DT-05-R2-DT-19|runCapacityEvidence\.js/i.test(
   JSON.stringify({
-    summary: handoff.summary,
     explicitEntrypoints: handoff.explicitEntrypoints,
     codingTargets: handoff.codingTargets,
-    taskExecutionPlan: handoff.taskExecutionPlan,
+    relatedTestcases: (handoff.taskExecutionPlan.tasks || []).map(task => task.relatedTestcases),
+    targetPaths: (handoff.taskExecutionPlan.tasks || []).map(task => task.targetPaths),
   }),
 );
-const outOfScopeEntrypoints = [
-  'tests/explicit/entries/runSevenWaveDeliveryGates.js',
-];
+const isDt19CapacityEvidenceHandoff = isDt19InScope
+  && /evaluateCapacityEvidence|capacity evidence|DT-19/i.test(handoffAuthorizationText);
+const outOfScopeEntrypoints = [];
+if (!isW7BusinessAcceptanceHandoff) {
+  outOfScopeEntrypoints.push('tests/explicit/entries/runSevenWaveDeliveryGates.js');
+}
+if (!isDt19CapacityEvidenceHandoff) {
+  outOfScopeEntrypoints.push('tests/explicit/entries/runCapacityEvidence.js');
+}
 if (!isTs09InScope) {
   outOfScopeEntrypoints.push('tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js');
 }
-const forbiddenTestcases = [
-  'ExplicitAcceptanceTestcase-TS-08',
-];
+const forbiddenTestcases = [];
+if (!isW7BusinessAcceptanceHandoff) {
+  forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-08');
+}
+if (!isDt19CapacityEvidenceHandoff) {
+  forbiddenTestcases.push('ExplicitAcceptanceTestcase-DT-05-R2-DT-19');
+}
 if (!isTs09InScope) {
   forbiddenTestcases.push('ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter');
 }
-const forbiddenImplementationPattern = isW3IndexLifecycleHandoff || isW31MutationVectorHandoff
+const forbiddenImplementationPattern = isW7BusinessAcceptanceHandoff
+  ? /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|generateAffectedEmbeddings)/i
+  : isDt19CapacityEvidenceHandoff
+  ? /(?:sevenWave|deliverySequence|embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|generateAffectedEmbeddings)/i
+  : isW3IndexLifecycleHandoff || isW31MutationVectorHandoff
   ? /(?:sevenWave|deliverySequence)/i
   : /(?:embedding-provider-adapter|embeddingProviderAdapter|index-lifecycle|indexLifecycle|sevenWave|deliverySequence|generateAffectedEmbeddings)/i;
 
@@ -43,6 +71,43 @@ const equivalentTopLevelAuthorizationText = JSON.stringify(
   Object.fromEntries(Object.entries(handoff)
     .filter(([key]) => /(?:strategy|completion|authorization|authorizedTargets)/i.test(key))),
 );
+const isWpP2FinalR3SecurityHandoff = /WP-P2 final R3 security/i.test(String(handoff.summary || ''));
+const governanceFields = [
+  handoff.summary,
+  handoff.taskExecutionPlan.executionStrategy,
+  ...(handoff.openGaps || []),
+];
+
+if (isWpP2FinalR3SecurityHandoff) {
+  const soleTarget = '.argo/scripts/graph-rag/liveEmbeddingProviderConfig.js';
+  assert.deepStrictEqual(
+    (handoff.codingTargets || []).map(target => target.path),
+    [soleTarget],
+    'CODING_SCOPE_AUTHORIZATION_GUARD: final R3 security handoff must authorize only liveEmbeddingProviderConfig.js',
+  );
+  for (const task of tasks) {
+    assert.deepStrictEqual(
+      task.targetPaths,
+      [soleTarget],
+      `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} contradicts final R3 one-file authorization`,
+    );
+  }
+  assertNoContradictoryProductionAuthorization(governanceFields);
+  for (const forbiddenFile of [
+    'defaultSemanticRetrieval.js',
+    'systemarchitecture-mcp-server.js',
+    'productionGraphRagRuntime.js',
+    'argo-mcp-server.js',
+  ]) {
+    assert.throws(
+      () => assertNoContradictoryProductionAuthorization([
+        `CodingAndReparing is explicitly authorized to modify ${forbiddenFile}.`,
+      ]),
+      /contradictory production authorization in handoff prose/,
+      `CODING_SCOPE_AUTHORIZATION_GUARD: negative self-test did not reject ${forbiddenFile}`,
+    );
+  }
+}
 
 // THEN mounted out-of-scope evidence remains frozen but cannot authorize implementation
 for (const entryPath of outOfScopeEntrypoints) {
@@ -55,6 +120,13 @@ for (const testcaseName of forbiddenTestcases) {
   assert(
     !codingTargetsText.includes(testcaseName),
     `CODING_SCOPE_AUTHORIZATION_GUARD: codingTargets authorize ${testcaseName}`,
+  );
+}
+if (!isDt19CapacityEvidenceHandoff) {
+  assert.strictEqual(
+    isDt19InScope,
+    false,
+    'CODING_SCOPE_AUTHORIZATION_GUARD: DT-19 capacity evidence entered authorized Coding scope',
   );
 }
 assert(
@@ -75,6 +147,20 @@ assert(
 );
 
 for (const task of tasks) {
+  const targetAuthorizationText = JSON.stringify({
+    relatedTestcases: task.relatedTestcases,
+    targetPaths: task.targetPaths,
+  });
+  assert(
+    !/deliveryStatus/i.test(targetAuthorizationText),
+    `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} authorizes manual deliveryStatus editing`,
+  );
+  if (isDt19CapacityEvidenceHandoff) {
+    assert(
+      (task.targetPaths || []).every(targetPath => targetPath === '.argo/scripts/graph-rag/productionGraphRagRuntime.js'),
+      `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} authorizes DT-19 work outside productionGraphRagRuntime.js`,
+    );
+  }
   const authorizationText = JSON.stringify({
     relatedTestcases: task.relatedTestcases,
     targetPaths: task.targetPaths,
@@ -91,6 +177,29 @@ for (const task of tasks) {
     !forbiddenImplementationPattern.test(authorizationText),
     `CODING_SCOPE_AUTHORIZATION_GUARD: ${task.taskId} authorizes adapter/lifecycle implementation`,
   );
+}
+assert(
+  /runner-owned deliveryStatus by hand/i.test(executionStrategyText)
+    || tasks.some(task => /no hand-authored deliveryStatus changes/i.test(String(task.completionSignal || ''))),
+  'CODING_SCOPE_AUTHORIZATION_GUARD: handoff must preserve runner-owned deliveryStatus authority',
+);
+
+function assertNoContradictoryProductionAuthorization(fields) {
+  const statements = fields.flatMap(value => splitAuthorizationStatements(value));
+  for (const statement of statements.filter(value => /authoriz/i.test(value))) {
+    assert(
+      !/(?:defaultSemanticRetrieval|systemarchitecture-mcp-server|productionGraphRagRuntime|argo-mcp-server)\.js/i.test(statement),
+      `CODING_SCOPE_AUTHORIZATION_GUARD: contradictory production authorization in handoff prose: ${statement.trim()}`,
+    );
+  }
+}
+
+function splitAuthorizationStatements(value) {
+  const protectedText = String(value || '').replace(/\.js\b/g, '__DOT_JS__');
+  return protectedText
+    .split(/[.!?](?:\s+|$)/)
+    .map(statement => statement.replace(/__DOT_JS__/g, '.js'))
+    .filter(Boolean);
 }
 
 function read(relativePath) {

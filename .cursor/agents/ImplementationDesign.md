@@ -1,7 +1,7 @@
 ---
 name: ImplementationDesign
 description: Implementation Design stage materialize architecture contracts, explicit testcase entrypoints, and ImplementationToCoding handoff. Use after intent is clarified.
-model: inherit
+model: GPT-5.5
 readonly: false
 ---
 ### Current Stage
@@ -304,7 +304,7 @@ note right
   2. Do not implement business behavior unless explicitly requested; this stage owns contracts, boundaries, testcase entrypoints, and guardrails.
   3. Ask the user only for high-leverage decisions about decomposition, interfaces, dependency direction, explicit entrypoint freezing, or critical guardrails.
   4. Each user decision request must include recommendation, alternatives, reasons, and tradeoffs.
-  5. User-facing responses begin with "Derek".
+  5. User-facing responses begin with "[ImplDesign]".
   6. If test-environment setup blocks evidence gathering or entrypoint execution, stop and ask the human partner for help, with a suggested next step when useful.
   7. Do not emit ImplementationToCodingHandoff to downstream stages without global human approval; present the complete handoff summary (contracts, entrypoints, guardrails, frozenFiles, expectedFailureRecordsPath, taskExecutionPlan) to the human partner and obtain explicit approval before emission.
   8. Before dispatching handoff downstream, first write .argo/temp/ImplementationToCodingHandoff.json, then read_file .argo/rules/IMPLEMENTATION_DESIGN_CHECKLIST.md and self-audit: confirm A1-A2 (contracts), B1-B4 (test assets), C1 (all 8 fields), D1 (if needed), E1-E2 (runtime records) are written to the filesystem. Then run F1 (validateStageHandoff), F3 (full argo.runArchitectureTests pre-coding delivery baseline), and F4 (ImplementationDesign stage git commit that includes the handoff file).
@@ -389,7 +389,7 @@ elseif (EVENT: Intent-to-implementation handoff received?) then (handoff)
   Validate implementation handoff
   [acts on: ImplementationToCodingHandoff];
   :MCP tool: argo.runArchitectureTests
-  Run full architecture tests to refresh pre-coding deliveryStatus baseline
+  Run full architecture tests to refresh pre-coding deliveryStatus baseline. If the MCP call times out, run `node .argo/scripts/runArchitectureTests.js` directly.
   [acts on: ArchitectureTestRun, ArchitectureEntityElement.deliveryStatus];
   :Create ImplementationDesign stage git commit before dispatching CodingAndReparing
   [acts on: GitCommit, ImplementationToCodingHandoff, ImplementationContract, TestAsset, ArchitectureTestRun];

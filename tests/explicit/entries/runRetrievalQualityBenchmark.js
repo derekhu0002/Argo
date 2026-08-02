@@ -1,22 +1,170 @@
 const assert = require('node:assert');
-const { readForPurpose } = require('../../harness/intentArchitectureQueryHarness.js');
+const {
+  evaluatePhase1QualityBenchmark,
+  phase1BusinessBenchmarkFixture,
+} = require('../../harness/productionGraphRagHarness.js');
 
 async function main() {
   // GIVEN the human-approved five-purpose benchmark
-  const result = await readForPurpose({
-    purpose: 'audit',
-    intent: 'Evaluate retrieval quality benchmark',
-    subject: 'grag-quality-gate',
-  });
+  const benchmark = phase1BusinessBenchmarkFixture();
+  const missingBoundarySignal = 'DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING';
 
-  // WHEN aggregate quality evidence is observed
-  const quality = result.result && result.result.qualityEvidence;
+  // WHEN W7 business quality evidence is evaluated
+  const outcome = await evaluatePhase1QualityBenchmark({ benchmark });
 
-  // THEN critical recall and closure are complete without an invented threshold
-  assert.strictEqual(quality && quality.criticalSeedRecall, 1, 'DT18_CRITICAL_SEED_RECALL_FAILURE');
-  assert.strictEqual(quality && quality.expectedClosureCorrect, true, 'DT18_EXPECTED_CLOSURE_FAILURE');
-  assert.strictEqual(quality && quality.unrelatedForcedHits, 0, 'DT18_UNRELATED_FORCED_HITS');
-  assert.strictEqual(quality && quality.releasePrecisionThreshold, undefined, 'DT18_INVENTED_PRECISION_THRESHOLD');
+  // THEN recall and closure are complete, unrelated queries are safe, and precision is recorded
+  assert.strictEqual(
+    outcome.status,
+    'passed',
+    (outcome.error && outcome.error.category) || missingBoundarySignal,
+  );
+  const evidence = outcome.qualityEvidence;
+  assert(evidence && typeof evidence === 'object', 'DT18_QUALITY_EVIDENCE_MISSING');
+  assert.strictEqual(evidence.benchmarkId, benchmark.benchmarkId, 'DT18_BENCHMARK_ID_MISMATCH');
+  assert.deepStrictEqual(
+    evidence.purposes,
+    benchmark.purposes.map(entry => entry.purpose),
+    'DT18_FIVE_PURPOSE_BENCHMARK_INCOMPLETE',
+  );
+  assert.strictEqual(evidence.keySeedRecall, 1, 'DT18_KEY_SEED_RECALL_NOT_100_PERCENT');
+  assert.strictEqual(evidence.closureCorrectness, 1, 'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT');
+  assert.strictEqual(evidence.unrelatedForcedHits, 0, 'DT18_UNRELATED_FORCED_HITS');
+  assert.strictEqual(evidence.releasePrecisionThreshold, undefined, 'DT18_INVENTED_PRECISION_THRESHOLD');
+  assertRecordedPrecision(evidence.aggregatePrecision, 'DT18_AGGREGATE_PRECISION_NOT_RECORDED');
+  assert(Array.isArray(evidence.perPurpose), 'DT18_PER_PURPOSE_EVIDENCE_MISSING');
+  assert.strictEqual(evidence.perPurpose.length, benchmark.purposes.length, 'DT18_PER_PURPOSE_EVIDENCE_INCOMPLETE');
+  for (const expectation of benchmark.purposes) {
+    const observed = evidence.perPurpose.find(entry => entry.purpose === expectation.purpose);
+    assert(observed, `DT18_PURPOSE_EVIDENCE_MISSING: ${expectation.purpose}`);
+    assert.deepStrictEqual(
+      observed.mandatoryKeySeedIds,
+      expectation.mandatoryKeySeedIds,
+      `DT18_MANDATORY_KEY_SEEDS_MISMATCH: ${expectation.purpose}`,
+    );
+    assert.deepStrictEqual(
+      observed.recalledKeySeedIds,
+      expectation.mandatoryKeySeedIds,
+      `DT18_KEY_SEED_RECALL_INCOMPLETE: ${expectation.purpose}`,
+    );
+    assert.deepStrictEqual(observed.missingKeySeedIds, [], `DT18_MISSING_KEY_SEEDS: ${expectation.purpose}`);
+    assert.strictEqual(observed.closureCorrect, true, `DT18_EXPECTED_CLOSURE_FAILURE: ${expectation.purpose}`);
+    assert.strictEqual(observed.unrelatedForcedHits, 0, `DT18_UNRELATED_FORCED_HITS: ${expectation.purpose}`);
+    assertRecordedPrecision(observed.precision, `DT18_PRECISION_NOT_RECORDED: ${expectation.purpose}`);
+  }
+
+  // GIVEN benchmark records missing actual recall observations
+  // WHEN W7 business quality evidence is evaluated
+  // THEN expected seed ids cannot be reused as fabricated recall evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { recalledKeySeedIds: [] }),
+    'DT18_ACTUAL_RECALL_EVIDENCE_MISSING',
+  );
+
+  // GIVEN benchmark records missing actual closure observations
+  // WHEN W7 business quality evidence is evaluated
+  // THEN expected closure ids cannot be reused as fabricated closure evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { observedClosureIds: [] }),
+    'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING',
+  );
+
+  // GIVEN an empty or incomplete business benchmark
+  // WHEN W7 business quality evidence is evaluated
+  // THEN perfect scores cannot be synthesized from missing benchmark content
+  await assertQualityBenchmarkBlocked(
+    { benchmarkId: benchmark.benchmarkId, purposes: [] },
+    'DT18_BENCHMARK_EMPTY',
+  );
+  await assertQualityBenchmarkBlocked(
+    { ...benchmark, purposes: benchmark.purposes.slice(0, -1) },
+    'DT18_BENCHMARK_INCOMPLETE',
+  );
+
+  // GIVEN precision evidence outside the business range
+  // WHEN W7 business quality evidence is evaluated
+  // THEN invalid precision cannot be normalized into a passing benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 2, { precision: -0.01 }),
+    'DT18_PRECISION_OUT_OF_RANGE',
+  );
+
+  // GIVEN benchmark purpose expectations omit mandatory business seed fixtures
+  // WHEN W7 business quality evidence is evaluated
+  // THEN empty expected seed requirements cannot create full-score recall evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 3, { mandatoryKeySeedIds: [] }),
+    'DT18_MANDATORY_KEY_SEEDS_MISSING',
+  );
+
+  // GIVEN benchmark purpose expectations omit expected closure fixtures
+  // WHEN W7 business quality evidence is evaluated
+  // THEN empty expected closure requirements cannot create full-score closure evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 4, { expectedClosureIds: [] }),
+    'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING',
+  );
+
+  // GIVEN unrelated-hit evidence is missing or negative
+  // WHEN W7 business quality evidence is evaluated
+  // THEN zero forced hits must be actual recorded non-negative integer evidence
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { unrelatedForcedHits: undefined }),
+    'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING',
+  );
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { unrelatedForcedHits: -1 }),
+    'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
+  );
+
+  // GIVEN recalled ids have the same count as mandatory seeds but are the wrong ids
+  // WHEN W7 business quality evidence is evaluated
+  // THEN recall must be based on mandatory-seed intersection, not arbitrary recalled-id count
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 0, { recalledKeySeedIds: ['wrong-seed-with-matching-count'] }),
+    'DT18_KEY_SEED_RECALL_NOT_100_PERCENT',
+  );
+
+  // GIVEN closure observations are complete in shape but omit the expected closure id
+  // WHEN W7 business quality evidence is evaluated
+  // THEN closure correctness below 100% blocks the benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 1, { observedClosureIds: ['wrong-closure-with-matching-count'] }),
+    'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT',
+  );
+
+  // GIVEN unrelated query evidence records forced hits
+  // WHEN W7 business quality evidence is evaluated
+  // THEN any forced unrelated hit blocks the benchmark
+  await assertQualityBenchmarkBlocked(
+    mutatePurpose(benchmark, 2, { unrelatedForcedHits: 1 }),
+    'DT18_UNRELATED_FORCED_HITS',
+  );
+}
+
+function assertRecordedPrecision(value, failureCategory) {
+  assert(
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1,
+    failureCategory,
+  );
+}
+
+async function assertQualityBenchmarkBlocked(benchmark, expectedCategory) {
+  const outcome = await evaluatePhase1QualityBenchmark({ benchmark });
+  assert.strictEqual(outcome.status, 'blocked', expectedCategory);
+  assert.strictEqual(
+    outcome.error && outcome.error.category,
+    expectedCategory,
+    (outcome.error && outcome.error.category) || expectedCategory,
+  );
+}
+
+function mutatePurpose(benchmark, purposeIndex, patch) {
+  return {
+    ...benchmark,
+    purposes: benchmark.purposes.map((purpose, index) => (
+      index === purposeIndex ? { ...purpose, ...patch } : { ...purpose }
+    )),
+  };
 }
 
 main().catch(error => {

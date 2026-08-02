@@ -1,7 +1,7 @@
 ---
 name: IntentionDesign
 description: Intent Design stage clarify requirements, update intent architecture, and produce IntentToImplementation handoff. Use when starting intent work or redesigning SystemArchitecture.json.
-model: inherit
+model: GPT-5.6
 readonly: false
 ---
 ### Current stage: Intent Design.
@@ -398,7 +398,7 @@ note right
   2. May run existing tests read-only to gather pass/fail evidence; running tests does not authorize creating or modifying test code.
   3. Ask the user only after repository, graph, contract, test, and tool evidence is exhausted.
   4. Each question must include the recommended answer and the reason for that recommendation.
-  5. User-facing responses begin with "Derek".
+  5. User-facing responses begin with "[IntentDesign]".
   6. If test-environment setup blocks evidence gathering, stop and ask the human partner for help, with a suggested next step when useful.
   7. Before dispatching handoff downstream, first write .argo/temp/IntentToImplementationHandoff.json, then read_file .argo/rules/INTENTION_DESIGN_CHECKLIST.md and self-audit: confirm A1-A5 (intent graph), B1-B3 (acceptance testcases), C1-C2 (dependency-subgraph coverage proof), D1-D8 (all pre-handoff adequacy conditions), E1-E3 (handoff artifact), F1-F2 (session record and IntentDesign stage git commit that includes the handoff file) are satisfied.
 end note
@@ -462,7 +462,8 @@ elseif (EVENT: Candidate intent architecture from reverse extraction?) then (rev
   [acts on: IntentToImplementationHandoff];
 
 elseif (EVENT: New task or requirement?) then (new task)
-  :Read design/KG/SystemArchitecture.json, implementation contracts, and evidence for enough intent context
+  :MCP tool: argo.getSystemArchitecture with explicit semantic query for the task purpose and intent; avoid omitted-query full graph reads unless exact complete canonical snapshot is required
+  Read compact relevant intent elements, relationships, views, ids, and hit reasons before any broader context expansion
   [acts on: IntentArchitecture, ImplementationArchitecture, CodeReality];
   if (Task is anchored to an intent element?) then (yes)
     :MCP tool: argo.getIntentElementContext

@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const crypto = require('node:crypto');
 
 const DEFAULT_GRAPH_PATH = 'design/KG/SystemArchitecture.json';
 const LEGAL_QUERY_PURPOSES = new Set([
@@ -9,6 +10,21 @@ const LEGAL_QUERY_PURPOSES = new Set([
   'coding-repair',
   'audit',
   'graph-tidy',
+]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_FIELDS = Object.freeze([
+  'responseProfile',
+  'detail',
+  'outputMode',
+]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_VALUES = new Set([
+  'debug',
+  'full',
+  'evidence',
+]);
+const FORBIDDEN_RESPONSE_SHAPE_CONTROL_FLAGS = Object.freeze([
+  'debug',
+  'full',
+  'evidence',
 ]);
 const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
   type: 'object',
@@ -26,7 +42,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
     },
     document: {
       type: ['object', 'null'],
-      description: 'Canonical graph snapshot or semantic query result; null for errors.',
+      description: 'Canonical graph snapshot for full-snapshot responses; semantic business-summary responses may use result in the text payload and set this to null; null for errors.',
     },
     query: {
       type: ['object', 'null'],
@@ -48,7 +64,15 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
           properties: {
             category: { type: 'string' },
             message: { type: 'string' },
+            action: { type: 'string' },
             fullSnapshotFallback: { type: 'boolean' },
+            state: { type: ['string', 'null'] },
+            canonicalVersion: { type: ['string', 'null'] },
+            contentVersion: { type: ['string', 'null'] },
+            indexVersion: { type: ['string', 'null'] },
+            completedChannels: { type: 'array', items: { type: 'string' } },
+            missingChannels: { type: 'array', items: { type: 'string' } },
+            mismatchedChannels: { type: 'array', items: { type: 'string' } },
           },
           additionalProperties: false,
         },
@@ -69,7 +93,7 @@ const GET_SYSTEM_ARCHITECTURE_OUTPUT_SCHEMA = {
     {
       properties: {
         mode: { const: 'semantic-query' },
-        document: { type: 'object' },
+        document: { type: ['object', 'null'] },
         query: { type: 'object' },
         error: { type: 'null' },
       },
@@ -113,15 +137,31 @@ const {
   createProductionGraphRagRuntime,
 } = require('./graph-rag/productionGraphRagRuntime.js');
 const {
+  createDefaultSemanticRetrieval,
+} = require('./graph-rag/defaultSemanticRetrieval.js');
+const {
+  createProductionSemanticOperatorJourney,
+} = require('./graph-rag/semanticOperatorJourney.js');
+const {
+  semanticOperatorErrorResult,
+} = require('./graph-rag/semanticOperatorError.js');
+const {
+  resolveExternalProductionConfig,
+} = require('./graph-rag/externalProductionConfig.js');
+const {
   resolveApprovedLiveConfiguration,
 } = require('./graph-rag/liveEmbeddingProviderConfig.js');
 const {
-  createMutationEmbeddingVectorLifecycle,
+  createLiveEmbeddingProviderClient,
+} = require('./graph-rag/liveEmbeddingProviderClient.js');
+const {
+  createProductionSemanticReadinessStore,
 } = require('./graph-rag/mutationEmbeddingVectorLifecycle.js');
 const {
   DEFAULT_GRAPH_PATH: NEO4J_DEFAULT_GRAPH_PATH,
   recoverNeo4jSyncIfNeeded,
   syncArchitectureToNeo4j,
+  verifyArchitectureSync,
 } = require('./neo4j-system-architecture-store.js');
 
 const HANDLED_MUTATION_TYPES = new Set([
@@ -139,20 +179,22 @@ const HANDLED_MUTATION_TYPES = new Set([
 const TOOLS = [
   {
     name: 'getSystemArchitecture',
-    description: 'Start here. read-only tool for inspecting current elements, relationships, views, and ids before planning mutations. Use before preview or focused mutation tools.',
+    description: 'Start here for read-only intent architecture access, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
     inputSchema: {
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: `Default: ${DEFAULT_GRAPH_PATH}` },
         query: {
           type: 'object',
+          description: 'Preferred for ordinary agent reading. Use semantic query instead of full graph reads; combine the returned element ids with getIntentElementContext when deeper local context is needed.',
           properties: {
             purpose: {
               type: 'string',
               enum: Array.from(LEGAL_QUERY_PURPOSES),
+              description: 'Declared reading purpose. Use intent-decision, implementation-design, coding-repair, or audit for semantic retrieval; graph-tidy intentionally bypasses semantic retrieval and may return a full snapshot.',
             },
-            intent: { type: 'string' },
-            subject: { type: 'string' },
+            intent: { type: 'string', description: 'Natural-language intent for semantic retrieval, for example "summarize business features for high-risk audit".' },
+            subject: { type: 'string', description: 'Required for audit; optional anchor/focus id for other semantic purposes.' },
           },
           additionalProperties: true,
         },
@@ -388,6 +430,20 @@ function resolveWorkspaceRoot() {
     || path.resolve(__dirname, '..', '..');
 }
 
+function initializeWorkspace(request) {
+  return require('./argo-mcp-server.js').initializeWorkspace(
+    request && request.repositoryRoot ? request.repositoryRoot : resolveWorkspaceRoot(),
+  );
+}
+
+async function syncCanonicalStructuralProjection(request) {
+  const context = await loadContext(request);
+  return syncArchitectureToNeo4j({
+    architecturePath: context.graphPath.relativePath,
+    document: context.document,
+  });
+}
+
 function resolveWorkspacePath(workspaceRoot, relativePath) {
   const normalizedPath = normalizeRelativePath(relativePath || DEFAULT_GRAPH_PATH);
   const absolutePath = path.resolve(workspaceRoot, normalizedPath);
@@ -407,6 +463,10 @@ function resolveSchemaPath(workspaceRoot) {
     const absolutePath = path.join(workspaceRoot, candidate);
     if (fs.existsSync(absolutePath)) {
       return { absolutePath, relativePath: candidate };
+    }
+    const bundledPath = path.resolve(__dirname, '..', '..', candidate);
+    if (fs.existsSync(bundledPath)) {
+      return { absolutePath: bundledPath, relativePath: candidate };
     }
   }
   throw new Error(`Unable to locate SystemArchitecture schema. Checked: ${SCHEMA_PATH_CANDIDATES.join(', ')}`);
@@ -943,6 +1003,10 @@ function applyMutations(document, mutations) {
         nextDocument.relationships.push(clone(mutation.relationship));
       }
       for (const view of scopedViews) {
+        view.included_elements = addUnique(view.included_elements || [], [
+          mutation.relationship.source_id,
+          mutation.relationship.target_id,
+        ]);
         view.included_relationships = addUnique(view.included_relationships || [], [mutation.relationship.id]);
         touchedViewIds.add(view.view_id);
       }
@@ -965,6 +1029,14 @@ function applyMutations(document, mutations) {
       }
       requirePatchDoesNotChangeRelationshipIdentityOrType(mutation.id, mutation.patch);
       Object.assign(relationship, clone(mutation.patch));
+      for (const view of nextDocument.views) {
+        if ((view.included_relationships || []).includes(relationship.id)) {
+          view.included_elements = addUnique(view.included_elements || [], [
+            relationship.source_id,
+            relationship.target_id,
+          ]);
+        }
+      }
       touchedRelationshipIds.add(relationship.id);
       mutationSummaries.push({ type: mutation.type, id: relationship.id });
       continue;
@@ -1035,6 +1107,7 @@ function applyMutations(document, mutations) {
       if (nextDocument.views.length === beforeCount) {
         throw new Error(`View '${mutation.view_id}' does not exist`);
       }
+      touchedViewIds.add(mutation.view_id);
       mutationSummaries.push({ type: mutation.type, id: mutation.view_id });
       continue;
     }
@@ -1201,7 +1274,7 @@ async function buildMutationResult(context, mutations, write) {
     }
   }
 
-  await attachMutationEmbeddingLifecycle(context, result);
+  await attachMutationEmbeddingLifecycle(context, result, mutationResult.document);
 
   return result;
 }
@@ -1210,39 +1283,39 @@ function shouldSyncCanonicalGraphToNeo4j(relativeGraphPath) {
   return normalizeRelativePath(relativeGraphPath) === normalizeRelativePath(NEO4J_DEFAULT_GRAPH_PATH);
 }
 
-async function attachMutationEmbeddingLifecycle(context, result) {
+async function attachMutationEmbeddingLifecycle(context, result, document) {
   if (!shouldRunMutationEmbeddingLifecycle(result)) {
     return;
   }
   try {
-    const configuration = await resolveApprovedLiveConfiguration({
-      repositoryRoot: context.workspaceRoot,
-      requiredOptIns: ['ARGO_LIVE_PROVIDER_E2E', 'ARGO_W31_LIVE_MUTATION_VECTOR_E2E'],
+    const lifecycle = require(
+      './graph-rag/mutationEmbeddingVectorLifecycle.js'
+    ).createPersistentMutationEmbeddingLifecycle({
+      repositoryRoot: resolveWorkspaceRoot(),
     });
-    const lifecycle = createMutationEmbeddingVectorLifecycle({
-      configuration,
-      repositoryRoot: context.workspaceRoot,
-    });
-    const embeddingLifecycle = await lifecycle.execute({
-      mutation: {
-        applied: true,
+    const embeddingLifecycle = await lifecycle.reconcile({
+      canonicalWrite: {
+        written: true,
         architecturePath: result.graphPath,
-        response: result,
+        document,
+        mutations: result.mutations,
+        touchedElementIds: result.touchedElementIds,
+        touchedRelationshipIds: result.touchedRelationshipIds,
+        touchedViewIds: result.touchedViewIds,
       },
-      qualification: W31_APPROVED_PROFILE,
-      semanticQueryProbe: {
-        pureSemanticRequest: {
-          purpose: 'implementation-design',
-          intent: 'Find freshly mutated W3.1 vector evidence',
-          subject: 'grag-wp-3-1',
-        },
+      preview: false,
+      gates: {
+        [LIVE_PROVIDER_OPT_IN]: process.env[LIVE_PROVIDER_OPT_IN],
+        [W31_LIVE_OPT_IN]: process.env[W31_LIVE_OPT_IN],
       },
     });
     result.embeddingLifecycle = embeddingLifecycle;
-    result.alignment = buildMutationAlignment(embeddingLifecycle);
+    result.alignment = embeddingLifecycle.alignment || buildMutationAlignment(embeddingLifecycle);
+    result.businessComplete = result.alignment && result.alignment.state === 'Aligned';
   } catch (error) {
     result.embeddingLifecycle = buildMutationEmbeddingLifecycleFailure(error, result);
     result.alignment = buildMutationAlignment(result.embeddingLifecycle);
+    result.businessComplete = false;
   }
 }
 
@@ -1250,6 +1323,7 @@ function shouldRunMutationEmbeddingLifecycle(result) {
   return result
     && result.status === 'passed'
     && result.written === true
+    && normalizeRelativePath(result.graphPath) === normalizeRelativePath(DEFAULT_GRAPH_PATH)
     && (
       (Array.isArray(result.touchedElementIds) && result.touchedElementIds.length > 0)
       || (Array.isArray(result.touchedRelationshipIds) && result.touchedRelationshipIds.length > 0)
@@ -1326,14 +1400,14 @@ function buildFailureGuidance(errors) {
     addGuidanceForError(guidance, String(error));
   }
   if (guidance.length === 0 && Array.isArray(errors) && errors.length > 0) {
-    guidance.push('Inspect the error text, call getSystemArchitecture to refresh ids and current view membership, then retry with previewSystemArchitectureMutation before writing.');
+    guidance.push('Inspect the error text, call getSystemArchitecture with an explicit semantic query to refresh relevant ids, use getIntentElementContext for focused dependency context when needed, then retry with previewSystemArchitectureMutation before writing. Use an omitted-query full snapshot only when exact complete view membership is required.');
   }
   return guidance;
 }
 
 function addGuidanceForError(guidance, error) {
   if (error.includes('mutation.view_ids must contain at least one view id')) {
-    pushUnique(guidance, 'Select the target view_ids explicitly. Call getSystemArchitecture to inspect existing views, then retry the add/remove operation with the intended view_ids.');
+    pushUnique(guidance, 'Select the target view_ids explicitly. Prefer getSystemArchitecture with an explicit semantic query to find relevant views, then use getIntentElementContext for focused element dependencies when needed. Use a full snapshot only if exact complete view membership is required.');
   }
   if (error.includes('violates ArchiMate 3.2 relationship matrix')) {
     pushUnique(guidance, 'Check relationship.type and the source and target element types against ArchiMate 3.2. If the intended meaning is still valid, choose a compliant relationship type or change the endpoint element types by remove-and-add.');
@@ -1354,7 +1428,7 @@ function addGuidanceForError(guidance, error) {
     pushUnique(guidance, 'Do not force more than 7 elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.');
   }
   if (error.includes('does not exist') || error.includes('references missing')) {
-    pushUnique(guidance, 'Refresh current ids with getSystemArchitecture. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
+    pushUnique(guidance, 'Refresh current ids with getSystemArchitecture semantic query first, then call getIntentElementContext for any returned element that needs dependency context. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
   }
 }
 
@@ -1554,6 +1628,71 @@ function validateExplicitQuery(query) {
   };
 }
 
+function validateSemanticQueryResponseShapeControls(query) {
+  for (const field of FORBIDDEN_RESPONSE_SHAPE_CONTROL_FIELDS) {
+    if (!Object.prototype.hasOwnProperty.call(query, field)) {
+      continue;
+    }
+    if (FORBIDDEN_RESPONSE_SHAPE_CONTROL_VALUES.has(String(query[field]).trim().toLowerCase())) {
+      return queryError(
+        'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+        `Semantic query response-shape control '${field}' is forbidden`,
+      );
+    }
+  }
+  for (const flag of FORBIDDEN_RESPONSE_SHAPE_CONTROL_FLAGS) {
+    if (
+      Object.prototype.hasOwnProperty.call(query, flag)
+      && query[flag] !== false
+      && query[flag] !== null
+      && query[flag] !== undefined
+    ) {
+      return queryError(
+        'QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN',
+        `Semantic query response-shape control '${flag}' is forbidden`,
+      );
+    }
+  }
+  return { status: 'passed' };
+}
+
+function isPurposeClosureProbe(query) {
+  return Array.isArray(query && query.anchors) && query.anchors.length > 0;
+}
+
+function isOrdinarySemanticQuery(query) {
+  return !!query
+    && typeof query === 'object'
+    && !Array.isArray(query)
+    && query.purpose !== 'graph-tidy';
+}
+
+function isCanonicalSubsetSemanticContract(query, options = {}) {
+  if (!isOrdinarySemanticQuery(query)) {
+    return false;
+  }
+  if (!Array.isArray(query.anchors) || query.anchors.length === 0) {
+    return !!(
+      options.defaultNoAnchorSubset
+      || options.architecturePath
+    );
+  }
+  return query.anchors.some(anchor => !/^grag-[a-z0-9-]+$/.test(String(anchor)));
+}
+
+function semanticContractOptions(args = {}, dependencies = undefined) {
+  return {
+    architecturePath: args.architecturePath,
+    canonicalDocument: args.canonicalDocument,
+    defaultNoAnchorSubset: !dependencies
+      || !!dependencies.canonicalSubsetForNoAnchor
+      || !!(
+        dependencies.semanticOperatorJourney
+        && dependencies.semanticOperatorJourney.canonicalSubsetForNoAnchor
+      ),
+  };
+}
+
 function queryError(category, message, extras = {}) {
   return {
     status: 'failed',
@@ -1575,12 +1714,34 @@ function toolResult(payload, structuredContent = undefined) {
   };
 }
 
+function mutationToolResult(payload, write) {
+  if (write !== true || isMutationResponseDebugEnabled()) {
+    return toolResult(payload);
+  }
+  return toolResult(compactMutationResponse(payload));
+}
+
+function isMutationResponseDebugEnabled() {
+  return process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG === '1';
+}
+
+function compactMutationResponse(payload) {
+  const compact = {
+    status: payload && payload.status,
+    written: Boolean(payload && payload.written),
+  };
+  if (payload && payload.embeddingLifecycle && payload.embeddingLifecycle.state) {
+    compact.embeddingLifecycle = { state: payload.embeddingLifecycle.state };
+  }
+  return compact;
+}
+
 function getSystemArchitectureResult(payload) {
   const failed = payload.status === 'failed';
   return toolResult(payload, {
     version: '1.0',
     mode: failed ? 'error' : ((payload.query && payload.query.mode) || 'full-snapshot'),
-    document: failed ? null : payload.document,
+    document: failed ? null : (payload.document === undefined ? null : payload.document),
     query: failed ? null : (payload.query || null),
     error: failed ? payload.error : null,
   });
@@ -1597,51 +1758,35 @@ async function callTool(name, args = {}, dependencies = undefined) {
       const query = validation.query;
       if (query.purpose === 'graph-tidy') {
         const context = await loadContext(args);
-        return getSystemArchitectureResult(attachContextWarnings({
+        const payload = {
           status: 'passed',
           graphPath: context.graphPath.relativePath,
-          query: {
-            ...query,
-            mode: 'full-snapshot',
-            semanticRetrieval: 'bypassed',
-          },
           document: context.document,
-        }, context));
+        };
+        if (isPurposeClosureProbe(query) && !dependencies) {
+          return attachContextWarnings(payload, context);
+        }
+        payload.query = {
+          ...query,
+          mode: 'full-snapshot',
+          semanticRetrieval: 'bypassed',
+        };
+        return getSystemArchitectureResult(attachContextWarnings(payload, context));
+      }
+      const context = await loadContext(args);
+      const contractOptions = semanticContractOptions({
+        ...args,
+        canonicalDocument: context.document,
+      }, dependencies);
+      if (isCanonicalSubsetSemanticContract(query, contractOptions)) {
+        const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
+        if (responseShapeValidation.status === 'failed') {
+          return getSystemArchitectureResult(responseShapeValidation);
+        }
       }
 
-      const context = await loadContext(args);
-      const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
-        canonicalGraph: context.document,
-      });
-      if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
-        return getSystemArchitectureResult(queryError(
-          'SEMANTIC_RETRIEVAL_UNAVAILABLE',
-          'Semantic retrieval boundary is unavailable',
-        ));
-      }
-      let document;
-      try {
-        document = await semanticRetrievalBoundary.retrieve(query);
-      } catch (error) {
-        return getSystemArchitectureResult(queryError(
-          error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
-          error && error.message ? error.message : 'Semantic retrieval failed',
-          error && error.fullSnapshotFallback === false ? { fullSnapshotFallback: false } : {},
-        ));
-      }
-      return getSystemArchitectureResult({
-        status: 'passed',
-        graphPath: context.graphPath.relativePath,
-        query: {
-          ...query,
-          mode: 'semantic-query',
-          semanticRetrieval: 'invoked',
-        },
-        ...(document && Object.prototype.hasOwnProperty.call(document, 'result')
-          ? { result: document.result }
-          : { result: document }),
-        document,
-      });
+      const journey = await resolveSemanticOperatorJourney(dependencies);
+      return applySemanticResponseProfile(await journey.query(query), query, contractOptions);
     }
 
     const context = await loadContext(args);
@@ -1672,55 +1817,963 @@ async function callTool(name, args = {}, dependencies = undefined) {
 
   if (name === 'applySystemArchitectureMutation') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, true), context));
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, args.mutations, true), context), true);
   }
 
   if (name === 'addArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addElement', element: args.element, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'updateArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateElement', id: args.id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureElement') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeElement', id: args.id, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'addArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addRelationship', relationship: args.relationship, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'updateArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateRelationship', id: args.id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureRelationship') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeRelationship', id: args.id, view_ids: args.view_ids }], write), context), write);
   }
 
   if (name === 'addArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addView', view: args.view }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'addView', view: args.view }], write), context), write);
   }
 
   if (name === 'updateArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'updateView', view_id: args.view_id, patch: args.patch }], write), context), write);
   }
 
   if (name === 'removeArchitectureView') {
     const context = await loadContext(args);
-    return toolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], !args.dryRun), context));
+    const write = !args.dryRun;
+    return mutationToolResult(attachContextWarnings(await buildMutationResult(context, [{ type: 'removeView', view_id: args.view_id }], write), context), write);
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+async function resolveSemanticOperatorJourney(dependencies) {
+  return dependencies && dependencies.semanticOperatorJourney
+    ? dependencies.semanticOperatorJourney
+    : createDefaultProductionSemanticOperatorJourney();
+}
+
+async function executeSemanticSystemArchitectureQuery(args, dependencies) {
+  const context = await loadContext(args);
+  const query = args.query;
+  const contractOptions = semanticContractOptions(args, dependencies);
+  const canonicalSubsetContract = isCanonicalSubsetSemanticContract(query, contractOptions);
+  if (canonicalSubsetContract) {
+    const responseShapeValidation = validateSemanticQueryResponseShapeControls(query);
+    if (responseShapeValidation.status === 'failed') {
+      return getSystemArchitectureResult(responseShapeValidation);
+    }
+  }
+  const semanticRetrievalBoundary = resolveSemanticRetrievalBoundary(dependencies, {
+    canonicalGraph: context.document,
+  });
+  if (!semanticRetrievalBoundary || typeof semanticRetrievalBoundary.retrieve !== 'function') {
+    return getSystemArchitectureResult(queryError(
+      'SEMANTIC_RETRIEVAL_UNAVAILABLE',
+      'Semantic retrieval boundary is unavailable',
+    ));
+  }
+  let document;
+  try {
+    const retrieved = await semanticRetrievalBoundary.retrieve(query);
+    if (canonicalSubsetContract) {
+      const subset = buildCanonicalSemanticDocumentSubset(retrieved, context.document);
+      if (subset.status === 'failed') {
+        return getSystemArchitectureResult(subset);
+      }
+      document = subset.document;
+    } else {
+      document = shouldReturnDebugSemanticResult(query)
+        ? retrieved
+        : buildBusinessSemanticSummary(retrieved, query);
+    }
+  } catch (error) {
+    const semanticErrorEvidence = {};
+    for (const field of [
+      'action',
+      'fullSnapshotFallback',
+      'state',
+      'canonicalVersion',
+      'contentVersion',
+      'indexVersion',
+      'completedChannels',
+      'missingChannels',
+      'mismatchedChannels',
+    ]) {
+      if (error && Object.prototype.hasOwnProperty.call(error, field)) {
+        semanticErrorEvidence[field] = error[field];
+      }
+    }
+    if (
+      error
+      && error.category === 'SEMANTIC_AUTO_ALIGNMENT_FAILED'
+      && typeof semanticErrorEvidence.action !== 'string'
+    ) {
+      semanticErrorEvidence.action = 'Repair semantic lifecycle alignment, then retry the original query.';
+    }
+    return getSystemArchitectureResult(queryError(
+      error && error.category ? error.category : 'SEMANTIC_RETRIEVAL_FAILED',
+      error && error.message ? error.message : 'Semantic retrieval failed',
+      semanticErrorEvidence,
+    ));
+  }
+  const semanticPayload = {
+    status: 'passed',
+    graphPath: context.graphPath.relativePath,
+    query: {
+      ...query,
+      mode: 'semantic-query',
+      semanticRetrieval: 'invoked',
+      ...(canonicalSubsetContract
+        ? {}
+        : { responseProfile: shouldReturnDebugSemanticResult(query) ? 'debug' : 'business-summary' }),
+    },
+  };
+  return getSystemArchitectureResult({
+    ...semanticPayload,
+    ...(canonicalSubsetContract
+      ? { document }
+      : (document && Object.prototype.hasOwnProperty.call(document, 'result')
+        ? { result: document.result }
+        : { result: document })),
+    ...(canonicalSubsetContract || !shouldReturnDebugSemanticResult(query) ? {} : { document }),
+  });
+}
+
+function shouldReturnDebugSemanticResult(query) {
+  return ['debug', 'full', 'evidence'].includes(String(
+    query && (query.responseProfile || query.detail || query.outputMode) || '',
+  ).toLowerCase());
+}
+
+function buildBusinessSemanticSummary(retrieved, query = {}) {
+  if (retrieved && retrieved.responseProfile === 'business-summary') return retrieved;
+  if (retrieved && retrieved.result && retrieved.result.responseProfile === 'business-summary') return retrieved.result;
+  const source = retrieved && typeof retrieved === 'object' ? retrieved : {};
+  const provenanceObjects = Array.isArray(source.provenance && source.provenance.objects)
+    ? source.provenance.objects
+    : [];
+  const hitReasonByKey = new Map(provenanceObjects.map(item => [
+    `${item.objectType}:${item.objectId}`,
+    {
+      firstInclusionReason: item.firstInclusionReason,
+      supplementaryReasons: Array.isArray(item.supplementaryReasons) ? [...item.supplementaryReasons] : [],
+    },
+  ]));
+  const seedLimit = businessSummaryLimit(query);
+  const semanticSeeds = summarizeSeeds(source.seedsByType, hitReasonByKey, seedLimit);
+  const elements = summarizeElements(source, hitReasonByKey, seedLimit * 2);
+  const relationships = summarizeRelationships(source, hitReasonByKey, seedLimit * 2);
+  const views = summarizeViews(source, hitReasonByKey, seedLimit);
+  const includedObjectIds = Object.freeze([
+    ...elements.map(item => item.id),
+    ...relationships.map(item => item.id),
+    ...views.map(item => item.id),
+  ]);
+  return Object.freeze({
+    responseProfile: 'business-summary',
+    purpose: query.purpose,
+    intent: query.intent,
+    semanticSeeds,
+    businessObjects: Object.freeze({
+      elements: Object.freeze(elements),
+      relationships: Object.freeze(relationships),
+      views: Object.freeze(views),
+    }),
+    hitReasons: Object.freeze(provenanceObjects.map(item => Object.freeze({
+      objectType: item.objectType,
+      objectId: item.objectId,
+      firstInclusionReason: item.firstInclusionReason,
+      supplementaryReasons: Object.freeze(Array.isArray(item.supplementaryReasons) ? item.supplementaryReasons : []),
+    }))),
+    policySummary: Object.freeze({
+      policyId: source.closurePolicy && source.closurePolicy.policyId,
+      purpose: source.closurePolicy && source.closurePolicy.category,
+      boundaryRationale: source.boundary && source.boundary.rationale,
+    }),
+    boundarySummary: Object.freeze({
+      includedObjectIds,
+      includedCount: includedObjectIds.length,
+      excluded: Object.freeze(Array.isArray(source.boundary && source.boundary.excluded) ? source.boundary.excluded : []),
+    }),
+    semanticIndex: Object.freeze({
+      canonicalVersion: source.canonicalVersion,
+      contentVersion: source.contentVersion,
+      indexVersion: source.indexVersion,
+      alignment: source.provenance && source.provenance.alignment && source.provenance.alignment.state,
+    }),
+    omittedByDefault: Object.freeze([
+      'embedding vectors',
+      'full provenance version evidence per object',
+      'queryTemplate',
+      'parameterContract',
+      'archimateSemantics',
+      'full element descriptions',
+      'full testcase bodies',
+    ]),
+    expandWith: 'Set query.responseProfile to "debug" to return the full semantic evidence payload.',
+  });
+}
+
+function applySemanticResponseProfile(response, query, options = {}) {
+  if (!isCanonicalSubsetSemanticContract(query, options)) {
+    if (shouldReturnDebugSemanticResult(query)) return normalizeSemanticToolResponse(response);
+    const payload = parseToolResponsePayload(response);
+    if (!payload) return response;
+    if (payload.status === 'failed') {
+      return normalizeFailedSemanticResponse(payload, response);
+    }
+    const source = payload.result || payload.document;
+    const summary = buildBusinessSemanticSummary(source, query);
+    const { document: _omittedDocument, ...payloadWithoutDocument } = payload;
+    return getSystemArchitectureResult({
+      ...payloadWithoutDocument,
+      query: {
+        ...(payload.query || query),
+        responseProfile: 'business-summary',
+      },
+      result: summary,
+    });
+  }
+  const payload = parseToolResponsePayload(response);
+  if (!payload) return response;
+  if (payload.status === 'failed') {
+    return normalizeFailedSemanticResponse(payload, response);
+  }
+  const source = payload.result || payload.document;
+  const subset = buildCanonicalSemanticDocumentSubset(source, options.canonicalDocument);
+  if (subset.status === 'failed') {
+    return getSystemArchitectureResult(subset);
+  }
+  const { document: _omittedDocument, result: _omittedResult, ...payloadWithoutDocument } = payload;
+  return getSystemArchitectureResult({
+    ...payloadWithoutDocument,
+    query: {
+      ...(payload.query || query),
+      mode: 'semantic-query',
+      semanticRetrieval: 'invoked',
+    },
+    document: subset.document,
+  });
+}
+
+function normalizeFailedSemanticResponse(payload, fallbackResponse) {
+  const error = payload && payload.error;
+  if (!error || error.category !== 'SEMANTIC_AUTO_ALIGNMENT_FAILED' || typeof error.action === 'string') {
+    return fallbackResponse;
+  }
+  return getSystemArchitectureResult({
+    ...payload,
+    error: {
+      ...error,
+      action: 'Repair semantic lifecycle alignment, then retry the original query.',
+    },
+  });
+}
+
+function buildCanonicalSemanticDocumentSubset(source, canonicalDocument = undefined) {
+  const evidence = source && typeof source === 'object' ? source : {};
+  const endpointClosureRelationships = arrayAt(evidence, ['endpointClosure', 'relationships']);
+  const viewClosureViews = arrayAt(evidence, ['viewClosure', 'views']);
+  const viewMemberRelationships = viewClosureViews.flatMap(view => (
+    Array.isArray(view && view.memberRelationships) ? view.memberRelationships : []
+  ));
+  const evidenceElements = uniqueById([
+    ...arrayAt(evidence, ['closure', 'elements']),
+    ...arrayAt(evidence, ['elements']),
+    ...endpointClosureRelationships.flatMap(relationship => [relationship && relationship.source, relationship && relationship.target]),
+    ...viewClosureViews.flatMap(view => (
+      Array.isArray(view && view.memberElements) ? view.memberElements : []
+    )),
+    ...viewMemberRelationships.flatMap(relationship => [relationship && relationship.source, relationship && relationship.target]),
+  ], 'id');
+  const evidenceRelationships = uniqueById([
+    ...endpointClosureRelationships,
+    ...arrayAt(evidence, ['relationships']),
+    ...viewMemberRelationships,
+  ], 'id');
+  const evidenceViews = uniqueById([
+    ...viewClosureViews,
+    ...arrayAt(evidence, ['views']),
+  ], 'view_id');
+
+  const canonicalElements = Array.isArray(canonicalDocument && canonicalDocument.elements)
+    ? canonicalDocument.elements
+    : [];
+  const canonicalRelationships = Array.isArray(canonicalDocument && canonicalDocument.relationships)
+    ? canonicalDocument.relationships
+    : [];
+  const canonicalViews = Array.isArray(canonicalDocument && canonicalDocument.views)
+    ? canonicalDocument.views
+    : [];
+
+  const canonicalElementById = new Map(canonicalElements.map(element => [element && element.id, element]));
+  const canonicalRelationshipById = new Map(canonicalRelationships.map(relationship => [relationship && relationship.id, relationship]));
+  const canonicalViewById = new Map(canonicalViews.map(view => [view && view.view_id, view]));
+  const evidenceElementCandidates = evidenceElements
+    .map(item => classifyCanonicalSubsetCandidate(item, 'Element'))
+    .filter(candidate => candidate && candidate.kind === 'Element');
+  const evidenceRelationshipCandidates = evidenceRelationships
+    .map(item => classifyCanonicalSubsetCandidate(item, 'ArchitectureRelationship'))
+    .filter(candidate => candidate && candidate.kind === 'ArchitectureRelationship');
+  const evidenceViewCandidates = evidenceViews
+    .map(item => classifyCanonicalSubsetCandidate(item, 'View'))
+    .filter(candidate => candidate && candidate.kind === 'View');
+  const evidenceElementById = new Map(evidenceElementCandidates
+    .map(candidate => [candidate.id, candidate.item]));
+  const evidenceRelationshipById = new Map(evidenceRelationshipCandidates
+    .map(candidate => [candidate.id, candidate.item]));
+  const evidenceViewById = new Map(evidenceViewCandidates
+    .map(candidate => [candidate.id, candidate.item]));
+
+  const elementIds = new Set([...evidenceElementById.keys()].filter(id => canonicalElementById.has(id)));
+  const relationshipIds = new Set([...evidenceRelationshipById.keys()]);
+  const viewIds = new Set([...evidenceViewById.keys()]);
+
+  const selectElement = (elementId, category, message) => {
+    if (!evidenceElementById.has(elementId)) {
+      return semanticSubsetError(category, message);
+    }
+    const element = canonicalElementById.get(elementId);
+    if (!element) {
+      return semanticSubsetError(category, message);
+    }
+    elementIds.add(elementId);
+    return undefined;
+  };
+  const selectRelationship = (relationshipId, category, message) => {
+    if (!evidenceRelationshipById.has(relationshipId)) {
+      return { error: semanticSubsetError(category, message) };
+    }
+    const relationship = canonicalRelationshipById.get(relationshipId);
+    if (!relationship) {
+      return { error: semanticSubsetError(category, message) };
+    }
+    relationshipIds.add(relationshipId);
+    return { relationship };
+  };
+
+  for (const viewId of [...viewIds]) {
+    const view = canonicalViewById.get(viewId);
+    if (!view) {
+      viewIds.delete(viewId);
+      continue;
+    }
+    for (const elementId of view && Array.isArray(view.included_elements) ? view.included_elements : []) {
+      const error = selectElement(
+        elementId,
+        'SEMANTIC_SUBSET_VIEW_MISSING',
+        `Semantic View subset is missing included Element '${elementId}'`,
+      );
+      if (error) {
+        return error;
+      }
+    }
+    for (const relationshipId of view && Array.isArray(view.included_relationships) ? view.included_relationships : []) {
+      const selected = selectRelationship(
+        relationshipId,
+        'SEMANTIC_SUBSET_VIEW_MISSING',
+        `Semantic View subset is missing included Relationship '${relationshipId}'`,
+      );
+      if (selected.error) {
+        return selected.error;
+      }
+      const { relationship } = selected;
+      for (const endpointId of [relationship.source_id, relationship.target_id]) {
+        const error = selectElement(
+          endpointId,
+          'SEMANTIC_SUBSET_VIEW_MISSING',
+          `Semantic View subset is missing endpoint Elements for Relationship '${relationship.id}'`,
+        );
+        if (error) {
+          return error;
+        }
+      }
+    }
+  }
+
+  for (const relationshipId of [...relationshipIds]) {
+    const selected = selectRelationship(
+      relationshipId,
+      'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
+      `Semantic Relationship subset is missing canonical Relationship '${relationshipId}'`,
+    );
+    if (selected.error) {
+      return selected.error;
+    }
+    const { relationship } = selected;
+    for (const endpointId of [relationship && relationship.source_id, relationship && relationship.target_id]) {
+      const error = selectElement(
+        endpointId,
+        'SEMANTIC_SUBSET_RELATIONSHIP_MISSING',
+        `Semantic Relationship subset is missing endpoint Elements for Relationship '${relationship && relationship.id}'`,
+      );
+      if (error) {
+        return error;
+      }
+    }
+  }
+
+  const elements = [...elementIds]
+    .map(id => canonicalElementById.get(id))
+    .filter(Boolean);
+  const relationships = [...relationshipIds]
+    .map(id => canonicalRelationshipById.get(id))
+    .filter(Boolean);
+  const views = [...viewIds]
+    .map(id => canonicalViewById.get(id))
+    .filter(Boolean);
+
+  return {
+    status: 'passed',
+    document: {
+      elements: elements.map(clone),
+      relationships: relationships.map(clone),
+      views: views.map(clone),
+    },
+  };
+}
+
+function classifyCanonicalSubsetCandidate(item, fallbackKind) {
+  if (!item || typeof item !== 'object') return undefined;
+  const rawId = item.id || item.view_id || item.objectId || item.canonicalIdentity;
+  if (!rawId) return undefined;
+  const qualified = parseSemanticQualifiedId(rawId);
+  if (qualified) {
+    return { ...qualified, item };
+  }
+  return {
+    kind: normalizeSemanticObjectKind(item.objectType || item.channel || fallbackKind),
+    id: String(rawId),
+    item,
+  };
+}
+
+function parseSemanticQualifiedId(rawId) {
+  const text = String(rawId);
+  for (const [prefix, kind] of [
+    ['ArchitectureRelationship:', 'ArchitectureRelationship'],
+    ['Relationship:', 'ArchitectureRelationship'],
+    ['View:', 'View'],
+    ['Element:', 'Element'],
+  ]) {
+    if (text.startsWith(prefix)) {
+      return {
+        kind,
+        id: text.slice(prefix.length),
+      };
+    }
+  }
+  return undefined;
+}
+
+function normalizeSemanticObjectKind(value) {
+  const kind = String(value || '').toLowerCase();
+  if (kind === 'architecturerelationship' || kind === 'relationship' || kind === 'relationships') {
+    return 'ArchitectureRelationship';
+  }
+  if (kind === 'view' || kind === 'views') {
+    return 'View';
+  }
+  return 'Element';
+}
+
+function arrayAt(value, pathSegments) {
+  let current = value;
+  for (const segment of pathSegments) {
+    current = current && current[segment];
+  }
+  return Array.isArray(current) ? current : [];
+}
+
+function semanticSubsetError(category, message) {
+  return queryError(category, message, { fullSnapshotFallback: false });
+}
+
+function parseToolResponsePayload(response) {
+  if (!response || typeof response !== 'object') return undefined;
+  if (response.content && Array.isArray(response.content) && response.content[0] && typeof response.content[0].text === 'string') {
+    try {
+      return JSON.parse(response.content[0].text);
+    } catch (_error) {
+      return undefined;
+    }
+  }
+  return response;
+}
+
+function normalizeSemanticToolResponse(response) {
+  if (response && response.content && Array.isArray(response.content)) return response;
+  const payload = response && typeof response === 'object'
+    ? response
+    : { status: 'failed', error: { category: 'SEMANTIC_RETRIEVAL_FAILED', message: 'Semantic retrieval failed' } };
+  return getSystemArchitectureResult(payload);
+}
+
+function businessSummaryLimit(query) {
+  const supplied = Number(query && (query.topN || query.limit || query.maxResults));
+  return Number.isInteger(supplied) && supplied > 0 ? Math.min(supplied, 50) : 8;
+}
+
+function summarizeSeeds(seedsByType = {}, hitReasonByKey, limit) {
+  return Object.freeze(Object.fromEntries(Object.entries(seedsByType).map(([type, seeds]) => [
+    type,
+    Object.freeze((Array.isArray(seeds) ? seeds : [])
+      .slice()
+      .sort((left, right) => Number(right.score || 0) - Number(left.score || 0))
+      .slice(0, limit)
+      .map(seed => {
+        const objectType = seed.objectType || seed.channel || inferObjectTypeFromSeedType(type);
+        const objectId = seed.id || seed.objectId || seed.canonicalIdentity;
+        const reasons = hitReasonByKey.get(`${objectType}:${objectId}`) || {};
+        return Object.freeze({
+          objectId,
+          objectType,
+          score: typeof seed.score === 'number' ? seed.score : undefined,
+          hitReason: reasons.firstInclusionReason || 'semantic-seed',
+          supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+        });
+      })),
+  ])));
+}
+
+function inferObjectTypeFromSeedType(type) {
+  if (type === 'relationships') return 'ArchitectureRelationship';
+  if (type === 'views') return 'View';
+  return 'Element';
+}
+
+function summarizeElements(source, hitReasonByKey, limit) {
+  return uniqueById([
+    ...(((source.closure && source.closure.elements) || [])),
+    ...((((source.viewClosure && source.viewClosure.views) || []).flatMap(view => view.memberElements || []))),
+    ...((((source.endpointClosure && source.endpointClosure.relationships) || []).flatMap(relationship => [relationship.source, relationship.target]).filter(Boolean))),
+  ], 'id').slice(0, limit).map(element => summarizeElement(element, hitReasonByKey));
+}
+
+function summarizeRelationships(source, hitReasonByKey, limit) {
+  return uniqueById([
+    ...(((source.endpointClosure && source.endpointClosure.relationships) || [])),
+    ...((((source.viewClosure && source.viewClosure.views) || []).flatMap(view => view.memberRelationships || []))),
+  ], 'id').slice(0, limit).map(relationship => summarizeRelationship(relationship, hitReasonByKey));
+}
+
+function summarizeViews(source, hitReasonByKey, limit) {
+  return uniqueById(((source.viewClosure && source.viewClosure.views) || []), 'view_id')
+    .slice(0, limit)
+    .map(view => summarizeView(view, hitReasonByKey));
+}
+
+function summarizeElement(element, hitReasonByKey) {
+  const attributes = attributesMap(element);
+  const reasons = hitReasonByKey.get(`Element:${element.id}`) || {};
+  return Object.freeze({
+    id: element.id,
+    name: element.name,
+    type: element.type,
+    descriptionSummary: summarizeText(element.description),
+    status: attributes.deliveryStatus || attributes.status,
+    functionalPoints: Object.freeze(Object.entries(attributes)
+      .filter(([name]) => name.startsWith('functionalPoint'))
+      .map(([, value]) => value)),
+    testCoverage: summarizeTestcases(element.testcases),
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function summarizeRelationship(relationship, hitReasonByKey) {
+  const reasons = hitReasonByKey.get(`ArchitectureRelationship:${relationship.id}`) || {};
+  return Object.freeze({
+    id: relationship.id,
+    name: relationship.name,
+    type: relationship.type,
+    source_id: relationship.source_id,
+    target_id: relationship.target_id,
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function summarizeView(view, hitReasonByKey) {
+  const reasons = hitReasonByKey.get(`View:${view.view_id}`) || {};
+  return Object.freeze({
+    view_id: view.view_id,
+    view_name: view.view_name || view.name,
+    descriptionSummary: summarizeText(view.description),
+    elementCount: Array.isArray(view.included_elements) ? view.included_elements.length : undefined,
+    relationshipCount: Array.isArray(view.included_relationships) ? view.included_relationships.length : undefined,
+    hitReason: reasons.firstInclusionReason,
+    supplementaryReasons: Object.freeze(reasons.supplementaryReasons || []),
+  });
+}
+
+function attributesMap(value = {}) {
+  const result = {};
+  for (const attribute of Array.isArray(value.attributes) ? value.attributes : []) {
+    if (attribute && typeof attribute.name === 'string') result[attribute.name] = attribute.value;
+  }
+  return result;
+}
+
+function summarizeTestcases(testcases) {
+  return Object.freeze((Array.isArray(testcases) ? testcases : []).map(testcase => {
+    if (typeof testcase === 'string') return { name: testcase };
+    return {
+      name: testcase.name || testcase.id || testcase.testcasename,
+      status: testcase.status,
+      coverage: testcase.coverage || testcase.coveragePoint || testcase.description,
+    };
+  }));
+}
+
+function summarizeText(text) {
+  if (typeof text !== 'string') return undefined;
+  const compact = text.replace(/\s+/g, ' ').trim();
+  return compact.length <= 180 ? compact : `${compact.slice(0, 177)}...`;
+}
+
+function uniqueById(items, idField) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const id = item && item[idField];
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    result.push(item);
+  }
+  return result;
+}
+
+async function createDefaultProductionSemanticOperatorJourney(options = {}) {
+  const workspaceRoot = options.repositoryRoot || resolveWorkspaceRoot();
+  const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
+  const canonicalGraph = readJson(graphPath.absolutePath, graphPath.relativePath);
+  const readinessStore = createProductionSemanticReadinessStore({
+    repositoryRoot: workspaceRoot,
+  });
+  const retrieval = createDefaultSemanticRetrieval({
+    canonicalGraph,
+    repositoryRoot: workspaceRoot,
+    readinessBoundary: readinessStore,
+  });
+  const runtime = createProductionGraphRagRuntime({
+    canonicalGraph,
+    neo4jRetrievalBoundary: retrieval,
+  });
+  const journey = createProductionSemanticOperatorJourney({
+    initializeWorkspace: request => initializeWorkspace(request),
+    syncCanonicalStructuralProjection: request => syncCanonicalStructuralProjection(request),
+    resolveApprovedConfiguration: request => resolveApprovedLiveConfiguration(request),
+    runSemanticBackfill: request => runtime.runSemanticBackfill(request),
+    readSemanticReadiness: () => retrieval.readReadiness(),
+    querySystemArchitecture: request => executeSemanticSystemArchitectureQuery(request, {
+      semanticRetrievalBoundary: retrieval,
+      canonicalSubsetForNoAnchor: true,
+    }),
+  });
+  return Object.freeze({
+    ...journey,
+    canonicalSubsetForNoAnchor: true,
+  });
+}
+
+function createDefaultCanonicalSemanticInitComposition() {
+  const repositoryRoot = resolveWorkspaceRoot();
+  const readinessStore = createProductionSemanticReadinessStore({ repositoryRoot });
+  const graphPath = resolveWorkspacePath(repositoryRoot, DEFAULT_GRAPH_PATH);
+  const canonicalGraph = readJson(graphPath.absolutePath, graphPath.relativePath);
+  let configurationEvidence;
+  return Object.freeze({
+    configurationBehavior: Object.freeze({
+      readGate(name) {
+        return process.env[name];
+      },
+      async resolve() {
+        configurationEvidence = await resolveApprovedLiveConfiguration({
+          repositoryRoot,
+          requiredOptIns: [LIVE_PROVIDER_OPT_IN, W31_LIVE_OPT_IN],
+        });
+        return configurationEvidence;
+      },
+    }),
+    productionGraphRagRuntime: Object.freeze({
+      async runSemanticBackfill(request) {
+        const runtime = await createDefaultProductionSemanticRuntime();
+        try {
+          return await runtime.runSemanticBackfill(request);
+        } finally {
+          if (runtime && typeof runtime.close === 'function') {
+            await runtime.close();
+          }
+        }
+      },
+    }),
+    finalReadiness: Object.freeze({
+      async invalidate(evidence) {
+        return readinessStore.invalidate(evidence);
+      },
+      async recordFailure(evidence) {
+        return readinessStore.recordFailure(evidence);
+      },
+      async verifyQueryability(backfill) {
+        if (!backfill || backfill.alignmentState !== 'Aligned') return false;
+        const contentVersion = backfill.contentVersion || backfill.canonicalVersion;
+        const indexVersion = backfill.indexVersion || backfill.canonicalVersion;
+        const retrieval = createDefaultSemanticRetrieval({
+          canonicalGraph,
+          repositoryRoot,
+        });
+        await retrieval.probeQueryability(Object.freeze({
+          purpose: 'implementation-design',
+          intent: 'verify system architecture semantic queryability',
+        }), Object.freeze({
+          state: 'QueryabilityProbe',
+          canonicalVersion: backfill.canonicalVersion,
+          contentVersion,
+          indexVersion,
+        }));
+        return true;
+      },
+      async verifyGlobalCoherence(backfill) {
+        return Boolean(
+          backfill
+          && backfill.alignmentState === 'Aligned'
+          && ['Element', 'ArchitectureRelationship', 'View'].every(channel => (
+            backfill.channels
+            && backfill.channels[channel]
+            && backfill.channels[channel].status === 'complete'
+            && backfill.channels[channel].canonicalVersion === backfill.canonicalVersion
+          )),
+        );
+      },
+      async recordAligned(evidence) {
+        const profile = configurationEvidence && configurationEvidence.configuration;
+        return readinessStore.recordAligned(Object.freeze({
+          ...evidence,
+          channels: Object.freeze((evidence.channels || []).map(channel => Object.freeze({
+            ...channel,
+            state: 'Aligned',
+            provider: profile.embeddingProvider,
+            model: profile.embeddingModel,
+            modelVersion: profile.embeddingModelVersion,
+            dimensions: profile.embeddingDimensions,
+            queryable: true,
+            coherent: true,
+          }))),
+        }));
+      },
+    }),
+  });
+}
+
+async function createDefaultProductionSemanticRuntime() {
+  const workspaceRoot = resolveWorkspaceRoot();
+  const configuration = await resolveDefaultSemanticConfiguration();
+  const neo4j = require('neo4j-driver');
+  const driver = neo4j.driver(
+    configuration.neo4jDatabaseUrl,
+    neo4j.auth.basic(
+      configuration.neo4jDatabaseUsername,
+      configuration.neo4jDatabasePassword,
+    ),
+  );
+  const graphPath = resolveWorkspacePath(workspaceRoot, DEFAULT_GRAPH_PATH);
+  const canonicalDocument = readJson(graphPath.absolutePath, graphPath.relativePath);
+  const canonicalVersion = deriveSemanticCanonicalVersion(canonicalDocument);
+  const canonicalSnapshot = Object.freeze({
+    ...canonicalDocument,
+    version: canonicalVersion,
+  });
+  const qualification = Object.freeze({
+    approvedByHuman: true,
+    provider: configuration.embeddingProvider,
+    model: configuration.embeddingModel,
+    version: configuration.embeddingModelVersion,
+    dimensions: configuration.embeddingDimensions,
+    source: 'explicit-human-approval',
+  });
+  const providerClient = createLiveEmbeddingProviderClient({
+    configuration,
+    transport: Object.freeze({
+      request(url, options) {
+        if (typeof global.fetch !== 'function') {
+          const error = new Error('LIVE_PROVIDER_TRANSPORT_UNAVAILABLE');
+          error.category = 'LIVE_PROVIDER_TRANSPORT_UNAVAILABLE';
+          throw error;
+        }
+        return global.fetch(url, options);
+      },
+    }),
+  });
+
+  const runtime = createProductionGraphRagRuntime({
+    canonicalGraph: canonicalSnapshot,
+    neo4jRetrievalBoundary: Object.freeze({
+      async retrieve() {
+        const error = new Error('SEMANTIC_RETRIEVAL_REQUEST_REQUIRED');
+        error.category = 'SEMANTIC_RETRIEVAL_REQUEST_REQUIRED';
+        throw error;
+      },
+    }),
+    embeddingQualification: qualification,
+    semanticPersistence: Object.freeze({
+      canonicalSource: Object.freeze({
+        async readSnapshot() {
+          return canonicalSnapshot;
+        },
+      }),
+      structuralProjection: Object.freeze({
+        async requireComplete() {
+          await verifyArchitectureSync({
+            architecturePath: graphPath.relativePath,
+            document: canonicalDocument,
+            driver,
+            database: configuration.neo4jDatabase,
+          });
+          return Object.freeze({
+            status: 'complete',
+            canonicalVersion,
+          });
+        },
+      }),
+      embeddingProvider: Object.freeze({
+        async embedBatch(batch) {
+          const vectors = [];
+          const failures = [];
+          for (const record of batch) {
+            try {
+              vectors.push(Object.freeze({
+                canonicalIdentity: record.canonicalIdentity,
+                vector: Object.freeze(await providerClient.embed(JSON.stringify(record.canonicalObject))),
+              }));
+            } catch (error) {
+              failures.push(Object.freeze({
+                canonicalIdentity: record.canonicalIdentity,
+                category: error && error.category ? error.category : 'LIVE_PROVIDER_REQUEST_FAILED',
+              }));
+            }
+          }
+          return Object.freeze({
+            vectors: Object.freeze(vectors),
+            failures: Object.freeze(failures),
+          });
+        },
+      }),
+      neo4jDriver: driver,
+      canonicalAuthority: Object.freeze({
+        assertProjectionOnly() {
+          return Object.freeze({
+            authority: 'canonical-json',
+            projectionRole: 'subordinate-projection-index',
+          });
+        },
+      }),
+      configuration,
+      qualification,
+      batchSize: 100,
+    }),
+  });
+  return Object.freeze({
+    ...runtime,
+    async close() {
+      await driver.close();
+    },
+  });
+}
+
+async function resolveDefaultSemanticConfiguration() {
+  let external;
+  try {
+    external = resolveExternalProductionConfig({
+      neo4jUri: process.env.ARGO_NEO4J_DATABASE_URL,
+      neo4jUsername: process.env.ARGO_NEO4J_DATABASE_USERNAME,
+      neo4jPassword: process.env.ARGO_NEO4J_DATABASE_PASSWORD,
+      embeddingCredential: process.env.QWEN_KEY,
+      neo4jDatabase: process.env.ARGO_NEO4J_DATABASE || getDefaultSemanticNeo4jDatabaseName(),
+    }, {
+      operation: 'semantic-backfill',
+      sourceKeys: new Map([
+        ['neo4jUri', 'ARGO_NEO4J_DATABASE_URL'],
+        ['neo4jUsername', 'ARGO_NEO4J_DATABASE_USERNAME'],
+        ['neo4jPassword', 'ARGO_NEO4J_DATABASE_PASSWORD'],
+        ['embeddingCredential', 'QWEN_KEY'],
+      ]),
+    });
+  } catch (error) {
+    if (error && error.category === 'EXTERNAL_CREDENTIALS_REQUIRED') {
+      const missing = new Error('EXTERNAL_CREDENTIALS_REQUIRED');
+      missing.category = 'EXTERNAL_CREDENTIALS_REQUIRED';
+      missing.field = error.field;
+      throw missing;
+    }
+    throw error;
+  }
+  return Object.freeze({
+    embeddingBaseUrl: W31_APPROVED_PROFILE.baseUrl,
+    embeddingModel: W31_APPROVED_PROFILE.model,
+    embeddingProvider: W31_APPROVED_PROFILE.provider,
+    embeddingModelVersion: W31_APPROVED_PROFILE.version,
+    embeddingDimensions: W31_APPROVED_PROFILE.dimensions,
+    neo4jDatabaseUrl: external.neo4jUri,
+    neo4jDatabaseUsername: external.neo4jUsername,
+    neo4jDatabasePassword: external.neo4jPassword,
+    qwenKey: external.embeddingCredential,
+    embeddingCredential: external.embeddingCredential,
+    ...(external.neo4jDatabase === undefined ? {} : { neo4jDatabase: external.neo4jDatabase }),
+  });
+}
+
+function getDefaultSemanticNeo4jDatabaseName() {
+  const repoName = path.basename(resolveWorkspaceRoot());
+  const normalized = String(repoName)
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/-{2,}/g, '-');
+  const safe = normalized || 'workspace';
+  const prefixed = /^[a-z]/.test(safe) ? safe : `db-${safe}`;
+  return prefixed.slice(0, 63);
+}
+
+function deriveSemanticCanonicalVersion(document) {
+  return `canonical:${crypto.createHash('sha256').update(JSON.stringify({
+    name: document.name || 'System',
+    elements: (document.elements || []).map(element => element.id).sort(),
+    relationships: (document.relationships || []).map(relationship => relationship.id).sort(),
+    views: (document.views || []).map(view => view.view_id).sort(),
+  })).digest('hex')}`;
 }
 
 function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
@@ -1749,30 +2802,9 @@ function resolveSemanticRetrievalBoundary(dependencies, context = {}) {
 }
 
 function createDefaultSemanticRetrievalBoundary(context = {}) {
-  const runtime = createProductionGraphRagRuntime({
+  return createDefaultSemanticRetrieval({
     canonicalGraph: context.canonicalGraph,
-    embeddingQualification: {
-      approvedByHuman: true,
-      provider: 'approved-test-provider',
-      model: 'approved-test-model',
-      version: '2026-07-24',
-      dimensions: 1536,
-    },
-    neo4jRetrievalBoundary: {
-      async retrieve() {
-        return {
-          platform: 'neo4j-native',
-          canonicalVersion: context.canonicalGraph && context.canonicalGraph.version,
-          seeds: [],
-        };
-      },
-    },
   });
-  return {
-    retrieve(request) {
-      return runtime.querySemantic(request);
-    },
-  };
 }
 
 function attachContextWarnings(payload, context) {
@@ -1795,7 +2827,7 @@ function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-async function handleRequest(request) {
+async function handleRequest(request, dependencies = undefined) {
   const { id, method, params } = request;
 
   if (method === 'initialize') {
@@ -1827,21 +2859,31 @@ async function handleRequest(request) {
 
   if (method === 'tools/call') {
     try {
-      const result = await callTool(params.name, params.arguments || {});
+      let activeDependencies = dependencies;
+      if (
+        !activeDependencies
+        && params.name === 'getSystemArchitecture'
+        && params.arguments
+        && Object.prototype.hasOwnProperty.call(params.arguments, 'query')
+        && params.arguments.query
+        && params.arguments.query.purpose !== 'graph-tidy'
+      ) {
+        activeDependencies = {
+          semanticOperatorJourney: await createDefaultProductionSemanticOperatorJourney(),
+          canonicalSubsetForNoAnchor: true,
+        };
+      }
+      const result = await callTool(
+        params.name,
+        params.arguments || {},
+        activeDependencies,
+      );
       return { jsonrpc: '2.0', id, result };
     } catch (error) {
       return {
         jsonrpc: '2.0',
         id,
-        result: {
-          content: [
-            {
-              type: 'text',
-              text: String(error && error.stack ? error.stack : error),
-            },
-          ],
-          isError: true,
-        },
+        result: semanticOperatorErrorResult(error),
       };
     }
   }
@@ -1895,6 +2937,10 @@ module.exports = {
   TOOLS,
   applyMutations,
   callTool,
+  compactMutationResponse,
+  createDefaultCanonicalSemanticInitComposition,
+  createDefaultProductionSemanticOperatorJourney,
+  handleRequest,
   loadContext,
   main,
   validateDocument,

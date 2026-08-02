@@ -16,6 +16,7 @@ const archimateRules = require('../../.argo/scripts/archimate32-rules.js');
 
 async function main() {
   process.env.ARGO_REPO_ROOT = repoRoot;
+  process.env.ARGO_MCP_MUTATION_RESPONSE_DEBUG = '1';
 
   validatesUnifiedMcpConfiguration();
   validatesNoDuplicateMcpExecutionAssets();

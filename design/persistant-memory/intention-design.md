@@ -1,5 +1,479 @@
 # Intent Design Session Record
 
+## 2026-07-28 — Documentation Refresh WP4 Intent Handoff
+
+- Scope: Work Package 4 only, `docsys-wp-design-navigation` / "Design Navigation Calibration Work". Stage boundary preserved: no implementation artifacts, documentation prose, code, tests, scripts, contracts, or config were intentionally modified by IntentionDesign.
+- Evidence read: `.argo/rules/intent-architecture-viewpoints.md`, `.argo/rules/INTENTION_DESIGN_CHECKLIST.md`, `.argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md`, current root `README.md`, root `CONTRIBUTING.md`, `design/README.md`, focused graph-tidy/full-snapshot Argo MCP evidence, dependency context for `docsys-stable-design-reference` and `docsys-content-boundary-requirement`, DOC-03/DOC-04 explicit entrypoints, and `design/KG/test-failure-records.json`.
+- Adequacy decision: no `SystemArchitecture.json` mutation was required. Existing graph context already captures the accepted dual-entry documentation system, stable design reference authority, content-boundary governance, DOC-03 deep-reference routing, DOC-04 placement governance, and WP sequencing from contributor entrypoint work to design navigation work to link/fact-source verification.
+- Selected viewpoint frame: Outcome Realization for `docsys-entrypoint-routing`; Requirements Realization for `docsys-fact-source-core` and `docsys-authority-layer-boundaries`; Implementation and Migration for `docsys-acceptance-core` and `docsys-vertical-delivery-chain`. Existing affected views carry explicit Viewpoint/Concern/Purpose/Scope/Rationale bindings.
+- Coverage proof for handoff scope: `docsys-stable-design-reference` maps DOC-03 to stable design reference routing for MCP/validator/intent graph/deep details without root README duplication; `docsys-content-boundary-requirement` maps DOC-04 to design/notes/marketing/domain content placement governance. Both are same-element mounted Acceptance Test testcases and both elements carry `deliveryStatus=delivered`. No testcase was added or modified in this session.
+- Validation evidence: `argo.validateSystemArchitecture` passed. `argo.runArchitectureTests` reported DOC-01, DOC-02, DOC-03, and DOC-04 passed; the same run remains red because of unrelated non-documentation failures `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E` and `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- MCP retrieval note: semantic `getSystemArchitecture` for ordinary intent-decision retrieval failed with `SEMANTIC_LIFECYCLE_FAILED` and missing `Element`, `ArchitectureRelationship`, and `View` channels. `initializeWorkspace` was not run because its tool description says it resets handoff artifacts. Intent evidence was gathered through MCP graph-tidy full snapshot and `getIntentElementContext`.
+- Handoff artifact: `.argo/temp/IntentToImplementationHandoff.json` was written for WP4 with implementation-bearing intent elements `docsys-stable-design-reference` and `docsys-content-boundary-requirement`; governing relationship context includes stable design routing, fact-source/content boundary governance, notes/domain/root-contract boundary relationships, DOC-03/DOC-04 acceptance governance, and adjacent WP sequencing.
+- ImplementationDesign boundary: update `design/README.md` as the stable design/system map and fact-source governance router. Route to architecture, HARNESS flow, agent/skill design, usage scenarios, intent architecture, MCP, validator, schema/EA mapping, specific-domain templates, marketing comparison, and research boundaries without duplicating deep content. Preserve dual-entry coherence with root `README.md` as the quiet adoption router and root `CONTRIBUTING.md` as the contributor/governance entrypoint.
+- Root contract handling: do not invent or claim root `OVERALL_ARCHITECTURE.md` if direct repository evidence shows it is absent. If current implementation evidence shows such a file exists, refer to it truthfully; otherwise keep fact-source wording honest and route to observed stable contracts such as `tests/ARCHITECTURE.md`.
+- Global handoff approval is recorded in handoff notes because `.argo/schema/IntentToImplementationHandoff.schema.json` has `additionalProperties: false` and no `approvedByHuman` property. Checklist self-audit: A1 not applicable because no graph mutation was required; A2-A5 satisfied by existing MCP-retrieved elements, relationships, and viewpoint-bound views; B1-B3 satisfied by existing DOC-03/DOC-04 same-element mounted testcases with no session testcase edits; C1-C2 scoped to the two delivered implementation-bearing documentation elements with same-element mounted testcase evidence and DOC pass results; D1-D8 satisfied with no open questions and schema-compliant global approval note; E1 written; E2 validation follows; E3 recorded schema-compliantly in notes; F1 is this record and F2 is the IntentDesign stage commit.
+
+## 2026-07-28 — Documentation Refresh WP3 Intent Handoff
+
+- Scope: Work Package 3 only, `docsys-wp-contributor-entrypoint` / "Contributor Governance Entrypoint Work". Stage boundary preserved: no implementation artifacts, docs prose, code, tests, scripts, contracts, or config were intentionally modified by IntentionDesign.
+- Evidence read: `.argo/rules/intent-architecture-viewpoints.md`, `.argo/rules/INTENTION_DESIGN_CHECKLIST.md`, `.argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md`, focused Argo MCP context for `docsys-contributor-governance-entry`, the DOC-02 explicit entrypoint, and existing documentation authority references.
+- Adequacy decision: `SystemArchitecture.json` mutation was required because the graph still modeled the contributor filename as unresolved while the host-approved execution decision designates root-level `CONTRIBUTING.md` for WP3. The repair closed that residual for WP3, updated contributor/WP wording, preserved frozen DOC-02 compatibility via `openPackagingDecision`, and left root implementation contract truthfulness as an implementation evidence check rather than an invented fact.
+- Selected viewpoint frame: Requirements Realization for contributor governance requirements and Implementation and Migration for the closed filename coordination record and WP3 delivery sequencing. Existing affected views remain viewpoint-bound.
+- Coverage proof for handoff scope: `docsys-contributor-governance-entry` maps DOC-02 to contributor safe-change boundaries. DOC-02 is a same-element mounted Acceptance Test with control point "contributor prepares to change MCP, validator, tests, or docs" and observation point "before editing, the contributor identifies the authoritative file, allowed edit surface, validation/test command, and forbidden shortcuts." No testcase was added or modified in this session.
+- Validation evidence: `argo.previewSystemArchitectureMutation` passed, `argo.applySystemArchitectureMutation` wrote the focused repair, and `argo.validateSystemArchitecture` passed. Direct DOC-02 verification passed with `ARGO_TESTCASE_ANCHOR=doc-02-contributor-governance-router node tests/explicit/entries/runDocumentationInformationArchitectureDecision.js`.
+- Test evidence: refreshed `argo.runArchitectureTests` reported DOC-01, DOC-02, DOC-03, and DOC-04 passed and refreshed `docsys-contributor-governance-entry` back to `deliveryStatus=delivered`. The same run still had two unrelated failures outside WP3 scope: `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E` and `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- Handoff artifact: `.argo/temp/IntentToImplementationHandoff.json` was written for WP3 with implementation-bearing intent element `docsys-contributor-governance-entry`; governing relationship context includes contributor routing, DOC-02 acceptance governance, closed filename coordination, and adjacent WP sequencing. `argo.validateStageHandoff(stage="intent-to-implementation")` passed.
+- ImplementationDesign boundary: create root-level `CONTRIBUTING.md` as the contributor/governance entrypoint. It should cover fact-source priority, safe change surfaces, stage boundaries, validation/test commands, explicit testcase/frozen-file boundaries, forbidden shortcuts, and documentation maintenance rules; link stable references such as `design/README.md`, `design/argo-harness/README.md`, `design/mcp/意图架构 MCP 功能列表.md`, `design/validator/intent-architecture-mcp-validation.md`, `tests/ARCHITECTURE.md`, and `package.json` scripts without duplicating deep specs.
+- Root contract handling: do not invent or claim root `OVERALL_ARCHITECTURE.md` if direct repository evidence shows it is absent. If current implementation evidence shows such a file exists, refer to it truthfully; otherwise state the gap honestly and route to observed stable contracts such as `tests/ARCHITECTURE.md`.
+- Global handoff approval is recorded in handoff notes because `.argo/schema/IntentToImplementationHandoff.schema.json` has `additionalProperties: false` and no `approvedByHuman` property. Checklist self-audit: A1-A5 satisfied by the focused graph mutation, validator pass, existing same-view relationship context, and viewpoint-bound view; B1-B3 satisfied with existing DOC-02 and no testcase edits; C1-C2 satisfied for the delivered WP3 element with same-element mounted DOC-02 evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied by the validated handoff and schema-compliant approval note; F1 is this record and F2 is the IntentDesign stage commit.
+
+## 2026-07-28 — Documentation Refresh WP2 Intent Handoff
+
+- Scope: Work Package 2 only, `docsys-wp-root-readme-reduction` / "Root README Noise Reduction Work". Stage boundary preserved: no implementation artifacts, docs prose, code, tests, scripts, contracts, or config were intentionally modified by IntentionDesign.
+- Evidence read: `.argo/rules/intent-architecture-viewpoints.md`, `.argo/rules/INTENTION_DESIGN_CHECKLIST.md`, `.argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md`, focused Argo MCP context for `docsys-wp-root-readme-reduction`, `docsys-root-readme-entry`, and `docsys-stable-design-reference`.
+- Adequacy decision: no `SystemArchitecture.json` mutation was required. Existing graph context already captures the accepted quieter root README adoption entry, root README noise constraint, stable design reference routing, content-boundary guard, and vertical chain from WP1 to WP2 to WP3.
+- Selected viewpoint frame: Outcome Realization for reader routing, Requirements Realization for root README noise/content-boundary constraints, and Implementation and Migration for delivery sequencing. Existing touched views already carry explicit Viewpoint/Concern/Purpose/Scope/Rationale bindings.
+- Coverage proof for handoff scope: `docsys-root-readme-entry` maps DOC-01 to first-time root README comprehension; `docsys-stable-design-reference` maps DOC-03 to deep MCP/validator routing without README overload; `docsys-content-boundary-requirement` maps DOC-04 to single-source placement discipline. All mappings are same-element mounted Acceptance Test testcases already present in the graph; no testcase was added or modified in this session.
+- Test evidence: `argo.validateSystemArchitecture` passed. `argo.runArchitectureTests` reported DOC-01, DOC-02, DOC-03, and DOC-04 passed; the same run had two unrelated failures outside WP2 scope, `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E` and `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- Handoff artifact: `.argo/temp/IntentToImplementationHandoff.json` was written for WP2 with implementation-bearing intent elements `docsys-root-readme-entry`, `docsys-stable-design-reference`, and `docsys-content-boundary-requirement`; the governing work package `docsys-wp-root-readme-reduction` is recorded in summary/notes/relationship context.
+- ImplementationDesign boundary: reduce `README.md` as a concise adoption/product router only. Do not implement the full contributor guide or design navigation work package; a minimal routing stub/link is allowed only if needed to keep README entry selection coherent. Do not invent root `OVERALL_ARCHITECTURE.md` if absent.
+- Global handoff approval is recorded in handoff notes because `.argo/schema/IntentToImplementationHandoff.schema.json` has `additionalProperties: false` and no `approvedByHuman` property.
+- Checklist self-audit before commit: A1 not applicable because no graph mutation was required; A2-A5 satisfied by existing MCP-retrieved elements, relationships, and viewpoint-bound views; B1-B3 satisfied by existing DOC-01/DOC-03/DOC-04 same-element mounted testcases with no session testcase edits; C1-C2 scoped to the three implementation-bearing handoff elements and their delivered documentation acceptance evidence; D1-D8 satisfied with no open questions; E1 written; E2 validation follows; E3 recorded schema-compliantly in notes; F1 is this record and F2 is the IntentDesign stage commit.
+
+## 2026-07-28 — Documentation Refresh WP1 Intent Handoff
+
+- Scope: Work Package 1 only, `docsys-wp-information-architecture` / "Documentation Information Architecture Decision". Stage boundary preserved: no implementation artifacts, docs prose, code, tests, scripts, contracts, or config were modified.
+- Evidence read: `.cursor/skills/orchestrating/SKILL.md`, `.argo/rules/intent-architecture-viewpoints.md`, `.argo/rules/INTENTION_DESIGN_CHECKLIST.md`, `.argo/history/decision-tree/20260728-121500-readme-docs-dual-entry-task-tidy-current-session.md`, focused Argo MCP context for `docsys-wp-information-architecture`, `docsys-wp-contributor-entrypoint`, `docsys-contributor-governance-entry`, `docsys-root-readme-entry`, and `docsys-content-boundary-requirement`.
+- Missing supplied report: `.argo/temp/architecture_analysis/architecture-diff-20260728-122427.md` was not found, and `.argo/temp/architecture_analysis` returned no files. This did not block WP1 because the accepted decision-tree evidence and MCP intent graph evidence were sufficient.
+- Adequacy decision: no `SystemArchitecture.json` mutation was required. Existing graph context already captures the accepted dual-entry decision, quieter root README, authority-layer boundaries, horizontal concerns, residual coordination, and the five-step vertical chain: `docsys-wp-information-architecture` -> `docsys-wp-root-readme-reduction` -> `docsys-wp-contributor-entrypoint` -> `docsys-wp-design-navigation` -> `docsys-wp-link-fact-verification`.
+- Selected viewpoints were already properly bound: Outcome Realization for reader routing, Requirements Realization for fact-source/content boundaries, and Implementation and Migration for acceptance core, residual coordination, and vertical delivery sequencing.
+- Residual decisions carried into handoff as approved execution guidance: root-level `CONTRIBUTING.md` is the recommended contributor governance entry unless ImplementationDesign evidence blocks it; root `OVERALL_ARCHITECTURE.md` must not be invented if absent, and documentation must represent that honestly as a gap.
+- Coverage proof for handoff scope: `docsys-root-readme-entry` maps DOC-01 to first-time root README comprehension; `docsys-contributor-governance-entry` maps DOC-02 to contributor safe-change boundaries; `docsys-stable-design-reference` maps DOC-03 to deep MCP/validator routing without README overload; `docsys-content-boundary-requirement` maps DOC-04 to content placement across design, notes, marketing, and domain docs. All mappings are same-element mounted Acceptance Test testcases already present in the graph; no testcase was added or modified in this session.
+- Handoff artifact: `.argo/temp/IntentToImplementationHandoff.json` was written for WP1. Because the validator requires `intentElementIds` to reference elements with mounted testcases, the handoff uses the four tested implementation-bearing documentation elements and records `docsys-wp-information-architecture` as governing package scope in summary/notes/relationship context.
+- Global handoff approval is recorded in handoff notes because `.argo/schema/IntentToImplementationHandoff.schema.json` has `additionalProperties: false` and no `approvedByHuman` property.
+- Checklist self-audit before commit: A1 not applicable because no graph mutation was required; A2-A5 satisfied by existing MCP-retrieved elements, relationships, and viewpoint-bound views; B1-B3 satisfied by existing DOC-01 through DOC-04 same-element mounted testcases with no session testcase edits; C1-C2 scoped to the four implementation-bearing handoff elements and their WP1 relationship context; D1-D8 satisfied with no open questions; E1 written; E2 validation follows; E3 recorded schema-compliantly in notes; F1 is this record and F2 is the IntentDesign stage commit.
+
+## 2026-07-27 — Canonical Semantic Lifecycle Optimization Handoff
+
+- Persistent stage/session ID: `intent-semantic-lifecycle-optimization-20260727T1114+08`.
+- Baseline: `be921fc`, clean branch start, reported protected runner `43/43`; `.argo/temp` appeared empty through the initial glob but handoff validation later exposed a stale concatenated WP-P3 JSON object, which was removed only after the replacement rationale and new complete handoff were written.
+- Selected viewpoints: Requirements Realization Viewpoint for A-D traceability; Application Usage Viewpoint for operator use of canonical `argo init` and the sole public `getSystemArchitecture` service; Implementation and Migration Viewpoint for preserving WP-P1/WP-P2 internals while superseding WP-P3 public exposure. Six touched views carry explicit Viewpoint/Concern/Purpose/Scope/Rationale bindings.
+- Business decision: `startNewProjectSemanticJourney`, `backfillSystemArchitectureSemanticProjection`, and `verifySystemArchitectureSemanticReadiness` are internalized into canonical initialization or retained only as private capabilities; all three are retired from public discovery/routing. `getSystemArchitecture` remains the sole public architecture read/query boundary.
+- Dual gate: real provider/vector work is authorized only when `ARGO_LIVE_PROVIDER_E2E=1` and `ARGO_W31_LIVE_MUTATION_VECTOR_E2E=1` exactly. Both disabled is structural-only with explicit Disabled/Pending evidence and zero provider/vector effects. Half-enabled or unsafe/missing external configuration fails closed with redacted action and zero provider/vector writes. The E2E names are explicit compatibility debt; no third flag is authorized.
+- Mutation lifecycle: every successful batch or focused Element/ArchitectureRelationship/View add/update/remove invalidates readiness first and records exact touched IDs. Dual-gated success durably upserts/tombstones complete evidence and becomes Aligned only after queryability/global coherence; disabled remains Pending/Stale; failure preserves canonical JSON and records Failed/Stale; preview has zero vector work; production has no runId cleanup.
+- Init/query lifecycle: `argo init` performs idempotent/resumable full three-channel reconciliation when dual-enabled and valid, and may align a previously structural-only project. Every ordinary `getSystemArchitecture(query)` freshly verifies persistent readiness and rejects disabled/pending/partial/stale/failed/mismatched state with `fullSnapshotFallback:false`; omitted-query and every graph-tidy request remain exact canonical bypasses.
+
+### Mounted coverage
+
+- A: `semprod-operator-journey-process` `functionalPoint.SP-05-new-project-journey` -> `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney`.
+- B: `grag-index-lifecycle` `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`; `semprod-persistent-projection-requirement` `functionalPoint.SP-02-persistent-projection` -> `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`; `grag-wp-3-1` `functionalPoint.W3-1-live-mutation-vector-e2e` -> `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E`.
+- C: `semprod-readiness-requirement` `functionalPoint.SP-04-fail-closed-readiness` -> `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`.
+- D: `grag-mcp-interface` `functionalPoint.TS-00` -> `ExplicitAcceptanceTestcase-TS-00`; unchanged `grag-query-service` DT-01/DT-02 functional points remain mapped to their mounted tests.
+- Preserved private internals: `semprod-backfill-control` SP-01 -> `ExplicitAcceptanceTestcase-SP-01-FullBackfill`; `semprod-default-vector-retrieval` SP-03 -> `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- All modified testcases have schema-compliant `acceptanceApproval.*` attributes recording delegated `approvedByHuman=true`. The handoff schema does not permit an `approvedByHuman` property, so delegated global approval is recorded in handoff notes.
+- Dependency exploration used `argo.getIntentElementContext` with depth 6 for all nine handoff elements. Unchanged delivered stop boundaries include canonical graph, mode validation, semantic index, credential boundary, and provider adapter with same-element mounted coverage and committed `be921fc` baseline evidence. Grouping/migration context and unchanged structural projection are evidence-backed exclusions; they have no new functional point or implementation acceptance behavior.
+
+### Mutation, validation, and evidence boundaries
+
+- All corrected previews passed at `61 elements / 87 relationships / 34 views`; stable names were retained after two no-write rename previews correctly failed on relationship label consistency.
+- All graph writes used Argo MCP mutation tools. `argo.validateSystemArchitecture` passed after the final mutation. `.argo/temp/IntentToImplementationHandoff.json` contains nine implementation-bearing intent elements, 23 relationship IDs, `openQuestions: []`, complete A-D coverage/evidence notes, and delegated global approval; `argo.validateStageHandoff(stage="intent-to-implementation")` passed.
+- Checklist self-audit: A1-A5 passed through MCP persistence, complete functional points, traversable relationships, and bound views; B1-B3 passed through exact mounted control/observation boundaries and delegated approvals; C1-C2 passed through depth-6 context exploration, same-element mappings, unchanged delivered boundaries, and evidence-backed exclusions; D1-D8 passed with no open questions; E1-E3 passed through the complete validated schema-compliant handoff and approval note; F1 is this record and F2 is the stage commit containing the graph, handoff, and this record.
+- Code-complete may be established with controlled production-composition tests for routing, dual-gate matrices, exact touched IDs, durable operations, zero-side-effect branches, no cleanup, failure/recovery, redaction, and regressions. Live release additionally requires both exact gates, safe external-only credentials, real qualified 1024-dimensional provider output, durable Neo4j persistence, vector queryability, and global coherence.
+- Live evidence remains blocked and was not invented: post-write Neo4j sync reports `neo4jUri is required for start`; the parent reported unsafe `.argo/temp` Windows ACL. Current apply evidence recorded zero real provider requests, `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`, `alignmentState=Failed`, semantic query rejection, and `fullSnapshotFallback:false` while retaining canonical JSON authority.
+- No implementation contracts, business code, test code, scripts, configuration, or ImplementationToCoding handoff were modified. No `deliveryStatus` attribute was added, removed, changed, reverted, or fabricated.
+
+### Independent intent audit correction
+
+- The 2026-07-27 independent audit findings were accepted after verification against `.argo/rules/intent-architecture-viewpoints.md` and current graph semantics.
+- One-purpose view bindings: `semprod-requirements-realization=designing`, `semprod-operator-journey=designing`, `semprod-delivery-sequence=deciding`, `semprod-wp1-persistence-backfill=auditing`, `semprod-wp2-default-retrieval-readiness=auditing`, and `semprod-wp3-operator-release-boundary=deciding`. Existing Requirements Realization, Application Usage, and Implementation and Migration viewpoint assignments, concerns, scopes, and rationales remain explicit.
+- `ExplicitAcceptanceTestcase-DT-16` now states zero provider/vector writes for half-enabled or unsafe/missing configuration while preserving successful canonical JSON writes as authoritative.
+- `grag-rel-lifecycle-validation` was atomically removed and re-added as `Access` from `grag-mode-validation` to the `grag-semantic-index` readiness/version state. Every semantic query reads that state afresh; validation does not initiate the mutation lifecycle.
+- Corrected MCP previews passed at `61 elements / 87 relationships / 34 views`. Applies wrote only through the Argo MCP mutation boundary. Both applies retained zero real provider requests and reported the known `neo4jUri is required for start` structural-sync blocker plus fail-closed `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`; no live evidence is claimed.
+- The handoff was updated with exact correction evidence and retains `openQuestions: []`. No implementation artifacts or runner-owned `deliveryStatus` values were changed. A new non-amended IntentDesign correction commit is required.
+
+## 2026-07-26 — Approved WP-P1 Persistence and Backfill Handoff
+
+- Persistent stage/session ID: `intent-semprod-wp-p1-20260726T2039+08`.
+- Scope: only architecture work package `semprod-wp-persistence-backfill` (WP-P1). WP-P2 and WP-P3 remain sequencing context and were not started.
+- Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint.
+- Stakeholder concern: delivery owners, ICT architects, runtime operators, requirements owners, and acceptors need a durable production semantic projection and an explicit bounded/resumable full backfill for canonical Element, ArchitectureRelationship, and View records without weakening canonical authority or reusing test-only cleanup as production persistence.
+- Modeling purpose: designing, deciding, auditing, and handoff preparation.
+- Affected view bindings: `semprod-requirements-realization` remains a Requirements Realization Viewpoint instance for SP-01/SP-02 requirement-to-realization semantics; new `semprod-wp1-persistence-backfill` is an Implementation and Migration Viewpoint instance for WP-P1 scope, upstream structural projection, affected-element dependencies, and delivery sequencing. Both descriptions use the required viewpoint/concern/purpose/scope/rationale binding.
+- Human approval evidence: on 2026-07-26 the human partner explicitly approved both complete mounted boundaries `ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`, and globally approved the intent-to-implementation scope limited to `semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`.
+
+### Intent mutation
+
+- Added `functionalPoint.SP-01-full-backfill` under `semprod-backfill-control`, mapped to mounted `ExplicitAcceptanceTestcase-SP-01-FullBackfill`.
+- Added `functionalPoint.SP-02-persistent-projection` under `semprod-persistent-projection-requirement`, mapped to mounted `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`.
+- Strengthened SP-01 around all-record three-channel enumeration, stable canonical identity, complete canonical/content/index/provider/model/version/dimensions/vector metadata, bounded batches, checkpoints, isolated failures, resume, idempotent rerun, external credentials, no fake mutation, and alignment only after all channels complete.
+- Strengthened SP-02 around a separate durable production persistence path, restart survival, stable-identity changed-record upsert, tombstone deletion, no production runId cleanup, preservation of existing live-E2E test-only cleanup, canonical JSON authority, and Neo4j projection/index status.
+- Added `semprod-rel-wp1-backfill`, `semprod-rel-backfill-lifecycle`, and `semprod-rel-adapter-backfill` to make WP-P1 realization and dependency directions graph-traversable.
+- No `deliveryStatus` attribute was created, changed, removed, or inferred.
+
+### Dependency-subgraph coverage matrix
+
+- `semprod-backfill-control` (focus/implementation target): `functionalPoint.SP-01-full-backfill` -> `ExplicitAcceptanceTestcase-SP-01-FullBackfill`; human-approved.
+- `semprod-persistent-projection-requirement` (implementation target): `functionalPoint.SP-02-persistent-projection` -> `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`; human-approved.
+- `grag-semantic-index` (delivered upstream boundary/context): `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`; graph evidence records `runMutationIndexLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `grag-index-lifecycle` (delivered upstream boundary/context): `functionalPoint.DT-16-all-mutation-version-advance` -> `ExplicitAcceptanceTestcase-DT-16`; graph evidence records `runMutationIndexLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `grag-embedding-provider-adapter` (delivered upstream boundary/context): `functionalPoint.TS-09-adapter-generation` -> `ExplicitAcceptanceTestcase-TS-09-EmbeddingProviderAdapter`; graph evidence records `runEmbeddingProviderAdapterLifecycle.js`, exitCode 0, and runner-owned `deliveryStatus=delivered`.
+- `semprod-structural-projection` is an evidence-backed excluded precondition rather than a WP-P1 implementation target: SP-01 starts only after ordinary structural projection, and WP-P1 neither changes structural projection nor treats it as semantic readiness.
+- WP-P2 default retrieval/readiness and WP-P3 operator release are excluded downstream dependents. The new WP-P1 view explicitly excludes both packages from implementation scope.
+
+### Validation and blockers
+
+- First `argo.previewSystemArchitectureMutation` attempt failed without writing because relationship additions referenced the not-yet-created `semprod-wp1-persistence-backfill` view. The ordered retry created the view before adding relationships and passed.
+- Successful preview evidence: 2 element updates, 1 new view, 3 new relationships, and 1 view update; counts `61 elements / 76 relationships / 30 views` -> `61 / 79 / 31`; no errors.
+- `argo.applySystemArchitectureMutation` wrote the same mutation successfully and preserved the same count delta. Canonical graph persistence passed.
+- Post-write Neo4j synchronization definitively failed with exact error `neo4jUri is required for start`. This is an environment/setup blocker; no synchronization evidence was fabricated.
+- `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `.argo/temp/IntentToImplementationHandoff.json` was found to contain an older unrelated TS-01/TS-07 handoff generated at `2026-07-26T17:30:00+08:00`; filesystem evidence shows creation at `2026-07-26 17:32` and last write at `2026-07-26 18:32`, before this WP-P1 session started at approximately `20:39`. The current session first inspected the file after the MCP graph apply, but the timestamps and absence of handoff-path references in the apply result prove the apply did not create it. The orchestrator's pre-dispatch empty-temp observation is therefore inconsistent with the repository filesystem observed by this session; no unsupported cause is asserted. The WP-P1 session did not overwrite or treat the stale file as WP-P1 evidence. `argo.validateStageHandoff(stage="intent-to-implementation")` passed only for that stale unrelated artifact, not for WP-P1.
+- The repository handoff schema has `additionalProperties: false` and no `approvedByHuman` property. The now-granted global approval is therefore recorded in schema-compliant handoff notes and in schema-compliant element attributes `acceptanceApproval.SP-01` and `acceptanceApproval.SP-02`, matching established repository practice.
+- Approval mutation preview passed for the two element updates with counts unchanged at `61 elements / 79 relationships / 31 views`; apply wrote the approval evidence successfully. Post-write Neo4j synchronization remained blocked with exact error `neo4jUri is required for start`; the canonical graph write still succeeded.
+- `.argo/temp/IntentToImplementationHandoff.json` now contains the approved five-element WP-P1 scope and seven relevant relationship ids; `openQuestions` is empty. `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Final `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Checklist self-audit after writing the handoff: A1-A5 satisfied by canonical MCP persistence, complete elements/functional points/directional relationships, and viewpoint-bound views; B1-B3 satisfied by same-element SP-01/SP-02 mappings and explicit human approval attributes; C1-C2 satisfied by the five-element coverage matrix, delivered boundary evidence, and evidence-backed structural-projection exclusion; D1-D8 satisfied with no open questions and explicit per-boundary/global approval; E1-E3 satisfied by the complete validated handoff and schema-compliant approval note; F1 is this session record and F2 is completed by the IntentDesign stage commit immediately following this audit.
+
+### Implementation-to-intent trace correction
+
+- Source proposal: `design/KG/ImplementationToIntentTraceProposal.json`, ImplementationDesign session `implementation-semprod-wp-p1-20260726T2055+08`.
+- `argo.validateTraceProposal` passed with exitCode 0 and stdout `Trace proposal validation passed for: design/KG/ImplementationToIntentTraceProposal.json`.
+- Proposal verdict: accepted as semantically consistent and scope-preserving. It changes only the physical acceptance entrypoint strings; SP-01/SP-02 descriptions, Inputs, control points, observation points, functional points, approval evidence, relationships, viewpoint bindings, and the five-element WP-P1 scope remain unchanged.
+- `ExplicitAcceptanceTestcase-SP-01-FullBackfill` now has exact acceptanceCriteria `tests/explicit/entries/runProductionSemanticBackfill.js`.
+- `ExplicitAcceptanceTestcase-SP-02-PersistentProjection` now has exact acceptanceCriteria `tests/explicit/entries/runPersistentSemanticProjectionLifecycle.js`.
+- Approval continuity: this is physical trace correction for the already-approved mounted boundaries, not a semantic boundary change. The 2026-07-26 per-testcase and global WP-P1 approvals remain valid; no additional human boundary approval is required.
+- `argo.previewSystemArchitectureMutation` passed for exactly two element testcase updates with counts unchanged at `61 elements / 79 relationships / 31 views`.
+- `argo.applySystemArchitectureMutation` wrote exactly those two updates with counts unchanged. Post-write Neo4j synchronization failed with exact error `neo4jUri is required for start`; no synchronization evidence is claimed.
+- No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
+
+### WP-P1 global validator scope blocker audit
+
+- Source proposal: `design/KG/ImplementationToIntentTraceProposal.json`, generated `2026-07-26T21:01:00+08:00` by resumed ImplementationDesign session `implementation-semprod-wp-p1-20260726T2055+08`.
+- `argo.validateTraceProposal` passed with exitCode 0, but proposal verdict is rejected/deferred because every requested mutation would remove, deactivate, or defer SP-03/SP-04/SP-05 mounts owned by unauthorized WP-P2/WP-P3 scope.
+- Reproduced `argo.validateStageHandoff(stage="implementation-to-coding")` exitCode 1 findings:
+  - `design/KG/SystemArchitecture.json.testcase(ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval).acceptanceCriteria must be a single workspace-relative testcase entrypoint, not a descriptive sentence or wrapped command`
+  - `design/KG/SystemArchitecture.json.testcase(ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness).acceptanceCriteria must be a single workspace-relative testcase entrypoint, not a descriptive sentence or wrapped command`
+  - `design/KG/SystemArchitecture.json.testcase(ExplicitAcceptanceTestcase-SP-05-NewProjectJourney).acceptanceCriteria must be a single workspace-relative testcase entrypoint, not a descriptive sentence or wrapped command`
+- Root cause: `.argo/scripts/validateStageHandoff.js` function `buildAcceptanceCriteriaByTestcase` iterates every element and every mounted testcase in `design/KG/SystemArchitecture.json` and validates each acceptanceCriteria before matching the WP-P1 handoff's explicit entrypoints. `.argo/schema/ImplementationToCodingHandoff.schema.json` has no intent-element or testcase scope selector. Therefore no canonical WP-P1-only graph attribute, relationship, view, or handoff field can exclude SP-03/SP-04/SP-05 from this global validation.
+- No graph mutation was applied. Altering SP-03/SP-04/SP-05 paths, mounts, semantics, approval state, or disposition requires separate human authorization for WP-P2/WP-P3; this session does not infer it.
+- `argo.validateSystemArchitecture` still passes with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- The WP-P1 architecture guard mismatch was reproduced exactly as `WP_P1_ARCHITECTURE_BOUNDARY_GUARD: contracts omit delete tombstones`. The approved intent already requires tombstone deletion, and the draft contracts express equivalent phrases (`deletes tombstones`, `tombstones delete`, and `tombstone deletion`). The failure is an ImplementationDesign-owned exact-wording mismatch between its draft contract text and its draft guard, not an intent semantic gap. ImplementationDesign may align the WP-P1 contract/guard wording without new human approval and without changing `SystemArchitecture.json`.
+- Routing: resume the same ImplementationDesign session to correct its WP-P1 contract/guard exact wording, preserve RED evidence, and report the global validator blocker to the orchestrator. The orchestrator must obtain separate human authorization for SP-03/SP-04/SP-05 or route a validator-scoping change to the owner of `.argo/scripts/validateStageHandoff.js`; IntentionDesign must not broaden WP-P1.
+- No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
+
+### Authorized sequential work-package isolation correction
+
+- Authorization: the parent delegated-review decision explicitly authorized only the narrow intent-governance correction needed to preserve sequential WP-P1/WP-P2/WP-P3 isolation. It did not approve, deliver, physicalize, or start SP-03/SP-04/SP-05.
+- Viewpoint frame: Requirements Realization Viewpoint for future acceptance-governance sequencing; Implementation and Migration Viewpoint for work-package isolation. No view was changed because existing requirement realization, work-package definitions, and view membership remain valid.
+- `argo.previewSystemArchitectureMutation` passed without writing for exactly three `updateElement` mutations: `semprod-default-vector-retrieval`, `semprod-readiness-requirement`, and `semprod-operator-journey-process`. Counts remained `61 elements / 79 relationships / 31 views`; touched relationships and views were empty; errors were empty.
+- `argo.applySystemArchitectureMutation` passed and wrote the same three element updates with counts unchanged at `61 / 79 / 31`.
+- SP-03/SP-04/SP-05 mounted testcase objects were removed by setting only their owning elements' `testcases` arrays to empty. Their requirements, descriptions, decision traces, coding targets, functional points, relationships, views, and work-package definitions were preserved.
+- Proposed future boundary semantics were preserved in `futureAcceptanceBoundary.SP-03`, `futureAcceptanceBoundary.SP-04`, and `futureAcceptanceBoundary.SP-05` attributes, including proposed control point, observation point, input, and suggested future entrypoint.
+- Future ownership was preserved in `futureMountOwner.SP-03` and `futureMountOwner.SP-04` as WP-P2 IntentionDesign, and `futureMountOwner.SP-05` as WP-P3 IntentionDesign. Each attribute requires separate approval and explicitly says this correction does not approve, deliver, or physicalize the boundary.
+- SP-01 and SP-02 remain mounted, executable-path anchored, and covered by their unchanged human-approval attributes. The approved five-element WP-P1 intent handoff is semantically unchanged and did not require regeneration.
+- `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- The former global blocker is removed: `argo.validateStageHandoff(stage="implementation-to-coding")` passed with exitCode 0 and stdout `Stage handoff validation passed for: implementation-to-coding`.
+- Post-write Neo4j synchronization failed exactly with `neo4jUri is required for start`; no Neo4j synchronization or semantic alignment evidence is claimed.
+- Checklist self-audit: A1-A5 remain satisfied for the WP-P1 scope; B1-B3, C1-C2, and D1-D8 remain satisfied for the approved mounted WP-P1 boundaries and five-element dependency scope; E1-E3 remain represented by the schema-compliant validated handoff and recorded human approval; F1 is this record and F2 requires the corrective stage commit.
+- No runner-owned `deliveryStatus` attribute was created, changed, removed, or inferred.
+
+### WP-P1 ImplementationDesign testcase audit — FAIL
+
+- Audited ImplementationDesign commit `1c08b31528620bb18c3346d3af44b8b8592c0235` (`Materialize WP-P1 persistence and backfill design.`), session `implementation-semprod-wp-p1-20260726T2055+08`, against approved SP-01/SP-02 intent.
+- Viewpoint and trace adequacy passed: Requirements Realization and Implementation and Migration framing is recorded; root/local contracts directly map the five approved WP-P1 intent elements; SP-01/SP-02 graph paths match their physical entrypoints; all four critical guards exit 0.
+- Independent RED replay passed as design evidence: SP-01 exits 1 with `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING`; SP-02 exits 1 with `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`.
+- Independent full runner replay produced exactly `40 total / 38 passed / 2 failed / 0 missing acceptanceCriteria`; only SP-01 and SP-02 fail with the expected categories. `design/KG/test-failure-records.json` contains exactly those two records.
+- The 21 committed delivery transitions are runner-truthful: two newly mounted owners changed from absent to `not_delivered`, and 19 previously delivered elements changed to `not_delivered`. Comparing intent commit `5ed151d9f6c21f44e92778641cb379215d74769c` with ImplementationDesign commit `1c08b31528620bb18c3346d3af44b8b8592c0235` shows the graphs are equal after removing `deliveryStatus`; element/relationship/view counts remain `61/79/31`. Every one of the 19 cascades has a declared upstream-dependency path to intentionally RED `semprod-backfill-control`, primarily through `semprod-rel-backfill-lifecycle`. No manual deliveryStatus mutation evidence exists.
+- WP-P2/WP-P3 isolation passed: no SP-03/SP-04/SP-05 physical entrypoint exists, their future semantics remain unmounted metadata, and the normalized intent graph has no non-deliveryStatus semantic change in the ImplementationDesign commit.
+- Independent `argo.validateStageHandoff(stage="implementation-to-coding")` passes.
+- Blocking testcase-design finding 1, owned by ImplementationDesign: both explicit entries can pass without proving a production durable path. SP-01 injects projection/checkpoint test ports; SP-02 injects an in-memory Map adapter retained across two store instances. Neither entry invokes production runtime/MCP composition or freezes a concrete durable Neo4j projection/checkpoint adapter. Coding could satisfy both entries with test-facing factories while leaving the required production persistence and operator path uncomposed.
+- Blocking testcase-design finding 2, owned by ImplementationDesign: SP-01 accepts implementation-reported `resumedFromCheckpoint === true` without independently proving completed canonical identities were not re-embedded or re-upserted. It has no negative explicit-opt-in case and no structural/canonical-version mismatch case, so automatic execution or wrong-version execution can false-pass.
+- Blocking testcase-design finding 3, owned by ImplementationDesign: SP-02 checks that four methods exist but does not enforce that they are the only public methods, does not reject a production cleanup API or `runId`-bearing records, and does not prove missing external configuration/qualification blocks before persistence side effects. The fake test-only cleanup set does not independently prove real live-E2E cleanup isolation from production records.
+- Blocking handoff finding 4, owned by ImplementationDesign: the coding handoff does not record the committed `40/38/2` baseline or its 21 delivery transitions. Coding therefore lacks an explicit handoff baseline against which its mandatory post-coding runner comparison can be audited.
+- Required correction: resume the same ImplementationDesign session; strengthen frozen Harness/entrypoints and guards for independent resume replay detection, explicit opt-in and version blocking, exact no-cleanup/no-runId store surface, external configuration/qualification blocking, concrete durable adapter plus runtime/MCP composition; add missing production adapter/checkpoint coding targets; record the exact committed runner baseline and transitions; rerun RED, four guards, full runner, handoff validation, and create a replacement ImplementationDesign commit.
+- Technical readiness verdict: not ready for delegated coding-gate review until those ImplementationDesign-owned corrections are complete. Coding/Repair remains unauthorized.
+- Neo4j synchronization blocker remains exactly `neo4jUri is required for start`; no synchronization evidence is claimed.
+
+### WP-P1 corrected ImplementationDesign testcase re-audit — PASS
+
+- Re-audited correction commit `5c0cff35cd8c58ab8a16caf996fd7cca835956e9` (`Correct WP-P1 production persistence acceptance boundaries.`) in the same ImplementationDesign session.
+- Prior finding 1, concrete durable production path: resolved. Contracts, coding targets, task plan, Harness, and guards now require `productionSemanticNeo4jAdapter.js` and `productionSemanticCheckpointStore.js`; SP-02 directly exercises the production adapter factory over a recording raw Neo4j driver, while SP-01 requires both factories and observes durable projection/checkpoint command effects through production runtime composition.
+- Prior finding 2, runtime/MCP composition: resolved. SP-01 invokes actual `systemarchitecture-mcp-server.js` `callTool("backfillSystemArchitectureSemanticProjection", ...)` with a production Graph RAG runtime and verifies operator exposure, inward delegation evidence, no fake canonical mutation, and durable operations.
+- Prior finding 3, independent no-replay evidence: resolved. Harness phases independently record provider identities and durable-upsert identities before and after interruption; the entrypoint requires both replay sets to be empty and no longer accepts an implementation-reported resume flag as proof.
+- Prior finding 4, explicit gating and version sequencing: resolved. Missing opt-in, structural/canonical version mismatch, missing external credentials, and missing provider qualification each require exact categories and zero provider/store/checkpoint/index side effects.
+- Prior finding 5, exact production surface and runId prohibition: resolved. SP-02 reflects the full callable store surface and requires exactly `close`, `deleteTombstones`, `readRecords`, and `upsertRecords`; runId-bearing input must fail before persistence; persisted production records must remain runId-free.
+- Prior finding 6, live-E2E cleanup isolation: resolved by combined frozen evidence. The existing frozen `liveEmbeddingNeo4jBoundary.js` cleanup is actually label- and runId-scoped (`ArgoLiveEmbeddingEvidence { runId: $runId }`); production records are required to have no runId; the corrected lifecycle probe verifies production record count and identities survive unrelated test cleanup. Production targets still exclude and may not import the live boundary.
+- Prior finding 7, baseline trace: resolved. The handoff records `40 total / 38 passed / 2 expected RED / 0 missing acceptanceCriteria`, both failure records, the 21 runner-owned transitions, and every transitioned element for later comparison.
+- Independent direct replay: SP-01 exits 1 with `SP01_PRODUCTION_BACKFILL_BOUNDARY_MISSING`; SP-02 exits 1 with `SP02_PRODUCTION_PERSISTENCE_BOUNDARY_MISSING`; all four WP-P1 guards exit 0.
+- Independent full `argo.runArchitectureTests` replay: `40 total / 38 passed / 2 failed / 0 missing acceptanceCriteria`; only SP-01/SP-02 fail with their expected categories. No `[DELIVERY]` change was reported, and commit comparison confirms zero deliveryStatus changes from `1c08b315` to `5c0cff35`.
+- Runner ownership: the correction commit does not modify `design/KG/SystemArchitecture.json`; semantic graph and deliveryStatus remain unchanged at `61 elements / 79 relationships / 31 views`. Fresh runner output leaves graph and failure records equal to HEAD. No manual deliveryStatus mutation evidence exists.
+- Independent `argo.validateStageHandoff(stage="implementation-to-coding")` passed with exitCode 0 and stdout `Stage handoff validation passed for: implementation-to-coding`.
+- Frozen evidence, expectedFailureRecordsPath, six production coding targets, four-task execution plan, and scope exclusions are complete and mutually consistent.
+- WP-P2/WP-P3 remain untouched: no SP-03/SP-04/SP-05 physical entrypoint exists, future mounts remain deferred metadata, and the correction commit contains no intent graph change.
+- Technical verdict: the handoff is ready for an independent delegated coding-gate review. This audit does not approve or dispatch Coding/Repair.
+- Neo4j synchronization blocker remains exactly `neo4jUri is required for start`; no synchronization evidence is claimed.
+
+### WP-P1 final delivery audit — FAIL
+
+- Audited CodingAndReparing session `coding-semprod-wp-p1-3ef5346`, commit `3ef53461a9e24b8984ac1a769468b9cbbe91dd0e` (`Implement WP-P1 durable semantic persistence and backfill.`), after ImplementationDesign session `implementation-semprod-wp-p1-20260726T2055+08` reported PASS without an additional audit commit.
+- Positive evidence independently reproduced: both approved mounted entrypoints exit 0; all four WP-P1 critical guards exit 0; `argo.runArchitectureTests` reports `40 total / 40 passed / 0 failed / 0 missing acceptanceCriteria`; `design/KG/test-failure-records.json` is `[]`; both stage handoffs and `design/KG/SystemArchitecture.json` validate with exitCode 0.
+- Coding scope is clean: the coding commit changes only the six authorized implementation targets plus runner-owned `design/KG/test-failure-records.json`; it does not change frozen tests/contracts/handoffs, `design/KG/SystemArchitecture.json`, `liveEmbeddingNeo4jBoundary.js`, or future WP-P2/WP-P3 assets. SP-03/SP-04/SP-05 remain unmounted future-wave metadata and no future entrypoint exists.
+- Canonical authority and cleanup isolation are preserved in code: production records use separate `ArgoProductionSemanticRecord`/`ArgoProductionSemanticCheckpoint` labels, expose no cleanup API, reject `runId`, and cannot be selected by frozen live-E2E cleanup scoped to `ArgoLiveEmbeddingEvidence { runId }`.
+- Blocking IntentionDesign defect: the 21 runner-owned `not_delivered` statuses are not stale and cannot be treated as successful delivery merely because the fresh run reports zero transitions. The tested elements `semprod-backfill-control`, `grag-index-lifecycle`, `grag-embedding-generation`, and `grag-embedding-provider-adapter` form one dependency strongly connected component through `semprod-rel-backfill-lifecycle`, `grag-rel-lifecycle-generation`, `grag-rel-adapter-generation`, and `semprod-rel-adapter-backfill`. Under the runner's documented least fixed-point rule, no member can become delivered; `semprod-persistent-projection-requirement` and downstream elements therefore remain not_delivered. No manual deliveryStatus mutation occurred.
+- Required IntentionDesign correction: use canonical MCP preview/apply to remove the delivery dependency cycle without changing approved SP-01/SP-02 semantics. The narrow recommended correction is to replace `semprod-rel-backfill-lifecycle` as a dependency-bearing `Triggering` edge with a non-triggering `Association` that preserves the explicit interaction/rationale but does not imply automatic backfill or lifecycle delivery precedence. Validate the graph and handoff, rerun the full runner, and require the two WP-P1 owners and applicable approved upstream boundaries to become runner-owned `delivered`.
+- Blocking production composition defect missed by the frozen acceptance design: the actual default call `callTool("backfillSystemArchitectureSemanticProjection", { explicitOptIn: true })` exits 1 with `productionGraphRagRuntime.runSemanticBackfill is required`. JSON-RPC `tools/call` invokes `callTool` without dependencies, while the passing SP-01 Harness injects `productionGraphRagRuntime`; therefore the shipped operator is advertised but cannot run through the production MCP server path.
+- Required ImplementationDesign correction: in the same WP-P1 session, strengthen the frozen Harness/entrypoint/guard and coding handoff so the default non-injected JSON-RPC/callTool path must construct the production runtime composition root and reach release-gate behavior; injected runtime evidence alone is insufficient.
+- Required CodingAndReparing correction after the design correction is approved: wire the MCP server's default `tools/call` path to a production Graph RAG runtime composed from canonical source, same-version structural projection evidence, qualified embedding provider, external Neo4j configuration/driver, canonical-authority policy, production projection/checkpoint stores, and bounded backfill. With absent environment configuration it must fail at the established external startup boundary, not at missing runtime injection.
+- The additional legacy `tests/architecture/production-graph-rag/coding-scope-authorization.guard.js` failure is non-blocking for WP-P1: it requires the exact phrase `runner-owned deliveryStatus by hand`, is not in WP-P1 critical/supporting sets, and predates Coding. Its maintenance owner is ImplementationDesign for the legacy production-graph slice; it should accept semantically equivalent manual-edit prohibition or validate its own handoff scope.
+- Final delivery verdict: FAIL. WP-P1 intent is not accepted until both blockers are corrected and independently re-audited.
+- Neo4j synchronization remains unverified due the exact environment blocker `neo4jUri is required for start`; no synchronization evidence is claimed or fabricated.
+
+### WP-P1 dependency-cycle intent correction
+
+- Viewpoint frame remains unchanged: Requirements Realization Viewpoint preserves SP-01 requirement-to-realization trace; Implementation and Migration Viewpoint preserves WP-P1 work-package sequencing and isolation. Existing view bindings and membership remain valid; no WP-P2/WP-P3 view or semantic was changed.
+- Before semantics: `semprod-rel-backfill-lifecycle`, `Triggering`, `semprod-backfill-control` -> `grag-index-lifecycle`, named `Full backfill triggers index lifecycle`; as a delivery dependency this completed the tested cycle `backfill -> adapter -> embedding generation -> index lifecycle -> backfill`.
+- Direct `updateRelationship` preview failed without writing because relationship type is immutable. The canonical retry used one atomic remove/re-add under the same relationship id, endpoints, and `semprod-wp1-persistence-backfill` view membership.
+- Successful preview: remove `semprod-rel-backfill-lifecycle`, then add the same id as `Association`, named `Full backfill coordinates with index lifecycle`, with non-triggering coordination semantics. `written=false`; touched relationship id exactly `semprod-rel-backfill-lifecycle`; counts remained `61 elements / 79 relationships / 31 views`; errors empty.
+- Successful apply wrote the same two mutations. After semantics: a non-triggering Association preserves bounded generation/persistence coordination and final-only three-channel alignment while explicitly creating no automatic activation, fake canonical mutation, or delivery precedence. Relationship identity, endpoints, viewpoint-bound view membership, approved SP-01/SP-02 boundaries, and five-element handoff scope are unchanged.
+- Post-write Neo4j synchronization failed exactly `neo4jUri is required for start`; canonical JSON was written and no synchronization evidence is claimed. Automatic embedding lifecycle separately reported `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`/`SEMANTIC_INDEX_NOT_ALIGNED`; it is not substituted for the explicit production backfill or Neo4j synchronization evidence.
+- `argo.validateSystemArchitecture` passed. `argo.validateStageHandoff` passed independently for both `intent-to-implementation` and `implementation-to-coding`.
+- Fresh `argo.runArchitectureTests`: `40 total / 40 passed / 0 failed / 0 missing acceptanceCriteria`; failure records remain `[]`. The runner made exactly 21 truthful `not_delivered -> delivered` transitions, clearing the complete prior cascade including both WP-P1 owners, lifecycle, adapter, generation, and all downstream dependents. No `not_delivered` attribute remains.
+- Independent dependency recomputation finds zero tested strongly connected components. No deliveryStatus was manually edited; all 21 changes were produced and persisted by the runner.
+- IntentionDesign blocker is resolved. Final acceptance remains blocked only by the default MCP composition gap: route to the same ImplementationDesign session `implementation-semprod-wp-p1-20260726T2055+08` to freeze a non-injected default JSON-RPC/callTool production-composition assertion, then route the resulting coding correction to CodingAndReparing.
+
+### WP-P1 final corrected delivery audit — PASS
+
+- Audited the intent-cycle correction `4e01094b56429991b32b0826968da0bea9f93b0e`, ImplementationDesign correction `82dc26503f5a2a7a2846c97402f25ff42654b05a`, and CodingAndReparing correction `4dd9e75632d4f75215cb367552062b003253ab25` in the same persistent sessions: IntentDesign `intent-semprod-wp-p1-20260726T2039+08`, ImplementationDesign `implementation-semprod-wp-p1-20260726T2055+08`, and CodingAndReparing `coding-semprod-wp-p1-3ef5346`.
+- Both prior blockers are closed. `semprod-rel-backfill-lifecycle` remains a non-triggering Association, the final graph has no `not_delivered` element, and all five handoff elements plus `grag-embedding-generation` carry runner-owned `deliveryStatus=delivered`.
+- The shipped non-injected process path was independently invoked as JSON-RPC `tools/call` for `backfillSystemArchitectureSemanticProjection` with all approved external credential variables removed. The process exited 0 with an MCP error result containing `EXTERNAL_CREDENTIALS_REQUIRED`, with the stack reaching `resolveDefaultSemanticConfiguration`, `createDefaultProductionSemanticRuntime`, `callTool`, and `handleRequest`; it did not report `productionGraphRagRuntime.runSemanticBackfill is required`. SP-01 also proves the canonical JSON bytes remain unchanged on this path.
+- Direct SP-01 and SP-02 replays exited 0. SP-01 proves explicit opt-in, same-version structural completion, external credentials, provider qualification, bounded batches, durable checkpoints, isolated failures, no replay on resume, idempotent rerun, complete three-channel metadata, no fake canonical mutation, and final-only alignment. SP-02 proves restart survival, stable identity, changed-record upsert, tombstone deletion, exact no-cleanup API, runId rejection before persistence, live-E2E cleanup isolation, canonical JSON authority, and subordinate Neo4j projection/index.
+- All four frozen `production-semantic-persistence` critical guards exited 0. The supporting typed MCP contract entrypoint exited 0. Independent `argo.runArchitectureTests` reported `40 total / 40 passed / 0 failed or missing / 0 missing acceptanceCriteria`; SP-01 and SP-02 both passed and `design/KG/test-failure-records.json` remains `[]`. This stable rerun produced no delivery transition because the prior runner-owned 21 `not_delivered -> delivered` transitions were already committed.
+- `argo.validateSystemArchitecture` passed. `argo.validateStageHandoff` passed independently for both `intent-to-implementation` and `implementation-to-coding`.
+- Commit-scope audit passed. Removing only `deliveryStatus` attributes makes the graphs at `4e01094`, `82dc265`, and `4dd9e75` byte-equivalent as JSON, proving the ImplementationDesign and Coding corrections did not alter approved intent semantics. Coding commit `4dd9e75` changes only `.argo/scripts/systemarchitecture-mcp-server.js` plus runner-owned graph/failure records; frozen tests, Harness, contracts, handoffs, production runtime, semantic-persistence modules, and live-E2E cleanup remain unchanged.
+- WP-P2/WP-P3 remain excluded and unstarted. SP-03/SP-04/SP-05 have no mounted testcase objects or physical entrypoints; their proposed control/observation semantics remain only in `futureAcceptanceBoundary.SP-03/04/05`, with future mount ownership assigned to WP-P2 IntentionDesign for SP-03/SP-04 and WP-P3 IntentionDesign for SP-05.
+- The legacy production-graph exact-wording guard remains outside the WP-P1 critical/supporting set and is non-gating maintenance scope. Live Neo4j synchronization remains environment-unverified with exact blocker `neo4jUri is required for start`; no synchronization evidence is inferred or fabricated.
+- Final verdict: PASS. The approved WP-P1 intent is delivered; no WP-P1 correction remains open.
+
+### Exact approval question
+
+Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcceptanceTestcase-SP-01-FullBackfill` and `ExplicitAcceptanceTestcase-SP-02-PersistentProjection`—and globally approve the WP-P1 intent-to-implementation handoff scope (`semprod-backfill-control`, `semprod-persistent-projection-requirement`, `grag-semantic-index`, `grag-index-lifecycle`, and `grag-embedding-provider-adapter`) so IntentDesign may record approval, replace the stale unrelated intent handoff with the WP-P1 handoff, validate it, and create the required IntentDesign stage commit? Recommended answer: approve, because the boundaries now cover the requested durable production persistence, full three-channel backfill, test-only cleanup isolation, canonical authority, external credentials, and all required failure/recovery semantics while excluding WP-P2 and WP-P3.
+
+## 2026-07-26 — Approved Neo4jUri And EmbeddingCredential Handoff
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need approved external configuration names to be the only source for internal startup fields before Neo4j connectivity, provider calls, or index side effects.
+- Modeling purpose: designing, deciding, auditing, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it already traces production runtime, credential constraint, embedding qualification, canonical Neo4j names, live provider evidence, and canonical authority to release requirements before index delivery.
+- Human approval evidence: the human partner explicitly approved the existing-test boundary extensions and asked to fix all issues, including the reported `embeddingCredential is required for start` blocker and the MCP post-write `neo4jUri is required for start` sync setup blocker.
+- Secret handling: Intent Design did not read, create, output, migrate, copy, or expose any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` - `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`, now covering exact `.argo/.env` loading and start-time `neo4jUri` plus `embeddingCredential` validation.
+- `grag-credential-boundary` - `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Acceptance boundaries
+
+- Existing `ExplicitAcceptanceTestcase-TS-01` must prove harness initialization loads only the exact repository-relative `.argo/.env` when direct process values are absent, preserves direct-process precedence and credential conflict behavior, validates `neo4jUri` and `embeddingCredential` before startup proceeds, fails closed when either remains unresolved, and emits no secret-bearing diagnostics.
+- Existing `ExplicitAcceptanceTestcase-TS-07` must prove absent, conflicting, unsafe, legacy-alias-only, canonical-Neo4j-plus-unresolved-`neo4jUri`, and canonical-Neo4j-plus-unresolved-`embeddingCredential` states fail closed before network or index side effects, without hardcoded, default, Cypher, runtime-field, or legacy-alias fallback.
+- Existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` must prove `ARGO_NEO4J_DATABASE_URL` is the only approved source for in-process `neo4jUri`, `QWEN_KEY` is the only approved source for in-process `embeddingCredential`, and neither runtime field may be sourced from separate keys, literals, defaults, command-line values, graph/Cypher data, or alternate files.
+
+### Dependency-scope decisions
+
+- Handoff scope is exactly `grag-production-runtime` and `grag-credential-boundary` with `grag-rel-credentials-runtime`.
+- No new testcase identity was added; the approved boundary changes extend TS-01, TS-07, and TS-07-Provider-Secret-Isolation.
+- Canonical Neo4j environment-name behavior is preserved: `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` remain the only accepted Neo4j names, and legacy aliases remain unsupported.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: canonical graph write passed for the same two elements and one view; element count 47, relationship count 59, and view count 27 unchanged. The post-write Neo4j sync still reported `neo4jUri is required for start`, which is now represented as a downstream acceptance boundary rather than an unresolved intent adequacy blocker.
+- `argo.validateSystemArchitecture`: passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- `.argo/temp/IntentToImplementationHandoff.json` was emitted for `grag-production-runtime`, `grag-credential-boundary`, and `grag-rel-credentials-runtime`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Open business questions and intent adequacy blockers: none.
+
+## 2026-07-26 — Embedding Credential Startup Boundary
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, security owners, and acceptors need startup configuration to prove that the approved provider secret source resolves the runtime `embeddingCredential` after canonical Neo4j configuration succeeds and before any database, provider, or index side effects.
+- Modeling purpose: designing, deciding, auditing, and handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it already traces production runtime, credential constraint, embedding qualification, canonical Neo4j names, live provider evidence, and canonical authority to release requirements before index delivery.
+- Root-cause boundary: the prior `neo4jUri` harness blocker is treated as already repaired for the reported harness path; this follow-up boundary isolates the unresolved `embeddingCredential` field and requires evidence that it is materialized only from approved `QWEN_KEY` provenance before startup proceeds.
+- Secret handling: Intent Design did not read, create, output, migrate, copy, or expose any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` - `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`, now including start-time `embeddingCredential` validation after `.argo/.env` loading and after canonical Neo4j resolution.
+- `grag-credential-boundary` - `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Acceptance boundaries needing approval
+
+- Existing `ExplicitAcceptanceTestcase-TS-01` must prove `node .argo/scripts/ensureArgoHarnessEnvironment.js` loads only the exact repository-relative `.argo/.env` when direct process values are absent, preserves direct-process precedence and credential conflict behavior, resolves the provider secret needed for `embeddingCredential` before start-time validation, and fails closed with no secret-bearing diagnostics when canonical Neo4j configuration is present but `embeddingCredential` remains unresolved.
+- Existing `ExplicitAcceptanceTestcase-TS-07` must prove absent, conflicting, unsafe, legacy-alias-only, and canonical-Neo4j-plus-unresolved-`embeddingCredential` states fail closed before network or index side effects, without hardcoded, default, Cypher, runtime-field, or legacy-alias secret fallback.
+- Existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` must prove `QWEN_KEY` is the only approved source for materializing in-process `embeddingCredential`; separately supplied `embeddingCredential` keys, unresolved provider credentials, unsafe `.argo/.env` metadata, conflicts, legacy aliases, and all unapproved sources fail closed before provider, database, or index side effects and leak no secret material to observable channels.
+
+### Dependency-scope decisions
+
+- Handoff scope, if approved later, should remain exactly `grag-production-runtime` and `grag-credential-boundary` with `grag-rel-credentials-runtime`.
+- No new testcase identity was added; the new acceptance expectations extend existing TS-01, TS-07, and TS-07-Provider-Secret-Isolation boundaries as requested.
+- The accepted canonical Neo4j environment-name behavior is preserved: `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` remain the only accepted Neo4j names, and legacy aliases remain unsupported.
+
+### Validation and blockers
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: canonical graph write passed for the same two elements and one view; element count 47, relationship count 59, and view count 27 unchanged. The tool's post-write Neo4j sync reported `neo4jUri is required for start`, so projection sync should be treated as a separate setup blocker from the reported harness path until verified.
+- `argo.validateSystemArchitecture`: passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Intent-to-implementation handoff was not emitted because the modified mounted testcase boundaries are explicitly marked `pendingHumanApproval` for the `embeddingCredential` extension, and the overall handoff does not yet have global human approval.
+
+## 2026-07-26 — Harness Environment And Canonical Neo4j Names
+
+- Selected viewpoint: Requirements Realization Viewpoint.
+- Stakeholder concern: runtime owners, ICT architects, requirements managers, and acceptors need harness environment initialization and Neo4j projection configuration names to be explicit, decidable release requirements.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-native-embedding-release-requirements` remains a Requirements Realization Viewpoint instance because it traces runtime and credential constraints to the existing Node.js/Neo4j realization path, now including canonical `.argo/.env` harness loading and rejection of legacy Neo4j aliases.
+- Human approval evidence: the orchestrator user requirement/defect report explicitly required `node .argo/scripts/ensureArgoHarnessEnvironment.js` to load `.argo/.env` into `process.env` and required the approved `ARGO_NEO4J_DATABASE_*` naming to replace legacy `ARGO_NEO4J_*` projection aliases. The human partner then constrained approval with: prefer extending existing testcases; do not add new testcases unless extension is impossible. The graph was repaired so the new functional points extend existing TS-01, TS-07, and TS-07-Provider-Secret-Isolation boundaries instead of adding new ExplicitAcceptanceTestcase identities.
+- Secret handling: Intent Design did not read, create, output, migrate, or copy any `.argo/.env` secret value.
+
+### Coverage matrix
+
+- `grag-production-runtime` — `functionalPoint.TS-01` -> `ExplicitAcceptanceTestcase-TS-01`; `functionalPoint.TS-01-harness-env-loading` -> existing `ExplicitAcceptanceTestcase-TS-01`.
+- `grag-credential-boundary` — `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> existing `ExplicitAcceptanceTestcase-TS-07` and existing `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`.
+
+### Acceptance boundaries
+
+- Existing `ExplicitAcceptanceTestcase-TS-01` now also requires `node .argo/scripts/ensureArgoHarnessEnvironment.js` to initialize `process.env` from the exact repository-relative `.argo/.env` before projection/runtime checks when direct process values are absent, ignore root/alternate `.env` files, preserve process precedence and conflict behavior delegated to the credential boundary, and avoid secret-bearing diagnostics.
+- Existing `ExplicitAcceptanceTestcase-TS-07` and `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation` now also require `ARGO_NEO4J_DATABASE_URL`, `ARGO_NEO4J_DATABASE_USERNAME`, and `ARGO_NEO4J_DATABASE_PASSWORD` to be the accepted Neo4j configuration names from approved process or exact `.argo/.env` sources; legacy `ARGO_NEO4J_URI`, `ARGO_NEO4J_USERNAME`, and `ARGO_NEO4J_PASSWORD` must not satisfy missing canonical configuration, override canonical values, or reach connection/projection/write side effects.
+
+### Dependency-scope decisions
+
+- Handoff scope is exactly `grag-production-runtime` and `grag-credential-boundary`.
+- `grag-rel-credentials-runtime` remains the in-scope realization relationship. Existing native retrieval, canonical authority, embedding qualification, provider adapter, index lifecycle, W3.1 mutation-vector lifecycle, and downstream seed/closure/quality elements remain contextual and outside this handoff.
+- Existing runner-owned `deliveryStatus` attributes were preserved as runner data and not fabricated or manually reinterpreted as new pass evidence.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for two element updates and one Requirements Realization View update; element count 47, relationship count 59, and view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- Approval-constraint repair: a second `argo.previewSystemArchitectureMutation` and `argo.applySystemArchitectureMutation` passed for two element updates, removing the two new ExplicitAcceptanceTestcase identities from this scope while preserving same-element coverage through existing mounted testcases.
+- Downstream ImplementationDesign should extend existing physical entrypoints where feasible: `tests/explicit/entries/runProductionGraphRagRuntime.js`, `tests/explicit/entries/runExternalCredentialBoundary.js`, and `tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js`.
+- Open business questions and adequacy blockers: none.
+
+## 2026-07-27 — WP-P3 Operator Journey and Production Release Handoff
+
+- Persistent session ID: `intent-semprod-wp-p3-20260727T0229+08`.
+- Scope: only `semprod-wp-operator-release` (WP-P3). WP-P1 remains accepted at 40/40 with SP-01/SP-02. WP-P2 remains accepted at commit `56cfad2` with SP-03/SP-04, full runner 42/42, valid handoffs/SystemArchitecture, and seven runner-delivered scoped elements.
+- Selected viewpoints: `semprod-operator-journey` is an Application Usage Viewpoint instance for designing the operator-to-application journey; new `semprod-wp3-operator-release-boundary` is an Implementation and Migration Viewpoint instance for deciding the exact five-element WP-P3 boundary; existing `semprod-delivery-sequence` remains the Implementation and Migration Viewpoint instance for predecessor sequencing and release-plateau context.
+- View limits and bindings: every touched view records Viewpoint, Concern, Purpose, Scope, and Rationale. `semprod-operator-journey` contains seven coherently connected elements, `semprod-wp3-operator-release-boundary` contains five, and `semprod-delivery-sequence` contains seven.
+- Human approval evidence: the delegated parent/orchestrator authorization explicitly required formalizing and mounting exactly `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney`, the exact five-element modeled scope, the corrected two-path and invalid-configuration behavior, no unresolved adequacy blocker, and a correction commit. Per-testcase approval is recorded as `acceptanceApproval.SP-05`; global handoff approval is recorded in the schema-compliant handoff notes because both graph testcase and handoff schemas reject an `approvedByHuman` property.
+- Delivery-status guardrail: no `deliveryStatus` attribute was manually added, changed, removed, reverted, or fabricated.
+
+### Exact modeled scope and relationships
+
+- Elements: `semprod-operator-journey-process`, `semprod-ready-plateau`, `grag-query-service`, `grag-credential-boundary`, `semprod-wp-operator-release`.
+- Relationships: `semprod-rel-wp2-wp3`, `semprod-rel-wp3-journey`, `semprod-rel-wp3-plateau`, `semprod-rel-operator-journey`, `semprod-rel-journey-structural`, `semprod-rel-structural-backfill`, `semprod-rel-backfill-journey`, `semprod-rel-query-journey`, `semprod-rel-ready-journey`, `semprod-rel-journey-readiness`, `semprod-rel-journey-credentials`.
+- Views: `semprod-operator-journey`, `semprod-wp3-operator-release-boundary`, `semprod-delivery-sequence`.
+
+### Coverage matrix
+
+- Focus: `semprod-operator-journey-process` — `functionalPoint.SP-05-new-project-journey` -> mounted `ExplicitAcceptanceTestcase-SP-05-NewProjectJourney` at `tests/explicit/entries/runNewProjectSemanticOperatorJourney.js`.
+- Delivered boundary: `grag-query-service` — `functionalPoint.DT-01-compatible-reading-boundary` -> `ExplicitAcceptanceTestcase-DT-01`; `functionalPoint.DT-02-no-argument-full-snapshot` -> `ExplicitAcceptanceTestcase-DT-02`. Recorded W1 pass evidence names both physical entrypoints with exit code 0; runner-owned `deliveryStatus=delivered`.
+- Delivered boundary: `grag-credential-boundary` — `functionalPoint.TS-07` -> `ExplicitAcceptanceTestcase-TS-07`; `functionalPoint.TS-07-provider-secret-isolation` -> `ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation`; `functionalPoint.TS-07-canonical-neo4j-env-names` -> both mounted TS-07 cases. Recorded W2 pass evidence names both physical entrypoints with exit code 0; runner-owned `deliveryStatus=delivered`.
+- Evidence-backed exclusion: `semprod-wp-operator-release` is a non-executable migration Work Package with no functional points. Its obligations are sequencing/realization context; executable WP-P3 behavior is mounted on the exact owning Business Process.
+- Evidence-backed exclusion: `semprod-ready-plateau` is a non-executable gated target-state Plateau with no functional points. It cannot be delivered by graph validation; SP-01..SP-05 and compatibility/regression evidence collectively gate it.
+- Accepted dependency exclusions: WP-P1 and WP-P2 are predecessor sequencing context, not reopened implementation scope. Their protected accepted baselines and delivered owned boundaries stop recursive exploration.
+
+### SP-05 and release semantics
+
+- Successful fixture parity: both fresh projects receive equivalent approved external Neo4j and embedding-provider configuration and differ only in explicit auto-backfill opt-in.
+- No-opt-in path: `argo init -> canonical structural projection` ends in actionable `SemanticIndexPending`, proves zero automatic start, invokes the explicit backfill command/tool, verifies readiness after backfill, then permits semantic query only when aligned; exact no-argument full snapshots remain available.
+- Opted-in path: automatic backfill may start only after explicit opt-in and approved external configuration validation. Progress, checkpoint, controlled failure, resume guidance, and errors are observable and credential-redacted. Readiness verification precedes semantic query.
+- Opted-in negative controls: missing, unsafe, and unapproved external configuration each prove zero automatic start, backfill, provider, and database side effects plus redacted actionable failure containing no credential values or unsafe source contents. Delivered TS-07 is dependency evidence, not a substitute for these WP-P3 orchestration controls.
+- Both paths preserve canonical JSON authority, fail-closed semantic retrieval, accepted WP-P1 persistence/backfill, accepted WP-P2 retrieval/readiness, and prohibit embedded credentials, implicit provider defaults, legacy fallback, silent snapshot fallback, and readiness bypass.
+- `semprod-ready-plateau` is target-only until SP-01 full backfill, SP-02 persistent lifecycle, SP-03 default vector retrieval, SP-04 fail-closed readiness, SP-05 operator journey, canonical/no-argument compatibility, credential/redaction, and WP-P1/WP-P2 regression gates pass.
+- SP-05 has approval but no pass or delivery claim. Its physical entrypoint remains downstream ImplementationDesign work.
+
+### Handoff replacement and validation
+
+- `.argo/temp/IntentToImplementationHandoff.json` intentionally supersedes the tracked WP-P2 intent handoff because WP-P3 is the authorized sequential stage. The replacement preserves WP-P2 governance in commit `56cfad2` and this memory. `.argo/temp/ImplementationToCodingHandoff.json` remains unchanged.
+- The exact five-element modeled scope is retained in graph, relationships, views, and handoff notes. Validator-compliant downstream `intentElementIds` contains the three implementation-bearing elements with mounted same-element coverage: `semprod-operator-journey-process`, `grag-query-service`, and `grag-credential-boundary`.
+- Initial handoff validation correctly rejected `semprod-ready-plateau` and `semprod-wp-operator-release` because non-executable migration elements have no mounted testcases. The handoff was minimally repaired by moving those two elements to evidence-backed relationship/view context rather than inventing invalid testcases or duplicating SP-05 outside its owner.
+- Authoritative mutation preview passed with `written=false`, `errors=[]`, and counts 61/84/33 -> 61/86/34.
+- Authoritative mutation apply passed with `written=true`, `errors=[]`, three element updates, one existing view update, one new view, and two new relationships. Structural Neo4j sync failed exactly `neo4jUri is required for start`; this is environment evidence, not production proof. Touched-record embedding reported Aligned and `secretLeaks=[]`, but does not substitute for SP-05.
+- `argo.validateSystemArchitecture` passed with exit code 0.
+- `argo.getIntentElementContext` passed after mutation for both `semprod-operator-journey-process` and `semprod-wp-operator-release`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed after the evidence-backed scope repair.
+- Independent-audit testcase correction preview passed with `written=false`, `errors=[]`, and counts 61/86/34 -> 61/87/34. Apply wrote one SP-05 element update, new `semprod-rel-journey-readiness`, neutral wording for existing Association `semprod-rel-ready-journey`, and the focused journey view update.
+- A mandatory post-ImplementationDesign audit found that using Realization for `semprod-rel-journey-credentials` and `semprod-rel-journey-readiness` made their protected targets depend on failed SP-05 under the runner's documented target-depends-on-source rule. The pre-coding 43/42 run truthfully changed accepted `grag-credential-boundary` and `semprod-readiness-requirement` from delivered to not_delivered and added new `semprod-operator-journey-process=not_delivered`. Only the new owner status is an acceptable mounted-RED consequence; the two protected WP-P2 regressions are an IntentDesign topology defect.
+- Topology correction viewpoint frame: Application Usage Viewpoint for the seven-element journey and Implementation and Migration Viewpoint for the five-element release boundary. Requirement and Constraint are protected policy elements, not application services the Business Process can validly access. Existing Backfill and Query Service `Serving` relationships carry actual runtime dependency into the journey; direct policy links therefore use Association for compliance/traceability without redefining protected delivery.
+- Authoritative topology preview passed with `written=false`, `errors=[]`, and unchanged counts 61/87/34. Apply atomically removed and re-added both relationship ids as Associations: `semprod-rel-journey-credentials` is now actively named `Operator journey observes external credential boundary`; `semprod-rel-journey-readiness` is now actively named `Operator journey observes fail-closed readiness boundary`. Both focused view descriptions were updated; membership and <=7-element limits remain unchanged.
+- `semprod-readiness-requirement` remains coherently connected inside `semprod-operator-journey` by a non-realizing policy Association. `semprod-rel-ready-journey` remains non-directional contextual traceability and does not say the plateau enables the journey.
+- No deliveryStatus was edited. Current `not_delivered` values remain runner-owned evidence from the prior topology. ImplementationDesign must rerun the full architecture runner after this commit; with SP-05 still the sole expected RED, `grag-credential-boundary` and `semprod-readiness-requirement` should return to delivered and only `semprod-operator-journey-process` should remain not_delivered if no unrelated regression exists.
+- Topology apply wrote canonical JSON but structural Neo4j synchronization remained blocked exactly by `neo4jUri is required for start`. The separate lifecycle returned `W31_TOUCHED_RECORD_EXTRACTION_INCOMPLETE`/alignment Failed because the relationship replacement exposed no touched records; neither result substitutes for runner refresh or live evidence.
+- Corrected `argo.validateSystemArchitecture` and `argo.validateStageHandoff(stage="intent-to-implementation")` both passed with exit code 0. Structural Neo4j sync remains blocked exactly by `neo4jUri is required for start`; no sync or production proof is fabricated.
+- Checklist self-audit: A1-A5 satisfied by authoritative correction mutation, complete requirement sources/functional point/relationships, and coherently connected viewpoint-bound views; B1-B3 satisfied for every implementation-bearing element, with corrected SP-05 mounted only under its exact owner and schema-compliant approval; C1-C2 satisfied by explicit same-element mappings, delivered boundary evidence, and evidence-backed non-executable/dependency exclusions; D1-D8 satisfied with global and per-testcase correction approval and no open questions; E1-E3 satisfied by the complete validated corrected handoff and approval note; F1 is this corrected record and F2 requires the following IntentDesign correction commit.
+- Open questions and adequacy blockers: none.
+
+## 2026-07-26 — WP-P2 Default Vector Retrieval and Readiness Handoff
+
+- Persistent stage/session ID: `intent-semprod-wp-p2-20260726T2330+08`.
+- Scope: only `semprod-wp-default-retrieval` (WP-P2). WP-P1 is an accepted delivered prerequisite. WP-P3, its operator CLI/documentation/release journey, and SP-05 remain unstarted and excluded.
+- Selected viewpoints: Requirements Realization Viewpoint and Implementation and Migration Viewpoint.
+- Stakeholder concern: requirements owners, delivery owners, ICT architects, runtime operators, and acceptors need the shipped default MCP semantic path to use qualified external-credential embedding and persistent Neo4j Vector Index retrieval, and to fail closed unless all three semantic channels are canonically aligned, without weakening full-snapshot compatibility.
+- Primary modeling purposes: `semprod-requirements-realization` uses only `designing`; `semprod-wp2-default-retrieval-readiness` and `semprod-wp2-vector-seed-closure` each use only `deciding`.
+- View binding: `semprod-requirements-realization` is a Requirements Realization Viewpoint instance for SP-03/SP-04 requirement-to-realization design. The layered views `semprod-wp2-default-retrieval-readiness` and `semprod-wp2-vector-seed-closure` are Implementation and Migration Viewpoint instances for deciding the WP-P2 public-boundary and lower-pipeline dependencies; each remains at or below seven elements.
+- Human approval evidence: the parent authorization explicitly required mounting and formalizing `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval` and `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`, and required the seven-element WP-P2 intent-to-implementation handoff with no unresolved adequacy blocker. Per-testcase approval is recorded in `acceptanceApproval.SP-03` and `acceptanceApproval.SP-04`; global handoff approval is recorded in the schema-compliant handoff notes because the repository handoff schema rejects an `approvedByHuman` property.
+
+### Intent mutation and acceptance boundaries
+
+- Added `functionalPoint.SP-03-default-vector-retrieval` and mounted `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval` under `semprod-default-vector-retrieval`, anchored to `tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js`.
+- SP-03 controls the shipped default uninjected MCP path and observes qualified query embedding, persistent Neo4j Vector Index retrieval, independent Element/ArchitectureRelationship/View threshold-all channels, valid zero results, deterministic purpose/ArchiMate closure, endpoint/View/provenance completion, canonical authority/version checks, graph-tidy bypass, external credentials, and prohibition of synthetic empty seeds or silent snapshot fallback.
+- Added `functionalPoint.SP-04-fail-closed-readiness` and mounted `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness` under `semprod-readiness-requirement`, anchored to `tests/explicit/entries/runProductionSemanticReadinessGate.js`.
+- SP-04 controls structural-only SemanticIndexPending, partial, stale, failed, unknown/mismatched, aligned, no-argument, and graph-tidy scenarios. Every non-aligned pure semantic request must reject before retrieval with actionable state/version/channel evidence and `fullSnapshotFallback:false`; only complete three-channel canonical/content/index alignment enables semantic retrieval.
+- Added `semprod-rel-wp2-default`, `semprod-rel-default-query-service`, `semprod-rel-default-seeds`, and `semprod-rel-default-readiness` so WP-P2 realization and the default MCP-to-seed/readiness directions are graph-traversable. The audit correction adds `semprod-rel-default-credentials`, a `Realization` from `semprod-default-vector-retrieval` to existing constraint `grag-credential-boundary`, making external-credentials-only graph-traversable without adding the constraint to implementation scope. Existing `grag-rel-mcp-interface-service`, `grag-rel-native-seeds`, `grag-rel-seeds-closure`, `grag-rel-native-index`, and `semprod-rel-default-index` preserve the remaining pipeline semantics.
+- `semprod-operator-journey-process.testcases` remains empty. `futureAcceptanceBoundary.SP-05` and `futureMountOwner.SP-05` remain unchanged, including the uncreated suggested `tests/explicit/entries/runNewProjectSemanticOperatorJourney.js`; WP-P3 was not started.
+- No `deliveryStatus` attribute was manually created, changed, removed, or inferred.
+
+### Dependency-subgraph coverage matrix
+
+- `semprod-default-vector-retrieval` (focus/new implementation): `functionalPoint.SP-03-default-vector-retrieval` -> mounted and human-approved `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+- `semprod-readiness-requirement` (focus/new implementation): `functionalPoint.SP-04-fail-closed-readiness` -> mounted and human-approved `ExplicitAcceptanceTestcase-SP-04-FailClosedReadiness`.
+- `grag-query-service` (delivered reused boundary): `functionalPoint.DT-01-compatible-reading-boundary` -> `ExplicitAcceptanceTestcase-DT-01`; `functionalPoint.DT-02-no-argument-full-snapshot` -> `ExplicitAcceptanceTestcase-DT-02`; recorded W1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-mcp-interface` (delivered reused boundary): `functionalPoint.TS-00` -> `ExplicitAcceptanceTestcase-TS-00`; recorded W1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-native-retrieval-service` (delivered reused boundary): `functionalPoint.TS-01-native` -> `ExplicitAcceptanceTestcase-TS-01-Native`; recorded W2/W3.1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-seed-retrieval` (delivered reused boundary): `functionalPoint.DT-04-three-channel-seed-discovery` -> `ExplicitAcceptanceTestcase-DT-04`; `functionalPoint.DT-05-threshold-all-correctness` -> `ExplicitAcceptanceTestcase-DT-05`; recorded W4 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-purpose-closure` (delivered reused boundary): `functionalPoint.DT-06-deterministic-mandatory-closure` -> `ExplicitAcceptanceTestcase-DT-06`; `functionalPoint.DT-07-purpose-category-dispatch` -> `ExplicitAcceptanceTestcase-DT-07`; recorded W5 pass evidence and runner-owned `deliveryStatus=delivered`.
+- `grag-semantic-index` is the delivered upstream data boundary: `functionalPoint.DT-16-versioned-vector-baseline` -> `ExplicitAcceptanceTestcase-DT-16-SemanticIndex`; recorded W3/W3.1 pass evidence and runner-owned `deliveryStatus=delivered`.
+- Evidence-backed exclusion: `semprod-wp-persistence-backfill` is sequencing context, not a WP-P2 implementation target. Parent evidence accepts WP-P1 at 40/40 and its five owned boundaries are runner-delivered; this handoff neither reopens nor modifies WP-P1 production persistence/backfill.
+- Evidence-backed exclusion: downstream endpoint/View/provenance elements are reused through the already delivered purpose/structural closure contracts and are observable inside SP-03, but no new implementation scope is assigned outside the seven authorized intent elements.
+- Evidence-backed exclusion: `semprod-wp-operator-release` and `semprod-operator-journey-process` are WP-P3 downstream scope; SP-05 stays unmounted.
+
+### Mutation, validation, and replacement rationale
+
+- First preview failed without writing because the view patch used unsupported `element_ids`/`relationship_ids`, relationship endpoints were missing from affected views, and a proposed ten-element view exceeded the seven-element limit. The corrected layered mutation used schema-approved `included_elements`/`included_relationships`, split delivery concerns across two bounded views, and passed.
+- Successful `argo.previewSystemArchitectureMutation`: 2 element updates, 2 new views, 4 new relationships, and 1 view update; counts `61 elements / 79 relationships / 31 views` -> `61 / 83 / 33`; `written=false`; errors empty.
+- `argo.applySystemArchitectureMutation` passed and wrote the same mutation; counts changed to `61 / 83 / 33`; errors empty.
+- Canonical graph validation passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Post-write structural Neo4j synchronization failed exactly `neo4jUri is required for start`. This is environment evidence, not a production composition verdict. No structural-sync success is claimed or fabricated, and fail-closed behavior was not weakened.
+- The mutation response separately reported an automatic embedding lifecycle `alignmentState=Aligned` for its touched records and a failure matrix with pure semantic rejection plus `fullSnapshotFallback:false`; this does not substitute for the failed full structural Neo4j synchronization or for future SP-03/SP-04 implementation acceptance.
+- Replacement rationale: `.argo/temp/IntentToImplementationHandoff.json` previously held the accepted WP-P1 five-element handoff. WP-P2 is the explicitly authorized next sequential package after WP-P1 delivery, so the temp slot is intentionally superseded with the seven-element WP-P2 handoff while preserving the WP-P1 governance record here and in its accepted commits. The replacement does not revise or invalidate WP-P1.
+- `.argo/temp/IntentToImplementationHandoff.json` now contains exactly the seven authorized WP-P2 intent elements, twelve relevant relationship ids, the full coverage proof, explicit WP-P1 replacement rationale, global approval note, and `openQuestions: []`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0 and stdout `Stage handoff validation passed for: intent-to-implementation`.
+- Final `argo.validateSystemArchitecture` passed with exitCode 0 and stdout `SystemArchitecture validation passed for: design/KG/SystemArchitecture.json`.
+- Checklist self-audit: A1-A5 satisfied by authoritative MCP persistence, complete functional points/relationships, and three viewpoint-bound views; B1-B3 satisfied by same-element mounted SP-03/SP-04 cases and explicit approval attributes; C1-C2 satisfied by the seven-element matrix, delivered reused boundaries, delivered semantic-index prerequisite, and evidence-backed WP-P1/WP-P3 exclusions; D1-D8 satisfied with requirement sources, complete observability, per-case approval, schema-compliant global approval, and no open questions; E1-E3 satisfied by the complete validated handoff and approval note; F1 is this record and F2 is completed by the following stage commit.
+- Mounted-boundary audit correction: the first correction preview failed without writing because removing `semprod-bootstrap-capability` and `semprod-rel-capability-goal` from their only view would orphan them. The corrected preview preserved both in `semprod-requirements-realization`, passed with 2 parent-element updates, 3 view updates, and 1 new relationship, and changed counts from `61/83/33` to `61/84/33`.
+- Parent navigation correction: `1210.subdiagram_views` now registers `semprod-requirements-realization`; `1211.subdiagram_views` now registers `semprod-wp2-default-retrieval-readiness` and `semprod-wp2-vector-seed-closure`, matching all three view parent IDs.
+- Purpose correction: each affected view now declares exactly one primary purpose in the required description binding—`designing` for the Requirements Realization view and `deciding` for both Implementation and Migration views.
+- Credential correction: `semprod-rel-default-credentials` appears in all three corrected views and in the intent handoff relationship IDs. `grag-credential-boundary` remains an existing delivered-context constraint and does not broaden the seven implementation targets.
+- Correction apply passed with errors empty. Structural Neo4j synchronization again failed exactly `neo4jUri is required for start`; no synchronization success is claimed. Automatic touched-record embedding lifecycle evidence remains separate and is not substituted for structural sync or SP-03/SP-04 acceptance.
+- Post-correction `argo.validateSystemArchitecture` passed with exitCode 0, and `argo.validateStageHandoff(stage="intent-to-implementation")` passed with exitCode 0.
+- Correction checklist self-audit: A1-A5 remain satisfied with parent navigation now consistent, one primary purpose per affected view, and credential realization traceability; B1-B3 and C1-C2 are unchanged; D1-D8 and E1-E3 remain satisfied with twelve relationship ids and no open questions; F1 is this corrected record and F2 requires the new non-amended correction commit.
+- No runner-owned `deliveryStatus` attribute was manually created, changed, removed, or inferred by this correction.
+- Open business questions and adequacy blockers: none.
+
 ## 2026-07-24 — Compatible Contract And Query Entry Boundary
 
 - Selected viewpoint: Application Usage Viewpoint.
@@ -320,6 +794,34 @@
 - Checklist self-audit: A1-A5 satisfied with no View mutation required; B1-B3 satisfied because no ExplicitAcceptanceTestcase was added or modified and both mounted testcase mappings are same-element; C1-C2 scoped to the single focus element with delivered upstream context and explicit exclusion of closure; D1-D8 satisfied through exact element mapping, same-element coverage, graph attributes, and schema-compliant global approval notes; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires the Intent Design stage commit.
 - Open business questions and adequacy blockers: none.
 
+## 2026-07-26 — W7 Phase 1 Business Acceptance Gate
+
+- Selected viewpoints: Application Usage Viewpoint for business-observable retrieval acceptance context, and Implementation and Migration Viewpoint for W7 sequencing, final delivery gating, and quality/capacity acceptance.
+- Stakeholder concern: acceptors, requirements owners, implementation designers, and downstream orchestrators need business benchmark evidence to prove recall and closure before whole Graph RAG delivery is allowed.
+- Modeling purpose: deciding and intent-to-implementation handoff preparation.
+- Affected view bindings: `grag-quality-capacity` remains an Implementation and Migration Viewpoint instance because it defines W7 business release evidence and keeps DT-19 capacity choices out of Phase 1 correctness; `grag-seven-wave-gates` remains an Implementation and Migration Viewpoint instance because it traces prerequisite waves and W7 quality acceptance to final delivery blocking semantics.
+- Human approval evidence: the orchestrating W7 request explicitly approved Phase 1 business acceptance, the release gates of key seed recall 100%, closure correctness 100%, unrelated-query zero forced hits, recorded precision, acceptance mapping DT-00/DT-18/TS-08, handoff production, and an IntentDesign stage commit. The handoff schema does not permit an `approvedByHuman` field, so global approval is recorded in handoff notes and schema-compliant `acceptanceApproval.*` element attributes.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved and not fabricated by Intent Design.
+
+### Coverage matrix
+
+- `grag-quality-gate` — `functionalPoint.DT-18-phase1-business-quality-gate` -> `ExplicitAcceptanceTestcase-DT-18`.
+- `grag-seven-wave-delivery` — `functionalPoint.TS-08` -> `ExplicitAcceptanceTestcase-TS-08`.
+
+### Acceptance boundaries
+
+- DT-18 requires the approved five-purpose business benchmark to prove key seed recall is exactly 100%, expected closure correctness is exactly 100%, forbidden unrelated queries produce zero forced hits, and precision is recorded as evidence for later governance rather than used as a release substitute for recall.
+- TS-08 requires W7 and whole delivery to remain blocked until W2-W6 are accepted and the W7 DT-18 business benchmark passes.
+- DT-00 remains the coherent canonical-reading goal context through `grag-goal` and existing coherent-result evidence. `grag-capability` remains capability context for W7, not a separate downstream implementation target in this handoff.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for five element updates and two View description updates; element count 47, relationship count 59, view count 27 unchanged.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read updated `grag-quality-gate` and `grag-seven-wave-delivery` context with implementation-design profile.
+- Open business questions and adequacy blockers: none.
+
 ## 2026-07-25 — W5 Deterministic Five-Purpose Closure
 
 - Selected viewpoint: Application Usage Viewpoint.
@@ -363,3 +865,173 @@
 - `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json` after removing a stale W4 JSON object that had remained after file overwrite.
 - Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound views; B1-B3 satisfied with same-element mounted DT-06 through DT-12 testcases and schema-compliant approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W4 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
 - Open business questions and adequacy blockers: none.
+
+## 2026-07-25 — W6 Structural Closure And Explainable Results
+
+- Selected viewpoint: Application Usage Viewpoint.
+- Stakeholder concern: application architects, implementation designers, coding repair owners, auditors, and consuming Agents need Graph RAG results whose relationships, Views, and object-level inclusion reasons can be understood and traced without implicit graph chasing.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-integrity-explainability` remains an Application Usage Viewpoint instance because it shows how query-service application behavior turns the W5-selected range into consumer-readable context through endpoint closure, complete non-cascading View closure, single first-inclusion provenance, and coherent outcome evidence. The view explicitly excludes W7 quality scoring and capacity decisions.
+- Superseded approval note: the human partner later clarified that the W6 ExplicitAcceptanceTestcase boundaries in this section were not approved because the mounted physical boundaries were weaker than the stated intent. See the 2026-07-25 repair section below for the approved repaired DT-00/DT-13/DT-14/DT-15 boundaries.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved. Intent Design did not create, change, remove, or infer `deliveryStatus`.
+
+### Coverage matrix
+
+- `grag-endpoint-closure` — `functionalPoint.DT-13-endpoint-closure` -> `ExplicitAcceptanceTestcase-DT-13`.
+- `grag-view-closure` — `functionalPoint.DT-14-complete-view-closure` -> `ExplicitAcceptanceTestcase-DT-14`.
+- `grag-provenance` — `functionalPoint.DT-15-first-inclusion-provenance` -> `ExplicitAcceptanceTestcase-DT-15`.
+- `grag-coherent-context` is the observable outcome realized by the three same-element acceptance boundaries above; it is not listed as a separate implementation target because its DT-13/14/15 evidence is mounted on the exact implementation functions.
+
+### Acceptance boundaries
+
+- DT-13 requires every returned ArchitectureRelationship to include both canonical endpoint Elements from the same graph version, even when endpoints are not semantic matches or purpose-policy matches. Missing, deleted, or invalid endpoint references must be reported as structural errors rather than hidden behind partial relationship output.
+- DT-14 requires every matched View to return complete metadata, included element ids, included relationship ids, member Elements, member ArchitectureRelationships, and endpoints for those relationships. Shared members must not cascade to overlapping Views unless those Views independently satisfy the query selection.
+- DT-15 requires exactly one stable `firstInclusionReason` for every returned object, ordered across semantic seed, relationship endpoint closure, purpose-policy closure, and complete-View closure. Later matches may be supplementary only and must not overwrite the first reason.
+
+### Dependency-scope decisions
+
+- Handoff scope is the three implementation functions: `grag-endpoint-closure`, `grag-view-closure`, and `grag-provenance`.
+- Context relationships are `grag-rel-purpose-endpoints`, `grag-rel-endpoints-views`, `grag-rel-views-provenance`, `grag-rel-provenance-coherent`, and `grag-rel-w6-coherent-context`.
+- W6 starts after delivered W5 purpose closure. `grag-purpose-closure` carries runner-owned `deliveryStatus=delivered` and `deliveryEvidence.W5`; W6 elements remain `not_delivered` until downstream implementation passes their mounted DT-13, DT-14, and DT-15 entrypoints.
+- W4 seed discovery, W5 purpose-policy selection, graph-tidy full-snapshot bypass, W7 quality scoring, DT-18/DT-19 evidence, and capacity governance remain outside this handoff.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for five W6 element updates, three relationship updates, one new provenance-to-coherent association, and one Application Usage View update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read `grag-endpoint-closure` dependency context with implementation-design profile after mutation.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-13 through DT-15 testcases and schema-compliant approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W5 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
+- Open business questions and adequacy blockers: none.
+
+## 2026-07-25 — W6 Acceptance Boundary Repair
+
+- Selected viewpoint: Application Usage Viewpoint.
+- Stakeholder concern: consuming Agents and acceptors need W6 physical acceptance entrypoints to prove the same boundaries stated in intent: same-version relationship endpoints, complete non-cascading Views, exactly one ordered first-inclusion reason, complete policy/index/version evidence, and no coherent-result delivery while canonical-version evidence is missing.
+- Modeling purpose: audit repair, deciding, and intent-to-implementation handoff preparation.
+- Affected view binding: `grag-integrity-explainability` remains an Application Usage Viewpoint instance because it shows how query-service application behavior turns W5 selected ranges into consumer-readable context with structural integrity, provenance, and traceable version evidence. The repaired view explicitly includes the DT-00 coherent-version regression gate and still excludes W7 quality scoring and capacity decisions.
+- Human feedback: prior W6 testcase boundaries were not approved. DT-13 lacked same canonical version and dangling-endpoint error checks; DT-14 lacked complete metadata/member checks and overlapping-View non-cascade proof; DT-15 lacked exactly-one first reason, supplementary non-overwrite, and full policy/index version evidence; W6 coherent-result delivery needed DT-00 or equivalent canonical-version regression coverage.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved. Intent Design did not create, change, remove, or infer `deliveryStatus`.
+
+### Repaired coverage matrix
+
+- `grag-coherent-context` — `functionalPoint.DT-00-coherent-result-version-regression` -> `ExplicitAcceptanceTestcase-DT-00-W6-CoherentResultRegression`.
+- `grag-endpoint-closure` — repaired `functionalPoint.DT-13-endpoint-closure` -> repaired `ExplicitAcceptanceTestcase-DT-13`.
+- `grag-view-closure` — repaired `functionalPoint.DT-14-complete-view-closure` -> repaired `ExplicitAcceptanceTestcase-DT-14`.
+- `grag-provenance` — repaired `functionalPoint.DT-15-first-inclusion-provenance` -> repaired `ExplicitAcceptanceTestcase-DT-15`.
+
+### Repaired acceptance boundaries
+
+- DT-00-W6 requires semantic evidence to identify the governing canonical graph version. The known `DT00_CANONICAL_VERSION_MISSING` failure blocks W6 coherent-result delivery until resolved.
+- DT-13 requires every returned ArchitectureRelationship to include both source and target Element objects from the same canonical graph version. Missing, deleted, invalid, or cross-version endpoints must produce explicit structural errors rather than partial relationship output.
+- DT-14 requires every matched View to include complete metadata, viewpoint binding, parent viewpoint when present, included element ids, included relationship ids, member Elements, member ArchitectureRelationships, and both endpoints for each relationship. Overlapping Views sharing members must not be returned unless independently matched or explicitly requested.
+- DT-15 requires every returned object to have exactly one ordered `firstInclusionReason`; later matching paths are supplementary only and cannot overwrite it. Declared purpose, selected policy id, policy parameters/anchors, canonical graph version, semantic index/content version, and alignment/index-state evidence must be present.
+
+### Dependency-scope decisions
+
+- Repaired handoff scope is now four target elements: `grag-coherent-context`, `grag-endpoint-closure`, `grag-view-closure`, and `grag-provenance`.
+- Context relationships remain `grag-rel-purpose-endpoints`, `grag-rel-endpoints-views`, `grag-rel-views-provenance`, `grag-rel-provenance-coherent`, and `grag-rel-w6-coherent-context`.
+- W6 remains downstream of delivered W5 purpose closure; W6 elements remain `not_delivered` until downstream implementation passes the repaired DT-00-W6, DT-13, DT-14, and DT-15 entrypoints.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for repaired W6 testcase/functional point updates, coherent-context DT-00 regression gate, W6 work-package repair, provenance-to-coherent relationship update, and Application Usage View repair.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read repaired `grag-coherent-context` dependency context with implementation-design profile after mutation.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-00-W6, DT-13, DT-14, and DT-15 testcases and schema-compliant repair approval attributes; C1-C2 satisfied through explicit same-element coverage mappings and delivered W5 boundary evidence; D1-D8 satisfied with no open questions; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage repair commit.
+- Open business questions and adequacy blockers: none.
+
+## 2026-07-26 — DT-19 W7 Capacity Evidence Handoff
+
+- Selected viewpoint: Implementation and Migration Viewpoint.
+- Stakeholder concern: acceptors, requirements owners, implementation designers, and downstream repair owners need W7 to record phase-1 result cardinality and precision evidence for DT-19 without turning that evidence into a silent capacity policy decision.
+- Modeling purpose: handoff preparation for an ImplementationDesign RED boundary and Coding/Repair round.
+- Affected view binding: `grag-quality-capacity` remains an Implementation and Migration Viewpoint instance because it already frames W7 quality/capacity acceptance and explicitly keeps DT-19 capacity choices out of Phase 1 correctness.
+- Human approval evidence: the orchestrating request explicitly asked to open a DT-19/W7 capacity evidence ImplementationDesign RED boundary and Coding/Repair round. The schema does not permit an `approvedByHuman` field on the handoff JSON, so approval is recorded in handoff notes and as schema-compliant `acceptanceApproval.DT-05-R2-DT-19` on `grag-capacity-residual`.
+- Delivery-status guardrail: existing runner-owned `deliveryStatus` values were preserved and not fabricated by Intent Design.
+
+### Coverage matrix
+
+- `grag-capacity-residual` — `functionalPoint.DT-05-R2-DT-19-capacity-evidence` -> `ExplicitAcceptanceTestcase-DT-05-R2-DT-19`.
+
+### Acceptance and dependency boundaries
+
+- DT-19 capacity evidence records phase-1 result cardinality and measured precision by declared purpose.
+- DT-19 remains a deferred residual assessment. This handoff does not authorize token budgets, pagination, caps, top-k, truncation, or continuation semantics.
+- `grag-quality-gate` is the delivered upstream context that influences DT-19 through `grag-rel-quality-capacity`; W7 sequencing remains represented by `grag-rel-w6-w7` and `grag-rel-w7-quality`.
+
+### Validation and open risks
+
+- `argo.previewSystemArchitectureMutation`: passed for one `grag-capacity-residual` element update.
+- `argo.applySystemArchitectureMutation`: passed; Neo4j synchronized to 47 elements, 59 relationships, and 27 views.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: read updated `grag-capacity-residual` context with implementation-design profile.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph mutation and existing viewpoint-bound view; B1-B3 satisfied with same-element mounted DT-19 testcase and schema-compliant approval attribute; C1-C2 satisfied through explicit same-element coverage mapping and delivered W7 quality context; D1-D8 satisfied with no open questions and schema-compliant global approval note; E1-E3 satisfied subject to schema limitation on `approvedByHuman`; F1 recorded here and F2 requires this IntentDesign stage commit.
+- Open business questions and adequacy blockers: none.
+
+## 2026-07-28 — BP MCP Semantic Query Contract WP-1..WP-4
+
+- Selected viewpoints: Application Usage Viewpoint for runtime `getSystemArchitecture` request, payload, Relationship endpoint closure, and View membership closure semantics; Implementation and Migration Viewpoint for WP-1 through WP-4 delivery sequence and implementation-impact views.
+- Stakeholder concern: agent-facing ARGO MCP semantic architecture reads must expose only canonical intent architecture full snapshots or structurally closed canonical object subsets, while rejecting public debug/evidence/response-shape controls.
+- Modeling purpose: deciding and intent-to-implementation handoff preparation.
+- Affected view bindings: existing Application Usage views continue to frame semantic request and closure behavior under `CapabilityRealizationViewpoint`; new/updated `bp-mcp-sem-delivery-sequence`, `bp-mcp-sem-delivery-impact-query`, and `bp-mcp-sem-delivery-impact-closure` are Implementation and Migration Viewpoint instances under `AcceptanceDeliveryViewpoint`.
+- Delivery-status guardrail: pre-existing runner-owned delivered statuses were read only. Agent-authored `deliveryStatus=planned` attributes on the four new Work Package elements were removed through `argo.applySystemArchitectureMutation`.
+
+### Coverage matrix
+
+- `grag-mode-validation` — `functionalPoint.BP-MCP-SEM-REQ` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-REQ` at `tests/explicit/entries/runMcpSemanticQueryContract.js#reject-response-shape-controls`.
+- `grag-query-service` — `functionalPoint.BP-MCP-SEM-COMPAT` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-COMPAT` at `#preserve-full-snapshot-read-modes`; `functionalPoint.BP-MCP-SEM-PAYLOAD` and `functionalPoint.BP-MCP-SEM-FIELDS` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-PAYLOAD` at `#canonical-object-subset-only`; `functionalPoint.BP-MCP-SEM-ELEMENT` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-ELEMENT` at `#element-hit-no-neighbor-expansion`.
+- `grag-canonical-graph` — reused delivered canonical authority boundary with existing mounted canonical graph acceptance testcases; WP-2 depends on it for full-snapshot authority and deep-equal canonical object identity.
+- `grag-endpoint-closure` — `functionalPoint.BP-MCP-SEM-REL` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-REL` at `#relationship-endpoint-closure`; `functionalPoint.BP-MCP-SEM-BROKEN-REL` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-REL` at `#broken-relationship-endpoint-rejection`.
+- `grag-view-closure` — `functionalPoint.BP-MCP-SEM-VIEW` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-VIEW` at `#view-membership-closure`; `functionalPoint.BP-MCP-SEM-NOCASCADE` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-NOCASCADE` at `#no-overlapping-view-cascade`; `functionalPoint.BP-MCP-SEM-BROKEN-VIEW` -> `ExplicitAcceptanceTestcase-BP-MCP-SEM-BROKEN-VIEW` at `#broken-view-reference-rejection`.
+
+### Validation and open risks
+
+- `argo.getIntentElementContext`: read implementation-design dependency context for `grag-query-service`, `grag-endpoint-closure`, and `grag-view-closure`. The initial semantic `argo.getSystemArchitecture` query failed with `EXTERNAL_CREDENTIALS_REQUIRED`; focused graph context reads succeeded.
+- `argo.previewSystemArchitectureMutation`: passed for four Work Package attribute repairs and the broken Relationship endpoint testcase anchor repair; `written=false`, `errors=[]`, counts 65 elements / 95 relationships / 37 views.
+- `argo.applySystemArchitectureMutation`: passed and wrote the repair set; Neo4j sync passed with counts 65 elements / 95 relationships / 37 views. Embedding lifecycle remained failed with missing Element, ArchitectureRelationship, and View channels, so no semantic-index readiness proof is claimed.
+- `argo.validateSystemArchitecture`: passed for `design/KG/SystemArchitecture.json`.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 satisfied by persisted/validated graph and viewpoint-bound views; B1-B2 satisfied by same-element mounted testcase mappings above; B3/D7 require parent acceptance of newly mounted BP-MCP-SEM boundaries before downstream dispatch; C1-C2 recorded through dependency contexts and delivered reused boundaries; D8/E3 remain an orchestration gate because the handoff schema has no `approvedByHuman` field; E1-E2 satisfied; F1 recorded here and F2 requires the IntentDesign stage commit.
+- Open business questions: none. Dispatch blocker: parent/global approval is still required before ImplementationDesign consumes the handoff.
+
+## 2026-07-28 — WP5 Documentation Link and Fact Verification Handoff
+
+- Selected viewpoint: Implementation and Migration Viewpoint for WP5 delivery closure, with existing Requirements Realization views carrying fact-source priority and root-contract truthfulness.
+- Stakeholder concern: business acceptors and downstream ImplementationDesign need final verification of the refreshed documentation system after WP1-WP4 without redefining DOC-01 through DOC-04 or inventing repository authorities.
+- Modeling purpose: intent-to-implementation handoff preparation.
+- Graph mutation decision: no mutation required. Existing graph scope already contains `docsys-wp-link-fact-verification`, `docsys-fact-source-priority-requirement`, `docsys-root-contract-gap`, `docsys-business-acceptance-requirement`, DOC-01 through DOC-04 mounted acceptance semantics, and the WP4 -> WP5 -> ready plateau relationships.
+- Root-contract evidence: superseded by the corrective iteration below. This stage initially treated the root contract as absent based on parent evidence, but later repository evidence confirmed `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists.
+- Global approval evidence: parent orchestrator authorized WP5 human approval gates and necessary stage commits. The handoff schema has no `approvedByHuman` field, so approval is recorded in `.argo/temp/IntentToImplementationHandoff.json` notes.
+
+### Coverage matrix
+
+- `docsys-root-readme-entry` — root README adoption-router boundary -> `ExplicitAcceptanceTestcase-DOC-01` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router`.
+- `docsys-contributor-governance-entry` — contributor safe-change governance-router boundary -> `ExplicitAcceptanceTestcase-DOC-02` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-02-contributor-governance-router`.
+- `docsys-stable-design-reference` — deep MCP/validator/design routing without root README overload -> `ExplicitAcceptanceTestcase-DOC-03` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-03-stable-design-reference-routing`.
+- `docsys-content-boundary-requirement` — stable design/domain/marketing/notes placement boundary -> `ExplicitAcceptanceTestcase-DOC-04` at `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-04-content-boundary-placement`.
+
+### Handoff boundary
+
+- ImplementationDesign scope: verify `README.md`, `CONTRIBUTING.md`, `design/README.md`, and stable design references they route to for link correctness, fact-source routing, root-contract truthfulness, and DOC-01 through DOC-04 acceptance semantics.
+- Validator repair: initial handoff validation rejected context-only ids (`docsys-wp-link-fact-verification`, `docsys-fact-source-priority-requirement`, `docsys-root-contract-gap`, `docsys-business-acceptance-requirement`, `docsys-doc-refresh-ready-plateau`, `docsys-wp-design-navigation`, `docsys-documentation-router-service`) because they do not have same-element mounted Acceptance Tests. The validated handoff narrows `intentElementIds` to the four DOC-owned tested elements and keeps WP5/fact-priority/root-contract semantics as contextual notes.
+- `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- IntentDesign does not authorize code, explicit testcase, implementation contract, or documentation implementation edits in this stage.
+- Open business questions and adequacy blockers: none.
+
+### Corrective iteration
+
+- Corrective parent evidence: `D:\Projects\Argo\OVERALL_ARCHITECTURE.md` exists and was readable; a direct read in this stage confirms it is the root implementation architecture contract.
+- Repaired WP5 constraint: ImplementationDesign should verify documentation routes to existing authoritative sources truthfully, including `OVERALL_ARCHITECTURE.md` where appropriate, and does not invent absent authorities.
+- Graph mutation decision remains unchanged: no mutation required. Existing intent semantics already cover fact-source truthfulness; only the handoff wording and stage memory needed correction.
+
+## 2026-07-29 — BP-AUTOALIGN Pressure Repair Final Intent Audit
+
+- Audit result: PASS for accepted BP-AUTOALIGN intent, subject to the operational restart blocker on the already-running Cursor ARGO MCP server. The repair preserves canonical content for embedding while stripping nested `content` before Neo4j projection upsert, so write-side lifecycle can reach Aligned instead of failing on non-primitive Neo4j node properties.
+- Evidence reviewed: `design/KG/SystemArchitecture.json` contains BP-AUTOALIGN write completion, query auto-alignment, Agent-unaware lifecycle ownership, stable diagnostics, and rejected silent full-snapshot fallback semantics with mounted explicit acceptance cases; `.argo/temp/ImplementationToCodingHandoff.json`, `tests/ARCHITECTURE.md`, and `design/persistant-memory/implementation-design.md` record the updated support regressions and out-of-scope SP-03-only runner gap.
+- Evidence run in this audit: `node tests/supporting/bp-autoalign-incremental-record-primitive-properties.test.js` passed; `npm run validate:system-architecture` passed; `argo.validateStageHandoff(stage="implementation-to-coding")` passed.
+- Parent return condition: FastOrchestrator may return the repair as intent-satisfied, but must restart the current long-lived ARGO MCP server before repeating real `CallMcpTool updateArchitectureElement` pressure because the observed old Failed lifecycle is consistent with stale Node module cache rather than current code.

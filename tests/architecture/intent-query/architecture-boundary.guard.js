@@ -7,6 +7,8 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 // GIVEN the stable gateway and intent-query runtime boundaries
 const gatewaySource = read('.argo/scripts/argo-mcp-server.js');
 const queryBoundarySource = read('.argo/scripts/systemarchitecture-mcp-server.js');
+const rootContract = read('OVERALL_ARCHITECTURE.md');
+const graphRagContract = read('.argo/scripts/graph-rag/ARCHITECTURE.md');
 
 // WHEN their public ownership is inspected
 // THEN the gateway delegates and the query module owns getSystemArchitecture
@@ -17,6 +19,43 @@ assert(
 assert(
   queryBoundarySource.includes("if (name === 'getSystemArchitecture')"),
   'ARCHITECTURE_BOUNDARY_GUARD: intent-query module must own getSystemArchitecture behavior',
+);
+assert(
+  rootContract.includes('W5 deterministic purpose closure')
+    && rootContract.includes('closePurposePolicyScope(request)'),
+  'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W5 purpose-closure boundary',
+);
+assert(
+  rootContract.includes('W6 structural closure')
+    && rootContract.includes('same-version endpoint Elements')
+    && rootContract.includes('first-inclusion reason'),
+  'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W6 coherent-result boundary',
+);
+assert(
+  graphRagContract.includes('named parameterized Cypher policies')
+    && graphRagContract.includes('Free-generated Cypher')
+    && graphRagContract.includes('DT-06 through DT-12')
+    && graphRagContract.includes('graph-tidy complete-snapshot bypass'),
+  'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W5 deterministic closure semantics',
+);
+assert(
+  graphRagContract.includes('W6 structural result completion')
+    && graphRagContract.includes('explicitly targeted View')
+    && graphRagContract.includes('exclude named overlapping Views')
+    && graphRagContract.includes('policy/index/version evidence'),
+  'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W6 structural result semantics',
+);
+assert(
+  rootContract.includes('W7 business acceptance')
+    && rootContract.includes('100% key seed recall')
+    && rootContract.includes('recorded precision'),
+  'ARCHITECTURE_BOUNDARY_GUARD: root contract must declare the W7 business acceptance gate',
+);
+assert(
+  graphRagContract.includes('evaluatePhase1QualityBenchmark(request)')
+    && graphRagContract.includes('evaluateDeliverySequence(request)')
+    && graphRagContract.includes('W7 quality evidence depends on W4 seed recall'),
+  'ARCHITECTURE_BOUNDARY_GUARD: local Graph RAG contract must protect W7 quality and delivery gates',
 );
 
 function read(relativePath) {

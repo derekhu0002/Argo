@@ -3,12 +3,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const graph = JSON.parse(read('design/KG/SystemArchitecture.json'));
+const testContract = read('tests/ARCHITECTURE.md');
 const entryRequirements = new Map([
   ['tests/explicit/entries/runProductionGraphRagRuntime.js', [
     'productionGraphRagHarness.js',
+    'inspectHarnessEnvironmentInitialization',
     'TS01_NODE_RUNTIME_REQUIRED',
     'TS01_PYTHON_SIDECAR_PROHIBITED',
     'TS01_GENAI_PLUGIN_DEPENDENCY_PROHIBITED',
+    'TS01_HARNESS_ENV_FILE_LOADER_MISSING',
+    'TS01_HARNESS_ENV_PATH_BOUNDARY_MISSING',
+    'TS01_HARNESS_ENV_PROCESS_PRECEDENCE_MISSING',
+    'TS01_HARNESS_ENV_SECRET_DIAGNOSTIC',
   ]],
   ['tests/explicit/entries/runNeo4jNativeRetrievalPlatform.js', [
     'productionGraphRagHarness.js',
@@ -36,6 +43,12 @@ const entryRequirements = new Map([
     'TS07_HARDCODED_CREDENTIAL_DEFAULT',
     'TS07_CREDENTIAL_FALLBACK_EXPRESSION',
     'TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION',
+    'evaluateNeo4jProjectionEnvironmentScenarios',
+    'TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED',
+    'TS07_CANONICAL_NEO4J_ENV_NORMALIZATION',
+    'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS',
+    'assertBlocked(neo4jEnvironment.legacyOnly',
+    'assertBlocked(neo4jEnvironment.canonicalWithLegacyConflict',
   ]],
   ['tests/explicit/entries/runCanonicalGraphFullSnapshot.js', [
     'intentArchitectureQueryHarness.js',
@@ -49,7 +62,59 @@ const entryRequirements = new Map([
   ['tests/explicit/entries/runSevenWaveDeliveryGates.js', [
     'productionGraphRagHarness.js',
     'DELIVERY_PREREQUISITES_INCOMPLETE',
+    'W7_QUALITY_BENCHMARK_REQUIRED',
     'TS08_OUT_OF_ORDER_DELIVERY_NOT_BLOCKED',
+    'TS08_WHOLE_DELIVERY_WITHOUT_W7_QUALITY',
+    'TS08_PRECISION_OUT_OF_RANGE_ACCEPTED',
+    'TS08_ORDERED_DELIVERY_NOT_ALLOWED',
+  ]],
+  ['tests/explicit/entries/runRetrievalQualityBenchmark.js', [
+    'productionGraphRagHarness.js',
+    'phase1BusinessBenchmarkFixture',
+    'DT18_PHASE1_QUALITY_BENCHMARK_BOUNDARY_MISSING',
+    'DT18_FIVE_PURPOSE_BENCHMARK_INCOMPLETE',
+    'DT18_KEY_SEED_RECALL_NOT_100_PERCENT',
+    'DT18_CLOSURE_CORRECTNESS_NOT_100_PERCENT',
+    'DT18_UNRELATED_FORCED_HITS',
+    'DT18_PRECISION_NOT_RECORDED',
+    'DT18_INVENTED_PRECISION_THRESHOLD',
+    'DT18_ACTUAL_RECALL_EVIDENCE_MISSING',
+    'DT18_ACTUAL_CLOSURE_EVIDENCE_MISSING',
+    'DT18_BENCHMARK_EMPTY',
+    'DT18_BENCHMARK_INCOMPLETE',
+    'DT18_PRECISION_OUT_OF_RANGE',
+    'DT18_MANDATORY_KEY_SEEDS_MISSING',
+    'DT18_EXPECTED_CLOSURE_EVIDENCE_MISSING',
+    'DT18_UNRELATED_FORCED_HITS_EVIDENCE_MISSING',
+    'DT18_UNRELATED_FORCED_HITS_NEGATIVE',
+    'wrong-seed-with-matching-count',
+    'wrong-closure-with-matching-count',
+    'unrelatedForcedHits: 1',
+  ]],
+  ['tests/explicit/entries/runCapacityEvidence.js', [
+    'productionGraphRagHarness.js',
+    'evaluateCapacityEvidence',
+    'evaluatePhase1QualityBenchmark',
+    'phase1BusinessBenchmarkFixture',
+    'qualityOutcome.qualityEvidence',
+    'failureCategory',
+    'cloneBenchmark',
+    'observedResultIds',
+    'DT18_RESULT_EVIDENCE_REQUIRED',
+    'DT18_MISSING_RESULT_EVIDENCE_ACCEPTED',
+    'DT18_RESULT_CARDINALITY_MISMATCH',
+    'DT18_RESULT_CARDINALITY_MISMATCH_ACCEPTED',
+    'DT19_CAPACITY_EVIDENCE_BOUNDARY_MISSING',
+    'DT19_CAPACITY_EVIDENCE_MISSING',
+    'DT19_DECLARED_PURPOSE_EVIDENCE_INCOMPLETE',
+    'DT19_QUALITY_EVIDENCE_REQUIRED',
+    'DT19_MISSING_QUALITY_EVIDENCE_ACCEPTED',
+    'DT19_RESULT_CARDINALITY_NOT_RECORDED',
+    'DT19_MEASURED_PRECISION_NOT_RECORDED',
+    'DT19_CAPACITY_POLICY_DECISION_FORBIDDEN',
+    "'topK'",
+    "'tokenBudget'",
+    "'resultLimit'",
   ]],
   ['tests/explicit/entries/runEmbeddingProviderAdapterLifecycle.js', [
     'productionGraphRagHarness.js',
@@ -79,6 +144,15 @@ const entryRequirements = new Map([
     'W31_FAILURE_MUST_NOT_ALIGN',
     'W31_UNALIGNED_QUERY_NOT_REJECTED',
     'W31_SECRET_LEAK',
+  ]],
+  ['tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js', [
+    'liveEmbeddingProviderHarness.js',
+    'runLiveProviderSecretIsolation',
+    'TS07_PROVIDER_LEGACY_NEO4J_ALIAS_FIXTURE_MISSING',
+    'TS07_PROVIDER_SOURCE_STATUS',
+    'TS07_PROVIDER_SOURCE_CATEGORY',
+    'TS07_PROVIDER_NEO4J_AUTH_ARGUMENTS_REQUIRED',
+    'TS07_PROVIDER_NEO4J_AUTH_UNIFIED_CHANNEL_LEAK',
   ]],
   ['tests/explicit/entries/runIndependentSemanticSeeds.js', [
     'intentArchitectureQueryHarness.js',
@@ -126,20 +200,25 @@ for (const [entryPath, requiredObservations] of entryRequirements) {
   }
 }
 
-const handoff = JSON.parse(read('.argo/temp/ImplementationToCodingHandoff.json'));
+const mountedEntryPaths = new Set(
+  (graph.elements || [])
+    .flatMap(element => element.testcases || [])
+    .map(testcase => testcase.acceptanceCriteria)
+    .filter(Boolean),
+);
 for (const entryPath of entryRequirements.keys()) {
   assert(
-    handoff.frozenFiles.includes(entryPath),
-    `PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: ${entryPath} must be frozen`,
+    mountedEntryPaths.has(entryPath) && testContract.includes(entryPath),
+    `PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: ${entryPath} lacks persistent mounted contract evidence`,
   );
 }
 assert(
-  handoff.frozenFiles.includes('tests/harness/productionGraphRagHarness.js'),
-  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: production Harness must be frozen',
+  testContract.includes('tests/harness/productionGraphRagHarness.js'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: production Harness lacks persistent test contract evidence',
 );
 assert(
-  handoff.frozenFiles.includes('tests/harness/liveEmbeddingProviderHarness.js'),
-  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness must be frozen',
+  testContract.includes('tests/harness/liveEmbeddingProviderHarness.js'),
+  'PRODUCTION_GRAPH_RAG_EXPLICIT_ENTRYPOINT_GUARD: live Harness lacks persistent test contract evidence',
 );
 
 const liveHarness = read('tests/harness/liveEmbeddingProviderHarness.js');

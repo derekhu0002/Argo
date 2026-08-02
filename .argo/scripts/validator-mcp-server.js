@@ -66,7 +66,7 @@ const TOOLS = [
   },
   {
     name: 'runArchitectureTests',
-    description: 'Execute explicit architecture testcases from the intent graph and refresh design/KG/test-failure-records.json.',
+    description: 'Execute explicit architecture testcases from the intent graph and refresh design/KG/test-failure-records.json. This MCP call can exceed client timeouts; if it times out, run the same test runner directly with: node .argo/scripts/runArchitectureTests.js',
     inputSchema: {
       type: 'object',
       properties: {

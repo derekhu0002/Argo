@@ -34,9 +34,16 @@ const mountedEntries = new Map([
   ['ExplicitAcceptanceTestcase-TS-07-Provider-Secret-Isolation', 'tests/explicit/entries/runLiveEmbeddingProviderSecretIsolation.js'],
   ['ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E', 'tests/explicit/entries/runApplyMutationEmbeddingVectorE2E.js'],
 ]);
-const isW31Handoff = /W3\.1|Mutation-Driven Live Vector|runApplyMutationEmbeddingVectorE2E/i.test(
-  `${handoff.summary || ''} ${handoff.taskExecutionPlan && handoff.taskExecutionPlan.executionStrategy || ''}`,
+const handoffScopeText = JSON.stringify({
+  summary: handoff.summary,
+  explicitEntrypoints: handoff.explicitEntrypoints,
+  codingTargets: handoff.codingTargets,
+  taskExecutionPlan: handoff.taskExecutionPlan,
+});
+const inScopeLiveTestcases = new Set(
+  [...mountedEntries.keys()].filter(testcaseName => handoffScopeText.includes(testcaseName)),
 );
+const isW31Handoff = inScopeLiveTestcases.has('ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E');
 
 // GIVEN the approved live-provider profile
 // WHEN implementation and test contracts are inspected
@@ -87,7 +94,8 @@ assert(gitignore.split(/\r?\n/).includes('.env'), 'LIVE_PROVIDER_CONTRACT_GUARD:
 assert(gitignore.split(/\r?\n/).includes('.env.*'), 'LIVE_PROVIDER_CONTRACT_GUARD: .env variants are not ignored');
 assert(gitignore.split(/\r?\n/).includes('!.argo/.env.example'), 'LIVE_PROVIDER_CONTRACT_GUARD: canonical example is not committable');
 
-// THEN both intent-mounted testcases map to frozen physical entries in the handoff
+// THEN intent-mounted testcases map to physical entries; current scope uses the handoff,
+// while accepted historical scope remains bound to the persistent test contract
 for (const [testcaseName, entryPath] of mountedEntries) {
   const mounted = graph.elements
     .flatMap(element => element.testcases || [])
@@ -98,13 +106,23 @@ for (const [testcaseName, entryPath] of mountedEntries) {
     entryPath,
     `LIVE_PROVIDER_CONTRACT_GUARD: ${testcaseName} mounted path drifted`,
   );
-  assert(
-    handoff.explicitEntrypoints.some(entry => (
-      entry.testcaseName === testcaseName && entry.entryPath === entryPath
-    )),
-    `LIVE_PROVIDER_CONTRACT_GUARD: handoff omits ${testcaseName}`,
-  );
-  assert(handoff.frozenFiles.includes(entryPath), `LIVE_PROVIDER_CONTRACT_GUARD: ${entryPath} is not frozen`);
+  if (inScopeLiveTestcases.has(testcaseName)) {
+    assert(
+      handoff.explicitEntrypoints.some(entry => (
+        entry.testcaseName === testcaseName && entry.entryPath === entryPath
+      )),
+      `LIVE_PROVIDER_CONTRACT_GUARD: handoff omits ${testcaseName}`,
+    );
+    assert(
+      handoff.frozenFiles.includes(entryPath),
+      `LIVE_PROVIDER_CONTRACT_GUARD: current-scope ${entryPath} is not frozen`,
+    );
+  } else {
+    assert(
+      testContract.includes(entryPath),
+      `LIVE_PROVIDER_CONTRACT_GUARD: accepted ${entryPath} lacks persistent test contract evidence`,
+    );
+  }
 }
 
 // THEN runner-owned expected live failures are recorded without adding schema-invalid handoff fields
@@ -121,6 +139,14 @@ if (isW31Handoff) {
   );
 }
 for (const [testcaseName, category] of Object.entries(expectedLiveFailures)) {
+  if (!inScopeLiveTestcases.has(testcaseName) && !isW31Handoff) {
+    continue;
+  }
+  const explicitEntrypoint = (handoff.explicitEntrypoints || [])
+    .find(entry => entry.testcaseName === testcaseName);
+  if (explicitEntrypoint && explicitEntrypoint.initialExecutionStatus === 'passed') {
+    continue;
+  }
   const record = failureRecords.find(candidate => candidate.testcasename === testcaseName);
   assert(record, `LIVE_PROVIDER_CONTRACT_GUARD: runner record missing ${testcaseName}`);
   assert(

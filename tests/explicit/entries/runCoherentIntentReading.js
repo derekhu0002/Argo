@@ -1,5 +1,6 @@
 const assert = require('node:assert');
 const {
+  assertCoherentW6VersionEvidence,
   observeReturnedGraph,
   readAsUnchangedConsumer,
   readForPurpose,
@@ -13,19 +14,12 @@ async function main() {
   const semanticResult = await readForPurpose({
     purpose: 'implementation-design',
     intent: 'Read coherent intent context',
+    anchors: ['grag-purpose-closure'],
   });
 
   // THEN legacy remains complete and semantic evidence identifies its purpose and version
   assert(observeReturnedGraph(legacyResult), 'DT00_LEGACY_GRAPH_MISSING: legacy reading must return canonical data');
-  assert.strictEqual(
-    semanticResult.query && semanticResult.query.purpose,
-    'implementation-design',
-    'DT00_QUERY_PURPOSE_MISSING: semantic evidence must preserve explicit purpose',
-  );
-  assert(
-    semanticResult.query && semanticResult.query.canonicalVersion,
-    'DT00_CANONICAL_VERSION_MISSING: semantic evidence must identify the governing canonical version',
-  );
+  assertCoherentW6VersionEvidence(legacyResult, semanticResult);
 }
 
 main().catch(error => {

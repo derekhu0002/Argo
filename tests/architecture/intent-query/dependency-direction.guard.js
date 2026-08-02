@@ -6,6 +6,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const runtimePaths = [
   '.argo/scripts/argo-mcp-server.js',
   '.argo/scripts/systemarchitecture-mcp-server.js',
+  '.argo/scripts/graph-rag/productionGraphRagRuntime.js',
 ];
 
 // GIVEN production runtime modules

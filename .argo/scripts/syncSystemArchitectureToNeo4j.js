@@ -9,9 +9,6 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const architecturePath = args.architecturePath || DEFAULT_GRAPH_PATH;
   const config = getNeo4jConfig({
-    uri: args.uri,
-    username: args.username,
-    password: args.password,
     database: args.database,
   });
 
@@ -50,21 +47,6 @@ function parseArgs(argv) {
     }
     if (token === '--architecture-path') {
       args.architecturePath = argv[index + 1];
-      index += 1;
-      continue;
-    }
-    if (token === '--uri') {
-      args.uri = argv[index + 1];
-      index += 1;
-      continue;
-    }
-    if (token === '--username') {
-      args.username = argv[index + 1];
-      index += 1;
-      continue;
-    }
-    if (token === '--password') {
-      args.password = argv[index + 1];
       index += 1;
       continue;
     }

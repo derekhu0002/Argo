@@ -19,6 +19,54 @@ function createSystemMetadataCommandAdapter(options = {}) {
   }).adapter;
 }
 
+function createReadinessAttestationMetadataAdapter(options = {}) {
+  requireExactKeys(options, ['repositoryRoot']);
+  const repositoryRoot = requireRepositoryRoot(options.repositoryRoot);
+  const file = path.join(
+    options.repositoryRoot,
+    '.argo',
+    'temp',
+    'semantic-readiness-attestation.json',
+  );
+  const directory = path.dirname(file);
+  const environment = sanitizedEnvironment();
+
+  function spawnExact(executable, args) {
+    return spawnSync(executable, args, {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...environment },
+      shell: false,
+      windowsHide: true,
+    });
+  }
+
+  return Object.freeze({
+    readCurrentIdentity: () => spawnExact('whoami', []),
+    readReadinessAttestationDirectoryAcl: () => spawnExact('icacls', [directory]),
+    readReadinessAttestationAcl: () => spawnExact('icacls', [file]),
+    readReadinessAttestationOwner: () => spawnExact('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      exactOwnerScript(file),
+    ]),
+  });
+}
+
+function exactOwnerScript(file) {
+  const literalPath = String(file).replace(/'/g, "''");
+  return `(Get-Acl -LiteralPath '${literalPath}').Owner`;
+}
+
+function sanitizedEnvironment() {
+  return Object.freeze(Object.fromEntries(
+    ['PATH', 'Path', 'PATHEXT', 'SystemRoot', 'WINDIR']
+      .filter(key => typeof process.env[key] === 'string')
+      .map(key => [key, process.env[key]]),
+  ));
+}
+
 function withSystemMetadataCommandTestComposition(options = {}, callback) {
   requireExactKeys(options, [
     'executeMetadataCommand',
@@ -208,6 +256,7 @@ function prohibited() {
 }
 
 module.exports = {
+  createReadinessAttestationMetadataAdapter,
   createSystemMetadataCommandAdapter,
   withSystemMetadataCommandTestComposition,
 };

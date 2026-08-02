@@ -3,6 +3,10 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const argoMcp = require('./argo-mcp-server.js');
+const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
+const {
+  runCanonicalSemanticInit,
+} = require('./graph-rag/semanticOperatorJourney.js');
 const {
   DEFAULT_GRAPH_PATH,
   createDriver,
@@ -12,6 +16,9 @@ const {
   syncArchitectureToNeo4j,
   verifyArchitectureSync,
 } = require('./neo4j-system-architecture-store.js');
+const {
+  loadRepositoryArgoEnvironment,
+} = require('./repositoryArgoEnvironment.js');
 
 const REQUIRED_TOOL_NAMES = [
   'getSystemArchitecture',
@@ -23,21 +30,28 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const workspaceRoot = resolveWorkspaceRoot();
   const reportPath = path.join(workspaceRoot, '.argo', 'temp', 'argo-harness-init-report.json');
+  const harnessEnvironment = loadRepositoryArgoEnvironment(workspaceRoot);
   const report = {
     status: 'ok',
     workspaceRoot,
     generatedAt: new Date().toISOString(),
     mode: options.checkOnly ? 'check-only' : 'prepare-and-check',
     reportPath: normalizeRelativePath(path.relative(workspaceRoot, reportPath)),
+    harnessEnvironment,
   };
 
   try {
     report.mcp = verifyArgoMcpServer({ workspaceRoot });
     report.systemArchitecture = await verifyCanonicalSystemArchitecture();
     report.neo4j = await ensureNeo4jProjection({ checkOnly: options.checkOnly });
+    report.semanticLifecycle = await ensureCanonicalSemanticLifecycle({
+      checkOnly: options.checkOnly,
+      workspaceRoot,
+      neo4j: report.neo4j,
+    });
   } catch (error) {
     report.status = 'failed';
-    report.error = String(error && error.stack ? error.stack : error);
+    report.error = formatErrorForReport(error);
   }
 
   if (report.mcp && report.mcp.status === 'failed') {
@@ -47,6 +61,9 @@ async function main() {
     report.status = 'failed';
   }
   if (report.neo4j && report.neo4j.status === 'failed') {
+    report.status = 'failed';
+  }
+  if (report.semanticLifecycle && report.semanticLifecycle.status === 'failed') {
     report.status = 'failed';
   }
 
@@ -78,6 +95,38 @@ function resolveWorkspaceRoot() {
   return process.env.ARGO_REPO_ROOT
     || process.env.WORKSPACE_FOLDER
     || path.resolve(__dirname, '..', '..');
+}
+
+async function ensureCanonicalSemanticLifecycle({ checkOnly, workspaceRoot, neo4j }) {
+  if (checkOnly) {
+    return {
+      status: 'skipped',
+      reason: 'check-only',
+      fullSnapshotFallback: false,
+    };
+  }
+
+  try {
+    const semanticLifecycle = await runCanonicalSemanticInit(
+      systemArchitectureMcp.createDefaultCanonicalSemanticInitComposition(),
+      {
+        repositoryRoot: workspaceRoot,
+        neo4j,
+      },
+    );
+    return {
+      status: 'ok',
+      state: semanticLifecycle.state,
+      alignment: semanticLifecycle.alignment,
+      readiness: semanticLifecycle.readiness,
+      fullSnapshotFallback: semanticLifecycle.fullSnapshotFallback === true,
+    };
+  } catch (error) {
+    return {
+      status: 'failed',
+      ...formatSemanticLifecycleError(error),
+    };
+  }
 }
 
 function verifyArgoMcpServer({ workspaceRoot }) {
@@ -235,6 +284,27 @@ async function ensureNeo4jProjection({ checkOnly }) {
   };
 }
 
+function formatSemanticLifecycleError(error) {
+  const payload = error && typeof error === 'object' ? error : {};
+  const category = typeof payload.category === 'string'
+    ? payload.category
+    : 'SEMANTIC_LIFECYCLE_INIT_FAILED';
+  const action = typeof payload.action === 'string'
+    ? payload.action
+    : 'Repair semantic lifecycle initialization, then run argo init again.';
+  const message = payload.safeSemanticLifecycleMessage === true && typeof payload.message === 'string'
+    ? payload.message
+    : (typeof payload.publicMessage === 'string'
+      ? payload.publicMessage
+      : 'Semantic lifecycle initialization failed.');
+  return {
+    category,
+    action,
+    message,
+    ...(typeof payload.field === 'string' ? { field: payload.field } : {}),
+  };
+}
+
 function parseToolPayload(result) {
   if (!result || !Array.isArray(result.content) || result.content.length === 0) {
     throw new Error('Unexpected MCP tool result shape.');
@@ -251,7 +321,18 @@ function writeJson(filePath, payload) {
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
+function formatErrorForReport(error) {
+  let message = String(error && error.stack ? error.stack : error);
+  for (const key of ['QWEN_KEY', 'ARGO_NEO4J_DATABASE_PASSWORD']) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.length > 0) {
+      message = message.split(value).join(`[REDACTED:${key}]`);
+    }
+  }
+  return message;
+}
+
 main().catch(error => {
-  console.error(String(error && error.stack ? error.stack : error));
+  console.error(formatErrorForReport(error));
   process.exit(1);
 });

@@ -4,6 +4,7 @@ const {
   assertBlocked,
   assertBlockedField,
   evaluateCredentialConfiguration,
+  evaluateNeo4jProjectionEnvironmentScenarios,
   externalProductionConfiguration,
   inspectCredentialSourceBoundary,
 } = require('../../harness/productionGraphRagHarness.js');
@@ -47,6 +48,34 @@ async function main() {
     [],
     `TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: ${sourceAudit.cypherCredentialLeaks.join(', ')}`,
   );
+
+  // GIVEN the Neo4j projection boundary reads environment-backed configuration
+  // WHEN canonical and legacy Neo4j names are supplied in isolation or conflict
+  const neo4jEnvironment = evaluateNeo4jProjectionEnvironmentScenarios();
+
+  // THEN canonical ARGO_NEO4J_DATABASE_* names are accepted without legacy aliases
+  assert.strictEqual(
+    neo4jEnvironment.canonicalOnly.status,
+    'accepted',
+    `TS07_CANONICAL_NEO4J_ENV_NAMES_REQUIRED:${neo4jEnvironment.canonicalOnly.category || neo4jEnvironment.canonicalOnly.field || 'missing'}`,
+  );
+  assert.deepStrictEqual(
+    {
+      uri: neo4jEnvironment.canonicalOnly.uri,
+      username: neo4jEnvironment.canonicalOnly.username,
+      passwordMatchesExpected: neo4jEnvironment.canonicalOnly.passwordMatchesExpected,
+    },
+    {
+      uri: 'neo4j://canonical.invalid:7687',
+      username: 'canonical-user',
+      passwordMatchesExpected: true,
+    },
+    'TS07_CANONICAL_NEO4J_ENV_NORMALIZATION',
+  );
+
+  // THEN legacy ARGO_NEO4J_* aliases neither satisfy nor override approved configuration
+  assertBlocked(neo4jEnvironment.legacyOnly, 'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS');
+  assertBlocked(neo4jEnvironment.canonicalWithLegacyConflict, 'UNSUPPORTED_LEGACY_NEO4J_ENV_ALIAS');
 
   assert.strictEqual(
     approvedEmbeddingQualification().approvedByHuman,

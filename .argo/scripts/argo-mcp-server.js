@@ -1,9 +1,20 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const { AsyncLocalStorage } = require('node:async_hooks');
 
 const validatorMcp = require('./validator-mcp-server.js');
 const systemArchitectureMcp = require('./systemarchitecture-mcp-server.js');
+const {
+  semanticOperatorErrorResult,
+} = require('./graph-rag/semanticOperatorError.js');
+const {
+  runCanonicalSemanticInit,
+} = require('./graph-rag/semanticOperatorJourney.js');
+const {
+  loadRepositoryArgoEnvironment,
+} = require('./repositoryArgoEnvironment.js');
+const canonicalSemanticInitStorage = new AsyncLocalStorage();
 
 const HANDOFF_FILES_TO_RESET = [
   ['.argo', 'temp', 'IntentToImplementationHandoff.json'],
@@ -86,7 +97,7 @@ const TOOLS = [
   },
   {
     name: 'runArchitectureTests',
-    description: 'Execute explicit architecture testcases from the intent graph and refresh design/KG/test-failure-records.json.',
+    description: 'Execute explicit architecture testcases from the intent graph and refresh design/KG/test-failure-records.json. This MCP call can exceed client timeouts; if it times out, run the same test runner directly with: node .argo/scripts/runArchitectureTests.js',
     inputSchema: {
       type: 'object',
       properties: {
@@ -118,20 +129,22 @@ const TOOLS = [
   },
   {
     name: 'getSystemArchitecture',
-    description: 'Start here. read-only tool for inspecting current elements, relationships, views, and ids before planning mutations. Use before preview or focused mutation tools.',
+    description: 'Start here, but prefer an explicit semantic query instead of an omitted-query full graph read. Provide query.purpose and query.intent to get a compact business/architecture result, then use returned element ids with getIntentElementContext for focused dependency context. Omit query only when an exact full canonical snapshot is explicitly required.',
     inputSchema: {
       type: 'object',
       properties: {
         architecturePath: { type: 'string', description: 'Default: design/KG/SystemArchitecture.json' },
         query: {
           type: 'object',
+          description: 'Preferred for ordinary agent reading. Use semantic query instead of full graph reads; combine the returned element ids with getIntentElementContext when deeper local context is needed.',
           properties: {
             purpose: {
               type: 'string',
               enum: ['intent-decision', 'implementation-design', 'coding-repair', 'audit', 'graph-tidy'],
+              description: 'Declared reading purpose. Use intent-decision, implementation-design, coding-repair, or audit for semantic retrieval; graph-tidy intentionally bypasses semantic retrieval and may return a full snapshot.',
             },
-            intent: { type: 'string' },
-            subject: { type: 'string' },
+            intent: { type: 'string', description: 'Natural-language intent for semantic retrieval, for example "summarize business features for high-risk audit".' },
+            subject: { type: 'string', description: 'Required for audit; optional anchor/focus id for other semantic purposes.' },
           },
           additionalProperties: true,
         },
@@ -354,8 +367,21 @@ function resolveWorkspaceRoot() {
 }
 
 async function callTool(name, args = {}, progressToken = null, dependencies = undefined) {
+  loadRepositoryArgoEnvironment(resolveWorkspaceRoot());
   if (name === 'initializeWorkspace') {
-    return toolResult(await initializeWorkspace(resolveWorkspaceRoot()));
+    const workspace = await initializeWorkspace(resolveWorkspaceRoot());
+    const composition = canonicalSemanticInitStorage.getStore()
+      || systemArchitectureMcp.createDefaultCanonicalSemanticInitComposition();
+    const semanticLifecycle = await runCanonicalSemanticInit(composition, {
+      repositoryRoot: resolveWorkspaceRoot(),
+      workspace,
+    });
+    return toolResult({
+      ...workspace,
+      semanticState: semanticLifecycle.state,
+      semanticLifecycle,
+      alignment: semanticLifecycle.alignment,
+    });
   }
   if (VALIDATOR_TOOL_NAMES.has(name)) {
     return validatorMcp.callTool(name, args, progressToken);
@@ -364,6 +390,13 @@ async function callTool(name, args = {}, progressToken = null, dependencies = un
     return systemArchitectureMcp.callTool(name, args, dependencies);
   }
   throw new Error(`Unknown tool: ${name}`);
+}
+
+async function withCanonicalSemanticInitTestComposition(composition, callback) {
+  if (!composition || typeof callback !== 'function') {
+    throw new TypeError('Canonical semantic init composition and callback are required');
+  }
+  return canonicalSemanticInitStorage.run(Object.freeze({ ...composition }), callback);
 }
 
 async function initializeWorkspace(workspaceRoot) {
@@ -443,11 +476,33 @@ function toolResult(payload) {
   };
 }
 
+function canonicalInitErrorResult(error) {
+  const result = semanticOperatorErrorResult(error);
+  if (error.safeSemanticLifecycleMessage !== true) return result;
+  const payload = Object.freeze({
+    status: 'failed',
+    error: Object.freeze({
+      ...result.error,
+      message: error.message,
+    }),
+  });
+  return Object.freeze({
+    ...result,
+    ...payload,
+    content: Object.freeze([
+      Object.freeze({
+        type: 'text',
+        text: JSON.stringify(payload),
+      }),
+    ]),
+  });
+}
+
 function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-async function handleRequest(request) {
+async function handleRequest(request, dependencies = undefined) {
   const { id, method, params } = request;
 
   if (method === 'initialize') {
@@ -488,21 +543,34 @@ async function handleRequest(request) {
   if (method === 'tools/call') {
     try {
       const progressToken = (params._meta && params._meta.progressToken) || null;
-      const result = await callTool(params.name, params.arguments || {}, progressToken);
+      let activeDependencies = dependencies;
+      if (
+        !activeDependencies
+        && params.name === 'getSystemArchitecture'
+        && params.arguments
+        && Object.prototype.hasOwnProperty.call(params.arguments, 'query')
+        && params.arguments.query
+        && params.arguments.query.purpose !== 'graph-tidy'
+      ) {
+        activeDependencies = {
+          semanticOperatorJourney:
+            await systemArchitectureMcp.createDefaultProductionSemanticOperatorJourney(),
+        };
+      }
+      const result = await callTool(
+        params.name,
+        params.arguments || {},
+        progressToken,
+        activeDependencies,
+      );
       return { jsonrpc: '2.0', id, result };
     } catch (error) {
       return {
         jsonrpc: '2.0',
         id,
-        result: {
-          content: [
-            {
-              type: 'text',
-              text: String(error && error.stack ? error.stack : error),
-            },
-          ],
-          isError: true,
-        },
+        result: params.name === 'initializeWorkspace'
+          ? canonicalInitErrorResult(error)
+          : semanticOperatorErrorResult(error),
       };
     }
   }
@@ -553,5 +621,8 @@ if (require.main === module) {
 
 module.exports = {
   callTool,
+  handleRequest,
+  initializeWorkspace,
   main,
+  withCanonicalSemanticInitTestComposition,
 };

@@ -6,8 +6,16 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const canonicalGraphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const { callTool } = require('../../../.argo/scripts/argo-mcp-server.js');
+const {
+  assertFreshReadinessPerQuery,
+  assertBusinessAgentUnawareWorkflow,
+  assertSolePublicSemanticSurface,
+  observeFreshReadinessPerQuery,
+  observeSolePublicSemanticSurface,
+} = require('../../harness/automaticSemanticLifecycleHarness.js');
 
 async function main() {
+  // GIVEN the typed architecture query contract and canonical graph
   process.env.ARGO_REPO_ROOT = repoRoot;
 
   const tool = readListedGetSystemArchitectureTool();
@@ -39,34 +47,19 @@ async function main() {
     document: canonicalGraph,
   });
 
-  const semanticDocument = { elements: [], relationships: [], views: [] };
-  const semanticQuery = {
-    purpose: 'implementation-design',
-    intent: 'Return typed architecture context',
-  };
-  const semanticResponse = await callTool(
-    'getSystemArchitecture',
-    { query: semanticQuery },
-    null,
-    {
-      semanticRetrievalBoundary: {
-        async retrieve() {
-          return semanticDocument;
-        },
-      },
-    },
-  );
-  assertTypedResponse(semanticResponse, {
-    mode: 'semantic-query',
-    document: semanticDocument,
-    query: {
-      ...semanticQuery,
-      mode: 'semantic-query',
-      semanticRetrieval: 'invoked',
-    },
-    error: null,
-  });
-  assertLegacyStructuredSemanticsMatch(semanticResponse);
+  // WHEN ordinary queries cross exported System and unified dispatch without
+  // a supplied journey or retrieval boundary
+  const semanticQueries = await observeFreshReadinessPerQuery();
+  assertFreshReadinessPerQuery(semanticQueries, 'TS00');
+  const alignedQueries = semanticQueries.find(item => item.readiness.state === 'Aligned');
+  for (const observation of alignedQueries.outcomes) {
+    assert.strictEqual(
+      observation.result.structuredContent.mode,
+      'semantic-query',
+      `TS00_${observation.dispatcher.toUpperCase()}_SEMANTIC_MODE_CHANGED`,
+    );
+    assertLegacyStructuredSemanticsMatch(observation.result);
+  }
 
   const invalidPurposeResponse = await callTool('getSystemArchitecture', {
     query: {
@@ -83,6 +76,15 @@ async function main() {
     },
   });
   assertTypedError(missingAuditSubjectResponse, 'AUDIT_SUBJECT_REQUIRED');
+
+  // WHEN public discovery and routing are inspected after WP-P3 retirement
+  // THEN getSystemArchitecture is the sole architecture read/query semantic surface
+  const publicSurface = await observeSolePublicSemanticSurface();
+  assertSolePublicSemanticSurface(publicSurface);
+
+  // THEN BP-AUTOALIGN keeps lifecycle work inside MCP/script boundaries; normal
+  // Agent read/write paths must not require manual init/backfill/readiness calls.
+  assertBusinessAgentUnawareWorkflow(publicSurface, semanticQueries);
 }
 
 function readListedGetSystemArchitectureTool() {

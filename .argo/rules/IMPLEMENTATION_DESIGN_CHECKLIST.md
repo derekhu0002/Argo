@@ -69,7 +69,7 @@
 |---|------|------|
 | F1 | **schema 校验** | `argo.validateStageHandoff` 以 `stage = "implementation-to-coding"` 运行通过 |
 | F2 | **人工审批** | 向人类展示完整 handoff 摘要（contracts + entrypoints + guardrails + frozenFiles + expectedFailureRecordsPath + taskExecutionPlan），获得**显式批准**后才可 emit |
-| F3 | **pre-coding delivery baseline** | handoff 前运行全量 `argo.runArchitectureTests`，刷新 `deliveryStatus` 与 failure records；该结果作为 Coding 阶段 delivered 回归检测基线 |
+| F3 | **pre-coding delivery baseline** | handoff 前运行全量 `argo.runArchitectureTests`，刷新 `deliveryStatus` 与 failure records；若 MCP 调用超时，直接运行 `node .argo/scripts/runArchitectureTests.js`；该结果作为 Coding 阶段 delivered 回归检测基线 |
 | F4 | **阶段提交** | 写出并校验 `ImplementationToCodingHandoff.json` 后、handoff 给 CodingAndReparing 前完成 ImplementationDesign 阶段 git commit，提交 contracts、test entrypoints、handoff、runner 刷新的 `deliveryStatus`/failure records 等本阶段产物 |
 
 ---
