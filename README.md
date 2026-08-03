@@ -1,167 +1,167 @@
 # ARGO HARNESS
 
-ARGO 是一套由**架构知识图谱驱动**的 AI Coding Harness，面向企业级复杂项目，通过精准上下文管理，把业务意图、架构决策、测试门禁和 Agent 协作组织成可追溯、可验证、可回归的交付闭环。
+ARGO is an **architecture knowledge-graph-driven** AI coding harness for complex enterprise projects. It uses precise context management to organize business intent, architecture decisions, test gates, and agent collaboration into a delivery loop that is traceable, verifiable, and repeatable.
 
-它通过工程系统提高交付确定性：
+ARGO improves delivery certainty through engineering discipline:
 
 $$Total\ Certainty = C \times \frac{(P \cdot B) \times E}{G}$$
 
-| 因子 | 含义 | ARGO 的工程锚点 |
+| Factor | Meaning | ARGO engineering anchor |
 | --- | --- | --- |
-| `C` | 目标清晰度 | 业务拷问、结构化决策、显性验收 |
-| `P` | 协议规范 | 意图图谱、实现契约、阶段 handoff |
-| `B` | 边界约束 | Schema、MCP validator、测试、人类门禁 |
-| `E` | 模型能效 | 聚焦架构子图、稳定事实源、清晰模块边界 |
-| `G` | 任务颗粒度 | 架构依赖切分、顺序交付、独立会话 |
+| `C` | Goal clarity | Business discovery, structured decisions, explicit acceptance |
+| `P` | Protocol specification | Intent graph, implementation contracts, stage handoffs |
+| `B` | Boundary constraints | Schema, MCP validators, tests, and human gates |
+| `E` | Model efficiency | Focused architecture subgraphs, stable fact sources, clear module boundaries |
+| `G` | Task granularity | Architecture-dependency decomposition, sequential delivery, independent sessions |
 
-完整推导见[ARGO 工程哲学：确定性交付公式的工程化](notes/ai-engineering/ARGO%20工程哲学：确定性交付公式的工程化.md)。
+For the full derivation, see [ARGO Engineering Philosophy: Engineering the Delivery Certainty Formula](notes/ai-engineering/ARGO%20工程哲学：确定性交付公式的工程化.md).
 
-## 核心方法
+## Core approach
 
-ARGO 由三个相互制约的构件组成：
+ARGO consists of three mutually reinforcing components:
 
 ```mermaid
 flowchart LR
-    H[人类伙伴<br/>目标与审核] --> F
+    H[Human partner<br/>goals and review] --> F
 
-    subgraph F[ARGO HARNESS 工程流]
-        BP[业务澄清] --> ID[意图设计]
-        ID --> IM[实现设计]
-        IM --> CR[编码与修复]
-        CR --> A[双层验收]
-        A -. GAP 回流 .-> ID
+    subgraph F[ARGO HARNESS delivery flow]
+        BP[Business clarification] --> ID[Intent design]
+        ID --> IM[Implementation design]
+        IM --> CR[Coding and repair]
+        CR --> A[Two-level acceptance]
+        A -. GAP feedback .-> ID
     end
 
-    F --> M[argo MCP<br/>查询 · 变更 · 校验 · 测试]
-    M <--> K[(意图架构 Data<br/>SystemArchitecture.json)]
+    F --> M[argo MCP<br/>query · mutation · validation · testing]
+    M <--> K[(Intent architecture data<br/>SystemArchitecture.json)]
     K --> F
 ```
 
-1. **意图架构 Data**：`design/KG/SystemArchitecture.json` 用 ArchiMate 元素、关系、view 和显性 testcase 保存目标、能力、依赖、约束与验收语义。
-2. **架构服务 MCP**：统一 `argo` 服务提供图谱查询、受控 mutation、Schema/语义校验、handoff 校验和架构测试。
-3. **HARNESS 工程流**：BusinessPartner、IntentionDesign、ImplementationDesign、CodingAndReparing 与双层验收在明确权限下协作。
+1. **Intent architecture data**: `design/KG/SystemArchitecture.json` stores goals, capabilities, dependencies, constraints, and acceptance semantics as ArchiMate elements, relationships, views, and explicit testcases.
+2. **Architecture service MCP**: the unified `argo` service provides graph queries, controlled mutations, schema and semantic validation, handoff validation, and architecture tests.
+3. **HARNESS delivery flow**: BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing, and two-level acceptance collaborate within explicit permissions.
 
-深入了解：[总体架构](design/architecture.md) · [意图架构设计](design/intent-architecture/README.md) · [HARNESS 工程流程](design/argo-harness/README.md)
+Learn more: [Overall architecture](design/architecture.md) · [Intent architecture design](design/intent-architecture/README.md) · [HARNESS delivery flow](design/argo-harness/README.md)
 
-## 精准上下文管理
+## Precise context management
 
-目标：让 Agent 在**正确阶段，只获得完成当前任务所需的正确事实、依赖、权限和验证证据**。解决大型项目中最常见的上下文问题：信息过载、事实冲突、跨阶段越权、长会话衰减，以及代码现实无声覆盖业务意图。
+The goal is for an agent to receive **only the facts, dependencies, permissions, and validation evidence needed to complete the current task at the correct stage**. This addresses common large-project context failures: information overload, conflicting facts, cross-stage overreach, long-session degradation, and code reality silently overriding business intent.
 
 ```mermaid
 flowchart LR
-    I[业务需求与决策] --> G[(意图架构图谱<br/>长期事实源)]
-    T[当前交付范围] --> Q[argo MCP<br/>查询 focus dependency subgraph]
+    I[Business requirements and decisions] --> G[(Intent architecture graph<br/>long-lived fact source)]
+    T[Current delivery scope] --> Q[argo MCP<br/>query focused dependency subgraph]
     G --> Q
-    Q --> V[相关 viewpoint<br/>目标 · 能力 · 依赖 · 约束 · testcase]
-    V --> H[阶段 handoff<br/>压缩为当前 Agent 的执行上下文]
-    H --> A[阶段 Agent<br/>明确可读、可写与禁止边界]
-    A --> E[测试、validator 与失败记录<br/>提供客观反馈]
-    E -->|GAP 回流| G
+    Q --> V[Relevant viewpoints<br/>goals · capabilities · dependencies · constraints · testcases]
+    V --> H[Stage handoff<br/>compressed execution context]
+    H --> A[Stage agent<br/>explicit read, write, and prohibited boundaries]
+    A --> E[Tests, validators, and failure records<br/>objective feedback]
+    E -->|GAP feedback| G
 ```
 
-精准管理由四个约束共同实现：
+Four constraints make this possible:
 
-- **事实精准**：长期事实进入 `SystemArchitecture.json`、实现契约、handoff 和冻结测试，而不是停留在聊天记忆里。
-- **范围精准**：当前任务围绕架构 focus、依赖子图和 viewpoint 获取上下文。
-- **权限精准**：不同阶段只修改自己拥有的产物，越权内容通过 handoff 或 GAP 回流处理。
-- **时机精准**：MCP validator、架构测试和双层验收用执行证据刷新上下文。
+- **Fact precision**: long-lived facts belong in `SystemArchitecture.json`, implementation contracts, handoffs, and frozen tests—not chat memory.
+- **Scope precision**: each task receives context around its architecture focus, dependency subgraph, and viewpoint.
+- **Permission precision**: each stage changes only the artifacts it owns; out-of-scope issues move through a handoff or GAP feedback.
+- **Timing precision**: MCP validators, architecture tests, and two-level acceptance refresh context with execution evidence.
 
-更完整的机制说明见[意图架构设计](design/intent-architecture/README.md)、[HARNESS 工程流程](design/argo-harness/README.md)和[基于架构依赖的任务编排方法论](notes/ai-engineering/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD)。
+For the complete mechanism, see [Intent architecture design](design/intent-architecture/README.md), [HARNESS delivery flow](design/argo-harness/README.md), and [Task orchestration based on architectural dependencies](notes/ai-engineering/驯服高维空间的重力：基于架构依赖的%20AI%20任务编排方法论.MD).
 
-## 一次交付如何运行
+## How a delivery runs
 
 ```text
-业务澄清
-  → 决策内化到意图架构
-  → 意图设计与人类验收审核
-  → 实现设计与人类测试审核
-  → 编码/修复直到测试通过
-  → 代码实现验收
-  → 意图交付验收
+Business clarification
+  → Internalize decisions in the intent architecture
+  → Intent design and human acceptance review
+  → Implementation design and human test review
+  → Code and repair until tests pass
+  → Code implementation acceptance
+  → Intent delivery acceptance
 ```
 
-上层可以读取下层事实做判断，下层不能越权改写上层：
+Upper stages may read lower-stage facts to make decisions; lower stages must not overwrite upper-stage decisions:
 
-| 阶段 | 负责 | 不负责 |
+| Stage | Owns | Does not own |
 | --- | --- | --- |
-| BusinessPartner | 目标、方案、风险、控制点和观测点 | 实现设计、编码 |
-| IntentionDesign | 意图图谱、覆盖、显性 testcase | 业务代码、实现契约 |
-| ImplementationDesign | 稳定边界、测试入口、实现 handoff | 直接修改意图图谱 |
-| CodingAndReparing | 真实生产行为、失败记录清零 | 冻结测试、架构契约 |
+| BusinessPartner | Goals, options, risks, control points, and observability points | Implementation design and coding |
+| IntentionDesign | Intent graph, coverage, and explicit testcases | Business code and implementation contracts |
+| ImplementationDesign | Stable boundaries, test entrypoints, and implementation handoffs | Direct intent-graph changes |
+| CodingAndReparing | Actual production behavior and clearing failure records | Frozen tests and architecture contracts |
 
-Agent 与 Skill 的完整分工见[Agent 与 Skill 设计](design/argo-harness/agents-and-skills.md)。
+For the complete division of responsibilities between agents and skills, see [Agent and skill design](design/argo-harness/agents-and-skills.md).
 
-## 快速上手
+## Quick start
 
-### 部署
+### Install
 
-平台 bundle 必须与统一 `.argo/` 目录一起复制到目标工作区根目录，并确认目标平台能发现名为 `argo` 的 MCP 服务：
+Copy the platform bundle together with the shared `.argo/` directory to the target workspace root, then confirm that the target platform can discover the MCP service named `argo`:
 
-| 版本 | 适用环境 | 部署内容 | 主入口 |
+| Edition | Environment | Deploy | Primary entrypoints |
 | --- | --- | --- | --- |
-| [Cursor 版](.cursor/) | Cursor | `.cursor/` + `.argo/` | `/business-partner`、`/orchestrating` |
-| [Copilot 版](.github/) | GitHub Copilot | `.github/` + `.argo/` | `BusinessPartner`、`Orchestrator` |
-| [OpenCode 版](.opencode/) | OpenCode | `.opencode/` + `.argo/` | `BusinessPartner`、`Orchestrator`、`/argoinit`、`/argotest` |
+| [Cursor](.cursor/) | Cursor | `.cursor/` + `.argo/` | `/business-partner`, `/orchestrating` |
+| [Copilot](.github/) | GitHub Copilot | `.github/` + `.argo/` | `BusinessPartner`, `Orchestrator` |
+| [OpenCode](.opencode/) | OpenCode | `.opencode/` + `.argo/` | `BusinessPartner`, `Orchestrator`, `/argoinit`, `/argotest` |
 
-部署后确认：
+After installation, confirm that:
 
-1. 平台能发现 `argo` MCP；
-2. `design/KG/SystemArchitecture.json` 存在；
-3. `validateSystemArchitecture` 可执行；
-4. 当前工作使用正确的 Agent 或 Skill 入口。
+1. the platform discovers the `argo` MCP service;
+2. `design/KG/SystemArchitecture.json` exists;
+3. `validateSystemArchitecture` can run; and
+4. the work uses the correct agent or skill entrypoint.
 
-MCP 工具参数、写入副作用、validator 规则、生产语义生命周期、凭据边界和命令级操作说明由稳定设计资料维护：见[意图架构 MCP 功能列表](design/mcp/意图架构%20MCP%20功能列表.md)和[MCP 校验机制](design/validator/intent-architecture-mcp-validation.md)。根 README 只负责帮助新读者选入口，不复制这些深层运行细节。
+Stable design references own MCP tool parameters, mutation side effects, validator rules, the production semantic lifecycle, credential boundaries, and command-level operating instructions. See the [Intent architecture MCP feature list](design/mcp/意图架构%20MCP%20功能列表.md) and [MCP validation mechanism](design/validator/intent-architecture-mcp-validation.md). This README helps new readers select an entrypoint; it does not duplicate those operational details.
 
-### 选择正确入口
+### Choose the right entrypoint
 
-| 当前情况 | 从这里开始 |
+| Situation | Start here |
 | --- | --- |
-| 新需求或业务方案 | `BusinessPartner` / `/business-partner`，随后 `/task-tidy` |
-| 缺陷或失败测试 | `Orchestrator` / `/orchestrating`，先判断意图、实现或代码问题 |
-| 没有可信架构基线 | `/reverse-architecture-extraction` |
-| 有可信基线但代码/测试被外部修改 | `/architecture-drift-recovery` |
-| 需要发现架构优化候选 | `/improve-codebase-architecture` |
-| Agent 重复偏航或规则需要沉淀 | `/distill-agent-rules` |
+| New requirement or business proposal | `BusinessPartner` / `/business-partner`, then `/task-tidy` |
+| Defect or failing test | `Orchestrator` / `/orchestrating` to determine whether the issue is in intent, implementation, or code |
+| No trustworthy architecture baseline | `/reverse-architecture-extraction` |
+| A trustworthy baseline exists, but code or tests were changed externally | `/architecture-drift-recovery` |
+| Find architecture-improvement candidates | `/improve-codebase-architecture` |
+| Repeated agent drift or rules that should be distilled | `/distill-agent-rules` |
 
-完整判断条件、输入建议和产出见[使用场景与入口选择](design/argo-harness/usage-scenarios/README.md)。
+For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 
-## 设计文档导航
+## Design documentation
 
-| 主题 | Deep dive |
+| Topic | Deep dive |
 | --- | --- |
-| 文档体系与事实源 | [设计文档总导航](design/README.md) |
-| 三大核心构件 | [总体架构](design/architecture.md) |
-| 工程阶段、门禁和 handoff | [HARNESS 工程流程](design/argo-harness/README.md) |
-| Agent、Skill 与平台映射 | [Agent 与 Skill 设计](design/argo-harness/agents-and-skills.md) |
-| 使用场景 | [使用场景与入口选择](design/argo-harness/usage-scenarios/README.md) |
-| ArchiMate、viewpoint 与显性验收 | [意图架构设计](design/intent-architecture/README.md) |
-| MCP 工具接口 | [意图架构 MCP 功能列表](design/mcp/意图架构%20MCP%20功能列表.md) |
-| 图谱校验和失败引导 | [MCP 校验机制](design/validator/intent-architecture-mcp-validation.md) |
-| Schema 与 Enterprise Architect | [Schema 与 EA 映射](design/schema-ea-mapping.md) |
-| 方案对比 | [ARGO、OpenSpec、Superpowers、ECC](design/marketing/solution-comparison-argo-openspec-superpower-ecc.md) |
+| Documentation system and fact sources | [Design documentation map](design/README.md) |
+| The three core components | [Overall architecture](design/architecture.md) |
+| Delivery stages, gates, and handoffs | [HARNESS delivery flow](design/argo-harness/README.md) |
+| Agents, skills, and platform mapping | [Agent and skill design](design/argo-harness/agents-and-skills.md) |
+| Usage scenarios | [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md) |
+| ArchiMate, viewpoints, and explicit acceptance | [Intent architecture design](design/intent-architecture/README.md) |
+| MCP tool interfaces | [Intent architecture MCP feature list](design/mcp/意图架构%20MCP%20功能列表.md) |
+| Graph validation and failure guidance | [MCP validation mechanism](design/validator/intent-architecture-mcp-validation.md) |
+| Schema and Enterprise Architect | [Schema-to-EA mapping](design/schema-ea-mapping.md) |
+| Solution comparison | [ARGO, OpenSpec, Superpowers, and ECC](design/marketing/solution-comparison-argo-openspec-superpower-ecc.md) |
 
-`design/` 保存稳定、已确认的设计规范；`notes/` 保存研究、推导和候选观点。设计文档引用研究依据，但不把研究笔记当作运行时事实源。
+`design/` contains stable, accepted design specifications. `notes/` contains research, derivations, and candidate ideas. Design documents may reference research evidence, but research notes are not runtime fact sources.
 
-## 持续扩展
+## Extend ARGO
 
-ARGO 的稳定底座是：
+ARGO has a stable foundation:
 
 ```text
-意图架构模板 + argo MCP + HARNESS 工程流
+Intent architecture template + argo MCP + HARNESS delivery flow
 ```
 
-不同项目可以在底座上选择领域模板。每个模板可组合：
+Projects can choose domain templates on top of this foundation. Each template can combine:
 
-- 默认意图架构和 viewpoint；
-- 领域 Skill 与知识库；
-- 编码规范和实现边界；
-- 测试环境、设备或外部服务控制接口；
-- 构建、运行、观测和验收证据。
+- default intent architecture and viewpoints;
+- domain skills and knowledge bases;
+- coding standards and implementation boundaries;
+- test environments, devices, or external-service control interfaces; and
+- build, run, observability, and acceptance evidence.
 
-| 已有领域 | 能力 |
+| Available domain | Capabilities |
 | --- | --- |
-| [HarmonyOS 与跨端移动开发](design/specific-domain/harmonyos/README.md) | ArkTS/ArkUI、设备环境、窗口分析、跨端比较、构建运行和交付预检 |
+| [HarmonyOS and cross-platform mobile development](design/specific-domain/harmonyos/README.md) | ArkTS/ArkUI, device environments, window analysis, cross-platform comparison, build and run workflows, and delivery preflight checks |
 
-新增模板应放在 `design/specific-domain/<domain>/`，领域 Skill 放在 `.argo/skills/<domain>/` 或相应平台适配目录。领域能力不能绕过通用意图设计、实现设计和双层验收。
+Add new templates under `design/specific-domain/<domain>/`, and put domain skills in `.argo/skills/<domain>/` or the corresponding platform-adaptation directory. Domain capabilities must not bypass the common intent design, implementation design, or two-level acceptance flow.
 
-更多扩展约定见[领域模板索引](design/specific-domain/README.md)。
+For more extension conventions, see the [domain template index](design/specific-domain/README.md).
