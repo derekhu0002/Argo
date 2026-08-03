@@ -5,26 +5,24 @@ ARGO is an **architecture knowledge-graph-driven** AI coding harness for complex
 
 ## Core approach
 
-ARGO consists of three mutually reinforcing components:// todo: substitue the image to represent components from top to down as human-> harness(agent coordination) -> knowledge graph(graph rag + archimate schema) MCP tool + auto acceptance test MCP tool.
+ARGO consists of three mutually reinforcing components:
 
 ```mermaid
-flowchart LR
-    H[Human partner<br/>goals and review] --> F
+flowchart TB
+    H[Human partner<br/>goals · decisions · review]
+    F[ARGO HARNESS<br/>agent coordination · stage permissions · handoffs]
+    G[(Architecture knowledge graph<br/>Graph RAG · ArchiMate schema · SystemArchitecture.json)]
+    M[argo MCP<br/>query · controlled mutation · validation]
+    T[Automatic acceptance-test MCP<br/>architecture tests · evidence · GAP feedback]
 
-    subgraph F[ARGO HARNESS delivery flow]
-        BP[Business clarification] --> ID[Intent design]
-        ID --> IM[Implementation design]
-        IM --> CR[Coding and repair]
-        CR --> A[Two-level acceptance]
-        A -. GAP feedback .-> ID
-    end
-
-    F --> M[argo MCP<br/>query · mutation · validation · testing]
-    M <--> K[(Intent architecture data<br/>SystemArchitecture.json)]
-    K --> F
+    H --> F --> G
+    G --> M
+    G --> T
+    M --> F
+    T --> F
 ```
 
-1. **Intent architecture data**: `design/KG/SystemArchitecture.json` stores goals, capabilities, dependencies, constraints, and acceptance semantics as ArchiMate elements, relationships, views, and explicit testcases.
+1. **Intent architecture data**: stores goals, capabilities, dependencies, constraints, and acceptance semantics as ArchiMate elements, relationships, views, and explicit testcases.
 2. **Architecture service MCP**: the unified `argo` service provides graph queries, controlled mutations, schema and semantic validation, handoff validation, and architecture tests.
 3. **HARNESS delivery flow**: BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing, and two-level acceptance collaborate within explicit permissions.
 
@@ -34,17 +32,22 @@ Learn more: [Overall architecture](design/architecture.md) · [Intent architectu
 
 The goal is for an agent to receive **only the facts, dependencies, permissions, and validation evidence needed to complete the current task at the correct stage**. This addresses common large-project context failures: information overload, conflicting facts, cross-stage overreach, long-session degradation, and code reality silently overriding business intent.
 
-// todo: substitute this image to represent how the agent can get precise context package through MCP from the knowledge graph.
 ```mermaid
 flowchart LR
-    I[Business requirements and decisions] --> G[(Intent architecture graph<br/>long-lived fact source)]
-    T[Current delivery scope] --> Q[argo MCP<br/>query focused dependency subgraph]
-    G --> Q
-    Q --> V[Relevant viewpoints<br/>goals · capabilities · dependencies · constraints · testcases]
-    V --> H[Stage handoff<br/>compressed execution context]
-    H --> A[Stage agent<br/>explicit read, write, and prohibited boundaries]
-    A --> E[Tests, validators, and failure records<br/>objective feedback]
-    E -->|GAP feedback| G
+    A[Stage agent<br/>current task and delivery stage]
+    M[argo MCP<br/>scope-aware graph query]
+    G[(Architecture knowledge graph<br/>facts · dependencies · permissions · testcases)]
+    P[Precise context package<br/>relevant viewpoint · dependency subgraph<br/>allowed actions · constraints · validation evidence]
+    W[Work and validation<br/>implementation · tests · failure records]
+
+    A -->|requests context for its scope| M
+    M -->|queries| G
+    G -->|returns only relevant facts| M
+    M -->|builds| P
+    P -->|guides| A
+    A --> W
+    W -->|evidence and GAP feedback| M
+    M -->|refreshes facts| G
 ```
 
 Four constraints make this possible:
@@ -79,7 +82,16 @@ Upper stages may read lower-stage facts to make decisions; lower stages must not
 
 For the complete division of responsibilities between agents and skills, see [Agent and skill design](design/argo-harness/agents-and-skills.md).
 
-// todo: represent some key capabilities of each agent above.
+```mermaid
+flowchart LR
+    BP[BusinessPartner<br/>clarifies goals · weighs options · identifies risks]
+    ID[IntentionDesign<br/>models intent · maintains coverage · defines acceptance]
+    IM[ImplementationDesign<br/>sets boundaries · prepares contracts · exposes test entrypoints]
+    CR[CodingAndReparing<br/>implements behavior · diagnoses failures · clears evidence]
+
+    BP --> ID --> IM --> CR
+```
+
 ## Quick start
 
 ### Install
@@ -114,33 +126,24 @@ Stable design references own MCP tool parameters, mutation side effects, validat
 
 For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 
-## Design documentation// TODO:remove this section
-
-
-| Topic | Deep dive |
-| --- | --- |
-| Documentation system and fact sources | [Design documentation map](design/README.md) |
-| The three core components | [Overall architecture](design/architecture.md) |
-| Delivery stages, gates, and handoffs | [HARNESS delivery flow](design/argo-harness/README.md) |
-| Agents, skills, and platform mapping | [Agent and skill design](design/argo-harness/agents-and-skills.md) |
-| Usage scenarios | [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md) |
-| ArchiMate, viewpoints, and explicit acceptance | [Intent architecture design](design/intent-architecture/README.md) |
-| MCP tool interfaces | [Intent architecture MCP feature list](design/mcp/意图架构%20MCP%20功能列表.md) |
-| Graph validation and failure guidance | [MCP validation mechanism](design/validator/intent-architecture-mcp-validation.md) |
-| Schema and Enterprise Architect | [Schema-to-EA mapping](design/schema-ea-mapping.md) |
-| Solution comparison | [ARGO, OpenSpec, Superpowers, and ECC](design/marketing/solution-comparison-argo-openspec-superpower-ecc.md) |
-
-`design/` contains stable, accepted design specifications. `notes/` contains research, derivations, and candidate ideas. Design documents may reference research evidence, but research notes are not runtime fact sources.
-
 ## Extend ARGO
 
-ARGO has a stable foundation: // todo: describe a way for other users to extend , such as hook the needed skills and information of test environments under some workpackge, and each workpackage is associated with relavant architecture elements.
+ARGO has a stable foundation:
 
 ```text
 Intent architecture template + argo MCP + HARNESS delivery flow
 ```
 
-Projects can choose domain templates on top of this foundation. Each template can combine:
+Projects can extend this foundation with domain templates and work packages. A work package connects a bounded delivery concern to the architecture elements that govern it, then supplies the skills, environment access, and evidence needed to deliver that concern.
+
+Each work package should:
+
+- identify its relevant goals, capabilities, processes, applications, technology, and acceptance testcases in the intent architecture;
+- expose only the domain skills, knowledge, test-environment information, devices, or external-service controls required for that architecture scope;
+- define its coding boundaries and test entrypoints; and
+- return build, run, observability, and acceptance evidence through the common validation flow.
+
+Each domain template can combine:
 
 - default intent architecture and viewpoints;
 - domain skills and knowledge bases;
