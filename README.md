@@ -29,35 +29,22 @@ All new requirements and issue reports—including defects and failing tests—s
 
 For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 
-## Extend ARGO
+## Preparation before starting
 
-ARGO has a stable foundation:
+Before delivery starts, prefill known facts into the intent architecture knowledge graph so that `BusinessPartner` begins with verifiable business and architecture context rather than recreating already-made decisions.
 
-```text
-Intent architecture template + argo MCP + HARNESS delivery flow
-```
+Prefill:
 
-Projects can extend this foundation with domain templates and work packages. A work package connects a bounded delivery concern to the architecture elements that govern it, then supplies the skills, environment access, and evidence needed to deliver that concern.
+- **Business requirements**: goals, stakeholders, constraints, business rules, acceptance criteria, and known risks;
+- **Architecture design**: existing capabilities, processes, applications, technology, dependencies, architecture viewpoints, and approved boundaries;
+- **Work packages**: independently acceptable delivery scopes, their architecture elements, and their acceptance testcases.
 
-Each work package should:
+Each work package should also declare the required:
 
-- identify its relevant goals, capabilities, processes, applications, technology, and acceptance testcases in the intent architecture;
-- expose only the domain skills, knowledge, test-environment information, devices, or external-service controls required for that architecture scope;
-- define its coding boundaries and test entrypoints; and
-- return build, run, observability, and acceptance evidence through the common validation flow.
+- domain skills and specialist knowledge;
+- tools, test environments, devices, or external-service controls;
+- implementation boundaries, delivery evidence, and acceptance conditions.
 
-Each domain template can combine:
+Prefilled content must pass the common graph validation and human acceptance. It establishes facts for later decisions; it does not bypass `BusinessPartner`, intent design, implementation design, or two-level acceptance.
 
-- default intent architecture and viewpoints;
-- domain skills and knowledge bases;
-- coding standards and implementation boundaries;
-- test environments, devices, or external-service control interfaces; and
-- build, run, observability, and acceptance evidence.
-
-| Available domain | Capabilities |
-| --- | --- |
-| [HarmonyOS and cross-platform mobile development](design/specific-domain/harmonyos/README.md) | ArkTS/ArkUI, device environments, window analysis, cross-platform comparison, build and run workflows, and delivery preflight checks |
-
-Add new templates under `design/specific-domain/<domain>/`, and put domain skills in `.argo/skills/<domain>/` or the corresponding platform-adaptation directory. Domain capabilities must not bypass the common intent design, implementation design, or two-level acceptance flow.
-
-For more extension conventions, see the [domain template index](design/specific-domain/README.md).
+Organize these materials through domain templates: define domain architecture and knowledge in `design/specific-domain/<domain>/`, and provide domain skills in `.argo/skills/<domain>/` or the relevant platform-adaptation directory. See the [domain template index](design/specific-domain/README.md) for conventions.
