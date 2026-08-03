@@ -114,14 +114,14 @@ Stable design references own MCP tool parameters, mutation side effects, validat
 
 ### Choose the right entrypoint
 
-| Situation | Start here |
-| --- | --- |
-| New requirement or business proposal | `BusinessPartner` / `/business-partner`, then `/task-tidy` |
-| Defect or failing test | `Orchestrator` / `/orchestrating` to determine whether the issue is in intent, implementation, or code |
-| No trustworthy architecture baseline | `/reverse-architecture-extraction` |
-| A trustworthy baseline exists, but code or tests were changed externally | `/architecture-drift-recovery` |
-| Find architecture-improvement candidates | `/improve-codebase-architecture` |
-| Repeated agent drift or rules that should be distilled | `/distill-agent-rules` |
+| Situation                                                                | Start here                                                                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| New requirement or business proposal                                     | `BusinessPartner` / `/business-partner`, then `/task-tidy`                                             |
+| Defect or failing test                                                   | `Orchestrator` / `/orchestrating` to determine whether the issue is in intent, implementation, or code |
+| No trustworthy architecture baseline                                     | `/reverse-architecture-extraction`                                                                     |
+| A trustworthy baseline exists, but code or tests were changed externally | `/architecture-drift-recovery`                                                                         |
+| Find architecture-improvement candidates                                 | `/improve-codebase-architecture`                                                                       |
+| Repeated agent drift or rules that should be distilled                   | `/distill-agent-rules`                                                                                 |
 
 For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 
