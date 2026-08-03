@@ -2,23 +2,10 @@
 
 ARGO is an **architecture knowledge-graph-driven** AI coding harness for complex enterprise projects. It uses precise context management to organize business intent, architecture decisions, test gates, and agent collaboration into a delivery loop that is traceable, verifiable, and repeatable.
 
-ARGO improves delivery certainty through engineering discipline:
-
-$$Total\ Certainty = C \times \frac{(P \cdot B) \times E}{G}$$
-
-| Factor | Meaning | ARGO engineering anchor |
-| --- | --- | --- |
-| `C` | Goal clarity | Business discovery, structured decisions, explicit acceptance |
-| `P` | Protocol specification | Intent graph, implementation contracts, stage handoffs |
-| `B` | Boundary constraints | Schema, MCP validators, tests, and human gates |
-| `E` | Model efficiency | Focused architecture subgraphs, stable fact sources, clear module boundaries |
-| `G` | Task granularity | Architecture-dependency decomposition, sequential delivery, independent sessions |
-
-For the full derivation, see [ARGO Engineering Philosophy: Engineering the Delivery Certainty Formula](notes/ai-engineering/ARGO%20工程哲学：确定性交付公式的工程化.md).
 
 ## Core approach
 
-ARGO consists of three mutually reinforcing components:
+ARGO consists of three mutually reinforcing components:// todo: substitue the image to represent components from top to down as human-> harness(agent coordination) -> knowledge graph(graph rag + archimate schema) MCP tool + auto acceptance test MCP tool.
 
 ```mermaid
 flowchart LR
@@ -47,6 +34,7 @@ Learn more: [Overall architecture](design/architecture.md) · [Intent architectu
 
 The goal is for an agent to receive **only the facts, dependencies, permissions, and validation evidence needed to complete the current task at the correct stage**. This addresses common large-project context failures: information overload, conflicting facts, cross-stage overreach, long-session degradation, and code reality silently overriding business intent.
 
+// todo: substitute this image to represent how the agent can get precise context package through MCP from the knowledge graph.
 ```mermaid
 flowchart LR
     I[Business requirements and decisions] --> G[(Intent architecture graph<br/>long-lived fact source)]
@@ -91,6 +79,7 @@ Upper stages may read lower-stage facts to make decisions; lower stages must not
 
 For the complete division of responsibilities between agents and skills, see [Agent and skill design](design/argo-harness/agents-and-skills.md).
 
+// todo: represent some key capabilities of each agent above.
 ## Quick start
 
 ### Install
@@ -125,7 +114,8 @@ Stable design references own MCP tool parameters, mutation side effects, validat
 
 For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 
-## Design documentation
+## Design documentation// TODO:remove this section
+
 
 | Topic | Deep dive |
 | --- | --- |
@@ -144,7 +134,7 @@ For detailed selection criteria, suggested inputs, and outputs, see [Usage scena
 
 ## Extend ARGO
 
-ARGO has a stable foundation:
+ARGO has a stable foundation: // todo: describe a way for other users to extend , such as hook the needed skills and information of test environments under some workpackge, and each workpackage is associated with relavant architecture elements.
 
 ```text
 Intent architecture template + argo MCP + HARNESS delivery flow
