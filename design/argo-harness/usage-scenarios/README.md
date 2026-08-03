@@ -1,6 +1,6 @@
 # 使用场景与入口选择
 
-本目录是 ARGO 使用方式的权威入口。先根据“当前是否有可信架构基线”和“变化属于意图、实现还是代码”选择流程，不要把所有问题都直接交给编码 Agent。
+本目录是 ARGO 使用方式的权威入口。所有新需求和问题单（包括缺陷与测试失败）先进入 `BusinessPartner` / `/business-partner`：它澄清业务目标、影响范围和验收边界，再将已收敛的决策树交给 `/task-tidy`。任务包准备完成后，选择 `/task-emit-human-in-the-loop` 保留人工持续审批和最终验收，或选择 `/task-emit-afk` 让 Agent 持续推进、打回未通过验收的任务，直至验收通过。随后才根据“当前是否有可信架构基线”和“变化属于意图、实现还是代码”选择后续流程，不要把所有问题都直接交给编码 Agent。
 
 流程图统一使用：`👤` 表示人类输入、判断或审核，`🤖` 表示 Agent、Skill 或自动化工具执行，`👤🤖` 表示人机协作。
 
@@ -8,11 +8,10 @@
 
 | 场景 | 判断条件 | 首选入口 | 期望产出 |
 | --- | --- | --- | --- |
-| 新需求开发 | 新增或改变业务目标、能力、约束、验收 | `BusinessPartner` / `/business-partner` → `/task-tidy` | 结构化决策、图谱变更、交付路由 |
-| 缺陷修复 | 已有失败现象，需要先判断问题层级 | `Orchestrator` / `/orchestrating` | 意图、实现或代码的正确分流 |
-| 架构优化 | 不新增功能，改善边界和可测试性 | `/improve-codebase-architecture` → `/grill-me` | 候选、决策树、图谱内化 |
-| 既有仓库架构反推 | 没有可信意图/实现基线 | `/reverse-architecture-extraction` | 候选架构、证据矩阵、开放问题 |
-| 架构漂移恢复 | 已有可信基线，外部修改了代码/测试 | `/architecture-drift-recovery` | drift 分类与阶段路由 |
+| 新需求、业务提案、缺陷或测试失败 | 新增、改变或观察到业务目标、能力、约束、验收或失败现象 | `BusinessPartner` / `/business-partner` → `/task-tidy` → `/task-emit-human-in-the-loop` 或 `/task-emit-afk` | 结构化决策、图谱变更、交付路由及选定执行模式 |
+| 架构优化 | 不新增功能，改善边界和可测试性 | `BusinessPartner` 识别后 → `/improve-codebase-architecture` → `/grill-me` | 候选、决策树、图谱内化 |
+| 既有仓库架构反推 | BusinessPartner 判定没有可信意图/实现基线 | `BusinessPartner` 识别后 → `/reverse-architecture-extraction` | 候选架构、证据矩阵、开放问题 |
+| 架构漂移恢复 | BusinessPartner 判定已有可信基线但代码或测试被外部修改 | `BusinessPartner` 识别后 → `/architecture-drift-recovery` | drift 分类与阶段路由 |
 | 业务方案探索 | 目标或方案尚不稳定 | `/business-partner` 或 `/grill-me` | 可判断的方案树和验收控制点 |
 | 市场/竞品研究 | 进入产品决策前需要外部证据 | `/market-research` | 有来源的事实、推断和建议 |
 | 意图图谱审计 | 担心 ArchiMate 语义或追踪错误 | `ArchimateLanguagistAudit` | 只读审计发现 |
@@ -28,7 +27,11 @@ flowchart LR
     B --> C[👤🤖 task-tidy<br/>整理决策树]
     C --> D[🤖 TaskTidyGraphIntegrator<br/>生成图谱候选]
     D --> E[👤🤖 host 验收图谱候选]
-    E --> F[👤 按依赖顺序提交主交付流程]
+    E --> F{👤 选择任务启动模式}
+    F -- 人在环 --> G[👤🤖 task-emit-human-in-the-loop]
+    F -- 离开键盘 --> H[🤖 task-emit-afk]
+    G --> I[🤖 FastOrchestrator<br/>按依赖顺序交付]
+    H --> I
 ```
 
 要求：
@@ -38,36 +41,37 @@ flowchart LR
 3. `/task-tidy` 将临时表格写入 `.argo/temp/decision-tree/`，不创建 `design/tasks/`。
 4. host 必须验收每个决策节点是否映射为元素、关系、属性、view、testcase 或有理由的 residual coordination。
 5. 通过 MCP preview、apply、validate 后生成依赖图和 G 估算。
-6. 人类按依赖顺序逐个新会话提交给 Orchestrator。
+6. 任务包完成后选择启动模式：`/task-emit-human-in-the-loop` 保留人类持续审批和最终验收；`/task-emit-afk` 由 Agent 持续推进并打回未通过验收的任务。两种模式都按依赖顺序交给 `FastOrchestrator`。
 
 ## 缺陷修复
 
 ```mermaid
 flowchart TD
-    A[👤 提交现象、复现步骤与失败证据] --> B[🤖 Orchestrator 接收问题]
-    B --> C[🤖 IntentionDesign 检查意图与验收边界]
-    C --> D{🤖 意图是否正确且完整?}
-    D -- 否 --> E[👤🤖 回到业务澄清与 task-tidy]
-    E --> F[🤖 刷新意图图谱与验收 testcase]
-    F --> G[👤🤖 进入主交付流程]
-    D -- 是 --> H[🤖 ImplementationDesign 检查实现契约]
+    A[👤 提交现象、复现步骤与失败证据] --> B[👤🤖 BusinessPartner<br/>澄清目标、影响与验收]
+    B --> C[👤🤖 task-tidy<br/>整理决策树]
+    C --> D[🤖 IntentionDesign 检查意图与验收边界]
+    D --> E{🤖 意图是否正确且完整?}
+    E -- 否 --> F[🤖 刷新意图图谱与验收 testcase]
+    F --> G[👤🤖 选择任务启动模式]
+    E -- 是 --> H[🤖 ImplementationDesign 检查实现契约]
     H --> I{🤖 问题类型?}
     I -- 实现架构问题 --> J[🤖 更新契约与测试入口]
-    J --> K[👤 审核实现验收]
-    K --> L[🤖 CodingAndReparing 修复]
-    I -- 纯代码 BUG --> L
+    J --> G
+    I -- 纯代码 BUG --> G
     I -- 无需开发或证据不足 --> N[🤖 说明结论或请求最小必要信息]
-    L --> O[🤖 测试与双层验收]
+    G --> O[👤🤖 task-emit-human-in-the-loop<br/>或 task-emit-afk]
+    O --> P[🤖 FastOrchestrator 修复]
+    P --> Q[🤖 测试与双层验收]
 ```
 
-“问题”不等于“代码 BUG”。Orchestrator 先让 `IntentionDesign` 判断业务意图和验收边界是否正确：
+“问题”不等于“代码 BUG”。`BusinessPartner` 先澄清问题的业务目标、影响和验收边界，`/task-tidy` 整理其决策树；随后 `IntentionDesign` 判断业务意图和验收边界是否正确：
 
 - **意图错误或缺失**：回到新需求前置流程，重新澄清并内化。
 - **意图正确、实现契约错误**：由 `ImplementationDesign` 更新契约和测试入口，经人类审核后编码。
 - **意图和实现均正确**：`CodingAndReparing` 直接修复生产行为。
 - **无需开发或证据不足**：说明原因或请求最小必要信息。
 
-输入尽量包含现象、复现步骤、失败命令、日志摘要、期望行为和影响范围。修复完成后仍需经过实现契约和业务意图两层验收。
+输入尽量包含现象、复现步骤、失败命令、日志摘要、期望行为和影响范围。修复任务启动时，选择 `/task-emit-human-in-the-loop` 保留人工持续审批和最终验收，或选择 `/task-emit-afk` 让 Agent 持续推进直到验收通过。修复完成后仍需经过实现契约和业务意图两层验收。
 
 ## 架构优化
 
