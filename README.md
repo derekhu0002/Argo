@@ -1,6 +1,6 @@
 # ARGO HARNESS
 
-ARGO is a vector knowledge-graph-driven development framework, built on the ArchiMate enterprise architecture language and covering agent automation across the full software delivery lifecycle, from requirements through delivery archival.
+ARGO is a vector knowledge-graph-driven Agent Loop framework that uses the ArchiMate enterprise architecture language to structure its knowledge graph. It covers the full software delivery lifecycle—from requirements analysis and architecture design through development, testing, and delivery archival—and provides human-in-the-loop and human-on-the-loop delivery modes.
 
 ## Quick start
 
