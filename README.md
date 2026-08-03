@@ -1,5 +1,7 @@
 # ARGO HARNESS
 
+ARGO is a vector knowledge-graph-driven development framework, built on the ArchiMate enterprise architecture language and covering agent automation across the full software delivery lifecycle, from requirements through delivery archival.
+
 ## Quick start
 
 ### Install
