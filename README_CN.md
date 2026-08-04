@@ -1,6 +1,8 @@
 # ARGO HARNESS
 
-ARGO 是一个向量知识图谱驱动的Agent Loop框架，以 ArchiMate 企业架构语言作为知识图谱的结构，覆盖从需求分析、架构设计、开发测试到交付归档的整个软件开发周期。并提供“人在环路”和“人在环上”的两种交付模式。
+ARGO 是一个向量知识图谱(GraphRAG)驱动的Agent Loop框架，以 ArchiMate 企业架构语言作为知识图谱的结构，覆盖从需求分析、架构设计、开发测试到交付归档的整个软件开发周期。并提供“人在环路”和“人在环上”的两种交付模式。
+
+![ARGO 总体架构](docs/images/argo-overall-architecture.png)
 
 ## 快速开始
 
