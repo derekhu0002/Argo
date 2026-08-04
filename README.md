@@ -2,6 +2,8 @@
 
 ARGO is a vector knowledge-graph-driven (so called GraphRAG) Agent Loop framework that uses the ArchiMate enterprise architecture language to structure its knowledge graph. It covers the full software delivery lifecycle—from requirements analysis and architecture design through development, testing, and delivery archival—and provides human-in-the-loop and human-on-the-loop delivery modes.
 
+![ARGO overall architecture](docs/images/argo-overall-architecture-en.png)
+
 ## Quick start
 
 ### Install
@@ -27,6 +29,8 @@ All new requirements and issue reports—including defects and failing tests—s
 | --- | --- |
 | New requirement, business proposal, defect, or failing test | `BusinessPartner` / `/business-partner` → `/task-tidy` → choose `/task-emit-human-in-the-loop` or `/task-emit-afk`; after acceptance, use `/delivery-archive` to archive iteration-delivery documentation |
 | Architecture improvement | `BusinessPartner` / `/business-partner` → `/improve-codebase-architecture` → `/task-tidy` → choose `/task-emit-human-in-the-loop` or `/task-emit-afk`; after acceptance, use `/delivery-archive` to archive iteration-delivery documentation |
+
+![ARGO Agent Loop end-to-end delivery flow](docs/images/argo-agent-loop-en.png)
 
 For detailed selection criteria, suggested inputs, and outputs, see [Usage scenarios and entrypoint selection](design/argo-harness/usage-scenarios/README.md).
 

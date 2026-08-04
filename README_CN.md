@@ -29,6 +29,8 @@ ARGO 是一个向量知识图谱(GraphRAG)驱动的Agent Loop框架，以 ArchiM
 | 新需求、业务提案、缺陷或测试失败 | `BusinessPartner` / `/business-partner` → `/task-tidy` → 选择 `/task-emit-human-in-the-loop` 或 `/task-emit-afk`，验收通过后调用：`/delivery-archive`进行迭代交付文档归档                                    |
 | 架构优化             | `BusinessPartner` / `/business-partner` → `/improve-codebase-architecture` → `/task-tidy` → 选择 `/task-emit-human-in-the-loop` 或 `/task-emit-afk`，验收通过后调用：`/delivery-archive`进行迭代交付文档归档 |
 
+![ARGO Agent Loop 全流程](docs/images/argo-agent-loop-cn.png)
+
 有关详细的选择标准、建议输入和输出，请参阅[使用场景与入口选择](design/argo-harness/usage-scenarios/README.md)。
 
 ## 开始前的准备工作
