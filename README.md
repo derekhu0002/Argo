@@ -4,6 +4,10 @@ ARGO is a vector knowledge-graph-driven (so called GraphRAG) Agent Loop framewor
 
 ![ARGO overall architecture](docs/images/argo-overall-architecture-en.png)
 
+![ArchiMate 3.2 elements and relationship types](docs/images/archimate32-elements-relationships-en.png)
+
+ArchiMate 3.2 connects business intent, application behavior, and technology infrastructure through a unified, validatable semantic model. Its constrained relationship types make architectural context queryable, traceable, and usable by agents throughout the delivery loop.
+
 ## Quick start
 
 ### Install
