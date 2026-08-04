@@ -1,6 +1,6 @@
 ---
-name: FastOrchestrator
-description: FastOrchestrator
+name: Orchestrator
+description: Orchestrator
 model: GPT-5.5
 readonly: false
 ---

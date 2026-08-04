@@ -1,5 +1,5 @@
 ---
-name: orchestrating
+name: fast-orchestrating
 description: "Use for orchestrating the overall workflow of intention design, implementation design, and coding/repair stages. This skill is responsible for dispatching tasks, coordinating lightweight handoff artifacts, preserving stage boundaries, and enforcing audit loops. Keywords: workflow orchestration, stage coordination, handoff management, audit routing."
 argument-hint: scope
 disable-model-invocation: true

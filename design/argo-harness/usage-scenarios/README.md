@@ -30,7 +30,7 @@ flowchart LR
     E --> F{👤 选择任务启动模式}
     F -- 人在环 --> G[👤🤖 task-emit-human-in-the-loop]
     F -- 离开键盘 --> H[🤖 task-emit-afk]
-    G --> I[🤖 FastOrchestrator<br/>按依赖顺序交付]
+    G --> I[🤖 Orchestrator<br/>按依赖顺序交付]
     H --> I
 ```
 
@@ -41,7 +41,7 @@ flowchart LR
 3. `/task-tidy` 将临时表格写入 `.argo/temp/decision-tree/`，不创建 `design/tasks/`。
 4. host 必须验收每个决策节点是否映射为元素、关系、属性、view、testcase 或有理由的 residual coordination。
 5. 通过 MCP preview、apply、validate 后生成依赖图和 G 估算。
-6. 任务包完成后选择启动模式：`/task-emit-human-in-the-loop` 保留人类持续审批和最终验收；`/task-emit-afk` 由 Agent 持续推进并打回未通过验收的任务。两种模式都按依赖顺序交给 `FastOrchestrator`。
+6. 任务包完成后选择启动模式：`/task-emit-human-in-the-loop` 保留人类持续审批和最终验收；`/task-emit-afk` 由 Agent 持续推进并打回未通过验收的任务。两种模式都按依赖顺序交给 `Orchestrator`。
 
 ## 缺陷修复
 
@@ -60,7 +60,7 @@ flowchart TD
     I -- 纯代码 BUG --> G
     I -- 无需开发或证据不足 --> N[🤖 说明结论或请求最小必要信息]
     G --> O[👤🤖 task-emit-human-in-the-loop<br/>或 task-emit-afk]
-    O --> P[🤖 FastOrchestrator 修复]
+    O --> P[🤖 Orchestrator 修复]
     P --> Q[🤖 测试与双层验收]
 ```
 
