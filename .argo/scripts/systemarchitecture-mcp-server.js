@@ -1424,8 +1424,8 @@ function addGuidanceForError(guidance, error) {
   if (error.includes('must declare parent_element_id') || error.includes('top-level view')) {
     pushUnique(guidance, 'Keep exactly one top-level view named SystemArchitecture. For any sub-view, set parent_element_id to an existing element and keep parent_element_name aligned with that element name.');
   }
-  if (error.includes('must contain at most 7 elements')) {
-    pushUnique(guidance, 'Do not force more than 7 elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.');
+  if (error.includes('must contain at most 15 elements')) {
+    pushUnique(guidance, 'Do not force more than 15 included_elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.');
   }
   if (error.includes('does not exist') || error.includes('references missing')) {
     pushUnique(guidance, 'Refresh current ids with getSystemArchitecture semantic query first, then call getIntentElementContext for any returned element that needs dependency context. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.');
@@ -1732,6 +1732,16 @@ function compactMutationResponse(payload) {
   };
   if (payload && payload.embeddingLifecycle && payload.embeddingLifecycle.state) {
     compact.embeddingLifecycle = { state: payload.embeddingLifecycle.state };
+  }
+  // Failed actual writes must retain business diagnostics (e.g. View15 maximum/observed)
+  // so callers can distinguish reject reasons; successful writes stay compact.
+  if (payload && payload.status === 'failed') {
+    if (Array.isArray(payload.errors)) {
+      compact.errors = payload.errors;
+    }
+    if (Array.isArray(payload.guidance)) {
+      compact.guidance = payload.guidance;
+    }
   }
   return compact;
 }

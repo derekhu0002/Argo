@@ -3336,6 +3336,409 @@
           "value": "Motivation: goal/requirements/constraint/assessment; Strategy: outcome; Application: query service, lifecycle process, retrieval function, embedding generation; Data: canonical graph and semantic index; Business: acceptor control points and Agent/operator ordinary workflows."
         }
       ]
+    },
+    {
+      "id": "view15-policy-goal",
+      "name": "Globally Consistent View Capacity Governance",
+      "type": "Goal",
+      "description": "By the next governed architecture-policy release, every otherwise-valid View with at most 15 included_elements is accepted, every View with 16 or more is rejected without persistence, existing memberships are not automatically recomposed, relationships do not consume the quota, endpoint coexistence remains mandatory, and active authority consistently states 15 while historical evidence remains accurate.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-ROOT|DT-VIEW15-HORIZONTAL|DT-VIEW15-RESIDUAL|accepted"
+        },
+        {
+          "name": "horizontalConcerns",
+          "value": "policy semantics; canonical membership stability; governed enforcement; active guidance; business acceptance evidence"
+        },
+        {
+          "name": "residualDecisionState",
+          "value": "No open business decision remains; later gaps are integration or implementation coordination only."
+        },
+        {
+          "name": "mappedLayers",
+          "value": "Motivation: goal/principle/requirements/constraint/assessment; Business: architecture acceptor control points; Application: governed mutation behavior as downstream realization scope; Data: View membership arrays and historical records; Strategy: coherent governance outcome."
+        }
+      ]
+    },
+    {
+      "id": "view15-global-limit-principle",
+      "name": "One Global Hard Maximum of Fifteen",
+      "type": "Principle",
+      "description": "All Views share one hard maximum of 15 included_elements. There is no seven-element soft gate, Viewpoint-specific capacity class, or per-View approval exception; single-concern and Viewpoint-binding obligations remain independent controls.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-SCOPE|DT-VIEW15-SCOPE-GLOBAL|accepted"
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-global-boundary",
+          "value": "{\"description\":\"Apply one hard maximum of 15 included_elements to every View with no seven-element soft gate or category/instance exception.\",\"businessOutcome\":\"Modelers and acceptors use one predictable global View-capacity rule while single-concern and Viewpoint obligations remain independent.\",\"observableBoundary\":\"Equivalent otherwise-valid Views under different Viewpoints are accepted through 15 included_elements without extra approval above seven and are rejected from 16 onward.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-VIEW15-GLOBAL-SCOPE\"}"
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor submits otherwise-valid Views under different valid Viewpoints at 8, 15, and 16 included_elements without category or instance approval metadata."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Every View uses the same hard maximum: 8 through 15 need no extra capacity approval and 16 is rejected; no seven-element soft gate or category/instance exception applies."
+        },
+        {
+          "name": "acceptanceApproval.VIEW15-GLOBAL-SCOPE",
+          "value": "approvedByHuman=true|2026-08-04|WorkPackage explicitly mandates one global hard maximum of 15 with no seven-element soft threshold or category/instance exceptions."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-GLOBAL-SCOPE",
+          "description": "Control point: acceptor submits otherwise-valid Views under different valid Viewpoints at 8, 15, and 16 included_elements without category or instance approval metadata. Observation point: all Views use one hard maximum, 8 through 15 require no extra capacity approval, and 16 is rejected without a seven-element soft gate or exception path.",
+          "type": "Acceptance Test",
+          "Input": "Equivalent otherwise-valid Views from different Viewpoints containing 8, 15, and 16 included_elements, with no capacity-exception metadata.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15GlobalScope.js"
+        }
+      ]
+    },
+    {
+      "id": "view15-prospective-stability-constraint",
+      "name": "Prospective Capacity Without Membership Recomposition",
+      "type": "Constraint",
+      "description": "The higher maximum changes future admission only. Existing included_elements and included_relationships memberships are not automatically merged, reorganized, or reassessed solely because capacity increased.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-MIGRATION|DT-VIEW15-MIGRATION-PROSPECTIVE|accepted"
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-no-migration",
+          "value": "{\"description\":\"Apply the fifteen-element limit prospectively without automatically changing existing included_elements or included_relationships memberships.\",\"businessOutcome\":\"The capacity increase enables future admission without erasing accepted concern boundaries or triggering architecture recomposition.\",\"observableBoundary\":\"A before/after comparison of every pre-existing View membership array shows no difference attributable solely to the policy activation.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-VIEW15-NO-MIGRATION\"}"
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor compares all pre-existing included_elements and included_relationships arrays before and after policy activation."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "No pre-existing View membership difference is attributable solely to the 7-to-15 policy change."
+        },
+        {
+          "name": "acceptanceApproval.VIEW15-NO-MIGRATION",
+          "value": "approvedByHuman=true|2026-08-04|WorkPackage explicitly requires prospective capacity with no automatic membership recomposition."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-NO-MIGRATION",
+          "description": "Control point: acceptor compares every pre-existing included_elements and included_relationships array before and after policy activation. Observation point: no membership difference is attributable solely to the capacity increase.",
+          "type": "Acceptance Test",
+          "Input": "Canonical pre-policy and post-policy View membership snapshots.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15NoMigration.js"
+        }
+      ]
+    },
+    {
+      "id": "view15-counting-semantics-requirement",
+      "name": "Elements-Only Capacity With Endpoint Coexistence",
+      "type": "Requirement",
+      "description": "Only included_elements consume the fifteen available positions. included_relationships do not consume the quota and have no new count limit, while every included relationship must retain both source and target elements in the same View.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-COUNT|DT-VIEW15-COUNT-ELEMENTS|accepted"
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-relationship-counting",
+          "value": "{\"description\":\"Count only included_elements toward the fifteen-position capacity while enforcing relationship endpoint coexistence independently.\",\"businessOutcome\":\"Relationship-rich Views retain the approved elements-only capacity semantics without weakening graph integrity.\",\"observableBoundary\":\"At 15 included_elements, adding any number of valid included_relationships does not trigger capacity rejection; a relationship missing either endpoint in the View is rejected specifically for endpoint coexistence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-VIEW15-RELATIONSHIPS\"}"
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor submits 15 included_elements with multiple valid included_relationships whose endpoints coexist, then submits a relationship whose source or target is absent from the View."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Relationship count consumes zero capacity and causes no quota rejection; the missing-endpoint case is rejected specifically for endpoint coexistence."
+        },
+        {
+          "name": "acceptanceApproval.VIEW15-RELATIONSHIPS",
+          "value": "approvedByHuman=true|2026-08-04|WorkPackage explicitly requires relationships outside the element quota while preserving endpoint coexistence."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-RELATIONSHIPS",
+          "description": "Control point: acceptor submits 15 included_elements plus multiple included_relationships whose endpoints coexist, then submits a relationship with a missing endpoint. Observation point: the first case is not rejected by relationship count and the second is rejected for endpoint coexistence, not quota consumption.",
+          "type": "Acceptance Test",
+          "Input": "A valid 15-element View with multiple in-View relationships, followed by a relationship missing one in-View endpoint.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15Relationships.js"
+        }
+      ]
+    },
+    {
+      "id": "view15-active-authority-requirement",
+      "name": "Current Fifteen Wording With Historical Truth",
+      "type": "Requirement",
+      "description": "Every active policy, graph description, validator diagnostic, mutation/remediation guide, and current acceptance surface states the hard maximum of 15; historical records that truthfully describe the former seven-element behavior remain unchanged in meaning and identifiable as historical evidence.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-WORDING|DT-VIEW15-WORDING-ACTIVE|accepted"
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-authority-consistency",
+          "value": "Keep current authority coherent at 15 without falsifying historical seven-element evidence."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor reviews current authority and diagnostics alongside historical decision records."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "All active authority uses 15, while historical seven-element records remain historically accurate."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-CONSISTENCY",
+          "description": "Control point: acceptor reviews active modeling principles, graph descriptions, validator failure text, mutation guidance, tests, and historical decision records. Observation point: every active authority and observable diagnostic uses 15 while historical seven-element evidence remains accurate and identifiable.",
+          "type": "Acceptance Test",
+          "Input": "Inventory of active policy/validation/remediation surfaces and historical decision evidence.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15Consistency.js"
+        }
+      ]
+    },
+    {
+      "id": "view15-enforcement-completeness-requirement",
+      "name": "Fail-Closed Capacity Enforcement Across Growth Paths",
+      "type": "Requirement",
+      "description": "Every governed operation that directly or indirectly grows View membership applies the same hard maximum: exactly 15 included_elements remains admissible when other invariants pass; 16 or more is rejected before persistence with a clear maximum-and-observed-count reason; relationship add/update and focused variants that introduce endpoint elements cannot defer overflow discovery to later full validation.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-ACCEPTANCE|ExplicitAcceptanceTestcase-VIEW15-BOUNDARY|ExplicitAcceptanceTestcase-VIEW15-OVERFLOW|ExplicitAcceptanceTestcase-VIEW15-INDIRECT-GROWTH|accepted"
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-exact-boundary",
+          "value": "Accept exactly 15 included_elements when all other invariants pass."
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-overflow-denial",
+          "value": "Reject 16 or more before persistence and report maximum 15 plus observed count."
+        },
+        {
+          "name": "functionalPoint.DT-VIEW15-indirect-growth",
+          "value": "Apply the same boundary to direct membership edits and every relationship operation that can introduce endpoint membership."
+        },
+        {
+          "name": "acceptanceControlPoint",
+          "value": "Acceptor submits exact-boundary, overflow, and every direct/indirect membership-growth scenario through governed architecture operations."
+        },
+        {
+          "name": "acceptanceObservationPoint",
+          "value": "Exactly 15 passes cardinality; every route to 16 fails before persistence with one coherent fifteen-element outcome."
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-BOUNDARY",
+          "description": "Control point: acceptor submits a prospective otherwise-valid View mutation with exactly 15 included_elements, valid Viewpoint binding, and valid relationship endpoints. Observation point: governed preview/write does not reject cardinality and reports no former seven-element diagnostic.",
+          "type": "Acceptance Test",
+          "Input": "Otherwise-valid prospective View mutation containing exactly 15 included_elements.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15GlobalScope.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-OVERFLOW",
+          "description": "Control point: acceptor submits an otherwise-valid View mutation containing 16 included_elements. Observation point: the operation is rejected before canonical persistence and reports maximum 15 with observed count 16.",
+          "type": "Acceptance Test",
+          "Input": "Otherwise-valid prospective View mutation containing 16 included_elements.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15GlobalScope.js"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-VIEW15-INDIRECT-GROWTH",
+          "description": "Control point: acceptor starts with a 15-element View and submits each governed relationship add/update or focused operation capable of introducing a new endpoint element. Observation point: every operation is rejected before persistence with the same fifteen-element overflow outcome and none defers discovery to later full validation.",
+          "type": "Acceptance Test",
+          "Input": "A 15-element View plus each governed relationship operation that can introduce endpoint membership.",
+          "acceptanceCriteria": "tests/explicit/entries/runView15IndirectGrowth.js"
+        }
+      ]
+    },
+    {
+      "id": "view15-rejected-alternatives-assessment",
+      "name": "Rejected Capacity Governance Alternatives",
+      "type": "Assessment",
+      "description": "Rejected alternatives remain rationale for future design: Viewpoint/category-specific thresholds, seven as a default with per-instance exceptions, targeted or full membership recomposition, a separate relationship cap, a combined element-plus-relationship quota, rewriting historical evidence, and retaining stale active seven-element wording are outside the accepted policy.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-VIEW15-SCOPE-CLASS",
+          "value": "rejected|category-specific capacity adds unapproved policy complexity"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-SCOPE-INSTANCE",
+          "value": "rejected|per-View approval contradicts no-extra-gate policy"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-MIGRATION-TARGETED",
+          "value": "rejected|no existing View selected for recomposition"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-MIGRATION-FULL",
+          "value": "rejected|full reassessment is a separate redesign"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-COUNT-SEPARATE",
+          "value": "rejected|no relationship-density limit approved"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-COUNT-COMBINED",
+          "value": "rejected|only included_elements define quota consumption"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-WORDING-ALL",
+          "value": "rejected|rewriting history corrupts audit evidence"
+        },
+        {
+          "name": "decisionTrace.DT-VIEW15-WORDING-NONE",
+          "value": "rejected|stale active wording contradicts current authority"
+        }
+      ]
+    },
+    {
+      "id": "view15-wp-intent-integration",
+      "name": "Persist View Capacity Intent and Acceptance",
+      "type": "Work Package",
+      "description": "Delivery step 1: persist the approved policy, rejected-branch rationale, exact acceptance ownership, and viewpoint-bound Views before downstream implementation design.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-VERTICAL|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "1"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "delivered"
+        },
+        {
+          "name": "deliveryEvidence",
+          "value": "View 15 policy, rejected rationale, six exact acceptance owners, and viewpoint-bound policy/acceptance/delivery views persisted; validateSystemArchitecture passed."
+        }
+      ]
+    },
+    {
+      "id": "view15-wp-implementation-design",
+      "name": "Map Capacity Enforcement Responsibilities",
+      "type": "Work Package",
+      "description": "Delivery step 2: map implementation responsibilities and every direct or indirect membership-growth boundary from the persisted intent without inventing new business policy.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-VERTICAL|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "2"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ]
+    },
+    {
+      "id": "view15-wp-enforcement-realization",
+      "name": "Realize Coherent Capacity Enforcement",
+      "type": "Work Package",
+      "description": "Delivery step 3: realize one fail-closed fifteen-element boundary across governed direct and indirect View membership-growth operations.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-VERTICAL|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "3"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ]
+    },
+    {
+      "id": "view15-wp-guidance-calibration",
+      "name": "Calibrate Active Capacity Guidance",
+      "type": "Work Package",
+      "description": "Delivery step 4: align active policy, diagnostics, remediation guidance, and tests to 15 while preserving historical records in their original time context.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-VERTICAL|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "4"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ]
+    },
+    {
+      "id": "view15-wp-acceptance-proof",
+      "name": "Prove Six View Capacity Scenarios",
+      "type": "Work Package",
+      "description": "Delivery step 5: execute the six explicit business acceptance scenarios and full graph validation after enforcement and active guidance agree.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-VERTICAL|DT-VIEW15-ACCEPTANCE|accepted"
+        },
+        {
+          "name": "deliveryOrder",
+          "value": "5"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ]
+    },
+    {
+      "id": "view15-ready-plateau",
+      "name": "Fifteen-Element View Governance Ready",
+      "type": "Plateau",
+      "description": "Target state: one global prospective maximum of 15 included_elements is coherently enforced and communicated, existing memberships remain stable, relationship endpoints still coexist, history remains truthful, and all six business scenarios have acceptance evidence.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-VIEW15-ROOT|DT-VIEW15-VERTICAL|DT-VIEW15-ACCEPTANCE|accepted target"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -5238,6 +5641,127 @@
       "target_name": "Script-Owned Query Auto-Alignment",
       "description": "Directional business semantics: readiness state determines whether ordinary query recovery runs automatic alignment, retries once, succeeds after Aligned, or fails closed with diagnostic evidence.",
       "statement": "Fail-Closed Semantic Index Readiness --(Influence)--> Script-Owned Query Auto-Alignment"
+    },
+    {
+      "id": "view15-rel-principle-goal",
+      "name": "Global limit governs capacity goal",
+      "type": "Influence",
+      "source_id": "view15-global-limit-principle",
+      "target_id": "view15-policy-goal",
+      "source_name": "One Global Hard Maximum of Fifteen",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "The universal no-soft-gate principle positively determines the policy goal for every View.",
+      "statement": "One Global Hard Maximum of Fifteen --(Influence)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-prospective-goal",
+      "name": "Prospective stability realizes policy goal",
+      "type": "Realization",
+      "source_id": "view15-prospective-stability-constraint",
+      "target_id": "view15-policy-goal",
+      "source_name": "Prospective Capacity Without Membership Recomposition",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "Membership stability realizes the goal by restricting the policy to future admission rather than graph redesign.",
+      "statement": "Prospective Capacity Without Membership Recomposition --(Realization)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-count-goal",
+      "name": "Counting semantics realize policy goal",
+      "type": "Realization",
+      "source_id": "view15-counting-semantics-requirement",
+      "target_id": "view15-policy-goal",
+      "source_name": "Elements-Only Capacity With Endpoint Coexistence",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "Elements-only counting and endpoint coexistence define the quota semantics required by the global goal.",
+      "statement": "Elements-Only Capacity With Endpoint Coexistence --(Realization)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-authority-goal",
+      "name": "Authority consistency realizes policy goal",
+      "type": "Realization",
+      "source_id": "view15-active-authority-requirement",
+      "target_id": "view15-policy-goal",
+      "source_name": "Current Fifteen Wording With Historical Truth",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "Current wording coherence and historical truth jointly realize authoritative governance.",
+      "statement": "Current Fifteen Wording With Historical Truth --(Realization)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-enforcement-goal",
+      "name": "Complete enforcement realizes policy goal",
+      "type": "Realization",
+      "source_id": "view15-enforcement-completeness-requirement",
+      "target_id": "view15-policy-goal",
+      "source_name": "Fail-Closed Capacity Enforcement Across Growth Paths",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "Uniform direct and indirect fail-closed enforcement makes the fifteen-element policy operationally observable.",
+      "statement": "Fail-Closed Capacity Enforcement Across Growth Paths --(Realization)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-rejected-goal",
+      "name": "Rejected choices constrain interpretation",
+      "type": "Influence",
+      "source_id": "view15-rejected-alternatives-assessment",
+      "target_id": "view15-policy-goal",
+      "source_name": "Rejected Capacity Governance Alternatives",
+      "target_name": "Globally Consistent View Capacity Governance",
+      "description": "Rejected choices negatively delimit future interpretations so exceptions, recomposition, combined quotas, and historical rewriting cannot be reintroduced as accepted intent.",
+      "statement": "Rejected Capacity Governance Alternatives --(Influence)--> Globally Consistent View Capacity Governance"
+    },
+    {
+      "id": "view15-rel-wp1-wp2",
+      "name": "Intent integration precedes implementation design",
+      "type": "Triggering",
+      "source_id": "view15-wp-intent-integration",
+      "target_id": "view15-wp-implementation-design",
+      "source_name": "Persist View Capacity Intent and Acceptance",
+      "target_name": "Map Capacity Enforcement Responsibilities",
+      "description": "Persisted approved intent is the prerequisite for mapping downstream responsibilities.",
+      "statement": "Persist View Capacity Intent and Acceptance --(Triggering)--> Map Capacity Enforcement Responsibilities"
+    },
+    {
+      "id": "view15-rel-wp2-wp3",
+      "name": "Implementation design precedes enforcement",
+      "type": "Triggering",
+      "source_id": "view15-wp-implementation-design",
+      "target_id": "view15-wp-enforcement-realization",
+      "source_name": "Map Capacity Enforcement Responsibilities",
+      "target_name": "Realize Coherent Capacity Enforcement",
+      "description": "Responsibility and path mapping must complete before coherent enforcement is realized.",
+      "statement": "Map Capacity Enforcement Responsibilities --(Triggering)--> Realize Coherent Capacity Enforcement"
+    },
+    {
+      "id": "view15-rel-wp3-wp4",
+      "name": "Enforcement precedes guidance calibration",
+      "type": "Triggering",
+      "source_id": "view15-wp-enforcement-realization",
+      "target_id": "view15-wp-guidance-calibration",
+      "source_name": "Realize Coherent Capacity Enforcement",
+      "target_name": "Calibrate Active Capacity Guidance",
+      "description": "Active guidance is calibrated against the coherently realized boundary without rewriting history.",
+      "statement": "Realize Coherent Capacity Enforcement --(Triggering)--> Calibrate Active Capacity Guidance"
+    },
+    {
+      "id": "view15-rel-wp4-wp5",
+      "name": "Guidance calibration precedes acceptance proof",
+      "type": "Triggering",
+      "source_id": "view15-wp-guidance-calibration",
+      "target_id": "view15-wp-acceptance-proof",
+      "source_name": "Calibrate Active Capacity Guidance",
+      "target_name": "Prove Six View Capacity Scenarios",
+      "description": "Acceptance consistency is evaluated only after active authority and diagnostics agree on 15.",
+      "statement": "Calibrate Active Capacity Guidance --(Triggering)--> Prove Six View Capacity Scenarios"
+    },
+    {
+      "id": "view15-rel-proof-ready",
+      "name": "Acceptance proof realizes ready plateau",
+      "type": "Realization",
+      "source_id": "view15-wp-acceptance-proof",
+      "target_id": "view15-ready-plateau",
+      "source_name": "Prove Six View Capacity Scenarios",
+      "target_name": "Fifteen-Element View Governance Ready",
+      "description": "All six business observations plus full graph validation qualify the target governance plateau.",
+      "statement": "Prove Six View Capacity Scenarios --(Realization)--> Fifteen-Element View Governance Ready"
     }
   ],
   "views": [
@@ -5618,7 +6142,7 @@
       "view_name": "Graph RAG Seven-Wave Sequence",
       "parent_element_id": "1211",
       "parent_element_name": "AcceptanceDeliveryViewpoint",
-      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: work packages execute in prerequisite order, with supplemental W3.1 integration represented in a dedicated acceptance view rather than overloading this seven-wave overview; Purpose: deciding and handoff preparation; Scope: W1 through W7 baseline wave order, with W3-to-W4 now gated by the Graph RAG W3.1 Integration Acceptance view; Rationale: this view remains the compact seven-wave sequencing overview under the acceptance-delivery anchor, while the W3.1 insertion is split out to preserve the repository seven-element view limit and make the supplemental integration gate explicit.",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: work packages execute in prerequisite order, with supplemental W3.1 integration represented in a dedicated acceptance view rather than overloading this seven-wave overview; Purpose: deciding and handoff preparation; Scope: W1 through W7 baseline wave order, with W3-to-W4 now gated by the Graph RAG W3.1 Integration Acceptance view; Rationale: this view remains the compact seven-wave sequencing overview under the acceptance-delivery anchor. Its existing membership and dedicated W3.1 split are retained prospectively as accepted concern boundaries; current governance permits up to 15 included_elements and does not require recomposition.",
       "included_elements": [
         "grag-wp-1",
         "grag-wp-2",
@@ -6209,6 +6733,74 @@
         "bp-autoalign-rel-query-service-recovery",
         "bp-autoalign-rel-query-service-automation",
         "bp-autoalign-rel-readiness-query"
+      ]
+    },
+    {
+      "view_id": "view15-policy-motivation",
+      "view_name": "View Capacity Fifteen Policy Motivation",
+      "parent_element_id": "1207",
+      "parent_element_name": "StakeholderIntentViewpoint",
+      "description": "Viewpoint: Motivation Viewpoint; Concern: architecture acceptors and modelers need one coherent View capacity policy covering applicability, migration, counting, temporal authority, enforcement completeness, and rejected alternatives; Purpose: designing and handoff preparation; Scope: global hard maximum 15, prospective stability, elements-only counting, active/history wording, all growth paths, and rejected branch rationale; Rationale: this view is a Motivation Viewpoint instance because it expresses the approved goal, principle, requirements, constraint, assessment, and their influence/realization semantics without implementation design.",
+      "included_elements": [
+        "view15-policy-goal",
+        "view15-global-limit-principle",
+        "view15-prospective-stability-constraint",
+        "view15-counting-semantics-requirement",
+        "view15-active-authority-requirement",
+        "view15-enforcement-completeness-requirement",
+        "view15-rejected-alternatives-assessment"
+      ],
+      "included_relationships": [
+        "view15-rel-principle-goal",
+        "view15-rel-prospective-goal",
+        "view15-rel-count-goal",
+        "view15-rel-authority-goal",
+        "view15-rel-enforcement-goal",
+        "view15-rel-rejected-goal"
+      ]
+    },
+    {
+      "view_id": "view15-acceptance-boundaries",
+      "view_name": "View Capacity Fifteen Acceptance Boundaries",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: architecture acceptors need the six View-capacity scenarios mounted on exact business owners with explicit control and observation points; Purpose: deciding and handoff preparation; Scope: exact 15 boundary, 16 overflow denial, relationship quota and endpoint coexistence, indirect membership growth, no migration, and active/history consistency; Rationale: this view is an Implementation and Migration Viewpoint instance because it organizes acceptance semantics that qualify downstream delivery while preserving ownership on the governing motivation elements.",
+      "included_elements": [
+        "view15-policy-goal",
+        "view15-global-limit-principle",
+        "view15-prospective-stability-constraint",
+        "view15-counting-semantics-requirement",
+        "view15-active-authority-requirement",
+        "view15-enforcement-completeness-requirement"
+      ],
+      "included_relationships": [
+        "view15-rel-principle-goal",
+        "view15-rel-prospective-goal",
+        "view15-rel-count-goal",
+        "view15-rel-authority-goal",
+        "view15-rel-enforcement-goal"
+      ]
+    },
+    {
+      "view_id": "view15-delivery-sequence",
+      "view_name": "View Capacity Fifteen Delivery Sequence",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: downstream owners need the approved prerequisite order from intent integration through implementation responsibility mapping, coherent enforcement, active guidance calibration, and acceptance proof; Purpose: handoff preparation; Scope: five ordered work packages and the target ready plateau; Rationale: this view is an Implementation and Migration Viewpoint instance because it represents only the delivery dependency chain and affected governance plateau, not implementation internals or a mixed policy canvas.",
+      "included_elements": [
+        "view15-wp-intent-integration",
+        "view15-wp-implementation-design",
+        "view15-wp-enforcement-realization",
+        "view15-wp-guidance-calibration",
+        "view15-wp-acceptance-proof",
+        "view15-ready-plateau"
+      ],
+      "included_relationships": [
+        "view15-rel-wp1-wp2",
+        "view15-rel-wp2-wp3",
+        "view15-rel-wp3-wp4",
+        "view15-rel-wp4-wp5",
+        "view15-rel-proof-ready"
       ]
     }
   ]

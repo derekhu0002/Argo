@@ -41,7 +41,7 @@ async function main() {
   await rejectsElementMutationWithoutViewScope(tempGraphPath);
   await rejectsRelationshipMutationWithoutViewScope(tempGraphPath);
   await rejectsElementAndRelationshipIdentityTypeUpdates(tempGraphPath);
-  await rejectsElementAdditionWhenViewWouldExceedSevenElements();
+  await rejectsElementAdditionWhenViewWouldExceedFifteenElements();
   await previewsGlobalUpdateMutationsWithoutViewScope(tempGraphPath);
   await returnsIntentElementContextWithSemanticTraversal();
   await treatsCompositionAndAggregationAsSourceToTargetDependencies();
@@ -241,23 +241,24 @@ function validatesTotalValidatorUsesFixedGraphAndViewLimitRule() {
   // View element limit now lives in shared graph-semantics.js; validateSystemArchitecture.js delegates.
   assert(script.includes('validateViewElementLimits'));
   const semantics = fs.readFileSync(path.join(repoRoot, '.argo', 'scripts', 'graph-semantics.js'), 'utf8');
-  assert(semantics.includes('must contain at most 7 elements'));
+  assert(semantics.includes('must contain at most ${MAX_INCLUDED_ELEMENTS} elements')
+    || semantics.includes('must contain at most 15 elements'));
 }
 
-async function rejectsElementAdditionWhenViewWouldExceedSevenElements() {
+async function rejectsElementAdditionWhenViewWouldExceedFifteenElements() {
   const tempRoot = fs.mkdtempSync(path.join(ensureTempDirectory(), 'view-limit-'));
   const tempGraphPath = path.join(tempRoot, 'SystemArchitecture.json');
-  fs.writeFileSync(tempGraphPath, JSON.stringify(buildSevenElementViewGraph(), null, 2));
+  fs.writeFileSync(tempGraphPath, JSON.stringify(buildFifteenElementViewGraph(), null, 2));
 
   const response = await callTool('previewSystemArchitectureMutation', {
     architecturePath: path.relative(repoRoot, tempGraphPath),
     mutations: [
       {
         type: 'addElement',
-        view_ids: ['seven-element-view'],
+        view_ids: ['fifteen-element-view'],
         element: {
-          id: 'eighth-element',
-          name: 'Eighth Element',
+          id: 'sixteenth-element',
+          name: 'Sixteenth Element',
           type: 'Application Component',
         },
       },
@@ -268,14 +269,14 @@ async function rejectsElementAdditionWhenViewWouldExceedSevenElements() {
   assert.strictEqual(payload.status, 'failed');
   assert.strictEqual(payload.written, false);
   assert(
-    payload.errors.some(error => error.includes('must contain at most 7 elements')),
+    payload.errors.some(error => error.includes('must contain at most 15 elements')),
     `Expected view size limit error, got: ${JSON.stringify(payload.errors)}`,
   );
   assertGuidanceIncludes(payload, ['split the view into layered sub-views', 'parent_element_id']);
 }
 
-function buildSevenElementViewGraph() {
-  const elements = Array.from({ length: 7 }, (_, index) => ({
+function buildFifteenElementViewGraph() {
+  const elements = Array.from({ length: 15 }, (_, index) => ({
     id: `element-${index + 1}`,
     name: `Element ${index + 1}`,
     type: 'Application Component',
@@ -303,8 +304,8 @@ function buildSevenElementViewGraph() {
         included_elements: ['element-1'],
       },
       {
-        view_id: 'seven-element-view',
-        view_name: 'Seven Element View',
+        view_id: 'fifteen-element-view',
+        view_name: 'Fifteen Element View',
         parent_element_id: 'element-1',
         parent_element_name: 'Element 1',
         included_elements: elements.map(element => element.id),

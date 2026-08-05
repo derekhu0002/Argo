@@ -1,5 +1,18 @@
 [
   {
+    "testcasename": "ExplicitAcceptanceTestcase-TS-07",
+    "testdescription": "Control: start/query without external credentials, with legacy Neo4j aliases only, with canonical Neo4j values but unresolved neo4jUri or embeddingCredential, and with unsafe or unapproved credential/configuration sources. Observe: safe failure before network/index side effects and no hardcoded, default, Cypher, runtime-field, or legacy-alias fallback.",
+    "acceptanceCriteria": "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "relatedIntentElementId": "grag-credential-boundary",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
+    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runExternalCredentialBoundary.js",
+    "exitCode": 1,
+    "failureError": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}",
+    "stdout": "",
+    "stderr": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}"
+  },
+  {
     "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
     "testdescription": "Control point: invoke ordinary typed queries only through public getSystemArchitecture(query) against aligned, disabled, pending, partial, stale, failed, and mismatched durable states; invoke omitted-query and graph-tidy controls. Observation point: each ordinary query freshly verifies readiness before provider/vector work; non-Aligned states reject with fullSnapshotFallback:false; Aligned performs qualified embedding and independent exhaustive Element, ArchitectureRelationship, and View vector retrieval followed by deterministic closure and canonical completion; no public readiness tool, injected retrieval boundary, synthetic empty seeds, or fallback exists; omitted-query and graph-tidy perform zero semantic operations.",
     "acceptanceCriteria": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",

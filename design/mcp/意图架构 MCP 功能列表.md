@@ -70,7 +70,7 @@
 #### `validateSystemArchitecture`
 
 - **参数**：无（不暴露 `architecturePath`，固定校验项目图谱）
-- **校验项**：JSON Schema、元素/关系 ID 唯一、ArchiMate 元素/关系类型、端点存在与名称匹配、ArchiMate 3.2 关系矩阵、顶层 view 唯一且名为 `SystemArchitecture`、子 view 挂载、view 成员引用、关系端点共现、元素/关系至少属于一个 view、每 view 最多 7 个元素
+- **校验项**：JSON Schema、元素/关系 ID 唯一、ArchiMate 元素/关系类型、端点存在与名称匹配、ArchiMate 3.2 关系矩阵、顶层 view 唯一且名为 `SystemArchitecture`、子 view 挂载、view 成员引用、关系端点共现、元素/关系至少属于一个 view、每 view 最多 15 个元素
 - **失败**：`status: failed`，错误列表输出到 payload / stderr；**无** mutation 式 `guidance`
 
 #### `validateStageHandoff`
@@ -260,12 +260,12 @@ getIntentElementContext（多元素修复或回归定位）
 | 元素/关系必须属于 ≥1 个 view | add 时必传 `view_ids` |
 | 顶层 view 唯一 | 名称必须为 `SystemArchitecture` |
 | 子 view | 必须声明有效 `parent_element_id` |
-| 每 view ≤ 7 个元素 | 超出须拆分为分层子 view |
+| 每 view ≤ 15 个元素 | 超出须拆分为分层子 view |
 | 关系端点共现 | view 含关系则必须同时含 source 与 target 元素 |
 | ArchiMate 3.2 矩阵 | 关系类型须与端点元素类型合法配对 |
 | 不可变字段 | element/relationship 的 `id`、`type` 不可 patch，须 remove + add |
 
-mutation 失败时的 `guidance` 关键字映射（如 `violates ArchiMate 3.2 relationship matrix`、`must contain at most 7 elements`）见校验归档文档「失败引导映射」一节。
+mutation 失败时的 `guidance` 关键字映射（如 `violates ArchiMate 3.2 relationship matrix`、`must contain at most 15 elements`）见校验归档文档「失败引导映射」一节。
 
 ---
 

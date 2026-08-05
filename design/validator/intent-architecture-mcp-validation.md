@@ -38,7 +38,7 @@
 | View 关系端点共现 | 总校验、preview、apply、focused 工具 | 若 view 包含关系 R，则该 view 的 `included_elements` 必须同时包含 R 的 `source_id` 和 `target_id` | `views '<view>' includes relationship '<rel>' but not source element '<source>'` / `target element '<target>'` | 当前无专项 guidance；通用 guidance 会提示检查错误文本、刷新 view membership 后重试 |
 | 元素至少属于一个 view | 总校验、preview、apply、focused 工具 | 遍历所有元素，必须被某个 view 的 `included_elements` 收集到 | `elements '<id>' must be included in at least one view` | 每个元素必须属于至少一个 view；add 时传 `view_ids` 或把已存在对象加入合适 view |
 | 关系至少属于一个 view | 总校验、preview、apply、focused 工具 | 遍历所有关系，必须被某个 view 的 `included_relationships` 收集到 | `relationships '<id>' must be included in at least one view` | 每个关系必须属于至少一个 view；add 时传 `view_ids` 或把已存在对象加入合适 view |
-| View 元素数量上限 | 总校验、preview、apply、focused 工具 | 总校验检查全部 view；mutation 路径检查本次被 add/update/addElement 触达的 view；每个 view `included_elements.length <= 7` | `views '<view>' must contain at most 7 elements; found <n>` | 不要把超过 7 个元素强塞进一个 view；拆分为分层子 view，并用 `parent_element_id` 挂载 |
+| View 元素数量上限 | 总校验、preview、apply、focused 工具 | 总校验检查全部 view；mutation 路径检查本次被 add/update/addElement 触达的 view；每个 view `included_elements.length <= 15`（仅计 `included_elements`，`included_relationships` 不计配额） | `views '<view>' must contain at most 15 elements; found <n>` | 不要把超过 15 个 included_elements 强塞进一个 view；拆分为分层子 view，并用 `parent_element_id` 挂载 |
 
 ## Mutation 前置校验
 
@@ -65,7 +65,7 @@
 | `id cannot be updated` / `type cannot be updated` | `Do not patch immutable identity or type fields. To change an id or type, remove the existing element or relationship, then add the replacement with the desired id or type.` |
 | `must be included in at least one view` | `Every element and relationship must belong to at least one view. Add it with view_ids, or add the existing object to an appropriate view before validating again.` |
 | `must declare parent_element_id` / `top-level view` | `Keep exactly one top-level view named SystemArchitecture. For any sub-view, set parent_element_id to an existing element and keep parent_element_name aligned with that element name.` |
-| `must contain at most 7 elements` | `Do not force more than 7 elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.` |
+| `must contain at most 15 elements` | `Do not force more than 15 included_elements into one view. Pause and think about layered architecture: split the view into layered sub-views, attach each sub-view with parent_element_id, and move lower-level elements into the appropriate child view before retrying.` |
 | `does not exist` / `references missing` | `Refresh current ids with getSystemArchitecture. Do not guess ids; use existing element, relationship, and view ids or create missing objects first.` |
 | 其他错误 | `Inspect the error text, call getSystemArchitecture to refresh ids and current view membership, then retry with previewSystemArchitectureMutation before writing.` |
 

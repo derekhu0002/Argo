@@ -180,7 +180,8 @@ function validateArchiMateEndpointMatrix(document, errors, options = {}) {
 }
 
 /**
- * Validate that each view contains at most 7 elements.
+ * Validate that each view contains at most 15 included_elements.
+ * included_relationships do not consume this quota.
  *
  * @param {object} document - parsed SystemArchitecture JSON
  * @param {string[]} errors - error accumulator
@@ -193,6 +194,7 @@ function validateViewElementLimits(document, errors, options = {}) {
     Array.isArray(options.touchedViewIds) && options.touchedViewIds.length > 0
       ? new Set(options.touchedViewIds)
       : undefined;
+  const MAX_INCLUDED_ELEMENTS = 15;
 
   for (const view of document.views || []) {
     if (!view) {
@@ -202,9 +204,9 @@ function validateViewElementLimits(document, errors, options = {}) {
       continue;
     }
     const elementCount = Array.isArray(view.included_elements) ? view.included_elements.length : 0;
-    if (elementCount > 7) {
+    if (elementCount > MAX_INCLUDED_ELEMENTS) {
       errors.push(
-        `views '${view.view_id}' must contain at most 7 elements; found ${elementCount}. ` +
+        `views '${view.view_id}' must contain at most ${MAX_INCLUDED_ELEMENTS} elements; found ${elementCount}. ` +
         'Split the content into layered sub-views before adding more elements.',
       );
     }
