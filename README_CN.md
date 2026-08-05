@@ -8,6 +8,8 @@ ARGO 是一个向量知识图谱(GraphRAG)驱动的Agent Loop框架，以 ArchiM
 
 ArchiMate 3.2 用统一且可验证的语义连接业务意图、应用实现与技术支撑；这些关系让 Agent 能追溯上下文、遵守架构边界，并将验收结果回流到正确的交付阶段。
 
+![ArchiMate 架构视图元素矩阵](docs/images/archimate-viewpoint-types.png)
+
 ## 快速开始
 
 ### 安装
