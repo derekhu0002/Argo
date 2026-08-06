@@ -1,8 +1,8 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-08-06T23:00:00.000+08:00",
+  "generatedAt": "2026-08-06T23:14:00.000+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Materializes governed automatic work delegation for CodingAndReparing. Coding is authorized only to update Cursor stage-agent and stage-skill governance surfaces so AUTODEL-DT-00 through AUTODEL-DT-15 pass without weakening existing approval, handoff, audit, commit, or delivery gates. Pre-coding explicit entrypoint evidence is recorded in .argo/temp/automatic-delegation-expected-failures.json; full runner baseline was refreshed before the ImplementationDesign commit with 90 total, 65 passed, 25 failed or missing, and 0 missing acceptanceCriteria.",
+  "summary": "Corrected ImplementationDesign testcase coverage for governed automatic work delegation after IntentDesign audit. Coding remains authorized only to update Cursor stage-agent and stage-skill governance surfaces so AUTODEL-DT-00 through AUTODEL-DT-15 pass without weakening existing approval, handoff, audit, commit, or delivery gates. The frozen Harness now checks DT-04/13 scheduling details, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-15 bounded-summary/no-bypass behavior, and contradictory gate-bypass language. Pre-coding explicit entrypoint evidence is recorded in .argo/temp/automatic-delegation-expected-failures.json; the required pre-commit full runner refresh records baseline evidence in design/KG/test-failure-records.json and runner-owned deliveryStatus.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
@@ -50,7 +50,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-04",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-04",
       "controlPoint": "Simple and complex multi-channel hypothesis fixtures.",
-      "observationPoint": "Delegation tree depth never exceeds two child edges from the stage owner.",
+      "observationPoint": "Delegation tree depth never exceeds two child edges from the stage owner, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -131,7 +131,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-07",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-07",
       "controlPoint": "Child task with large logs, many search results, ordinary supports, and decisive counterexamples.",
-      "observationPoint": "Parent receives bounded required fields, strongest ordinary supports, decisive counterexamples, and evidence locations without raw logs.",
+      "observationPoint": "Parent receives bounded required fields, strongest ordinary supports, every decisive counterexample, externally addressable evidence locations, and no raw logs or full search process.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -149,7 +149,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-09",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-09",
       "controlPoint": "Three business decisions requiring distinct evidence combinations.",
-      "observationPoint": "Children gather evidence while BusinessPartner returns one coherent traceable decision tree, authority weighting, recommendations, questions, and acceptance semantics.",
+      "observationPoint": "Children gather evidence while BusinessPartner alone synthesizes SMART framing, MECE tree, authority weighting, recommendations, user questions, business acceptance, and the final business verdict.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -158,7 +158,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-10",
       "controlPoint": "Three intent dependency branches sharing one upstream architecture element.",
-      "observationPoint": "Branch investigations run independently; exactly one IntentionDesign writer integrates the graph through preview/apply/validation.",
+      "observationPoint": "Branch investigations run independently; exactly one IntentionDesign graph writer preserves Viewpoint binding, same-view endpoints, ArchiMate-valid relationship semantics, preview, apply, and validation.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -167,7 +167,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-11",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-11",
       "controlPoint": "Three disjoint local stable elements and one shared interface.",
-      "observationPoint": "Local work may parallelize while shared interface, root contract, dependency direction, frozen scope, and handoff remain under one owner.",
+      "observationPoint": "Local work may parallelize while shared interface, root contract, cross-element dependency direction, frozen scope, and implementation-to-coding handoff remain under one owner.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -203,7 +203,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-15",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-15",
       "controlPoint": "Complete workflow containing large work inside every stage.",
-      "observationPoint": "Orchestrator observes validated stage summaries and existing gates rather than raw child evidence; no stage is bypassed.",
+      "observationPoint": "Orchestrator observes bounded validated stage summaries and existing gates rather than raw child evidence, does not manage child-level work, and no stage is bypassed.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."

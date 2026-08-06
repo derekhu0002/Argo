@@ -11,6 +11,8 @@ This contract owns the Cursor agent portion of Governed Automatic Work Delegatio
 - `.cursor/agents/ImplementationDesign.md` owns implementation-stage automatic delegation guidance for disjoint local stable-element contract and testcase-entrypoint work while preserving one owner for the root contract, shared interfaces, dependency direction, frozen files, and ImplementationToCoding handoff.
 - `.cursor/agents/CodingAndReparing.md` owns coding-stage automatic delegation guidance for same-frontier repair tasks with disjoint authorized write sets while preserving shared-write serialization, integration, full validation, delivery regression comparison, and final delivery judgment.
 - Agent specifications record governance behavior only. They do not import test code, execute production code, or weaken existing approval, handoff, audit, commit, or delivery gates.
+- AUTODEL assertions must reject contradictory gate-bypass or weakening language, not merely accept positive phrases. Contradictions include skipping or bypassing human approval, handoff validation, audits, stage commits, delivery-status governance, or full-runner evidence.
+- DT-10 requires one graph writer with Viewpoint binding, same-view endpoints, ArchiMate-valid relationship semantics, preview, apply, and validation controls. DT-15 requires validated bounded stage summaries, no raw child evidence, no child-level Orchestrator management, and no stage bypass.
 
 ## Local Dependencies
 

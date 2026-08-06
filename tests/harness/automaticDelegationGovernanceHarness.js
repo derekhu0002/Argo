@@ -25,6 +25,7 @@ function assertContextAccountabilityGovernance() {
     'final accountability',
   ], 'AUTODEL_DT00_CONTEXT_ACCOUNTABILITY_MISSING');
   assertExistingStageGatesPreserved();
+  assertNoContradictoryGateBypassLanguage(corpus, 'AUTODEL_DT00_GATE_CONTRADICTION');
 }
 
 function assertStageOwnedDispatchGovernance() {
@@ -51,6 +52,7 @@ function assertStageOwnedDispatchGovernance() {
     'stage commits',
     'handoff validation',
   ], 'AUTODEL_DT15_ORCHESTRATOR_BOUNDARY_MISSING');
+  assertNoContradictoryGateBypassLanguage(read(STAGE_SURFACES.orchestrator), 'AUTODEL_DT15_ORCHESTRATOR_GATE_CONTRADICTION');
 }
 
 function assertHypothesisEvidenceGovernance() {
@@ -72,11 +74,16 @@ function assertResourceGovernance() {
   const corpus = readGovernanceCorpus();
   assertIncludesAll(corpus, [
     'two child edges',
+    'no third child edge',
+    'stage owner to verifier to gatherer',
     'four active',
-    'queue',
+    'eligible queued work fills released slots',
     'dependency-blocked',
+    'does not consume',
+    'overflow queues by dependency, risk, and blocking impact',
   ], 'AUTODEL_DT04_DT13_RESOURCE_LIMITS_MISSING');
   assert(!/unbounded recursion/i.test(corpus), 'AUTODEL_DT04_UNBOUNDED_RECURSION_ALLOWED');
+  assertNoContradictoryDelegationLanguage(corpus, 'AUTODEL_DT04_DT13_RESOURCE_CONTRADICTION');
 }
 
 function assertWriteGovernance() {
@@ -163,12 +170,17 @@ function assertBoundedReturnContract() {
     'identity',
     'verdict',
     'decisive evidence',
+    'missing channels',
     'conflicts',
     'change results',
     'next action',
     'strongest 3-5',
+    'ordinary supports',
     'decisive counterexample',
+    'evidence locations',
+    'externally addressable',
     'without raw logs',
+    'without full search process',
   ], 'AUTODEL_DT07_BOUNDED_RETURN_MISSING');
 }
 
@@ -188,8 +200,12 @@ function assertImplementationStageDelegationGovernance() {
     'testcase-entrypoint',
     'root contract',
     'shared interface',
+    'cross-element dependency direction',
+    'frozen scope',
+    'one owner',
     'handoff',
   ], 'AUTODEL_DT11_IMPLEMENTATION_STAGE_DELEGATION_MISSING');
+  assertNoContradictoryDelegationLanguage(read(STAGE_SURFACES.implementationDesign), 'AUTODEL_DT11_DEPENDENCY_OWNER_CONTRADICTION');
 }
 
 function assertCodingStageDelegationGovernance() {
@@ -218,13 +234,74 @@ function assertProxyAcceptanceGovernance() {
 }
 
 function assertExistingStageGatesPreserved() {
-  assertIncludesAll(read(STAGE_SURFACES.orchestrator), [
+  const orchestrator = read(STAGE_SURFACES.orchestrator);
+  assertIncludesAll(orchestrator, [
     'validateStageHandoff',
     'runArchitectureTests',
     'Stage Commit Governance',
     'Delivery Status Governance',
     'human partner approved',
   ], 'AUTODEL_EXISTING_STAGE_GATES_WEAKENED');
+  assertIncludesAll(orchestrator, [
+    'stage commits',
+    'approval',
+    'audit',
+    'delivery status',
+    'final workflow closure',
+  ], 'AUTODEL_EXISTING_GATE_INVENTORY_INCOMPLETE');
+  assertNoContradictoryGateBypassLanguage(orchestrator, 'AUTODEL_EXISTING_GATE_CONTRADICTION');
+}
+
+function assertBusinessPartnerSynthesisGovernance() {
+  const businessPartner = read(STAGE_SURFACES.businessPartner);
+  assertIncludesAll(businessPartner, [
+    'hypothesis verification',
+    'local or internet evidence',
+    'SMART framing',
+    'MECE tree',
+    'authority weighting',
+    'recommendations',
+    'user questions',
+    'business acceptance',
+    'final business verdict',
+  ], 'AUTODEL_DT09_BUSINESS_SYNTHESIS_MISSING');
+  assertNoContradictoryDelegationLanguage(businessPartner, 'AUTODEL_DT09_BUSINESS_SYNTHESIS_CONTRADICTION');
+}
+
+function assertIntentionDesignGraphWriterGovernance() {
+  const intentionDesign = read(STAGE_SURFACES.intentionDesign);
+  assertIncludesAll(intentionDesign, [
+    'focused dependency branches',
+    'concern mapping candidates',
+    'coverage checks',
+    'drift evidence',
+    'only graph writer',
+    'Viewpoint',
+    'same-view endpoints',
+    'ArchiMate-valid relationship',
+    'preview',
+    'apply',
+    'validation',
+  ], 'AUTODEL_DT10_GRAPH_WRITER_VIEWPOINT_MISSING');
+  assertNoContradictoryGraphWriterLanguage(intentionDesign, 'AUTODEL_DT10_GRAPH_WRITER_CONTRADICTION');
+}
+
+function assertOrchestratorNoBypassGovernance() {
+  const orchestrator = read(STAGE_SURFACES.orchestrator);
+  assertIncludesAll(orchestrator, [
+    'validated stage summaries',
+    'bounded summaries',
+    'not raw child evidence',
+    'no stage is bypassed',
+    'stage dispatch',
+    'stage commits',
+    'approvals',
+    'handoff validation',
+    'audit routing',
+    'final workflow closure',
+  ], 'AUTODEL_DT15_BOUNDED_SUMMARY_NO_BYPASS_MISSING');
+  assertNoContradictoryGateBypassLanguage(orchestrator, 'AUTODEL_DT15_BOUNDED_SUMMARY_GATE_CONTRADICTION');
+  assertNoContradictoryDelegationLanguage(orchestrator, 'AUTODEL_DT15_CHILD_MANAGEMENT_CONTRADICTION');
 }
 
 function readGovernanceCorpus() {
@@ -244,9 +321,31 @@ function assertIncludesAll(text, needles, failureCategory) {
   }
 }
 
+function assertNoContradictoryGateBypassLanguage(text, failureCategory) {
+  assertNoPattern(text, /\b(skip|bypass|weaken|disable|replace)\s+(approval|human approval|handoff|validateStageHandoff|audit|commit|stage commit|delivery gate|delivery status|runArchitectureTests|full runner)\b/i, failureCategory);
+  assertNoPattern(text, /\b(children|child agents|subagents)\s+(may|can|should|must)\s+(approve|commit|validate handoff|run final delivery|own final)\b/i, failureCategory);
+}
+
+function assertNoContradictoryDelegationLanguage(text, failureCategory) {
+  assertNoPattern(text, /\bunbounded recursion\b/i, failureCategory);
+  assertNoPattern(text, /\b(unlimited|uncapped)\s+(children|child agents|concurrency|delegation)\b/i, failureCategory);
+  assertNoPattern(text, /\b(orchestrator)\s+(manages|owns|dispatches)\s+(child-level|internal child|stage-internal child)\b/i, failureCategory);
+  assertNoPattern(text, /\bchild\s+(owns|decides|approves)\s+(final|business acceptance|stage judgment|handoff)\b/i, failureCategory);
+}
+
+function assertNoContradictoryGraphWriterLanguage(text, failureCategory) {
+  assertNoPattern(text, /\b(parallel|multiple)\s+graph\s+writers\b/i, failureCategory);
+  assertNoPattern(text, /\b(skip|bypass)\s+(Viewpoint|preview|apply|validation|same-view endpoint)\b/i, failureCategory);
+}
+
+function assertNoPattern(text, pattern, failureCategory) {
+  assert(!pattern.test(text), failureCategory);
+}
+
 module.exports = {
   STAGE_SURFACES,
   assertBoundedReturnContract,
+  assertBusinessPartnerSynthesisGovernance,
   assertCodingStageDelegationGovernance,
   assertContextAccountabilityGovernance,
   assertDelegationProhibitions,
@@ -257,8 +356,10 @@ module.exports = {
   assertHypothesisEvidenceGovernance,
   assertImplementationStageDelegationGovernance,
   assertIndependentUnitTrigger,
+  assertIntentionDesignGraphWriterGovernance,
   assertMultiChannelTrigger,
   assertOpenDiscoveryTrigger,
+  assertOrchestratorNoBypassGovernance,
   assertProxyAcceptanceGovernance,
   assertResourceGovernance,
   assertStageOwnedDispatchGovernance,

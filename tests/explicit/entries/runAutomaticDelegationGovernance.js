@@ -1,5 +1,6 @@
 const {
   assertBoundedReturnContract,
+  assertBusinessPartnerSynthesisGovernance,
   assertCodingStageDelegationGovernance,
   assertContextAccountabilityGovernance,
   assertDelegationProhibitions,
@@ -10,8 +11,10 @@ const {
   assertHypothesisEvidenceGovernance,
   assertImplementationStageDelegationGovernance,
   assertIndependentUnitTrigger,
+  assertIntentionDesignGraphWriterGovernance,
   assertMultiChannelTrigger,
   assertOpenDiscoveryTrigger,
+  assertOrchestratorNoBypassGovernance,
   assertProxyAcceptanceGovernance,
   assertResourceGovernance,
   assertStageOwnedDispatchGovernance,
@@ -94,6 +97,16 @@ async function main() {
   // THEN exactly one retry, supplement, serialize, or escalate disposition is chosen
   assertFailureDispositionGovernance(); // DT-08
 
+  // GIVEN DT-09 BusinessPartner evidence delegation
+  // WHEN child evidence work returns to the business stage owner
+  // THEN BusinessPartner alone synthesizes SMART/MECE framing, authority weighting, recommendations, questions, and acceptance
+  assertBusinessPartnerSynthesisGovernance(); // DT-09
+
+  // GIVEN DT-10 IntentionDesign investigation delegation
+  // WHEN dependency branches, concern mapping, coverage checks, and drift evidence run in parallel
+  // THEN exactly one Viewpoint-governed graph writer preserves preview/apply/validation and same-view endpoint controls
+  assertIntentionDesignGraphWriterGovernance(); // DT-10
+
   // GIVEN DT-11 disjoint local implementation design work and one shared interface
   // WHEN ImplementationDesign delegates locally
   // THEN root contract, dependency direction, frozen files, and handoff remain stage-owned
@@ -108,6 +121,11 @@ async function main() {
   // WHEN the phase-one release evidence is evaluated
   // THEN proxy behavior passes without claiming unavailable token-reduction telemetry
   assertProxyAcceptanceGovernance(); // DT-14
+
+  // GIVEN DT-15 Orchestrator receives validated stage output
+  // WHEN stage-internal automatic delegation has occurred
+  // THEN Orchestrator sees bounded stage summaries, no raw child evidence, and no stage bypass
+  assertOrchestratorNoBypassGovernance(); // DT-15
 
   // GIVEN existing stage, approval, handoff, audit, commit, and delivery gates
   // WHEN delegation governance is added
