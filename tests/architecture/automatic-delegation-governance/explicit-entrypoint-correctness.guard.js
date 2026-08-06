@@ -98,6 +98,7 @@ for (const helper of [
   assert(harness.includes(`function ${helper}`), `AUTODEL_HARNESS_CONTRADICTION_HELPER_MISSING:${helper}`);
 }
 for (const protectedTerm of [
+  'simple work uses one child level where sufficient',
   'eligible queued work fills released slots',
   'does not consume',
   'evidence locations',
@@ -109,6 +110,7 @@ for (const protectedTerm of [
   'cross-element dependency direction',
   'not raw child evidence',
   'no stage is bypassed',
+  'every hard-trigger decision is traceable',
 ]) {
   assert(harness.includes(protectedTerm), `AUTODEL_HARNESS_SEMANTIC_TERM_MISSING:${protectedTerm}`);
 }

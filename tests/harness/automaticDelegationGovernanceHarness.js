@@ -73,6 +73,7 @@ function assertHypothesisEvidenceGovernance() {
 function assertResourceGovernance() {
   const corpus = readGovernanceCorpus();
   assertIncludesAll(corpus, [
+    'simple work uses one child level where sufficient',
     'two child edges',
     'no third child edge',
     'stage owner to verifier to gatherer',
@@ -223,6 +224,7 @@ function assertProxyAcceptanceGovernance() {
   const corpus = readGovernanceCorpus();
   assertIncludesAll(corpus, [
     'behavior proxy',
+    'every hard-trigger decision is traceable',
     'atomic tasks do not delegate',
     'bounded summaries',
     'depth',

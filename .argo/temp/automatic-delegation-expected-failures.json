@@ -3,7 +3,7 @@
   "stage": "implementation-design",
   "scope": "governed automatic work delegation",
   "entrypointCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-  "auditCorrection": "Harness assertions strengthened for DT-04/13 scheduling, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-15 bounded summaries/no bypass, and contradictory gate-bypass language.",
+  "auditCorrection": "Harness assertions strengthened for DT-04 simple one-level work and DT-04/13 scheduling, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-14 hard-trigger decision traceability, DT-15 bounded summaries/no bypass, and contradictory gate-bypass language.",
   "fullRunnerBaseline": {
     "command": "argo.runArchitectureTests design/KG/SystemArchitecture.json",
     "total": 90,

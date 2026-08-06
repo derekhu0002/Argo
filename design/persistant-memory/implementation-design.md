@@ -708,3 +708,9 @@
 - Updated `runAutomaticDelegationGovernance.js`, `tests/architecture/automatic-delegation-governance/explicit-entrypoint-correctness.guard.js`, `.cursor/agents/ARCHITECTURE.md`, `tests/ARCHITECTURE.md`, `.argo/temp/ImplementationToCodingHandoff.json`, and `.argo/temp/automatic-delegation-expected-failures.json`. Coding target authorization remains unchanged and no intent graph change is required.
 - Focused correction evidence: `node tests/explicit/entries/runAutomaticDelegationGovernance.js` remains expected RED at `AUTODEL_DT00_CONTEXT_ACCOUNTABILITY_MISSING:automatic delegation`; the four AUTODEL critical guards pass; `argo.validateStageHandoff(stage=implementation-to-coding)` passes.
 - Full correction runner baseline through MCP remains `90 total / 65 passed / 25 failed or missing / 0 missing acceptanceCriteria`; AUTODEL has 22 expected REDs and inherited out-of-scope failures remain `ExplicitAcceptanceTestcase-TS-07`, `ExplicitAcceptanceTestcase-W3-1-MutationEmbeddingVectorE2E`, and `ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval`.
+
+## 2026-08-06 governed automatic delegation re-audit correction
+
+- IntentDesign re-audit found two remaining AUTODEL testcase-design omissions: DT-04 did not explicitly assert that simple work uses one delegation level where sufficient, and DT-14 did not explicitly assert that every hard-trigger decision is traceable.
+- Updated `automaticDelegationGovernanceHarness.js` to require `simple work uses one child level where sufficient` in resource governance and `every hard-trigger decision is traceable` in proxy acceptance governance. Updated `explicit-entrypoint-correctness.guard.js`, `tests/ARCHITECTURE.md`, `.argo/temp/ImplementationToCodingHandoff.json`, and `.argo/temp/automatic-delegation-expected-failures.json` to freeze the new observations.
+- Coding target authorization remains unchanged. No intent graph change or `ImplementationToIntentTraceProposal` is required.

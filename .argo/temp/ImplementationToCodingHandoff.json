@@ -2,7 +2,7 @@
   "stage": "implementation-to-coding",
   "generatedAt": "2026-08-06T23:14:00.000+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected ImplementationDesign testcase coverage for governed automatic work delegation after IntentDesign audit. Coding remains authorized only to update Cursor stage-agent and stage-skill governance surfaces so AUTODEL-DT-00 through AUTODEL-DT-15 pass without weakening existing approval, handoff, audit, commit, or delivery gates. The frozen Harness now checks DT-04/13 scheduling details, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-15 bounded-summary/no-bypass behavior, and contradictory gate-bypass language. Pre-coding explicit entrypoint evidence is recorded in .argo/temp/automatic-delegation-expected-failures.json; the required pre-commit full runner refresh records baseline evidence in design/KG/test-failure-records.json and runner-owned deliveryStatus.",
+  "summary": "Corrected ImplementationDesign testcase coverage for governed automatic work delegation after IntentDesign re-audit. Coding remains authorized only to update Cursor stage-agent and stage-skill governance surfaces so AUTODEL-DT-00 through AUTODEL-DT-15 pass without weakening existing approval, handoff, audit, commit, or delivery gates. The frozen Harness now checks DT-04 simple one-level work plus DT-04/13 scheduling details, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-14 hard-trigger decision traceability, DT-15 bounded-summary/no-bypass behavior, and contradictory gate-bypass language. Pre-coding explicit entrypoint evidence is recorded in .argo/temp/automatic-delegation-expected-failures.json; the required pre-commit full runner refresh records baseline evidence in design/KG/test-failure-records.json and runner-owned deliveryStatus.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
@@ -50,7 +50,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-04",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-04",
       "controlPoint": "Simple and complex multi-channel hypothesis fixtures.",
-      "observationPoint": "Delegation tree depth never exceeds two child edges from the stage owner, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
+      "observationPoint": "Simple work uses one delegation level where sufficient, complex work may use stage owner to verifier to gatherer, no tree exceeds two child edges, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
@@ -194,7 +194,7 @@
       "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-14",
       "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-14",
       "controlPoint": "Proxy scenario suite for large, atomic, multi-channel, conflict, failure, and full-stage delivery behavior.",
-      "observationPoint": "Trigger traceability, bounded summaries, resource limits, dispositions, and existing gates pass without claimed token telemetry.",
+      "observationPoint": "Every hard-trigger decision is traceable, atomic tasks do not delegate, bounded summaries, resource limits, dispositions, and existing gates pass without claimed token telemetry.",
       "initialExecutionStatus": "failed",
       "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
       "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
