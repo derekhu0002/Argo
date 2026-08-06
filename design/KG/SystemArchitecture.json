@@ -1268,7 +1268,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -1988,7 +1988,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2037,7 +2037,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2106,7 +2106,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2235,7 +2235,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -2292,7 +2292,7 @@
         },
         {
           "name": "deliveryStatus",
-          "value": "delivered"
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3769,6 +3769,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-00",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3806,6 +3810,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-01",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3851,6 +3859,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-02-DT-03",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3903,6 +3915,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-04-DT-13",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -3939,6 +3955,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-05",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4016,6 +4036,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-06-FAMILY",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4091,6 +4115,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-07",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4120,6 +4148,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-08",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4157,6 +4189,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-14",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4470,6 +4506,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-09",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4499,6 +4539,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-10",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4528,6 +4572,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-11",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4557,6 +4605,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-12",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [
@@ -4586,6 +4638,10 @@
         {
           "name": "acceptanceApproval.AUTODEL-DT-15",
           "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
         }
       ],
       "testcases": [

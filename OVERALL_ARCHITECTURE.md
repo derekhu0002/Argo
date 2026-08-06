@@ -42,6 +42,7 @@
 38. The BP MCP semantic query contract covers WP-1 through WP-4 as one public `getSystemArchitecture(query)` contract for ordinary semantic queries with or without `query.anchors`. WP-1 rejects forbidden response-shape controls (`responseProfile`, `detail`, `outputMode`, and debug/full/evidence variants) before retrieval with `QUERY_RESPONSE_SHAPE_CONTROL_FORBIDDEN`. WP-2 returns only canonical object subsets under `document.elements`, `document.relationships`, and `document.views`; successful ordinary semantic payloads must not expose derived business summaries, semantic seeds, hit reasons, policy summaries, boundary summaries, semantic index diagnostics, field-level truncation, or transformed canonical objects, and must not require anchors to activate that canonical subset shape. WP-3 applies minimal relationship endpoint closure for selected Relationships, adding only the canonical source and target Elements and failing closed with `SEMANTIC_SUBSET_RELATIONSHIP_MISSING` for broken endpoint references. WP-4 applies complete non-cascading View membership closure for selected Views, including declared members, included Relationships, and their endpoints while excluding overlapping Views unless independently selected and failing closed with `SEMANTIC_SUBSET_VIEW_MISSING` for broken View references.
 39. The root README is the adoption/product entry and documentation router. It retains positioning, problem framing, certainty formula, three core components, high-level delivery flow, quick start/deployment checks, entry selection, and curated next links. It must route deep semantic operator, MCP, validator, lifecycle, credential, and command details to stable `design/` references instead of duplicating them inline. WP2 authorizes only `README.md` reduction plus validation evidence; it does not authorize creating `CONTRIBUTING.md`, inventing a root implementation contract, or implementing design-navigation/contributor-guide work packages.
 40. View capacity governance is owned by the canonical mutation validation boundary and accepted through frozen test entrypoints. Every governed prospective View capacity check counts only `included_elements`, applies one hard maximum of 15 included_elements, excludes Viewpoint/category/instance exceptions and the former seven-element soft threshold, keeps `included_relationships` outside quota, preserves relationship endpoint coexistence, and never recomposes existing View membership arrays solely because the policy is active.
+41. Governed automatic work delegation is specified in Cursor agent and stage-skill governance surfaces, not in production runtime code. Coding may add stage-owned automatic delegation rules only to the authorized stage specifications, while the single AUTODEL explicit entrypoint, Harness, critical guards, intent graph, contracts, existing approval, handoff, audit, commit, and delivery gates remain frozen.
 
 ## Stable architecture elements
 
@@ -58,6 +59,7 @@
 | Stable Design Documentation Map | `design/README.md` | Own stable design navigation, fact-source governance, research/domain/marketing boundaries, and routing to MCP, validator, HARNESS, schema, domain, and marketing authorities. | Design documentation navigation |
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails, including the frozen View15 capacity policy entrypoints and critical guards. | Frozen Node.js entry scripts |
+| Agent Delegation Governance Boundary | `.cursor/agents/` and `.cursor/skills/` | Own Cursor-facing stage and orchestration instructions for governed automatic work delegation: stage-owned internal dispatch, hypothesis-bound evidence, bounded child work, disjoint authorized writes, structured child returns, singular failure disposition, proxy acceptance, and preservation of existing approval, handoff, audit, commit, and delivery gates. | Cursor agent specification files and stage skills |
 
 ## Implements mappings
 
@@ -129,5 +131,19 @@
 | Contributor Governance Entry / safe-change router | `docsys-contributor-governance-entry` | direct |
 | Stable Design Documentation Map / stable reference routing | `docsys-stable-design-reference` | direct |
 | Stable Design Documentation Map / content boundary discipline | `docsys-content-boundary-requirement` | direct |
+| Agent Delegation Governance Boundary / common delegation policy | `autodel-goal` | direct |
+| Agent Delegation Governance Boundary / stage-owned accountability | `autodel-stage-ownership-principle` | direct |
+| Agent Delegation Governance Boundary / hypothesis verdict governance | `autodel-hypothesis-governance-requirement` | direct |
+| Agent Delegation Governance Boundary / depth and concurrency limits | `autodel-resource-governance-constraint` | direct |
+| Agent Delegation Governance Boundary / disjoint write governance | `autodel-write-governance-requirement` | direct |
+| Agent Delegation Governance Boundary / five triggers and prohibitions | `autodel-trigger-policy-requirement` | direct |
+| Agent Delegation Governance Boundary / bounded return contract | `autodel-return-contract-requirement` | direct |
+| Agent Delegation Governance Boundary / singular failure disposition | `autodel-failure-governance-requirement` | direct |
+| Agent Delegation Governance Boundary / proxy-first acceptance | `autodel-proxy-acceptance-requirement` | direct |
+| Agent Delegation Governance Boundary / BusinessPartner delegation surface | `autodel-businesspartner-function` | direct |
+| Agent Delegation Governance Boundary / IntentionDesign delegation surface | `autodel-intention-function` | direct |
+| Agent Delegation Governance Boundary / ImplementationDesign delegation surface | `autodel-implementation-function` | direct |
+| Agent Delegation Governance Boundary / CodingAndReparing delegation surface | `autodel-coding-function` | direct |
+| Agent Delegation Governance Boundary / Orchestrator coordination surface | `autodel-orchestrator-function` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.
