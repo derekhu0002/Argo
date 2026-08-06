@@ -3739,6 +3739,864 @@
           "value": "not_delivered"
         }
       ]
+    },
+    {
+      "id": "autodel-goal",
+      "name": "Contained Accountable Large-Task Delegation",
+      "type": "Goal",
+      "description": "DT-00 accepted business goal: isolate large-task working context while preserving stage ownership, architecture semantics, write authorization, human approval, handoff validation, audit routing, delivery gates, and final accountable judgment. Phase-one success uses observable behavior proxies because trustworthy context-window telemetry is unavailable.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-00",
+          "value": "accepted|root objective for all automatic-delegation decisions"
+        },
+        {
+          "name": "decisionSource",
+          "value": "D:\\Projects\\Argo\\.argo\\history\\decision-tree\\20260806-220800-agent-auto-delegation-current-session.md"
+        },
+        {
+          "name": "horizontalConcerns",
+          "value": "delegation governance; hypothesis and evidence governance; intent architecture delegation; implementation architecture delegation; coding and repair delegation; cross-stage orchestration"
+        },
+        {
+          "name": "mappedLayers",
+          "value": "Motivation, Strategy, Business, Application, and Data"
+        },
+        {
+          "name": "functionalPoint.DT-00-context-accountability",
+          "value": "{\"description\":\"Isolate large-task working context while preserving accountable final judgment and all existing quality gates.\",\"businessOutcome\":\"Large tasks delegate bounded work without degrading ownership, approval, handoff, audit, or delivery quality.\",\"observableBoundary\":\"A large multi-hypothesis task delegates bounded work and returns structured evidence; an atomic task remains local; existing gates remain unchanged.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-00\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-00",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-00",
+          "description": "Control point: business acceptor submits one large multi-hypothesis task and one atomic local task through the normal stage workflow. Observation point: the large task delegates bounded work, the atomic task remains local, the parent receives structured evidence rather than raw working context, and all existing stage, approval, handoff, audit, and delivery gates remain unchanged.",
+          "type": "Acceptance Test",
+          "Input": "Large multi-hypothesis task and atomic local task under existing stage gates.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-00"
+        }
+      ]
+    },
+    {
+      "id": "autodel-stage-ownership-principle",
+      "name": "Stage-Owned Delegation With Final Accountability",
+      "type": "Principle",
+      "description": "DT-01 accepted principle: each stage-owning Agent delegates its own bounded internal work and retains final stage accountability; Orchestrator coordinates only across stages and retains existing workflow gates. Dual ownership and Orchestrator-only internal splitting are rejected because they create recursive decomposition, bottlenecks, or stage-boundary leakage.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-01",
+          "value": "accepted|stage-owned internal delegation"
+        },
+        {
+          "name": "decisionTrace.DT-01-R1",
+          "value": "rejected|no dual Orchestrator and stage-Agent splitting of the same internal work"
+        },
+        {
+          "name": "decisionTrace.DT-01-R2",
+          "value": "rejected|Orchestrator does not own all internal decomposition"
+        },
+        {
+          "name": "functionalPoint.DT-01-stage-accountability",
+          "value": "{\"description\":\"Keep internal delegation with each stage owner and cross-stage coordination with Orchestrator.\",\"businessOutcome\":\"Delegation scales work without creating dual ownership or bypassing final accountability.\",\"observableBoundary\":\"Each stage Agent alone dispatches its internal subwork; Orchestrator dispatches stages and audits only; no duplicate internal dispatch occurs.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-01\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-01",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-01",
+          "description": "Control point: acceptor runs one large task in each stage and inspects dispatch ownership. Observation point: internal subwork is dispatched only by the owning stage Agent, Orchestrator dispatches only stages and audits, and no duplicate or recursive internal dispatch occurs.",
+          "type": "Acceptance Test",
+          "Input": "Large task in BusinessPartner, IntentionDesign, ImplementationDesign, and CodingAndReparing stages.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-01"
+        }
+      ]
+    },
+    {
+      "id": "autodel-hypothesis-governance-requirement",
+      "name": "Hypothesis-Bound Evidence and Singular Verdict",
+      "type": "Requirement",
+      "description": "DT-02 and DT-03 accepted: the stage parent owns decision points; one verifier may own a complex hypothesis; channel gatherers collect only declared evidence; proof, falsification, required channels, and authority precedence are predeclared; each executed hypothesis returns exactly one supported, refuted, or undetermined verdict, with execution failure kept distinct. One complete child per complex decision and global channel workers are rejected as defaults.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-02",
+          "value": "accepted|parent decision, hypothesis verifier, and hypothesis-bound evidence gatherers"
+        },
+        {
+          "name": "decisionTrace.DT-02-R1",
+          "value": "rejected|one complete child per complex decision is not the default"
+        },
+        {
+          "name": "decisionTrace.DT-02-R2",
+          "value": "rejected|global evidence-channel workers are not the default"
+        },
+        {
+          "name": "decisionTrace.DT-03",
+          "value": "accepted|predeclared proof, falsification, channels, authority precedence, and one epistemic verdict"
+        },
+        {
+          "name": "functionalPoint.DT-02-hypothesis-binding",
+          "value": "{\"description\":\"Bind every delegated evidence channel to one declared hypothesis and parent-owned decision point.\",\"businessOutcome\":\"Independent evidence gathering remains traceable and synthesizable without mixing decision contexts.\",\"observableBoundary\":\"Each hypothesis has an explicit evidence plan, channel evidence remains attached to it, and the parent owns cross-hypothesis synthesis.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-02\"}"
+        },
+        {
+          "name": "functionalPoint.DT-03-singular-verdict",
+          "value": "{\"description\":\"Apply predeclared authority and proof rules to produce one epistemic verdict per executed hypothesis.\",\"businessOutcome\":\"Conflicting or missing evidence yields a coherent accountable judgment distinct from execution failure.\",\"observableBoundary\":\"Every executed hypothesis is exactly supported, refuted, or undetermined with decisive evidence and missing channels identified; execution failure is separate.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-03\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-02-DT-03",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-02",
+          "description": "Control point: acceptor submits three independent decisions requiring different evidence-channel combinations. Observation point: each hypothesis has an explicit evidence plan, channel evidence remains attached to that hypothesis, and the parent owns final cross-hypothesis synthesis.",
+          "type": "Acceptance Test",
+          "Input": "Three independently decidable hypotheses with different evidence combinations.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-02"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-03",
+          "description": "Control point: acceptor submits hypotheses with agreeing, conflicting, and missing channel evidence plus a separate execution failure. Observation point: each executed hypothesis receives exactly one supported, refuted, or undetermined verdict with decisive evidence and missing channels identified, while execution failure is classified separately.",
+          "type": "Acceptance Test",
+          "Input": "Agreeing, conflicting, missing, and execution-failure evidence scenarios.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-03"
+        }
+      ]
+    },
+    {
+      "id": "autodel-resource-governance-constraint",
+      "name": "Bounded Delegation Depth and Concurrency",
+      "type": "Constraint",
+      "description": "DT-04 and DT-13 accepted resource boundary: simple hypotheses use one child level; complex hypotheses may use stage owner to verifier to gatherer; no third child edge is allowed. At most four child Agents are active across one delegation tree; overflow queues by dependency, risk, and blocking impact. Universal one-level and unbounded recursion are rejected.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-04",
+          "value": "accepted|maximum two child edges from stage owner"
+        },
+        {
+          "name": "decisionTrace.DT-04-R1",
+          "value": "rejected|one level is not universal"
+        },
+        {
+          "name": "decisionTrace.DT-04-R2",
+          "value": "rejected|unbounded recursion forbidden"
+        },
+        {
+          "name": "decisionTrace.DT-13",
+          "value": "accepted|maximum four active children; eligible overflow queues"
+        },
+        {
+          "name": "functionalPoint.DT-04-depth-bound",
+          "value": "{\"description\":\"Bound delegation to at most two child edges from the stage owner.\",\"businessOutcome\":\"Complex multi-channel work can delegate while accountability and resource cost remain bounded.\",\"observableBoundary\":\"Simple work uses one child level where sufficient; complex work may use verifier then gatherer; no third child edge occurs.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-04\"}"
+        },
+        {
+          "name": "functionalPoint.DT-13-concurrency-queue",
+          "value": "{\"description\":\"Limit each delegation tree to four active children and queue only eligible overflow work.\",\"businessOutcome\":\"Parallelism remains bounded while available slots are used predictably.\",\"observableBoundary\":\"Active children never exceed four, eligible queued work fills released slots, and dependency-blocked work consumes no slot.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-13\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-04-DT-13",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-04",
+          "description": "Control point: acceptor submits a simple hypothesis and a complex multi-channel hypothesis and inspects both delegation trees. Observation point: simple work uses one level where sufficient, complex work may use verifier then gatherer, and no tree exceeds two child edges from the stage owner.",
+          "type": "Acceptance Test",
+          "Input": "Simple and complex multi-channel hypothesis fixtures.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-04"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-13",
+          "description": "Control point: acceptor submits eight independent hypotheses and eight same-frontier coding tasks. Observation point: no more than four children are active in one delegation tree, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
+          "type": "Acceptance Test",
+          "Input": "Eight independent hypotheses and eight eligible same-frontier coding tasks with dependency markers.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-13"
+        }
+      ]
+    },
+    {
+      "id": "autodel-write-governance-requirement",
+      "name": "Authorized Disjoint Parallel Writes",
+      "type": "Requirement",
+      "description": "DT-05 accepted: read-only work may parallelize; exact dependency-independent, disjoint, stage-authorized write sets may run in isolation; overlapping, hidden-shared, or ordered writes use one serial writer. Prospective write sets and dependencies must be known before dispatch.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-05",
+          "value": "accepted|parallel read-only and isolated disjoint writes; serialize overlap or order"
+        },
+        {
+          "name": "functionalPoint.DT-05-write-classification",
+          "value": "{\"description\":\"Classify prospective work as read-only, disjoint authorized write, or overlapping or ordered write before dispatch.\",\"businessOutcome\":\"Safe parallelism is enabled without write collision or dependency inversion.\",\"observableBoundary\":\"Disjoint dependency-independent authorized targets may run in isolation and parallel; shared or ordered targets are serialized under one writer with exact write sets recorded.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-05\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-05",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-05",
+          "description": "Control point: acceptor submits disjoint authorized coding targets and two tasks targeting the same contract. Observation point: disjoint dependency-independent targets may run in isolation and parallel, while shared or ordered target work is serialized under one writer with exact write sets recorded.",
+          "type": "Acceptance Test",
+          "Input": "Approved disjoint write sets and overlapping shared-contract write sets.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-05"
+        }
+      ]
+    },
+    {
+      "id": "autodel-trigger-policy-requirement",
+      "name": "Five Hard Triggers With Four Prohibitions",
+      "type": "Requirement",
+      "description": "DT-06 accepted trigger policy: delegation is mandatory when cumulative architecture granularity exceeds 10, at least two independently decidable units exist, one hypothesis needs at least two non-lightweight evidence channels, at least two dependency-independent disjoint authorized write sets exist, or broad unknown-repository or open-internet discovery is required. Delegation remains prohibited for atomic local work, strict dependency or shared-write work, negative-value delegation, and reserved final decisions or gates.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-06",
+          "value": "accepted|any hard trigger requires a delegation plan or explicit prohibition reason"
+        },
+        {
+          "name": "decisionTrace.DT-06-A",
+          "value": "accepted|G cumulative above 10 requires slicing and delegation of independently verifiable slices"
+        },
+        {
+          "name": "decisionTrace.DT-06-B",
+          "value": "accepted|two or more independently decidable hypotheses/work packages delegate separately"
+        },
+        {
+          "name": "decisionTrace.DT-06-C",
+          "value": "accepted|two or more non-lightweight channels use verifier plus channel gatherers"
+        },
+        {
+          "name": "decisionTrace.DT-06-D",
+          "value": "accepted|two or more independent disjoint authorized write sets isolate and parallelize"
+        },
+        {
+          "name": "decisionTrace.DT-06-E",
+          "value": "accepted|broad repository discovery or open internet research delegates exploration/research"
+        },
+        {
+          "name": "decisionTrace.DT-06-P",
+          "value": "accepted|atomicity, dependency/write overlap, negative value, and reserved final authority prohibit delegation"
+        },
+        {
+          "name": "functionalPoint.DT-06-policy-decision",
+          "value": "{\"description\":\"Evaluate all five hard triggers and four prohibitions and record one traceable delegation decision.\",\"businessOutcome\":\"Large work delegates consistently while unsuitable work remains local for an explicit reason.\",\"observableBoundary\":\"Each trigger fixture produces a delegation plan or prohibition reason; each prohibited fixture launches no child.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-A-granularity",
+          "value": "{\"description\":\"Slice and delegate independently verifiable work when cumulative architecture granularity exceeds ten.\",\"businessOutcome\":\"Oversized architecture work is bounded before execution.\",\"observableBoundary\":\"A G-above-ten task has a slice plan and delegates eligible slices within resource limits.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-A\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-B-independent-units",
+          "value": "{\"description\":\"Delegate two or more independently decidable hypotheses or work packages separately.\",\"businessOutcome\":\"Independent decisions do not share unnecessary working context.\",\"observableBoundary\":\"Separate hypotheses are delegated separately and synthesized by the stage parent.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-B\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-C-multichannel",
+          "value": "{\"description\":\"Use one verifier and bounded channel gatherers for a hypothesis needing multiple non-lightweight channels.\",\"businessOutcome\":\"Broad evidence collection is isolated while verdict authority remains singular.\",\"observableBoundary\":\"Graph, code, and internet reports are gathered independently and one verifier returns a traceable verdict under authority precedence.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-C\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-D-disjoint-writes",
+          "value": "{\"description\":\"Isolate and parallelize multiple dependency-independent disjoint authorized write sets.\",\"businessOutcome\":\"Safe independent delivery work reduces parent load and elapsed time.\",\"observableBoundary\":\"Two approved disjoint coding targets may run concurrently and return exact non-colliding write sets.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-D\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-E-open-discovery",
+          "value": "{\"description\":\"Delegate bounded exploration for broad unknown-repository or open-internet discovery.\",\"businessOutcome\":\"Open-ended search does not flood the parent context.\",\"observableBoundary\":\"At least one bounded worker returns structured findings and evidence locations rather than raw search output.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-E\"}"
+        },
+        {
+          "name": "functionalPoint.DT-06-P-prohibitions",
+          "value": "{\"description\":\"Keep atomic, dependency-coupled, negative-value, and reserved-authority work local.\",\"businessOutcome\":\"Automatic delegation does not become unconditional fan-out or weaken final gates.\",\"observableBoundary\":\"No child launches for each prohibited case and exactly one prohibition reason is recorded.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-06-P\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-06-FAMILY",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundaries and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06",
+          "description": "Control point: acceptor runs fixtures independently hitting each hard trigger and each prohibition. Observation point: every hard-trigger case yields a delegation plan or explicit prohibition reason, every prohibited case remains local with its reason recorded, and atomic work does not fan out.",
+          "type": "Acceptance Test",
+          "Input": "Independent fixtures for five hard triggers and four prohibitions.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-A",
+          "description": "Control point: acceptor submits a task whose cumulative architecture granularity is above 10. Observation point: a slice plan exists before stage execution and every independently verifiable slice is delegated within resource limits.",
+          "type": "Acceptance Test",
+          "Input": "Architecture task with declared cumulative G above 10.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-A"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-B",
+          "description": "Control point: acceptor submits two hypotheses with separate proof criteria and acceptance boundaries. Observation point: the hypotheses are delegated separately and the stage parent synthesizes both verdicts.",
+          "type": "Acceptance Test",
+          "Input": "Two independently decidable hypotheses.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-B"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-C",
+          "description": "Control point: acceptor submits one hypothesis requiring graph, code, and internet evidence. Observation point: channel reports are independently gathered, authority precedence is preserved, and one verifier returns a traceable singular verdict.",
+          "type": "Acceptance Test",
+          "Input": "One hypothesis requiring at least three non-lightweight evidence channels.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-C"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-D",
+          "description": "Control point: acceptor submits two dependency-independent approved coding targets with disjoint prospective write sets. Observation point: both may run concurrently in isolation and return their exact write sets without collision.",
+          "type": "Acceptance Test",
+          "Input": "Two approved, disjoint, dependency-independent coding targets.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-D"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-E",
+          "description": "Control point: acceptor submits open-ended local repository discovery and internet research requests with stated evidence types. Observation point: at least one bounded exploration or research worker is delegated and the parent receives structured findings plus evidence locations rather than raw search output.",
+          "type": "Acceptance Test",
+          "Input": "Broad unknown-repository and open-internet evidence requests.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-E"
+        },
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-P",
+          "description": "Control point: acceptor submits atomic local work, strict dependency/shared-write work, negative-value delegation, and reserved final decision or gate scenarios. Observation point: no child is launched in each prohibited case and one explicit prohibition reason is recorded.",
+          "type": "Acceptance Test",
+          "Input": "One fixture for each of four delegation prohibitions.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-P"
+        }
+      ]
+    },
+    {
+      "id": "autodel-return-contract-requirement",
+      "name": "Bounded Structured Child Return Contract",
+      "type": "Requirement",
+      "description": "DT-07 accepted: children return bounded identity, verdict, decisive evidence, conflicts, change results, and next action in chat; detailed evidence remains externally addressable. The strongest three to five ordinary supports and every decisive counterexample are retained. Returning the full investigation process and all raw material is rejected.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-07",
+          "value": "accepted|bounded structured summary with externally addressable evidence"
+        },
+        {
+          "name": "decisionTrace.DT-07-R1",
+          "value": "rejected|full investigation process and raw material do not return automatically"
+        },
+        {
+          "name": "functionalPoint.DT-07-bounded-return",
+          "value": "{\"description\":\"Return bounded identity, verdict, decisive evidence, conflicts, change results, and next action while keeping detail locatable.\",\"businessOutcome\":\"Parent context remains contained without losing decisive support or counterevidence.\",\"observableBoundary\":\"The parent receives required fields, strongest three to five ordinary supports, every decisive counterexample, and evidence locations without raw logs or full search process.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-07\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-07",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-07",
+          "description": "Control point: acceptor executes a child task producing large logs and many search results. Observation point: the parent receives required identity, verdict, decisive evidence, conflicts, change results, next action, strongest three to five ordinary supports, every decisive counterexample, and evidence locations without raw logs or full search process.",
+          "type": "Acceptance Test",
+          "Input": "Child task with large logs, many search results, ordinary supports, and decisive counterexamples.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-07"
+        }
+      ]
+    },
+    {
+      "id": "autodel-failure-governance-requirement",
+      "name": "Singular Delegation Failure Disposition",
+      "type": "Requirement",
+      "description": "DT-08 accepted: recoverable execution failure receives at most one same-session retry; missing evidence is supplemented; write collision is serialized; authority or business conflict is escalated. Failure remains distinct from epistemic uncertainty, and every non-success receives exactly one next disposition.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-08",
+          "value": "accepted|retry, supplement, serialize, or escalate exactly once by category"
+        },
+        {
+          "name": "functionalPoint.DT-08-disposition",
+          "value": "{\"description\":\"Classify each non-success into exactly one retry, supplement, serialize, or escalate action while preserving retry and depth ceilings.\",\"businessOutcome\":\"Delegation failures converge without loops, duplicate investigations, or hidden authority conflicts.\",\"observableBoundary\":\"Recoverable failure retries at most once; missing evidence supplements; write conflict serializes; authority conflict escalates; every case has one disposition.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-08\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-08",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-08",
+          "description": "Control point: acceptor injects recoverable tool failure, missing evidence, write collision, and authority conflict. Observation point: each case enters exactly one retry, supplement, serialize, or escalate disposition; retry occurs at most once in-session; depth and concurrency limits remain intact.",
+          "type": "Acceptance Test",
+          "Input": "Recoverable execution failure, missing evidence, write conflict, and authority conflict fixtures.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-08"
+        }
+      ]
+    },
+    {
+      "id": "autodel-proxy-acceptance-requirement",
+      "name": "Proxy-First Context Containment Acceptance",
+      "type": "Requirement",
+      "description": "DT-14 accepted: phase-one delegation is accepted through observable behavior proxies until trustworthy token telemetry exists. Every hard trigger is traceable, atomic tasks remain local, summaries are bounded, depth/concurrency/retry limits hold, conflicts follow one disposition, and existing full-stage delivery gates pass. Telemetry-first blocking is rejected; future token metrics are a deferred enhancement.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-14",
+          "value": "accepted|observable behavior proxy is phase-one release gate"
+        },
+        {
+          "name": "decisionTrace.DT-14-R1",
+          "value": "rejected|trustworthy token telemetry is deferred rather than blocking behavior governance"
+        },
+        {
+          "name": "residualCoordination",
+          "value": "Add token-level reduction metrics only when trustworthy runtime telemetry exists; not a phase-one blocker."
+        },
+        {
+          "name": "functionalPoint.DT-14-proxy-acceptance",
+          "value": "{\"description\":\"Accept context containment through behavior proxies without claiming unavailable token telemetry.\",\"businessOutcome\":\"Governed delegation can ship with observable quality evidence while measurement enhancement remains deferred.\",\"observableBoundary\":\"Large, atomic, multichannel, conflict, failure, and cross-stage scenarios satisfy trigger traceability, bounded summaries, resource limits, dispositions, and unchanged delivery gates.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-14\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-14",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-14",
+          "description": "Control point: acceptor runs large, atomic, multi-channel, conflict, failure, and complete cross-stage delivery scenarios. Observation point: every hard-trigger decision is traceable, atomic tasks do not delegate, child summaries remain bounded, depth/concurrency/retry/disposition limits hold, and all existing stage and delivery gates pass without a claimed token-reduction percentage.",
+          "type": "Acceptance Test",
+          "Input": "Proxy scenario suite for large, atomic, multi-channel, conflict, failure, and full-stage delivery behavior.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-14"
+        }
+      ]
+    },
+    {
+      "id": "autodel-rejected-alternatives-assessment",
+      "name": "Rejected Delegation Alternatives",
+      "type": "Assessment",
+      "description": "Future-design rationale preserving all rejected branches: dual ownership, Orchestrator-only internal splitting, one complete child per complex decision by default, global channel workers by default, universal one-level delegation, unbounded recursion, full raw child returns, and telemetry-first blocking are excluded because they weaken ownership, containment, traceability, cost bounds, or timely behavior governance.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-01-R1",
+          "value": "rejected|dual ownership causes overlap and recursive dispatch"
+        },
+        {
+          "name": "decisionTrace.DT-01-R2",
+          "value": "rejected|Orchestrator-only decomposition leaks stage semantics"
+        },
+        {
+          "name": "decisionTrace.DT-02-R1",
+          "value": "rejected|complete child may reproduce oversized context"
+        },
+        {
+          "name": "decisionTrace.DT-02-R2",
+          "value": "rejected|global channel workers mix unrelated hypotheses"
+        },
+        {
+          "name": "decisionTrace.DT-04-R1",
+          "value": "rejected|universal one-level delegation overloads stage owner for complex evidence"
+        },
+        {
+          "name": "decisionTrace.DT-04-R2",
+          "value": "rejected|unbounded recursion has no cost or accountability ceiling"
+        },
+        {
+          "name": "decisionTrace.DT-07-R1",
+          "value": "rejected|full return defeats context containment"
+        },
+        {
+          "name": "decisionTrace.DT-14-R1",
+          "value": "rejected|telemetry-first delays enforceable governance"
+        }
+      ]
+    },
+    {
+      "id": "autodel-capability",
+      "name": "Governed Automatic Work Delegation",
+      "type": "Capability",
+      "description": "Strategy capability to detect delegation pressure, decompose bounded independent work, coordinate hypothesis and evidence channels, isolate authorized disjoint writes, constrain resources, synthesize structured results, and preserve final stage and Orchestrator accountability.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00 through DT-15|accepted capability aggregation"
+        },
+        {
+          "name": "acceptanceIndicator",
+          "value": "Proxy-first scenario suite passes with unchanged stage and delivery gates."
+        }
+      ]
+    },
+    {
+      "id": "autodel-outcome",
+      "name": "Contained Context With Preserved Delivery Quality",
+      "type": "Outcome",
+      "description": "Externally observable outcome: large work delegates bounded subwork and returns traceable structured evidence while atomic work remains local; stage owners retain final judgments, Orchestrator retains cross-stage gates, write conflicts are prevented or serialized, resource limits hold, and existing acceptance and delivery quality are preserved.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-00",
+          "value": "accepted|observable business outcome"
+        },
+        {
+          "name": "mappedLayers",
+          "value": "Strategy outcome produced by Business processes and Application functions under Motivation policy using bounded-summary Data."
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-01-own-task",
+      "name": "Define Stage-Owned Task",
+      "type": "Business Process",
+      "description": "Vertical step 1: define the stage-owned task, acceptance boundary, and final accountable Agent before any delegation decision.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-00|DT-01|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-02-evaluate-policy",
+      "name": "Evaluate Triggers and Prohibitions",
+      "type": "Business Process",
+      "description": "Vertical step 2: evaluate all five hard triggers and four prohibition conditions and record a delegation plan or explicit prohibition reason.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-06|DT-06-A|DT-06-B|DT-06-C|DT-06-D|DT-06-E|DT-06-P|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-03-plan-evidence",
+      "name": "Plan Hypotheses and Evidence",
+      "type": "Business Process",
+      "description": "Vertical step 3: define hypotheses, proof and falsification conditions, required evidence channels, authority precedence, and exact acceptance boundaries.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-02|DT-03|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-04-classify-writes",
+      "name": "Classify Work and Write Sets",
+      "type": "Business Process",
+      "description": "Vertical step 4: classify work as read-only, disjoint authorized write, or overlapping/ordered write using declared dependencies and prospective write sets.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-05|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-05-build-tree",
+      "name": "Build Bounded Delegation Tree",
+      "type": "Business Process",
+      "description": "Vertical step 5: build the delegation tree and dependency DAG under the maximum two-child-edge depth and four-active-child concurrency limits.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-04|DT-13|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-06-execute-children",
+      "name": "Execute Bounded Child Work",
+      "type": "Business Process",
+      "description": "Vertical step 6: execute eligible child tasks using hypothesis-bound scopes, isolated authorized writes where allowed, and bounded structured return contracts.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-05|DT-07|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-07-dispose-failure",
+      "name": "Classify Non-Success Disposition",
+      "type": "Business Process",
+      "description": "Vertical step 7: classify each non-success exactly once as retry, supplement, serialize, or escalate without confusing execution failure with epistemic uncertainty.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-08|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "7"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-08-synthesize-stage",
+      "name": "Synthesize and Validate Stage Output",
+      "type": "Business Process",
+      "description": "Vertical step 8: the owning stage Agent synthesizes evidence, integrates authorized writes, resolves conflicts, runs stage-wide acceptance, and retains the final stage judgment.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-09|DT-10|DT-11|DT-12|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-09-handoff-orchestrator",
+      "name": "Handoff Validated Stage Summary",
+      "type": "Business Process",
+      "description": "Vertical step 9: hand only validated stage outputs and bounded summaries to Orchestrator for existing cross-stage dispatch, approval, handoff, audit, commit, and closure gates.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-15|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "id": "autodel-step-10-accept-proxies",
+      "name": "Accept Through Behavior Proxies",
+      "type": "Business Process",
+      "description": "Vertical step 10: accept phase-one delegation only when the proxy scenario suite passes without weakening existing delivery gates; defer token metrics until trustworthy telemetry exists.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-14|accepted"
+        },
+        {
+          "name": "verticalOrder",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "autodel-stage-owner-role",
+      "name": "Stage-Owning Agent",
+      "type": "Business Role",
+      "description": "Accountable role that owns stage semantics, internal delegation decisions, evidence synthesis, authorized write integration, stage-wide acceptance, and final stage judgment.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-01|DT-09|DT-10|DT-11|DT-12|accepted"
+        }
+      ]
+    },
+    {
+      "id": "autodel-orchestrator-role",
+      "name": "Cross-Stage Orchestrator",
+      "type": "Business Role",
+      "description": "Role limited to stage dispatch, stage commits, approvals, handoff validation, audit routing, and final workflow closure; it does not manage child-level work.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-01|DT-15|accepted"
+        }
+      ]
+    },
+    {
+      "id": "autodel-acceptor-role",
+      "name": "Delegation Business Acceptor",
+      "type": "Business Role",
+      "description": "Role that evaluates the observable behavior proxy suite and confirms delegation governance without inventing token-reduction percentages.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-14|accepted"
+        }
+      ]
+    },
+    {
+      "id": "autodel-bounded-summary-data",
+      "name": "Bounded Child and Stage Summary",
+      "type": "Data Object",
+      "description": "Structured evidence object containing child identity, singular verdict, decisive evidence, missing channels, conflicts, exact change/write results, evidence locations, and next action. Raw logs, full source, and complete search process remain externally addressable and are not automatically copied into parent context.",
+      "attributes": [
+        {
+          "name": "decisionTrace",
+          "value": "DT-02|DT-03|DT-07|DT-15|accepted"
+        },
+        {
+          "name": "dataBoundary",
+          "value": "strongest 3-5 ordinary supports; every decisive counterexample; evidence locations; no automatic raw-material return"
+        }
+      ]
+    },
+    {
+      "id": "autodel-businesspartner-function",
+      "name": "BusinessPartner Evidence Delegation",
+      "type": "Application Function",
+      "description": "DT-09 accepted application behavior: delegate hypothesis verification and local or internet evidence gathering; retain SMART framing, MECE tree, authority weighting, recommendations, user questions, and business acceptance.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-09",
+          "value": "accepted|evidence work delegates; business decision ownership remains"
+        },
+        {
+          "name": "functionalPoint.DT-09-business-evidence-delegation",
+          "value": "{\"description\":\"Delegate hypothesis verification and local or internet evidence gathering while retaining the final business verdict.\",\"businessOutcome\":\"BusinessPartner reduces evidence context without delegating business acceptance.\",\"observableBoundary\":\"Children gather hypothesis-bound evidence; BusinessPartner alone returns the coherent decision tree, authority weighting, recommendations, questions, and acceptance semantics.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-09\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-09",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-09",
+          "description": "Control point: business acceptor submits three BusinessPartner decisions requiring different evidence combinations. Observation point: children gather hypothesis-bound evidence while BusinessPartner alone returns one coherent traceable decision tree, authority weighting, recommendations, questions, and acceptance semantics.",
+          "type": "Acceptance Test",
+          "Input": "Three business decisions requiring distinct evidence combinations.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-09"
+        }
+      ]
+    },
+    {
+      "id": "autodel-intention-function",
+      "name": "IntentionDesign Investigation Delegation",
+      "type": "Application Function",
+      "description": "DT-10 accepted application behavior: delegate focused dependency branches, concern-mapping candidates, coverage checks, and drift evidence; retain IntentionDesign as the sole Viewpoint-governed canonical graph writer using retrieval, preview, apply, and validation.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-10",
+          "value": "accepted|parallel read/proposal work; one canonical graph writer"
+        },
+        {
+          "name": "functionalPoint.DT-10-intent-investigation-delegation",
+          "value": "{\"description\":\"Delegate dependency, concern, coverage, and drift investigation while retaining one viewpoint-governed graph writer.\",\"businessOutcome\":\"Intent analysis parallelizes without canonical graph races or semantic fragmentation.\",\"observableBoundary\":\"Branches investigate independently; exactly one IntentionDesign writer integrates same-view endpoints through preview, apply, and validation.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-10\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-10",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
+          "description": "Control point: architecture acceptor submits three dependency branches sharing one upstream element. Observation point: branch investigations run independently, exactly one IntentionDesign writer integrates the graph, each affected view has one declared Viewpoint, relationship endpoints coexist in-view, and preview/apply/validation remain serialized.",
+          "type": "Acceptance Test",
+          "Input": "Three intent dependency branches sharing one upstream architecture element.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-10"
+        }
+      ]
+    },
+    {
+      "id": "autodel-implementation-function",
+      "name": "ImplementationDesign Local Contract Delegation",
+      "type": "Application Function",
+      "description": "DT-11 accepted application behavior: delegate disjoint local stable-element contracts and testcase-entrypoint work; retain root contract, shared interfaces, cross-element dependency direction, frozen scope, and implementation-to-coding handoff under one stage owner.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-11",
+          "value": "accepted|local disjoint parallelism; global contract and handoff owner"
+        },
+        {
+          "name": "functionalPoint.DT-11-local-contract-delegation",
+          "value": "{\"description\":\"Delegate disjoint local stable-element design while retaining root, shared-interface, dependency, and handoff responsibility.\",\"businessOutcome\":\"Implementation design parallelizes safely without fragmenting global contracts.\",\"observableBoundary\":\"Local work may parallelize; shared interface and root or handoff remain under one owner; final dependency direction is coherent.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-11\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-11",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-11",
+          "description": "Control point: design acceptor submits three local stable elements and one shared interface. Observation point: disjoint local work may run in parallel, the shared interface and root/handoff remain under one owner, and final cross-element dependency direction is coherent.",
+          "type": "Acceptance Test",
+          "Input": "Three disjoint local stable elements and one shared interface.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-11"
+        }
+      ]
+    },
+    {
+      "id": "autodel-coding-function",
+      "name": "CodingAndReparing DAG Delegation",
+      "type": "Application Function",
+      "description": "DT-12 accepted application behavior: parallelize same-frontier approved tasks only when dependencies and write sets are disjoint; retain shared writes, convergence, integration, full runner, delivery regression comparison, and final delivery judgment under the coding stage owner.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-12",
+          "value": "accepted|dependency-frontier parallelism with disjoint authorized writes"
+        },
+        {
+          "name": "functionalPoint.DT-12-coding-dag-delegation",
+          "value": "{\"description\":\"Parallelize same-frontier approved coding tasks only when dependencies and write sets are disjoint.\",\"businessOutcome\":\"Coding work gains bounded parallelism without integration or delivery regression risk.\",\"observableBoundary\":\"Independent frontier tasks run concurrently, convergent work waits, and the main coding Agent performs full validation and final delivery comparison.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-12\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-12",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-12",
+          "description": "Control point: delivery acceptor submits two approved parallel coding chains converging on one downstream task. Observation point: independent same-frontier tasks run concurrently only with disjoint write sets, the convergent task waits, and the main coding Agent runs full validation and delivery regression comparison before final judgment.",
+          "type": "Acceptance Test",
+          "Input": "Two approved disjoint coding chains with one convergent downstream task.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-12"
+        }
+      ]
+    },
+    {
+      "id": "autodel-orchestrator-function",
+      "name": "Orchestrator Stage Coordination",
+      "type": "Application Function",
+      "description": "DT-15 accepted application behavior: Orchestrator performs cross-stage routing, stage commits, approvals, handoff validation, audit routing, and final workflow closure only; it observes bounded validated stage summaries rather than raw child evidence and does not duplicate stage-internal decomposition.",
+      "attributes": [
+        {
+          "name": "decisionTrace.DT-15",
+          "value": "accepted|cross-stage coordination only"
+        },
+        {
+          "name": "functionalPoint.DT-15-stage-coordination",
+          "value": "{\"description\":\"Coordinate validated stage summaries and existing cross-stage gates without entering stage-internal subtask management.\",\"businessOutcome\":\"Automatic delegation preserves the established stage pipeline and Orchestrator accountability.\",\"observableBoundary\":\"Orchestrator observes bounded validated stage summaries and all existing gates, manages no raw child work, and bypasses no stage.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-AUTODEL-DT-15\"}"
+        },
+        {
+          "name": "acceptanceApproval.AUTODEL-DT-15",
+          "value": "approvedByHuman=true|2026-08-06|accepted decision-tree boundary and dispatched WorkPackage"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-AUTODEL-DT-15",
+          "description": "Control point: workflow acceptor executes a complete workflow containing large work inside every stage. Observation point: Orchestrator observes validated bounded stage summaries and existing gates, never manages raw child evidence or stage-internal work, and no stage is bypassed.",
+          "type": "Acceptance Test",
+          "Input": "Complete multi-stage workflow with large internal work in every stage.",
+          "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-15"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -5762,6 +6620,435 @@
       "target_name": "Fifteen-Element View Governance Ready",
       "description": "All six business observations plus full graph validation qualify the target governance plateau.",
       "statement": "Prove Six View Capacity Scenarios --(Realization)--> Fifteen-Element View Governance Ready"
+    },
+    {
+      "id": "autodel-rel-principle-goal",
+      "name": "Stage ownership supports delegation goal",
+      "type": "Influence",
+      "source_id": "autodel-stage-ownership-principle",
+      "target_id": "autodel-goal",
+      "source_name": "Stage-Owned Delegation With Final Accountability",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Stage-owned internal delegation positively influences context containment while preserving final accountability.",
+      "statement": "Stage-Owned Delegation With Final Accountability --(Influence)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-hypothesis-goal",
+      "name": "Hypothesis governance realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-hypothesis-governance-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Hypothesis-Bound Evidence and Singular Verdict",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Bounded hypothesis ownership and singular verdict semantics satisfy the goal's evidence-quality obligation.",
+      "statement": "Hypothesis-Bound Evidence and Singular Verdict --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-resource-goal",
+      "name": "Resource bounds support delegation goal",
+      "type": "Influence",
+      "source_id": "autodel-resource-governance-constraint",
+      "target_id": "autodel-goal",
+      "source_name": "Bounded Delegation Depth and Concurrency",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Depth and concurrency ceilings positively influence predictable containment and negatively constrain runaway delegation.",
+      "statement": "Bounded Delegation Depth and Concurrency --(Influence)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-write-goal",
+      "name": "Write governance realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-write-governance-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Authorized Disjoint Parallel Writes",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Write classification satisfies the goal without allowing collisions or unauthorized parallel mutation.",
+      "statement": "Authorized Disjoint Parallel Writes --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-trigger-goal",
+      "name": "Trigger policy realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-trigger-policy-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Five Hard Triggers With Four Prohibitions",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Hard triggers and explicit prohibitions make delegation mandatory only where business value and independence justify it.",
+      "statement": "Five Hard Triggers With Four Prohibitions --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-return-goal",
+      "name": "Return contract realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-return-contract-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Bounded Structured Child Return Contract",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Bounded returns satisfy the context-containment part of the root goal.",
+      "statement": "Bounded Structured Child Return Contract --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-failure-goal",
+      "name": "Failure governance realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-failure-governance-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Singular Delegation Failure Disposition",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "A singular bounded disposition preserves accountability and prevents retry or investigation loops.",
+      "statement": "Singular Delegation Failure Disposition --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-proxy-goal",
+      "name": "Proxy acceptance realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-proxy-acceptance-requirement",
+      "target_id": "autodel-goal",
+      "source_name": "Proxy-First Context Containment Acceptance",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Observable behavior proxies provide a truthful phase-one release gate without invented token metrics.",
+      "statement": "Proxy-First Context Containment Acceptance --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-rejected-goal",
+      "name": "Rejected alternatives constrain delegation goal",
+      "type": "Influence",
+      "source_id": "autodel-rejected-alternatives-assessment",
+      "target_id": "autodel-goal",
+      "source_name": "Rejected Delegation Alternatives",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "Rejected choices negatively influence containment or accountability and remain future-design exclusions.",
+      "statement": "Rejected Delegation Alternatives --(Influence)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-capability-outcome",
+      "name": "Delegation capability realizes contained outcome",
+      "type": "Realization",
+      "source_id": "autodel-capability",
+      "target_id": "autodel-outcome",
+      "source_name": "Governed Automatic Work Delegation",
+      "target_name": "Contained Context With Preserved Delivery Quality",
+      "description": "The governed capability produces the observable contained and accountable delivery outcome.",
+      "statement": "Governed Automatic Work Delegation --(Realization)--> Contained Context With Preserved Delivery Quality"
+    },
+    {
+      "id": "autodel-rel-outcome-goal",
+      "name": "Contained outcome realizes delegation goal",
+      "type": "Realization",
+      "source_id": "autodel-outcome",
+      "target_id": "autodel-goal",
+      "source_name": "Contained Context With Preserved Delivery Quality",
+      "target_name": "Contained Accountable Large-Task Delegation",
+      "description": "The externally observable outcome satisfies the accepted root goal.",
+      "statement": "Contained Context With Preserved Delivery Quality --(Realization)--> Contained Accountable Large-Task Delegation"
+    },
+    {
+      "id": "autodel-rel-step01-step02",
+      "name": "Owned task precedes trigger evaluation",
+      "type": "Triggering",
+      "source_id": "autodel-step-01-own-task",
+      "target_id": "autodel-step-02-evaluate-policy",
+      "source_name": "Define Stage-Owned Task",
+      "target_name": "Evaluate Triggers and Prohibitions",
+      "description": "Ownership and acceptance boundaries must be defined before delegation eligibility is evaluated.",
+      "statement": "Define Stage-Owned Task --(Triggering)--> Evaluate Triggers and Prohibitions"
+    },
+    {
+      "id": "autodel-rel-step02-step03",
+      "name": "Trigger evaluation precedes evidence planning",
+      "type": "Triggering",
+      "source_id": "autodel-step-02-evaluate-policy",
+      "target_id": "autodel-step-03-plan-evidence",
+      "source_name": "Evaluate Triggers and Prohibitions",
+      "target_name": "Plan Hypotheses and Evidence",
+      "description": "Only eligible delegation proceeds to hypothesis and evidence planning.",
+      "statement": "Evaluate Triggers and Prohibitions --(Triggering)--> Plan Hypotheses and Evidence"
+    },
+    {
+      "id": "autodel-rel-step03-step04",
+      "name": "Evidence planning precedes write classification",
+      "type": "Triggering",
+      "source_id": "autodel-step-03-plan-evidence",
+      "target_id": "autodel-step-04-classify-writes",
+      "source_name": "Plan Hypotheses and Evidence",
+      "target_name": "Classify Work and Write Sets",
+      "description": "Planned units and dependencies provide the basis for read/write classification.",
+      "statement": "Plan Hypotheses and Evidence --(Triggering)--> Classify Work and Write Sets"
+    },
+    {
+      "id": "autodel-rel-step04-step05",
+      "name": "Write classification precedes tree construction",
+      "type": "Triggering",
+      "source_id": "autodel-step-04-classify-writes",
+      "target_id": "autodel-step-05-build-tree",
+      "source_name": "Classify Work and Write Sets",
+      "target_name": "Build Bounded Delegation Tree",
+      "description": "Dependency and write-set classification constrains the safe tree and DAG.",
+      "statement": "Classify Work and Write Sets --(Triggering)--> Build Bounded Delegation Tree"
+    },
+    {
+      "id": "autodel-rel-step05-step06",
+      "name": "Bounded tree precedes child execution",
+      "type": "Triggering",
+      "source_id": "autodel-step-05-build-tree",
+      "target_id": "autodel-step-06-execute-children",
+      "source_name": "Build Bounded Delegation Tree",
+      "target_name": "Execute Bounded Child Work",
+      "description": "Only the bounded eligible tree and dependency frontier may execute.",
+      "statement": "Build Bounded Delegation Tree --(Triggering)--> Execute Bounded Child Work"
+    },
+    {
+      "id": "autodel-rel-step06-step07",
+      "name": "Child execution precedes disposition",
+      "type": "Triggering",
+      "source_id": "autodel-step-06-execute-children",
+      "target_id": "autodel-step-07-dispose-failure",
+      "source_name": "Execute Bounded Child Work",
+      "target_name": "Classify Non-Success Disposition",
+      "description": "Execution outcomes are classified before stage synthesis proceeds.",
+      "statement": "Execute Bounded Child Work --(Triggering)--> Classify Non-Success Disposition"
+    },
+    {
+      "id": "autodel-rel-step07-step08",
+      "name": "Disposition precedes stage synthesis",
+      "type": "Triggering",
+      "source_id": "autodel-step-07-dispose-failure",
+      "target_id": "autodel-step-08-synthesize-stage",
+      "source_name": "Classify Non-Success Disposition",
+      "target_name": "Synthesize and Validate Stage Output",
+      "description": "Every non-success receives one action before the stage owner performs final synthesis and validation.",
+      "statement": "Classify Non-Success Disposition --(Triggering)--> Synthesize and Validate Stage Output"
+    },
+    {
+      "id": "autodel-rel-step08-step09",
+      "name": "Validated stage output precedes handoff",
+      "type": "Triggering",
+      "source_id": "autodel-step-08-synthesize-stage",
+      "target_id": "autodel-step-09-handoff-orchestrator",
+      "source_name": "Synthesize and Validate Stage Output",
+      "target_name": "Handoff Validated Stage Summary",
+      "description": "Only stage-owner-validated output crosses the Orchestrator boundary.",
+      "statement": "Synthesize and Validate Stage Output --(Triggering)--> Handoff Validated Stage Summary"
+    },
+    {
+      "id": "autodel-rel-step09-step10",
+      "name": "Cross-stage handoff precedes proxy acceptance",
+      "type": "Triggering",
+      "source_id": "autodel-step-09-handoff-orchestrator",
+      "target_id": "autodel-step-10-accept-proxies",
+      "source_name": "Handoff Validated Stage Summary",
+      "target_name": "Accept Through Behavior Proxies",
+      "description": "The complete validated workflow is evaluated through the phase-one proxy suite.",
+      "statement": "Handoff Validated Stage Summary --(Triggering)--> Accept Through Behavior Proxies"
+    },
+    {
+      "id": "autodel-rel-step10-outcome",
+      "name": "Proxy acceptance realizes contained outcome",
+      "type": "Realization",
+      "source_id": "autodel-step-10-accept-proxies",
+      "target_id": "autodel-outcome",
+      "source_name": "Accept Through Behavior Proxies",
+      "target_name": "Contained Context With Preserved Delivery Quality",
+      "description": "Passing the approved proxy suite demonstrates the observable outcome without claiming unavailable telemetry.",
+      "statement": "Accept Through Behavior Proxies --(Realization)--> Contained Context With Preserved Delivery Quality"
+    },
+    {
+      "id": "autodel-rel-stage-role-own",
+      "name": "Stage owner performs task definition",
+      "type": "Assignment",
+      "source_id": "autodel-stage-owner-role",
+      "target_id": "autodel-step-01-own-task",
+      "source_name": "Stage-Owning Agent",
+      "target_name": "Define Stage-Owned Task",
+      "description": "The owning stage Agent defines its task and acceptance boundary.",
+      "statement": "Stage-Owning Agent --(Assignment)--> Define Stage-Owned Task"
+    },
+    {
+      "id": "autodel-rel-stage-role-synthesis",
+      "name": "Stage owner performs final synthesis",
+      "type": "Assignment",
+      "source_id": "autodel-stage-owner-role",
+      "target_id": "autodel-step-08-synthesize-stage",
+      "source_name": "Stage-Owning Agent",
+      "target_name": "Synthesize and Validate Stage Output",
+      "description": "The stage owner retains evidence synthesis, integration, validation, and final stage judgment.",
+      "statement": "Stage-Owning Agent --(Assignment)--> Synthesize and Validate Stage Output"
+    },
+    {
+      "id": "autodel-rel-orchestrator-role-handoff",
+      "name": "Orchestrator performs cross-stage handoff",
+      "type": "Assignment",
+      "source_id": "autodel-orchestrator-role",
+      "target_id": "autodel-step-09-handoff-orchestrator",
+      "source_name": "Cross-Stage Orchestrator",
+      "target_name": "Handoff Validated Stage Summary",
+      "description": "Orchestrator owns only cross-stage routing and existing gates after validated stage output arrives.",
+      "statement": "Cross-Stage Orchestrator --(Assignment)--> Handoff Validated Stage Summary"
+    },
+    {
+      "id": "autodel-rel-acceptor-role-proxy",
+      "name": "Business acceptor evaluates proxies",
+      "type": "Assignment",
+      "source_id": "autodel-acceptor-role",
+      "target_id": "autodel-step-10-accept-proxies",
+      "source_name": "Delegation Business Acceptor",
+      "target_name": "Accept Through Behavior Proxies",
+      "description": "The business acceptor controls the proxy scenario suite and observes its release evidence.",
+      "statement": "Delegation Business Acceptor --(Assignment)--> Accept Through Behavior Proxies"
+    },
+    {
+      "id": "autodel-rel-businesspartner-intention",
+      "name": "Business intent triggers IntentionDesign",
+      "type": "Triggering",
+      "source_id": "autodel-businesspartner-function",
+      "target_id": "autodel-intention-function",
+      "source_name": "BusinessPartner Evidence Delegation",
+      "target_name": "IntentionDesign Investigation Delegation",
+      "description": "Human-approved BusinessPartner intent and acceptance semantics precede intent-architecture integration.",
+      "statement": "BusinessPartner Evidence Delegation --(Triggering)--> IntentionDesign Investigation Delegation"
+    },
+    {
+      "id": "autodel-rel-intention-implementation",
+      "name": "Validated intent triggers ImplementationDesign",
+      "type": "Triggering",
+      "source_id": "autodel-intention-function",
+      "target_id": "autodel-implementation-function",
+      "source_name": "IntentionDesign Investigation Delegation",
+      "target_name": "ImplementationDesign Local Contract Delegation",
+      "description": "Validated canonical intent and handoff precede implementation design.",
+      "statement": "IntentionDesign Investigation Delegation --(Triggering)--> ImplementationDesign Local Contract Delegation"
+    },
+    {
+      "id": "autodel-rel-implementation-coding",
+      "name": "Authorized design triggers coding",
+      "type": "Triggering",
+      "source_id": "autodel-implementation-function",
+      "target_id": "autodel-coding-function",
+      "source_name": "ImplementationDesign Local Contract Delegation",
+      "target_name": "CodingAndReparing DAG Delegation",
+      "description": "Validated implementation design and coding authorization precede dependency-frontier execution.",
+      "statement": "ImplementationDesign Local Contract Delegation --(Triggering)--> CodingAndReparing DAG Delegation"
+    },
+    {
+      "id": "autodel-rel-businesspartner-summary",
+      "name": "BusinessPartner writes bounded summary",
+      "type": "Access",
+      "source_id": "autodel-businesspartner-function",
+      "target_id": "autodel-bounded-summary-data",
+      "source_name": "BusinessPartner Evidence Delegation",
+      "target_name": "Bounded Child and Stage Summary",
+      "description": "BusinessPartner writes hypothesis evidence summaries and final decision trace without raw investigation dumps.",
+      "statement": "BusinessPartner Evidence Delegation --(Access)--> Bounded Child and Stage Summary"
+    },
+    {
+      "id": "autodel-rel-intention-summary",
+      "name": "IntentionDesign writes bounded summary",
+      "type": "Access",
+      "source_id": "autodel-intention-function",
+      "target_id": "autodel-bounded-summary-data",
+      "source_name": "IntentionDesign Investigation Delegation",
+      "target_name": "Bounded Child and Stage Summary",
+      "description": "IntentionDesign writes focused branch evidence and one integrated graph result summary.",
+      "statement": "IntentionDesign Investigation Delegation --(Access)--> Bounded Child and Stage Summary"
+    },
+    {
+      "id": "autodel-rel-implementation-summary",
+      "name": "ImplementationDesign writes bounded summary",
+      "type": "Access",
+      "source_id": "autodel-implementation-function",
+      "target_id": "autodel-bounded-summary-data",
+      "source_name": "ImplementationDesign Local Contract Delegation",
+      "target_name": "Bounded Child and Stage Summary",
+      "description": "ImplementationDesign writes local results and global contract/handoff synthesis evidence.",
+      "statement": "ImplementationDesign Local Contract Delegation --(Access)--> Bounded Child and Stage Summary"
+    },
+    {
+      "id": "autodel-rel-coding-summary",
+      "name": "CodingAndReparing writes bounded summary",
+      "type": "Access",
+      "source_id": "autodel-coding-function",
+      "target_id": "autodel-bounded-summary-data",
+      "source_name": "CodingAndReparing DAG Delegation",
+      "target_name": "Bounded Child and Stage Summary",
+      "description": "CodingAndReparing writes exact write sets, local results, full-run comparison, and final delivery evidence.",
+      "statement": "CodingAndReparing DAG Delegation --(Access)--> Bounded Child and Stage Summary"
+    },
+    {
+      "id": "autodel-rel-orchestrator-summary",
+      "name": "Orchestrator reads validated summaries",
+      "type": "Access",
+      "source_id": "autodel-orchestrator-function",
+      "target_id": "autodel-bounded-summary-data",
+      "source_name": "Orchestrator Stage Coordination",
+      "target_name": "Bounded Child and Stage Summary",
+      "description": "Orchestrator reads only validated bounded stage summaries and externally addressable evidence locations, not raw child context.",
+      "statement": "Orchestrator Stage Coordination --(Access)--> Bounded Child and Stage Summary"
+    },
+    {
+      "id": "autodel-rel-summary-return",
+      "name": "Structured data realizes return contract",
+      "type": "Realization",
+      "source_id": "autodel-bounded-summary-data",
+      "target_id": "autodel-return-contract-requirement",
+      "source_name": "Bounded Child and Stage Summary",
+      "target_name": "Bounded Structured Child Return Contract",
+      "description": "The bounded summary data structure realizes the required return-content boundary.",
+      "statement": "Bounded Child and Stage Summary --(Realization)--> Bounded Structured Child Return Contract"
+    },
+    {
+      "id": "autodel-rel-bp-principle",
+      "name": "BusinessPartner function realizes stage ownership",
+      "type": "Realization",
+      "source_id": "autodel-businesspartner-function",
+      "target_id": "autodel-stage-ownership-principle",
+      "source_name": "BusinessPartner Evidence Delegation",
+      "target_name": "Stage-Owned Delegation With Final Accountability",
+      "description": "BusinessPartner delegates evidence but retains final business decision semantics.",
+      "statement": "BusinessPartner Evidence Delegation --(Realization)--> Stage-Owned Delegation With Final Accountability"
+    },
+    {
+      "id": "autodel-rel-intent-principle",
+      "name": "IntentionDesign function realizes stage ownership",
+      "type": "Realization",
+      "source_id": "autodel-intention-function",
+      "target_id": "autodel-stage-ownership-principle",
+      "source_name": "IntentionDesign Investigation Delegation",
+      "target_name": "Stage-Owned Delegation With Final Accountability",
+      "description": "IntentionDesign delegates investigation while remaining the sole canonical graph writer.",
+      "statement": "IntentionDesign Investigation Delegation --(Realization)--> Stage-Owned Delegation With Final Accountability"
+    },
+    {
+      "id": "autodel-rel-implementation-principle",
+      "name": "ImplementationDesign function realizes stage ownership",
+      "type": "Realization",
+      "source_id": "autodel-implementation-function",
+      "target_id": "autodel-stage-ownership-principle",
+      "source_name": "ImplementationDesign Local Contract Delegation",
+      "target_name": "Stage-Owned Delegation With Final Accountability",
+      "description": "ImplementationDesign delegates local disjoint work while retaining global contract and handoff ownership.",
+      "statement": "ImplementationDesign Local Contract Delegation --(Realization)--> Stage-Owned Delegation With Final Accountability"
+    },
+    {
+      "id": "autodel-rel-coding-principle",
+      "name": "Coding function realizes stage ownership",
+      "type": "Realization",
+      "source_id": "autodel-coding-function",
+      "target_id": "autodel-stage-ownership-principle",
+      "source_name": "CodingAndReparing DAG Delegation",
+      "target_name": "Stage-Owned Delegation With Final Accountability",
+      "description": "CodingAndReparing delegates eligible frontier tasks while retaining integration and final delivery judgment.",
+      "statement": "CodingAndReparing DAG Delegation --(Realization)--> Stage-Owned Delegation With Final Accountability"
+    },
+    {
+      "id": "autodel-rel-orchestrator-principle",
+      "name": "Orchestrator function realizes ownership boundary",
+      "type": "Realization",
+      "source_id": "autodel-orchestrator-function",
+      "target_id": "autodel-stage-ownership-principle",
+      "source_name": "Orchestrator Stage Coordination",
+      "target_name": "Stage-Owned Delegation With Final Accountability",
+      "description": "Orchestrator realizes the cross-stage-only half of the accepted ownership boundary.",
+      "statement": "Orchestrator Stage Coordination --(Realization)--> Stage-Owned Delegation With Final Accountability"
     }
   ],
   "views": [
@@ -6801,6 +8088,174 @@
         "view15-rel-wp3-wp4",
         "view15-rel-wp4-wp5",
         "view15-rel-proof-ready"
+      ]
+    },
+    {
+      "view_id": "autodel-motivation-policy",
+      "view_name": "Automatic Delegation Motivation Policy",
+      "parent_element_id": "1207",
+      "parent_element_name": "StakeholderIntentViewpoint",
+      "description": "Viewpoint: Motivation Viewpoint; Concern: stage owners, business acceptors, and architects need coherent ownership, trigger, evidence, resource, write, return, failure, and proxy-acceptance policy for automatic delegation; Purpose: designing and deciding; Scope: approved automatic-delegation motivation and rejected-alternative rationale; Rationale: this view is a Motivation Viewpoint instance because it expresses the approved goal, principle, requirements, constraint, and assessment without implementation design.",
+      "included_elements": [
+        "autodel-goal",
+        "autodel-stage-ownership-principle",
+        "autodel-hypothesis-governance-requirement",
+        "autodel-resource-governance-constraint",
+        "autodel-write-governance-requirement",
+        "autodel-trigger-policy-requirement",
+        "autodel-return-contract-requirement",
+        "autodel-failure-governance-requirement",
+        "autodel-proxy-acceptance-requirement",
+        "autodel-rejected-alternatives-assessment"
+      ],
+      "included_relationships": [
+        "autodel-rel-principle-goal",
+        "autodel-rel-hypothesis-goal",
+        "autodel-rel-resource-goal",
+        "autodel-rel-write-goal",
+        "autodel-rel-trigger-goal",
+        "autodel-rel-return-goal",
+        "autodel-rel-failure-goal",
+        "autodel-rel-proxy-goal",
+        "autodel-rel-rejected-goal"
+      ]
+    },
+    {
+      "view_id": "autodel-outcome-realization",
+      "view_name": "Governed Delegation Outcome Realization",
+      "parent_element_id": "1208",
+      "parent_element_name": "OutcomeCapabilityViewpoint",
+      "description": "Viewpoint: Outcome Realization Viewpoint; Concern: business managers and architects need to see how governed delegation behavior produces contained, accountable large-task delivery; Purpose: designing and deciding; Scope: delegation goal, capability, observable outcome, and ten-step business dependency chain; Rationale: this view is an Outcome Realization Viewpoint instance because it starts from the observable outcome and traces backward through the producing capability and core business behavior.",
+      "included_elements": [
+        "autodel-goal",
+        "autodel-capability",
+        "autodel-outcome",
+        "autodel-step-01-own-task",
+        "autodel-step-02-evaluate-policy",
+        "autodel-step-03-plan-evidence",
+        "autodel-step-04-classify-writes",
+        "autodel-step-05-build-tree",
+        "autodel-step-06-execute-children",
+        "autodel-step-07-dispose-failure",
+        "autodel-step-08-synthesize-stage",
+        "autodel-step-09-handoff-orchestrator",
+        "autodel-step-10-accept-proxies"
+      ],
+      "included_relationships": [
+        "autodel-rel-capability-outcome",
+        "autodel-rel-outcome-goal",
+        "autodel-rel-step01-step02",
+        "autodel-rel-step02-step03",
+        "autodel-rel-step03-step04",
+        "autodel-rel-step04-step05",
+        "autodel-rel-step05-step06",
+        "autodel-rel-step06-step07",
+        "autodel-rel-step07-step08",
+        "autodel-rel-step08-step09",
+        "autodel-rel-step09-step10",
+        "autodel-rel-step10-outcome"
+      ]
+    },
+    {
+      "view_id": "autodel-business-process-chain",
+      "view_name": "Automatic Delegation Business Process Chain",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: stage owners, Orchestrator, and business acceptors need explicit responsibility and prerequisite order across delegation decisions; Purpose: designing and deciding; Scope: the approved ten-step vertical dependency chain and responsible roles; Rationale: this view is a Business Process Cooperation Viewpoint instance because it models temporal process dependencies and responsibility boundaries without implementation contracts.",
+      "included_elements": [
+        "autodel-step-01-own-task",
+        "autodel-step-02-evaluate-policy",
+        "autodel-step-03-plan-evidence",
+        "autodel-step-04-classify-writes",
+        "autodel-step-05-build-tree",
+        "autodel-step-06-execute-children",
+        "autodel-step-07-dispose-failure",
+        "autodel-step-08-synthesize-stage",
+        "autodel-step-09-handoff-orchestrator",
+        "autodel-step-10-accept-proxies",
+        "autodel-stage-owner-role",
+        "autodel-orchestrator-role",
+        "autodel-acceptor-role"
+      ],
+      "included_relationships": [
+        "autodel-rel-step01-step02",
+        "autodel-rel-step02-step03",
+        "autodel-rel-step03-step04",
+        "autodel-rel-step04-step05",
+        "autodel-rel-step05-step06",
+        "autodel-rel-step06-step07",
+        "autodel-rel-step07-step08",
+        "autodel-rel-step08-step09",
+        "autodel-rel-step09-step10",
+        "autodel-rel-stage-role-own",
+        "autodel-rel-stage-role-synthesis",
+        "autodel-rel-orchestrator-role-handoff",
+        "autodel-rel-acceptor-role-proxy"
+      ]
+    },
+    {
+      "view_id": "autodel-stage-application-cooperation",
+      "view_name": "Stage Agent Delegation Cooperation",
+      "parent_element_id": "1210",
+      "parent_element_name": "CapabilityRealizationViewpoint",
+      "description": "Viewpoint: Application Cooperation Viewpoint; Concern: stage-agent functions must exchange bounded summaries while preserving stage ownership, evidence traceability, and Orchestrator boundaries; Purpose: designing; Scope: BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing, Orchestrator coordination, and structured child summaries; Rationale: this view is an Application Cooperation Viewpoint instance because it isolates application-function orchestration and shared data access across the approved stage-agent landscape.",
+      "included_elements": [
+        "autodel-bounded-summary-data",
+        "autodel-businesspartner-function",
+        "autodel-intention-function",
+        "autodel-implementation-function",
+        "autodel-coding-function",
+        "autodel-orchestrator-function"
+      ],
+      "included_relationships": [
+        "autodel-rel-businesspartner-intention",
+        "autodel-rel-intention-implementation",
+        "autodel-rel-implementation-coding",
+        "autodel-rel-businesspartner-summary",
+        "autodel-rel-intention-summary",
+        "autodel-rel-implementation-summary",
+        "autodel-rel-coding-summary",
+        "autodel-rel-orchestrator-summary"
+      ]
+    },
+    {
+      "view_id": "autodel-acceptance-boundaries",
+      "view_name": "Automatic Delegation Acceptance Boundaries",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: business acceptors and delivery owners need exact testcase ownership, control points, observation points, and unchanged stage gates for delegation; Purpose: deciding and handoff preparation; Scope: all accepted policy owners, stage responsibility functions, structured return contract, and proxy-first capability acceptance; Rationale: this view is an Implementation and Migration Viewpoint instance because it organizes acceptance semantics that qualify downstream delivery without defining implementation contracts or code.",
+      "included_elements": [
+        "autodel-goal",
+        "autodel-stage-ownership-principle",
+        "autodel-hypothesis-governance-requirement",
+        "autodel-resource-governance-constraint",
+        "autodel-write-governance-requirement",
+        "autodel-trigger-policy-requirement",
+        "autodel-return-contract-requirement",
+        "autodel-failure-governance-requirement",
+        "autodel-proxy-acceptance-requirement",
+        "autodel-bounded-summary-data",
+        "autodel-businesspartner-function",
+        "autodel-intention-function",
+        "autodel-implementation-function",
+        "autodel-coding-function",
+        "autodel-orchestrator-function"
+      ],
+      "included_relationships": [
+        "autodel-rel-principle-goal",
+        "autodel-rel-hypothesis-goal",
+        "autodel-rel-resource-goal",
+        "autodel-rel-write-goal",
+        "autodel-rel-trigger-goal",
+        "autodel-rel-return-goal",
+        "autodel-rel-failure-goal",
+        "autodel-rel-proxy-goal",
+        "autodel-rel-summary-return",
+        "autodel-rel-bp-principle",
+        "autodel-rel-intent-principle",
+        "autodel-rel-implementation-principle",
+        "autodel-rel-coding-principle",
+        "autodel-rel-orchestrator-principle"
       ]
     }
   ]
