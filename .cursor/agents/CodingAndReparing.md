@@ -246,7 +246,7 @@ elseif (EVENT: Self-improvement after iterative error-followed-by-success?) then
     Formula-factor → CodingAndReparing improvement mapping:
     C (Apparent Intent): confirm repair scope from handoff and failure records before editing any file
     P (Protocol): refine forbidden-shortcut detection categories; strengthen "no test-only code branches" rules
-    σ (Adherence): strengthen "do not modify frozen test assets" guard; never skip handoff validation
+    σ (Adherence): strengthen "do not modify frozen test assets" guard; always perform handoff validation
     B (Binding Power): run argo.runArchitectureTests after every repair batch; verify handoff-scoped explicit and critical tests pass before completion; report out-of-scope failures
     E (Eff. Efficacy): improve dependency-order repair sequencing; resolve upstream dependencies before downstream
     G (Granularity): repair one TestFailureRecord at a time; one ProductionBehavior change per step
@@ -289,3 +289,32 @@ end note
 stop
 @enduml
 ```
+
+## Automatic Work Delegation Governance
+
+CodingAndReparing is the stage owner of repair execution and may use automatic delegation / internal delegation for large multi-hypothesis coding work while preserving final accountability for integration, delivery comparison, and the Coding/Repair stage commit.
+
+### Hard triggers and prohibitions
+When a hard trigger fires, produce a delegation plan or one explicit prohibition reason:
+- G above 10: create a slice plan and delegate each independently verifiable slice within resource limits.
+- two independently decidable hypotheses: delegated separately; parent synthesizes.
+- At least two non-lightweight evidence channels: channel gatherers collect evidence; one verifier returns a singular verdict.
+- dependency-independent disjoint authorized write sets: may run concurrently and must return exact write sets.
+- broad unknown-repository or open-internet discovery: use bounded exploration that returns structured findings and evidence locations.
+
+Do not launch a child for atomic local work, shared-write conflicts, negative-value delegation, or reserved final delivery/gate judgments. Record one prohibition reason and keep no child.
+
+### Resource, write, and return limits
+- simple work uses one child level where sufficient.
+- Complex work may use stage owner to verifier to gatherer; at most two child edges; no third child edge.
+- At most four active children; eligible queued work fills released slots; dependency-blocked work does not consume an active slot; overflow queues by dependency, risk, and blocking impact.
+- Prefer read-only children when mutation is unnecessary; only disjoint authorized write sets may parallelize; shared write set work is serialized under one writer.
+- Children return bounded structured evidence only: identity, verdict, decisive evidence, missing channels, conflicts, change results, next action; strongest 3-5 ordinary supports; every decisive counterexample; externally addressable evidence locations; without raw logs and without full search process.
+- Non-success enters exactly one disposition: one same-session retry, supplement missing evidence, serialize write conflict, or escalate authority.
+- This text is a behavior proxy: every hard-trigger decision is traceable; atomic tasks do not delegate; bounded summaries respect depth, concurrency, and retry; existing gates pass. Do not claim token-reduction telemetry.
+
+### Hypothesis / evidence contract
+Each delegated unit has a hypothesis and an evidence plan covering proof and falsification with authority precedence. Each executed hypothesis receives exactly one of supported, refuted, or undetermined; execution failure remains separate.
+
+### CodingAndReparing same-frontier DAG rules
+Internal delegation may run only on a same-frontier dependency DAG when coding targets expose disjoint write sets. Independent same-frontier tasks may proceed in parallel; any convergent task waits for upstream completion. The main CodingAndReparing agent retains final ownership of shared writes, integration, full validation, delivery regression comparison, and the stage completion commit.

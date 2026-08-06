@@ -1,5 +1,14 @@
 # CodingAndReparing Persistent Memory
 
+## 2026-08-07 Governed automatic work delegation
+
+- Event: Approved ImplementationToCoding handoff repair for AUTODEL-DT-00 through AUTODEL-DT-15.
+- Repair order: common vocabulary on authorized surfaces → BusinessPartner evidence delegation → IntentionDesign/ImplementationDesign stage ownership → CodingAndReparing same-frontier DAG → Orchestrator/fast-orchestrating coordination boundary.
+- Production change: added automatic delegation governance text to authorized Cursor agent/skill surfaces only; reworded pre-existing `never skip handoff validation` in CodingAndReparing to avoid false gate-contradiction match.
+- Preserved: frozen entrypoints, harness, guards, contracts, handoff, expected-failure records; existing approval/handoff/audit/commit/delivery gates unchanged.
+- Runner evidence: `node tests/explicit/entries/runAutomaticDelegationGovernance.js` pass; four AUTODEL guards pass; full suite 87/90; 14 autodel elements not_delivered → delivered; no delivered→not_delivered regression vs baseline `a45a17b`.
+- Out-of-scope remaining failures: `TS-07`, `W3-1-MutationEmbeddingVectorE2E`, `SP-03-DefaultVectorRetrieval`.
+
 ## 2026-08-04 View15 active authority wording
 
 - Event: ImplementationToCoding handoff repair for `view15-active-authority-requirement` / Current Fifteen Wording With Historical Truth.

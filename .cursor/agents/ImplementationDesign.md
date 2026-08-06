@@ -470,3 +470,32 @@ end note
 stop
 @enduml
 ```
+
+## Automatic Work Delegation Governance
+
+ImplementationDesign is the stage owner of implementation architecture work and may use internal delegation for large multi-hypothesis design while preserving final accountability for contracts, frozen scope, and handoff emission.
+
+### Hard triggers and prohibitions
+When a hard trigger fires, produce a delegation plan or one explicit prohibition reason:
+- G above 10: create a slice plan and delegate each independently verifiable slice within resource limits.
+- two independently decidable hypotheses: delegated separately; parent synthesizes.
+- At least two non-lightweight evidence channels: channel gatherers collect evidence; one verifier returns a singular verdict.
+- dependency-independent disjoint authorized write sets: may run concurrently and must return exact write sets.
+- broad unknown-repository or open-internet discovery: use bounded exploration that returns structured findings and evidence locations.
+
+Do not launch a child for atomic local work, shared-write contract/handoff edits, negative-value delegation, or reserved final handoff/approval gates. Record one prohibition reason and keep no child.
+
+### Resource, write, and return limits
+- simple work uses one child level where sufficient.
+- Complex work may use stage owner to verifier to gatherer; at most two child edges; no third child edge.
+- At most four active children; eligible queued work fills released slots; dependency-blocked work does not consume an active slot; overflow queues by dependency, risk, and blocking impact.
+- Prefer read-only children when possible; only disjoint authorized write sets may parallelize; shared write set work is serialized under one writer.
+- Children return bounded structured evidence only: identity, verdict, decisive evidence, missing channels, conflicts, change results, next action; strongest 3-5 ordinary supports; every decisive counterexample; externally addressable evidence locations; without raw logs and without full search process.
+- Non-success enters exactly one disposition: one same-session retry, supplement missing evidence, serialize write conflict, or escalate authority.
+- This text is a behavior proxy: every hard-trigger decision is traceable; atomic tasks do not delegate; bounded summaries respect depth, concurrency, and retry; existing gates pass. Do not claim token-reduction telemetry.
+
+### Hypothesis / evidence contract
+Each delegated unit has a hypothesis and an evidence plan covering proof and falsification with authority precedence. Each executed hypothesis receives exactly one of supported, refuted, or undetermined; execution failure remains separate.
+
+### ImplementationDesign ownership boundary
+Internal delegation may cover disjoint local stable-element contracts and testcase-entrypoint design when write sets do not collide. Keep one owner for the root contract, shared interface, cross-element dependency direction, frozen scope, and ImplementationToCoding handoff.
