@@ -1086,3 +1086,41 @@ Do you approve both complete WP-P1 mounted acceptance boundaries—`ExplicitAcce
 - Evidence reviewed: `design/KG/SystemArchitecture.json` contains BP-AUTOALIGN write completion, query auto-alignment, Agent-unaware lifecycle ownership, stable diagnostics, and rejected silent full-snapshot fallback semantics with mounted explicit acceptance cases; `.argo/temp/ImplementationToCodingHandoff.json`, `tests/ARCHITECTURE.md`, and `design/persistant-memory/implementation-design.md` record the updated support regressions and out-of-scope SP-03-only runner gap.
 - Evidence run in this audit: `node tests/supporting/bp-autoalign-incremental-record-primitive-properties.test.js` passed; `npm run validate:system-architecture` passed; `argo.validateStageHandoff(stage="implementation-to-coding")` passed.
 - Parent return condition: Orchestrator may return the repair as intent-satisfied, but must restart the current long-lived ARGO MCP server before repeating real `CallMcpTool updateArchitectureElement` pressure because the observed old Failed lifecycle is consistent with stale Node module cache rather than current code.
+
+## 2026-08-06 — Governed Automatic Work Delegation Intent Handoff
+
+- Selected viewpoints: Motivation Viewpoint for policy rationale; Outcome Realization Viewpoint for capability-to-outcome production; Business Process Cooperation Viewpoint for the ten-step responsibility chain; Application Cooperation Viewpoint for stage-function orchestration and bounded-summary access; Implementation and Migration Viewpoint for acceptance and handoff preparation.
+- Stakeholder concerns: stage owners and business acceptors need bounded context isolation with preserved final accountability; architects need coherent capability and outcome traceability; process owners need explicit trigger, evidence, write, resource, failure, and handoff responsibilities; delivery owners need exact acceptance boundaries without weakened gates.
+- Modeling purpose: designing, deciding, and intent-to-implementation handoff preparation.
+- Affected view bindings are preserved in `autodel-motivation-policy`, `autodel-outcome-realization`, `autodel-business-process-chain`, `autodel-stage-application-cooperation`, and `autodel-acceptance-boundaries`; each description uses the required Viewpoint/Concern/Purpose/Scope/Rationale pattern.
+
+### Coverage matrix
+
+- `autodel-goal`: `functionalPoint.DT-00-context-accountability` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-00`.
+- `autodel-stage-ownership-principle`: `functionalPoint.DT-01-stage-accountability` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-01`.
+- `autodel-hypothesis-governance-requirement`: `functionalPoint.DT-02-hypothesis-binding` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-02`; `functionalPoint.DT-03-singular-verdict` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-03`.
+- `autodel-resource-governance-constraint`: `functionalPoint.DT-04-depth-bound` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-04`; `functionalPoint.DT-13-concurrency-queue` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-13`.
+- `autodel-write-governance-requirement`: `functionalPoint.DT-05-write-classification` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-05`.
+- `autodel-trigger-policy-requirement`: policy, G>10, independent-unit, multi-channel, disjoint-write, open-discovery, and prohibition functional points -> `ExplicitAcceptanceTestcase-AUTODEL-DT-06`, `DT-06-A`, `DT-06-B`, `DT-06-C`, `DT-06-D`, `DT-06-E`, and `DT-06-P`, respectively.
+- `autodel-return-contract-requirement`: `functionalPoint.DT-07-bounded-return` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-07`.
+- `autodel-failure-governance-requirement`: `functionalPoint.DT-08-disposition` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-08`.
+- `autodel-proxy-acceptance-requirement`: `functionalPoint.DT-14-proxy-acceptance` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-14`.
+- `autodel-businesspartner-function`: `functionalPoint.DT-09-business-evidence-delegation` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-09`.
+- `autodel-intention-function`: `functionalPoint.DT-10-intent-investigation-delegation` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-10`.
+- `autodel-implementation-function`: `functionalPoint.DT-11-local-contract-delegation` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-11`.
+- `autodel-coding-function`: `functionalPoint.DT-12-coding-dag-delegation` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-12`.
+- `autodel-orchestrator-function`: `functionalPoint.DT-15-stage-coordination` -> `ExplicitAcceptanceTestcase-AUTODEL-DT-15`.
+- Approval evidence: every direct coverage owner carries a schema-supported `acceptanceApproval.*` attribute with `approvedByHuman=true`, grounded in the accepted decision-tree `humanDecision` records and the Orchestrator-dispatched WorkPackage.
+- Evidence-backed exclusions: the rejected-alternatives assessment, capability, outcome, three roles, bounded-summary data object, and ten process steps remain graph/view context rather than independent implementation allocation boundaries. Their observable behavior is owned by the fourteen directly tested policy and stage-function elements, so they are excluded from handoff `intentElementIds`.
+- Dependency boundary: this is new implementation scope and has no delivered leaf. IntentionDesign did not set or modify runner-owned `deliveryStatus`.
+
+### Mutation, validation, and handoff
+
+- `argo.previewSystemArchitectureMutation`: passed for fourteen coverage and approval repairs; `written=false`, `errors=[]`, counts remained 140 elements / 190 relationships / 55 views.
+- `argo.applySystemArchitectureMutation`: passed; `written=true`; embedding lifecycle remained Aligned.
+- `argo.validateSystemArchitecture`: passed.
+- `argo.getIntentElementContext`: passed for `autodel-goal` audit context and `autodel-capability` implementation-design context with no truncated dependencies or dependents.
+- Initial `argo.validateStageHandoff(stage="intent-to-implementation")` correctly rejected seventeen context-only elements without same-element mounted testcases. The handoff was narrowed to fourteen tested implementation allocation owners and sixteen relationships while preserving context elements in the graph and notes.
+- Final `argo.validateStageHandoff(stage="intent-to-implementation")`: passed for `.argo/temp/IntentToImplementationHandoff.json`.
+- Checklist self-audit: A1-A5 passed; B1-B3 passed for all fourteen direct handoff elements; C1-C2 passed with explicit same-element functional-point mappings and a documented new-scope boundary; D1-D8 passed using accepted human decisions and schema-supported approval evidence; E1-E3 passed, with global approval recorded in notes because the handoff schema has no `approvedByHuman` field; F1 recorded here and F2 requires the stage commit.
+- Open business questions and adequacy blockers: none.

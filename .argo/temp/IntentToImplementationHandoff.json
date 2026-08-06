@@ -1,0 +1,49 @@
+{
+  "stage": "intent-to-implementation",
+  "generatedAt": "2026-08-06T22:55:26.7653880+08:00",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Implement governed automatic work delegation across BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing, and Orchestrator while preserving stage-owned final accountability, hypothesis-bound evidence, singular verdicts, depth-two and concurrency-four limits, disjoint-write governance, bounded returns, singular failure disposition, behavior-proxy acceptance, and every existing quality gate.",
+  "intentElementIds": [
+    "autodel-goal",
+    "autodel-stage-ownership-principle",
+    "autodel-hypothesis-governance-requirement",
+    "autodel-resource-governance-constraint",
+    "autodel-write-governance-requirement",
+    "autodel-trigger-policy-requirement",
+    "autodel-return-contract-requirement",
+    "autodel-failure-governance-requirement",
+    "autodel-proxy-acceptance-requirement",
+    "autodel-businesspartner-function",
+    "autodel-intention-function",
+    "autodel-implementation-function",
+    "autodel-coding-function",
+    "autodel-orchestrator-function"
+  ],
+  "relationshipIds": [
+    "autodel-rel-principle-goal",
+    "autodel-rel-hypothesis-goal",
+    "autodel-rel-resource-goal",
+    "autodel-rel-write-goal",
+    "autodel-rel-trigger-goal",
+    "autodel-rel-return-goal",
+    "autodel-rel-failure-goal",
+    "autodel-rel-proxy-goal",
+    "autodel-rel-businesspartner-intention",
+    "autodel-rel-intention-implementation",
+    "autodel-rel-implementation-coding",
+    "autodel-rel-bp-principle",
+    "autodel-rel-intent-principle",
+    "autodel-rel-implementation-principle",
+    "autodel-rel-coding-principle",
+    "autodel-rel-orchestrator-principle"
+  ],
+  "openQuestions": [],
+  "notes": [
+    "Global handoff approval: approvedByHuman=true; evidence is the accepted DT-00 through DT-15 humanDecision record plus the Orchestrator-dispatched full WorkPackage.",
+    "View binding: Motivation Viewpoint owns policy rationale; Outcome Realization Viewpoint owns capability-to-outcome production; Business Process Cooperation Viewpoint owns the ten-step responsibility chain; Application Cooperation Viewpoint owns stage-function orchestration and bounded-summary access; Implementation and Migration Viewpoint owns acceptance and handoff preparation.",
+    "Direct coverage scope comprises the fourteen testcase-owning policy and stage-function elements. Each functional point has a same-element mounted ExplicitAcceptanceTestcase-AUTODEL mapping and a schema-supported acceptanceApproval attribute.",
+    "Context-only elements are the rejected-alternatives assessment, capability, outcome, three roles, bounded-summary data object, and ten business-process steps. They remain in the intent graph and bound views for architecture traceability but are excluded from intentElementIds because they are not independent implementation allocation boundaries; their observable behavior is owned by the fourteen directly covered policy and stage-function elements.",
+    "The direct dependency context contains no delivered boundary node because this is new implementation scope. Runner-owned deliveryStatus was not set or modified by IntentionDesign.",
+    "Implementation must create the single explicit entrypoint tests/explicit/entries/runAutomaticDelegationGovernance.js with DT-00 through DT-15 anchors, including DT-06-A through DT-06-E and DT-06-P, without weakening any existing stage, approval, handoff, audit, or delivery gate."
+  ]
+}
