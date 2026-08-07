@@ -4653,6 +4653,58 @@
           "acceptanceCriteria": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-15"
         }
       ]
+    },
+    {
+      "id": "rmt-srv-test-derekworkspacev5",
+      "name": "Test Cloud Server (test.derekworkspacev5.com)",
+      "type": "Node",
+      "description": "Remote cloud server node hosting the Argo test website. SSH public key mutual trust established via ed25519 key pair — passwordless connection verified 2026-08-07. The server runs Ubuntu 22.04.5 LTS with Nginx 1.18.0 serving test content from /var/www/test.derekworkspacev5.com. Web root accessible at http://test.derekworkspacev5.com.",
+      "attributes": [
+        {
+          "name": "ip",
+          "value": "120.24.114.13"
+        },
+        {
+          "name": "domain",
+          "value": "test.derekworkspacev5.com"
+        },
+        {
+          "name": "sshPort",
+          "value": "22"
+        },
+        {
+          "name": "sshUser",
+          "value": "root"
+        },
+        {
+          "name": "sshAuth",
+          "value": "public-key-ed25519"
+        },
+        {
+          "name": "hostname",
+          "value": "iZwz9fw2jux50hetykz0o8Z"
+        },
+        {
+          "name": "os",
+          "value": "Ubuntu 22.04.5 LTS"
+        },
+        {
+          "name": "webServer",
+          "value": "Nginx 1.18.0"
+        },
+        {
+          "name": "webRoot",
+          "value": "/var/www/test.derekworkspacev5.com"
+        },
+        {
+          "name": "diskSize",
+          "value": "40GB"
+        },
+        {
+          "name": "connectionVerifiedAt",
+          "value": "2026-08-07"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -7426,7 +7478,8 @@
         "grag-canonical-graph",
         "grag-semantic-index",
         "grag-embedding-provider-adapter",
-        "grag-seed-retrieval"
+        "grag-seed-retrieval",
+        "rmt-srv-test-derekworkspacev5"
       ],
       "included_relationships": [
         "grag-rel-runtime-native",
