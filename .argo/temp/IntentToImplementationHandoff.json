@@ -1,49 +1,22 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-08-06T22:55:26.7653880+08:00",
+  "generatedAt": "2026-08-07T16:00:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Implement governed automatic work delegation across BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing, and Orchestrator while preserving stage-owned final accountability, hypothesis-bound evidence, singular verdicts, depth-two and concurrency-four limits, disjoint-write governance, bounded returns, singular failure disposition, behavior-proxy acceptance, and every existing quality gate.",
+  "summary": "Hexo SSG deployment and content generation verification on Test Cloud Server (120.24.114.13). Scope: (1) promo-hexo-ssg — install Hexo CLI, init site directory, install and configure Butterfly or Icarus theme; (2) promo-content-generation — verify hexo generate produces static HTML to public/ directory. Decision baseline: .argo/history/decision-tree/20260807-argo-promo-website-deploy.md#B1,B2.",
   "intentElementIds": [
-    "autodel-goal",
-    "autodel-stage-ownership-principle",
-    "autodel-hypothesis-governance-requirement",
-    "autodel-resource-governance-constraint",
-    "autodel-write-governance-requirement",
-    "autodel-trigger-policy-requirement",
-    "autodel-return-contract-requirement",
-    "autodel-failure-governance-requirement",
-    "autodel-proxy-acceptance-requirement",
-    "autodel-businesspartner-function",
-    "autodel-intention-function",
-    "autodel-implementation-function",
-    "autodel-coding-function",
-    "autodel-orchestrator-function"
+    "promo-hexo-ssg",
+    "promo-content-generation"
   ],
   "relationshipIds": [
-    "autodel-rel-principle-goal",
-    "autodel-rel-hypothesis-goal",
-    "autodel-rel-resource-goal",
-    "autodel-rel-write-goal",
-    "autodel-rel-trigger-goal",
-    "autodel-rel-return-goal",
-    "autodel-rel-failure-goal",
-    "autodel-rel-proxy-goal",
-    "autodel-rel-businesspartner-intention",
-    "autodel-rel-intention-implementation",
-    "autodel-rel-implementation-coding",
-    "autodel-rel-bp-principle",
-    "autodel-rel-intent-principle",
-    "autodel-rel-implementation-principle",
-    "autodel-rel-coding-principle",
-    "autodel-rel-orchestrator-principle"
+    "promo-rel-hexo-generates"
   ],
   "openQuestions": [],
   "notes": [
-    "Global handoff approval: approvedByHuman=true; evidence is the accepted DT-00 through DT-15 humanDecision record plus the Orchestrator-dispatched full WorkPackage.",
-    "View binding: Motivation Viewpoint owns policy rationale; Outcome Realization Viewpoint owns capability-to-outcome production; Business Process Cooperation Viewpoint owns the ten-step responsibility chain; Application Cooperation Viewpoint owns stage-function orchestration and bounded-summary access; Implementation and Migration Viewpoint owns acceptance and handoff preparation.",
-    "Direct coverage scope comprises the fourteen testcase-owning policy and stage-function elements. Each functional point has a same-element mounted ExplicitAcceptanceTestcase-AUTODEL mapping and a schema-supported acceptanceApproval attribute.",
-    "Context-only elements are the rejected-alternatives assessment, capability, outcome, three roles, bounded-summary data object, and ten business-process steps. They remain in the intent graph and bound views for architecture traceability but are excluded from intentElementIds because they are not independent implementation allocation boundaries; their observable behavior is owned by the fourteen directly covered policy and stage-function elements.",
-    "The direct dependency context contains no delivered boundary node because this is new implementation scope. Runner-owned deliveryStatus was not set or modified by IntentionDesign.",
-    "Implementation must create the single explicit entrypoint tests/explicit/entries/runAutomaticDelegationGovernance.js with DT-00 through DT-15 anchors, including DT-06-A through DT-06-E and DT-06-P, without weakening any existing stage, approval, handoff, audit, or delivery gate."
+    "Viewpoint: Product Viewpoint via promo-website-product-view (parent: BusinessBehaviorViewpoint). View binding verified with description pattern: Viewpoint/Concern/Purpose/Scope/Rationale.",
+    "Coverage proof: promo-hexo-ssg has 3 functionalPoints (B1-HexoCLI, B1-SiteInit, B1-ThemeConfig) all mapped to same-element mounted ExplicitAcceptanceTestcase-PROMO-HEXO-SSG. promo-content-generation has 2 functionalPoints (B2-MarkdownToHTML, B2-FrontMatter) all mapped to same-element mounted ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN.",
+    "Dependency subgraph: promo-hexo-ssg --Realization--> promo-content-generation. Neither element has deliveryStatus=delivered (new elements, no architecture tests run yet). Both elements are in scope for this handoff. No delivered boundary nodes reached.",
+    "Testcase entrypoints: tests/explicit/entries/runPromoHexoSSG.js and tests/explicit/entries/runPromoContentGen.js. These entrypoints are declared in acceptanceCriteria but not yet created; ImplementationDesign owns entrypoint creation.",
+    "Per-testcase human approval: both testcases (ExplicitAcceptanceTestcase-PROMO-HEXO-SSG and ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN) were added in this session and require human approval before handoff is dispatched to ImplementationDesign.",
+    "Global handoff approval: recorded in this notes field because schema has additionalProperties:false and no approvedByHuman property. Global approval is independent of per-testcase approval and must be confirmed by the human partner before Orchestrator dispatches this handoff."
   ]
 }

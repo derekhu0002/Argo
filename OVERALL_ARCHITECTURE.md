@@ -60,6 +60,7 @@
 | Canonical Intent Graph | `design/KG/SystemArchitecture.json` | Remain the authoritative source for Elements, Relationships, Views, and memberships. | Workspace-relative canonical graph path |
 | Query Acceptance Boundary | `tests/` | Own business-readable Harness, explicit entrypoints, and implementation guardrails, including the frozen View15 capacity policy entrypoints and critical guards. | Frozen Node.js entry scripts |
 | Agent Delegation Governance Boundary | `.cursor/agents/` and `.cursor/skills/` | Own Cursor-facing stage and orchestration instructions for governed automatic work delegation: stage-owned internal dispatch, hypothesis-bound evidence, bounded child work, disjoint authorized writes, structured child returns, singular failure disposition, proxy acceptance, and preservation of existing approval, handoff, audit, commit, and delivery gates. | Cursor agent specification files and stage skills |
+| Promo Website Deployment Boundary | `tests/harness/promoDeploymentHarness.js` | Own SSH-based Hexo SSG deployment verification on the Test Cloud Server (120.24.114.13). Hide remote command execution behind business-readable methods for Hexo CLI installation, site initialization, theme configuration, and static content generation observation. | `createPromoDeploymentHarness(config)` returning business-readable observation methods |
 
 ## Implements mappings
 
@@ -145,5 +146,7 @@
 | Agent Delegation Governance Boundary / ImplementationDesign delegation surface | `autodel-implementation-function` | direct |
 | Agent Delegation Governance Boundary / CodingAndReparing delegation surface | `autodel-coding-function` | direct |
 | Agent Delegation Governance Boundary / Orchestrator coordination surface | `autodel-orchestrator-function` | direct |
+| Promo Website Deployment Boundary / Hexo SSG deployment verification | `promo-hexo-ssg` | direct |
+| Promo Website Deployment Boundary / Markdown-to-HTML generation verification | `promo-content-generation` | direct |
 
 Module responsibilities, allowed local dependencies, interface details, and test ownership are defined only by the local `ARCHITECTURE.md` contracts.

@@ -4875,6 +4875,31 @@
         {
           "name": "acceptanceObservationPoint.B1",
           "value": "hexo init produces project scaffold"
+        },
+        {
+          "name": "functionalPoint.B1-HexoCLI",
+          "value": "{\"description\":\"Install Hexo CLI on Test Cloud Server (120.24.114.13) with Node.js v22.22.1.\",\"businessOutcome\":\"Hexo CLI is available on the target server and ready for site initialization.\",\"observableBoundary\":\"Running `hexo version` on the target server returns the installed Hexo CLI version without error.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-PROMO-HEXO-SSG\"}"
+        },
+        {
+          "name": "functionalPoint.B1-SiteInit",
+          "value": "{\"description\":\"hexo init creates a valid project scaffold with source directories and configuration.\",\"businessOutcome\":\"A working Hexo site directory exists on the server, ready for theme installation and content authoring.\",\"observableBoundary\":\"hexo init exits 0 and produces _config.yml, source/, scaffolds/, themes/ directories.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-PROMO-HEXO-SSG\"}"
+        },
+        {
+          "name": "functionalPoint.B1-ThemeConfig",
+          "value": "{\"description\":\"Install and configure Butterfly or Icarus theme in the Hexo site.\",\"businessOutcome\":\"The promo website renders with a professional theme (Butterfly or Icarus).\",\"observableBoundary\":\"_config.yml references the installed theme; hexo g renders pages with the selected theme's layout.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-PROMO-HEXO-SSG\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-PROMO-HEXO-SSG",
+          "description": "Acceptor perspective control point: SSH into Test Cloud Server (120.24.114.13) as root and verify Hexo CLI installation, site initialization, and theme configuration. Observation point: hexo version returns installed version, hexo init produces project scaffold with _config.yml and standard directories, and _config.yml references the selected Butterfly or Icarus theme.",
+          "type": "Acceptance Test",
+          "Input": "Test Cloud Server (120.24.114.13) with Node.js v22.22.1, root access.",
+          "acceptanceCriteria": "tests/explicit/entries/runPromoHexoSSG.js"
         }
       ]
     },
@@ -4927,6 +4952,27 @@
         {
           "name": "acceptanceObservationPoint.B2",
           "value": "hexo g no parse errors"
+        },
+        {
+          "name": "functionalPoint.B2-MarkdownToHTML",
+          "value": "{\"description\":\"hexo generate converts Markdown source files to static HTML in public/ directory.\",\"businessOutcome\":\"Static website files are produced and ready for deployment to nginx.\",\"observableBoundary\":\"hexo g exits 0 and public/ contains index.html and other HTML assets.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN\"}"
+        },
+        {
+          "name": "functionalPoint.B2-FrontMatter",
+          "value": "{\"description\":\"Markdown source files use valid Hexo front-matter format (YAML between --- delimiters).\",\"businessOutcome\":\"Content authors can write Markdown with standard Hexo front-matter without parse errors blocking generation.\",\"observableBoundary\":\"hexo g completes without front-matter parse errors.\",\"coveredBy\":\"ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN\"}"
+        },
+        {
+          "name": "deliveryStatus",
+          "value": "not_delivered"
+        }
+      ],
+      "testcases": [
+        {
+          "name": "ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN",
+          "description": "Acceptor perspective control point: place Markdown source files with valid Hexo front-matter in the source/ directory and run hexo generate. Observation point: hexo g exits 0 without parse errors, public/ directory contains index.html and linked assets with content from the source Markdown files.",
+          "type": "Acceptance Test",
+          "Input": "Hexo site directory with Markdown source files containing valid front-matter.",
+          "acceptanceCriteria": "tests/explicit/entries/runPromoContentGen.js"
         }
       ]
     },

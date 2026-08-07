@@ -6,11 +6,11 @@
     "relatedIntentElementId": "grag-credential-boundary",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runExternalCredentialBoundary.js",
-    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runExternalCredentialBoundary.js",
+    "executionCommand": "C:\\nvm4w\\nodejs\\node.exe tests/explicit/entries/runExternalCredentialBoundary.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}",
+    "failureError": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}"
+    "stderr": "AssertionError [ERR_ASSERTION]: TS07_CYPHER_CREDENTIAL_BOUNDARY_VIOLATION: .argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js\n+ actual - expected\n\n+ [\n+   '.argo/scripts/graph-rag/mutationEmbeddingVectorLifecycle.js'\n+ ]\n- []\n\n    at main (D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runExternalCredentialBoundary.js:46:10) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: [Array],\n  expected: [],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}"
   },
   {
     "testcasename": "ExplicitAcceptanceTestcase-SP-03-DefaultVectorRetrieval",
@@ -19,10 +19,36 @@
     "relatedIntentElementId": "semprod-default-vector-retrieval",
     "status": "failed",
     "resolvedScriptPath": "tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
-    "executionCommand": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\nodejs\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
+    "executionCommand": "C:\\nvm4w\\nodejs\\node.exe tests/explicit/entries/runDefaultMcpNeo4jVectorRetrieval.js",
     "exitCode": 1,
-    "failureError": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:962:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:883:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)",
+    "failureError": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\AICodingAgent\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:962:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\AICodingAgent\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:883:7)\n    at main (D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)",
     "stdout": "",
-    "stderr": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:962:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:883:7)\n    at main (D:\\Projects\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)"
+    "stderr": "AssertionError [ERR_ASSERTION]: SP03_APPROVED_SOURCE_DIRECT_ATTRIBUTION_MISMATCH\n+ actual - expected\n\n+ undefined\n- {\n-   ARGO_EMBEDDING_BASE_URL: 'process',\n-   ARGO_EMBEDDING_DIMENSIONS: 'process',\n-   ARGO_EMBEDDING_MODEL: 'process',\n-   ARGO_EMBEDDING_MODEL_VERSION: 'process',\n-   ARGO_EMBEDDING_PROVIDER: 'process',\n-   ARGO_NEO4J_DATABASE_PASSWORD: 'process',\n-   ARGO_NEO4J_DATABASE_URL: 'process',\n-   ARGO_NEO4J_DATABASE_USERNAME: 'process',\n-   QWEN_KEY: 'process'\n- }\n\n    at assertApprovedCredentialSourceEvidence (D:\\Projects\\AICodingAgent\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:962:10)\n    at assertCredentialSourceMatrix (D:\\Projects\\AICodingAgent\\Argo\\tests\\harness\\productionDefaultRetrievalHarness.js:883:7)\n    at main (D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runDefaultMcpNeo4jVectorRetrieval.js:38:3)"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-PROMO-HEXO-SSG",
+    "testdescription": "Acceptor perspective control point: SSH into Test Cloud Server (120.24.114.13) as root and verify Hexo CLI installation, site initialization, and theme configuration. Observation point: hexo version returns installed version, hexo init produces project scaffold with _config.yml and standard directories, and _config.yml references the selected Butterfly or Icarus theme.",
+    "acceptanceCriteria": "tests/explicit/entries/runPromoHexoSSG.js",
+    "relatedIntentElementId": "promo-hexo-ssg",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runPromoHexoSSG.js",
+    "executionCommand": "C:\\nvm4w\\nodejs\\node.exe tests/explicit/entries/runPromoHexoSSG.js",
+    "exitCode": 1,
+    "failureError": "Command failed: C:\\nvm4w\\nodejs\\node.exe D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runPromoHexoSSG.js",
+    "stdout": "[PROMO-HEXO-SSG] Node.js version: v22.22.1\n[PROMO-HEXO-SSG] Hexo CLI version: NOT INSTALLED\n[PROMO-HEXO-SSG] Site scaffold exists: false\n[PROMO-HEXO-SSG]   _config.yml: false\n[PROMO-HEXO-SSG]   source/: false\n[PROMO-HEXO-SSG]   themes/: false\n[PROMO-HEXO-SSG]   scaffolds/: false\n[PROMO-HEXO-SSG] Configured theme: NOT CONFIGURED\n\n[PROMO-HEXO-SSG] Results: {\n  \"nodeVersion\": \"v22.22.1\",\n  \"hexoVersion\": null,\n  \"scaffold\": {\n    \"exists\": false,\n    \"configExists\": false,\n    \"hasSourceDir\": false,\n    \"hasThemesDir\": false,\n    \"hasScaffoldsDir\": false,\n    \"rawOutput\": \"DIR_MISSING\\nCONFIG_MISSING\\nSOURCE_MISSING\\nTHEMES_MISSING\\nSCAFFOLDS_MISSING\",\n    \"exitCode\": 0\n  },\n  \"configuredTheme\": null,\n  \"themeValid\": null,\n  \"allPassed\": null,\n  \"failureReason\": \"PROMO_HEXO_SSG_NOT_READY\",\n  \"failureDetail\": \"Hexo CLI not installed; Site directory not initialized; _config.yml missing; source/ directory missing; themes/ directory missing; scaffolds/ directory missing; Theme not configured (expected Butterfly or Icarus)\"\n}\n[PROMO-HEXO-SSG] EXPECTED FAILURE: PROMO_HEXO_SSG_NOT_READY\n[PROMO-HEXO-SSG] Detail: Hexo CLI not installed; Site directory not initialized; _config.yml missing; source/ directory missing; themes/ directory missing; scaffolds/ directory missing; Theme not configured (expected Butterfly or Icarus)",
+    "stderr": "Command failed: C:\\nvm4w\\nodejs\\node.exe D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runPromoHexoSSG.js"
+  },
+  {
+    "testcasename": "ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN",
+    "testdescription": "Acceptor perspective control point: place Markdown source files with valid Hexo front-matter in the source/ directory and run hexo generate. Observation point: hexo g exits 0 without parse errors, public/ directory contains index.html and linked assets with content from the source Markdown files.",
+    "acceptanceCriteria": "tests/explicit/entries/runPromoContentGen.js",
+    "relatedIntentElementId": "promo-content-generation",
+    "status": "failed",
+    "resolvedScriptPath": "tests/explicit/entries/runPromoContentGen.js",
+    "executionCommand": "C:\\nvm4w\\nodejs\\node.exe tests/explicit/entries/runPromoContentGen.js",
+    "exitCode": 1,
+    "failureError": "Command failed: C:\\nvm4w\\nodejs\\node.exe D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runPromoContentGen.js",
+    "stdout": "[PROMO-CONTENT-GEN] Site directory exists: false\n\n[PROMO-CONTENT-GEN] Results: {\n  \"siteExists\": false,\n  \"failureReason\": \"PROMO_CONTENT_GEN_SITE_NOT_INITIALIZED\",\n  \"failureDetail\": \"Hexo site directory not found. Run promo-hexo-ssg installation first.\"\n}\n[PROMO-CONTENT-GEN] EXPECTED FAILURE: PROMO_CONTENT_GEN_SITE_NOT_INITIALIZED\n[PROMO-CONTENT-GEN] Detail: Hexo site directory not found. Run promo-hexo-ssg installation first.",
+    "stderr": "Command failed: C:\\nvm4w\\nodejs\\node.exe D:\\Projects\\AICodingAgent\\Argo\\tests\\explicit\\entries\\runPromoContentGen.js"
   }
 ]

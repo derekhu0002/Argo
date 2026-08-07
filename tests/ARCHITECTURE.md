@@ -7,7 +7,8 @@ This local contract refines `OVERALL_ARCHITECTURE.md`.
 - `tests/harness/intentArchitectureQueryHarness.js` hides MCP response parsing, canonical-file access, and invocation plumbing behind business-readable methods.
 - `tests/harness/viewCapacityPolicyHarness.js` hides temporary graph fixture construction, dry-run mutation calls, response parsing, and membership comparison behind View15 business-readable methods.
 - `tests/harness/automaticDelegationGovernanceHarness.js` hides Cursor agent/skill file inspection behind AUTODEL business-readable methods for stage-owned delegation, trigger/prohibition, bounded return, failure disposition, stage-specific delegation, and proxy acceptance assertions.
-- `tests/explicit/entries/` owns the four frozen DT-01/02/03/12 entrypoints.
+- `tests/harness/promoDeploymentHarness.js` hides SSH command execution behind business-readable methods for Hexo SSG deployment verification on the Test Cloud Server (120.24.114.13): Node.js version observation, Hexo CLI version observation, site scaffold inspection, theme configuration reading, hexo generate execution, and front-matter parse error detection.
+- `tests/explicit/entries/` owns the four frozen DT-01/02/03/12 entrypoints plus the promo deployment entrypoints.
 - `tests/architecture/intent-query/` owns frozen critical non-explicit guardrails for boundaries, dependency direction, entry correctness, and traceability.
 - Explicit entrypoints preserve GIVEN / WHEN / THEN, semantic data names, control points, observation points, and readable business failure categories.
 - The AUTODEL explicit entrypoint owns DT-00 through DT-15 anchors, including DT-06-A through DT-06-E and DT-06-P, as one physical entrypoint. It observes behavior proxies in governance specifications and must not weaken existing stage, approval, handoff, audit, commit, or delivery gates.
@@ -304,3 +305,29 @@ For the WP4 design navigation calibration handoff, `tests/architecture/documenta
 For the WP5 link and fact-source verification handoff, the three documentation guards above are frozen regression guards together with `tests/explicit/entries/runDocumentationInformationArchitectureDecision.js#doc-01-root-readme-adoption-router`, `#doc-02-contributor-governance-router`, `#doc-03-stable-design-reference-routing`, and `#doc-04-content-boundary-placement`. WP5 authorizes no documentation repair while these entrypoints and guards pass; any future Coding work must treat `ROOT_README_INLINE_SEMANTIC_LIFECYCLE_DETAIL`, `CONTRIBUTOR_GOVERNANCE_*`, `DESIGN_NAVIGATION_*`, or broken routed-link evidence as a regression requiring a new approved repair handoff.
 
 All explicit and critical paths listed here, plus `tests/harness/intentArchitectureQueryHarness.js`, `tests/harness/productionGraphRagHarness.js`, `tests/harness/liveEmbeddingProviderHarness.js`, `.argo/.env.example`, and `.gitignore`, are frozen during Coding/Repair unless the current handoff explicitly excludes them from `frozenFiles`.
+
+## Promo Website Deployment — Owned Tests
+
+### Explicit entrypoints
+
+- `tests/explicit/entries/runPromoHexoSSG.js` — `ExplicitAcceptanceTestcase-PROMO-HEXO-SSG`. Control point: SSH into Test Cloud Server (120.24.114.13) as root and verify Hexo CLI installation, site initialization, and theme configuration. Observation point: hexo version returns installed version, hexo init produces project scaffold with _config.yml and standard directories, and _config.yml references the selected Butterfly or Icarus theme. Pre-coding expected RED signal: `PROMO_HEXO_SSG_NOT_READY` (Hexo not yet installed on remote server).
+- `tests/explicit/entries/runPromoContentGen.js` — `ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN`. Control point: place a sample Markdown file with valid Hexo front-matter in source/_posts and run hexo generate. Observation point: hexo g exits 0 without front-matter parse errors, public/ contains index.html. Pre-coding expected RED signal: `PROMO_CONTENT_GEN_NOT_READY` (site not initialized on remote server).
+
+### Harness
+
+- `tests/harness/promoDeploymentHarness.js` — Hides SSH command execution behind business-readable methods. Exposes `observeNodeVersion`, `observeHexoCliVersion`, `observeSiteScaffold`, `observeThemeConfig`, `observeThemeInstalled`, `observeHexoGenerate`, `placeSampleMarkdown`, `observeFrontMatterParseErrors`, `observeSuccessfulGeneration`, and `getConfig`. CodingAndReparing may modify the SSH command format and error handling but must preserve the public API.
+
+### Critical non-explicit guardrails
+
+- `tests/architecture/promo-deployment/promo-deployment-boundary.guard.js` — `ArchitectureBoundaryGuard`. Protects the promo website deployment boundary: harness must export `createPromoDeploymentHarness`, all required business-readable methods must exist, explicit entrypoints must export `run()`, and `OVERALL_ARCHITECTURE.md` must contain `promo-hexo-ssg` and `promo-content-generation` implements mappings.
+
+### Coding authorization
+
+CodingAndReparing is authorized to execute remote server operations (SSH commands) on Test Cloud Server (120.24.114.13) as root:
+1. Install Hexo CLI: `npm install -g hexo-cli`
+2. Initialize site: `hexo init /opt/argo-website`
+3. Install theme: `cd /opt/argo-website && npm install hexo-theme-butterfly` (or hexo-theme-icarus)
+4. Configure theme in `_config.yml`
+5. Place sample content and verify `hexo generate`
+
+Coding may also modify `tests/harness/promoDeploymentHarness.js` if SSH command format or error handling needs adjustment, but must preserve the public API. Explicit entrypoints, critical guards, contracts, and handoff artifacts are frozen.

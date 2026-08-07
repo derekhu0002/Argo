@@ -1,473 +1,120 @@
 {
   "stage": "implementation-to-coding",
-  "generatedAt": "2026-08-06T23:14:00.000+08:00",
+  "generatedAt": "2026-08-07T18:30:00+08:00",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "Corrected ImplementationDesign testcase coverage for governed automatic work delegation after IntentDesign re-audit. Coding remains authorized only to update Cursor stage-agent and stage-skill governance surfaces so AUTODEL-DT-00 through AUTODEL-DT-15 pass without weakening existing approval, handoff, audit, commit, or delivery gates. The frozen Harness now checks DT-04 simple one-level work plus DT-04/13 scheduling details, DT-07 evidence locations, DT-09 business synthesis, DT-10 graph-writer/Viewpoint controls, DT-11 dependency ownership, DT-14 hard-trigger decision traceability, DT-15 bounded-summary/no-bypass behavior, and contradictory gate-bypass language. Pre-coding explicit entrypoint evidence is recorded in .argo/temp/automatic-delegation-expected-failures.json; the required pre-commit full runner refresh records baseline evidence in design/KG/test-failure-records.json and runner-owned deliveryStatus.",
+  "summary": "Hexo SSG installation and content generation verification on Test Cloud Server (120.24.114.13). Scope: (1) promo-hexo-ssg — install Hexo CLI, init /opt/argo-website, install and configure Butterfly or Icarus theme; (2) promo-content-generation — verify hexo generate produces static HTML to public/. Decision baseline: .argo/history/decision-tree/20260807-argo-promo-website-deploy.md#B1,B2.",
   "implementationContracts": [
     "OVERALL_ARCHITECTURE.md",
-    "tests/ARCHITECTURE.md",
-    ".cursor/agents/ARCHITECTURE.md",
-    ".cursor/skills/ARCHITECTURE.md"
+    "tests/ARCHITECTURE.md"
   ],
   "explicitEntrypoints": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-00",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-00",
-      "controlPoint": "Large multi-hypothesis task and atomic local task under existing stage gates.",
-      "observationPoint": "Large work delegates bounded subwork, atomic work remains local, structured evidence returns, and existing stage gates remain unchanged.",
+      "testcaseName": "ExplicitAcceptanceTestcase-PROMO-HEXO-SSG",
+      "entryPath": "tests/explicit/entries/runPromoHexoSSG.js",
+      "controlPoint": "SSH into Test Cloud Server (120.24.114.13) as root and verify Hexo CLI installation, site initialization at /opt/argo-website, and Butterfly or Icarus theme configuration.",
+      "observationPoint": "hexo version returns installed version; hexo init produces project scaffold with _config.yml, source/, themes/, scaffolds/; _config.yml references Butterfly or Icarus theme and theme directory exists.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "AUTODEL_DT00_CONTEXT_ACCOUNTABILITY_MISSING:automatic delegation"
+      "initialExecutionCommand": "node tests/explicit/entries/runPromoHexoSSG.js",
+      "failureReason": "PROMO_HEXO_SSG_NOT_READY: Hexo CLI not installed; Site directory not initialized; Theme not configured (expected Butterfly or Icarus). Node.js v22.22.1 detected; SSH connectivity verified."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-01",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-01",
-      "controlPoint": "Large work in each stage and Orchestrator stage coordination.",
-      "observationPoint": "Internal subwork is dispatched only by stage owners and Orchestrator dispatches stages/audits only.",
+      "testcaseName": "ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN",
+      "entryPath": "tests/explicit/entries/runPromoContentGen.js",
+      "controlPoint": "Place a sample Markdown file with valid Hexo front-matter in source/_posts and run hexo generate.",
+      "observationPoint": "hexo g exits 0 without front-matter parse errors; public/ directory contains index.html; sample content appears in generated output.",
       "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-02",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-02",
-      "controlPoint": "Independent decisions with different evidence-channel plans.",
-      "observationPoint": "Evidence remains hypothesis-bound and parent owns final synthesis.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-03",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-03",
-      "controlPoint": "Agreeing, conflicting, missing, and execution-failure evidence scenarios.",
-      "observationPoint": "Each executed hypothesis receives exactly one supported, refuted, or undetermined verdict; execution failure remains separate.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-04",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-04",
-      "controlPoint": "Simple and complex multi-channel hypothesis fixtures.",
-      "observationPoint": "Simple work uses one delegation level where sufficient, complex work may use stage owner to verifier to gatherer, no tree exceeds two child edges, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-05",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-05",
-      "controlPoint": "Approved disjoint write sets and overlapping shared-contract write sets.",
-      "observationPoint": "Disjoint dependency-independent targets may run in parallel; shared or ordered work serializes under one writer.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06",
-      "controlPoint": "Independent fixtures for five hard triggers and four prohibitions.",
-      "observationPoint": "Every trigger yields a delegation plan or explicit prohibition reason, and prohibited cases remain local.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-A",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-A",
-      "controlPoint": "Architecture task with declared cumulative G above 10.",
-      "observationPoint": "A slice plan exists before stage execution and independently verifiable slices are delegated within resource limits.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-B",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-B",
-      "controlPoint": "Two independently decidable hypotheses.",
-      "observationPoint": "Hypotheses are delegated separately and synthesized by the parent.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-C",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-C",
-      "controlPoint": "One hypothesis requiring at least three non-lightweight evidence channels.",
-      "observationPoint": "Channel reports are gathered independently and one verifier returns a traceable singular verdict.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-D",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-D",
-      "controlPoint": "Two approved, disjoint, dependency-independent coding targets.",
-      "observationPoint": "Both may run concurrently in isolation and return exact non-colliding write sets.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-E",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-E",
-      "controlPoint": "Broad unknown-repository and open-internet evidence requests.",
-      "observationPoint": "Bounded exploration/research workers return structured findings and evidence locations rather than raw search output.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-06-P",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-06-P",
-      "controlPoint": "Atomic local work, strict dependency/shared-write work, negative-value delegation, and reserved final decision/gate scenarios.",
-      "observationPoint": "No child launches in prohibited cases and one explicit prohibition reason is recorded.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-07",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-07",
-      "controlPoint": "Child task with large logs, many search results, ordinary supports, and decisive counterexamples.",
-      "observationPoint": "Parent receives bounded required fields, strongest ordinary supports, every decisive counterexample, externally addressable evidence locations, and no raw logs or full search process.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-08",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-08",
-      "controlPoint": "Recoverable execution failure, missing evidence, write conflict, and authority conflict fixtures.",
-      "observationPoint": "Each non-success enters exactly one retry, supplement, serialize, or escalate disposition.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-09",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-09",
-      "controlPoint": "Three business decisions requiring distinct evidence combinations.",
-      "observationPoint": "Children gather evidence while BusinessPartner alone synthesizes SMART framing, MECE tree, authority weighting, recommendations, user questions, business acceptance, and the final business verdict.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-10",
-      "controlPoint": "Three intent dependency branches sharing one upstream architecture element.",
-      "observationPoint": "Branch investigations run independently; exactly one IntentionDesign graph writer preserves Viewpoint binding, same-view endpoints, ArchiMate-valid relationship semantics, preview, apply, and validation.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-11",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-11",
-      "controlPoint": "Three disjoint local stable elements and one shared interface.",
-      "observationPoint": "Local work may parallelize while shared interface, root contract, cross-element dependency direction, frozen scope, and implementation-to-coding handoff remain under one owner.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-12",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-12",
-      "controlPoint": "Two approved disjoint coding chains with one convergent downstream task.",
-      "observationPoint": "Independent same-frontier tasks run concurrently, convergent task waits, and main CodingAndReparing runs full validation and delivery comparison.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-13",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-13",
-      "controlPoint": "Eight independent hypotheses and eight eligible same-frontier coding tasks with dependency markers.",
-      "observationPoint": "Active children never exceed four, eligible queued work fills released slots, and dependency-blocked work consumes no active slot.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-14",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-14",
-      "controlPoint": "Proxy scenario suite for large, atomic, multi-channel, conflict, failure, and full-stage delivery behavior.",
-      "observationPoint": "Every hard-trigger decision is traceable, atomic tasks do not delegate, bounded summaries, resource limits, dispositions, and existing gates pass without claimed token telemetry.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-15",
-      "entryPath": "tests/explicit/entries/runAutomaticDelegationGovernance.js#DT-15",
-      "controlPoint": "Complete workflow containing large work inside every stage.",
-      "observationPoint": "Orchestrator observes bounded validated stage summaries and existing gates rather than raw child evidence, does not manage child-level work, and no stage is bypassed.",
-      "initialExecutionStatus": "failed",
-      "initialExecutionCommand": "node tests/explicit/entries/runAutomaticDelegationGovernance.js",
-      "failureReason": "Blocked behind first failing DT-00 pre-coding signal."
+      "initialExecutionCommand": "node tests/explicit/entries/runPromoContentGen.js",
+      "failureReason": "PROMO_CONTENT_GEN_SITE_NOT_INITIALIZED: Hexo site directory not found. Run promo-hexo-ssg installation first."
     }
   ],
   "criticalNonExplicitTests": [
     {
-      "name": "AUTODEL architecture boundary guard",
-      "path": "tests/architecture/automatic-delegation-governance/architecture-boundary.guard.js",
+      "name": "Promo Deployment Architecture Boundary Guard",
+      "path": "tests/architecture/promo-deployment/promo-deployment-boundary.guard.js",
       "kind": "ArchitectureBoundaryGuard",
-      "controlPoint": "Contracts, handoff coding targets, frozen files, and AUTODEL expected failure path.",
-      "observationPoint": "Coding may edit only authorized Cursor agent/skill governance surfaces and cannot edit tests, contracts, or intent graph.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "AUTODEL dependency direction guard",
-      "path": "tests/architecture/automatic-delegation-governance/dependency-direction.guard.js",
-      "kind": "DependencyDirectionGuard",
-      "controlPoint": "Authorized agent specification targets and frozen implementation-design assets.",
-      "observationPoint": "Agent specs do not depend on test entrypoints or code imports, and shared gate edits are serialized.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "AUTODEL explicit entrypoint correctness guard",
-      "path": "tests/architecture/automatic-delegation-governance/explicit-entrypoint-correctness.guard.js",
-      "kind": "ExplicitEntrypointCorrectnessGuard",
-      "controlPoint": "Single explicit entrypoint and Harness source.",
-      "observationPoint": "DT-00 through DT-15 anchors, including DT-06-A through DT-06-E and DT-06-P, remain wired to Harness-owned business assertions.",
-      "expectedStatus": "passed"
-    },
-    {
-      "name": "AUTODEL implementation traceability guard",
-      "path": "tests/architecture/automatic-delegation-governance/implementation-traceability.guard.js",
-      "kind": "KeyImplementationTraceabilityGuard",
-      "controlPoint": "Intent graph testcase acceptanceCriteria and implementation handoff explicit entrypoint records.",
-      "observationPoint": "Every AUTODEL testcase maps to the single frozen entrypoint fragment and every direct intent element remains present.",
+      "controlPoint": "Verify harness exports createPromoDeploymentHarness with all required business-readable methods, entrypoints export run(), and OVERALL_ARCHITECTURE.md contains promo-hexo-ssg and promo-content-generation implements mappings.",
+      "observationPoint": "All required methods present; both entrypoints export run(); implements mappings exist in root contract.",
       "expectedStatus": "passed"
     }
   ],
   "supportingNonExplicitTests": [],
-  "expectedFailureRecordsPath": ".argo/temp/automatic-delegation-expected-failures.json",
+  "expectedFailureRecordsPath": ".argo/temp/promo-deployment-expected-failures.json",
   "codingTargets": [
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-09",
-      "path": ".cursor/skills/business-partner/SKILL.md",
-      "failureSignal": "AUTODEL_DT09_BUSINESSPARTNER_DELEGATION_CONTRACT_MISSING",
-      "nextAction": "Add BusinessPartner stage-owned evidence delegation rules for hypothesis verification and local/internet evidence while preserving final business acceptance."
+      "testcaseName": "ExplicitAcceptanceTestcase-PROMO-HEXO-SSG",
+      "path": "tests/harness/promoDeploymentHarness.js",
+      "failureSignal": "PROMO_HEXO_SSG_NOT_READY",
+      "nextAction": "SSH into 120.24.114.13 as root and: (1) npm install -g hexo-cli, (2) hexo init /opt/argo-website, (3) cd /opt/argo-website && npm install hexo-theme-butterfly (or hexo-theme-icarus), (4) set theme in _config.yml. Harness may be modified only for SSH command format or error handling fixes; public API must be preserved."
     },
     {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
-      "path": ".cursor/agents/IntentionDesign.md",
-      "failureSignal": "AUTODEL_DT01_STAGE_OWNER_DELEGATION_MISSING:intentionDesign",
-      "nextAction": "Add IntentionDesign internal delegation rules for read-only branch investigation while preserving a single Viewpoint-governed graph writer and MCP validation gates."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-11",
-      "path": ".cursor/agents/ImplementationDesign.md",
-      "failureSignal": "AUTODEL_DT11_IMPLEMENTATION_STAGE_DELEGATION_MISSING",
-      "nextAction": "Add ImplementationDesign local-contract/test-entrypoint delegation rules while preserving root contract, shared interfaces, frozen scope, and handoff ownership."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-12",
-      "path": ".cursor/agents/CodingAndReparing.md",
-      "failureSignal": "AUTODEL_DT12_CODING_STAGE_DELEGATION_MISSING",
-      "nextAction": "Add CodingAndReparing same-frontier dependency-DAG delegation rules for disjoint authorized write sets while preserving convergence, full validation, and delivery regression checks."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-15",
-      "path": ".cursor/agents/Orchestrator.md",
-      "failureSignal": "AUTODEL_DT15_ORCHESTRATOR_BOUNDARY_MISSING",
-      "nextAction": "Clarify Orchestrator remains cross-stage coordinator only and does not manage child-level stage-internal work while preserving existing gates."
-    },
-    {
-      "testcaseName": "ExplicitAcceptanceTestcase-AUTODEL-DT-15",
-      "path": ".cursor/skills/fast-orchestrating/SKILL.md",
-      "failureSignal": "AUTODEL_DT15_ORCHESTRATOR_BOUNDARY_MISSING",
-      "nextAction": "Add helper-skill orchestration rules that route stages and approvals only, leaving internal delegation to stage owners."
+      "testcaseName": "ExplicitAcceptanceTestcase-PROMO-CONTENT-GEN",
+      "failureSignal": "PROMO_CONTENT_GEN_NOT_READY",
+      "nextAction": "Complete promo-hexo-ssg installation (T1-T3) first. Then place a sample Markdown post and verify hexo generate succeeds. Harness may be modified only for SSH command format or error handling fixes; public API must be preserved."
     }
   ],
   "taskExecutionPlan": {
-    "executionStrategy": "Serialize shared gate edits through Orchestrator and apply stage-specific governance updates independently where target paths are disjoint. Do not edit frozen tests, contracts, handoff, expected failure records, or design/KG/SystemArchitecture.json.",
+    "executionStrategy": "sequential",
     "tasks": [
       {
-        "taskId": "AUTODEL-01-common-policy-vocabulary",
-        "title": "Add common delegation policy vocabulary",
-        "objective": "Ensure all authorized surfaces use the same hard triggers, prohibitions, resource limits, return contract, and failure disposition terms.",
-        "dependsOn": [],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-00",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-14"
-        ],
-        "targetPaths": [
-          ".cursor/skills/business-partner/SKILL.md",
-          ".cursor/agents/IntentionDesign.md",
-          ".cursor/agents/ImplementationDesign.md",
-          ".cursor/agents/CodingAndReparing.md",
-          ".cursor/agents/Orchestrator.md",
-          ".cursor/skills/fast-orchestrating/SKILL.md"
-        ],
+        "taskId": "T1-hexo-cli-install",
+        "title": "Install Hexo CLI on Remote Server",
+        "objective": "SSH into Test Cloud Server (120.24.114.13) as root and install Hexo CLI globally via npm.",
         "steps": [
-          "Add stage-owned automatic delegation vocabulary without claiming token-reduction telemetry.",
-          "Include DT-06-A through DT-06-E hard triggers and DT-06-P prohibitions in business-readable form.",
-          "Preserve existing approval, handoff, audit, commit, and delivery gates."
+          "ssh root@120.24.114.13 'npm install -g hexo-cli'",
+          "ssh root@120.24.114.13 'hexo version' to verify installation"
         ],
-        "completionSignal": "The explicit entrypoint no longer fails with AUTODEL_DT00_CONTEXT_ACCOUNTABILITY_MISSING or AUTODEL_DT06_TRIGGER_FAMILY_MISSING."
+        "completionSignal": "node tests/explicit/entries/runPromoHexoSSG.js reports hexoVersion is not null"
       },
       {
-        "taskId": "AUTODEL-02-businesspartner",
-        "title": "Govern BusinessPartner evidence delegation",
-        "objective": "Authorize BusinessPartner to delegate hypothesis-bound evidence work while retaining final business decision ownership.",
-        "dependsOn": [
-          "AUTODEL-01-common-policy-vocabulary"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-02",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-03",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-07",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-09"
-        ],
-        "targetPaths": [
-          ".cursor/skills/business-partner/SKILL.md"
-        ],
+        "taskId": "T2-hexo-site-init",
+        "title": "Initialize Hexo Site Directory",
+        "objective": "Initialize Hexo site at /opt/argo-website on the remote server.",
+        "dependsOn": ["T1-hexo-cli-install"],
         "steps": [
-          "Define hypothesis verifier and evidence gatherer responsibilities.",
-          "Require proof/falsification, authority precedence, singular verdict, and bounded return fields.",
-          "State that BusinessPartner retains SMART framing, MECE tree, recommendations, questions, and acceptance semantics."
+          "ssh root@120.24.114.13 'hexo init /opt/argo-website'",
+          "ssh root@120.24.114.13 'ls /opt/argo-website/_config.yml /opt/argo-website/source /opt/argo-website/themes /opt/argo-website/scaffolds' to verify scaffold"
         ],
-        "completionSignal": "AUTODEL_DT09_BUSINESSPARTNER_DELEGATION_CONTRACT_MISSING is resolved."
+        "completionSignal": "node tests/explicit/entries/runPromoHexoSSG.js reports scaffold.exists, configExists, hasSourceDir, hasThemesDir, hasScaffoldsDir all true"
       },
       {
-        "taskId": "AUTODEL-03-intention-implementation",
-        "title": "Govern architecture-stage delegation",
-        "objective": "Authorize read/proposal parallelism in IntentionDesign and local stable-element delegation in ImplementationDesign without fragmenting graph or handoff ownership.",
-        "dependsOn": [
-          "AUTODEL-01-common-policy-vocabulary"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-11"
-        ],
-        "targetPaths": [
-          ".cursor/agents/IntentionDesign.md",
-          ".cursor/agents/ImplementationDesign.md"
-        ],
+        "taskId": "T3-theme-install",
+        "title": "Install and Configure Theme",
+        "objective": "Install Butterfly or Icarus theme and configure _config.yml.",
+        "dependsOn": ["T2-hexo-site-init"],
         "steps": [
-          "For IntentionDesign, permit focused dependency, concern, coverage, and drift investigations while preserving one graph writer and Viewpoint binding.",
-          "For ImplementationDesign, permit disjoint local contract and testcase-entrypoint design while preserving root contract, shared interface, dependency direction, frozen scope, and handoff ownership."
+          "ssh root@120.24.114.13 'cd /opt/argo-website && npm install hexo-theme-butterfly' (or hexo-theme-icarus as fallback)",
+          "ssh root@120.24.114.13 'cd /opt/argo-website && sed -i \"s/^theme:.*/theme: butterfly/\" _config.yml || echo \"theme: butterfly\" >> _config.yml'"
         ],
-        "completionSignal": "AUTODEL_DT01_STAGE_OWNER_DELEGATION_MISSING for architecture stages and AUTODEL_DT11_IMPLEMENTATION_STAGE_DELEGATION_MISSING are resolved."
+        "completionSignal": "node tests/explicit/entries/runPromoHexoSSG.js reports themeValid is true and themeInstalled is true"
       },
       {
-        "taskId": "AUTODEL-04-coding",
-        "title": "Govern CodingAndReparing DAG delegation",
-        "objective": "Authorize same-frontier parallel coding work only when dependencies and write sets are disjoint.",
-        "dependsOn": [
-          "AUTODEL-01-common-policy-vocabulary"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-05",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-D",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-12"
-        ],
-        "targetPaths": [
-          ".cursor/agents/CodingAndReparing.md"
-        ],
+        "taskId": "T4-content-gen-verify",
+        "title": "Verify Content Generation",
+        "objective": "Place a sample Markdown post and verify hexo generate produces static HTML.",
+        "dependsOn": ["T2-hexo-site-init", "T3-theme-install"],
         "steps": [
-          "Define same-frontier dependency-DAG eligibility.",
-          "Require exact authorized disjoint write sets before parallel dispatch.",
-          "Keep shared writes, convergence, integration, full runner, and delivery regression comparison under the main coding Agent."
+          "Place sample Markdown with valid front-matter in /opt/argo-website/source/_posts/",
+          "ssh root@120.24.114.13 'cd /opt/argo-website && npx hexo generate'",
+          "ssh root@120.24.114.13 'ls /opt/argo-website/public/index.html' to verify output"
         ],
-        "completionSignal": "AUTODEL_DT12_CODING_STAGE_DELEGATION_MISSING is resolved."
-      },
-      {
-        "taskId": "AUTODEL-05-orchestrator",
-        "title": "Govern Orchestrator coordination boundary",
-        "objective": "Preserve Orchestrator as cross-stage coordinator only after stage Agents gain internal delegation.",
-        "dependsOn": [
-          "AUTODEL-01-common-policy-vocabulary"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-01",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-15"
-        ],
-        "targetPaths": [
-          ".cursor/agents/Orchestrator.md",
-          ".cursor/skills/fast-orchestrating/SKILL.md"
-        ],
-        "steps": [
-          "State that Orchestrator dispatches stages and audits only, not child-level internal work.",
-          "Preserve stage commits, approval forwarding, handoff validation, audit routing, delivery-status governance, and final workflow closure.",
-          "Ensure helper-skill language follows the same boundary."
-        ],
-        "completionSignal": "AUTODEL_DT15_ORCHESTRATOR_BOUNDARY_MISSING is resolved and existing gate assertions still pass."
-      },
-      {
-        "taskId": "AUTODEL-06-cross-stage-integration",
-        "title": "Run AUTODEL acceptance and guards",
-        "objective": "Verify the full proxy suite and critical non-explicit guards after authorized spec updates.",
-        "dependsOn": [
-          "AUTODEL-02-businesspartner",
-          "AUTODEL-03-intention-implementation",
-          "AUTODEL-04-coding",
-          "AUTODEL-05-orchestrator"
-        ],
-        "relatedTestcases": [
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-00",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-01",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-02",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-03",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-04",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-05",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-A",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-B",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-C",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-D",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-E",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-06-P",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-07",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-08",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-09",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-10",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-11",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-12",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-13",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-14",
-          "ExplicitAcceptanceTestcase-AUTODEL-DT-15"
-        ],
-        "targetPaths": [
-          ".cursor/skills/business-partner/SKILL.md",
-          ".cursor/agents/IntentionDesign.md",
-          ".cursor/agents/ImplementationDesign.md",
-          ".cursor/agents/CodingAndReparing.md",
-          ".cursor/agents/Orchestrator.md",
-          ".cursor/skills/fast-orchestrating/SKILL.md"
-        ],
-        "steps": [
-          "Run node tests/explicit/entries/runAutomaticDelegationGovernance.js.",
-          "Run the four tests/architecture/automatic-delegation-governance/*.guard.js files.",
-          "Run full node .argo/scripts/runArchitectureTests.js and compare delivery status against the pre-coding baseline commit."
-        ],
-        "completionSignal": "AUTODEL explicit entrypoint and critical guards pass, with no delivered-to-not_delivered regression against the ImplementationDesign baseline."
+        "completionSignal": "node tests/explicit/entries/runPromoContentGen.js reports allPassed is true (exit 0, public/ exists, index.html exists, no front-matter errors)"
       }
     ]
   },
   "frozenFiles": [
+    "tests/explicit/entries/runPromoHexoSSG.js",
+    "tests/explicit/entries/runPromoContentGen.js",
+    "tests/architecture/promo-deployment/promo-deployment-boundary.guard.js",
+    ".argo/temp/promo-deployment-expected-failures.json",
+    ".argo/temp/ImplementationToCodingHandoff.json",
     "OVERALL_ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
-    ".cursor/agents/ARCHITECTURE.md",
-    ".cursor/skills/ARCHITECTURE.md",
     "design/KG/SystemArchitecture.json",
-    ".argo/temp/IntentToImplementationHandoff.json",
-    ".argo/temp/ImplementationToCodingHandoff.json",
-    ".argo/temp/automatic-delegation-expected-failures.json",
-    "tests/explicit/entries/runAutomaticDelegationGovernance.js",
-    "tests/harness/automaticDelegationGovernanceHarness.js",
-    "tests/architecture/automatic-delegation-governance/architecture-boundary.guard.js",
-    "tests/architecture/automatic-delegation-governance/dependency-direction.guard.js",
-    "tests/architecture/automatic-delegation-governance/explicit-entrypoint-correctness.guard.js",
-    "tests/architecture/automatic-delegation-governance/implementation-traceability.guard.js"
+    ".argo/temp/IntentToImplementationHandoff.json"
   ],
   "openGaps": [
-    "Coding must update only the authorized Cursor agent and stage-skill governance surfaces; AUTODEL behavior is not yet implemented there.",
-    "No ImplementationToIntentTraceProposal is required because the intent graph already mounts all AUTODEL explicit testcases to the required single entrypoint."
+    "SSH key or password configuration for root@120.24.114.13 must be set up for Coding agent to execute remote commands.",
+    "If hexo-theme-butterfly installation fails, fall back to hexo-theme-icarus as documented alternative.",
+    "GitHub Discussions must be enabled for Giscus comment system (out of scope for this handoff, covered by B3/C)."
   ]
 }
