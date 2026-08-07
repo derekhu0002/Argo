@@ -13,7 +13,8 @@ disable-model-invocation: true
 
 ## Rules
 
-- **MUST** 只输出本次要实现的架构元素 ID、名称，以及对应交付范围。
+- **MUST** 在分包前固定本次决策基线：task-tidy 生成的具体决策树文件、架构元素 ID 与范围、挂载验收用例、accepted/rejected 分支、约束及依赖顺序。缺少可追踪基线时不得启动 `/Orchestrator`。
+- **MUST** 只把本次要实现的架构元素 ID、名称、对应交付范围、挂载验收用例和决策基线引用放入 `WorkPackage`。
 - **MUST** 以固定结构输出，保证每个任务包都能被稳定解析。
 - **MUST** 仅在全部任务包整理完成后，最后再启动 `/Orchestrator`；不得在中途启动。
 - **MUST** 为每个架构元素单独描述交付范围，明确本次交付的是该元素的全部内容还是部分内容。
@@ -38,6 +39,7 @@ disable-model-invocation: true
 	- ID: <element-id>
 	- 名称: <element-name>
 	- 本次交付范围: <scope>
+	- 决策基线: <decision-tree-path#decision-node-ids>
 	- 测试用例:
 		- <testcase-id>: <testcase-name>
 		- <testcase-id>: <testcase-name>
@@ -48,13 +50,14 @@ disable-model-invocation: true
 	- ID: <element-id>
 	- 名称: <element-name>
 	- 本次交付范围: <scope>
+	- 决策基线: <decision-tree-path#decision-node-ids>
 	- 测试用例:
 		- <testcase-id>: <testcase-name>
 		- <testcase-id>: <testcase-name>
 ```
 
 如果一个任务包包含多个架构元素，则在同一个 `WorkPackage` 下为每个架构元素重复同样的结构，并分别填写各自的交付范围与测试用例。如果只有一个任务包，则只输出一个 `WorkPackage` 块；如果有多个任务包，则按 `WorkPackage 1`、`WorkPackage 2`、`WorkPackage 3` 依次编号。
-5. 在全部 `WorkPackage` 输出完成后，将 `WorkPackage`按依赖顺序Handoff给不同的`/Orchestrator`。Handoff必须严格按以下结构输出：
+5. 在全部 `WorkPackage` 输出完成后，将 `WorkPackage` 按依赖顺序 Handoff 给不同的 `/Orchestrator`。每次 Handoff 必须同时声明：审批请求返回当前会话主 Agent；不得自批；不通过时等待主 Agent恢复同一会话。Handoff 必须严格按以下结构输出：
 
 ```md
 ## WorkPackage
@@ -63,7 +66,12 @@ disable-model-invocation: true
 	- ID: <element-id>
 	- 名称: <element-name>
 	- 本次交付范围: <scope>
+	- 决策基线: <decision-tree-path#decision-node-ids>
 	- 测试用例:
 		- <testcase-id>: <testcase-name>
 		- <testcase-id>: <testcase-name>
 ```
+
+6. 每个阶段审批请求返回后，当前会话主 Agent必须依据该 `WorkPackage` 的决策基线核对。全部满足才可返回 `APPROVED`；可在既有决策内修复则返回 `REWORK_REQUIRED`；需要新业务决定或缺少必要人工授权则返回 `BLOCKED_HUMAN_DECISION`。
+7. `/Orchestrator` 报告全部阶段和审计完成后，当前会话主 Agent必须逐个 `WorkPackage` 完成最终符合性验收。只有所有架构元素范围、accepted/rejected 决策、验收用例、约束、依赖、门禁及无回退证据均符合前期决策，且不存在 unresolved blocker，才可宣布最终验收通过。测试通过本身不是充分条件。
+8. 如果当前会话主 Agent身份或会话连续性无法确认，必须停止审批并失败关闭；不得将最终验收权静默转移给任何子 Agent。
