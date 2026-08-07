@@ -1,0 +1,45 @@
+menu:
+  原理: /principles/ || fas fa-lightbulb
+  使用指南: /guide/ || fas fa-book
+  案例观点: /cases/ || fas fa-star
+  关于: /about/ || fas fa-user
+
+comments:
+  use: giscus
+  text: true
+  lazyload: true
+  count: true
+
+giscus:
+  repo: derekwoo/AICodingAgent
+  category_name: Announcements
+  mapping: pathname
+  reactions_enabled: "1"
+  emit_metadata: "0"
+  input_position: bottom
+  theme: light
+  lang: zh-CN
+
+social:
+  fab fa-github: https://github.com/derekwoo/AICodingAgent || GitHub
+
+avatar:
+  img: https://avatars.githubusercontent.com/u/60488031
+
+keywords: ARGO,Agentic Engineering,GraphRAG,ArchiMate
+language: zh-CN
+
+footer:
+  owner:
+    since: 2025
+    author: Derek Woo
+  custom: 基于 Hexo + Butterfly 构建 | 技术交流窗口
+
+aside:
+  card_author:
+    button:
+      link: https://github.com/derekwoo/AICodingAgent
+      icon: fab fa-github
+      text: GitHub
+  card_announcement:
+    content: ARGO HARNESS — AI 确定性交付框架
