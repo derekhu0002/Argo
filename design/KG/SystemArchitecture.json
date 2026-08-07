@@ -53,6 +53,10 @@
         {
           "view_id": "161",
           "view_name": "BusinessBehaviorViewpoint"
+        },
+        {
+          "view_id": "promo-website-product-view",
+          "view_name": "ARGO Promo Website Product View"
         }
       ]
     },
@@ -4705,6 +4709,354 @@
           "value": "2026-08-07"
         }
       ]
+    },
+    {
+      "id": "argo-promo-website",
+      "name": "ARGO Promo Website",
+      "type": "Product",
+      "description": "ARGO technical communication website deployed on test.derekworkspacev5.com. Positioning: personal technical exchange window. Composed of four content sections. Decision trace: ROOT|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.ROOT",
+          "value": "accepted|2026-08-07|deploy ARGO promo website on Test Cloud Server"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "domain",
+          "value": "test.derekworkspacev5.com"
+        },
+        {
+          "name": "positioning",
+          "value": "personal technical exchange window; not formal product promotion"
+        }
+      ]
+    },
+    {
+      "id": "promo-principles-section",
+      "name": "Principles Content Section",
+      "type": "Representation",
+      "description": "Content section: deterministic delivery formula, engineering philosophy, competitive positioning. Decision trace: A1|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.A1",
+          "value": "accepted|2026-08-07|principles from delivery formula + engineering philosophy + competitive positioning"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "acceptanceControlPoint.A1",
+          "value": "principles section renders with content and formula"
+        },
+        {
+          "name": "acceptanceObservationPoint.A1",
+          "value": "principles section exists and contains formula"
+        }
+      ]
+    },
+    {
+      "id": "promo-guide-section",
+      "name": "Usage Guide Content Section",
+      "type": "Representation",
+      "description": "Content section: Quick Start + Agent Loop + three-platform entry. Decision trace: A2|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.A2",
+          "value": "accepted|2026-08-07|usage guide from Quick Start + Agent Loop + three-platform entry"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "acceptanceControlPoint.A2",
+          "value": "guide section contains Cursor/Copilot/OpenCode entries"
+        },
+        {
+          "name": "acceptanceObservationPoint.A2",
+          "value": "guide section has three-platform entry markers"
+        }
+      ]
+    },
+    {
+      "id": "promo-cases-section",
+      "name": "Cases & Insights Content Section",
+      "type": "Representation",
+      "description": "Content section: opinion articles + Dogfooding + TEST placeholder. H-A3 refuted. Decision trace: A3|accepted(alternative)|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.A3",
+          "value": "accepted(alternative)|2026-08-07|opinion insights + Dogfooding + TEST placeholder"
+        },
+        {
+          "name": "decisionTrace.H-A3",
+          "value": "refuted|no public ARGO success cases"
+        },
+        {
+          "name": "decisionTrace.H-A3prime",
+          "value": "supported|opinion articles + Dogfooding confirmed"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "acceptanceControlPoint.A3",
+          "value": "cases section has article link + Dogfooding + TEST placeholder"
+        },
+        {
+          "name": "acceptanceObservationPoint.A3",
+          "value": "page has TEST placeholder marker"
+        }
+      ]
+    },
+    {
+      "id": "promo-about-section",
+      "name": "About & Contact Content Section",
+      "type": "Representation",
+      "description": "Content section: GitHub link + project intro. Decision trace: A4|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.A4",
+          "value": "accepted|2026-08-07|GitHub link + project intro"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "githubRepo",
+          "value": "derekwoo/AICodingAgent"
+        },
+        {
+          "name": "acceptanceControlPoint.A4",
+          "value": "about section has clickable GitHub link"
+        },
+        {
+          "name": "acceptanceObservationPoint.A4",
+          "value": "GitHub link navigates to repository"
+        }
+      ]
+    },
+    {
+      "id": "promo-hexo-ssg",
+      "name": "Hexo Static Site Generator",
+      "type": "Application Component",
+      "description": "Hexo Node.js SSG: pure static output, zero server runtime. Decision trace: B1|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.B1",
+          "value": "accepted|2026-08-07|Hexo SSG"
+        },
+        {
+          "name": "decisionTrace.H-B1",
+          "value": "superseded|pure static upgraded to Hexo+Giscus"
+        },
+        {
+          "name": "decisionTrace.H-B1prime",
+          "value": "supported|Hexo+Giscus optimal"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "runtime",
+          "value": "Node.js v22.22.1"
+        },
+        {
+          "name": "acceptanceControlPoint.B1",
+          "value": "hexo init succeeds"
+        },
+        {
+          "name": "acceptanceObservationPoint.B1",
+          "value": "hexo init produces project scaffold"
+        }
+      ]
+    },
+    {
+      "id": "promo-giscus-comments",
+      "name": "Giscus Comment System",
+      "type": "Application Component",
+      "description": "Giscus widget via GitHub Discussions. Zero server storage. Decision trace: B3|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.B3",
+          "value": "accepted|2026-08-07|Giscus for zero-maintenance commenting"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "dependency",
+          "value": "GitHub Discussions must be enabled on derekwoo/AICodingAgent"
+        },
+        {
+          "name": "acceptanceControlPoint.B3",
+          "value": "Giscus comment area renders"
+        },
+        {
+          "name": "acceptanceObservationPoint.B3",
+          "value": "comment input box visible at page bottom"
+        }
+      ]
+    },
+    {
+      "id": "promo-content-generation",
+      "name": "Hexo Markdown-to-HTML Generation",
+      "type": "Application Function",
+      "description": "Markdown source files to static HTML via hexo generate. Decision trace: B2|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.B2",
+          "value": "accepted|2026-08-07|Markdown to hexo generate static HTML"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "acceptanceControlPoint.B2",
+          "value": "front-matter format correct"
+        },
+        {
+          "name": "acceptanceObservationPoint.B2",
+          "value": "hexo g no parse errors"
+        }
+      ]
+    },
+    {
+      "id": "promo-scp-deploy",
+      "name": "SCP Static File Deployment",
+      "type": "Technology Process",
+      "description": "hexo g build to scp public/ to /var/www/test.derekworkspacev5.com/. Decision trace: C1|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.C1",
+          "value": "accepted|2026-08-07|local build + SCP to nginx web root"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "deployPath",
+          "value": "/var/www/test.derekworkspacev5.com/"
+        },
+        {
+          "name": "acceptanceControlPoint.C1",
+          "value": "files uploaded, nginx serves correctly"
+        },
+        {
+          "name": "acceptanceObservationPoint.C1",
+          "value": "curl returns new website content"
+        }
+      ]
+    },
+    {
+      "id": "promo-nginx-web-server",
+      "name": "Nginx Web Server (Promo Site)",
+      "type": "System Software",
+      "description": "Nginx 1.18.0 serving ARGO promo website on test.derekworkspacev5.com. Decision trace: C|accepted|2026-08-07.",
+      "attributes": [
+        {
+          "name": "decisionTrace.C",
+          "value": "accepted|2026-08-07|nginx serve static site"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "version",
+          "value": "Nginx 1.18.0"
+        },
+        {
+          "name": "acceptanceControlPoint.C",
+          "value": "website accessible via domain"
+        },
+        {
+          "name": "acceptanceObservationPoint.C",
+          "value": "browser returns 200"
+        }
+      ]
+    },
+    {
+      "id": "promo-coord-giscus-discussions",
+      "name": "Residual: GitHub Discussions Enablement",
+      "type": "Requirement",
+      "description": "Residual coordination: Giscus depends on GitHub Discussions enabled on target repo. Status: open.",
+      "attributes": [
+        {
+          "name": "coordinationStatus",
+          "value": "open"
+        },
+        {
+          "name": "coordinationType",
+          "value": "residual"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "blockedBy",
+          "value": "GitHub Discussions feature toggle on target repository"
+        }
+      ]
+    },
+    {
+      "id": "promo-coord-dogfooding-content",
+      "name": "Residual: Dogfooding Case Content",
+      "type": "Requirement",
+      "description": "Residual coordination: ARGO dogfooding case needs article-form compilation. Status: open.",
+      "attributes": [
+        {
+          "name": "coordinationStatus",
+          "value": "open"
+        },
+        {
+          "name": "coordinationType",
+          "value": "residual"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "blockedBy",
+          "value": "dogfooding process documentation needs article-form compilation"
+        }
+      ]
+    },
+    {
+      "id": "promo-coord-test-placeholder",
+      "name": "Residual: TEST Placeholder Content",
+      "type": "Requirement",
+      "description": "Residual coordination: TEST case placeholder content and format TBD. Status: open.",
+      "attributes": [
+        {
+          "name": "coordinationStatus",
+          "value": "open"
+        },
+        {
+          "name": "coordinationType",
+          "value": "residual"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "blockedBy",
+          "value": "TEST placeholder content and format not yet defined"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -7157,6 +7509,160 @@
       "target_name": "Stage-Owned Delegation With Final Accountability",
       "description": "Orchestrator realizes the cross-stage-only half of the accepted ownership boundary.",
       "statement": "Orchestrator Stage Coordination --(Realization)--> Stage-Owned Delegation With Final Accountability"
+    },
+    {
+      "id": "promo-rel-server-hosts",
+      "name": "Test Cloud Server hosts Nginx",
+      "type": "Assignment",
+      "source_id": "rmt-srv-test-derekworkspacev5",
+      "target_id": "promo-nginx-web-server",
+      "source_name": "Test Cloud Server (test.derekworkspacev5.com)",
+      "target_name": "Nginx Web Server (Promo Site)",
+      "description": "Test Cloud Server hosts Nginx web server for ARGO promo website.",
+      "statement": "Test Cloud Server (test.derekworkspacev5.com) --(Assignment)--> Nginx Web Server (Promo Site)"
+    },
+    {
+      "id": "promo-rel-website-principles",
+      "name": "Website composed of Principles section",
+      "type": "Composition",
+      "source_id": "argo-promo-website",
+      "target_id": "promo-principles-section",
+      "source_name": "ARGO Promo Website",
+      "target_name": "Principles Content Section",
+      "description": "ARGO promo website composed of principles content section.",
+      "statement": "ARGO Promo Website --(Composition)--> Principles Content Section"
+    },
+    {
+      "id": "promo-rel-website-guide",
+      "name": "Website composed of Usage Guide section",
+      "type": "Composition",
+      "source_id": "argo-promo-website",
+      "target_id": "promo-guide-section",
+      "source_name": "ARGO Promo Website",
+      "target_name": "Usage Guide Content Section",
+      "description": "ARGO promo website composed of usage guide section.",
+      "statement": "ARGO Promo Website --(Composition)--> Usage Guide Content Section"
+    },
+    {
+      "id": "promo-rel-website-cases",
+      "name": "Website composed of Cases section",
+      "type": "Composition",
+      "source_id": "argo-promo-website",
+      "target_id": "promo-cases-section",
+      "source_name": "ARGO Promo Website",
+      "target_name": "Cases & Insights Content Section",
+      "description": "ARGO promo website composed of cases and insights section.",
+      "statement": "ARGO Promo Website --(Composition)--> Cases & Insights Content Section"
+    },
+    {
+      "id": "promo-rel-website-about",
+      "name": "Website composed of About section",
+      "type": "Composition",
+      "source_id": "argo-promo-website",
+      "target_id": "promo-about-section",
+      "source_name": "ARGO Promo Website",
+      "target_name": "About & Contact Content Section",
+      "description": "ARGO promo website composed of about and contact section.",
+      "statement": "ARGO Promo Website --(Composition)--> About & Contact Content Section"
+    },
+    {
+      "id": "promo-rel-hexo-generates",
+      "name": "Hexo realizes content generation",
+      "type": "Realization",
+      "source_id": "promo-hexo-ssg",
+      "target_id": "promo-content-generation",
+      "source_name": "Hexo Static Site Generator",
+      "target_name": "Hexo Markdown-to-HTML Generation",
+      "description": "Hexo SSG realizes Markdown-to-HTML generation.",
+      "statement": "Hexo Static Site Generator --(Realization)--> Hexo Markdown-to-HTML Generation"
+    },
+    {
+      "id": "promo-rel-content-serves",
+      "name": "Content generation serves website",
+      "type": "Serving",
+      "source_id": "promo-content-generation",
+      "target_id": "argo-promo-website",
+      "source_name": "Hexo Markdown-to-HTML Generation",
+      "target_name": "ARGO Promo Website",
+      "description": "Hexo content generation serves the ARGO promo website.",
+      "statement": "Hexo Markdown-to-HTML Generation --(Serving)--> ARGO Promo Website"
+    },
+    {
+      "id": "promo-rel-giscus-serves",
+      "name": "Giscus serves website comments",
+      "type": "Serving",
+      "source_id": "promo-giscus-comments",
+      "target_id": "argo-promo-website",
+      "source_name": "Giscus Comment System",
+      "target_name": "ARGO Promo Website",
+      "description": "Giscus provides zero-maintenance commenting.",
+      "statement": "Giscus Comment System --(Serving)--> ARGO Promo Website"
+    },
+    {
+      "id": "promo-rel-nginx-serves",
+      "name": "Nginx serves website",
+      "type": "Serving",
+      "source_id": "promo-nginx-web-server",
+      "target_id": "argo-promo-website",
+      "source_name": "Nginx Web Server (Promo Site)",
+      "target_name": "ARGO Promo Website",
+      "description": "Nginx serves static ARGO promo website.",
+      "statement": "Nginx Web Server (Promo Site) --(Serving)--> ARGO Promo Website"
+    },
+    {
+      "id": "promo-rel-deploy-nginx",
+      "name": "SCP deployment delivers to Nginx",
+      "type": "Flow",
+      "source_id": "promo-scp-deploy",
+      "target_id": "promo-nginx-web-server",
+      "source_name": "SCP Static File Deployment",
+      "target_name": "Nginx Web Server (Promo Site)",
+      "description": "SCP transfers built static files to Nginx web root.",
+      "statement": "SCP Static File Deployment --(Flow)--> Nginx Web Server (Promo Site)"
+    },
+    {
+      "id": "promo-rel-hexo-deploy",
+      "name": "Hexo build triggers deployment",
+      "type": "Triggering",
+      "source_id": "promo-hexo-ssg",
+      "target_id": "promo-scp-deploy",
+      "source_name": "Hexo Static Site Generator",
+      "target_name": "SCP Static File Deployment",
+      "description": "Hexo build triggers SCP deployment.",
+      "statement": "Hexo Static Site Generator --(Triggering)--> SCP Static File Deployment"
+    },
+    {
+      "id": "promo-rel-giscus-coord",
+      "name": "Giscus blocked by Discussions coordination",
+      "type": "Association",
+      "source_id": "promo-giscus-comments",
+      "target_id": "promo-coord-giscus-discussions",
+      "source_name": "Giscus Comment System",
+      "target_name": "Residual: GitHub Discussions Enablement",
+      "description": "Giscus availability depends on GitHub Discussions enablement.",
+      "statement": "Giscus Comment System --(Association)--> Residual: GitHub Discussions Enablement"
+    },
+    {
+      "id": "promo-rel-cases-coord-dogfooding",
+      "name": "Cases blocked by Dogfooding content",
+      "type": "Association",
+      "source_id": "promo-cases-section",
+      "target_id": "promo-coord-dogfooding-content",
+      "source_name": "Cases & Insights Content Section",
+      "target_name": "Residual: Dogfooding Case Content",
+      "description": "Cases Dogfooding depends on article compilation.",
+      "statement": "Cases & Insights Content Section --(Association)--> Residual: Dogfooding Case Content"
+    },
+    {
+      "id": "promo-rel-cases-coord-test",
+      "name": "Cases blocked by TEST placeholder",
+      "type": "Association",
+      "source_id": "promo-cases-section",
+      "target_id": "promo-coord-test-placeholder",
+      "source_name": "Cases & Insights Content Section",
+      "target_name": "Residual: TEST Placeholder Content",
+      "description": "Cases TEST placeholder depends on content definition.",
+      "statement": "Cases & Insights Content Section --(Association)--> Residual: TEST Placeholder Content"
     }
   ],
   "views": [
@@ -8365,6 +8871,45 @@
         "autodel-rel-implementation-principle",
         "autodel-rel-coding-principle",
         "autodel-rel-orchestrator-principle"
+      ]
+    },
+    {
+      "view_id": "promo-website-product-view",
+      "view_name": "ARGO Promo Website Product View",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Product Viewpoint; Concern: business managers and product owners need to see the ARGO promo website as a product composed of content sections, realized by application components (Hexo, Giscus) and technology services (Nginx, SCP deployment), hosted on the Test Cloud Server; Purpose: designing and deciding; Scope: product composition, application realization, technology serving, and residual coordination items; Rationale: this view instantiates the Product Viewpoint because it shows the website as a value-delivering product with its compositional structure, realizing application components, and supporting technology infrastructure.",
+      "included_elements": [
+        "argo-promo-website",
+        "promo-principles-section",
+        "promo-guide-section",
+        "promo-cases-section",
+        "promo-about-section",
+        "promo-hexo-ssg",
+        "promo-giscus-comments",
+        "promo-content-generation",
+        "promo-scp-deploy",
+        "promo-nginx-web-server",
+        "rmt-srv-test-derekworkspacev5",
+        "promo-coord-giscus-discussions",
+        "promo-coord-dogfooding-content",
+        "promo-coord-test-placeholder"
+      ],
+      "included_relationships": [
+        "promo-rel-website-principles",
+        "promo-rel-website-guide",
+        "promo-rel-website-cases",
+        "promo-rel-website-about",
+        "promo-rel-hexo-generates",
+        "promo-rel-content-serves",
+        "promo-rel-giscus-serves",
+        "promo-rel-nginx-serves",
+        "promo-rel-deploy-nginx",
+        "promo-rel-hexo-deploy",
+        "promo-rel-server-hosts",
+        "promo-rel-giscus-coord",
+        "promo-rel-cases-coord-dogfooding",
+        "promo-rel-cases-coord-test"
       ]
     }
   ]
