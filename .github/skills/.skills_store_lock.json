@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "@ai-chen2050/wechat-public-cli": {
+      "name": "wechat-public-cli",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=wechat-public-cli&namespace=ai-chen2050",
+      "source": "clawhub",
+      "version": "1.0.4",
+      "namespace": {
+        "canonicalName": "@ai-chen2050/wechat-public-cli",
+        "displayName": "ai-chen2050",
+        "handle": "ai-chen2050",
+        "publicSlug": "wechat-public-cli"
+      },
+      "internalSlug": "wechat-public-cli",
+      "publicSlug": "wechat-public-cli",
+      "installDir": "/mnt/d/Projects/Argo/.github/skills/@ai-chen2050/wechat-public-cli"
+    }
+  }
+}
