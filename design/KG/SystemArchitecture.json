@@ -4714,7 +4714,7 @@
       "id": "argo-promo-website",
       "name": "ARGO Promo Website",
       "type": "Product",
-      "description": "ARGO technical communication website deployed on test.derekworkspacev5.com. Positioning: personal technical exchange window. Composed of four content sections. Decision trace: ROOT|accepted|2026-08-07.",
+      "description": "ARGO 技术交流网站，基于 Hexo + Butterfly 构建，部署于 argo.derekworkspacev5.com (Cloudflare CDN → 阿里云 ECS 120.24.114.13)。含四大板块：原理、使用指南、案例观点、关于。Decision trace: ROOT|accepted|2026-08-07, updated 2026-08-08 with Cloudflare CDN and HTTPS.",
       "attributes": [
         {
           "name": "decisionTrace.ROOT",
@@ -5008,7 +5008,7 @@
       "id": "promo-nginx-web-server",
       "name": "Nginx Web Server (Promo Site)",
       "type": "System Software",
-      "description": "Nginx 1.18.0 serving ARGO promo website on test.derekworkspacev5.com. Decision trace: C|accepted|2026-08-07.",
+      "description": "Nginx 1.18.0 serving ARGO promo website on argo.derekworkspacev5.com via Cloudflare CDN. Supports HTTP + HTTPS (self-signed cert for Cloudflare Flexible SSL). Decision trace: C|accepted|2026-08-07, updated 2026-08-08 with HTTPS and domain change.",
       "attributes": [
         {
           "name": "decisionTrace.C",
@@ -5101,6 +5101,30 @@
         {
           "name": "blockedBy",
           "value": "TEST placeholder content and format not yet defined"
+        }
+      ]
+    },
+    {
+      "id": "promo-cloudflare-cdn",
+      "name": "Cloudflare CDN (argo.derekworkspacev5.com)",
+      "type": "Node",
+      "description": "Viewpoint: Implementation and Deployment Viewpoint; Concern: external CDN proxying to bypass ICP filing; Purpose: informing; Scope: argo.derekworkspacev5.com proxied via Cloudflare to origin 120.24.114.13; Rationale: Cloudflare CDN provides DNS proxy and edge caching, enabling HTTP/HTTPS access without ICP filing on Alibaba Cloud origin.",
+      "attributes": [
+        {
+          "name": "decisionTrace.C2",
+          "value": "accepted|2026-08-08|Cloudflare CDN for argo.derekworkspacev5.com"
+        },
+        {
+          "name": "decisionSource",
+          "value": ".argo/history/decision-tree/20260807-argo-promo-website-deploy.md"
+        },
+        {
+          "name": "domain",
+          "value": "argo.derekworkspacev5.com"
+        },
+        {
+          "name": "originIP",
+          "value": "120.24.114.13"
         }
       ]
     }
@@ -7709,6 +7733,26 @@
       "target_name": "Residual: TEST Placeholder Content",
       "description": "Cases TEST placeholder depends on content definition.",
       "statement": "Cases & Insights Content Section --(Association)--> Residual: TEST Placeholder Content"
+    },
+    {
+      "id": "promo-rel-cloudflare-cdn-proxy",
+      "name": "Cloudflare CDN proxies to Nginx",
+      "type": "Flow",
+      "statement": "Cloudflare CDN (argo.derekworkspacev5.com) --(Flow)--> Nginx Web Server (Promo Site)",
+      "source_id": "promo-cloudflare-cdn",
+      "source_name": "Cloudflare CDN (argo.derekworkspacev5.com)",
+      "target_id": "promo-nginx-web-server",
+      "target_name": "Nginx Web Server (Promo Site)"
+    },
+    {
+      "id": "promo-rel-cloudflare-serves",
+      "name": "Cloudflare CDN serves website",
+      "type": "Serving",
+      "statement": "Cloudflare CDN (argo.derekworkspacev5.com) --(Serving)--> ARGO Promo Website",
+      "source_id": "promo-cloudflare-cdn",
+      "source_name": "Cloudflare CDN (argo.derekworkspacev5.com)",
+      "target_id": "argo-promo-website",
+      "target_name": "ARGO Promo Website"
     }
   ],
   "views": [
@@ -8939,7 +8983,8 @@
         "rmt-srv-test-derekworkspacev5",
         "promo-coord-giscus-discussions",
         "promo-coord-dogfooding-content",
-        "promo-coord-test-placeholder"
+        "promo-coord-test-placeholder",
+        "promo-cloudflare-cdn"
       ],
       "included_relationships": [
         "promo-rel-website-principles",
@@ -8955,7 +9000,9 @@
         "promo-rel-server-hosts",
         "promo-rel-giscus-coord",
         "promo-rel-cases-coord-dogfooding",
-        "promo-rel-cases-coord-test"
+        "promo-rel-cases-coord-test",
+        "promo-rel-cloudflare-cdn-proxy",
+        "promo-rel-cloudflare-serves"
       ]
     }
   ]
