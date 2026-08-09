@@ -57,7 +57,7 @@ disable-model-invocation: true
 ```
 
 如果一个任务包包含多个架构元素，则在同一个 `WorkPackage` 下为每个架构元素重复同样的结构，并分别填写各自的交付范围与测试用例。如果只有一个任务包，则只输出一个 `WorkPackage` 块；如果有多个任务包，则按 `WorkPackage 1`、`WorkPackage 2`、`WorkPackage 3` 依次编号。
-5. 在全部 `WorkPackage` 输出完成后，将 `WorkPackage` 按依赖顺序 Handoff 给不同的 `/Orchestrator`。每次 Handoff 必须同时声明：审批请求返回当前会话主 Agent；不得自批；不通过时等待主 Agent恢复同一会话。Handoff 必须严格按以下结构输出：
+5. 在全部 `WorkPackage` 输出完成后，将 `WorkPackage` 按依赖顺序 Handoff 给不同的 `/Orchestrator`。Handoff 必须严格按以下结构输出：
 
 ```md
 ## WorkPackage
