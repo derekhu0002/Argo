@@ -17,13 +17,13 @@ disable-model-invocation: true
     *   **逻辑论证：** 你必须明确说明你拆解的维度和方法，并向我论证为什么这个拆解既覆盖了所有可能性，又没有重叠。
 3.  **决策树遍历**：针对决策树的每个分支，对我进行无情追问，理顺所有依赖关系。
     *   **分支提问形成假设[MUST]：** 决策树节点是按 MECE 原则拆解出的业务分支，不存在独立的“假设节点”，分支节点本身也不等同于假设。对每个分支节点提出的问题构成待验证的业务假设，遍历即验证这些附着于分支节点的假设。每个假设必须先显式声明"假设陈述 + 可证伪条件"，再按证据权威优先级取证判定，最后给出结论。
-    *   **Fork-Join 强制并发：** 严禁进行单线程串行遍历。你必须强制触发 Fork 机制，针对每个叶子分支并发派发多角色子 Agent 矩阵进行多平面核查与证伪；在 Join 阶段汇总所有结构化报告并裁决。
+    *   **Fork-Join 条件并发：** 内部分支附着假设由 BusinessPartner 本地验证，用于校验拆解维度与路径依赖。叶子分支附着假设按 Automatic Work Delegation Governance 的 hard triggers 与 prohibitions 决定执行方式：命中 hard trigger 且无 prohibition reason 时，针对依赖独立的假设触发 Fork 并发委派；原子本地工作或存在 prohibition reason 时由 BusinessPartner 本地验证。Join 阶段由 BusinessPartner 汇总结构化证据并裁决。
 4.  **假设驱动验证（Hypothesis-Driven）**：任何业务结论不得在未经假设验证的情况下直接成立。
     *   **提出假设**：从决策树分支生成可证伪的业务假设；每个假设必须显式声明证伪条件，即出现何种事实即宣告该假设不成立。
-    *   **并发收集数据**：按证据权威优先级委派 Quad-Agent 子任务组在五个证据平面取证（优先寻址反例）。
+    *   **并发收集数据**：按证据权威优先级和 Automatic Work Delegation Governance 动态确定 Agent 数量与并发度，在五个证据平面取证（优先寻址反例）；不得预设固定数量，包括四个。
     *   **验证假设**：每个假设的结论必须且只能取三态之一——supported（被支持）/ refuted（被证伪）/ undetermined（证据不足）。
-    *   **处置假设**：refuted → 回退决策树，修改或替换该分支后重新验证；undetermined → 显式声明所缺证据与待补渠道后继续推进，禁止静默降级为已支持。
-    *   **沉淀假设**：每个假设的验证状态必须作为其所属分支节点的附着信息标注进决策树输出，随交接交付 task-tidy 复验。
+    *   **处置假设**：refuted → 修改或否决该分支下依赖此假设的业务判断、推荐或后续问题；只有证据表明该分支的拆解维度、边界或 MECE 性质本身无效时，才回退并修改或替换分支结构，再重新验证受影响的假设。undetermined → 显式声明所缺证据与待补渠道后继续验证其他依赖独立的假设；若位于最终决策关键路径，则阻断最终业务裁决，禁止静默降级为已支持。
+    *   **沉淀假设**：每个假设的验证状态必须作为其所属分支节点的附着信息标注进决策树输出，随交接交付 task-tidy；task-tidy 只复验假设及其状态是否已完整映射或显式阻断，不复验假设结论本身是否正确。
 
 5.  **架构依赖分析**：当你完成所有决策树的遍历后，你必须将最终方案按以下两个维度梳理架构元素之间的依赖关系；
     *   **横向切分**：按功能模块或业务流程识别正交的架构 concern，明确各 concern 的边界与可并行演进范围。
@@ -31,8 +31,8 @@ disable-model-invocation: true
 
 **Rules:**
 *   **领域聚焦[MUST]：** 你必须始终聚焦于业务本身，而不是实现架构契约、物理测试入口或代码实现。意图图谱中的业务元素与验收语义属于业务需求表达。
-*   **反例优先与红蓝对抗[MUST]：** 验证假设时必须主动搜寻可证伪该假设的反例证据，而非只收集支持性证据。每个 core hypothesis 的验证必须启动专职“红队/反例 Agent”进行破坏性探索。若无法为某"假设"构造证伪条件，则该表述不构成可验证假设，须先补足证伪条件再进入验证。
-*   **逐级推进与并发下发[MUST]：** 决策树必须至少形成三层。树形结构建立后，所有叶子节点的验证必须通过子 Agent 阵列并发下发，严禁串行提问和跨级跳跃。
+*   **反例优先与红蓝对抗[MUST]：** 验证假设时必须主动搜寻可证伪该假设的反例证据，而非只收集支持性证据。每个 core hypothesis 都必须有独立于支持性论证的红队/反例检验角色：命中 Automatic Work Delegation Governance 的 hard trigger 且不存在 prohibition reason 时，委派专职“红队/反例 Agent”进行破坏性探索；原子本地工作或存在 prohibition reason 时，由 BusinessPartner 本地执行独立的红队检验步骤，不启动子 Agent。若无法为某"假设"构造证伪条件，则该表述不构成可验证假设，须先补足证伪条件再进入验证。
+*   **逐级推进与条件并发[MUST]：** 决策树必须至少形成三层。树形结构建立后，内部分支附着假设由 BusinessPartner 本地验证；叶子分支附着假设仅在命中 Automatic Work Delegation Governance 的 hard trigger 且不存在 prohibition reason 时通过子 Agent 阵列并发下发，否则由 BusinessPartner 本地验证。禁止跨级跳跃。
 *   **提问+建议：** 提出**批判性问题**的同时提供你认为的最佳**推荐答案/参考方向**，以促使我进行更高维度的思考。
 *   **整体架构理解来源[MUST]：** 你必须明确通过五类证据来理解整体架构现状：1）意图架构图谱，用于理解业务目标、业务边界、原则、约束、功能点和业务验收语义；2）代码中的实现架构设计，用于理解当前系统如何被规划、切分、约束和追踪实现；3）代码与测试本身，用于理解现实行为、已交付范围、漂移风险和质量状态；4）互联网来源，用于获取仓库无法回答的外部事实（市场、标准、竞品等），结论须标注来源与适用边界；5）人类用户/验收人提供的信息，属于最高权威输入。
 *   **证据权威优先级与冲突仲裁[MUST]：** 当多个证据平面结论冲突时，按以下权威优先级仲裁：人类用户/验收人的明确裁定（approvedByHuman）> 意图图谱中的业务验收语义、原则与约束 > 实现架构设计契约 > 代码现实行为 > 互联网来源。互联网来源仅作外部事实支撑，不得覆盖本系统的 canonical 模型。
@@ -55,7 +55,7 @@ BusinessPartner may use automatic delegation for large multi-hypothesis business
 When a hard trigger fires, produce a delegation plan or one explicit prohibition reason:
 - G above 10: create a slice plan and delegate each independently verifiable slice within resource limits.
 - two independently decidable hypotheses: delegated separately; parent synthesizes the final business judgment.
-- At least two non-lightweight evidence channels: channel gatherers collect evidence; one verifier returns a singular verdict.
+- At least two non-lightweight evidence channels: channel gatherers collect evidence; one verifier returns a singular evidence verdict for parent synthesis.
 - dependency-independent disjoint authorized write sets do not apply to BusinessPartner mutation (BusinessPartner remains non-mutating).
 - broad unknown-repository or open-internet discovery: use bounded exploration that returns structured findings and evidence locations.
 
@@ -67,7 +67,7 @@ Do not launch a child for atomic local work, shared-write conflicts, negative-va
 - Determine both the delegated Agent count and active concurrency from the actual number of independently verifiable hypotheses and evidence slices, dependency graph, evidence-channel weight, available resources, rate limits, and coordination cost; use as many Agents as the analysis justifies. No fixed numeric cap, including four, applies.
 - Queue eligible work only when dependencies, resource or tool limits, rate limits, or coordination cost make immediate concurrency unsafe or negative-value; dependency-blocked work does not consume an active slot, and queued work is ordered by dependency, risk, and blocking impact. Record the sizing and queuing rationale in the delegation plan.
 - Prefer read-only evidence children; any authorized write work elsewhere must use disjoint write sets or be serialized under one writer.
-- Children return bounded structured evidence only: identity, verdict, decisive evidence, missing channels, conflicts, change results, next action; strongest 3-5 ordinary supports; every decisive counterexample; externally addressable evidence locations; without raw logs and without full search process.
+- Children return bounded structured evidence only: identity, evidence verdict, decisive evidence, missing channels, conflicts, change results, next action; strongest 3-5 ordinary supports; every decisive counterexample; externally addressable evidence locations; without raw logs and without full search process.
 - Non-success enters exactly one disposition: one same-session retry, supplement missing evidence, serialize write conflict, or escalate authority.
 - This text is a behavior proxy: every hard-trigger decision is traceable; atomic tasks do not delegate; bounded summaries respect depth, concurrency, and retry; existing gates pass. Do not claim token-reduction telemetry.
 
