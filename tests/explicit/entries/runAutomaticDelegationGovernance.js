@@ -18,6 +18,7 @@ const {
   assertProxyAcceptanceGovernance,
   assertResourceGovernance,
   assertStageOwnedDispatchGovernance,
+  assertTaskTidyMappingGovernance,
   assertTriggerGovernance,
   assertWriteGovernance,
 } = require('../../harness/automaticDelegationGovernanceHarness.js');
@@ -101,6 +102,11 @@ async function main() {
   // WHEN child evidence work returns to the business stage owner
   // THEN BusinessPartner alone synthesizes SMART/MECE framing, authority weighting, recommendations, questions, and acceptance
   assertBusinessPartnerSynthesisGovernance(); // DT-09
+
+  // GIVEN a BusinessPartner decision tree awaiting canonical graph integration
+  // WHEN task-tidy and its integrator prepare the decision-tree mapping
+  // THEN they report every node as mapped or blocked without mutating the canonical graph
+  assertTaskTidyMappingGovernance();
 
   // GIVEN DT-10 IntentionDesign investigation delegation
   // WHEN dependency branches, concern mapping, coverage checks, and drift evidence run in parallel

@@ -15,7 +15,7 @@ ARGO 用 Agent 承担有状态的阶段职责，用 Skill 封装可复用的横�
 | Agent | 职责 | 允许变更 | 禁止事项 |
 | --- | --- | --- | --- |
 | `BusinessPartner` | 收敛业务问题、方案、风险和验收控制点 | 决策记录 | 不进入实现设计或编码 |
-| `TaskTidyGraphIntegrator` | 把决策树映射为意图图谱候选 | 候选 mutation 与覆盖证据 | 不重新裁决已确认业务决策 |
+| `TaskTidyGraphIntegrator` | 把决策树映射为只读 mapping candidate | 映射/阻断报告与追踪证据 | 不写 canonical 图谱、不重新裁决已确认业务决策 |
 | `IntentionDesign` | 维护意图、覆盖和显性 testcase | `SystemArchitecture.json`、意图 handoff | 不改业务代码、实现契约和测试代码 |
 | `ImplementationDesign` | 维护实现边界、测试入口和实现 handoff | 实现契约、测试入口、实现 handoff | 不直接改意图图谱 |
 | `CodingAndReparing` | 修复真实生产行为并清空修复队列 | handoff 允许的源码和支持性测试 | 不改冻结测试与架构契约 |
@@ -32,7 +32,7 @@ OpenCode 和 GitHub Copilot 使用 `Orchestrator` 主 Agent；Cursor 不支持�
 | Skill | 何时使用 | 产出/路由 |
 | --- | --- | --- |
 | `/business-partner` | 需求或方案尚未结构化 | `DecisionTreeRecord` |
-| `/task-tidy` | 已有决策树，需要内化并排序 | 图谱变更、覆盖证据、依赖图、G 估算 |
+| `/task-tidy` | 已有决策树，需要映射并排序 | mapped/blocked 报告、追踪矩阵与 IntentionDesign 输入 |
 | `/orchestrating` | Cursor 中执行完整交付链 | 阶段调度、校验、审核和返工 |
 | `/grill-me` | 方案需要批判性深挖 | 收敛后的决策树 |
 

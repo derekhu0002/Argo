@@ -6,6 +6,8 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 
 const STAGE_SURFACES = Object.freeze({
   businessPartner: '.cursor/skills/business-partner/SKILL.md',
+  taskTidy: '.cursor/skills/task-tidy/SKILL.md',
+  taskTidyIntegrator: '.cursor/agents/TaskTidyGraphIntegrator.md',
   intentionDesign: '.cursor/agents/IntentionDesign.md',
   implementationDesign: '.cursor/agents/ImplementationDesign.md',
   codingAndRepairing: '.cursor/agents/CodingAndReparing.md',
@@ -270,6 +272,25 @@ function assertBusinessPartnerSynthesisGovernance() {
   assertNoContradictoryDelegationLanguage(businessPartner, 'AUTODEL_DT09_BUSINESS_SYNTHESIS_CONTRADICTION');
 }
 
+function assertTaskTidyMappingGovernance() {
+  const taskTidy = read(STAGE_SURFACES.taskTidy);
+  const integrator = read(STAGE_SURFACES.taskTidyIntegrator);
+  assertIncludesAll(taskTidy, [
+    'mapped or blocked',
+    'must not write the canonical intent graph',
+    'IntentionDesign',
+    'mapping report',
+  ], 'TASK_TIDY_MAPPING_BOUNDARY_MISSING');
+  assertIncludesAll(integrator, [
+    'mapping candidate',
+    'must not mutate',
+    'mapped or blocked',
+    'IntentionDesign',
+  ], 'TASK_TIDY_INTEGRATOR_BOUNDARY_MISSING');
+  assertNoPattern(taskTidy, /\bapplySystemArchitectureMutation\b/i, 'TASK_TIDY_CANONICAL_GRAPH_WRITE_ALLOWED');
+  assertNoPattern(integrator, /\bapplySystemArchitectureMutation\b/i, 'TASK_TIDY_INTEGRATOR_CANONICAL_GRAPH_WRITE_ALLOWED');
+}
+
 function assertIntentionDesignGraphWriterGovernance() {
   const intentionDesign = read(STAGE_SURFACES.intentionDesign);
   assertIncludesAll(intentionDesign, [
@@ -348,6 +369,7 @@ module.exports = {
   STAGE_SURFACES,
   assertBoundedReturnContract,
   assertBusinessPartnerSynthesisGovernance,
+  assertTaskTidyMappingGovernance,
   assertCodingStageDelegationGovernance,
   assertContextAccountabilityGovernance,
   assertDelegationProhibitions,

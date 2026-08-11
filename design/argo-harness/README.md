@@ -29,7 +29,7 @@ flowchart TD
 
 ### 1. 业务澄清与意图内化
 
-新需求先由 `BusinessPartner` 或 `/business-partner` 将自然语言目标收敛为结构化 `DecisionTreeRecord`。随后 `/task-tidy` 把决策树写入临时表格，委托 `TaskTidyGraphIntegrator` 生成图谱变更候选，由 host 验收后通过 `argo` MCP 内化到 `SystemArchitecture.json`。
+新需求先由 `BusinessPartner` 或 `/business-partner` 将自然语言目标收敛为结构化 `DecisionTreeRecord`。随后 `/task-tidy` 把决策树写入临时表格，委托 `TaskTidyGraphIntegrator` 生成只读 mapping report，并确认每个决策为 mapped 或 blocked；`IntentionDesign` 作为唯一 canonical 图谱写入者，通过 `argo` MCP 完成最终表达、覆盖验证和 intent handoff。
 
 该阶段不创建独立的 `design/tasks/` 任务文档。长期有效的目标、依赖、约束和验收标准必须成为架构元素、关系、view、属性或 testcase；只有无法表达为 durable architecture intent 的事项才保留为残余协调项。
 
