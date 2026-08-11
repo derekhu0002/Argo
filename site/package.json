@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "hexo generate",
+    "build": "npm run build:industry-cases && hexo generate",
+    "build:industry-cases": "node tools/build-industry-cases.mjs",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
-    "server": "hexo server"
+    "server": "npm run build:industry-cases && hexo server",
+    "test:industry-cases": "node --test tests/industry-cases.test.mjs"
   },
   "hexo": {
     "version": "8.1.2"
@@ -22,6 +24,11 @@
     "hexo-renderer-stylus": "^3.0.1",
     "hexo-server": "^3.0.0",
     "hexo-theme-butterfly": "^5.7.0",
-    "hexo-theme-landscape": "^1.0.0"
+    "hexo-theme-landscape": "^1.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

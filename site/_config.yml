@@ -29,6 +29,7 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
+  - industry-cases/**
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -107,6 +108,7 @@ deploy:
 menu:
   原理: /principles/ || fas fa-lightbulb
   使用指南: /guide/ || fas fa-book
+  业界案例: /industry-cases/ || fas fa-industry
   案例观点: /cases/ || fas fa-star
   关于: /about/ || fas fa-user
 
