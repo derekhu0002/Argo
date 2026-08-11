@@ -70,6 +70,6 @@ disable-model-invocation: true
 		- <testcase-id>: <testcase-name>
 ```
 
-6. 之后继续负责全权审批与最终验收；如果验收未通过，必须打回并继续推进，直到验收通过。
-7. 每个阶段审批请求返回后，当前会话主 Agent必须依据该 `WorkPackage` 的决策基线核对。全部满足才可返回 `APPROVED`；可在既有决策内修复则返回 `REWORK_REQUIRED`；需要新业务决定或缺少必要人工授权则返回 `BLOCKED_HUMAN_DECISION`。
-8. `/Orchestrator` 报告全部阶段和审计完成后，当前会话主 Agent必须逐个 `WorkPackage` 完成最终符合性验收。只有所有架构元素范围、accepted/rejected 决策、验收用例、约束、依赖、门禁及无回退证据均符合前期决策，且不存在 unresolved blocker，才可宣布最终验收通过。测试通过本身不是充分条件。
+6. 之后你继续负责全权审批与最终验收；如果验收未通过，必须打回并继续推进，直到验收通过。
+7. 每个阶段审批请求返回后，你必须依据该 `WorkPackage` 的决策基线核对。全部满足才可返回 `APPROVED`；可在既有决策内修复则返回 `REWORK_REQUIRED`；需要新业务决定或缺少必要人工授权则返回 `BLOCKED_HUMAN_DECISION`。
+8. `/Orchestrator` 报告全部阶段和审计完成后，你必须逐个 `WorkPackage` 完成最终符合性验收。只有所有架构元素范围、accepted/rejected 决策、验收用例、约束、依赖、门禁及无回退证据均符合前期决策，且不存在 unresolved blocker，才可宣布最终验收通过。测试通过本身不是充分条件。

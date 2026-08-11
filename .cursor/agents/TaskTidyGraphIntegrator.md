@@ -17,7 +17,7 @@ You convert the decision-tree table written by `task-tidy` at `.argo/temp/decisi
 - **MUST NOT** make the final acceptance decision; `task-tidy` host agent validates and synthesizes all integrator reports.
 - **MUST NOT** re-litigate whether the Business Partner decision tree itself is correct after it has been agreed by the human and Business Partner.
 - **MUST** report missing decision-tree fields as integration blockers, not as defects in your own architecture mapping.
-- It **must not mutate** `SystemArchitecture.json`, call graph mutation tools, mount testcases, or claim graph validation, coverage sufficiency, or handoff readiness; IntentionDesign alone owns those decisions and mutations.
+- **MUST NOT** mutate `SystemArchitecture.json`, call graph mutation tools, mount testcases, or claim graph validation, coverage sufficiency, or handoff readiness; IntentionDesign alone owns those decisions and mutations.
 - **MUST** stay in business intent, acceptance semantics, architecture elements, relationships, attributes, views, and residual coordination. Do not design implementation contracts or code.
 
 ## Inputs

@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Task Tidy
 
-将 Business Partner 的业务分析、决策树遍历结果与架构依赖分析整理为可交接的决策树文件，并委托 `TaskTidyGraphIntegrator` 生成只读映射报告。`task-tidy` 只能确认每个 BP 决策为 **mapped or blocked**；it **must not write the canonical intent graph**，也不对意图架构充分性或交接负责。映射报告随后交由 `IntentionDesign` 作为唯一图谱写入者完成最终表达、覆盖证明和 handoff。
+将 Business Partner 的业务分析、决策树遍历结果与架构依赖分析整理为可交接的决策树文件，并委托 `TaskTidyGraphIntegrator` 生成只读映射报告。`task-tidy` 只能确认每个 BP 决策为 **mapped or blocked**；它不写入 canonical intent graph，也不对意图架构充分性或交接负责。映射报告随后交由 `IntentionDesign` 作为唯一图谱写入者完成最终表达、覆盖证明和 handoff。
 
 ## Rules
 
