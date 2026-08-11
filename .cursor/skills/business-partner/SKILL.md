@@ -63,7 +63,8 @@ Do not launch a child for atomic local work, shared-write conflicts, negative-va
 ### Resource, write, and return limits
 - simple work uses one child level where sufficient.
 - Complex evidence work may use stage owner to verifier to gatherer; at most two child edges; no third child edge.
-- At most four active children; eligible queued work fills released slots; dependency-blocked work does not consume an active slot; overflow queues by dependency, risk, and blocking impact.
+- Determine both the delegated Agent count and active concurrency from the actual number of independently verifiable hypotheses and evidence slices, dependency graph, evidence-channel weight, available resources, rate limits, and coordination cost; use as many Agents as the analysis justifies. No fixed numeric cap, including four, applies.
+- Queue eligible work only when dependencies, resource or tool limits, rate limits, or coordination cost make immediate concurrency unsafe or negative-value; dependency-blocked work does not consume an active slot, and queued work is ordered by dependency, risk, and blocking impact. Record the sizing and queuing rationale in the delegation plan.
 - Prefer read-only evidence children; any authorized write work elsewhere must use disjoint write sets or be serialized under one writer.
 - Children return bounded structured evidence only: identity, verdict, decisive evidence, missing channels, conflicts, change results, next action; strongest 3-5 ordinary supports; every decisive counterexample; externally addressable evidence locations; without raw logs and without full search process.
 - Non-success enters exactly one disposition: one same-session retry, supplement missing evidence, serialize write conflict, or escalate authority.
