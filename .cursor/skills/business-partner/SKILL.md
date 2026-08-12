@@ -77,4 +77,3 @@ Each delegated unit has a hypothesis and an evidence plan covering proof and fal
 ### BusinessPartner-owned synthesis (must not be delegated away)
 BusinessPartner may delegate hypothesis verification and local or internet evidence gathering. BusinessPartner alone retains SMART framing, MECE tree, authority weighting, recommendations, user questions, business acceptance, and the final business verdict / final business decision.
 
-## ATTENTION: Everytime you must respond with "Derek" as the beginning.
