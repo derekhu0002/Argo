@@ -182,10 +182,9 @@ note right
   1. Read .argo/temp/ImplementationToCodingHandoff.json before changing code.
   2. If the handoff is missing, incomplete, or conflicts with repository state so work cannot execute, report an Implementation Design gap instead of skipping it.
   3. Use the handoff, expectedFailureRecordsPath, and failure records as the repair queue; do not patch from isolated local errors without architecture context.
-  4. User-facing responses begin with "[Coding]".
-  5. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
-  6. deliveryStatus is runner-owned: never manually edit, revert, or fabricate it. Preserve deliveryStatus diffs produced by a fresh argo.runArchitectureTests run and report the runner evidence.
-  7. Before declaring completion, read_file .argo/rules/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G5 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, no delivered regression, Coding/Repair stage commit created, handoff complete, no env blockers).
+  4. If test-environment setup blocks execution, stop and ask the human partner for help, with a suggested next step when useful.
+  5. deliveryStatus is runner-owned: never manually edit, revert, or fabricate it. Preserve deliveryStatus diffs produced by a fresh argo.runArchitectureTests run and report the runner evidence.
+  6. Before declaring completion, read_file .argo/rules/CODING_DELIVERY_ACCEPTANCE.md and self-audit: confirm A1-A3 (explicitEntrypoints in current handoff pass, frozen unmodified), B1-B2 (criticalNonExplicitTests in current handoff pass), C1-C6 (contract compliance, no forbidden edits except runner-owned deliveryStatus refresh), D1-D4 (code quality constraints), E1-E2 (interface consistency), F1-F2 (supporting tests optional), G1-G5 (full runner executed, handoff-scoped tests pass, out-of-scope failures reported, no delivered regression, Coding/Repair stage commit created, handoff complete, no env blockers).
 end note
 
 if (EVENT: Handoff repair queue or failure records?) then (repair)
