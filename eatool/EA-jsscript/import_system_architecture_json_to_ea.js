@@ -25,6 +25,7 @@ var IMPORT_PACKAGE_SUFFIX = ' EA Import';
 var DIAGRAM_TYPE = 'Logical';
 var CREATE_MISSING_SUBDIAGRAMS = true;
 var ENABLE_AUTOLAYOUT = true;
+var MAX_ATTRIBUTE_DEFAULT_LENGTH = 250;
 
 var WARNED = {};
 
@@ -330,18 +331,37 @@ function applyElementAttributes(element, attributes) {
       continue;
     }
     var attr = element.Attributes.AddNew(data.name, 'String');
+
     var attributeValue = safeString(data.value);
     if (isNonEmptyString(attributeValue)) {
-      attr.Notes = attributeValue;
-    } else {
-      attr.Notes = isNonEmptyString(data.content) ? data.content : safeString(data.description);
+      if (attributeValue.length <= MAX_ATTRIBUTE_DEFAULT_LENGTH) {
+        attr.Default = attributeValue;
+      } else {
+        appendAttributeNotes(attr, attributeValue);
+      }
     }
+
+    appendAttributeNotes(attr, safeString(data.description));
     if (isNonEmptyString(data.content)) {
+      appendAttributeNotes(attr, safeString(data.content));
       attr.Alias = 'content';
     }
+
     attr.Update();
   }
   element.Attributes.Refresh();
+}
+
+function appendAttributeNotes(attr, text) {
+  if (!isNonEmptyString(text)) {
+    return;
+  }
+  var current = safeString(attr.Notes);
+  if (isNonEmptyString(current)) {
+    attr.Notes = current + '\r\n\r\n' + text;
+  } else {
+    attr.Notes = text;
+  }
 }
 
 function applyElementSpecialMethods(element, data) {

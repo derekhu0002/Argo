@@ -9,6 +9,8 @@ const importerPath = path.join(repoRoot, 'eatool', 'EA-jsscript', 'import_system
 function main() {
   importsElementAttributesAfterPersistingCoreFieldChanges();
   importsElementAttributeValuesAsNotes();
+  importsElementAttributeDescriptionsAsNotes();
+  importsElementAttributeContentAsNotes();
 }
 
 function importsElementAttributesAfterPersistingCoreFieldChanges() {
@@ -36,10 +38,10 @@ function importsElementAttributesAfterPersistingCoreFieldChanges() {
   assert.strictEqual(element.persistedAttributes.length, 1, 'attribute is persisted on the EA element');
   assert.strictEqual(element.persistedAttributes[0].Name, 'modelingSkillPaths');
   assert.strictEqual(
-    element.persistedAttributes[0].Notes,
+    element.persistedAttributes[0].Default,
     '.argo/skills/modeling/application-structure-viewpoint/SKILL.md',
   );
-  assert.strictEqual(element.persistedAttributes[0].Default, '', 'value is not written to EA Default');
+  assert.strictEqual(element.persistedAttributes[0].Notes, '', 'value is not written to EA Notes');
   assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'value is not written to tagged values');
 }
 
@@ -78,6 +80,66 @@ function importsElementAttributeValuesAsNotes() {
   assert.strictEqual(element.persistedAttributes[0].Notes, longValue, 'long value is written to EA Notes');
   assert.strictEqual(element.persistedAttributes[0].Default, '', 'long value is not written to EA Default');
   assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'long value is not written to tagged values');
+}
+
+function importsElementAttributeDescriptionsAsNotes() {
+  const context = loadImporterContext();
+  const importPackage = new EaPackage();
+  const elementMap = {};
+  const elementDataMap = {
+    'el-desc': {
+      id: 'el-desc',
+      name: 'Element With Attribute Description',
+      type: 'Work Package',
+      attributes: [
+        {
+          name: 'commit',
+          value: '7b38129',
+          description: '.github/skills/{ai-generate,backend-api}/SKILL.md',
+        },
+      ],
+    },
+  };
+
+  const element = context.ensureElement(importPackage, 'el-desc', elementDataMap, elementMap);
+
+  assert.ok(element, 'element is created');
+  assert.strictEqual(element.persistedAttributes.length, 1, 'attribute is persisted on the EA element');
+  assert.strictEqual(element.persistedAttributes[0].Default, '7b38129', 'value is written to EA Default');
+  assert.strictEqual(
+    element.persistedAttributes[0].Notes,
+    '.github/skills/{ai-generate,backend-api}/SKILL.md',
+    'description is written to EA Notes',
+  );
+  assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'attribute is not written to tagged values');
+}
+
+function importsElementAttributeContentAsNotes() {
+  const context = loadImporterContext();
+  const importPackage = new EaPackage();
+  const elementMap = {};
+  const elementDataMap = {
+    'el-content': {
+      id: 'el-content',
+      name: 'Element With Attribute Content',
+      type: 'Constraint',
+      attributes: [
+        {
+          name: 'code_file',
+          content: 'function main() { return 1; }',
+        },
+      ],
+    },
+  };
+
+  const element = context.ensureElement(importPackage, 'el-content', elementDataMap, elementMap);
+
+  assert.ok(element, 'element is created');
+  assert.strictEqual(element.persistedAttributes.length, 1, 'attribute is persisted on the EA element');
+  assert.strictEqual(element.persistedAttributes[0].Notes, 'function main() { return 1; }', 'content is written to EA Notes');
+  assert.strictEqual(element.persistedAttributes[0].Alias, 'content', 'content is marked via Alias');
+  assert.strictEqual(element.persistedAttributes[0].Default, '', 'content is not written to EA Default');
+  assert.deepStrictEqual(element.persistedAttributes[0].TaggedValues.tags, {}, 'content is not written to tagged values');
 }
 
 function loadImporterContext() {
@@ -217,6 +279,7 @@ class EaAttribute {
     this.Name = name;
     this.Type = type;
     this._default = '';
+    this.Notes = '';
     this.TaggedValues = new TaggedValueCollection();
   }
 

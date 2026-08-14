@@ -931,9 +931,13 @@ function extractFromDiagram(currentDiagram) {
 					}
 				} else {
 					var attbbbjss = '{\n"name": "' + jsonEscape(attr.Name) + '"\n';
-					var attributeValue = attr.Notes != "" ? attr.Notes : attr.Default;
+					var attributeValue = attr.Default != "" ? attr.Default : "";
 					if (attributeValue != "") {
 						attbbbjss += ',"value": "' + jsonEscape(attributeValue) + '"\n';
+					}
+					var attributeDescription = attr.Notes != "" ? attr.Notes : "";
+					if (attributeDescription != "") {
+						attbbbjss += ',"description": "' + jsonEscape(attributeDescription) + '"\n';
 					}
 					attbbbjss += '}';
 					attributesJsonStrings.push(attbbbjss);
