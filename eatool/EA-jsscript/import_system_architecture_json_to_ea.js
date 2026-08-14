@@ -522,6 +522,12 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
       connector.SupplierEnd.Aggregation = connectorMeta.aggregationKind;
     }
 
+    // Persist the connector core fields before attaching tagged values. Tagged values
+    // require a saved connector (with a valid ConnectorID), otherwise EA silently drops
+    // them and the original schema id would be lost on the next export.
+    connector.Update();
+    source.Connectors.Refresh();
+
     putTag(connector.TaggedValues, 'schema_id', data.id);
     putTag(connector.TaggedValues, 'schema_name', relationshipName);
     putTag(connector.TaggedValues, 'schema_statement', safeString(data.statement));
@@ -533,6 +539,7 @@ function importRelationships(importPkg, relationships, elementMap, relationshipM
     putTag(connector.TaggedValues, 'target_name', safeString(data.target_name));
     putJsonTag(connector.TaggedValues, 'schema_relationship_json', data);
 
+    connector.TaggedValues.Refresh();
     connector.Update();
     source.Connectors.Refresh();
 
