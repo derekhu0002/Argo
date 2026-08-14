@@ -416,6 +416,20 @@ const ELEMENT_TYPE_METADATA_ENTRIES = [
     }
   ],
   [
+    "Skill",
+    {
+      "layer": "Other",
+      "aspect": "Agent"
+    }
+  ],
+  [
+    "Rule",
+    {
+      "layer": "Other",
+      "aspect": "Agent"
+    }
+  ],
+  [
     "Location",
     {
       "layer": "Other",
@@ -545,6 +559,8 @@ const ARCHIMATE_CLASS_BY_ELEMENT_TYPE = {
   "Plateau": "Plateau",
   "Gap": "Gap",
   "Grouping": "Grouping",
+  "Skill": "Skill",
+  "Rule": "Rule",
   "Location": "Location",
   "And Junction": "Junction_And",
   "Or Junction": "Junction_Or"
@@ -610,6 +626,8 @@ const ELEMENT_TYPE_BY_ARCHIMATE_CLASS = {
   "Plateau": "Plateau",
   "Gap": "Gap",
   "Grouping": "Grouping",
+  "Skill": "Skill",
+  "Rule": "Rule",
   "Location": "Location",
   "Junction_And": "And Junction",
   "Junction_Or": "Or Junction"

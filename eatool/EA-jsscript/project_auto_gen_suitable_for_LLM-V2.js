@@ -430,6 +430,8 @@ function displayArchimateName(normalized) {
 		case "Plateau":
 		case "Gap":
 		case "Grouping":
+		case 'Skill':
+		case 'Rule':
 		case "Location":
 		case "Association":
 		case "Composition":
@@ -540,6 +542,8 @@ function isSchemaElementType(value) {
 		case "Plateau":
 		case "Gap":
 		case "Grouping":
+		case 'Skill':
+		case 'Rule':
 		case "Location":
 		case "And Junction":
 		case "Or Junction":
