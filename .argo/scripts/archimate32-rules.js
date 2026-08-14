@@ -12208,6 +12208,27 @@ const RELATIONSHIP_TARGET_MATRIX = {
   }
 };
 
+// Skill and Rule are modeled as ArchiMate "Agent" elements (layer: Other).
+// They may participate ONLY in Association relationships, and may associate
+// with every other element type (including each other and themselves).
+// RELATIONSHIP_TARGET_MATRIX.Association is a complete graph over all
+// non-junction element classes; extend it to include the two agent classes.
+const AGENT_ELEMENT_CLASSES = ['Skill', 'Rule'];
+const NON_JUNCTION_ELEMENT_CLASSES = Object.keys(ELEMENT_TYPE_BY_ARCHIMATE_CLASS)
+  .filter(className => className !== 'Junction_And' && className !== 'Junction_Or');
+
+for (const sourceClass of Object.keys(RELATIONSHIP_TARGET_MATRIX.Association)) {
+  const targets = RELATIONSHIP_TARGET_MATRIX.Association[sourceClass];
+  for (const agentClass of AGENT_ELEMENT_CLASSES) {
+    if (!targets.includes(agentClass)) {
+      targets.push(agentClass);
+    }
+  }
+}
+for (const agentClass of AGENT_ELEMENT_CLASSES) {
+  RELATIONSHIP_TARGET_MATRIX.Association[agentClass] = NON_JUNCTION_ELEMENT_CLASSES.slice();
+}
+
 const elementTypeMetadata = new Map(ELEMENT_TYPE_METADATA_ENTRIES);
 const relationshipCategoryByType = new Map(RELATIONSHIP_CATEGORY_ENTRIES);
 

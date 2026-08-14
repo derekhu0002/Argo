@@ -174,7 +174,7 @@ function validatesArchimate32RuleCoverage() {
     .flatMap(sourceMap => Object.values(sourceMap))
     .reduce((total, targets) => total + targets.length, 0);
 
-  assert.strictEqual(matrixCombinationCount, 10484);
+  assert.strictEqual(matrixCombinationCount, 10728);
   assert.strictEqual(archimateRules.isSupportedElementType('Junction'), false);
   assert.strictEqual(archimateRules.isSupportedElementType('And Junction'), true);
   assert.strictEqual(archimateRules.isSupportedElementType('Or Junction'), true);
@@ -185,6 +185,48 @@ function validatesArchimate32RuleCoverage() {
   assert.strictEqual(
     archimateRules.RELATIONSHIP_TARGET_MATRIX.Assignment.ApplicationComponent.includes('ApplicationFunction'),
     true,
+  );
+
+  // Skill and Rule participate only in Association, with every element type.
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Association.Skill.includes('ApplicationComponent'),
+    true,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Association.ApplicationComponent.includes('Rule'),
+    true,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Association.Rule.includes('Skill'),
+    true,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Association.Skill.includes('Skill'),
+    true,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Composition.Skill,
+    undefined,
+  );
+  assert.strictEqual(
+    archimateRules.RELATIONSHIP_TARGET_MATRIX.Assignment.ApplicationComponent.includes('Rule'),
+    false,
+  );
+  assert.deepStrictEqual(
+    archimateRules.validateRelationshipEndpointTypes(
+      { id: 'agent-assoc', type: 'Association' },
+      { id: 's1', name: 'A Skill', type: 'Skill' },
+      { id: 't1', name: 'A Component', type: 'Application Component' },
+    ),
+    [],
+  );
+  assert.strictEqual(
+    archimateRules.validateRelationshipEndpointTypes(
+      { id: 'agent-composition', type: 'Composition' },
+      { id: 's2', name: 'A Rule', type: 'Rule' },
+      { id: 't2', name: 'A Component', type: 'Application Component' },
+    ).length,
+    1,
   );
 }
 
