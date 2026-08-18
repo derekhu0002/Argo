@@ -5560,6 +5560,13 @@
           "Input": "Read the harness views in design/KG/SystemArchitecture.json",
           "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
         }
+      ],
+      "attributes": [
+        {
+          "name": "commit",
+          "value": "ce88a9f",
+          "description": "design/KG/SystemArchitecture.json; tests/explicit/entries/runHarnessGraphModeling.js"
+        }
       ]
     }
   ],
