@@ -5127,6 +5127,440 @@
           "value": "120.24.114.13"
         }
       ]
+    },
+    {
+      "id": "harness-role-archimate-languagist-audit",
+      "name": "ArchimateLanguagistAudit",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Audits design/KG/SystemArchitecture.json for ArchiMate language correctness, element and relationship semantics, view consistency, schema compliance, and intent-graph wording quality. Materialized at .github/agents/ArchimateLanguagistAudit.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/ArchimateLanguagistAudit.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-business-partner",
+      "name": "BusinessPartner",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Business partner agent that clarifies goals into structured decision trees and evaluates business acceptance. Materialized at .github/agents/BusinessPartner.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/BusinessPartner.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-clean-architecture-auditor",
+      "name": "CleanArchitectureAuditor",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Cross-stage architecture auditor for Clean Architecture principles (dependency rule, component principles, SOLID at architecture level, boundary audit). Materialized at .github/agents/CleanArchitectureAuditor.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/CleanArchitectureAuditor.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-coding-and-repairing",
+      "name": "CodingAndReparing",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Codes and repairs implementation based on recorded test failure records without touching frozen testcases, contracts, or guardrails. Materialized at .github/agents/CodingAndReparing.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/CodingAndReparing.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-implementation-design",
+      "name": "ImplementationDesign",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Designs stable implementation architecture with clear boundaries, test entry points, and guardrails from intent architecture. Materialized at .github/agents/ImplementationDesign.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/ImplementationDesign.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-intention-design",
+      "name": "IntentionDesign",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Designs the intention architecture based on user requirements and implementation constraints; the sole canonical intent-graph writer. Materialized at .github/agents/IntentionDesign.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/IntentionDesign.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-orchestrator",
+      "name": "Orchestrator",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Coordinates across harness stages: dispatch, approvals, handoff validation, audit routing, and workflow closure. Materialized at .github/agents/Orchestrator.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/Orchestrator.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-reverse-architecture-extraction",
+      "name": "ReverseArchitectureExtraction",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Bootstraps candidate architecture or recovers architecture drift from tests first and code entrypoints second. Materialized at .github/agents/ReverseArchitectureExtraction.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/ReverseArchitectureExtraction.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-task-tidy-graph-integrator",
+      "name": "TaskTidyGraphIntegrator",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Integrates Business Partner decision trees into the intent architecture and produces coverage evidence for host validation. Materialized at .github/agents/TaskTidyGraphIntegrator.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/TaskTidyGraphIntegrator.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-role-teacher",
+      "name": "teacher",
+      "type": "Business Role",
+      "parent": "1209",
+      "description": "Teacher partner agent that critically reviews work. Materialized at .github/agents/teacher.md.",
+      "attributes": [
+        {
+          "name": "agentFile",
+          "value": ".github/agents/teacher.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-architecture-diff-plantuml",
+      "name": "architecture-diff-plantuml",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/architecture-diff-plantuml/SKILL.md. Generates PlantUML architecture analysis from SystemArchitecture.json git diffs.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/architecture-diff-plantuml/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-architecture-drift-recovery",
+      "name": "architecture-drift-recovery",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/architecture-drift-recovery/SKILL.md. Recovers architecture consistency after external test/code changes to an accepted baseline.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/architecture-drift-recovery/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-brief",
+      "name": "brief",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/brief/SKILL.md. Creates or updates INTRODUCTION.md as an external-facing product brief from architecture sources only.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/brief/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-coding-delivery-acceptance",
+      "name": "coding-delivery-acceptance",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/coding-delivery-acceptance/SKILL.md. Audits the coding delivery against the implementation architecture contract and identifies gaps.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/coding-delivery-acceptance/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-coding-gap-report",
+      "name": "coding-gap-report",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/coding-gap-report/SKILL.md. Reports gaps in the coding delivery against the implementation architecture contract with next steps.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/coding-gap-report/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-delivery-archive",
+      "name": "delivery-archive",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/delivery-archive/SKILL.md. Archives accepted PRD, architecture design, coding delivery, self-test, or acceptance evidence into docs.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/delivery-archive/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-distill-agent-rules",
+      "name": "distill-agent-rules",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/distill-agent-rules/SKILL.md. Distills reusable principles, constraints, trigger conditions, and landing locations from agent behavior retro.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/distill-agent-rules/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-grill-me",
+      "name": "grill-me",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/grill-me/SKILL.md. Interviews the user relentlessly about a plan or design until shared understanding is reached.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/grill-me/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-guizang-ppt-skill",
+      "name": "guizang-ppt-skill",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/guizang-ppt-skill/SKILL.md. Generates horizontal flip-page web PPT (single HTML) with WebGL background and magazine/Swiss styles.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/guizang-ppt-skill/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-impl-gap-report",
+      "name": "impl-gap-report",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/impl-gap-report/SKILL.md. Reports gaps in the implementation delivery against the intention architecture contract with next steps.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/impl-gap-report/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-improve-codebase-architecture",
+      "name": "improve-codebase-architecture",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/improve-codebase-architecture/SKILL.md. Surfaces codebase architecture improvement candidates for the intention design stage before grill-me.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/improve-codebase-architecture/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-market-research",
+      "name": "market-research",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/market-research/SKILL.md. Conducts market research, competitive analysis, investor due diligence, and industry intelligence.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/market-research/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-reverse-architecture-extraction",
+      "name": "reverse-architecture-extraction",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/reverse-architecture-extraction/SKILL.md. Bootstraps candidate implementation and intent architecture from test/code-only repositories.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/reverse-architecture-extraction/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-task-emit-afk",
+      "name": "task-emit-afk",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/task-emit-afk/SKILL.md. Packages target architecture elements and acceptance cases into delivery slices.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/task-emit-afk/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-task-emit-human-in-the-loop",
+      "name": "task-emit-human-in-the-loop",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/task-emit-human-in-the-loop/SKILL.md. Packages target architecture elements and acceptance cases into human-gated delivery slices.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/task-emit-human-in-the-loop/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-skill-task-tidy",
+      "name": "task-tidy",
+      "type": "Skill",
+      "parent": "1211",
+      "description": "Materialized at .github/skills/task-tidy/SKILL.md. Normalizes business analysis into a decision-tree mapping report and delegates canonical intent integration.",
+      "attributes": [
+        {
+          "name": "skillFile",
+          "value": ".github/skills/task-tidy/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-rule-viewpoint-first-modeling",
+      "name": "viewpoint-first-modeling",
+      "type": "Rule",
+      "parent": "1211",
+      "description": "Materialized at .github/copilot-instructions.md. Viewpoint-first intent architecture modeling: any agent that creates, changes, audits, or proposes changes to SystemArchitecture.json must start from one or more Architecture Viewpoints.",
+      "attributes": [
+        {
+          "name": "ruleFile",
+          "value": ".github/copilot-instructions.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-rule-coding-delivery-acceptance",
+      "name": "coding-delivery-acceptance",
+      "type": "Rule",
+      "parent": "1211",
+      "description": "Materialized at .argo/rules/CODING_DELIVERY_ACCEPTANCE.md. CodingAndReparing delivery acceptance criteria: all explicit and critical non-explicit tests in the handoff scope must pass without touching frozen tests.",
+      "attributes": [
+        {
+          "name": "ruleFile",
+          "value": ".argo/rules/CODING_DELIVERY_ACCEPTANCE.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-rule-implementation-design-checklist",
+      "name": "implementation-design-checklist",
+      "type": "Rule",
+      "parent": "1211",
+      "description": "Materialized at .argo/rules/IMPLEMENTATION_DESIGN_CHECKLIST.md. ImplementationDesign delivery checklist: architecture contracts, test assets, and ImplementationToCodingHandoff.json before handoff.",
+      "attributes": [
+        {
+          "name": "ruleFile",
+          "value": ".argo/rules/IMPLEMENTATION_DESIGN_CHECKLIST.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-rule-intention-design-checklist",
+      "name": "intention-design-checklist",
+      "type": "Rule",
+      "parent": "1211",
+      "description": "Materialized at .argo/rules/INTENTION_DESIGN_CHECKLIST.md. IntentionDesign delivery checklist: persisted graph changes, complete elements/relationships/views, mounted acceptance tests, and human approval.",
+      "attributes": [
+        {
+          "name": "ruleFile",
+          "value": ".argo/rules/INTENTION_DESIGN_CHECKLIST.md"
+        }
+      ]
+    },
+    {
+      "id": "harness-wp-archgraph-modeling",
+      "name": "Model harness agents/skills/rules into the intent knowledge graph",
+      "type": "Work Package",
+      "parent": "1211",
+      "description": "ArchGraph transformation: model the Argo harness (agents, skills, rules) into the intent knowledge graph using AML conventions (Business Role for agents, Skill and Rule extension elements for skills and rules), with viewpoint-bound views and executable GIVEN-WHEN-THEN acceptance tests.",
+      "testcases": [
+        {
+          "name": "AT-harness-agents-modeled",
+          "description": "GIVEN the harness defines 10 agents in .github/agents/*.md; WHEN the intent knowledge graph is read; THEN each agent is modelled as a Business Role element carrying an agentFile attribute that points to an existing agent file.",
+          "type": "Acceptance Test",
+          "Input": "Read design/KG/SystemArchitecture.json and .github/agents/*.md",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
+        },
+        {
+          "name": "AT-harness-skills-modeled",
+          "description": "GIVEN the harness defines skills in .github/skills/<name>/SKILL.md; WHEN the intent knowledge graph is read; THEN each skill is modelled as a Skill element carrying a skillFile attribute that points to an existing SKILL.md.",
+          "type": "Acceptance Test",
+          "Input": "Read design/KG/SystemArchitecture.json and .github/skills/*/SKILL.md",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
+        },
+        {
+          "name": "AT-harness-rules-modeled",
+          "description": "GIVEN the harness defines rules in .argo/rules/*.md and .github/copilot-instructions.md; WHEN the intent knowledge graph is read; THEN each rule is modelled as a Rule element carrying a ruleFile attribute that points to an existing rule file.",
+          "type": "Acceptance Test",
+          "Input": "Read design/KG/SystemArchitecture.json and rule files",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
+        },
+        {
+          "name": "AT-harness-stage-pipeline",
+          "description": "GIVEN the harness stage pipeline BusinessPartner → IntentionDesign → ImplementationDesign → CodingAndReparing; WHEN the intent knowledge graph is read; THEN the pipeline is expressed as Triggering relationships between the corresponding Business Role elements.",
+          "type": "Acceptance Test",
+          "Input": "Read design/KG/SystemArchitecture.json relationships",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
+        },
+        {
+          "name": "AT-harness-views-bound",
+          "description": "GIVEN the new harness views; WHEN each view is read; THEN each view description starts with a Viewpoint binding declaring viewpoint, concern, purpose, scope, and rationale.",
+          "type": "Acceptance Test",
+          "Input": "Read the harness views in design/KG/SystemArchitecture.json",
+          "acceptanceCriteria": "tests/explicit/entries/runHarnessGraphModeling.js"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -7753,6 +8187,94 @@
       "source_name": "Cloudflare CDN (argo.derekworkspacev5.com)",
       "target_id": "argo-promo-website",
       "target_name": "ARGO Promo Website"
+    },
+    {
+      "id": "harness-rel-trigger-bp-id",
+      "name": "BusinessPartner precedes IntentionDesign",
+      "type": "Triggering",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-role-intention-design",
+      "source_name": "BusinessPartner",
+      "target_name": "IntentionDesign",
+      "description": "Business clarification and intent internalization precedes intent design.",
+      "statement": "BusinessPartner --(Triggering)--> IntentionDesign"
+    },
+    {
+      "id": "harness-rel-trigger-id-impl",
+      "name": "IntentionDesign precedes ImplementationDesign",
+      "type": "Triggering",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-role-implementation-design",
+      "source_name": "IntentionDesign",
+      "target_name": "ImplementationDesign",
+      "description": "Approved intent architecture precedes implementation design.",
+      "statement": "IntentionDesign --(Triggering)--> ImplementationDesign"
+    },
+    {
+      "id": "harness-rel-trigger-impl-car",
+      "name": "ImplementationDesign precedes CodingAndReparing",
+      "type": "Triggering",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-role-coding-and-repairing",
+      "source_name": "ImplementationDesign",
+      "target_name": "CodingAndReparing",
+      "description": "Approved implementation handoff precedes coding and repair.",
+      "statement": "ImplementationDesign --(Triggering)--> CodingAndReparing"
+    },
+    {
+      "id": "harness-rel-orch-business-partner",
+      "name": "Orchestrator coordinates BusinessPartner",
+      "type": "Association",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-role-business-partner",
+      "source_name": "Orchestrator",
+      "target_name": "BusinessPartner",
+      "description": "Orchestrator coordinates the BusinessPartner stage without entering stage-internal work.",
+      "statement": "Orchestrator --(Association)--> BusinessPartner"
+    },
+    {
+      "id": "harness-rel-orch-intention-design",
+      "name": "Orchestrator coordinates IntentionDesign",
+      "type": "Association",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-role-intention-design",
+      "source_name": "Orchestrator",
+      "target_name": "IntentionDesign",
+      "description": "Orchestrator coordinates the IntentionDesign stage without entering stage-internal work.",
+      "statement": "Orchestrator --(Association)--> IntentionDesign"
+    },
+    {
+      "id": "harness-rel-orch-implementation-design",
+      "name": "Orchestrator coordinates ImplementationDesign",
+      "type": "Association",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-role-implementation-design",
+      "source_name": "Orchestrator",
+      "target_name": "ImplementationDesign",
+      "description": "Orchestrator coordinates the ImplementationDesign stage without entering stage-internal work.",
+      "statement": "Orchestrator --(Association)--> ImplementationDesign"
+    },
+    {
+      "id": "harness-rel-orch-coding-and-repairing",
+      "name": "Orchestrator coordinates CodingAndReparing",
+      "type": "Association",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-role-coding-and-repairing",
+      "source_name": "Orchestrator",
+      "target_name": "CodingAndReparing",
+      "description": "Orchestrator coordinates the CodingAndReparing stage without entering stage-internal work.",
+      "statement": "Orchestrator --(Association)--> CodingAndReparing"
+    },
+    {
+      "id": "harness-rel-intention-assign-wp",
+      "name": "IntentionDesign assigned to modeling task",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-wp-archgraph-modeling",
+      "source_name": "IntentionDesign",
+      "target_name": "Model harness agents/skills/rules into the intent knowledge graph",
+      "description": "The canonical intent-graph writer role is assigned to the archgraph modeling work package.",
+      "statement": "IntentionDesign --(Assignment)--> Model harness agents/skills/rules into the intent knowledge graph"
     }
   ],
   "views": [
@@ -9003,6 +9525,113 @@
         "promo-rel-cases-coord-test",
         "promo-rel-cloudflare-cdn-proxy",
         "promo-rel-cloudflare-serves"
+      ]
+    },
+    {
+      "view_id": "harness-agent-organization",
+      "view_name": "Harness Agent Organization",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Organization Viewpoint; Concern: which harness agents exist, their responsibilities, and where each agent definition materializes; Purpose: designing; Scope: the 10 .github/agents/*.md agent definitions modelled as Business Role elements; Rationale: this view is an instance of the Organization Viewpoint because it models agent roles, their competencies, and their materialized agent definitions.",
+      "included_elements": [
+        "harness-role-archimate-languagist-audit",
+        "harness-role-business-partner",
+        "harness-role-clean-architecture-auditor",
+        "harness-role-coding-and-repairing",
+        "harness-role-implementation-design",
+        "harness-role-intention-design",
+        "harness-role-orchestrator",
+        "harness-role-reverse-architecture-extraction",
+        "harness-role-task-tidy-graph-integrator",
+        "harness-role-teacher"
+      ],
+      "included_relationships": []
+    },
+    {
+      "view_id": "harness-stage-pipeline",
+      "view_name": "Harness Stage Pipeline",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: responsibility order and hand-off between the harness stage agents; Purpose: designing; Scope: BusinessPartner, IntentionDesign, ImplementationDesign, CodingAndReparing stage roles and the Orchestrator coordination role; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it expresses temporal trigger dependencies and responsibility boundaries between agent roles.",
+      "included_elements": [
+        "harness-role-business-partner",
+        "harness-role-intention-design",
+        "harness-role-implementation-design",
+        "harness-role-coding-and-repairing",
+        "harness-role-orchestrator"
+      ],
+      "included_relationships": [
+        "harness-rel-trigger-bp-id",
+        "harness-rel-trigger-id-impl",
+        "harness-rel-trigger-impl-car",
+        "harness-rel-orch-business-partner",
+        "harness-rel-orch-intention-design",
+        "harness-rel-orch-implementation-design",
+        "harness-rel-orch-coding-and-repairing"
+      ]
+    },
+    {
+      "view_id": "harness-rule-modules",
+      "view_name": "Harness Rule Modules",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: which reusable rule modules the harness loads and where each rule materializes; Purpose: designing; Scope: .argo/rules/*.md and .github/copilot-instructions.md modelled as Rule elements; Rationale: this view is an instance of the Implementation and Migration Viewpoint because it models reusable rule modules and their materialized instruction files.",
+      "included_elements": [
+        "harness-rule-viewpoint-first-modeling",
+        "harness-rule-coding-delivery-acceptance",
+        "harness-rule-implementation-design-checklist",
+        "harness-rule-intention-design-checklist"
+      ],
+      "included_relationships": []
+    },
+    {
+      "view_id": "harness-skill-modules-a",
+      "view_name": "Harness Skill Modules A",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: which reusable skill modules the harness loads and where each skill materializes; Purpose: designing; Scope: the delivery-pipeline .github/skills/*/SKILL.md modelled as Skill elements; Rationale: this view is an instance of the Implementation and Migration Viewpoint because it models reusable skill modules and their materialized SKILL.md files.",
+      "included_elements": [
+        "harness-skill-architecture-diff-plantuml",
+        "harness-skill-architecture-drift-recovery",
+        "harness-skill-brief",
+        "harness-skill-coding-delivery-acceptance",
+        "harness-skill-coding-gap-report",
+        "harness-skill-delivery-archive",
+        "harness-skill-distill-agent-rules",
+        "harness-skill-grill-me",
+        "harness-skill-guizang-ppt-skill",
+        "harness-skill-impl-gap-report",
+        "harness-skill-improve-codebase-architecture",
+        "harness-skill-market-research",
+        "harness-skill-reverse-architecture-extraction",
+        "harness-skill-task-emit-afk",
+        "harness-skill-task-emit-human-in-the-loop"
+      ],
+      "included_relationships": []
+    },
+    {
+      "view_id": "harness-skill-modules-b",
+      "view_name": "Harness Skill Modules B",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: which reusable skill modules the harness loads and where each skill materializes; Purpose: designing; Scope: the remaining .github/skills/*/SKILL.md modelled as Skill elements; Rationale: this view is an instance of the Implementation and Migration Viewpoint because it models reusable skill modules and their materialized SKILL.md files.",
+      "included_elements": [
+        "harness-skill-task-tidy"
+      ],
+      "included_relationships": []
+    },
+    {
+      "view_id": "harness-archgraph-modeling-task",
+      "view_name": "Harness ArchGraph Modeling Task",
+      "parent_element_id": "1211",
+      "parent_element_name": "AcceptanceDeliveryViewpoint",
+      "description": "Viewpoint: Implementation and Migration Viewpoint; Concern: the archgraph transformation work package and its owning role; Purpose: designing; Scope: the harness-to-knowledge-graph modeling Work Package and its Assignment to the canonical graph writer role; Rationale: this view is an instance of the Implementation and Migration Viewpoint because it models a Work Package and its delivery assignment.",
+      "included_elements": [
+        "harness-wp-archgraph-modeling",
+        "harness-role-intention-design"
+      ],
+      "included_relationships": [
+        "harness-rel-intention-assign-wp"
       ]
     }
   ]
