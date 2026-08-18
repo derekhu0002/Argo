@@ -5133,7 +5133,7 @@
       "name": "ArchimateLanguagistAudit",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Audits design/KG/SystemArchitecture.json for ArchiMate language correctness, element and relationship semantics, view consistency, schema compliance, and intent-graph wording quality. Materialized at .github/agents/ArchimateLanguagistAudit.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/ArchimateLanguagistAudit.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5146,7 +5146,7 @@
       "name": "BusinessPartner",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Business partner agent that clarifies goals into structured decision trees and evaluates business acceptance. Materialized at .github/agents/BusinessPartner.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/BusinessPartner.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5159,7 +5159,7 @@
       "name": "CleanArchitectureAuditor",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Cross-stage architecture auditor for Clean Architecture principles (dependency rule, component principles, SOLID at architecture level, boundary audit). Materialized at .github/agents/CleanArchitectureAuditor.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/CleanArchitectureAuditor.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5172,7 +5172,7 @@
       "name": "CodingAndReparing",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Codes and repairs implementation based on recorded test failure records without touching frozen testcases, contracts, or guardrails. Materialized at .github/agents/CodingAndReparing.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/CodingAndReparing.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5185,7 +5185,7 @@
       "name": "ImplementationDesign",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Designs stable implementation architecture with clear boundaries, test entry points, and guardrails from intent architecture. Materialized at .github/agents/ImplementationDesign.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/ImplementationDesign.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5198,7 +5198,7 @@
       "name": "IntentionDesign",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Designs the intention architecture based on user requirements and implementation constraints; the sole canonical intent-graph writer. Materialized at .github/agents/IntentionDesign.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/IntentionDesign.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5211,7 +5211,7 @@
       "name": "Orchestrator",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Coordinates across harness stages: dispatch, approvals, handoff validation, audit routing, and workflow closure. Materialized at .github/agents/Orchestrator.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/Orchestrator.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5224,7 +5224,7 @@
       "name": "ReverseArchitectureExtraction",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Bootstraps candidate architecture or recovers architecture drift from tests first and code entrypoints second. Materialized at .github/agents/ReverseArchitectureExtraction.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/ReverseArchitectureExtraction.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5237,7 +5237,7 @@
       "name": "TaskTidyGraphIntegrator",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Integrates Business Partner decision trees into the intent architecture and produces coverage evidence for host validation. Materialized at .github/agents/TaskTidyGraphIntegrator.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/TaskTidyGraphIntegrator.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5250,7 +5250,7 @@
       "name": "teacher",
       "type": "Business Role",
       "parent": "1209",
-      "description": "Teacher partner agent that critically reviews work. Materialized at .github/agents/teacher.md.",
+      "description": "Harness agent role identity. Materialized at .github/agents/teacher.md.",
       "attributes": [
         {
           "name": "agentFile",
@@ -5568,6 +5568,244 @@
           "description": "design/KG/SystemArchitecture.json; tests/explicit/entries/runHarnessGraphModeling.js"
         }
       ]
+    },
+    {
+      "id": "harness-bp-define-problem",
+      "name": "Define Problem (SMART)",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Define the problem clearly, specifically, and measurably using SMART criteria, challenging the user to remove ambiguity."
+    },
+    {
+      "id": "harness-bp-structured-decomposition",
+      "name": "Structured MECE Decomposition",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Decompose the problem into a MECE decision tree with at least three layers, justifying the decomposition dimensions and coverage."
+    },
+    {
+      "id": "harness-bp-decision-tree-traversal",
+      "name": "Decision Tree Traversal",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Traverse every decision-tree branch, asking critical questions and attaching falsifiable hypotheses to branch nodes."
+    },
+    {
+      "id": "harness-bp-hypothesis-verification",
+      "name": "Hypothesis-Driven Verification",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Verify each hypothesis across the five evidence planes using authority precedence, concluding supported, refuted, or undetermined."
+    },
+    {
+      "id": "harness-bp-dependency-analysis",
+      "name": "Architecture Dependency Analysis",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Derive horizontal (orthogonal concerns) and vertical (dependency order) architecture element dependencies for the final plan."
+    },
+    {
+      "id": "harness-bp-acceptance-output",
+      "name": "Produce Acceptance Testcases",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Produce standardized acceptance testcases with control and observation points, and hand the decision tree to task-tidy."
+    },
+    {
+      "id": "harness-id-intent-modeling",
+      "name": "Intent Graph Modeling",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Locate or create architecture elements, relationships, and views in the intent graph through ARGO MCP."
+    },
+    {
+      "id": "harness-id-testcase-mounting",
+      "name": "Acceptance Testcase Mounting",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Mount executable GIVEN-WHEN-THEN acceptance testcases on their owning intent elements."
+    },
+    {
+      "id": "harness-id-coverage",
+      "name": "Coverage Matrix Construction",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Build the dependency subgraph and coverage matrix mapping functional points to mounted testcases."
+    },
+    {
+      "id": "harness-id-handoff",
+      "name": "Intent Handoff Writing",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Write and validate the IntentToImplementationHandoff.json stage handoff."
+    },
+    {
+      "id": "harness-id-validation",
+      "name": "Intent Validation",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Run validateSystemArchitecture and validateStageHandoff and obtain human approval of mounted testcases."
+    },
+    {
+      "id": "harness-impld-gap-analysis",
+      "name": "Implementation Gap Analysis",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Analyze the implementation architecture and identify gaps against the approved intent architecture."
+    },
+    {
+      "id": "harness-impld-contract-design",
+      "name": "Implementation Contract Design",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Design stable implementation architecture: contracts, boundaries, dependency direction, test ownership, and guardrails."
+    },
+    {
+      "id": "harness-impld-test-entrypoints",
+      "name": "Test Entrypoint Physicalization",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Physicalize explicit testcases into executable entrypoints and classify critical and supporting non-explicit tests."
+    },
+    {
+      "id": "harness-impld-trace-proposal",
+      "name": "Intent Trace Proposal",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Submit an ImplementationToIntentTraceProposal when an intent gap is discovered."
+    },
+    {
+      "id": "harness-impld-handoff",
+      "name": "Implementation Handoff Writing",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Write and validate the ImplementationToCodingHandoff.json stage handoff and obtain human approval."
+    },
+    {
+      "id": "harness-car-repair-queue",
+      "name": "Repair Queue Construction",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Build a traceable repair queue from the handoff, expected failure records, contracts, and existing tests."
+    },
+    {
+      "id": "harness-car-repair",
+      "name": "Production Behavior Repair",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Modify contract-allowed files to repair real production behavior without test-only shortcuts."
+    },
+    {
+      "id": "harness-car-test-run",
+      "name": "Test Run and Delivery Status Refresh",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Run relevant entrypoints and argo.runArchitectureTests to refresh runner-owned deliveryStatus."
+    },
+    {
+      "id": "harness-car-self-audit",
+      "name": "Delivery Acceptance Self-Audit",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Self-audit against CODING_DELIVERY_ACCEPTANCE.md before declaring completion."
+    },
+    {
+      "id": "harness-car-stage-commit",
+      "name": "Coding Stage Commit",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Create the Coding/Repair stage git commit with fresh runner evidence."
+    },
+    {
+      "id": "harness-orch-receive",
+      "name": "Requirement Reception",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Receive the requirement or issue and inspect .argo/temp for stale temporary files."
+    },
+    {
+      "id": "harness-orch-dispatch",
+      "name": "Stage Dispatch",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Dispatch work to the correct stage agent without solving it directly."
+    },
+    {
+      "id": "harness-orch-handoff-validation",
+      "name": "Handoff Validation",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Validate each stage handoff via validateStageHandoff before advancing to the next stage."
+    },
+    {
+      "id": "harness-orch-routing",
+      "name": "Question and Gap Routing",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Route questions, gaps, and trace proposals back to the owning stage or the human partner."
+    },
+    {
+      "id": "harness-orch-commit-verification",
+      "name": "Stage Commit Verification",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Verify each stage git commit exists and covers its owned artifacts before dispatching the next stage."
+    },
+    {
+      "id": "harness-ala-audit",
+      "name": "ArchiMate Language Audit",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Audit SystemArchitecture.json for ArchiMate language correctness, element and relationship semantics, view consistency, and schema compliance."
+    },
+    {
+      "id": "harness-caa-audit",
+      "name": "Clean Architecture Audit",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Audit intent and implementation architecture against Clean Architecture principles: dependency rule, four circles, component principles, and SOLID at architecture level."
+    },
+    {
+      "id": "harness-rae-bootstrap",
+      "name": "Candidate Architecture Bootstrap",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Bootstrap candidate implementation and intent architecture from tests first and code entrypoints second."
+    },
+    {
+      "id": "harness-rae-drift-recovery",
+      "name": "Architecture Drift Recovery",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Recover architecture consistency after external test or code drift against an accepted baseline."
+    },
+    {
+      "id": "harness-tti-coverage-matrix",
+      "name": "Decision Tree Coverage Matrix",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Rebuild a Decision Tree Coverage Matrix from the task-tidy decision-tree table."
+    },
+    {
+      "id": "harness-tti-mapping",
+      "name": "Graph Destination Mapping",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Propose a graph destination for each decision node: elements, relationships, views, attributes, testcases, or residual coordination."
+    },
+    {
+      "id": "harness-tti-readiness-report",
+      "name": "Integration Readiness Report",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Produce the mapping readiness report and integration blockers for host validation."
+    },
+    {
+      "id": "harness-teacher-teach",
+      "name": "Stepwise Teaching",
+      "type": "Business Process",
+      "parent": "1209",
+      "description": "Teach step-by-step to expose the deepest knowledge and reach shared understanding."
     }
   ],
   "relationships": [
@@ -8282,6 +8520,633 @@
       "target_name": "Model harness agents/skills/rules into the intent knowledge graph",
       "description": "The canonical intent-graph writer role is assigned to the archgraph modeling work package.",
       "statement": "IntentionDesign --(Assignment)--> Model harness agents/skills/rules into the intent knowledge graph"
+    },
+    {
+      "id": "harness-assign-bp-define-problem",
+      "name": "BusinessPartner performs Define Problem (SMART)",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-define-problem",
+      "source_name": "BusinessPartner",
+      "target_name": "Define Problem (SMART)",
+      "description": "BusinessPartner is assigned to perform Define Problem (SMART).",
+      "statement": "BusinessPartner --(Assignment)--> Define Problem (SMART)"
+    },
+    {
+      "id": "harness-assign-bp-structured-decomposition",
+      "name": "BusinessPartner performs Structured MECE Decomposition",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-structured-decomposition",
+      "source_name": "BusinessPartner",
+      "target_name": "Structured MECE Decomposition",
+      "description": "BusinessPartner is assigned to perform Structured MECE Decomposition.",
+      "statement": "BusinessPartner --(Assignment)--> Structured MECE Decomposition"
+    },
+    {
+      "id": "harness-assign-bp-decision-tree-traversal",
+      "name": "BusinessPartner performs Decision Tree Traversal",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-decision-tree-traversal",
+      "source_name": "BusinessPartner",
+      "target_name": "Decision Tree Traversal",
+      "description": "BusinessPartner is assigned to perform Decision Tree Traversal.",
+      "statement": "BusinessPartner --(Assignment)--> Decision Tree Traversal"
+    },
+    {
+      "id": "harness-assign-bp-hypothesis-verification",
+      "name": "BusinessPartner performs Hypothesis-Driven Verification",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-hypothesis-verification",
+      "source_name": "BusinessPartner",
+      "target_name": "Hypothesis-Driven Verification",
+      "description": "BusinessPartner is assigned to perform Hypothesis-Driven Verification.",
+      "statement": "BusinessPartner --(Assignment)--> Hypothesis-Driven Verification"
+    },
+    {
+      "id": "harness-assign-bp-dependency-analysis",
+      "name": "BusinessPartner performs Architecture Dependency Analysis",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-dependency-analysis",
+      "source_name": "BusinessPartner",
+      "target_name": "Architecture Dependency Analysis",
+      "description": "BusinessPartner is assigned to perform Architecture Dependency Analysis.",
+      "statement": "BusinessPartner --(Assignment)--> Architecture Dependency Analysis"
+    },
+    {
+      "id": "harness-assign-bp-acceptance-output",
+      "name": "BusinessPartner performs Produce Acceptance Testcases",
+      "type": "Assignment",
+      "source_id": "harness-role-business-partner",
+      "target_id": "harness-bp-acceptance-output",
+      "source_name": "BusinessPartner",
+      "target_name": "Produce Acceptance Testcases",
+      "description": "BusinessPartner is assigned to perform Produce Acceptance Testcases.",
+      "statement": "BusinessPartner --(Assignment)--> Produce Acceptance Testcases"
+    },
+    {
+      "id": "harness-assign-id-intent-modeling",
+      "name": "IntentionDesign performs Intent Graph Modeling",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-id-intent-modeling",
+      "source_name": "IntentionDesign",
+      "target_name": "Intent Graph Modeling",
+      "description": "IntentionDesign is assigned to perform Intent Graph Modeling.",
+      "statement": "IntentionDesign --(Assignment)--> Intent Graph Modeling"
+    },
+    {
+      "id": "harness-assign-id-testcase-mounting",
+      "name": "IntentionDesign performs Acceptance Testcase Mounting",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-id-testcase-mounting",
+      "source_name": "IntentionDesign",
+      "target_name": "Acceptance Testcase Mounting",
+      "description": "IntentionDesign is assigned to perform Acceptance Testcase Mounting.",
+      "statement": "IntentionDesign --(Assignment)--> Acceptance Testcase Mounting"
+    },
+    {
+      "id": "harness-assign-id-coverage",
+      "name": "IntentionDesign performs Coverage Matrix Construction",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-id-coverage",
+      "source_name": "IntentionDesign",
+      "target_name": "Coverage Matrix Construction",
+      "description": "IntentionDesign is assigned to perform Coverage Matrix Construction.",
+      "statement": "IntentionDesign --(Assignment)--> Coverage Matrix Construction"
+    },
+    {
+      "id": "harness-assign-id-handoff",
+      "name": "IntentionDesign performs Intent Handoff Writing",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-id-handoff",
+      "source_name": "IntentionDesign",
+      "target_name": "Intent Handoff Writing",
+      "description": "IntentionDesign is assigned to perform Intent Handoff Writing.",
+      "statement": "IntentionDesign --(Assignment)--> Intent Handoff Writing"
+    },
+    {
+      "id": "harness-assign-id-validation",
+      "name": "IntentionDesign performs Intent Validation",
+      "type": "Assignment",
+      "source_id": "harness-role-intention-design",
+      "target_id": "harness-id-validation",
+      "source_name": "IntentionDesign",
+      "target_name": "Intent Validation",
+      "description": "IntentionDesign is assigned to perform Intent Validation.",
+      "statement": "IntentionDesign --(Assignment)--> Intent Validation"
+    },
+    {
+      "id": "harness-assign-impld-gap-analysis",
+      "name": "ImplementationDesign performs Implementation Gap Analysis",
+      "type": "Assignment",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-impld-gap-analysis",
+      "source_name": "ImplementationDesign",
+      "target_name": "Implementation Gap Analysis",
+      "description": "ImplementationDesign is assigned to perform Implementation Gap Analysis.",
+      "statement": "ImplementationDesign --(Assignment)--> Implementation Gap Analysis"
+    },
+    {
+      "id": "harness-assign-impld-contract-design",
+      "name": "ImplementationDesign performs Implementation Contract Design",
+      "type": "Assignment",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-impld-contract-design",
+      "source_name": "ImplementationDesign",
+      "target_name": "Implementation Contract Design",
+      "description": "ImplementationDesign is assigned to perform Implementation Contract Design.",
+      "statement": "ImplementationDesign --(Assignment)--> Implementation Contract Design"
+    },
+    {
+      "id": "harness-assign-impld-test-entrypoints",
+      "name": "ImplementationDesign performs Test Entrypoint Physicalization",
+      "type": "Assignment",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-impld-test-entrypoints",
+      "source_name": "ImplementationDesign",
+      "target_name": "Test Entrypoint Physicalization",
+      "description": "ImplementationDesign is assigned to perform Test Entrypoint Physicalization.",
+      "statement": "ImplementationDesign --(Assignment)--> Test Entrypoint Physicalization"
+    },
+    {
+      "id": "harness-assign-impld-trace-proposal",
+      "name": "ImplementationDesign performs Intent Trace Proposal",
+      "type": "Assignment",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-impld-trace-proposal",
+      "source_name": "ImplementationDesign",
+      "target_name": "Intent Trace Proposal",
+      "description": "ImplementationDesign is assigned to perform Intent Trace Proposal.",
+      "statement": "ImplementationDesign --(Assignment)--> Intent Trace Proposal"
+    },
+    {
+      "id": "harness-assign-impld-handoff",
+      "name": "ImplementationDesign performs Implementation Handoff Writing",
+      "type": "Assignment",
+      "source_id": "harness-role-implementation-design",
+      "target_id": "harness-impld-handoff",
+      "source_name": "ImplementationDesign",
+      "target_name": "Implementation Handoff Writing",
+      "description": "ImplementationDesign is assigned to perform Implementation Handoff Writing.",
+      "statement": "ImplementationDesign --(Assignment)--> Implementation Handoff Writing"
+    },
+    {
+      "id": "harness-assign-car-repair-queue",
+      "name": "CodingAndReparing performs Repair Queue Construction",
+      "type": "Assignment",
+      "source_id": "harness-role-coding-and-repairing",
+      "target_id": "harness-car-repair-queue",
+      "source_name": "CodingAndReparing",
+      "target_name": "Repair Queue Construction",
+      "description": "CodingAndReparing is assigned to perform Repair Queue Construction.",
+      "statement": "CodingAndReparing --(Assignment)--> Repair Queue Construction"
+    },
+    {
+      "id": "harness-assign-car-repair",
+      "name": "CodingAndReparing performs Production Behavior Repair",
+      "type": "Assignment",
+      "source_id": "harness-role-coding-and-repairing",
+      "target_id": "harness-car-repair",
+      "source_name": "CodingAndReparing",
+      "target_name": "Production Behavior Repair",
+      "description": "CodingAndReparing is assigned to perform Production Behavior Repair.",
+      "statement": "CodingAndReparing --(Assignment)--> Production Behavior Repair"
+    },
+    {
+      "id": "harness-assign-car-test-run",
+      "name": "CodingAndReparing performs Test Run and Delivery Status Refresh",
+      "type": "Assignment",
+      "source_id": "harness-role-coding-and-repairing",
+      "target_id": "harness-car-test-run",
+      "source_name": "CodingAndReparing",
+      "target_name": "Test Run and Delivery Status Refresh",
+      "description": "CodingAndReparing is assigned to perform Test Run and Delivery Status Refresh.",
+      "statement": "CodingAndReparing --(Assignment)--> Test Run and Delivery Status Refresh"
+    },
+    {
+      "id": "harness-assign-car-self-audit",
+      "name": "CodingAndReparing performs Delivery Acceptance Self-Audit",
+      "type": "Assignment",
+      "source_id": "harness-role-coding-and-repairing",
+      "target_id": "harness-car-self-audit",
+      "source_name": "CodingAndReparing",
+      "target_name": "Delivery Acceptance Self-Audit",
+      "description": "CodingAndReparing is assigned to perform Delivery Acceptance Self-Audit.",
+      "statement": "CodingAndReparing --(Assignment)--> Delivery Acceptance Self-Audit"
+    },
+    {
+      "id": "harness-assign-car-stage-commit",
+      "name": "CodingAndReparing performs Coding Stage Commit",
+      "type": "Assignment",
+      "source_id": "harness-role-coding-and-repairing",
+      "target_id": "harness-car-stage-commit",
+      "source_name": "CodingAndReparing",
+      "target_name": "Coding Stage Commit",
+      "description": "CodingAndReparing is assigned to perform Coding Stage Commit.",
+      "statement": "CodingAndReparing --(Assignment)--> Coding Stage Commit"
+    },
+    {
+      "id": "harness-assign-orch-receive",
+      "name": "Orchestrator performs Requirement Reception",
+      "type": "Assignment",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-orch-receive",
+      "source_name": "Orchestrator",
+      "target_name": "Requirement Reception",
+      "description": "Orchestrator is assigned to perform Requirement Reception.",
+      "statement": "Orchestrator --(Assignment)--> Requirement Reception"
+    },
+    {
+      "id": "harness-assign-orch-dispatch",
+      "name": "Orchestrator performs Stage Dispatch",
+      "type": "Assignment",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-orch-dispatch",
+      "source_name": "Orchestrator",
+      "target_name": "Stage Dispatch",
+      "description": "Orchestrator is assigned to perform Stage Dispatch.",
+      "statement": "Orchestrator --(Assignment)--> Stage Dispatch"
+    },
+    {
+      "id": "harness-assign-orch-handoff-validation",
+      "name": "Orchestrator performs Handoff Validation",
+      "type": "Assignment",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-orch-handoff-validation",
+      "source_name": "Orchestrator",
+      "target_name": "Handoff Validation",
+      "description": "Orchestrator is assigned to perform Handoff Validation.",
+      "statement": "Orchestrator --(Assignment)--> Handoff Validation"
+    },
+    {
+      "id": "harness-assign-orch-routing",
+      "name": "Orchestrator performs Question and Gap Routing",
+      "type": "Assignment",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-orch-routing",
+      "source_name": "Orchestrator",
+      "target_name": "Question and Gap Routing",
+      "description": "Orchestrator is assigned to perform Question and Gap Routing.",
+      "statement": "Orchestrator --(Assignment)--> Question and Gap Routing"
+    },
+    {
+      "id": "harness-assign-orch-commit-verification",
+      "name": "Orchestrator performs Stage Commit Verification",
+      "type": "Assignment",
+      "source_id": "harness-role-orchestrator",
+      "target_id": "harness-orch-commit-verification",
+      "source_name": "Orchestrator",
+      "target_name": "Stage Commit Verification",
+      "description": "Orchestrator is assigned to perform Stage Commit Verification.",
+      "statement": "Orchestrator --(Assignment)--> Stage Commit Verification"
+    },
+    {
+      "id": "harness-assign-ala-audit",
+      "name": "ArchimateLanguagistAudit performs ArchiMate Language Audit",
+      "type": "Assignment",
+      "source_id": "harness-role-archimate-languagist-audit",
+      "target_id": "harness-ala-audit",
+      "source_name": "ArchimateLanguagistAudit",
+      "target_name": "ArchiMate Language Audit",
+      "description": "ArchimateLanguagistAudit is assigned to perform ArchiMate Language Audit.",
+      "statement": "ArchimateLanguagistAudit --(Assignment)--> ArchiMate Language Audit"
+    },
+    {
+      "id": "harness-assign-caa-audit",
+      "name": "CleanArchitectureAuditor performs Clean Architecture Audit",
+      "type": "Assignment",
+      "source_id": "harness-role-clean-architecture-auditor",
+      "target_id": "harness-caa-audit",
+      "source_name": "CleanArchitectureAuditor",
+      "target_name": "Clean Architecture Audit",
+      "description": "CleanArchitectureAuditor is assigned to perform Clean Architecture Audit.",
+      "statement": "CleanArchitectureAuditor --(Assignment)--> Clean Architecture Audit"
+    },
+    {
+      "id": "harness-assign-rae-bootstrap",
+      "name": "ReverseArchitectureExtraction performs Candidate Architecture Bootstrap",
+      "type": "Assignment",
+      "source_id": "harness-role-reverse-architecture-extraction",
+      "target_id": "harness-rae-bootstrap",
+      "source_name": "ReverseArchitectureExtraction",
+      "target_name": "Candidate Architecture Bootstrap",
+      "description": "ReverseArchitectureExtraction is assigned to perform Candidate Architecture Bootstrap.",
+      "statement": "ReverseArchitectureExtraction --(Assignment)--> Candidate Architecture Bootstrap"
+    },
+    {
+      "id": "harness-assign-rae-drift-recovery",
+      "name": "ReverseArchitectureExtraction performs Architecture Drift Recovery",
+      "type": "Assignment",
+      "source_id": "harness-role-reverse-architecture-extraction",
+      "target_id": "harness-rae-drift-recovery",
+      "source_name": "ReverseArchitectureExtraction",
+      "target_name": "Architecture Drift Recovery",
+      "description": "ReverseArchitectureExtraction is assigned to perform Architecture Drift Recovery.",
+      "statement": "ReverseArchitectureExtraction --(Assignment)--> Architecture Drift Recovery"
+    },
+    {
+      "id": "harness-assign-tti-coverage-matrix",
+      "name": "TaskTidyGraphIntegrator performs Decision Tree Coverage Matrix",
+      "type": "Assignment",
+      "source_id": "harness-role-task-tidy-graph-integrator",
+      "target_id": "harness-tti-coverage-matrix",
+      "source_name": "TaskTidyGraphIntegrator",
+      "target_name": "Decision Tree Coverage Matrix",
+      "description": "TaskTidyGraphIntegrator is assigned to perform Decision Tree Coverage Matrix.",
+      "statement": "TaskTidyGraphIntegrator --(Assignment)--> Decision Tree Coverage Matrix"
+    },
+    {
+      "id": "harness-assign-tti-mapping",
+      "name": "TaskTidyGraphIntegrator performs Graph Destination Mapping",
+      "type": "Assignment",
+      "source_id": "harness-role-task-tidy-graph-integrator",
+      "target_id": "harness-tti-mapping",
+      "source_name": "TaskTidyGraphIntegrator",
+      "target_name": "Graph Destination Mapping",
+      "description": "TaskTidyGraphIntegrator is assigned to perform Graph Destination Mapping.",
+      "statement": "TaskTidyGraphIntegrator --(Assignment)--> Graph Destination Mapping"
+    },
+    {
+      "id": "harness-assign-tti-readiness-report",
+      "name": "TaskTidyGraphIntegrator performs Integration Readiness Report",
+      "type": "Assignment",
+      "source_id": "harness-role-task-tidy-graph-integrator",
+      "target_id": "harness-tti-readiness-report",
+      "source_name": "TaskTidyGraphIntegrator",
+      "target_name": "Integration Readiness Report",
+      "description": "TaskTidyGraphIntegrator is assigned to perform Integration Readiness Report.",
+      "statement": "TaskTidyGraphIntegrator --(Assignment)--> Integration Readiness Report"
+    },
+    {
+      "id": "harness-assign-teacher-teach",
+      "name": "teacher performs Stepwise Teaching",
+      "type": "Assignment",
+      "source_id": "harness-role-teacher",
+      "target_id": "harness-teacher-teach",
+      "source_name": "teacher",
+      "target_name": "Stepwise Teaching",
+      "description": "teacher is assigned to perform Stepwise Teaching.",
+      "statement": "teacher --(Assignment)--> Stepwise Teaching"
+    },
+    {
+      "id": "harness-trigger-bp-define-problem-to-bp-structured-decomposition",
+      "name": "Define Problem (SMART) precedes Structured MECE Decomposition",
+      "type": "Triggering",
+      "source_id": "harness-bp-define-problem",
+      "target_id": "harness-bp-structured-decomposition",
+      "source_name": "Define Problem (SMART)",
+      "target_name": "Structured MECE Decomposition",
+      "description": "Sequential behaviour order inside BusinessPartner.",
+      "statement": "Define Problem (SMART) --(Triggering)--> Structured MECE Decomposition"
+    },
+    {
+      "id": "harness-trigger-bp-structured-decomposition-to-bp-decision-tree-traversal",
+      "name": "Structured MECE Decomposition precedes Decision Tree Traversal",
+      "type": "Triggering",
+      "source_id": "harness-bp-structured-decomposition",
+      "target_id": "harness-bp-decision-tree-traversal",
+      "source_name": "Structured MECE Decomposition",
+      "target_name": "Decision Tree Traversal",
+      "description": "Sequential behaviour order inside BusinessPartner.",
+      "statement": "Structured MECE Decomposition --(Triggering)--> Decision Tree Traversal"
+    },
+    {
+      "id": "harness-trigger-bp-decision-tree-traversal-to-bp-hypothesis-verification",
+      "name": "Decision Tree Traversal precedes Hypothesis-Driven Verification",
+      "type": "Triggering",
+      "source_id": "harness-bp-decision-tree-traversal",
+      "target_id": "harness-bp-hypothesis-verification",
+      "source_name": "Decision Tree Traversal",
+      "target_name": "Hypothesis-Driven Verification",
+      "description": "Sequential behaviour order inside BusinessPartner.",
+      "statement": "Decision Tree Traversal --(Triggering)--> Hypothesis-Driven Verification"
+    },
+    {
+      "id": "harness-trigger-bp-hypothesis-verification-to-bp-dependency-analysis",
+      "name": "Hypothesis-Driven Verification precedes Architecture Dependency Analysis",
+      "type": "Triggering",
+      "source_id": "harness-bp-hypothesis-verification",
+      "target_id": "harness-bp-dependency-analysis",
+      "source_name": "Hypothesis-Driven Verification",
+      "target_name": "Architecture Dependency Analysis",
+      "description": "Sequential behaviour order inside BusinessPartner.",
+      "statement": "Hypothesis-Driven Verification --(Triggering)--> Architecture Dependency Analysis"
+    },
+    {
+      "id": "harness-trigger-bp-dependency-analysis-to-bp-acceptance-output",
+      "name": "Architecture Dependency Analysis precedes Produce Acceptance Testcases",
+      "type": "Triggering",
+      "source_id": "harness-bp-dependency-analysis",
+      "target_id": "harness-bp-acceptance-output",
+      "source_name": "Architecture Dependency Analysis",
+      "target_name": "Produce Acceptance Testcases",
+      "description": "Sequential behaviour order inside BusinessPartner.",
+      "statement": "Architecture Dependency Analysis --(Triggering)--> Produce Acceptance Testcases"
+    },
+    {
+      "id": "harness-trigger-id-intent-modeling-to-id-testcase-mounting",
+      "name": "Intent Graph Modeling precedes Acceptance Testcase Mounting",
+      "type": "Triggering",
+      "source_id": "harness-id-intent-modeling",
+      "target_id": "harness-id-testcase-mounting",
+      "source_name": "Intent Graph Modeling",
+      "target_name": "Acceptance Testcase Mounting",
+      "description": "Sequential behaviour order inside IntentionDesign.",
+      "statement": "Intent Graph Modeling --(Triggering)--> Acceptance Testcase Mounting"
+    },
+    {
+      "id": "harness-trigger-id-testcase-mounting-to-id-coverage",
+      "name": "Acceptance Testcase Mounting precedes Coverage Matrix Construction",
+      "type": "Triggering",
+      "source_id": "harness-id-testcase-mounting",
+      "target_id": "harness-id-coverage",
+      "source_name": "Acceptance Testcase Mounting",
+      "target_name": "Coverage Matrix Construction",
+      "description": "Sequential behaviour order inside IntentionDesign.",
+      "statement": "Acceptance Testcase Mounting --(Triggering)--> Coverage Matrix Construction"
+    },
+    {
+      "id": "harness-trigger-id-coverage-to-id-handoff",
+      "name": "Coverage Matrix Construction precedes Intent Handoff Writing",
+      "type": "Triggering",
+      "source_id": "harness-id-coverage",
+      "target_id": "harness-id-handoff",
+      "source_name": "Coverage Matrix Construction",
+      "target_name": "Intent Handoff Writing",
+      "description": "Sequential behaviour order inside IntentionDesign.",
+      "statement": "Coverage Matrix Construction --(Triggering)--> Intent Handoff Writing"
+    },
+    {
+      "id": "harness-trigger-id-handoff-to-id-validation",
+      "name": "Intent Handoff Writing precedes Intent Validation",
+      "type": "Triggering",
+      "source_id": "harness-id-handoff",
+      "target_id": "harness-id-validation",
+      "source_name": "Intent Handoff Writing",
+      "target_name": "Intent Validation",
+      "description": "Sequential behaviour order inside IntentionDesign.",
+      "statement": "Intent Handoff Writing --(Triggering)--> Intent Validation"
+    },
+    {
+      "id": "harness-trigger-impld-gap-analysis-to-impld-contract-design",
+      "name": "Implementation Gap Analysis precedes Implementation Contract Design",
+      "type": "Triggering",
+      "source_id": "harness-impld-gap-analysis",
+      "target_id": "harness-impld-contract-design",
+      "source_name": "Implementation Gap Analysis",
+      "target_name": "Implementation Contract Design",
+      "description": "Sequential behaviour order inside ImplementationDesign.",
+      "statement": "Implementation Gap Analysis --(Triggering)--> Implementation Contract Design"
+    },
+    {
+      "id": "harness-trigger-impld-contract-design-to-impld-test-entrypoints",
+      "name": "Implementation Contract Design precedes Test Entrypoint Physicalization",
+      "type": "Triggering",
+      "source_id": "harness-impld-contract-design",
+      "target_id": "harness-impld-test-entrypoints",
+      "source_name": "Implementation Contract Design",
+      "target_name": "Test Entrypoint Physicalization",
+      "description": "Sequential behaviour order inside ImplementationDesign.",
+      "statement": "Implementation Contract Design --(Triggering)--> Test Entrypoint Physicalization"
+    },
+    {
+      "id": "harness-trigger-impld-test-entrypoints-to-impld-trace-proposal",
+      "name": "Test Entrypoint Physicalization precedes Intent Trace Proposal",
+      "type": "Triggering",
+      "source_id": "harness-impld-test-entrypoints",
+      "target_id": "harness-impld-trace-proposal",
+      "source_name": "Test Entrypoint Physicalization",
+      "target_name": "Intent Trace Proposal",
+      "description": "Sequential behaviour order inside ImplementationDesign.",
+      "statement": "Test Entrypoint Physicalization --(Triggering)--> Intent Trace Proposal"
+    },
+    {
+      "id": "harness-trigger-impld-trace-proposal-to-impld-handoff",
+      "name": "Intent Trace Proposal precedes Implementation Handoff Writing",
+      "type": "Triggering",
+      "source_id": "harness-impld-trace-proposal",
+      "target_id": "harness-impld-handoff",
+      "source_name": "Intent Trace Proposal",
+      "target_name": "Implementation Handoff Writing",
+      "description": "Sequential behaviour order inside ImplementationDesign.",
+      "statement": "Intent Trace Proposal --(Triggering)--> Implementation Handoff Writing"
+    },
+    {
+      "id": "harness-trigger-car-repair-queue-to-car-repair",
+      "name": "Repair Queue Construction precedes Production Behavior Repair",
+      "type": "Triggering",
+      "source_id": "harness-car-repair-queue",
+      "target_id": "harness-car-repair",
+      "source_name": "Repair Queue Construction",
+      "target_name": "Production Behavior Repair",
+      "description": "Sequential behaviour order inside CodingAndReparing.",
+      "statement": "Repair Queue Construction --(Triggering)--> Production Behavior Repair"
+    },
+    {
+      "id": "harness-trigger-car-repair-to-car-test-run",
+      "name": "Production Behavior Repair precedes Test Run and Delivery Status Refresh",
+      "type": "Triggering",
+      "source_id": "harness-car-repair",
+      "target_id": "harness-car-test-run",
+      "source_name": "Production Behavior Repair",
+      "target_name": "Test Run and Delivery Status Refresh",
+      "description": "Sequential behaviour order inside CodingAndReparing.",
+      "statement": "Production Behavior Repair --(Triggering)--> Test Run and Delivery Status Refresh"
+    },
+    {
+      "id": "harness-trigger-car-test-run-to-car-self-audit",
+      "name": "Test Run and Delivery Status Refresh precedes Delivery Acceptance Self-Audit",
+      "type": "Triggering",
+      "source_id": "harness-car-test-run",
+      "target_id": "harness-car-self-audit",
+      "source_name": "Test Run and Delivery Status Refresh",
+      "target_name": "Delivery Acceptance Self-Audit",
+      "description": "Sequential behaviour order inside CodingAndReparing.",
+      "statement": "Test Run and Delivery Status Refresh --(Triggering)--> Delivery Acceptance Self-Audit"
+    },
+    {
+      "id": "harness-trigger-car-self-audit-to-car-stage-commit",
+      "name": "Delivery Acceptance Self-Audit precedes Coding Stage Commit",
+      "type": "Triggering",
+      "source_id": "harness-car-self-audit",
+      "target_id": "harness-car-stage-commit",
+      "source_name": "Delivery Acceptance Self-Audit",
+      "target_name": "Coding Stage Commit",
+      "description": "Sequential behaviour order inside CodingAndReparing.",
+      "statement": "Delivery Acceptance Self-Audit --(Triggering)--> Coding Stage Commit"
+    },
+    {
+      "id": "harness-trigger-orch-receive-to-orch-dispatch",
+      "name": "Requirement Reception precedes Stage Dispatch",
+      "type": "Triggering",
+      "source_id": "harness-orch-receive",
+      "target_id": "harness-orch-dispatch",
+      "source_name": "Requirement Reception",
+      "target_name": "Stage Dispatch",
+      "description": "Sequential behaviour order inside Orchestrator.",
+      "statement": "Requirement Reception --(Triggering)--> Stage Dispatch"
+    },
+    {
+      "id": "harness-trigger-orch-dispatch-to-orch-handoff-validation",
+      "name": "Stage Dispatch precedes Handoff Validation",
+      "type": "Triggering",
+      "source_id": "harness-orch-dispatch",
+      "target_id": "harness-orch-handoff-validation",
+      "source_name": "Stage Dispatch",
+      "target_name": "Handoff Validation",
+      "description": "Sequential behaviour order inside Orchestrator.",
+      "statement": "Stage Dispatch --(Triggering)--> Handoff Validation"
+    },
+    {
+      "id": "harness-trigger-orch-handoff-validation-to-orch-routing",
+      "name": "Handoff Validation precedes Question and Gap Routing",
+      "type": "Triggering",
+      "source_id": "harness-orch-handoff-validation",
+      "target_id": "harness-orch-routing",
+      "source_name": "Handoff Validation",
+      "target_name": "Question and Gap Routing",
+      "description": "Sequential behaviour order inside Orchestrator.",
+      "statement": "Handoff Validation --(Triggering)--> Question and Gap Routing"
+    },
+    {
+      "id": "harness-trigger-orch-routing-to-orch-commit-verification",
+      "name": "Question and Gap Routing precedes Stage Commit Verification",
+      "type": "Triggering",
+      "source_id": "harness-orch-routing",
+      "target_id": "harness-orch-commit-verification",
+      "source_name": "Question and Gap Routing",
+      "target_name": "Stage Commit Verification",
+      "description": "Sequential behaviour order inside Orchestrator.",
+      "statement": "Question and Gap Routing --(Triggering)--> Stage Commit Verification"
+    },
+    {
+      "id": "harness-trigger-tti-coverage-matrix-to-tti-mapping",
+      "name": "Decision Tree Coverage Matrix precedes Graph Destination Mapping",
+      "type": "Triggering",
+      "source_id": "harness-tti-coverage-matrix",
+      "target_id": "harness-tti-mapping",
+      "source_name": "Decision Tree Coverage Matrix",
+      "target_name": "Graph Destination Mapping",
+      "description": "Sequential behaviour order inside TaskTidyGraphIntegrator.",
+      "statement": "Decision Tree Coverage Matrix --(Triggering)--> Graph Destination Mapping"
+    },
+    {
+      "id": "harness-trigger-tti-mapping-to-tti-readiness-report",
+      "name": "Graph Destination Mapping precedes Integration Readiness Report",
+      "type": "Triggering",
+      "source_id": "harness-tti-mapping",
+      "target_id": "harness-tti-readiness-report",
+      "source_name": "Graph Destination Mapping",
+      "target_name": "Integration Readiness Report",
+      "description": "Sequential behaviour order inside TaskTidyGraphIntegrator.",
+      "statement": "Graph Destination Mapping --(Triggering)--> Integration Readiness Report"
     }
   ],
   "views": [
@@ -9639,6 +10504,173 @@
       ],
       "included_relationships": [
         "harness-rel-intention-assign-wp"
+      ]
+    },
+    {
+      "view_id": "harness-bp-behavior",
+      "view_name": "Harness BusinessPartner Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: BusinessPartner behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-bp-define-problem",
+        "harness-bp-structured-decomposition",
+        "harness-bp-decision-tree-traversal",
+        "harness-bp-hypothesis-verification",
+        "harness-bp-dependency-analysis",
+        "harness-bp-acceptance-output",
+        "harness-role-business-partner"
+      ],
+      "included_relationships": [
+        "harness-assign-bp-define-problem",
+        "harness-assign-bp-structured-decomposition",
+        "harness-assign-bp-decision-tree-traversal",
+        "harness-assign-bp-hypothesis-verification",
+        "harness-assign-bp-dependency-analysis",
+        "harness-assign-bp-acceptance-output",
+        "harness-trigger-bp-define-problem-to-bp-structured-decomposition",
+        "harness-trigger-bp-structured-decomposition-to-bp-decision-tree-traversal",
+        "harness-trigger-bp-decision-tree-traversal-to-bp-hypothesis-verification",
+        "harness-trigger-bp-hypothesis-verification-to-bp-dependency-analysis",
+        "harness-trigger-bp-dependency-analysis-to-bp-acceptance-output"
+      ]
+    },
+    {
+      "view_id": "harness-id-behavior",
+      "view_name": "Harness IntentionDesign Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: IntentionDesign behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-id-intent-modeling",
+        "harness-id-testcase-mounting",
+        "harness-id-coverage",
+        "harness-id-handoff",
+        "harness-id-validation",
+        "harness-role-intention-design"
+      ],
+      "included_relationships": [
+        "harness-assign-id-intent-modeling",
+        "harness-assign-id-testcase-mounting",
+        "harness-assign-id-coverage",
+        "harness-assign-id-handoff",
+        "harness-assign-id-validation",
+        "harness-trigger-id-intent-modeling-to-id-testcase-mounting",
+        "harness-trigger-id-testcase-mounting-to-id-coverage",
+        "harness-trigger-id-coverage-to-id-handoff",
+        "harness-trigger-id-handoff-to-id-validation"
+      ]
+    },
+    {
+      "view_id": "harness-impld-behavior",
+      "view_name": "Harness ImplementationDesign Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: ImplementationDesign behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-impld-gap-analysis",
+        "harness-impld-contract-design",
+        "harness-impld-test-entrypoints",
+        "harness-impld-trace-proposal",
+        "harness-impld-handoff",
+        "harness-role-implementation-design"
+      ],
+      "included_relationships": [
+        "harness-assign-impld-gap-analysis",
+        "harness-assign-impld-contract-design",
+        "harness-assign-impld-test-entrypoints",
+        "harness-assign-impld-trace-proposal",
+        "harness-assign-impld-handoff",
+        "harness-trigger-impld-gap-analysis-to-impld-contract-design",
+        "harness-trigger-impld-contract-design-to-impld-test-entrypoints",
+        "harness-trigger-impld-test-entrypoints-to-impld-trace-proposal",
+        "harness-trigger-impld-trace-proposal-to-impld-handoff"
+      ]
+    },
+    {
+      "view_id": "harness-car-behavior",
+      "view_name": "Harness CodingAndReparing Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: CodingAndReparing behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-car-repair-queue",
+        "harness-car-repair",
+        "harness-car-test-run",
+        "harness-car-self-audit",
+        "harness-car-stage-commit",
+        "harness-role-coding-and-repairing"
+      ],
+      "included_relationships": [
+        "harness-assign-car-repair-queue",
+        "harness-assign-car-repair",
+        "harness-assign-car-test-run",
+        "harness-assign-car-self-audit",
+        "harness-assign-car-stage-commit",
+        "harness-trigger-car-repair-queue-to-car-repair",
+        "harness-trigger-car-repair-to-car-test-run",
+        "harness-trigger-car-test-run-to-car-self-audit",
+        "harness-trigger-car-self-audit-to-car-stage-commit"
+      ]
+    },
+    {
+      "view_id": "harness-orch-behavior",
+      "view_name": "Harness Orchestrator Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: Orchestrator behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-orch-receive",
+        "harness-orch-dispatch",
+        "harness-orch-handoff-validation",
+        "harness-orch-routing",
+        "harness-orch-commit-verification",
+        "harness-role-orchestrator"
+      ],
+      "included_relationships": [
+        "harness-assign-orch-receive",
+        "harness-assign-orch-dispatch",
+        "harness-assign-orch-handoff-validation",
+        "harness-assign-orch-routing",
+        "harness-assign-orch-commit-verification",
+        "harness-trigger-orch-receive-to-orch-dispatch",
+        "harness-trigger-orch-dispatch-to-orch-handoff-validation",
+        "harness-trigger-orch-handoff-validation-to-orch-routing",
+        "harness-trigger-orch-routing-to-orch-commit-verification"
+      ]
+    },
+    {
+      "view_id": "harness-support-behavior",
+      "view_name": "Harness Support Agents Behaviour",
+      "parent_element_id": "1209",
+      "parent_element_name": "BusinessBehaviorViewpoint",
+      "description": "Viewpoint: Business Process Cooperation Viewpoint; Concern: Support agent behaviour procedures. Purpose: designing; Scope: the owning Business Role and its Business Process behaviour elements; Rationale: this view is an instance of the Business Process Cooperation Viewpoint because it decomposes each harness role into assigned behaviour procedures and their trigger order.",
+      "included_elements": [
+        "harness-ala-audit",
+        "harness-caa-audit",
+        "harness-rae-bootstrap",
+        "harness-rae-drift-recovery",
+        "harness-tti-coverage-matrix",
+        "harness-tti-mapping",
+        "harness-tti-readiness-report",
+        "harness-teacher-teach",
+        "harness-role-archimate-languagist-audit",
+        "harness-role-clean-architecture-auditor",
+        "harness-role-reverse-architecture-extraction",
+        "harness-role-task-tidy-graph-integrator",
+        "harness-role-teacher"
+      ],
+      "included_relationships": [
+        "harness-assign-ala-audit",
+        "harness-assign-caa-audit",
+        "harness-assign-rae-bootstrap",
+        "harness-assign-rae-drift-recovery",
+        "harness-assign-tti-coverage-matrix",
+        "harness-assign-tti-mapping",
+        "harness-assign-tti-readiness-report",
+        "harness-assign-teacher-teach",
+        "harness-trigger-tti-coverage-matrix-to-tti-mapping",
+        "harness-trigger-tti-mapping-to-tti-readiness-report"
       ]
     }
   ]

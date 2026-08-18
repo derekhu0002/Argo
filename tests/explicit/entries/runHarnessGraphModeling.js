@@ -51,7 +51,26 @@ const HARNESS_VIEW_IDS = [
   'harness-skill-modules-a',
   'harness-skill-modules-b',
   'harness-archgraph-modeling-task',
+  'harness-bp-behavior',
+  'harness-id-behavior',
+  'harness-impld-behavior',
+  'harness-car-behavior',
+  'harness-orch-behavior',
+  'harness-support-behavior',
 ];
+
+const ROLE_IDS = {
+  ArchimateLanguagistAudit: 'harness-role-archimate-languagist-audit',
+  BusinessPartner: 'harness-role-business-partner',
+  CleanArchitectureAuditor: 'harness-role-clean-architecture-auditor',
+  CodingAndReparing: 'harness-role-coding-and-repairing',
+  ImplementationDesign: 'harness-role-implementation-design',
+  IntentionDesign: 'harness-role-intention-design',
+  Orchestrator: 'harness-role-orchestrator',
+  ReverseArchitectureExtraction: 'harness-role-reverse-architecture-extraction',
+  TaskTidyGraphIntegrator: 'harness-role-task-tidy-graph-integrator',
+  teacher: 'harness-role-teacher',
+};
 
 const STAGE_CHAIN = [
   ['harness-role-business-partner', 'harness-role-intention-design'],
@@ -118,6 +137,24 @@ async function main() {
     assert.ok(hit, `HARNESS_STAGE_CHAIN_MISSING: ${sourceId} --Triggering--> ${targetId}`);
     assert.ok(byId.has(sourceId), `HARNESS_STAGE_SOURCE_MISSING: ${sourceId}`);
     assert.ok(byId.has(targetId), `HARNESS_STAGE_TARGET_MISSING: ${targetId}`);
+  }
+
+  // THEN every harness agent behaviour is modelled as a Business Process
+  // assigned to its owning role (agents remain identity markers)
+  const businessProcesses = elements.filter(element => element.type === 'Business Process');
+  assert.ok(
+    businessProcesses.length >= 30,
+    `HARNESS_BEHAVIOR_COUNT: expected >= 30 behaviours, got ${businessProcesses.length}`,
+  );
+  for (const agent of AGENTS) {
+    const roleId = ROLE_IDS[agent];
+    const assigned = relationships.find(relationship => (
+      relationship.type === 'Assignment'
+      && relationship.source_id === roleId
+      && byId.get(relationship.target_id)
+      && byId.get(relationship.target_id).type === 'Business Process'
+    ));
+    assert.ok(assigned, `HARNESS_BEHAVIOR_MISSING: no behaviour assigned to role ${roleId}`);
   }
 
   // THEN every harness view carries an explicit viewpoint binding
